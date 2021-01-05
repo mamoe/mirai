@@ -20,9 +20,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
-import net.mamoe.mirai.internal.message.OfflineGroupImage
-import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
@@ -153,8 +151,11 @@ internal class GroupImpl(
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
             }.message.asMessageChain()
 
-            var length: Int = 0
-            var imageCnt: Int = 0
+            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
+            var length = 0
+
+            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER") // stupid compiler
+            var imageCnt = 0
             chain.verityLength(message, this, lengthCallback = {
                 length = it
             }, imageCntCallback = {
@@ -181,6 +182,17 @@ internal class GroupImpl(
 
         msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
+        msg.filterIsInstance<FriendImage>().forEach { image ->
+            bot.network.run {
+                ImgStore.GroupPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    groupCode = id,
+                    md5 = image.md5,
+                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
+                ).sendAndExpect<ImgStore.GroupPicUp.Response>()
+            }
+        }
 
         val result = bot.network.runCatching {
             val source: MessageSourceToGroupImpl
