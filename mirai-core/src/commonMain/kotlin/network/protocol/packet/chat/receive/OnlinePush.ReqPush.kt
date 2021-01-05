@@ -14,6 +14,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import kotlinx.io.core.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
@@ -170,6 +171,49 @@ internal inline fun lambda732(crossinline block: ByteReadPacket.(GroupImpl, QQAn
     }
 }
 
+private fun handleMuteMemberPacket(
+    bot: QQAndroidBot,
+    group: GroupImpl,
+    operator: Member,
+    target: Long,
+    timeSeconds: Int
+): Packet? {
+    if (target == 0L) {
+        val new = timeSeconds != 0
+        if (group.settings.isMuteAllField == new) {
+            return null
+        }
+        group.settings.isMuteAllField = new
+        return GroupMuteAllEvent(!new, new, group, operator)
+    }
+
+    if (target == bot.id) {
+        return when {
+            group.botMuteRemaining == timeSeconds -> null
+            timeSeconds == 0 || timeSeconds == 0xFFFF_FFFF.toInt() -> {
+                group.botAsMember.checkIsMemberImpl()._muteTimestamp = 0
+                BotUnmuteEvent(operator)
+            }
+            else -> {
+                group.botAsMember.checkIsMemberImpl()._muteTimestamp =
+                    currentTimeSeconds().toInt() + timeSeconds
+                BotMuteEvent(timeSeconds, operator)
+            }
+        }
+    }
+
+    val member = group[target] ?: return null
+    member.checkIsMemberImpl()
+
+    if (member.muteTimeRemaining == timeSeconds) {
+        return null
+    }
+
+    member._muteTimestamp = currentTimeSeconds().toInt() + timeSeconds
+    return if (timeSeconds == 0) MemberUnmuteEvent(member, operator)
+    else MemberMuteEvent(member, timeSeconds, operator)
+}
+
 private object Transformers732 : Map<Int, Lambda732> by mapOf(
     // mute
     0x0c to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
@@ -179,44 +223,16 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         }
         val operator = group[operatorUin] ?: return@lambda732 emptySequence()
         readUInt().toLong() // time
-        this.discardExact(2)
-        val target = readUInt().toLong()
-        val timeSeconds = readInt()
-
-        if (target == 0L) {
-            val new = timeSeconds != 0
-            if (group.settings.isMuteAllField == new) {
-                return@lambda732 emptySequence()
-            }
-            group.settings.isMuteAllField = new
-            return@lambda732 sequenceOf(GroupMuteAllEvent(!new, new, group, operator))
-        }
-
-        if (target == bot.id) {
-            return@lambda732 when {
-                group.botMuteRemaining == timeSeconds -> emptySequence()
-                timeSeconds == 0 || timeSeconds == 0xFFFF_FFFF.toInt() -> {
-                    group.botAsMember.checkIsMemberImpl()._muteTimestamp = 0
-                    sequenceOf(BotUnmuteEvent(operator))
-                }
-                else -> {
-                    group.botAsMember.checkIsMemberImpl()._muteTimestamp =
-                        currentTimeSeconds().toInt() + timeSeconds
-                    sequenceOf(BotMuteEvent(timeSeconds, operator))
-                }
+        val length = readUShort().toInt()
+        val packetList: MutableList<Packet> = mutableListOf()
+        repeat(length) {
+            val target = readUInt().toLong()
+            val timeSeconds = readUInt()
+            handleMuteMemberPacket(bot, group, operator, target, timeSeconds.toInt())?.let {
+                packetList.add(it)
             }
         }
-
-        val member = group[target] ?: return@lambda732 emptySequence()
-        member.checkIsMemberImpl()
-
-        if (member.muteTimeRemaining == timeSeconds) {
-            return@lambda732 emptySequence()
-        }
-
-        member._muteTimestamp = currentTimeSeconds().toInt() + timeSeconds
-        return@lambda732 if (timeSeconds == 0) sequenceOf(MemberUnmuteEvent(member, operator))
-        else sequenceOf(MemberMuteEvent(member, timeSeconds, operator))
+        return@lambda732 packetList.asSequence()
     },
 
     // anonymous
