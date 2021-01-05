@@ -47,8 +47,9 @@ internal fun Face.toCommData(): ImMsgBody.CommonElem {
 internal data class MarketFaceImpl internal constructor(
     internal val delegate: ImMsgBody.MarketFace,
 ) : MarketFace {
-    @Transient
-    override val name: String = delegate.faceName.decodeToString()
+
+    override val name: String get() = delegate.faceName.decodeToString()
+
     @Transient
     override val id: Int = delegate.tabId
 

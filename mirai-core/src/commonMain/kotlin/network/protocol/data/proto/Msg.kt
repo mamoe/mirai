@@ -564,7 +564,7 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal data class MarketFace(
-        @ProtoNumber(1) @JvmField val faceName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField var faceName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val itemType: Int = 0,
         @ProtoNumber(3) @JvmField val faceInfo: Int = 0,
         @ProtoNumber(4) @JvmField val faceId: ByteArray = EMPTY_BYTE_ARRAY,
