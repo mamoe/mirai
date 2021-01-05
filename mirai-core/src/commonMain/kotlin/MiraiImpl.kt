@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
@@ -34,9 +36,9 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
-import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.math.absoluteValue
@@ -67,6 +69,14 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         get() = BotFactoryImpl
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
+
+    override val Http: HttpClient = HttpClient(OkHttp) {
+        install(HttpTimeout) {
+            this.requestTimeoutMillis = 30_0000
+            this.connectTimeoutMillis = 30_0000
+            this.socketTimeoutMillis = 30_0000
+        }
+    }
 
     @OptIn(LowLevelApi::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
@@ -404,7 +414,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         amount: Int
     ): GroupAnnouncementList = bot.asQQAndroidBot().run {
         val rep = bot.asQQAndroidBot().network.run {
-            MiraiPlatformUtils.Http.post<String> {
+            Mirai.Http.post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
@@ -432,7 +442,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun _lowLevelSendAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
         bot.asQQAndroidBot().run {
             val rep = withContext(network.coroutineContext) {
-                MiraiPlatformUtils.Http.post<String> {
+                Mirai.Http.post<String> {
                     url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
                     body = MultiPartFormDataContent(formData {
                         append("qid", groupId)
@@ -468,7 +478,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @MiraiExperimentalApi
     override suspend fun _lowLevelDeleteAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
         val data = withContext(network.coroutineContext) {
-            MiraiPlatformUtils.Http.post<String> {
+            Mirai.Http.post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
@@ -498,7 +508,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun _lowLevelGetAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
         bot.asQQAndroidBot().run {
             val rep = network.run {
-                MiraiPlatformUtils.Http.post<String> {
+                Mirai.Http.post<String> {
                     url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
                     body = MultiPartFormDataContent(formData {
                         append("qid", groupId)
@@ -525,7 +535,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun _lowLevelGetGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
         bot.asQQAndroidBot().run {
             val rep = network.run {
-                MiraiPlatformUtils.Http.get<String> {
+                Mirai.Http.get<String> {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                     parameter("bkn", bkn)
                     parameter("gc", groupId)
@@ -551,7 +561,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         type: GroupHonorType
     ): GroupHonorListData? = bot.asQQAndroidBot().run {
         val rep = network.run {
-            MiraiPlatformUtils.Http.get<String> {
+            Mirai.Http.get<String> {
                 url("https://qun.qq.com/interactive/honorlist")
                 parameter("gc", groupId)
                 parameter("type", type.value)
@@ -781,7 +791,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         seconds: Int
     ) {
         bot as QQAndroidBot
-        val response = MiraiPlatformUtils.Http.post<String> {
+        val response = Mirai.Http.post<String> {
             url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
             body = MultiPartFormDataContent(formData {
                 append("anony_id", anonymousId)
@@ -805,9 +815,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override fun createImage(imageId: String): Image {
         return when {
-            imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
-            imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
-            imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+            imageId matches IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+            imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> OfflineFriendImage(imageId)
+            imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> OfflineFriendImage(imageId)
             else ->
                 @Suppress("INVISIBLE_MEMBER")
                 throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")

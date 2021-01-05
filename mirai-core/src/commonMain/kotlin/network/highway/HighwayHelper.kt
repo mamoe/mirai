@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.*
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
@@ -199,7 +200,7 @@ internal object HighwayHelper {
         uKey: ByteArray,
         fileKey: ByteArray,
     ) {
-        MiraiPlatformUtils.Http.post<String> {
+        Mirai.Http.post<String> {
             url("http://$serverIp:$serverPort")
             parameter("ver", 4679)
             parameter("ukey", uKey.toUHexString(""))
