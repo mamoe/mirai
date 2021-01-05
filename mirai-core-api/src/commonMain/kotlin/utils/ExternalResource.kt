@@ -61,9 +61,10 @@ public interface ExternalResource : Closeable {
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
-     * png, jpg, gif, tif, bmp, wav, amr, silk
+     * png, jpg, gif, tif, bmp, amr, silk
      *
      * @see net.mamoe.mirai.utils.getFileType
+     * @see net.mamoe.mirai.utils.FILE_TYPES
      * @see DEFAULT_FORMAT_NAME
      */
     public val formatName: String
@@ -88,7 +89,7 @@ public interface ExternalResource : Closeable {
 
     public companion object {
         /**
-         * 在无法识别文件格式时使用的默认格式名.
+         * 在无法识别文件格式时使用的默认格式名. "mirai".
          *
          * @see ExternalResource.formatName
          */
@@ -265,7 +266,7 @@ public interface ExternalResource : Closeable {
 
 
 private fun InputStream.detectFileTypeAndClose(): String? {
-    val buffer = ByteArray(10)
+    val buffer = ByteArray(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)
     return use {
         kotlin.runCatching { it.read(buffer) }.onFailure { return null }
         getFileType(buffer)
@@ -320,7 +321,7 @@ internal class ExternalResourceImplByByteArray(
     override val size: Long = data.size.toLong()
     override val md5: ByteArray by lazy { data.md5() }
     override val formatName: String by lazy {
-        formatName ?: getFileType(data.copyOf(8)).orEmpty()
+        formatName ?: getFileType(data.copyOf(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)).orEmpty()
     }
 
     override fun inputStream(): InputStream = data.inputStream()
