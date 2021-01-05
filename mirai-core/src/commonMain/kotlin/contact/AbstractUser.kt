@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
@@ -26,7 +27,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
@@ -81,7 +81,7 @@ internal abstract class AbstractUser(
                 }
 
                 val time = measureTime {
-                    MiraiPlatformUtils.Http.postImage(
+                    Mirai.Http.postImage(
                         "0x6ff0070",
                         bot.id,
                         null,

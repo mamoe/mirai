@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.*
+import io.ktor.client.features.*
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import java.io.*
@@ -24,13 +25,6 @@ import java.util.zip.GZIPOutputStream
 import java.util.zip.Inflater
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
-public object MiraiPlatformUtils {
-    /**
-     * Ktor HttpClient. 不同平台使用不同引擎.
-     */
-    public val Http: HttpClient = HttpClient()
-}
 
 @JvmOverloads
 public fun ByteArray.unzip(offset: Int = 0, length: Int = size - offset): ByteArray {
