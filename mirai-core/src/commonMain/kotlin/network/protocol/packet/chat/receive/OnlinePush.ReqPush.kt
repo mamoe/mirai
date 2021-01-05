@@ -509,7 +509,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
             msg.msgGroupMsgSync != null -> {
                 when (msg.msgGroupMsgSync.processflag) {
-                    1, 2 -> bot.launch(bot.network.coroutineContext) {
+                    1, 2 -> bot.network.launch {
                         bot.groupListModifyLock.withLock {
                             bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
                                 BotJoinGroupEvent.Active(it).broadcast()
