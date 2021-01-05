@@ -23,6 +23,7 @@ import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClientList
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -91,7 +92,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
-        this@AbstractBot.eventChannel.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
+        this@AbstractBot.eventChannel.subscribeAlways(
+            priority = MONITOR,
+            concurrency = Listener.ConcurrencyKind.LOCKED
+        ) { event ->
             if (!event.bot.isActive) {
                 // bot closed
                 return@subscribeAlways
@@ -110,30 +114,6 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 return@subscribeAlways
             }*/
             when (event) {
-                is BotOfflineEvent.MsfOffline,
-                is BotOfflineEvent.Dropped,
-                is BotOfflineEvent.RequireReconnect,
-                is BotOfflineEvent.PacketFactoryErrorCode
-                -> {
-                    if (!_network.isActive) {
-                        // normally closed
-                        return@subscribeAlways
-                    }
-                    bot.logger.info { "Connection lost, retrying login" }
-
-                    bot.asQQAndroidBot().client.run {
-                        if (serverList.isEmpty()) {
-                            serverList.addAll(DefaultServerList)
-                        } else serverList.removeAt(0)
-                    }
-
-                    val success: Boolean
-                    val time = measureTime { success = Reconnect().reconnect(event) }
-
-                    if (success) {
-                        logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
-                    }
-                }
                 is BotOfflineEvent.Active -> {
                     val cause = event.cause
                     val msg = if (cause == null) {
@@ -146,7 +126,37 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
-                    bot.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
+                    if (!event.reconnect) {
+                        bot.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
+                    }
+                }
+                is BotOfflineEvent.MsfOffline,
+                is BotOfflineEvent.Dropped,
+                is BotOfflineEvent.RequireReconnect,
+                is BotOfflineEvent.PacketFactoryErrorCode
+                -> {
+                    // nothing to do
+                }
+            }
+
+            if (event.reconnect) {
+                if (!_network.isActive) {
+                    // normally closed
+                    return@subscribeAlways
+                }
+                bot.logger.info { "Connection lost, retrying login" }
+
+                bot.asQQAndroidBot().client.run {
+                    if (serverList.isEmpty()) {
+                        serverList.addAll(DefaultServerList)
+                    } else serverList.removeAt(0)
+                }
+
+                val success: Boolean
+                val time = measureTime { success = Reconnect().reconnect(event) }
+
+                if (success) {
+                    logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
                 }
             }
         }

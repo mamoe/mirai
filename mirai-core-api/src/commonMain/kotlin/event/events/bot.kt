@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -34,6 +34,10 @@ public data class BotOnlineEvent internal constructor(
  * [Bot] 离线.
  */
 public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
+    /**
+     * 为 `true` 时会尝试重连. 仅 [BotOfflineEvent.Force] 默认为 `false`, 其他默认为 `true`.
+     */
+    public open val reconnect: Boolean get() = true
 
     /**
      * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
@@ -41,16 +45,20 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class Active(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) : BotOfflineEvent(), BotActiveEvent, CauseAware
+    ) : BotOfflineEvent(), BotActiveEvent, CauseAware {
+        override val reconnect: Boolean get() = false
+    }
 
     /**
-     * 被挤下线
+     * 被挤下线. 默认不会自动重连. 可将 [reconnect] 改为 `true` 以重连.
      */
     public data class Force internal constructor(
         public override val bot: Bot,
         public val title: String,
-        public val message: String
-    ) : BotOfflineEvent(), Packet, BotPassiveEvent
+        public val message: String,
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent {
+        override var reconnect: Boolean = false
+    }
 
     /**
      * 被服务器断开
@@ -59,7 +67,9 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class MsfOffline internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
+        override var reconnect: Boolean = true
+    }
 
     /**
      * 因网络问题而掉线
@@ -67,7 +77,9 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class Dropped internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
+        override var reconnect: Boolean = true
+    }
 
     /**
      * 因 returnCode = -10008 等原因掉线
@@ -77,7 +89,9 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         val returnCode: Int,
         public override val bot: Bot,
         public override val cause: Throwable
-    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
+        override var reconnect: Boolean = true
+    }
 
     /**
      * 服务器主动要求更换另一个服务器
@@ -85,8 +99,9 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     @MiraiInternalApi
     public data class RequireReconnect internal constructor(
         public override val bot: Bot
-    ) : BotOfflineEvent(), Packet,
-        BotPassiveEvent
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent {
+        override var reconnect: Boolean = true
+    }
 
     @MiraiExperimentalApi
     public interface CauseAware {
