@@ -97,6 +97,8 @@ internal class MessageSerializationTest {
         VipFace(VipFace.AiXin, 1),
         PokeMessage.BaoBeiQiu,
         MarketFaceImpl(ImMsgBody.MarketFace()),
+        SimpleServiceMessage(1, "SSM"),
+        LightApp("lightApp"),
         image.flash(),
         image.toForwardMessage(1L, "test"),
     )
