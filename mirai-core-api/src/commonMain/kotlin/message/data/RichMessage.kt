@@ -32,7 +32,7 @@ import kotlin.annotation.AnnotationTarget.*
 // not using sealed class for customized implementations
 // using polymorphic serializer from Message.Serializer
 public interface RichMessage : MessageContent, ConstrainSingle {
-    override val key: MessageKey<*> get() = Key
+    override val key: MessageKey<RichMessage> get() = Key
 
     /**
      * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
