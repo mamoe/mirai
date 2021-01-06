@@ -20,7 +20,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.message.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -110,13 +110,13 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
     public companion object {
         private fun getDefaultJson() = Json {
             serializersModule =
-                MessageSerializer.serializersModule // don't convert to property, serializersModule is volatile.
+                MessageSerializers.serializersModule // don't convert to property, serializersModule is volatile.
             ignoreUnknownKeys = true
         }
 
         /**
          * 从 JSON 字符串解析 [MessageChain]
-         * @param json 需要包含 [MessageSerializer.serializersModule]
+         * @param json 需要包含 [MessageSerializers.serializersModule]
          * @see serializeToJsonString
          */
         @JvmOverloads

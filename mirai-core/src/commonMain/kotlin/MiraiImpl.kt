@@ -34,7 +34,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
@@ -51,52 +51,52 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
         @Suppress("ObjectPropertyName", "unused", "DEPRECATION_ERROR")
         private val _init = Mirai.let {
-            MessageSerializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
-            MessageSerializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
-            MessageSerializer.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
-            MessageSerializer.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
+            MessageSerializers.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
+            MessageSerializers.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
+            MessageSerializers.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
+            MessageSerializers.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
 
-            MessageSerializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
+            MessageSerializers.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
 
             // MessageSource
 
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceFromGroupImpl::class,
                 OnlineMessageSourceFromGroupImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceFromFriendImpl::class,
                 OnlineMessageSourceFromFriendImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceFromTempImpl::class,
                 OnlineMessageSourceFromTempImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceFromStrangerImpl::class,
                 OnlineMessageSourceFromStrangerImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceToGroupImpl::class,
                 OnlineMessageSourceToGroupImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceToFriendImpl::class,
                 OnlineMessageSourceToFriendImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceToTempImpl::class,
                 OnlineMessageSourceToTempImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OnlineMessageSourceToStrangerImpl::class,
                 OnlineMessageSourceToStrangerImpl.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OfflineMessageSourceImplData::class,
                 OfflineMessageSourceImplData.serializer()
             )
-            MessageSerializer.registerSerializer(
+            MessageSerializers.registerSerializer(
                 OfflineMessageSourceImplData::class,
                 OfflineMessageSourceImplData.serializer()
             )

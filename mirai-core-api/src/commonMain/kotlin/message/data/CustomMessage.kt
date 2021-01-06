@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.message.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -31,12 +31,12 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * 目前在回复时无法通过 [MessageSource.originalMessage] 获取自定义类型消息
  *
  * ## 序列化
- * 若要支持序列化, 需 [MessageSerializer.registerSerializer]
+ * 若要支持序列化, 需 [MessageSerializers.registerSerializer]
  *
  * @sample samples.CustomMessageIdentifier 实现示例
  *
  * @see CustomMessageMetadata 自定义消息元数据
- * @see MessageSerializer
+ * @see MessageSerializers
  */
 @Serializable
 @MiraiExperimentalApi

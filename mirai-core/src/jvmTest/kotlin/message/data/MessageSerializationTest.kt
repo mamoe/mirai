@@ -15,7 +15,7 @@ import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.message.MarketFaceImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 internal class MessageSerializationTest {
     @Suppress("DEPRECATION_ERROR")
     private val module
-        get() = MessageSerializer.serializersModule
+        get() = MessageSerializers.serializersModule
     private val format
         get() = Json {
             serializersModule = module

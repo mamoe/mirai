@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2020 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.message
@@ -15,25 +15,16 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.modules.*
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.overwriteWith
+import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.message.data.MessageChainImpl
 import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.reflect.KClass
 
-@MiraiExperimentalApi
-public interface MessageSerializer {
-    public val serializersModule: SerializersModule
-
-    public fun <M : SingleMessage> registerSerializer(baseClass: KClass<M>, serializer: KSerializer<M>)
-
-    public fun registerSerializers(serializersModule: SerializersModule)
-
-    public fun clearRegisteredSerializers()
-
-    public companion object INSTANCE : MessageSerializer by MessageSerializerImpl
-}
 
 internal fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
     with(descriptor) {
@@ -174,7 +165,7 @@ private val builtInSerializersModule by lazy {
     }
 }
 
-internal object MessageSerializerImpl : MessageSerializer {
+internal object MessageSerializersImpl : MessageSerializers {
     @Volatile
     private var serializersModuleField: SerializersModule? = null
     override val serializersModule: SerializersModule get() = serializersModuleField ?: builtInSerializersModule
@@ -192,11 +183,6 @@ internal object MessageSerializerImpl : MessageSerializer {
     @Synchronized
     override fun registerSerializers(serializersModule: SerializersModule) {
         serializersModuleField = serializersModule.overwriteWith(serializersModule)
-    }
-
-    @Synchronized
-    override fun clearRegisteredSerializers() {
-        serializersModuleField = builtInSerializersModule
     }
 }
 
