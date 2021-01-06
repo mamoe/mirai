@@ -139,7 +139,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
      * 发送陌生人消息
      */
     @Suppress("FunctionName")
-    internal inline fun createToStrangerImpl(
+    internal fun createToStrangerImpl(
         client: QQAndroidClient,
         target: Stranger,
         message: MessageChain,
