@@ -106,7 +106,9 @@ public data class ForwardMessage(
     val source: String,
     val summary: String,
     val nodeList: List<Node>,
-) : MessageContent {
+) : MessageContent, ConstrainSingle {
+    override val key: MessageKey<ForwardMessage> get() = Key
+
     override fun contentToString(): String {
         return "[转发消息]"
     }
