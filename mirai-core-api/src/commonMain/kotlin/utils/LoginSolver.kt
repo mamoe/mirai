@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
+import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import net.mamoe.mirai.utils.internal.SeleniumLoginSolver
