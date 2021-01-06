@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,7 +18,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.message.MessageSerializer
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * 自定义消息
@@ -114,15 +116,15 @@ public sealed class CustomMessage : SingleMessage {
     }
 
     public companion object {
-        private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
+        private val factories: ConcurrentLinkedQueue<Factory<*>> = ConcurrentLinkedQueue()
 
         internal fun register(factory: Factory<out CustomMessage>) {
             factories.removeIf { it::class == factory::class }
-            val exist = factories.asSequence().firstOrNull { it.typeName == factory.typeName }
+            val exist = factories.firstOrNull { it.typeName == factory.typeName }
             if (exist != null) {
                 error("CustomMessage.Factory typeName ${factory.typeName} is already registered by ${exist::class.qualifiedName}")
             }
-            factories.addLast(factory)
+            factories.add(factory)
         }
 
         @Serializable
@@ -149,7 +151,7 @@ public sealed class CustomMessage : SingleMessage {
             }
             return kotlin.runCatching {
                 when (msg.miraiVersionFlag) {
-                    1 -> factories.asSequence().firstOrNull { it.typeName == msg.typeName }?.load(msg.data)
+                    1 -> factories.firstOrNull { it.typeName == msg.typeName }?.load(msg.data)
                     else -> null
                 }
             }.getOrElse {

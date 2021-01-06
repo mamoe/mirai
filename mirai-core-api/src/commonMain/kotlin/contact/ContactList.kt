@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -47,14 +46,3 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
  */
 public val ContactList<*>.idContentString: String
     get() = "[" + delegate.joinToString { it.id.toString() } + "]"
-
-
-internal operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
-    forEach { if (it.id == id) return it }
-    throw NoSuchElementException("No such contact: $id")
-}
-
-internal fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
-    forEach { if (it.id == id) return it }
-    return null
-}
