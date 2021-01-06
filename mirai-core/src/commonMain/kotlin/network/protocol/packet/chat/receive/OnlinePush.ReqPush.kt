@@ -19,7 +19,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendInfoImpl

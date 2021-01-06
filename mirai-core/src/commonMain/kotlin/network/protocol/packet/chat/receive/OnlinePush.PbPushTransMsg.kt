@@ -18,7 +18,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
