@@ -540,20 +540,20 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 获得荣誉时的事件
      */
-    public class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
+    public data class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
         MemberHonorChangeEvent()
 
     /**
      * 失去荣誉时的事件
      */
-    public class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
+    public data class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
         MemberHonorChangeEvent()
 }
 
 /**
  * [Group] 龙王改变时的事件
  */
-public class GroupTalkativeChangeEvent(
+public data class GroupTalkativeChangeEvent(
     /**
      * 改变的群
      */
