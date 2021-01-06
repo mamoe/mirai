@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,6 +10,7 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.Job
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -33,14 +34,10 @@ import kotlin.annotation.AnnotationTarget.*
 public annotation class LowLevelApi
 
 /**
- * [Bot] 相关协议层低级 API.
- *
- * **注意**: 不应该把这个类作为一个类型, 只应使用其中的方法
+ * [IMirai] 协议层低级 API.
  *
  * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
-@MiraiExperimentalApi
-@Suppress("FunctionName", "unused")
 @LowLevelApi
 public interface LowLevelApiAccessor {
     /**
@@ -50,7 +47,7 @@ public interface LowLevelApiAccessor {
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
      */
     @LowLevelApi
-    public fun _lowLevelNewFriend(bot: Bot, friendInfo: FriendInfo): Friend
+    public fun newFriend(bot: Bot, friendInfo: FriendInfo): Friend
 
     /**
      * 构造一个 [Stranger] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
@@ -59,13 +56,14 @@ public interface LowLevelApiAccessor {
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
      */
     @LowLevelApi
-    public fun _lowLevelNewStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger
+    public fun newStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger
 
     /**
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode
      */
     @LowLevelApi
-    public suspend fun _lowLevelQueryGroupList(bot: Bot): Sequence<Long>
+    @JvmBlockingBridge
+    public suspend fun getRawGroupList(bot: Bot): Sequence<Long>
 
     /**
      * 向服务器查询群成员列表.
@@ -73,10 +71,11 @@ public interface LowLevelApiAccessor {
      *
      * 这个函数很慢. 请不要频繁使用.
      *
-     * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
+     * @see IMirai.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
      */
     @LowLevelApi
-    public suspend fun _lowLevelQueryGroupMemberList(
+    @JvmBlockingBridge
+    public suspend fun getRawGroupMemberList(
         bot: Bot,
         groupUin: Long,
         groupCode: Long,
@@ -89,9 +88,12 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     @MiraiExperimentalApi
-    public suspend fun _lowLevelGetAnnouncements(
+    @JvmBlockingBridge
+    public suspend fun getRawGroupAnnouncements(
         bot: Bot,
-        groupId: Long, page: Int = 1, amount: Int = 10
+        groupId: Long,
+        page: Int = 1,
+        amount: Int = 10
     ): GroupAnnouncementList
 
     /**
@@ -100,10 +102,12 @@ public interface LowLevelApiAccessor {
      * @return 公告的fid
      */
     @LowLevelApi
+    @JvmBlockingBridge
     @MiraiExperimentalApi
-    public suspend fun _lowLevelSendAnnouncement(
+    public suspend fun sendGroupAnnouncement(
         bot: Bot,
-        groupId: Long, announcement: GroupAnnouncement
+        groupId: Long,
+        announcement: GroupAnnouncement
     ): String
 
 
@@ -112,10 +116,12 @@ public interface LowLevelApiAccessor {
      * @param fid [GroupAnnouncement.fid]
      */
     @LowLevelApi
+    @JvmBlockingBridge
     @MiraiExperimentalApi
-    public suspend fun _lowLevelDeleteAnnouncement(
+    public suspend fun deleteGroupAnnouncement(
         bot: Bot,
-        groupId: Long, fid: String
+        groupId: Long,
+        fid: String
     )
 
     /**
@@ -123,10 +129,12 @@ public interface LowLevelApiAccessor {
      * @param fid [GroupAnnouncement.fid]
      */
     @LowLevelApi
+    @JvmBlockingBridge
     @MiraiExperimentalApi
-    public suspend fun _lowLevelGetAnnouncement(
+    public suspend fun getGroupAnnouncement(
         bot: Bot,
-        groupId: Long, fid: String
+        groupId: Long,
+        fid: String
     ): GroupAnnouncement
 
 
@@ -136,8 +144,9 @@ public interface LowLevelApiAccessor {
      * page从0开始传入可以得到发言列表
      */
     @LowLevelApi
+    @JvmBlockingBridge
     @MiraiExperimentalApi
-    public suspend fun _lowLevelGetGroupActiveData(bot: Bot, groupId: Long, page: Int = -1): GroupActiveData
+    public suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int = -1): GroupActiveData
 
 
     /**
@@ -145,7 +154,8 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     @MiraiExperimentalApi
-    public suspend fun _lowLevelGetGroupHonorListData(
+    @JvmBlockingBridge
+    public suspend fun getRawGroupHonorListData(
         bot: Bot,
         groupId: Long,
         type: GroupHonorType
@@ -155,8 +165,9 @@ public interface LowLevelApiAccessor {
     /**
      * 处理一个账号请求添加机器人为好友的事件
      */
+    @JvmBlockingBridge
     @LowLevelApi
-    public suspend fun _lowLevelSolveNewFriendRequestEvent(
+    public suspend fun solveNewFriendRequestEvent(
         bot: Bot,
         eventId: Long,
         fromId: Long,
@@ -169,7 +180,8 @@ public interface LowLevelApiAccessor {
      * 处理被邀请加入一个群请求事件
      */
     @LowLevelApi
-    public suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
+    @JvmBlockingBridge
+    public suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
         invitorId: Long,
@@ -181,7 +193,8 @@ public interface LowLevelApiAccessor {
      * 处理账号请求加入群事件
      */
     @LowLevelApi
-    public suspend fun _lowLevelSolveMemberJoinRequestEvent(
+    @JvmBlockingBridge
+    public suspend fun solveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
         fromId: Long,
@@ -196,7 +209,8 @@ public interface LowLevelApiAccessor {
      * 查询语音的下载连接
      */
     @LowLevelApi
-    public suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
+    @JvmBlockingBridge
+    public suspend fun getGroupVoiceDownloadUrl(
         bot: Bot,
         md5: ByteArray,
         groupId: Long,
@@ -204,22 +218,13 @@ public interface LowLevelApiAccessor {
     ): String
 
     /**
-     * 查询语音的上传连接
-     */
-    @LowLevelApi
-    public suspend fun _lowLevelUploadVoice(
-        bot: Bot,
-        md5: ByteArray,
-        groupId: Long,
-    )
-
-    /**
      * 禁言一个匿名用户
      *
      * @param anonymousId [AnonymousMember.anonymousId]
      */
     @LowLevelApi
-    public suspend fun _lowLevelMuteAnonymous(
+    @JvmBlockingBridge
+    public suspend fun muteAnonymousMember(
         bot: Bot,
         anonymousId: String,
         anonymousNick: String,

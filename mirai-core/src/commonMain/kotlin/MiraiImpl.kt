@@ -127,7 +127,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             "the request $event is outdated: You had already responded it on another device."
         }
 
-        _lowLevelSolveNewFriendRequestEvent(
+        solveNewFriendRequestEvent(
             event.bot,
             eventId = event.eventId,
             fromId = event.fromId,
@@ -147,7 +147,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             "the request $event is outdated: You had already responded it on another device."
         }
 
-        _lowLevelSolveNewFriendRequestEvent(
+        solveNewFriendRequestEvent(
             event.bot,
             eventId = event.eventId,
             fromId = event.fromId,
@@ -167,7 +167,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         if (event.group?.contains(event.fromId) == true) return
 
-        _lowLevelSolveMemberJoinRequestEvent(
+        solveMemberJoinRequestEvent(
             bot = event.bot,
             eventId = event.eventId,
             fromId = event.fromId,
@@ -188,7 +188,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         if (event.group?.contains(event.fromId) == true) return
 
-        _lowLevelSolveMemberJoinRequestEvent(
+        solveMemberJoinRequestEvent(
             bot = event.bot,
             eventId = event.eventId,
             fromId = event.fromId,
@@ -238,7 +238,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             "the request $this has already been responded"
         }
 
-        _lowLevelSolveMemberJoinRequestEvent(
+        solveMemberJoinRequestEvent(
             bot = event.bot,
             eventId = event.eventId,
             fromId = event.fromId,
@@ -266,7 +266,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             "the request $this is outdated: Bot has been already in the group."
         }
 
-        _lowLevelSolveBotInvitedJoinGroupRequestEvent(
+        solveBotInvitedJoinGroupRequestEvent(
             bot = event.bot,
             eventId = event.eventId,
             invitorId = event.invitorId,
@@ -276,7 +276,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     @LowLevelApi
-    override fun _lowLevelNewFriend(bot: Bot, friendInfo: FriendInfo): Friend {
+    override fun newFriend(bot: Bot, friendInfo: FriendInfo): Friend {
         return FriendImpl(
             bot.asQQAndroidBot(),
             bot.coroutineContext + SupervisorJob(bot.supervisorJob),
@@ -285,7 +285,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     @LowLevelApi
-    override fun _lowLevelNewStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger {
+    override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger {
         return StrangerImpl(
             bot.asQQAndroidBot(),
             bot.coroutineContext + SupervisorJob(bot.supervisorJob),
@@ -295,7 +295,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
 
     @OptIn(LowLevelApi::class)
-    override suspend fun _lowLevelQueryGroupList(bot: Bot): Sequence<Long> {
+    override suspend fun getRawGroupList(bot: Bot): Sequence<Long> {
         bot.asQQAndroidBot()
         return bot.network.run {
             FriendList.GetTroopListSimplify(bot.client)
@@ -304,7 +304,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     @OptIn(LowLevelApi::class)
-    override suspend fun _lowLevelQueryGroupMemberList(
+    override suspend fun getRawGroupMemberList(
         bot: Bot,
         groupUin: Long,
         groupCode: Long,
@@ -445,7 +445,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelGetAnnouncements(
+    override suspend fun getRawGroupAnnouncements(
         bot: Bot,
         groupId: Long,
         page: Int,
@@ -477,7 +477,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelSendAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
+    override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
         bot.asQQAndroidBot().run {
             val rep = withContext(network.coroutineContext) {
                 Mirai.Http.post<String> {
@@ -514,7 +514,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelDeleteAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
+    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
         val data = withContext(network.coroutineContext) {
             Mirai.Http.post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
@@ -543,7 +543,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelGetAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
+    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
         bot.asQQAndroidBot().run {
             val rep = network.run {
                 Mirai.Http.post<String> {
@@ -570,7 +570,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelGetGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
+    override suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
         bot.asQQAndroidBot().run {
             val rep = network.run {
                 Mirai.Http.get<String> {
@@ -593,7 +593,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelGetGroupHonorListData(
+    override suspend fun getRawGroupHonorListData(
         bot: Bot,
         groupId: Long,
         type: GroupHonorType
@@ -719,7 +719,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelSolveNewFriendRequestEvent(
+    override suspend fun solveNewFriendRequestEvent(
         bot: Bot,
         eventId: Long,
         fromId: Long,
@@ -736,13 +736,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 blackList = blackList
             ).sendWithoutExpect()
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            bot.friends.delegate.add(_lowLevelNewFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
+            bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
         }
     }
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
+    override suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
         invitorId: Long,
@@ -763,7 +763,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun _lowLevelSolveMemberJoinRequestEvent(
+    override suspend fun solveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
         fromId: Long,
@@ -803,7 +803,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @OptIn(ExperimentalStdlibApi::class)
     @LowLevelApi
-    override suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
+    override suspend fun getGroupVoiceDownloadUrl(
         bot: Bot,
         md5: ByteArray,
         groupId: Long,
@@ -816,12 +816,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @LowLevelApi
-    override suspend fun _lowLevelUploadVoice(bot: Bot, md5: ByteArray, groupId: Long) {
-
-    }
-
-    override suspend fun _lowLevelMuteAnonymous(
+    override suspend fun muteAnonymousMember(
         bot: Bot,
         anonymousId: String,
         anonymousNick: String,

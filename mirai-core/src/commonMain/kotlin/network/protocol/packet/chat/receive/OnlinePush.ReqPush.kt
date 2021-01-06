@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,13 +14,9 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.io.core.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
@@ -494,7 +490,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0xB3L to lambda528 { bot ->
         // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
         val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
-        val new = Mirai._lowLevelNewFriend(
+        val new = Mirai.newFriend(
             bot, FriendInfoImpl(
                 uin = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,

@@ -527,7 +527,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             val nick = sequenceOf(msgHead.fromNick, msgHead.authNick, pbNick).filter { it.isNotEmpty() }.firstOrNull()
                 ?: return null
             val id = sequenceOf(msgHead.fromUin, msgHead.authUin).filter { it != 0L }.firstOrNull() ?: return null//对方QQ
-            Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
+            Mirai.newStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
                 bot.getStranger(id)?.let { previous ->
                     bot.strangers.remove(id)
                     StrangerRelationChangeEvent.Deleted(previous).broadcast()
@@ -566,7 +566,7 @@ internal suspend fun QQAndroidBot.getNewGroup(groupCode: Long): Group? {
         coroutineContext = coroutineContext,
         id = groupCode,
         groupInfo = GroupInfoImpl(troopNum),
-        members = Mirai._lowLevelQueryGroupMemberList(
+        members = Mirai.getRawGroupMemberList(
             this,
             troopNum.groupUin,
             troopNum.groupCode,
