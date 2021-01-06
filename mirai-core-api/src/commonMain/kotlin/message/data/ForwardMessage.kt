@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@ package net.mamoe.mirai.message.data
 
 import io.ktor.http.*
 import io.ktor.util.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
@@ -96,6 +97,7 @@ public data class RawForwardMessage(
  *
  * @see buildForwardMessage
  */
+@SerialName(ForwardMessage.SERIAL_NAME)
 @Serializable
 public data class ForwardMessage(
     val preview: List<String>,
@@ -136,7 +138,7 @@ public data class ForwardMessage(
          * Java 用户: 使用 [sequenceOf] (`SequenceKt.sequenceOf`) 或 [asSequence] (`SequenceKt.asSequence`)
          */
         public fun generatePreview(forward: RawForwardMessage): List<String> =
-            forward.nodeList.map { it.senderName + ": " + it.message.contentToString() }
+            forward.nodeList.map { it.senderName + ": " + it.messageChain.contentToString() }
 
         /**
          * 显示在卡片底部
@@ -152,8 +154,15 @@ public data class ForwardMessage(
         override val senderId: Long,
         override val time: Int,
         override val senderName: String,
-        override val message: Message
-    ) : INode
+        override val messageChain: MessageChain
+    ) : INode {
+        public constructor(
+            senderId: Long,
+            time: Int,
+            senderName: String,
+            message: Message
+        ) : this(senderId, time, senderName, message.asMessageChain())
+    }
 
     @MiraiExperimentalApi
     public interface INode {
@@ -175,11 +184,13 @@ public data class ForwardMessage(
         /**
          * 消息内容
          */
-        public val message: Message
+        public val messageChain: MessageChain
     }
 
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, ForwardMessage>(MessageContent, { it.safeCast() })
+        AbstractPolymorphicMessageKey<MessageContent, ForwardMessage>(MessageContent, { it.safeCast() }) {
+        public const val SERIAL_NAME: String = "ForwardMessage"
+    }
 }
 
 
@@ -358,7 +369,7 @@ public class ForwardMessageBuilder private constructor(
         /**
          * 消息内容
          */
-        public override lateinit var message: Message
+        public override lateinit var messageChain: MessageChain
 
 
         /**
@@ -410,19 +421,21 @@ public class ForwardMessageBuilder private constructor(
          * 指定消息内容
          */
         @ForwardMessageDsl
-        public infix fun message(message: Message): BuilderNode = this.apply { this.message = message }
+        public infix fun message(message: Message): BuilderNode =
+            this.apply { this.messageChain = message.asMessageChain() }
 
         /**
          * 指定消息内容
          */
         @ForwardMessageDsl
-        public infix fun message(message: String): BuilderNode = this.apply { this.message = PlainText(message) }
+        public infix fun message(message: String): BuilderNode =
+            this.apply { this.messageChain = PlainText(message).asMessageChain() }
 
         /** 添加一条消息  */
         @ForwardMessageDsl
         public infix fun says(message: Message): ForwardMessageBuilder = this@ForwardMessageBuilder.apply {
             checkBuilt()
-            this@BuilderNode.message = message
+            this@BuilderNode.messageChain = message.asMessageChain()
             add(this@BuilderNode)
         }
 
@@ -454,7 +467,7 @@ public class ForwardMessageBuilder private constructor(
             checkBuilt()
             add(BuilderNode().apply {
                 senderId = this@says
-                this.message = message
+                this.messageChain = message.asMessageChain()
             })
         }
 
@@ -551,7 +564,7 @@ public class ForwardMessageBuilder private constructor(
             it.senderId,
             it.time,
             it.senderName,
-            it.message
+            it.messageChain
         )
     }).render(this.displayStrategy)
 
@@ -565,5 +578,5 @@ public class ForwardMessageBuilder private constructor(
 internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
 
 private fun ForwardMessage.INode.toNode(): ForwardMessage.Node {
-    return ForwardMessage.Node(senderId, time, senderName, message)
+    return ForwardMessage.Node(senderId, time, senderName, messageChain)
 }

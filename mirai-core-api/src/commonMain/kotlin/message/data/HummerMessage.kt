@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,7 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
@@ -46,6 +46,7 @@ public interface HummerMessage : MessageContent, ConstrainSingle {
  *
  * @see PokeMessage.Companion 使用伴生对象中的常量
  */
+@SerialName(PokeMessage.SERIAL_NAME)
 @Serializable
 public data class PokeMessage @MiraiInternalApi constructor(
     /**
@@ -62,6 +63,8 @@ public data class PokeMessage @MiraiInternalApi constructor(
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, PokeMessage>(HummerMessage, { it.castOrNull() }) {
+
+        public const val SERIAL_NAME: String = "PokeMessage"
 
         /** 戳一戳 */
         @JvmField
@@ -195,7 +198,9 @@ public interface MarketFace : HummerMessage {
         get() = Key
 
     public companion object Key :
-        AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() })
+        AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() }) {
+        public const val SERIAL_NAME: String = "MarketFace"
+    }
 
     override fun contentToString(): String = name
 }
@@ -215,6 +220,7 @@ public interface MarketFace : HummerMessage {
  *
  * @see VipFace.Key 使用伴生对象中的常量
  */
+@SerialName(VipFace.SERIAL_NAME)
 @Serializable
 public data class VipFace @MiraiInternalApi constructor(
     /**
@@ -238,6 +244,8 @@ public data class VipFace @MiraiInternalApi constructor(
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, VipFace>(HummerMessage, { it.safeCast() }) {
+
+        public const val SERIAL_NAME: String = "VipFace"
 
         @JvmField
         public val LiuLian: Kind = 9 to "榴莲"
@@ -310,12 +318,14 @@ public data class VipFace @MiraiInternalApi constructor(
  *
  * @see Image 查看图片相关信息
  */
+@SerialName(FlashImage.SERIAL_NAME)
 @Serializable
 public data class FlashImage(
     /**
      * 闪照的内容图片, 即一个普通图片.
      */
-    @Contextual
+    @SerialName("imageId")
+    @Serializable(Image.AsStringSerializer::class)
     public val image: Image
 ) : MessageContent, HummerMessage, CodableMessage, ConstrainSingle {
     override val key: MessageKey<FlashImage>
@@ -323,6 +333,7 @@ public data class FlashImage(
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, FlashImage>(HummerMessage, { it.safeCast() }) {
+        public const val SERIAL_NAME: String = "FlashImage"
 
         /**
          * 将普通图片转换为闪照.

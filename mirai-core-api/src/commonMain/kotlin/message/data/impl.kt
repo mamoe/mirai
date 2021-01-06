@@ -156,7 +156,7 @@ internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
 /**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
-@Serializable
+@Serializable(MessageChain.Serializer::class)
 internal data class MessageChainImpl constructor(
     @JvmField
     internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable

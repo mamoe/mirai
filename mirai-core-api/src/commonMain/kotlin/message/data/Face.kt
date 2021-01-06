@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 
@@ -22,10 +23,11 @@ import net.mamoe.mirai.message.code.CodableMessage
  * 格式: &#91;mirai:face:*[id]*&#93;
  */
 @Serializable
+@SerialName(Face.SERIAL_NAME)
 public data class Face(public val id: Int) : // used in delegation
     MessageContent, CodableMessage {
 
-    public override fun toString(): String = "[mirai:face:$id]";
+    public override fun toString(): String = "[mirai:face:$id]"
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
     public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
@@ -39,6 +41,9 @@ public data class Face(public val id: Int) : // used in delegation
     //Auto generated
     @Suppress("NonAsciiCharacters", "unused", "SpellCheckingInspection", "all")
     public companion object {
+        public const val SERIAL_NAME: String = "Face"
+
+
         public const val JING_YA: Int = 0
         public const val 惊讶: Int = JING_YA
         public const val PIE_ZUI: Int = 1

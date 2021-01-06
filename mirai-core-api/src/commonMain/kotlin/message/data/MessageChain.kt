@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -20,6 +20,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.MessageSerializerImpl
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -92,9 +93,10 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
     public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
         asSequence().any { key.safeCast.invoke(it) != null }
 
+    @kotlinx.serialization.Serializer(MessageChain::class)
     public object Serializer : KSerializer<MessageChain> {
         @Suppress("DEPRECATION_ERROR")
-        private val delegate = ListSerializer<Message>(Message.Serializer)
+        private val delegate = ListSerializer(PolymorphicSerializer(SingleMessage::class))
         override val descriptor: SerialDescriptor = delegate.descriptor
         override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
@@ -110,12 +112,11 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * 从 JSON 字符串解析 [MessageChain]
          * @see serializeToJsonString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun deserializeFromJsonString(
             string: String,
-            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
+            json: Json = Json { serializersModule = MessageSerializerImpl.serializersModule }
         ): MessageChain {
             return json.decodeFromString(Serializer, string)
         }
@@ -124,12 +125,11 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * 将 [MessageChain] 序列化为 JSON 字符串.
          * @see deserializeFromJsonString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun MessageChain.serializeToJsonString(
-            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
-        ): String = json.encodeToString(Message.Serializer, this)
+            json: Json = Json { serializersModule = MessageSerializerImpl.serializersModule }
+        ): String = json.encodeToString(MessageChain.Serializer, this)
 
         /**
          * 将 [MessageChain] 序列化为指定格式的字符串.
@@ -137,7 +137,6 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * @see serializeToJsonString
          * @see StringFormat.encodeToString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @ExperimentalSerializationApi
         @JvmStatic
         public fun MessageChain.serializeToString(format: StringFormat): String =

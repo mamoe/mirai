@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,6 +15,7 @@ import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.message.MarketFaceImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -22,11 +23,13 @@ import kotlin.test.assertEquals
 
 internal class MessageSerializationTest {
     @Suppress("DEPRECATION_ERROR")
-    private val module get() = Message.Serializer.serializersModule
+    private val module
+        get() = MessageSerializer.serializersModule
     private val format
         get() = Json {
             serializersModule = module
             useArrayPolymorphism = false // ?
+            ignoreUnknownKeys = true
         }
 
     private inline fun <reified T : Any> T.serialize(serializer: KSerializer<T> = module.serializer()): String {
@@ -38,7 +41,14 @@ internal class MessageSerializationTest {
     }
 
     private inline fun <reified T : Any> testSerialization(t: T, serializer: KSerializer<T> = module.serializer()) {
-        val deserialized = t.serialize(serializer).deserialize(serializer)
+        val deserialized = kotlin.runCatching {
+            println("Testing ${t::class.simpleName} with serializer $serializer")
+            val serialized = t.serialize(serializer)
+            println("Result: ${serializer.descriptor.serialName}  $serialized")
+            serialized.deserialize(serializer)
+        }.getOrElse {
+            throw AssertionError("Failed to serialize $t", it)
+        }
         assertEquals(
             t,
             deserialized,
@@ -78,7 +88,6 @@ internal class MessageSerializationTest {
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     private val testConstrainSingleMessageInstances: Array<out ConstrainSingle> = arrayOf(
-        LongMessage("content", "resId"),
         Mirai.constructMessageSource(
             1L,
             MessageSourceKind.FRIEND,
@@ -100,7 +109,12 @@ internal class MessageSerializationTest {
     }
 
     @Test
-    fun `test serialize each message contents`() {
+    fun `test polymorphic serialization`() {
+
+    }
+
+    @Test
+    fun `test contextual serialization`() {
         for (message in testMessageContentInstances) {
             testSerialization(message, module.serializer(message.javaClass))
         }

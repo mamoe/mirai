@@ -30,10 +30,13 @@ import net.mamoe.mirai.utils.generateImageIdFromResourceId
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toUHexString
 
+@Serializable(with = OnlineGroupImageImpl.Serializer::class)
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
-) : @Suppress("DEPRECATION")
-OnlineGroupImage() {
+) : OnlineGroupImage() {
+    object Serializer : Image.FallbackSerializer("OnlineGroupImage")
+
+
     override val imageId: String = generateImageId(
         delegate.picMd5,
         delegate.filePath.substringAfterLast('.')
@@ -58,10 +61,13 @@ OnlineGroupImage() {
     }
 }
 
+@Serializable(with = OnlineFriendImageImpl.Serializer::class)
 internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
 ) : @Suppress("DEPRECATION")
 OnlineFriendImage() {
+    object Serializer : Image.FallbackSerializer("OnlineFriendImage")
+
     override val imageId: String =
         generateImageIdFromResourceId(delegate.resId, getImageType(delegate.imgType)) ?: delegate.resId
     override val originUrl: String
@@ -212,7 +218,6 @@ internal interface SuspendDeferredOriginUrlAware : Image {
     suspend fun getUrl(bot: Bot): String
 }
 
-@Suppress("EXPOSED_SUPER_INTERFACE")
 internal interface OnlineImage : Image, ConstOriginUrlAware {
     override val originUrl: String
 }
@@ -228,11 +233,12 @@ internal interface OfflineImage : Image
 /**
  * @param imageId 参考 [Image.imageId]
  */
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@Serializable
+@Serializable(with = OfflineGroupImage.Serializer::class)
 internal data class OfflineGroupImage(
     override val imageId: String
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    object Serializer : Image.FallbackSerializer("OfflineGroupImage")
+
     override fun getUrl(bot: Bot): String {
         return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
             imageId.substring(1..36)
@@ -265,10 +271,12 @@ internal val Image.friendImageId: String
  *
  * @param imageId 参考 [Image.imageId]
  */
-@Serializable
+@Serializable(with = OfflineFriendImage.Serializer::class)
 internal data class OfflineFriendImage(
     override val imageId: String
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
+    object Serializer : Image.FallbackSerializer("OfflineFriendImage")
+
     override fun getUrl(bot: Bot): String {
         return "http://c2cpicdw.qpic.cn/offpic_new/${bot.id}${this.friendImageId}/0?term=2"
     }

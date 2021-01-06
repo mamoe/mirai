@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -143,7 +143,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         target: Stranger,
         message: MessageChain,
-        source: MessageSourceToStrangerImpl
+        source: OnlineMessageSourceToStrangerImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
         ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
@@ -173,7 +173,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         targetFriend: Friend,
         message: MessageChain,
-        crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
+        crossinline sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit
     ): List<OutgoingPacket> {
         contract {
             callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -209,7 +209,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             },
             postInit = {
                 sourceCallback(
-                    MessageSourceToFriendImpl(
+                    OnlineMessageSourceToFriendImpl(
                         internalIds = randIds.get(),
                         sender = client.bot,
                         target = targetFriend,
@@ -262,7 +262,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         targetMember: Member,
         message: MessageChain,
-        source: MessageSourceToTempImpl
+        source: OnlineMessageSourceToTempImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
         writeProtoBuf(
             MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
@@ -292,7 +292,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         targetGroup: Group,
         message: MessageChain,
         isForward: Boolean,
-        source: MessageSourceToGroupImpl
+        source: OnlineMessageSourceToGroupImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
         ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
@@ -354,12 +354,12 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
     client: QQAndroidClient,
     member: Member,
     message: MessageChain,
-    crossinline sourceCallback: (MessageSourceToTempImpl) -> Unit
+    crossinline sourceCallback: (OnlineMessageSourceToTempImpl) -> Unit
 ): OutgoingPacket {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
-    val source = MessageSourceToTempImpl(
+    val source = OnlineMessageSourceToTempImpl(
         internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = member,
@@ -380,12 +380,12 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
     client: QQAndroidClient,
     stranger: Stranger,
     message: MessageChain,
-    crossinline sourceCallback: (MessageSourceToStrangerImpl) -> Unit
+    crossinline sourceCallback: (OnlineMessageSourceToStrangerImpl) -> Unit
 ): OutgoingPacket {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
-    val source = MessageSourceToStrangerImpl(
+    val source = OnlineMessageSourceToStrangerImpl(
         internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = stranger,
@@ -406,7 +406,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
     client: QQAndroidClient,
     qq: Friend,
     message: MessageChain,
-    crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
+    crossinline sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -425,13 +425,13 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     group: Group,
     message: MessageChain,
     isForward: Boolean,
-    crossinline sourceCallback: (MessageSourceToGroupImpl) -> Unit
+    crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit
 ): OutgoingPacket {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
     val messageRandom = Random.nextInt().absoluteValue
-    val source = MessageSourceToGroupImpl(
+    val source = OnlineMessageSourceToGroupImpl(
         group,
         internalIds = intArrayOf(messageRandom),
         sender = client.bot,

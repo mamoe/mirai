@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
@@ -95,8 +96,11 @@ public interface RichMessage : MessageContent, ConstrainSingle {
  * @see ServiceMessage 服务消息
  */
 @Serializable
+@SerialName(LightApp.SERIAL_NAME)
 public data class LightApp(override val content: String) : RichMessage, CodableMessage {
-    public companion object Key : AbstractMessageKey<LightApp>({ it.safeCast() })
+    public companion object Key : AbstractMessageKey<LightApp>({ it.safeCast() }) {
+        public const val SERIAL_NAME: String = "LightApp"
+    }
 
     public override fun toString(): String = "[mirai:app:$content]"
 
@@ -117,6 +121,7 @@ public data class LightApp(override val content: String) : RichMessage, CodableM
  */
 @MiraiExperimentalApi
 @Serializable
+@SerialName(SimpleServiceMessage.SERIAL_NAME)
 public class SimpleServiceMessage(
     public override val serviceId: Int,
     public override val content: String
@@ -136,6 +141,9 @@ public class SimpleServiceMessage(
         return result
     }
 
+    public companion object {
+        public const val SERIAL_NAME: String = "SimpleServiceMessage"
+    }
 }
 
 
@@ -257,8 +265,7 @@ public class XmlMessageBuilder(
     }
 }
 
-@Serializable
-@MiraiExperimentalApi
+// internal runtime value, not serializable
 internal data class LongMessage internal constructor(override val content: String, val resId: String) :
     AbstractServiceMessage() {
     override val serviceId: Int get() = 35
@@ -266,7 +273,7 @@ internal data class LongMessage internal constructor(override val content: Strin
     companion object Key : AbstractPolymorphicMessageKey<ServiceMessage, LongMessage>(ServiceMessage, { it.safeCast() })
 }
 
-@Serializable
+// internal runtime value, not serializable
 internal data class ForwardMessageInternal(override val content: String) : AbstractServiceMessage() {
     override val serviceId: Int get() = 35
 }

@@ -170,7 +170,7 @@ internal class GroupImpl(
                         ForwardMessage.Node(
                             senderId = bot.id,
                             time = currentTimeSeconds().toInt(),
-                            message = chain,
+                            messageChain = chain,
                             senderName = bot.nick
                         )
                     ),
@@ -195,7 +195,7 @@ internal class GroupImpl(
         }
 
         val result = bot.network.runCatching {
-            val source: MessageSourceToGroupImpl
+            val source: OnlineMessageSourceToGroupImpl
             MessageSvcPbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,

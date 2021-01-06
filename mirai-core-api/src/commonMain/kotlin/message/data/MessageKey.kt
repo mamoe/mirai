@@ -36,7 +36,6 @@ public interface MessageKey<out M : SingleMessage> {
  * @see AbstractPolymorphicMessageKey
  */
 public abstract class AbstractMessageKey<out M : SingleMessage>(
-    @JvmField
     override val safeCast: (SingleMessage) -> M?,
 ) : MessageKey<M>
 

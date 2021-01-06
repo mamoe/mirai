@@ -34,6 +34,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
@@ -50,17 +51,54 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
         @Suppress("ObjectPropertyName", "unused", "DEPRECATION_ERROR")
         private val _init = Mirai.let {
-            Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
-            Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
-            Message.Serializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
-            Message.Serializer.registerSerializer(
+            MessageSerializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
+            MessageSerializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
+            MessageSerializer.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
+            MessageSerializer.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
+
+            MessageSerializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
+
+            // MessageSource
+
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceFromGroupImpl::class,
+                OnlineMessageSourceFromGroupImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceFromFriendImpl::class,
+                OnlineMessageSourceFromFriendImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceFromTempImpl::class,
+                OnlineMessageSourceFromTempImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceFromStrangerImpl::class,
+                OnlineMessageSourceFromStrangerImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceToGroupImpl::class,
+                OnlineMessageSourceToGroupImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceToFriendImpl::class,
+                OnlineMessageSourceToFriendImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceToTempImpl::class,
+                OnlineMessageSourceToTempImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
+                OnlineMessageSourceToStrangerImpl::class,
+                OnlineMessageSourceToStrangerImpl.serializer()
+            )
+            MessageSerializer.registerSerializer(
                 OfflineMessageSourceImplData::class,
                 OfflineMessageSourceImplData.serializer()
             )
-
-            Message.Serializer.registerSerializer(
-                MessageSourceFromGroupImpl::class,
-                MessageSourceFromGroupImpl.serializer()
+            MessageSerializer.registerSerializer(
+                OfflineMessageSourceImplData::class,
+                OfflineMessageSourceImplData.serializer()
             )
         }
     }
@@ -305,12 +343,12 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
 
         val response: PbMessageSvc.PbMsgWithDraw.Response = when (source) {
-            is MessageSourceToGroupImpl,
-            is MessageSourceFromGroupImpl
+            is OnlineMessageSourceToGroupImpl,
+            is OnlineMessageSourceFromGroupImpl
             -> {
                 val group = when (source) {
-                    is MessageSourceToGroupImpl -> source.target
-                    is MessageSourceFromGroupImpl -> source.group
+                    is OnlineMessageSourceToGroupImpl -> source.target
+                    is OnlineMessageSourceFromGroupImpl -> source.group
                     else -> error("stub")
                 }
                 if (bot.id != source.fromId) {
@@ -326,10 +364,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
-            is MessageSourceFromFriendImpl,
-            is MessageSourceToFriendImpl,
-            is MessageSourceFromStrangerImpl,
-            is MessageSourceToStrangerImpl,
+            is OnlineMessageSourceFromFriendImpl,
+            is OnlineMessageSourceToFriendImpl,
+            is OnlineMessageSourceFromStrangerImpl,
+            is OnlineMessageSourceToStrangerImpl,
             -> network.run {
                 check(source.fromId == bot.id) {
                     "can only recall a message sent by bot"
@@ -342,13 +380,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
-            is MessageSourceFromTempImpl,
-            is MessageSourceToTempImpl
+            is OnlineMessageSourceFromTempImpl,
+            is OnlineMessageSourceToTempImpl
             -> network.run {
                 check(source.fromId == bot.id) {
                     "can only recall a message sent by bot"
                 }
-                source as MessageSourceToTempImpl
+                source as OnlineMessageSourceToTempImpl
                 PbMessageSvc.PbMsgWithDraw.createForTempMessage(
                     bot.client,
                     (source.target.group as GroupImpl).uin,
@@ -592,7 +630,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         forwardMessage: ForwardMessage?
     ): MessageReceipt<Group> = with(bot.asQQAndroidBot()) {
         message.forEach {
-            it.message.ensureSequenceIdAvailable()
+            it.messageChain.ensureSequenceIdAvailable()
         }
 
         val group = getGroupOrFail(groupCode)
@@ -655,7 +693,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             if (isLong) {
                 group.sendMessage(
                     RichMessage.longMessage(
-                        brief = message.joinToString(limit = 27) { it.message.contentToString() },
+                        brief = message.joinToString(limit = 27) { it.messageChain.contentToString() },
                         resId = resId,
                         timeSeconds = time
                     )

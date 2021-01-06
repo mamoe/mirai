@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -20,12 +20,9 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageSerializer
-import net.mamoe.mirai.message.MessageSerializerImpl
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
@@ -73,8 +70,6 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @see Contact.sendMessage 发送消息
  */
-@Suppress("DEPRECATION_ERROR")
-@Serializable(Message.Serializer::class)
 public interface Message { // must be interface. Don't consider any changes.
 
     /**
@@ -198,50 +193,7 @@ public interface Message { // must be interface. Don't consider any changes.
     public operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
-    @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-    public object Serializer :
-        MessageSerializer by MessageSerializerImpl,
-        KSerializer<Message> by PolymorphicSerializer(Message::class)
-
-    @Suppress("DEPRECATION_ERROR")
-    public companion object {
-        /**
-         * 从 JSON 字符串解析 [Message]
-         * @see serializeToJsonString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @JvmOverloads
-        @JvmStatic
-        public fun deserializeFromJsonString(
-            string: String,
-            json: Json = Json { serializersModule = Serializer.serializersModule }
-        ): Message {
-            return json.decodeFromString(Serializer, string)
-        }
-
-        /**
-         * 将 [Message] 序列化为 JSON 字符串.
-         * @see deserializeFromJsonString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @JvmOverloads
-        @JvmStatic
-        public fun Message.serializeToJsonString(
-            json: Json = Json { serializersModule = Serializer.serializersModule }
-        ): String = json.encodeToString(Serializer, this)
-
-        /**
-         * 将 [Message] 序列化为指定格式的字符串.
-         *
-         * @see serializeToJsonString
-         * @see StringFormat.encodeToString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @ExperimentalSerializationApi
-        @JvmStatic
-        public fun Message.serializeToString(format: StringFormat): String =
-            format.encodeToString(Serializer, this)
-    }
+    public companion object
 }
 
 
@@ -320,10 +272,11 @@ public inline operator fun Message.times(count: Int): MessageChain = this.repeat
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-// @Serializable(SingleMessage.Serializer::class)
+@Serializable(SingleMessage.Serializer::class)
 public interface SingleMessage : Message {
-    // @kotlinx.serialization.Serializer(forClass = SingleMessage::class)
-    //  public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
+    @kotlinx.serialization.Serializer(forClass = SingleMessage::class)
+    public object Serializer :
+        KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 
 /**
@@ -339,14 +292,11 @@ public interface SingleMessage : Message {
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-@Serializable(MessageMetadata.Serializer::class)
 public interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
     override fun contentToString(): String = ""
-
-    public object Serializer : KSerializer<MessageMetadata> by PolymorphicSerializer(MessageMetadata::class)
 }
 
 /**
@@ -381,11 +331,8 @@ public interface ConstrainSingle : SingleMessage {
  * @see ForwardMessage 合并转发
  * @see Voice 语音
  */
-@Serializable(MessageContent.Serializer::class)
 public interface MessageContent : SingleMessage {
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
-
-    public object Serializer : KSerializer<MessageContent> by PolymorphicSerializer(MessageContent::class)
 }
 
 /**

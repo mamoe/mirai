@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 
@@ -28,10 +29,12 @@ private const val displayA = "@全体成员"
  *
  * @see At at 单个群成员
  */
+@SerialName(AtAll.SERIAL_NAME)
 @Serializable
 public object AtAll :
     MessageContent, CodableMessage {
     public const val display: String = displayA
+    public const val SERIAL_NAME: String = "AtAll"
 
     @Suppress("SpellCheckingInspection")
     public override fun toString(): String = "[mirai:atall]"

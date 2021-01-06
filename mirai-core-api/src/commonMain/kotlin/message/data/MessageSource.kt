@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -68,7 +68,7 @@ import net.mamoe.mirai.utils.safeCast
  *
  * @see buildMessageSource 构造一个 [OfflineMessageSource]
  */
-@Serializable(MessageSourceSerializerImpl.Companion::class)
+@Serializable(MessageSource.Serializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public final override val key: MessageKey<MessageSource>
         get() = Key
@@ -150,7 +150,11 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public final override fun toString(): String =
         "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
 
+    public object Serializer : MessageSourceSerializerImpl("MessageSource")
+
     public companion object Key : AbstractMessageKey<MessageSource>({ it.safeCast() }) {
+        public const val SERIAL_NAME: String = "MessageSource"
+
         /**
          * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
          *
@@ -361,7 +365,8 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToStranger : Outgoing() {
-            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToStranger>(Outgoing, { it.safeCast() })
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Outgoing, ToStranger>(Outgoing, { it.safeCast() })
 
             public abstract override val target: Stranger
             public final override val subject: Stranger get() = target

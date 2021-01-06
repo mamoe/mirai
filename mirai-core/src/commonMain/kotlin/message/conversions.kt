@@ -328,13 +328,13 @@ internal fun List<MsgComm.Msg>.toMessageChain(
             checkNotNull(bot) { "bot is null" }
 
             when (messageSourceKind) {
-                MessageSourceKind.TEMP -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
-                MessageSourceKind.GROUP -> +MessageSourceFromGroupImpl(bot, this@toMessageChain)
-                MessageSourceKind.FRIEND -> +MessageSourceFromFriendImpl(bot, this@toMessageChain)
-                MessageSourceKind.STRANGER -> +MessageSourceFromStrangerImpl(bot, this@toMessageChain)
+                MessageSourceKind.TEMP -> +OnlineMessageSourceFromTempImpl(bot, this@toMessageChain)
+                MessageSourceKind.GROUP -> +OnlineMessageSourceFromGroupImpl(bot, this@toMessageChain)
+                MessageSourceKind.FRIEND -> +OnlineMessageSourceFromFriendImpl(bot, this@toMessageChain)
+                MessageSourceKind.STRANGER -> +OnlineMessageSourceFromStrangerImpl(bot, this@toMessageChain)
             }
         } else {
-            +OfflineMessageSourceImplByMsg(bot, this@toMessageChain, botId)
+            +OfflineMessageSourceImplData(bot, this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
         addAll(ptts)
@@ -348,7 +348,7 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(botId: Long, groupIdOrZero: Long
     if (elements.isEmpty())
         error("elements for SourceMsg is empty")
     return buildMessageChain(elements.size + 1) {
-        +OfflineMessageSourceImplBySourceMsg(
+        +OfflineMessageSourceImplData(
             delegate = this@toMessageChain,
             botId = botId,
             groupIdOrZero = groupIdOrZero
@@ -422,7 +422,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
-                list.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, botId, groupIdOrZero)))
+                list.add(QuoteReply(OfflineMessageSourceImplData(element.srcMsg, botId, groupIdOrZero)))
             }
             element.notOnlineImage != null -> list.add(OnlineFriendImageImpl(element.notOnlineImage))
             element.customFace != null -> list.add(OnlineGroupImageImpl(element.customFace))

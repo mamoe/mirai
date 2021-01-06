@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,10 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUShort
 import kotlinx.io.core.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
@@ -34,7 +30,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.message.MessageSourceFromFriendImpl
+import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
@@ -437,7 +433,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                             ?: return null// don't compare with dstAppId. diff.
 
                         val chain = buildMessageChain {
-                            +MessageSourceFromFriendImpl(bot, listOf(this@transform))
+                            +OnlineMessageSourceFromFriendImpl(bot, listOf(this@transform))
                             for (msgItem in textMsg.msgItems) {
                                 when (msgItem.type) {
                                     1 -> +PlainText(msgItem.text)

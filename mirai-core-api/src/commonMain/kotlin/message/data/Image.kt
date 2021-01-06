@@ -20,14 +20,10 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.decodeStructure
-import kotlinx.serialization.encoding.encodeStructure
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -40,6 +36,8 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.map
+import net.mamoe.mirai.message.mapPrimitive
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
@@ -90,26 +88,32 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val imageId: String
 
-    public object Serializer : KSerializer<Image> {
-        override val descriptor: SerialDescriptor = buildClassSerialDescriptor("net.mamoe.mirai.message.data.Image") {
-            element("imageId", String.serializer().descriptor)
-        }
+    @kotlinx.serialization.Serializer(forClass = Image::class)
+    public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
+        SERIAL_NAME,
+        serialize = { imageId },
+        deserialize = { Image(it) },
+    )
 
-        override fun deserialize(decoder: Decoder): Image = decoder.decodeStructure(descriptor) {
-            val imageId = if (decodeSequentially()) {
-                decodeStringElement(descriptor, 0)
-            } else {
-                decodeStringElement(descriptor, decodeElementIndex(descriptor))
-            }
-            Image(imageId)
-        }
+    @kotlinx.serialization.Serializer(forClass = Image::class)
+    public object Serializer : KSerializer<Image> by FallbackSerializer("Image")
 
-        override fun serialize(encoder: Encoder, value: Image): Unit = encoder.encodeStructure(descriptor) {
-            encodeStringElement(descriptor, 0, value.imageId)
-        }
+    @MiraiInternalApi
+    public open class FallbackSerializer(serialName: String) : KSerializer<Image> by Delegate.serializer().map(
+        buildClassSerialDescriptor(serialName) { element("imageId", String.serializer().descriptor) },
+        serialize = { Delegate(imageId) },
+        deserialize = { Image(imageId) },
+    ) {
+        @SerialName(SERIAL_NAME)
+        @Serializable
+        internal data class Delegate(
+            val imageId: String
+        )
     }
 
     public companion object Key : AbstractMessageKey<Image>({ it.safeCast() }) {
+        public const val SERIAL_NAME: String = "Image"
+
         /**
          * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
          * 这个图片必须是服务器已经存在的图片.
@@ -148,8 +152,9 @@ public interface Image : Message, MessageContent, CodableMessage {
         @Suppress("RegExpRedundantEscape") // This is required on Android
         @JvmStatic
         @get:JvmName("getImageIdRegex")
-        public val IMAGE_ID_REGEX: Regex =
-            Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
+        // inline because compilation error
+        public inline val IMAGE_ID_REGEX: Regex
+            get() = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
 
         /**
          * 图片资源 ID 正则表达式 1. mirai 内部使用.
@@ -160,7 +165,9 @@ public interface Image : Message, MessageContent, CodableMessage {
         @JvmStatic
         @MiraiInternalApi
         @get:JvmName("getImageResourceIdRegex1")
-        public val IMAGE_RESOURCE_ID_REGEX_1: Regex = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
+        // inline because compilation error
+        public inline val IMAGE_RESOURCE_ID_REGEX_1: Regex
+            get() = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
         /**
          * 图片资源 ID 正则表达式 2. mirai 内部使用.
@@ -171,7 +178,9 @@ public interface Image : Message, MessageContent, CodableMessage {
         @JvmStatic
         @MiraiInternalApi
         @get:JvmName("getImageResourceIdRegex2")
-        public val IMAGE_RESOURCE_ID_REGEX_2: Regex = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
+        // inline because compilation error
+        public inline val IMAGE_RESOURCE_ID_REGEX_2: Regex
+            get() = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
     }
 }
 

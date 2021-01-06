@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,15 +10,12 @@
 package net.mamoe.mirai.message
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.plus
-import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -29,21 +26,44 @@ import kotlin.reflect.KClass
 public interface MessageSerializer {
     public val serializersModule: SerializersModule
 
-    public fun <M : Message> registerSerializer(clazz: KClass<M>, serializer: KSerializer<M>)
+    public fun <M : SingleMessage> registerSerializer(baseClass: KClass<M>, serializer: KSerializer<M>)
 
     public fun registerSerializers(serializersModule: SerializersModule)
 
     public fun clearRegisteredSerializers()
+
+    public companion object INSTANCE : MessageSerializer by MessageSerializerImpl
+}
+
+internal fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
+    with(descriptor) {
+        repeat(descriptor.elementsCount) { index ->
+            element(
+                elementName = getElementName(index),
+                descriptor = getElementDescriptor(index),
+                annotations = getElementAnnotations(index),
+                isOptional = isElementOptional(index),
+            )
+        }
+    }
 }
 
 @MiraiInternalApi
-public open class MessageSourceSerializerImpl(serialName: String) : KSerializer<MessageSource> {
-    public companion object : MessageSourceSerializerImpl("net.mamoe.mirai.message.data.MessageSource")
-
+public open class MessageSourceSerializerImpl(serialName: String) :
+    KSerializer<MessageSource> by SerialData.serializer().map(
+        resultantDescriptor = buildClassSerialDescriptor(serialName) {
+            takeElementsFrom(SerialData.serializer().descriptor)
+        },
+        serialize = { SerialData(kind, botId, ids, internalIds, time, fromId, targetId, originalMessage) },
+        deserialize = {
+            Mirai.constructMessageSource(botId, kind, fromId, targetId, ids, time, internalIds, originalMessage)
+        }
+    ) {
+    @SerialName(MessageSource.SERIAL_NAME)
     @Serializable
     internal class SerialData(
         val kind: MessageSourceKind,
-        val bot: Long,
+        val botId: Long,
         val ids: IntArray,
         val internalIds: IntArray,
         val time: Int,
@@ -51,49 +71,6 @@ public open class MessageSourceSerializerImpl(serialName: String) : KSerializer<
         val targetId: Long,
         val originalMessage: MessageChain,
     )
-
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(serialName) {
-        val desc = SerialData.serializer().descriptor
-        repeat(SerialData.serializer().descriptor.elementsCount) { index ->
-            element(
-                desc.getElementName(index),
-                desc.getElementDescriptor(index),
-                desc.getElementAnnotations(index),
-                desc.isElementOptional(index)
-            )
-        }
-    }
-//        buildClassSerialDescriptor("MessageSource") {
-//            element("bot", Long.serializer().descriptor)
-//            element("ids", ArraySerializer(Int.serializer()).descriptor)
-//            element("internalIds", ArraySerializer(Int.serializer()).descriptor)
-//            element("time", Int.serializer().descriptor)
-//            element("fromId", Int.serializer().descriptor)
-//            element("targetId", Int.serializer().descriptor)
-//            element("originalMessage", MessageChain.Serializer.descriptor)
-//        }
-
-    override fun deserialize(decoder: Decoder): MessageSource {
-        val data = SerialData.serializer().deserialize(decoder)
-        data.run {
-            return Mirai.constructMessageSource(
-                botId = bot, kind = kind, fromUin = fromId, targetUin = targetId, ids = ids,
-                time = time, internalIds = internalIds, originalMessage = originalMessage.asMessageChain()
-            )
-        }
-    }
-
-    override fun serialize(encoder: Encoder, value: MessageSource) {
-        value.run {
-            SerialData.serializer().serialize(
-                encoder = encoder,
-                value = SerialData(
-                    kind = kind, bot = botId, ids = ids, internalIds = internalIds,
-                    time = time, fromId = fromId, targetId = targetId, originalMessage = originalMessage
-                )
-            )
-        }
-    }
 }
 
 
@@ -121,8 +98,6 @@ private val builtInSerializersModule by lazy {
         contextual(LightApp::class, LightApp.serializer())
         contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
         contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
-        contextual(LongMessage::class, LongMessage.serializer())
-        contextual(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
 
         contextual(PttMessage::class, PttMessage.serializer())
         contextual(Voice::class, Voice.serializer())
@@ -130,12 +105,7 @@ private val builtInSerializersModule by lazy {
         contextual(VipFace::class, VipFace.serializer())
         contextual(FlashImage::class, FlashImage.serializer())
 
-        fun PolymorphicModuleBuilder<SingleMessage>.singleMessageSubclasses() {
-            // subclass(MessageSource::class, MessageSource.serializer())
-        }
-
-        //   contextual(MessageSource::class, MessageSource.serializer())
-        polymorphicDefault(MessageSource::class) { MessageSource.serializer() }
+        contextual(MessageSource::class, MessageSource.serializer())
 
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())
@@ -154,8 +124,6 @@ private val builtInSerializersModule by lazy {
 
             subclass(LightApp::class, LightApp.serializer())
             subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-            subclass(LongMessage::class, LongMessage.serializer())
-            subclass(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
 
             //  subclass(PttMessage::class, PttMessage.serializer())
             subclass(Voice::class, Voice.serializer())
@@ -166,21 +134,11 @@ private val builtInSerializersModule by lazy {
             subclass(FlashImage::class, FlashImage.serializer())
         }
 
-        @Suppress("DEPRECATION_ERROR")
-        contextual(Message::class, Message.Serializer)
-        // contextual(SingleMessage::class, SingleMessage.Serializer)
+        contextual(SingleMessage::class, SingleMessage.Serializer)
         contextual(MessageChain::class, MessageChain.Serializer)
         contextual(MessageChainImpl::class, MessageChainImpl.serializer())
 
-        polymorphic(MessageChain::class) {
-            subclass(MessageChainImpl::class, MessageChainImpl.serializer())
-        }
-        polymorphicDefault(MessageChain::class) { MessageChainImpl.serializer() }
-
-        polymorphic(AbstractServiceMessage::class) {
-            subclass(LongMessage::class, LongMessage.serializer())
-            subclass(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
-        }
+//        polymorphicDefault(MessageChain::class) { MessageChainImpl.serializer() }
 
         //  polymorphic(SingleMessage::class) {
         //      subclass(MessageSource::class, MessageSource.serializer())
@@ -189,16 +147,12 @@ private val builtInSerializersModule by lazy {
         //      }
         //  }
 
-        polymorphicDefault(Image::class) { Image.Serializer }
-
         // polymorphic(Message::class) {
         //     subclass(PlainText::class, PlainText.serializer())
         // }
-        polymorphic(Message::class) {
+        polymorphic(SingleMessage::class) {
             messageContentSubclasses()
             messageMetadataSubclasses()
-            singleMessageSubclasses()
-            subclass(MessageChainImpl::class, MessageChainImpl.serializer())
         }
 
         //contextual(SingleMessage::class, SingleMessage.Serializer)
@@ -216,7 +170,7 @@ private val builtInSerializersModule by lazy {
         // contextual(MessageMetadata::class, MessageMetadata.Serializer)
         // polymorphic(MessageMetadata::class, MessageMetadata.Serializer) {
         //     messageMetadataSubclasses()
-        // }
+        //
     }
 }
 
@@ -226,22 +180,51 @@ internal object MessageSerializerImpl : MessageSerializer {
     override val serializersModule: SerializersModule get() = serializersModuleField ?: builtInSerializersModule
 
     @Synchronized
-    override fun <M : Message> registerSerializer(clazz: KClass<M>, serializer: KSerializer<M>) {
-        serializersModuleField = serializersModule.plus(SerializersModule {
-            contextual(clazz, serializer)
-            polymorphic(Message::class) {
-                subclass(clazz, serializer)
+    override fun <M : SingleMessage> registerSerializer(baseClass: KClass<M>, serializer: KSerializer<M>) {
+        serializersModuleField = serializersModule.overwriteWith(SerializersModule {
+            contextual(baseClass, serializer)
+            polymorphic(SingleMessage::class) {
+                subclass(baseClass, serializer)
             }
         })
     }
 
     @Synchronized
     override fun registerSerializers(serializersModule: SerializersModule) {
-        serializersModuleField = serializersModule
+        serializersModuleField = serializersModule.overwriteWith(serializersModule)
     }
 
     @Synchronized
     override fun clearRegisteredSerializers() {
         serializersModuleField = builtInSerializersModule
+    }
+}
+
+internal inline fun <T, R> KSerializer<T>.map(
+    resultantDescriptor: SerialDescriptor,
+    crossinline deserialize: T.(T) -> R,
+    crossinline serialize: R.(R) -> T,
+): KSerializer<R> {
+    return object : KSerializer<R> {
+        override val descriptor: SerialDescriptor get() = resultantDescriptor
+        override fun deserialize(decoder: Decoder): R = this@map.deserialize(decoder).let { deserialize(it, it) }
+        override fun serialize(encoder: Encoder, value: R) = serialize(encoder, value.let { serialize(it, it) })
+    }
+}
+
+internal inline fun <T, R> KSerializer<T>.mapPrimitive(
+    serialName: String,
+    crossinline deserialize: (T) -> R,
+    crossinline serialize: R.(R) -> T,
+): KSerializer<R> {
+    val kind = this@mapPrimitive.descriptor.kind
+    check(kind is PrimitiveKind) { "kind must be PrimitiveKind but found $kind" }
+    return object : KSerializer<R> {
+        override fun deserialize(decoder: Decoder): R =
+            this@mapPrimitive.deserialize(decoder).let(deserialize)
+
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, kind)
+        override fun serialize(encoder: Encoder, value: R) =
+            this@mapPrimitive.serialize(encoder, value.let { serialize(it, it) })
     }
 }
