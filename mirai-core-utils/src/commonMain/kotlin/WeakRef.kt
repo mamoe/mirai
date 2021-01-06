@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,10 +11,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
-
-// TODO: 2020/2/10 添加中文 doc
 
 /**
  * WeakRef that `getValue` for delegation throws an [IllegalStateException] if the referent is released by GC. Therefore it returns notnull value only
@@ -46,10 +43,7 @@ public inline operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property
  * @see weakRef provides a WeakRef
  * @see unsafeWeakRef provides a UnsafeWeakRef
  */
-public expect class WeakRef<T>(referent: T) {
-    public fun get(): T?
-    public fun clear()
-}
+public typealias WeakRef<T> = java.lang.ref.WeakReference<T>
 
 /**
  * Indicates that the property is delegated by a [WeakRef]
