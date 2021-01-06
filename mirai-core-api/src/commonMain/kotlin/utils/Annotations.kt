@@ -68,3 +68,10 @@ internal annotation class EventListenerLikeJava
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(PROPERTY, FUNCTION, TYPE, CLASS)
 internal annotation class JavaFriendlyAPI
+
+/**
+ * 表示这个属性由 [lazy] 委托, 即它只会在被需要的时候才初始化.
+ */
+@Target(PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+internal annotation class LazyProperty
