@@ -740,7 +740,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         if (retry == 0) {
             val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-            packetListeners.addLast(handler)
+            packetListeners.add(handler)
             try {
                 return doSendAndReceive(handler, delegate, 0) // no need
             } finally {
@@ -750,7 +750,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             val data = this.delegate.readBytes()
             return retryCatching(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-                packetListeners.addLast(handler)
+                packetListeners.add(handler)
                 try {
                     doSendAndReceive(handler, data, data.size)
                 } finally {
@@ -761,7 +761,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     @PublishedApi
-    internal val packetListeners = LockFreeLinkedList<PacketListener>()
+    internal val packetListeners = ConcurrentLinkedQueue<PacketListener>()
 
     @PublishedApi
     internal inner class PacketListener(

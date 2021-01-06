@@ -12,12 +12,12 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.event.internal.broadcastInternal
+import net.mamoe.mirai.internal.event.broadcastInternal
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.internal.runBlocking
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.

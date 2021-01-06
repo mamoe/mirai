@@ -12,6 +12,7 @@ package net.mamoe.mirai.message
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.*
+import net.mamoe.mirai.internal.message.MessageSerializersImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage

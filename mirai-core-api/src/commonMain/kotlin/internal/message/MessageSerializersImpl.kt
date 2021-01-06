@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.message
+package net.mamoe.mirai.internal.message
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -20,6 +20,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
 import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChainImpl
 import net.mamoe.mirai.utils.MiraiInternalApi

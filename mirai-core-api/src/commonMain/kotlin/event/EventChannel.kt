@@ -21,10 +21,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.internal.GlobalEventListeners
-import net.mamoe.mirai.event.internal.Handler
-import net.mamoe.mirai.event.internal.ListenerRegistry
-import net.mamoe.mirai.event.internal.registerEventHandler
+import net.mamoe.mirai.internal.event.GlobalEventListeners
+import net.mamoe.mirai.internal.event.Handler
+import net.mamoe.mirai.internal.event.ListenerRegistry
+import net.mamoe.mirai.internal.event.registerEventHandler
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger

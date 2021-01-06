@@ -18,13 +18,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
+import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
-import net.mamoe.mirai.utils.internal.SeleniumLoginSolver
-import net.mamoe.mirai.utils.internal.isSliderCaptchaSupportKind
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File

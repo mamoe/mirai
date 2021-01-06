@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.SocketException
-import net.mamoe.mirai.internal.utils.addSuppressedMirai
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.toIpV4AddressString
@@ -314,7 +313,7 @@ internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
             }
         }.recover {
             if (exception != null) {
-                exception!!.addSuppressedMirai(it)
+                exception!!.addSuppressed(it)
             }
             exception = it
             null

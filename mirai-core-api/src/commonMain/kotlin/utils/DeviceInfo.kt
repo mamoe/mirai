@@ -14,9 +14,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.utils.internal.getRandomByteArray
-import net.mamoe.mirai.utils.internal.getRandomIntString
-import net.mamoe.mirai.utils.internal.getRandomString
 import java.io.File
 
 @Serializable
