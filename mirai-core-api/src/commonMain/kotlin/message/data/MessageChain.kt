@@ -20,7 +20,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.message.MessageSerializerImpl
+import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -108,15 +108,22 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
 
     @Suppress("DEPRECATION_ERROR")
     public companion object {
+        private fun getDefaultJson() = Json {
+            serializersModule =
+                MessageSerializer.serializersModule // don't convert to property, serializersModule is volatile.
+            ignoreUnknownKeys = true
+        }
+
         /**
          * 从 JSON 字符串解析 [MessageChain]
+         * @param json 需要包含 [MessageSerializer.serializersModule]
          * @see serializeToJsonString
          */
         @JvmOverloads
         @JvmStatic
         public fun deserializeFromJsonString(
             string: String,
-            json: Json = Json { serializersModule = MessageSerializerImpl.serializersModule }
+            json: Json = getDefaultJson()
         ): MessageChain {
             return json.decodeFromString(Serializer, string)
         }
@@ -128,8 +135,8 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         @JvmOverloads
         @JvmStatic
         public fun MessageChain.serializeToJsonString(
-            json: Json = Json { serializersModule = MessageSerializerImpl.serializersModule }
-        ): String = json.encodeToString(MessageChain.Serializer, this)
+            json: Json = getDefaultJson()
+        ): String = json.encodeToString(Serializer, this)
 
         /**
          * 将 [MessageChain] 序列化为指定格式的字符串.
