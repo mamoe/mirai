@@ -185,6 +185,10 @@ public interface Message { // must be interface. Don't consider any changes.
         another.fold(this, Message::plus).asMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
+    public operator fun plus(another: Array<out Message>): MessageChain =
+        another.fold(this, Message::plus).asMessageChain()
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
     public operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
