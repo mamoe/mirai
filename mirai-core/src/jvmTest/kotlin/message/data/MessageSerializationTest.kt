@@ -67,12 +67,7 @@ internal class MessageSerializationTest {
         At(123456),
         AtAll,
         image,
-        image.toForwardMessage(1L, "test"),
-        VipFace(VipFace.AiXin, 1),
-        PokeMessage.BaoBeiQiu,
         Face(Face.AI_NI),
-        MarketFaceImpl(ImMsgBody.MarketFace()),
-        image.flash(),
     )
 
     private val emptySource = Mirai.constructMessageSource(
@@ -98,6 +93,12 @@ internal class MessageSerializationTest {
             intArrayOf(1),
             messageChainOf(emptySource, image)
         ),
+
+        VipFace(VipFace.AiXin, 1),
+        PokeMessage.BaoBeiQiu,
+        MarketFaceImpl(ImMsgBody.MarketFace()),
+        image.flash(),
+        image.toForwardMessage(1L, "test"),
     )
 
     companion object {
@@ -125,7 +126,7 @@ internal class MessageSerializationTest {
 
     @Test
     fun `test serialize message chain`() {
-        val chain = testMessageContentInstances.asMessageChain()
+        val chain = testMessageContentInstances.asMessageChain() + emptySource
         println(chain.serialize()) // [["net.mamoe.mirai.message.data.PlainText",{"content":"test"}],["net.mamoe.mirai.message.data.At",{"target":123456,"display":""}],["net.mamoe.mirai.message.data.AtAll",{}],["net.mamoe.mirai.internal.message.OfflineGroupImage",{"imageId":"{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai"}]]
 
         testSerialization(chain)
