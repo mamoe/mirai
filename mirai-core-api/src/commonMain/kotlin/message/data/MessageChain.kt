@@ -13,6 +13,8 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,8 +27,9 @@ import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.safeCast
-import kotlin.js.JsName
+import java.util.stream.Stream
 import kotlin.reflect.KProperty
+import kotlin.streams.asSequence
 
 /**
  * 消息链. 空的实现为 [EmptyMessageChain]
@@ -36,7 +39,7 @@ import kotlin.reflect.KProperty
  * ### 构造消息链
  * - [buildMessageChain][buildMessageChain]: 使用构建器
  * - [Message.plus][Message.plus]: 将两个消息相连成为一个消息链
- * - [asMessageChain][asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
+ * - [toMessageChain][toMessageChain] 将 [Iterable], [Array] 等类型转换为 [MessageChain]
  * - [messageChainOf][messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
@@ -45,8 +48,8 @@ import kotlin.reflect.KProperty
  * @see MessageSource.recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
  *
  * @see buildMessageChain 构造一个 [MessageChain]
- * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
- * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
+ * @see Message.toMessageChain 将单个 [Message] 转换为 [MessageChain]
+ * @see toMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
  * @see forEachContent 遍历内容
  * @see allContent 判断是否每一个 [MessageContent] 都满足条件
@@ -98,7 +101,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         @Suppress("DEPRECATION_ERROR")
         private val delegate = ListSerializer(PolymorphicSerializer(SingleMessage::class))
         override val descriptor: SerialDescriptor = delegate.descriptor
-        override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
+        override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).toMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
     }
 
@@ -149,6 +152,22 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         public fun MessageChain.serializeToString(format: StringFormat): String =
             format.encodeToString(Serializer, this)
     }
+}
+
+/**
+ * 不含任何元素的 [MessageChain].
+ */
+public object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<SingleMessage> by emptyList() {
+    public override val size: Int get() = 0
+    public override fun toString(): String = ""
+    public override fun contentToString(): String = ""
+    public override fun equals(other: Any?): Boolean = other === this
+
+    public override fun iterator(): Iterator<SingleMessage> = this
+    public override fun hasNext(): Boolean = false
+    public override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
+    override fun toMiraiCode(): String = ""
+    override fun appendMiraiCode(builder: StringBuilder) {}
 }
 
 // region accessors
@@ -238,6 +257,66 @@ public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Bool
 // endregion accessors
 
 
+// region toMessageChain
+
+/**
+ * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ * @see buildMessageChain
+ */
+@JvmName("newChain")
+public inline fun messageChainOf(vararg messages: Message): MessageChain = messages.toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public fun Sequence<Message>.toMessageChain(): MessageChain = MessageChainImpl(this.constrainSingleMessages())
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public fun Stream<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public suspend fun Flow<Message>.toMessageChain(): MessageChain =
+    buildMessageChain { collect(::add) }
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public inline fun Iterable<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public inline fun Iterator<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmSynthetic
+// no JvmName because 'fun messageChainOf(vararg messages: Message)'
+public inline fun Array<out Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
+@kotlin.internal.LowPriorityInOverloadResolution // prefer Iterable<Message>.toMessageChain() for MessageChain
+@JvmName("newChain")
+public fun Message.toMessageChain(): MessageChain = when (this) {
+    is MessageChain -> (this as List<SingleMessage>).toMessageChain()
+    else -> MessageChainImpl(
+        listOf(
+            this as? SingleMessage ?: error("Message is either MessageChain nor SingleMessage: $this")
+        )
+    )
+}
+
+
 // region delegate
 
 /**
@@ -299,160 +378,3 @@ public inline fun <reified T : R, R : SingleMessage?> MessageChain.orElse(
 ): OrNullDelegate<R> = OrNullDelegate<R>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
-
-
-// region asMessageChain
-
-/**
- * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
- */
-@JvmName("newChain")
-public inline fun messageChainOf(vararg messages: Message): MessageChain = messages.asMessageChain()
-
-/**
- * 得到包含 [this] 的 [MessageChain].
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("UNCHECKED_CAST")
-public fun Message.asMessageChain(): MessageChain = when (this) {
-    is MessageChain -> this
-    else -> SingleMessageChainImpl(this as SingleMessage)
-}
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun SingleMessage.asMessageChain(): MessageChain = SingleMessageChainImpl(this)
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Collection<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImpl(this.constrainSingleMessages())
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-@JvmName("newChain1")
-// @JsName("newChain")
-public fun Array<out Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-@JvmSynthetic
-@JvmName("newChain2")
-public fun Array<out SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.asSequence())
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImpl(this.constrainSingleMessages())
-
-@JvmSynthetic
-public inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 扁平化消息序列.
- *
- * 原 [this]:
- * ```
- * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
- * ```
- * 结果 [Sequence]:
- * ```
- * A <- B <- C <- D <- E <- F <- G
- * ```
- */
-public inline fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
-
-// @JsName("flatten1")
-@JvmName("flatten1")// avoid platform declare clash
-@JvmSynthetic
-public inline fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-/**
- * 扁平化消息序列.
- *
- * 原 [this]:
- * ```
- * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
- * ```
- * 结果 [Sequence]:
- * ```
- * A <- B <- C <- D <- E <- F <- G
- * ```
- */
-public inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
-
-@JsName("flatten1") // avoid platform declare clash
-@JvmName("flatten1")
-@JvmSynthetic
-public inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
-
-public inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.asSequence().flatten()
-
-public inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-/**
- * 返回 [MessageChain.asSequence] 或 `sequenceOf(this as SingleMessage)`
- */
-public fun Message.flatten(): Sequence<SingleMessage> {
-    return when (this) {
-        is MessageChain -> this.asSequence()
-        else -> sequenceOf(this as SingleMessage)
-    }
-}
-
-@JvmSynthetic // make Java user happier with less methods
-public inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-// endregion converters
-
-
-/**
- * 不含任何元素的 [MessageChain].
- */
-public object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<SingleMessage> by emptyList() {
-
-    public override val size: Int get() = 0
-    public override fun toString(): String = ""
-    public override fun contentToString(): String = ""
-    public override fun equals(other: Any?): Boolean = other === this
-
-    public override fun iterator(): Iterator<SingleMessage> = this
-    public override fun hasNext(): Boolean = false
-    public override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
-    override fun toMiraiCode(): String = ""
-    override fun appendMiraiCode(builder: StringBuilder) {}
-}

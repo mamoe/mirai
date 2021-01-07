@@ -66,7 +66,7 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
 
 @JvmSynthetic
 internal fun Message.followedByImpl(tail: Message): MessageChain {
-    return MessageChainImplBySequence(this.flatten() + tail.flatten())
+    return MessageChainImplBySequence(this.toMessageChain().asSequence() + tail.toMessageChain().asSequence())
     /*
     when {
         this is SingleMessage && tail is SingleMessage -> {
@@ -113,7 +113,7 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
 
 @JvmSynthetic
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
-    constrainSingleMessagesImpl(this.asSequence())
+    constrainSingleMessagesImpl(this)
 
 /**
  * - [Sequence.toMutableList]
@@ -145,6 +145,11 @@ internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): Lis
 @JvmSynthetic
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
     constrainSingleMessagesImpl(this.asSequence())
+
+@JvmName("constrainSingleMessages_Sequence")
+@JvmSynthetic
+internal fun Sequence<Message>.constrainSingleMessages(): List<SingleMessage> =
+    this.flatMap { it.toMessageChain() }.constrainSingleMessages()
 
 
 @JvmSynthetic
@@ -178,11 +183,6 @@ internal data class MessageChainImpl constructor(
 internal fun MessageChainImplBySequence(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
 ): MessageChain = MessageChainImpl(delegate.constrainSingleMessages())
-
-@Suppress("FunctionName")
-internal fun SingleMessageChainImpl(
-    delegate: SingleMessage
-): MessageChain = MessageChainImpl(listOf(delegate))
 
 
 //////////////////////
