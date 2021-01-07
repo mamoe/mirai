@@ -163,7 +163,7 @@ public data class ForwardMessage(
             time: Int,
             senderName: String,
             message: Message
-        ) : this(senderId, time, senderName, message.asMessageChain())
+        ) : this(senderId, time, senderName, message.toMessageChain())
     }
 
     @MiraiExperimentalApi
@@ -424,20 +424,20 @@ public class ForwardMessageBuilder private constructor(
          */
         @ForwardMessageDsl
         public infix fun message(message: Message): BuilderNode =
-            this.apply { this.messageChain = message.asMessageChain() }
+            this.apply { this.messageChain = message.toMessageChain() }
 
         /**
          * 指定消息内容
          */
         @ForwardMessageDsl
         public infix fun message(message: String): BuilderNode =
-            this.apply { this.messageChain = PlainText(message).asMessageChain() }
+            this.apply { this.messageChain = PlainText(message).toMessageChain() }
 
         /** 添加一条消息  */
         @ForwardMessageDsl
         public infix fun says(message: Message): ForwardMessageBuilder = this@ForwardMessageBuilder.apply {
             checkBuilt()
-            this@BuilderNode.messageChain = message.asMessageChain()
+            this@BuilderNode.messageChain = message.toMessageChain()
             add(this@BuilderNode)
         }
 
@@ -469,7 +469,7 @@ public class ForwardMessageBuilder private constructor(
             checkBuilt()
             add(BuilderNode().apply {
                 senderId = this@says
-                this.messageChain = message.asMessageChain()
+                this.messageChain = message.toMessageChain()
             })
         }
 

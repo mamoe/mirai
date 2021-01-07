@@ -149,7 +149,7 @@ internal class GroupImpl(
                 }
             }.getOrElse {
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
-            }.message.asMessageChain()
+            }.message.toMessageChain()
 
             @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
             var length = 0
@@ -178,7 +178,7 @@ internal class GroupImpl(
                 )
             }
             chain
-        } else message.asMessageChain()
+        } else message.toMessageChain()
 
         msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 

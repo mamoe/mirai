@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -692,11 +692,11 @@ public interface UserMessageEvent : MessageEvent {
 public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
     @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     public override suspend fun reply(message: Message): MessageReceipt<Contact> =
-        subject.sendMessage(message.asMessageChain())
+        subject.sendMessage(message.toMessageChain())
 
     @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(plain)"), ERROR)
     public override suspend fun reply(plain: String): MessageReceipt<Contact> =
-        subject.sendMessage(PlainText(plain).asMessageChain())
+        subject.sendMessage(PlainText(plain).toMessageChain())
 
     @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.uploadAsImage(subject)"), ERROR)
     public override suspend fun ExternalResource.uploadAsImage(): Image = this.uploadAsImage(subject)

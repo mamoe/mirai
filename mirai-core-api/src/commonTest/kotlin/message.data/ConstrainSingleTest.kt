@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -119,33 +119,33 @@ internal class ConstrainSingleTest {
         )
 
         // Collection<SingleMessage>.asMessageChain()
-        assertEquals("test${lastSingle}foo", list.asMessageChain().toString())
+        assertEquals("test${lastSingle}foo", list.toMessageChain().toString())
 
         // Collection<Message>.asMessageChain()
         @Suppress("USELESS_CAST")
         assertEquals(
             "test${lastSingle}foo",
-            list.map { it as Message }.asMessageChain().toString()
+            list.map { it as Message }.toMessageChain().toString()
         )
 
         // Iterable<SingleMessage>.asMessageChain()
-        assertEquals("test${lastSingle}foo", list.asIterable().asMessageChain().toString())
+        assertEquals("test${lastSingle}foo", list.asIterable().toMessageChain().toString())
 
         // Iterable<Message>.asMessageChain()
         @Suppress("USELESS_CAST")
         assertEquals(
             "test${lastSingle}foo",
-            list.map { it as Message }.asIterable().asMessageChain().toString()
+            list.map { it as Message }.asIterable().toMessageChain().toString()
         )
 
         // Sequence<SingleMessage>.asMessageChain()
-        assertEquals("test${lastSingle}foo", list.asSequence().asMessageChain().toString())
+        assertEquals("test${lastSingle}foo", list.asSequence().toMessageChain().toString())
 
         // Sequence<Message>.asMessageChain()
         @Suppress("USELESS_CAST")
         assertEquals(
             "test${lastSingle}foo",
-            list.map { it as Message }.asSequence().asMessageChain().toString()
+            list.map { it as Message }.asSequence().toMessageChain().toString()
         )
     }
 }

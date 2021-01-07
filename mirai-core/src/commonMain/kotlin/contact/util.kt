@@ -51,7 +51,7 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
         }
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting FriendMessagePreSendEvent", it)
-    }.message.asMessageChain()
+    }.message.toMessageChain()
     chain.verityLength(message, this, {}, {})
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
@@ -103,7 +103,7 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
         }
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting StrangerMessagePreSendEvent", it)
-    }.message.asMessageChain()
+    }.message.toMessageChain()
     chain.verityLength(message, this, {}, {})
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()

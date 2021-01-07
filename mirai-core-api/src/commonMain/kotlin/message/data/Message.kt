@@ -182,20 +182,20 @@ public interface Message { // must be interface. Don't consider any changes.
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Iterable<Message>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Array<out Message>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
     public operator fun plus(another: Iterable<String>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Sequence<Message>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
     public companion object
 }
@@ -204,7 +204,7 @@ public interface Message { // must be interface. Don't consider any changes.
 @MiraiExperimentalApi
 @JvmSynthetic
 public suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
-    another.fold(this) { acc, it -> acc + it }.asMessageChain()
+    another.fold(this) { acc, it -> acc + it }.toMessageChain()
 
 
 /**
@@ -258,7 +258,7 @@ public inline fun Message.isNotPlain(): Boolean {
 public inline fun Message.repeat(count: Int): MessageChain {
     if (this is ConstrainSingle) {
         // fast-path
-        return this.asMessageChain()
+        return this.toMessageChain()
     }
     return buildMessageChain(count) {
         repeat(count) {

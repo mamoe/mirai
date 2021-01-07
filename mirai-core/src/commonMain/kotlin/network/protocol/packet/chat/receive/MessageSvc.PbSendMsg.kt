@@ -62,7 +62,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         fun flush() {
             txtAdd = false
             if (last.isNotEmpty()) {
-                results.add(ArrayList(last).asMessageChain())
+                results.add(ArrayList(last).toMessageChain())
                 last.clear()
             }
         }
@@ -80,7 +80,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 } else {
                     val splitted = element.content.chunked(80)
                     flush()
-                    splitted.forEach { results.add(PlainText(it).asMessageChain()) }
+                    splitted.forEach { results.add(PlainText(it).toMessageChain()) }
                 }
             } else {
                 last.add(element)

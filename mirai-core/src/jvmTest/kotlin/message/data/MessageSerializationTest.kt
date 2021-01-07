@@ -128,7 +128,7 @@ internal class MessageSerializationTest {
 
     @Test
     fun `test serialize message chain`() {
-        val chain = testMessageContentInstances.asMessageChain() + emptySource
+        val chain = testMessageContentInstances.toMessageChain() + emptySource
         println(chain.serialize()) // [["net.mamoe.mirai.message.data.PlainText",{"content":"test"}],["net.mamoe.mirai.message.data.At",{"target":123456,"display":""}],["net.mamoe.mirai.message.data.AtAll",{}],["net.mamoe.mirai.internal.message.OfflineGroupImage",{"imageId":"{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai"}]]
 
         testSerialization(chain)

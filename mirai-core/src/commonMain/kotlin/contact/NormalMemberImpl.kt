@@ -76,7 +76,7 @@ internal class NormalMemberImpl constructor(
             }
         }.getOrElse {
             throw EventCancelledException("exception thrown when broadcasting TempMessagePreSendEvent", it)
-        }.message.asMessageChain()
+        }.message.toMessageChain()
 
         chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
