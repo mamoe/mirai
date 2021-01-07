@@ -24,7 +24,6 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.safeCast
-import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -304,30 +303,6 @@ public fun Message.isContentEmpty(): Boolean {
         is MessageChain -> this.all { it.isContentEmpty() }
         else -> false
     }
-}
-
-public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
-
-/**
- * 当 [this] 为 [PlainText] 时返回 `true`.
- */
-public inline fun Message.isPlain(): Boolean {
-    contract {
-        returns(true) implies (this@isPlain is PlainText)
-        returns(false) implies (this@isPlain !is PlainText)
-    }
-    return this is PlainText
-}
-
-/**
- * 当 [this] 不为 [PlainText] 时返回 `true`.
- */
-public inline fun Message.isNotPlain(): Boolean {
-    contract {
-        returns(false) implies (this@isNotPlain is PlainText)
-        returns(true) implies (this@isNotPlain !is PlainText)
-    }
-    return this !is PlainText
 }
 
 /**

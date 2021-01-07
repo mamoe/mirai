@@ -15,11 +15,55 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.DeprecationLevel.ERROR
+import kotlin.contracts.contract
 import kotlin.js.JsName
+
+///////////////////////////////////////////////////////////////////////////
+// Message
+///////////////////////////////////////////////////////////////////////////
+
+/**
+ * 当 [this] 为 [PlainText] 时返回 `true`.
+ */
+@Deprecated(
+    "Message.isPlain is ambiguous when used on a MessageChain containing single element PlainText. Use is PlainText by yourself.",
+    ReplaceWith("this is PlainText", "net.mamoe.mirai.message.data.PlainText"),
+    ERROR
+)
+public inline fun Message.isPlain(): Boolean {
+    contract {
+        returns(true) implies (this@isPlain is PlainText)
+        returns(false) implies (this@isPlain !is PlainText)
+    }
+    return this is PlainText
+}
+
+/**
+ * 当 [this] 不为 [PlainText] 时返回 `true`.
+ */
+@Deprecated(
+    "Message.isNotPlain is ambiguous when used on a MessageChain containing single element PlainText. Use is PlainText by yourself.",
+    ReplaceWith("this is PlainText", "net.mamoe.mirai.message.data.PlainText"),
+    ERROR
+)
+public inline fun Message.isNotPlain(): Boolean {
+    contract {
+        returns(false) implies (this@isNotPlain is PlainText)
+        returns(true) implies (this@isNotPlain !is PlainText)
+    }
+    return this !is PlainText
+}
+
+@Deprecated(
+    "To simplify, use !isContentEmpty",
+    ReplaceWith("!this.isContentEmpty()", "net.mamoe.mirai.message.data.isContentNotEmpty"),
+    ERROR
+)
+public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Deprecated
+// MessageChain
 ///////////////////////////////////////////////////////////////////////////
 
 /**
