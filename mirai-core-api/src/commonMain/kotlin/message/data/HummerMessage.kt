@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.VipFace.Kind
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
@@ -170,6 +171,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
 
     private val stringValue = "[mirai:poke:$name,$pokeType,$id]"
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append("[mirai:poke:").appendAsMiraiCode(name)
             .append(',').append(pokeType).append(',').append(id)
@@ -292,6 +294,7 @@ public data class VipFace @MiraiInternalApi constructor(
         private infix fun Int.to(name: String): Kind = Kind(this, name)
     }
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append(stringValue)
     }
@@ -346,6 +349,7 @@ public data class FlashImage(
 
     private val stringValue: String by lazy(LazyThreadSafetyMode.NONE) { "[mirai:flash:${image.imageId}]" }
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append(stringValue)
     }

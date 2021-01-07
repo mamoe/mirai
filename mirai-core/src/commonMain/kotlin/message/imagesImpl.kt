@@ -24,11 +24,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
-import net.mamoe.mirai.utils.generateImageId
-import net.mamoe.mirai.utils.generateImageIdFromResourceId
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toUHexString
 
 @Serializable(with = OnlineGroupImageImpl.Serializer::class)
 internal class OnlineGroupImageImpl(
@@ -201,6 +198,7 @@ internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append("[mirai:image:").append(imageId).append("]")
     }

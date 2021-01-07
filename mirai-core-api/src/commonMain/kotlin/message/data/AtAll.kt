@@ -16,6 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 private const val displayA = "@全体成员"
 
@@ -47,6 +48,7 @@ public object AtAll :
         return toString()
     }
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append(toString())
     }

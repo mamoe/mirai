@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.UserOrBot
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 
 /**
@@ -49,6 +50,7 @@ public data class At(
         return "@${member.nameCardOrNick}"
     }
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append("[mirai:at:").append(target).append(']')
     }

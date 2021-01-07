@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * QQ 自带表情
@@ -31,6 +32,7 @@ public data class Face(public val id: Int) : // used in delegation
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
     public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
+    @MiraiExperimentalApi
     override fun appendMiraiCode(builder: StringBuilder) {
         builder.append("[mirai:face:").append(id).append(']')
     }
