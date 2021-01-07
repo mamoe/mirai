@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.PlannedRemoval
+import kotlin.DeprecationLevel.ERROR
 import kotlin.js.JsName
 
 
@@ -30,7 +31,7 @@ import kotlin.js.JsName
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Message.asMessageChain(): MessageChain = toMessageChain()
 
@@ -42,7 +43,7 @@ public fun Message.asMessageChain(): MessageChain = toMessageChain()
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun SingleMessage.asMessageChain(): MessageChain = toMessageChain()
 
@@ -54,7 +55,7 @@ public fun SingleMessage.asMessageChain(): MessageChain = toMessageChain()
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Collection<SingleMessage>.asMessageChain(): MessageChain = toMessageChain()
 
@@ -67,7 +68,7 @@ public fun Collection<SingleMessage>.asMessageChain(): MessageChain = toMessageC
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 // @JsName("newChain")
 public fun Array<out Message>.asMessageChain(): MessageChain = toMessageChain()
@@ -78,7 +79,7 @@ public fun Array<out Message>.asMessageChain(): MessageChain = toMessageChain()
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Array<out SingleMessage>.asMessageChain(): MessageChain = toMessageChain()
 
@@ -90,7 +91,7 @@ public fun Array<out SingleMessage>.asMessageChain(): MessageChain = toMessageCh
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 // @JsName("newChain")
 public fun Collection<Message>.asMessageChain(): MessageChain = toMessageChain()
@@ -103,7 +104,7 @@ public fun Collection<Message>.asMessageChain(): MessageChain = toMessageChain()
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Iterable<SingleMessage>.asMessageChain(): MessageChain = toMessageChain()
 
@@ -112,7 +113,7 @@ public fun Iterable<SingleMessage>.asMessageChain(): MessageChain = toMessageCha
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public inline fun MessageChain.asMessageChain(): MessageChain = this
 
@@ -126,7 +127,7 @@ public inline fun MessageChain.asMessageChain(): MessageChain = this
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Iterable<Message>.asMessageChain(): MessageChain = toMessageChain()
 
@@ -138,7 +139,7 @@ public fun Iterable<Message>.asMessageChain(): MessageChain = toMessageChain()
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = toMessageChain()
 
@@ -151,7 +152,7 @@ public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = toMessageCha
 @Deprecated(
     "Use toMessageChain.",
     ReplaceWith("this.toMessageChain()", "net.mamoe.mirai.message.data.toMessageChain"),
-    DeprecationLevel.ERROR
+    ERROR
 )
 // @JsName("newChain")
 public fun Sequence<Message>.asMessageChain(): MessageChain = toMessageChain()
@@ -169,12 +170,12 @@ public fun Sequence<Message>.asMessageChain(): MessageChain = toMessageChain()
  * A <- B <- C <- D <- E <- F <- G
  * ```
  */
-@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 public inline fun Iterable<Message>.flatten(): Sequence<SingleMessage> = toMessageChain().asSequence()
 
 // @JsName("flatten1")
-@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 @JvmName("flatten1")// avoid platform declare clash
 @JvmSynthetic
@@ -192,33 +193,33 @@ public inline fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = t
  * A <- B <- C <- D <- E <- F <- G
  * ```
  */
-@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 public inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = this.toMessageChain().asSequence()
 
-@Deprecated("flatten is deprecated.", ReplaceWith("this"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this"), ERROR)
 @PlannedRemoval("2.0.0")
 @JsName("flatten1") // avoid platform declare clash
 @JvmName("flatten1")
 @JvmSynthetic
 public inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
 
-@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 public inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.toMessageChain().asSequence()
 
-@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 public inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 /**
  * 返回 [MessageChain.asSequence] 或 `sequenceOf(this as SingleMessage)`
  */
-@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.toMessageChain().asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 public fun Message.flatten(): Sequence<SingleMessage> = this.toMessageChain().asSequence()
 
-@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"))
+@Deprecated("flatten is deprecated.", ReplaceWith("this.asSequence()"), ERROR)
 @PlannedRemoval("2.0.0")
 @JvmSynthetic // make Java user happier with less methods
 public inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
