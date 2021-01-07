@@ -172,7 +172,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
     private val stringValue = "[mirai:poke:$name,$pokeType,$id]"
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:poke:").appendAsMiraiCode(name)
             .append(',').append(pokeType).append(',').append(id)
             .append(']')
@@ -295,7 +295,7 @@ public data class VipFace @MiraiInternalApi constructor(
     }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append(stringValue)
     }
 
@@ -350,7 +350,7 @@ public data class FlashImage(
     private val stringValue: String by lazy(LazyThreadSafetyMode.NONE) { "[mirai:flash:${image.imageId}]" }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append(stringValue)
     }
 

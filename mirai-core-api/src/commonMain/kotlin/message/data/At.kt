@@ -51,7 +51,7 @@ public data class At(
     }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:at:").append(target).append(']')
     }
 

@@ -98,8 +98,8 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         asSequence().any { key.safeCast.invoke(it) != null }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
-        forEach { it.safeCast<CodableMessage>()?.appendMiraiCode(builder) }
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        forEach { it.safeCast<CodableMessage>()?.appendMiraiCodeTo(builder) }
     }
 
     @kotlinx.serialization.Serializer(MessageChain::class)
@@ -171,7 +171,8 @@ public object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<Si
     override fun toMiraiCode(): String = ""
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {}
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+    }
 }
 
 // region accessors

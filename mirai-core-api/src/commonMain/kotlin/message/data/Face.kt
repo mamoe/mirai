@@ -33,7 +33,7 @@ public data class Face(public val id: Int) : // used in delegation
     public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:face:").append(id).append(']')
     }
 

@@ -49,7 +49,7 @@ public object AtAll :
     }
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append(toString())
     }
 

@@ -36,7 +36,7 @@ public data class PlainText(
     public override fun contentToString(): String = content
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.appendAsMiraiCode(content)
     }
 

@@ -199,7 +199,7 @@ internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
     final override fun contentToString(): String = "[图片]"
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:image:").append(imageId).append("]")
     }
 }

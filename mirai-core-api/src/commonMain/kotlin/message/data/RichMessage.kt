@@ -105,7 +105,7 @@ public data class LightApp(override val content: String) : RichMessage, CodableM
     public override fun toString(): String = "[mirai:app:$content]"
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:app:").appendAsMiraiCode(content).append(']')
     }
 }
@@ -166,7 +166,7 @@ public interface ServiceMessage : RichMessage, CodableMessage {
     public val serviceId: Int
 
     @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:service:").append(serviceId).append(',').appendAsMiraiCode(content).append(']')
     }
 }
