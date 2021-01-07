@@ -23,7 +23,6 @@ import kotlinx.serialization.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -200,78 +199,11 @@ public interface Message { // must be interface. Don't consider any changes.
     public companion object
 }
 
-
-@MiraiExperimentalApi
+/** 将 [another] 按顺序连接到这个消息的尾部. */
 @JvmSynthetic
 public suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.toMessageChain()
 
-
-/**
- * [Message.contentToString] 的捷径
- */
-@get:JvmSynthetic
-public inline val Message.content: String
-    get() = contentToString()
-
-
-/**
- * 判断消息内容是否为空.
- *
- * 以下情况视为 "空消息":
- *
- * - 是 [MessageMetadata] (因为 [MessageMetadata.contentToString] 都必须返回空字符串)
- * - [PlainText] 长度为 0
- * - [MessageChain] 所有元素都满足 [isContentEmpty]
- */
-public fun Message.isContentEmpty(): Boolean {
-    return when (this) {
-        is MessageMetadata -> true
-        is PlainText -> this.content.isEmpty()
-        is MessageChain -> this.all { it.isContentEmpty() }
-        else -> false
-    }
-}
-
-public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
-
-public inline fun Message.isPlain(): Boolean {
-    contract {
-        returns(true) implies (this@isPlain is PlainText)
-        returns(false) implies (this@isPlain !is PlainText)
-    }
-    return this is PlainText
-}
-
-public inline fun Message.isNotPlain(): Boolean {
-    contract {
-        returns(false) implies (this@isNotPlain is PlainText)
-        returns(true) implies (this@isNotPlain !is PlainText)
-    }
-    return this !is PlainText
-}
-
-/**
- * 将此消息元素按顺序重复 [count] 次.
- */
-// inline: for future removal
-public inline fun Message.repeat(count: Int): MessageChain {
-    if (this is ConstrainSingle) {
-        // fast-path
-        return this.toMessageChain()
-    }
-    return buildMessageChain(count) {
-        repeat(count) {
-            add(this@repeat)
-        }
-    }
-}
-
-/**
- * 将此消息元素按顺序重复 [count] 次.
- */
-@JvmSynthetic
-public inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
@@ -339,15 +271,83 @@ public interface MessageContent : SingleMessage {
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
 }
 
+
+/**
+ * [Message.contentToString] 的捷径
+ */
+@get:JvmSynthetic
+public inline val Message.content: String
+    get() = contentToString()
+
 /**
  * 将 [this] 发送给指定联系人
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> =
-    contact.sendMessage(this) as MessageReceipt<C>
-
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
 public suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> =
     contact.sendMessage(this) as MessageReceipt<C>
+
+
+/**
+ * 判断消息内容是否为空.
+ *
+ * 以下情况视为 "空消息":
+ *
+ * - 是 [MessageMetadata] (因为 [MessageMetadata.contentToString] 都必须返回空字符串)
+ * - [PlainText] 长度为 0
+ * - [MessageChain] 所有元素都满足 [isContentEmpty]
+ */
+public fun Message.isContentEmpty(): Boolean {
+    return when (this) {
+        is MessageMetadata -> true
+        is PlainText -> this.content.isEmpty()
+        is MessageChain -> this.all { it.isContentEmpty() }
+        else -> false
+    }
+}
+
+public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
+
+/**
+ * 当 [this] 为 [PlainText] 时返回 `true`.
+ */
+public inline fun Message.isPlain(): Boolean {
+    contract {
+        returns(true) implies (this@isPlain is PlainText)
+        returns(false) implies (this@isPlain !is PlainText)
+    }
+    return this is PlainText
+}
+
+/**
+ * 当 [this] 不为 [PlainText] 时返回 `true`.
+ */
+public inline fun Message.isNotPlain(): Boolean {
+    contract {
+        returns(false) implies (this@isNotPlain is PlainText)
+        returns(true) implies (this@isNotPlain !is PlainText)
+    }
+    return this !is PlainText
+}
+
+/**
+ * 将此消息元素按顺序重复 [count] 次.
+ */
+// inline: for future removal
+public inline fun Message.repeat(count: Int): MessageChain {
+    if (this is ConstrainSingle) {
+        // fast-path
+        return this.toMessageChain()
+    }
+    return buildMessageChain(count) {
+        repeat(count) {
+            add(this@repeat)
+        }
+    }
+}
+
+/**
+ * 将此消息元素按顺序重复 [count] 次.
+ */
+@JvmSynthetic
+public inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
