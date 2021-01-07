@@ -288,20 +288,24 @@ public suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageRecei
 
 
 /**
- * 判断消息内容是否为空.
- *
- * 以下情况视为 "空消息":
- *
- * - 是 [MessageMetadata] (因为 [MessageMetadata.contentToString] 都必须返回空字符串)
- * - [PlainText] 长度为 0
- * - [MessageChain] 所有元素都满足 [isContentEmpty]
+ * 当消息内容为空时返回 `true`.
+ * @see String.isEmpty
  */
 public fun Message.isContentEmpty(): Boolean {
     return when (this) {
-        is MessageMetadata -> true
-        is PlainText -> this.content.isEmpty()
         is MessageChain -> this.all { it.isContentEmpty() }
-        else -> false
+        else -> this.content.isEmpty()
+    }
+}
+
+/**
+ * 当消息内容为空白时返回 `true`.
+ * @see String.isBlank
+ */
+public fun Message.isContentBlank(): Boolean {
+    return when (this) {
+        is MessageChain -> this.all { it.isContentBlank() }
+        else -> this.content.isBlank()
     }
 }
 
