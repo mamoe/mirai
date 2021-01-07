@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -48,13 +48,13 @@ public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建
  */
-public open class MessageChainBuilder private constructor(
+public class MessageChainBuilder private constructor(
     private val container: MutableList<SingleMessage>
 ) : MutableList<SingleMessage> by container, Appendable {
     public constructor() : this(mutableListOf())
     public constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
-    public final override fun add(element: SingleMessage): Boolean {
+    public override fun add(element: SingleMessage): Boolean {
         checkBuilt()
         flushCache()
         return container.add(element)
@@ -67,28 +67,28 @@ public open class MessageChainBuilder private constructor(
         return when (element) {
             // is ConstrainSingle -> container.add(element)
             is SingleMessage -> container.add(element) // no need to constrain
-            is Iterable<*> -> this.addAll(element.flatten())
+            is Iterable<*> -> this.addAll(element.toMessageChain().asSequence())
             else -> error("stub")
         }
     }
 
-    public final override fun addAll(elements: Collection<SingleMessage>): Boolean {
+    public override fun addAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         flushCache()
-        return addAll(elements.flatten())
+        return addAll(elements.asSequence())
     }
 
     public fun addAll(elements: Iterable<SingleMessage>): Boolean {
         checkBuilt()
         flushCache()
-        return addAll(elements.flatten())
+        return addAll(elements.asSequence())
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
     public fun addAll(elements: Iterable<Message>): Boolean {
         checkBuilt()
         flushCache()
-        return addAll(elements.flatten())
+        return addAll(elements.toMessageChain().asSequence())
     }
 
     @JvmSynthetic
@@ -136,9 +136,9 @@ public open class MessageChainBuilder private constructor(
         withCache { append(charSequence) }
     }
 
-    public final override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
-    public final override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
-    public final override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
+    public override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
+    public override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
+    public override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
         withCache { append(value, startIndex, endIndex) }
 
     public fun append(message: Message): MessageChainBuilder = apply { add(message) }
@@ -164,27 +164,27 @@ public open class MessageChainBuilder private constructor(
     ///////
     // FOR IMMUTABLE SAFETY
 
-    public final override fun remove(element: SingleMessage): Boolean {
+    public override fun remove(element: SingleMessage): Boolean {
         checkBuilt()
         return container.remove(element)
     }
 
-    public final override fun removeAll(elements: Collection<SingleMessage>): Boolean {
+    public override fun removeAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         return container.removeAll(elements)
     }
 
-    public final override fun removeAt(index: Int): SingleMessage {
+    public override fun removeAt(index: Int): SingleMessage {
         checkBuilt()
         return container.removeAt(index)
     }
 
-    public final override fun clear() {
+    public override fun clear() {
         checkBuilt()
         return container.clear()
     }
 
-    public final override fun set(index: Int, element: SingleMessage): SingleMessage {
+    public override fun set(index: Int, element: SingleMessage): SingleMessage {
         checkBuilt()
         return container.set(index, element)
     }
