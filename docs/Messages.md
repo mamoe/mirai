@@ -114,7 +114,7 @@ chain.toMiraiCode() // "plain[mirai:at:123][mirai:atall]"
 通过 `CodableMessage.toMiraiCode()`。
 
 ```
-val at = At(123)// 是纯文本
+val at = At(123)
 
 at.toMiraiCode() // 结果为 `[mirai:at:123]`
 ```
@@ -187,6 +187,12 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("/f
 | `fun Message.plus(tail: Message): MessageChain`         |
 
 可以使用如上表格所示的方法构造，或使用 DSL builder。
+```
+class MessageChainBuilder : MutableList<SingleMessage> {
+    operator fun Message.unaryPlus()
+    operator fun String.unaryPlus()
+}
+```
 
 每个 `Message.unaryPlus` 都会被加入到结果消息链中。
 
