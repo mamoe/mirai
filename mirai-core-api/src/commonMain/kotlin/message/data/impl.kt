@@ -52,9 +52,9 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
              * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
              */
             this.forEachContent { thisElement ->
-                if (thisElement.isPlain()) return@forEachContent
+                if (thisElement is PlainText) return@forEachContent
                 for (it in anotherIterator) {
-                    if (it.isPlain() || it !is MessageContent) continue
+                    if (it is PlainText || it !is MessageContent) continue
                     if (thisElement != it) return false
                 }
             }
