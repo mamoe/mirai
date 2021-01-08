@@ -44,5 +44,11 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
  * [123456, 321654, 123654]
  * ```
  */
+@Deprecated(
+    "deprecated.",
+    ReplaceWith("\"[\" + delegate.joinToString { it.id.toString() } + \"]\""),
+    DeprecationLevel.ERROR
+)
+@PlannedRemoval("2.0.0")
 public val ContactList<*>.idContentString: String
     get() = "[" + delegate.joinToString { it.id.toString() } + "]"
