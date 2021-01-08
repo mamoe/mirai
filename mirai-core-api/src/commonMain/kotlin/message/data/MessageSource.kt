@@ -122,17 +122,17 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      * 发送人.
      *
      * - 当 [OnlineMessageSource.Outgoing] 时为 [机器人][Bot.id]
-     * - 当 [OnlineMessageSource.Incoming] 时为发信 [目标好友][Friend.id] 或 [群][Group.id]
-     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][Friend.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
+     * - 当 [OnlineMessageSource.Incoming] 时为发信 [来源用户][User.id] 或 [群][Group.id]
+     * - 当 [OfflineMessageSource] 时取决于 [OfflineMessageSource.kind]
      */
     public abstract val fromId: Long
 
     /**
      * 消息发送目标.
      *
-     * - 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][Friend.id] 或 [群][Group.id] 或 [临时消息][Member.id]
+     * - 当 [OnlineMessageSource.Outgoing] 时为发信 [目标用户][User.id] 或 [群][Group.id]
      * - 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
-     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][Friend.id] 或 [群][Group.id] 或 [临时消息][Member.id] (取决于 [OfflineMessageSource.kind])
+     * - 当 [OfflineMessageSource] 时取决于 [OfflineMessageSource.kind]
      */
     public abstract val targetId: Long // groupCode / friendUin / memberUin
 
@@ -157,8 +157,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
 
         /**
          * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
-         *
-         * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
          *
          * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
          *
