@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,13 +28,13 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * ### 广播
  * 广播事件的唯一方式为 [broadcast].
  *
- * @see subscribeAlways
- * @see subscribeOnce
+ * @see EventChannel.subscribeAlways
+ * @see EventChannel.subscribeOnce
  *
- * @see subscribeMessages
+ * @see EventChannel.subscribeMessages
  *
  * @see [broadcast] 广播事件
- * @see [CoroutineScope.subscribe] 监听事件
+ * @see [EventChannel.subscribe] 监听事件
  *
  * @see CancellableEvent 可被取消的事件
  */

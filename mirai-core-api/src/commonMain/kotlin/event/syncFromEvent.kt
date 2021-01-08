@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see asyncFromEvent 本函数的异步版本
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  *
  * @see syncFromEventOrNull 本函数的在超时后返回 `null` 的版本
@@ -59,7 +59,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @return 超时返回 `null`, 否则返回 [mapper] 返回的第一个非 `null` 值.
  *
  * @see asyncFromEvent 本函数的异步版本
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  *
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
@@ -88,7 +88,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  *
  * @see syncFromEvent
  * @see asyncFromEvent
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic
@@ -117,7 +117,7 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
  *
  * @see syncFromEvent
  * @see asyncFromEventOrNull
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic

@@ -82,7 +82,7 @@ public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<Grou
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有群会话消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeGroupMessages(
@@ -100,7 +100,7 @@ public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<Fri
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有好友消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeFriendMessages(
@@ -118,7 +118,7 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempM
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有临时会话消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeTempMessages(
@@ -137,7 +137,7 @@ public typealias StrangerMessageSubscribersBuilder = MessageSubscribersBuilder<S
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有 [Stranger] 消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeStrangerMessages(
@@ -157,7 +157,7 @@ public typealias OtherClientMessageSubscribersBuilder = MessageSubscribersBuilde
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有 [OtherClient] 消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeOtherClientMessages(

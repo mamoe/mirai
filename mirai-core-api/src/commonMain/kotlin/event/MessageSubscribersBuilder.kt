@@ -40,7 +40,7 @@ public typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @param R 消息监听器内部的返回值
  * @param Ret 每个 DSL 函数创建监听器之后的返回值
  *
- * @see subscribeMessages
+ * @see EventChannel.subscribeMessages
  */
 @MessageDsl
 public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR> internal constructor(

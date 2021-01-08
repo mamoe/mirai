@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.event.Listener.EventPriority.*
 
@@ -40,7 +39,7 @@ public enum class ListeningStatus {
 
 /**
  * 事件监听器.
- * 由 [CoroutineScope.subscribe] 等方法返回.
+ * 由 [EventChannel.subscribe] 等方法返回.
  *
  * 取消监听: [complete]
  */
@@ -102,9 +101,9 @@ public interface Listener<in E : Event> : CompletableJob {
     public val priority: EventPriority get() = NORMAL
 
     /**
-     * 这个方法将会调用 [CoroutineScope.subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
+     * 这个方法将会调用 [EventChannel.subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
      *
-     * 这个函数不会抛出任何异常, 详见 [CoroutineScope.subscribe]
+     * 这个函数不会抛出任何异常, 详见 [EventChannel.subscribe]
      */
     public suspend fun onEvent(event: E): ListeningStatus
 }

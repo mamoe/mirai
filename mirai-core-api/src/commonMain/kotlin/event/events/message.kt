@@ -838,14 +838,9 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
 /**
  * 一个 (收到的) 消息事件.
  *
- * 它是一个 [BotEvent], 因此可以被 [监听][Bot.subscribe]
+ * 它是一个 [BotEvent], 因此可以被 [监听][EventChannel.subscribe]
  *
- * 支持的消息类型:
- * - [群消息事件][GroupMessageEvent]
- * - [好友消息事件][FriendMessageEvent]
- * - [临时会话消息事件][TempMessageEvent]
- *
- * @see isContextIdenticalWith 判断语境是否相同
+ * @see isContextIdenticalWith 判断语境相同
  */
 @Suppress("DEPRECATION")
 public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<User, Contact> {

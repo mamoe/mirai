@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -26,7 +26,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Kotlin 函数要求:
  * - 接收者 (英 receiver) 和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
  *   接收者或函数参数的类型都必须为 [Event] 或其子类.
- * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [CoroutineScope.subscribeAlways], 为 [ListeningStatus] 时将注册为 [CoroutineScope.subscribe].
+ * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [EventChannel.subscribeAlways], 为 [ListeningStatus] 时将注册为 [EventChannel.subscribe].
  *   任何其他类型的返回值将会在注册时抛出异常.
  *
  * 所有 Kotlin 非 `suspend` 的函数都将会在 [Dispatchers.IO] 中调用

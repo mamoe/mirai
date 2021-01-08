@@ -52,8 +52,8 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  *
- * @see subscribe
- * @see subscribeMessages
+ * @see EventChannel.subscribe
+ * @see EventChannel.subscribeMessages
  * @see nextMessage 挂起协程并等待下一条消息
  */
 @Suppress("unused")

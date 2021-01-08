@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,7 +24,7 @@ import kotlin.reflect.KClass
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
  *
  * @throws TimeoutCancellationException 在超时后抛出.
@@ -48,7 +48,7 @@ public suspend inline fun <reified E : Event> nextEvent(
  * @param timeoutMillis 超时. 单位为毫秒.
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
- * @see subscribe 普通地监听一个事件
+ * @see EventChannel.subscribe 普通地监听一个事件
  * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
  *
  * @return 事件实例, 在超时后返回 `null`

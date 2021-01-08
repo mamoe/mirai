@@ -55,7 +55,7 @@ import kotlin.reflect.KClass
  * - [GlobalEventChannel]
  * - [Bot.eventChannel]
  *
- * @see EventChannel.subscribe
+ * @see subscribe
  */
 public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     public val baseEventClass: KClass<out BaseEvent>,
@@ -96,7 +96,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     // region transforming operations
 
     /**
-     * 添加一个过滤器. 过滤器将在收到任何事件之后, 传递给通过 [subscribe] 注册的监听器之前调用.
+     * 添加一个过滤器. 过滤器将在收到任何事件之后, 传递给通过 [EventChannel.subscribe] 注册的监听器之前调用.
      *
      * 若 [filter] 返回 `true`, 该事件将会被传给监听器. 否则将会被忽略, **监听器继续监听**.
      *
