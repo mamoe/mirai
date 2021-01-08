@@ -345,6 +345,14 @@ public data class FlashImage(
          */
         @JvmStatic
         public fun from(imageId: String): FlashImage = FlashImage(Image(imageId))
+
+        /**
+         * 将普通图片转换为闪照.
+         *
+         * @see Image.flash
+         */
+        @JvmStatic
+        public inline fun from(image: Image): FlashImage = FlashImage(image)
     }
 
     private val stringValue: String by lazy(LazyThreadSafetyMode.NONE) { "[mirai:flash:${image.imageId}]" }
@@ -370,15 +378,3 @@ public inline fun FlashImage(imageId: String): FlashImage = FlashImage.from(imag
  */
 @JvmSynthetic
 public inline fun Image.flash(): FlashImage = FlashImage(this)
-
-/**
- * 将普通图片转换为闪照.
- */
-@JvmSynthetic
-public inline fun GroupImage.flash(): FlashImage = FlashImage(this)
-
-/**
- * 将普通图片转换为闪照.
- */
-@JvmSynthetic
-public inline fun FriendImage.flash(): FlashImage = FlashImage(this)

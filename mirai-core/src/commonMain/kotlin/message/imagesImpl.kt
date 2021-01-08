@@ -204,15 +204,15 @@ internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
     }
 }
 
-internal interface ConstOriginUrlAware : Image {
+internal interface ConstOriginUrlAware {
     val originUrl: String
 }
 
-internal interface DeferredOriginUrlAware : Image {
+internal interface DeferredOriginUrlAware {
     fun getUrl(bot: Bot): String
 }
 
-internal interface SuspendDeferredOriginUrlAware : Image {
+internal interface SuspendDeferredOriginUrlAware {
     suspend fun getUrl(bot: Bot): String
 }
 
