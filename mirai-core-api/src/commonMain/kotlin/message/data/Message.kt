@@ -68,7 +68,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @see Contact.sendMessage 发送消息
  */
-public interface Message { // must be interface. Don't consider any changes.
+public interface Message {
 
     /**
      * 将 `this` 和 [tail] 连接.
