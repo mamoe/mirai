@@ -53,9 +53,9 @@ public interface Event {
      *
      * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
      *
-     * 优先级为 [Listener.EventPriority.MONITOR] 的监听器不应该调用这个函数.
+     * 优先级为 [EventPriority.MONITOR] 的监听器不应该调用这个函数.
      *
-     * @see Listener.EventPriority 查看优先级相关信息
+     * @see EventPriority 查看优先级相关信息
      */
     public fun intercept()
 }

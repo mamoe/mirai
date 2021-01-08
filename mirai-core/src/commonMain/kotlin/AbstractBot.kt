@@ -24,7 +24,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
+import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -94,7 +94,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     private val offlineListener: Listener<BotOfflineEvent> =
         this@AbstractBot.eventChannel.subscribeAlways(
             priority = MONITOR,
-            concurrency = Listener.ConcurrencyKind.LOCKED
+            concurrency = ConcurrencyKind.LOCKED
         ) { event ->
             if (!event.bot.isActive) {
                 // bot closed

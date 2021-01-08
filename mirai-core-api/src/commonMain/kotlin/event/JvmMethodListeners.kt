@@ -147,10 +147,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 public annotation class EventHandler(
     /**
      * 监听器优先级
-     * @see Listener.EventPriority 查看优先级相关信息
+     * @see EventPriority 查看优先级相关信息
      * @see Event.intercept 拦截事件
      */
-    public val priority: Listener.EventPriority = EventPriority.NORMAL,
+    public val priority: EventPriority = EventPriority.NORMAL,
     /**
      * 是否自动忽略被 [取消][CancellableEvent.isCancelled]
      * @see CancellableEvent
@@ -158,9 +158,9 @@ public annotation class EventHandler(
     public val ignoreCancelled: Boolean = true,
     /**
      * 并发类型
-     * @see Listener.ConcurrencyKind
+     * @see ConcurrencyKind
      */
-    public val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
+    public val concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT
 )
 
 /**

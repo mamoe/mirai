@@ -34,7 +34,7 @@ import kotlin.reflect.KClass
 @JvmSynthetic
 public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
@@ -67,7 +67,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
 @JvmSynthetic
 public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
@@ -96,7 +96,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R?> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
@@ -125,7 +125,7 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
@@ -144,7 +144,7 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 internal suspend inline fun <E : Event, R> syncFromEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
-    priority: Listener.EventPriority,
+    priority: EventPriority,
     crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
     coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {

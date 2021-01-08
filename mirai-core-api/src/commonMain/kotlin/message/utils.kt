@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ package net.mamoe.mirai.message
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import net.mamoe.mirai.event.EventPriority
-import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
@@ -46,7 +45,7 @@ public fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
 @JvmSynthetic
 public suspend inline fun <reified P : MessageEvent> P.nextMessage(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
     return syncFromEvent<P, P>(timeoutMillis, priority) {
@@ -68,7 +67,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
 @JvmSynthetic
 public suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
     timeoutMillis: Long,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
@@ -84,7 +83,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
 public inline fun <reified P : MessageEvent> P.nextMessageAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain> {
     return this.bot.async(coroutineContext) {
@@ -101,7 +100,7 @@ public inline fun <reified P : MessageEvent> P.nextMessageAsync(
 public inline fun <reified P : MessageEvent> P.nextMessageOrNullAsync(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain?> {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }

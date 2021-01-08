@@ -15,7 +15,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.sync.Mutex
-import net.mamoe.mirai.event.Listener.EventPriority.*
+import net.mamoe.mirai.event.EventPriority.*
 
 /**
  * 订阅者的状态
@@ -29,9 +29,9 @@ public enum class ListeningStatus {
     /**
      * 表示已停止.
      *
-     * - 若监听器使用 [Listener.ConcurrencyKind.LOCKED],
+     * - 若监听器使用 [ConcurrencyKind.LOCKED],
      * 在这之后监听器将会被从监听器列表中删除, 因此不再能接收到事件.
-     * - 若使用 [Listener.ConcurrencyKind.CONCURRENT],
+     * - 若使用 [ConcurrencyKind.CONCURRENT],
      * 在这之后无法保证立即停止监听.
      */
     STOPPED
@@ -45,54 +45,11 @@ public enum class ListeningStatus {
  */
 public interface Listener<in E : Event> : CompletableJob {
 
-    public enum class ConcurrencyKind {
-        /**
-         * 并发地同时处理多个事件, 但无法保证 [onEvent] 返回 [ListeningStatus.STOPPED] 后立即停止事件监听.
-         */
-        CONCURRENT,
-
-        /**
-         * 使用 [Mutex] 保证同一时刻只处理一个事件.
-         */
-        LOCKED
-    }
-
     /**
      * 并发类型
      */
     public val concurrencyKind: ConcurrencyKind
 
-    /**
-     * 事件优先级.
-     *
-     * 在广播时, 事件监听器的调用顺序为 (从左到右):
-     * `[HIGHEST]` -> `[HIGH]` -> `[NORMAL]` -> `[LOW]` -> `[LOWEST]` -> `[MONITOR]`
-     *
-     * - 使用 [MONITOR] 优先级的监听器将会被**并行**调用.
-     * - 使用其他优先级的监听器都将会**按顺序**调用.
-     *   因此一个监听器的挂起可以阻塞事件处理过程而导致低优先级的监听器较晚处理.
-     *
-     * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
-     */
-    public enum class EventPriority {
-
-        HIGHEST, HIGH, NORMAL, LOW, LOWEST,
-
-        /**
-         * 最低的优先级.
-         *
-         * 使用此优先级的监听器应遵循约束:
-         * - 不 [拦截事件][Event.intercept]
-         */
-        MONITOR;
-
-        internal companion object {
-            @JvmStatic
-            internal val prioritiesExcludedMonitor: Array<EventPriority> = run {
-                values().filter { it != MONITOR }.toTypedArray()
-            }
-        }
-    }
 
     /**
      * 事件优先级
@@ -108,4 +65,47 @@ public interface Listener<in E : Event> : CompletableJob {
     public suspend fun onEvent(event: E): ListeningStatus
 }
 
-public typealias EventPriority = Listener.EventPriority
+public enum class ConcurrencyKind {
+    /**
+     * 并发地同时处理多个事件, 但无法保证 [Listener.onEvent] 返回 [ListeningStatus.STOPPED] 后立即停止事件监听.
+     */
+    CONCURRENT,
+
+    /**
+     * 使用 [Mutex] 保证同一时刻只处理一个事件.
+     */
+    LOCKED
+}
+
+
+/**
+ * 事件优先级.
+ *
+ * 在广播时, 事件监听器的调用顺序为 (从左到右):
+ * [HIGHEST] -> [HIGH] -> [NORMAL] -> [LOW] -> [LOWEST] -> [MONITOR]
+ *
+ * - 使用 [MONITOR] 优先级的监听器将会被**并行**调用.
+ * - 使用其他优先级的监听器都将会**按顺序**调用.
+ *   因此一个监听器的挂起可以阻塞事件处理过程而导致低优先级的监听器较晚处理.
+ *
+ * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
+ */
+public enum class EventPriority {
+
+    HIGHEST, HIGH, NORMAL, LOW, LOWEST,
+
+    /**
+     * 最低的优先级.
+     *
+     * 使用此优先级的监听器应遵循约束:
+     * - 不 [拦截事件][Event.intercept]
+     */
+    MONITOR;
+
+    internal companion object {
+        @JvmStatic
+        internal val prioritiesExcludedMonitor: Array<EventPriority> = run {
+            values().filter { it != MONITOR }.toTypedArray()
+        }
+    }
+}

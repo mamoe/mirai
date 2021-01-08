@@ -34,7 +34,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: suspend E.(E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -56,7 +56,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: suspend (E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -77,7 +77,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: E.(E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -98,7 +98,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: (E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -118,7 +118,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: suspend (E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -138,7 +138,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: suspend E.(E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -157,7 +157,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: E.(E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -176,6 +176,6 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: (E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }

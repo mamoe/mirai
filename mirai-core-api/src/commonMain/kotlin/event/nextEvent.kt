@@ -32,7 +32,7 @@ import kotlin.reflect.KClass
 @JvmSynthetic
 public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline filter: (E) -> Boolean = { true }
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
@@ -56,7 +56,7 @@ public suspend inline fun <reified E : Event> nextEvent(
 @JvmSynthetic
 public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     crossinline filter: (E) -> Boolean = { true }
 ): E? {
     return withTimeoutOrNull(timeoutMillis) {
@@ -70,7 +70,7 @@ public suspend inline fun <reified E : Event> nextEventOrNull(
 internal suspend inline fun <E : Event> nextEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
-    priority: Listener.EventPriority,
+    priority: EventPriority,
     crossinline filter: (E) -> Boolean
 ): E = suspendCancellableCoroutine { cont ->
     coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
@@ -90,7 +90,7 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
     bot: Bot,
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
-    priority: Listener.EventPriority
+    priority: EventPriority
 ): E = suspendCancellableCoroutine { cont ->
     coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
         try {

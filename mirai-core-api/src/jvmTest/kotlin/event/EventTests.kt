@@ -52,7 +52,7 @@ class EventTests {
         resetEventListeners()
         var listeners = 0
         val counter = AtomicInteger(0)
-        for (p in Listener.EventPriority.values()) {
+        for (p in EventPriority.values()) {
             repeat(2333) {
                 listeners++
                 GlobalScope.globalEventChannel().subscribeAlways<ParentEvent> {
@@ -78,7 +78,7 @@ class EventTests {
             val registered = AtomicInteger()
             coroutineScope {
                 println("Step 0")
-                for (priority in Listener.EventPriority.values()) {
+                for (priority in EventPriority.values()) {
                     launch {
                         repeat(5000) {
                             registered.getAndIncrement()
@@ -216,7 +216,7 @@ class EventTests {
     }
     */
     fun resetEventListeners() {
-        for (p in Listener.EventPriority.values()) {
+        for (p in EventPriority.values()) {
             GlobalEventListeners[p].clear()
         }
     }
@@ -278,11 +278,11 @@ class EventTests {
                 step.step(1)
                 ListeningStatus.LISTENING
             }
-            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.HIGH) {
+            subscribe<PriorityTestEvent>(priority = EventPriority.HIGH) {
                 step.step(0)
                 ListeningStatus.LISTENING
             }
-            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.LOW) {
+            subscribe<PriorityTestEvent>(priority = EventPriority.LOW) {
                 step.step(3)
                 ListeningStatus.LISTENING
             }

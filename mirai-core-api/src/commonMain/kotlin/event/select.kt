@@ -61,7 +61,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 public suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     @BuilderInference crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
 ): Unit = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
 
@@ -74,7 +74,7 @@ public suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
 public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     @BuilderInference crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
 ): Unit = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
 
@@ -104,7 +104,7 @@ public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
 public suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.MONITOR,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R =
@@ -436,7 +436,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
     filterContext: Boolean = true,
-    priority: Listener.EventPriority,
+    priority: EventPriority,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, R>.() -> Unit
 ): R = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
@@ -486,7 +486,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     // we don't have any way to reduce duplication yet,
     // until local functions are supported in inline functions
     @Suppress("DuplicatedCode") val subscribeAlways = globalEventChannel().subscribeAlways<T>(
-        concurrency = Listener.ConcurrencyKind.LOCKED,
+        concurrency = ConcurrencyKind.LOCKED,
         priority = priority
     ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@selectMessagesImpl))
@@ -538,7 +538,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
 internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl(
     timeoutMillis: Long,
     filterContext: Boolean,
-    priority: Listener.EventPriority,
+    priority: EventPriority,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
 ): Unit = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
@@ -568,7 +568,7 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
 
     // ensure atomic completing
     val subscribeAlways = globalEventChannel().subscribeAlways<T>(
-        concurrency = Listener.ConcurrencyKind.LOCKED,
+        concurrency = ConcurrencyKind.LOCKED,
         priority = priority
     ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@whileSelectMessagesImpl))

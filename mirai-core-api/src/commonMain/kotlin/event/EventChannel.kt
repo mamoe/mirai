@@ -19,8 +19,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
-import net.mamoe.mirai.event.Listener.ConcurrencyKind.LOCKED
+import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
+import net.mamoe.mirai.event.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.internal.event.GlobalEventListeners
 import net.mamoe.mirai.internal.event.Handler
@@ -80,7 +80,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
     ): Channel<out BaseEvent> {
         val channel = Channel<BaseEvent>(capacity)
@@ -120,7 +120,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * [filter] 允许挂起协程. **过滤器的挂起将被认为是事件监听器的挂起**.
      *
      * 过滤器挂起是否会影响事件处理,
-     * 取决于 [subscribe] 时的 [Listener.ConcurrencyKind] 和 [Listener.EventPriority].
+     * 取决于 [subscribe] 时的 [ConcurrencyKind] 和 [EventPriority].
      *
      * ## 过滤器异常处理
      * 若 [filter] 抛出异常, 将被包装为 [ExceptionInEventChannelFilterException] 并重新抛出.
@@ -305,11 +305,11 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * ## 并发安全性
      * 基于 [concurrency] 参数, 事件监听器可以被允许并行执行.
      *
-     * - 若 [concurrency] 为 [Listener.ConcurrencyKind.CONCURRENT], [handler] 可能被并行调用, 需要保证并发安全.
-     * - 若 [concurrency] 为 [Listener.ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制.
+     * - 若 [concurrency] 为 [ConcurrencyKind.CONCURRENT], [handler] 可能被并行调用, 需要保证并发安全.
+     * - 若 [concurrency] 为 [ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制.
      *
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext].
-     * @param concurrency 并发类型. 查看 [Listener.ConcurrencyKind]
+     * @param concurrency 并发类型. 查看 [ConcurrencyKind]
      * @param priority  监听优先级，优先级越高越先执行
      * @param handler 事件处理器. 在接收到事件时会调用这个处理器. 其返回值意义参考 [ListeningStatus]. 其异常处理参考上文
      *
@@ -331,7 +331,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     @JvmSynthetic
     public inline fun <reified E : Event> subscribe(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = LOCKED,
+        concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> ListeningStatus
     ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority, handler)
@@ -346,7 +346,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun <E : Event> subscribe(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = LOCKED,
+        concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
         handler: suspend E.(E) -> ListeningStatus
     ): Listener<E> = subscribeInternal(
@@ -372,7 +372,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     @JvmSynthetic
     public inline fun <reified E : Event> subscribeAlways(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> Unit
     ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority, handler)
@@ -386,7 +386,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun <E : Event> subscribeAlways(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         handler: suspend E.(E) -> Unit
     ): Listener<E> = subscribeInternal(
@@ -465,7 +465,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun <E : Event> subscribeAlways(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         handler: Consumer<E>
     ): Listener<E> = subscribeInternal(
@@ -495,7 +495,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun <E : Event> subscribe(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         handler: java.util.function.Function<E, ListeningStatus>
     ): Listener<E> = subscribeInternal(
@@ -523,7 +523,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public fun <E : Event> subscribeOnce(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         handler: Consumer<E>
     ): Listener<E> = subscribeInternal(
@@ -565,8 +565,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     @Suppress("FunctionName")
     private fun <E : Event> createListener(
         coroutineContext: CoroutineContext,
-        concurrencyKind: Listener.ConcurrencyKind,
-        priority: Listener.EventPriority = EventPriority.NORMAL,
+        concurrencyKind: ConcurrencyKind,
+        priority: EventPriority = EventPriority.NORMAL,
         handler: suspend (E) -> ListeningStatus
     ): Listener<E> {
         val context = this.defaultCoroutineContext + coroutineContext

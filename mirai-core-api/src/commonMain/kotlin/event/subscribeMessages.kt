@@ -16,7 +16,7 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.Stranger
-import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
+import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.content
 import kotlin.contracts.InvocationKind
@@ -75,8 +75,8 @@ public typealias MessageEventSubscribersBuilder = MessageSubscribersBuilder<Mess
  */
 public fun <R> EventChannel<*>.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: MessageEventSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -93,8 +93,8 @@ public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<Grou
  */
 public fun <R> EventChannel<*>.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -111,8 +111,8 @@ public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<Fri
  */
 public fun <R> EventChannel<*>.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -129,8 +129,8 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempM
  */
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -148,8 +148,8 @@ public typealias StrangerMessageSubscribersBuilder = MessageSubscribersBuilder<S
  */
 public fun <R> EventChannel<*>.subscribeStrangerMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: StrangerMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -168,8 +168,8 @@ public typealias OtherClientMessageSubscribersBuilder = MessageSubscribersBuilde
  */
 public fun <R> EventChannel<*>.subscribeOtherClientMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: OtherClientMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
@@ -185,8 +185,8 @@ private typealias MessageSubscriberBuilderConstructor<E> = (
 private inline fun <reified E : MessageEvent> EventChannel<*>.createBuilder(
     constructor: MessageSubscriberBuilderConstructor<E>,
     coroutineContext: CoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind,
-    priority: Listener.EventPriority
+    concurrencyKind: ConcurrencyKind,
+    priority: EventPriority
 ): MessageSubscribersBuilder<E, Listener<E>, Unit, Unit> = constructor(Unit) { filter, listener ->
     subscribeAlways(coroutineContext, concurrencyKind, priority) {
         val toString = this.message.content

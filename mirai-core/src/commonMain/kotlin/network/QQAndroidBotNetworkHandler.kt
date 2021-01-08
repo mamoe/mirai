@@ -479,7 +479,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     init {
         @Suppress("RemoveRedundantQualifierName")
-        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = Listener.EventPriority.MONITOR) {
+        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
             this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
         }
         supervisor.invokeOnCompletion { listener.cancel() }
