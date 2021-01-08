@@ -718,7 +718,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      */
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
-        require(retry in 1..10) { "retry must in 1..10" }
+        require(retry in 0..10) { "retry must in 0..10" }
 
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
@@ -748,7 +748,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         } else {
             val data = this.delegate.readBytes()
-            return retryCatching(retry + 1) {
+            return retryCatchingExceptions(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
                 packetListeners.add(handler)
                 try {
