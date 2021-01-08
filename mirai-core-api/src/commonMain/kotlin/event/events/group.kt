@@ -541,13 +541,23 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
      * 获得荣誉时的事件
      */
     public data class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent()
+        MemberHonorChangeEvent() {
+    
+        override fun toString(): String {
+            return "MemberHonorChangeEvent.Achieve(member=$member, honorType=$honorType)"
+        }
+    }
 
     /**
      * 失去荣誉时的事件
      */
     public data class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent()
+        MemberHonorChangeEvent() {
+    
+        override fun toString(): String {
+            return "MemberHonorChangeEvent.Lose(member=$member, honorType=$honorType)"
+        }
+    }
 }
 
 /**
