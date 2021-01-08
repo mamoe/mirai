@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.event.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import kotlin.annotation.AnnotationTarget.CONSTRUCTOR
 
 
 /**
@@ -39,10 +40,10 @@ public typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @param R 消息监听器内部的返回值
  * @param Ret 每个 DSL 函数创建监听器之后的返回值
  *
- * @see subscribeFriendMessages
+ * @see subscribeMessages
  */
 @MessageDsl
-public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
+public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR> internal constructor(
     /**
      * 用于 [MessageListener] 无返回值的替代.
      */
@@ -53,17 +54,17 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
      */
     public val subscriber: (M.(String) -> Boolean, MessageListener<M, RR>) -> Ret
 ) {
-    @Suppress("DEPRECATION_ERROR")
+    @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+    @Target(CONSTRUCTOR)
+    private annotation class UseNewListenerFilterInstead
+
+    @OptIn(UseNewListenerFilterInstead::class)
     public open fun newListeningFilter(filter: M.(String) -> Boolean): ListeningFilter = ListeningFilter(filter)
 
     /**
      * 由 [contains], [startsWith] 等 DSL 创建出的监听条件, 使用 [invoke] 将其注册给事件
      */
-    public open inner class ListeningFilter @Deprecated( // keep it for development warning
-        "use newListeningFilter instead",
-        ReplaceWith("newListeningFilter(filter)"),
-        level = DeprecationLevel.ERROR
-    ) constructor(
+    public inner class ListeningFilter @UseNewListenerFilterInstead internal constructor(
         public val filter: M.(String) -> Boolean
     ) {
         /** 进行逻辑 `or`. */
