@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -148,22 +148,6 @@ public abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi in
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.reply(message: Message): Nothing = error("prohibited")
-
-    @JvmName("reply3")
-    @Suppress(
-        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
-        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
-    )
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override infix fun MessageSelectionTimeoutChecker.`->`(message: String): Nothing = error("prohibited")
-
-    @JvmName("reply3")
-    @Suppress(
-        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
-        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
-    )
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override infix fun MessageSelectionTimeoutChecker.`->`(message: Message): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.quoteReply(block: suspend () -> Any?): Nothing =
@@ -328,24 +312,6 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
             ownerMessagePacket.subject.sendMessage(message)
             Unit as R
         }
-    }
-
-    @JvmName("reply3")
-    @Suppress(
-        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
-        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
-    )
-    public open infix fun MessageSelectionTimeoutChecker.`->`(message: Message) {
-        return this.reply(message)
-    }
-
-    @JvmName("reply3")
-    @Suppress(
-        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
-        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
-    )
-    public open infix fun MessageSelectionTimeoutChecker.`->`(message: String) {
-        return this.reply(message)
     }
 
     /**
