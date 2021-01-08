@@ -14,6 +14,8 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.OtherClient
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.content
@@ -25,9 +27,44 @@ import kotlin.coroutines.EmptyCoroutineContext
 public typealias MessageEventSubscribersBuilder = MessageSubscribersBuilder<MessageEvent, Listener<MessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
+ * 通过 DSL 订阅来自所有 [Bot] 的所有联系人的消息事件.
  *
- * @see subscribe 事件监听基础
+ * ```
+ * eventChannel.subscribeMessages {
+ *     "test" {
+ *         // 当消息内容为 "test" 时执行
+ *         // this: MessageEvent
+ *         reply("test!")
+ *     }
+ *
+ *     "Hello" reply "Hi" // 当消息内容为 "Hello" 时回复 "Hi"
+ *     "quote me" quoteReply "ok" // 当消息内容为 "quote me" 时引用该消息并回复 "ok"
+ *     "quote me2" quoteReply {
+ *         // lambda 也是允许的：
+ *         // 返回值接受 Any?
+ *         // 为 Unit 时不发送任何内容；
+ *         // 为 Message 时直接发送；
+ *         // 为 String 时发送为 PlainText；
+ *         // 否则 toString 并发送为 PlainText
+ *
+ *         "ok"
+ *     }
+ *
+ *     case("iGNorECase", ignoreCase=true) reply "OK" // 忽略大小写
+ *     startsWith("-") reply { cmd ->
+ *         // 当消息内容以 "-" 开头时执行
+ *         // cmd 为消息去除开头 "-" 的内容
+ *     }
+ *
+ *
+ *     val listener: Listener<MessageEvent> = "1" reply "2"
+ *     // 每个语句都会被注册为事件监听器，可以这样获取监听器
+ *
+ *     listener.complete() // 停止 "1" reply "2" 这个事件监听
+ * }
+ * ```
+ *
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeMessages(
@@ -43,7 +80,7 @@ public fun <R> EventChannel<*>.subscribeMessages(
 public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessageEvent, Listener<GroupMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有群消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有群会话消息事件. DSL 语法查看 [subscribeMessages].
  *
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
@@ -61,7 +98,7 @@ public fun <R> EventChannel<*>.subscribeGroupMessages(
 public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMessageEvent, Listener<FriendMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有好友消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有好友消息事件. DSL 语法查看 [subscribeMessages].
  *
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
@@ -79,7 +116,7 @@ public fun <R> EventChannel<*>.subscribeFriendMessages(
 public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageEvent, Listener<TempMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有临时会话消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有临时会话消息事件. DSL 语法查看 [subscribeMessages].
  *
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
@@ -98,7 +135,7 @@ public fun <R> EventChannel<*>.subscribeTempMessages(
 public typealias StrangerMessageSubscribersBuilder = MessageSubscribersBuilder<StrangerMessageEvent, Listener<StrangerMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有陌生人消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [Stranger] 消息事件. DSL 语法查看 [subscribeMessages].
  *
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
@@ -111,6 +148,26 @@ public fun <R> EventChannel<*>.subscribeStrangerMessages(
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
     return createBuilder(::StrangerMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
+        .run(listeners)
+}
+
+
+public typealias OtherClientMessageSubscribersBuilder = MessageSubscribersBuilder<OtherClientMessageEvent, Listener<OtherClientMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [OtherClient] 消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ */
+public fun <R> EventChannel<*>.subscribeOtherClientMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
+    listeners: OtherClientMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::OtherClientMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
         .run(listeners)
 }
 
