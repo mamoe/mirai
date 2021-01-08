@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,8 +21,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.message.action.Nudge
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -120,56 +118,3 @@ public data class FriendInputStatusChangedEvent internal constructor(
     public val inputting: Boolean
 
 ) : FriendEvent, Packet, AbstractEvent()
-
-/**
- * 在 [Friend] 与 [Bot] 的对话中, [Friend] 被 [戳][Nudge] 事件
- *
- * 注: 此事件仅可能在私聊中发生
- */
-@MiraiExperimentalApi
-public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
-    /**
-     * 戳一戳的发起人, 为 [Bot] 的某一好友, 或是 [Bot.asFriend]
-     */
-    public abstract val from: Friend
-
-    /**
-     * 戳一戳的动作名称
-     */
-    public abstract val action: String
-
-    /**
-     * 戳一戳中设置的自定义后缀
-     */
-    public abstract val suffix: String
-
-    /** 在 [Bot] 与 [Friend] 的对话中 [Friend] 戳了自己事件 */
-    @MiraiExperimentalApi
-    public data class NudgedByHimself internal constructor(
-        override val friend: Friend,
-        override val action: String,
-        override val suffix: String
-    ) : FriendNudgedEvent() {
-        override fun toString(): String {
-            return "FriendNudgedEvent.NudgedByHimself(friend=$friend, action=$action, suffix=$suffix)"
-        }
-
-        override val from: Friend
-            get() = friend
-    }
-
-    /** [Bot] 戳了 [Friend] */
-    @MiraiExperimentalApi
-    public data class NudgedByBot internal constructor(
-        override val friend: Friend,
-        override val action: String,
-        override val suffix: String
-    ) : FriendNudgedEvent() {
-        override fun toString(): String {
-            return "FriendNudgedEvent.NudgedByBot(friend=$friend, action=$action, suffix=$suffix)"
-        }
-
-        override val from: Friend
-            get() = bot.asFriend
-    }
-}

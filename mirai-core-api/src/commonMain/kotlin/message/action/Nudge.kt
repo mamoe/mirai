@@ -12,8 +12,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.events.BotNudgedEvent
-import net.mamoe.mirai.event.events.MemberNudgedEvent
+import net.mamoe.mirai.event.events.NudgeEvent
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 
@@ -42,8 +41,7 @@ public sealed class Nudge {
      * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
      * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
      *
-     * @see MemberNudgedEvent 成员被戳事件
-     * @see BotNudgedEvent [Bot] 被戳事件
+     * @see NudgeEvent 事件
      * @see Contact.sendNudge
      */
     @JvmBlockingBridge
@@ -62,8 +60,7 @@ public sealed class Nudge {
          *
          * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
          *
-         * @see MemberNudgedEvent 成员被戳事件
-         * @see BotNudgedEvent [Bot] 被戳事件
+         * @see NudgeEvent 事件
          */
         @JvmSynthetic
         @JvmStatic
