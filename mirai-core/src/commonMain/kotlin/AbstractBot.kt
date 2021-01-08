@@ -21,7 +21,8 @@ import io.ktor.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.OtherClientList
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
@@ -79,7 +80,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
     val otherClientsLock = Mutex() // lock sync
-    override val otherClients: OtherClientList = OtherClientList()
+    override val otherClients: ContactList<OtherClient> = ContactList()
 
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]
