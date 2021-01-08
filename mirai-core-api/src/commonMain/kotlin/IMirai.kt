@@ -41,19 +41,18 @@ public val Mirai: IMirai by lazy { findMiraiInstance() }
  */
 public interface IMirai : LowLevelApiAccessor {
     /**
-     * 此 API 不稳定. 请优先使用 [BotFactory.INSTANCE]
+     * 请优先使用 [BotFactory.INSTANCE]
      *
      * @see BotFactory.INSTANCE
      */
+    @MiraiInternalApi
     @Suppress("PropertyName")
-    @MiraiExperimentalApi
     public val BotFactory: BotFactory
 
     /**
-     * Mirai 全局使用的 [FileCacheStrategy].
+     * Mirai 全局使用的 [FileCacheStrategy]. 覆盖后将会立即应用到全局.
      */
     @Suppress("PropertyName")
-    @MiraiExperimentalApi
     public var FileCacheStrategy: FileCacheStrategy
 
     @Suppress("PropertyName")
