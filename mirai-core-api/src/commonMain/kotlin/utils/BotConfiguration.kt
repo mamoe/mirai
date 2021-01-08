@@ -115,7 +115,7 @@ public open class BotConfiguration { // open for Java
      * @see fileBasedDeviceInfo 使用指定文件存储设备信息
      * @see randomDeviceInfo 使用随机设备信息
      */
-    public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub
+    public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub // allows user to set `null` manually.
 
     /**
      * Json 序列化器, 使用 'kotlinx.serialization'

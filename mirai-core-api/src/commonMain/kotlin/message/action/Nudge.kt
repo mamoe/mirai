@@ -22,8 +22,10 @@ import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
  *
  * 仅在手机 QQ 8.4.0 左右版本才受支持. 其他客户端会忽略这些消息.
  *
- * @see User.nudge 创建 [Nudge] 对象
- * @see Bot.nudge 创建 [Nudge] 对象
+ * 示例，要机器人戳一个群员并发送到群里，使用 `member.nudge().sendTo(group)`.
+ * 要机器人戳一个好友并发送给该好友，使用 `friend.nudge().sendTo(friend)`.
+ *
+ * @see UserOrBot.nudge 创建 [Nudge] 对象
  */
 public sealed class Nudge {
     /**
@@ -32,7 +34,7 @@ public sealed class Nudge {
     public abstract val target: UserOrBot
 
     /**
-     * 发送戳一戳该成员的消息.
+     * 发送戳一戳该成员的消息到 [receiver].
      *
      * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
      *
