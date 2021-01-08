@@ -46,6 +46,32 @@ public inline fun <R> retryCatching(
     return Result.failure(exception!!)
 }
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+@kotlin.internal.LowPriorityInOverloadResolution
+public inline fun <R> retryCatchingExceptions(
+    n: Int,
+    except: KClass<out Exception>? = null,
+    block: (count: Int, lastException: Throwable?) -> R
+): Result<R> {
+    require(n >= 0) {
+        "param n for retryCatching must not be negative"
+    }
+    var exception: Throwable? = null
+    repeat(n) {
+        try {
+            return Result.success(block(it, exception))
+        } catch (e: Exception) {
+            if (except?.isInstance(e) == true) {
+                return Result.failure(e)
+            }
+            exception?.addSuppressed(e)
+            exception = e
+        }
+    }
+    return Result.failure(exception!!)
+}
+
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
@@ -70,4 +96,39 @@ public inline fun <R> retryCatching(
         }
     }
     return Result.failure(exception!!)
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+public inline fun <R> retryCatchingExceptions(
+    n: Int,
+    except: KClass<out Exception>? = null,
+    block: () -> R
+): Result<R> {
+    require(n >= 0) {
+        "param n for retryCatching must not be negative"
+    }
+    var exception: Throwable? = null
+    repeat(n) {
+        try {
+            return Result.success(block())
+        } catch (e: Exception) {
+            if (except?.isInstance(e) == true) {
+                return Result.failure(e)
+            }
+            exception?.addSuppressed(e)
+            exception = e
+        }
+    }
+    return Result.failure(exception!!)
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+public inline fun <R> runCatchingExceptions(block: () -> R): Result<R> {
+    return try {
+        Result.success(block())
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

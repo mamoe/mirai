@@ -164,7 +164,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     private inner class Reconnect {
         suspend fun reconnect(event: BotOfflineEvent): Boolean {
             while (true) {
-                retryCatching<Unit>(
+                retryCatchingExceptions<Unit>(
                     configuration.reconnectionRetryTimes,
                     except = LoginFailedException::class
                 ) { tryCount, _ ->
@@ -229,7 +229,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         }
 
         private suspend fun doInit() {
-            retryCatching(5) { count, lastException ->
+            retryCatchingExceptions(5) { count, lastException ->
                 if (count != 0) {
                     if (!isActive) {
                         logger.error("Cannot init due to fatal error")
