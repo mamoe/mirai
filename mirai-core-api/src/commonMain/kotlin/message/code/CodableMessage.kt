@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.message.code
 
+import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
@@ -16,7 +17,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 /**
  * 可以使用 mirai 码表示的 [Message] 类型.
  *
- * 从字符串解析 mirai 码：[parseMiraiCode]
+ * 从字符串解析 mirai 码：[MiraiCode.parseMiraiCode]
  *
  * @see At
  * @see AtAll
@@ -25,6 +26,8 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * @see Image
  * @see FlashImage
  * @see PokeMessage
+ *
+ * @see MiraiCode
  */
 public interface CodableMessage : Message {
     /**

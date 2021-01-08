@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.message.code
 
+import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

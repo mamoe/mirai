@@ -16,7 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.message.data.VipFace.Kind
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -173,7 +173,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:poke:").appendAsMiraiCode(name)
+        builder.append("[mirai:poke:").appendStringAsMiraiCode(name)
             .append(',').append(pokeType).append(',').append(id)
             .append(']')
     }

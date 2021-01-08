@@ -16,7 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
@@ -106,7 +106,7 @@ public data class LightApp(override val content: String) : RichMessage, CodableM
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:app:").appendAsMiraiCode(content).append(']')
+        builder.append("[mirai:app:").appendStringAsMiraiCode(content).append(']')
     }
 }
 
@@ -167,7 +167,7 @@ public interface ServiceMessage : RichMessage, CodableMessage {
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:service:").append(serviceId).append(',').appendAsMiraiCode(content).append(']')
+        builder.append("[mirai:service:").append(serviceId).append(',').appendStringAsMiraiCode(content).append(']')
     }
 }
 

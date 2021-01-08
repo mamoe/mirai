@@ -24,6 +24,7 @@ import kotlinx.serialization.json.Json
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.MiraiCode
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -60,9 +61,10 @@ import kotlin.streams.asSequence
  * @see orElse 属性委托扩展
  * @see getValue 属性委托扩展
  * @see flatten 扁平化
+ *
+ * @see MiraiCode mirai 码
  */
 @Serializable(MessageChain.Serializer::class)
-@Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public interface MessageChain : Message, List<SingleMessage>, RandomAccess, CodableMessage {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
