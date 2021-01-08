@@ -95,7 +95,7 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      *
-     * 各个 [SingleMessage] 的转换示例:
+     * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
      * - [GroupImage] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
      * - [FriendImage] : `"[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"`
@@ -112,7 +112,7 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
      *
-     * 各个 [SingleMessage] 的转换示例:
+     * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
      * - [Image] : `"[图片]"`
      * - [PokeMessage] : `"[戳一戳]"`
@@ -120,6 +120,7 @@ public interface Message { // must be interface. Don't consider any changes.
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
+     * @see contentEquals
      * @see Message.content Kotlin 扩展
      */
     public fun contentToString(): String
@@ -145,6 +146,12 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 单个消息的顺序和内容不会被检查, 即只要比较两个 [Image], 总是会得到 `true`, 因为 [Image] 的 [contentToString] 都是 `"[图片]"`.
      *
+     *
+     * 相当于
+     * ```
+     * this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
+     * ```
+     *
      * @param ignoreCase 为 `true` 时忽略大小写
      */
     @LowPriorityInOverloadResolution
@@ -154,6 +161,13 @@ public interface Message { // must be interface. Don't consider any changes.
 
     /**
      * 判断内容是否与 [another] 相等.
+     *
+     *
+     * 相当于
+     * ```
+     * this.contentToString().equals(another, ignoreCase = ignoreCase)
+     * ```
+     *
      *
      * 若本函数返回 `true`, 则表明:
      * - `this` 与 [another] 的 [contentToString] 相等
