@@ -11,12 +11,16 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
+import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
@@ -73,6 +77,11 @@ public interface ExternalResource : Closeable {
      * 文件大小 bytes
      */
     public val size: Long
+
+    /**
+     * 当 [close] 时会 [CompletableDeferred.complete] 的 [Deferred].
+     */
+    public val closed: Deferred<Unit>
 
     /**
      * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
@@ -263,91 +272,3 @@ public interface ExternalResource : Closeable {
         }
     }
 }
-
-
-private fun InputStream.detectFileTypeAndClose(): String? {
-    val buffer = ByteArray(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)
-    return use {
-        kotlin.runCatching { it.read(buffer) }.onFailure { return null }
-        getFileType(buffer)
-    }
-}
-
-internal class ExternalResourceImplByFileWithMd5(
-    private val file: RandomAccessFile,
-    override val md5: ByteArray,
-    formatName: String?
-) : ExternalResource {
-    override val size: Long = file.length()
-    override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
-    }
-
-    override fun inputStream(): InputStream {
-        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
-        return file.inputStream()
-    }
-
-    override fun close() {
-        file.close()
-    }
-}
-
-internal class ExternalResourceImplByFile(
-    private val file: RandomAccessFile,
-    formatName: String?,
-    private val closeOriginalFileOnClose: Boolean = true
-) : ExternalResource {
-    override val size: Long = file.length()
-    override val md5: ByteArray by lazy { inputStream().md5() }
-    override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
-    }
-
-    override fun inputStream(): InputStream {
-        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
-        return file.inputStream()
-    }
-
-    override fun close() {
-        if (closeOriginalFileOnClose) file.close()
-    }
-}
-
-internal class ExternalResourceImplByByteArray(
-    private val data: ByteArray,
-    formatName: String?
-) : ExternalResource {
-    override val size: Long = data.size.toLong()
-    override val md5: ByteArray by lazy { data.md5() }
-    override val formatName: String by lazy {
-        formatName ?: getFileType(data.copyOf(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)).orEmpty()
-    }
-
-    override fun inputStream(): InputStream = data.inputStream()
-    override fun close() {}
-}
-
-private fun RandomAccessFile.inputStream(): InputStream {
-    val file = this
-    return object : InputStream() {
-        override fun read(): Int = file.read()
-        override fun read(b: ByteArray, off: Int, len: Int): Int = file.read(b, off, len)
-        override fun close() {
-            file.seek(0)
-        }
-        // don't close file on stream.close. stream may be obtained at multiple times.
-    }.buffered()
-}
-
-
-/*
- * ImgType:
- *  JPG:    1000
- *  PNG:    1001
- *  WEBP:   1002
- *  BMP:    1005
- *  GIG:    2000 // gig? gif?
- *  APNG:   2001
- *  SHARPP: 1004
- */
