@@ -13,10 +13,8 @@
 
 package net.mamoe.mirai.event.events
 
-import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
@@ -24,15 +22,9 @@ import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.isContextIdenticalWith
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
-import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.io.File
-import java.io.InputStream
-import kotlin.DeprecationLevel.ERROR
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.internal.InlineOnly
 
 
@@ -490,6 +482,7 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
 
 // endregion
 
+// region MessageEvent
 /**
  * 机器人收到的好友消息的事件
  *
@@ -500,7 +493,7 @@ public class FriendMessageEvent constructor(
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
+) : AbstractMessageEvent(), MessageEvent, FriendEvent {
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
@@ -526,15 +519,14 @@ public class OtherClientMessageEvent constructor(
     public override val client: OtherClient,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable,
-    OtherClientEvent {
+) : AbstractMessageEvent(), MessageEvent, OtherClientEvent {
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 
-    public override val sender: User = client.bot.asFriend // TODO 临时使用
+    public override val sender: User get() = client.bot.asFriend
     public override val bot: Bot get() = super.bot
     public override val subject: User get() = sender
     public override val senderName: String get() = sender.nick
@@ -578,17 +570,130 @@ public class GroupMessageEvent(
     public override val subject: Group get() = group
     public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
-    @Deprecated("Use targetMember", ReplaceWith("this.targetMember"))
-    @Suppress("NOTHING_TO_INLINE")
-    public inline fun At.asMember(): Member = group.getOrFail(target)
-
-    @get:JvmSynthetic // TODO: 2020/12/16 move to extensions by 2.0-M2
-    public inline val At.targetMember: Member?
-        get(): Member? = group[this.target]
-
     public override fun toString(): String =
         "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
 }
+
+/**
+ * 机器人收到的群临时会话消息的事件
+ *
+ * @see MessageEvent
+ */
+public class TempMessageEvent(
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
+    }
+
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Member get() = sender
+    public override val group: Group get() = sender.group
+    public override val senderName: String get() = sender.nameCardOrNick
+    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
+
+    public override fun toString(): String =
+        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
+}
+
+/**
+ * 机器人收到的陌生人消息的事件
+ *
+ * @see MessageEvent
+ */
+@Suppress("DEPRECATION")
+public class StrangerMessageEvent constructor(
+    public override val sender: Stranger,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), MessageEvent, BroadcastControllable, StrangerEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessage must be an instance of OnlineMessageSource.Incoming.FromStranger" }
+    }
+
+    public override val stranger: Stranger get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Stranger get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
+
+    public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
+}
+
+/**
+ * 来自 [User] 的消息
+ *
+ * @see FriendMessageEvent
+ * @see TempMessageEvent
+ */
+public interface UserMessageEvent : MessageEvent {
+    public override val subject: User
+}
+
+@MiraiInternalApi
+public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent()
+
+/**
+ * 一个 (收到的) 消息事件.
+ *
+ * 它是一个 [BotEvent], 因此可以被 [监听][EventChannel.subscribe]
+ *
+ * @see isContextIdenticalWith 判断语境相同
+ */
+public interface MessageEvent : Event, Packet, BotEvent {
+    /**
+     * 与这个消息事件相关的 [Bot]
+     */
+    public override val bot: Bot
+
+    /**
+     * 消息事件主体.
+     *
+     * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
+     * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
+     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 引用相同
+     *
+     * 在回复消息时, 可通过 [subject] 作为回复对象
+     */
+    public val subject: Contact
+
+    /**
+     * 发送人.
+     *
+     * 在私聊消息时为相关 [User] 的实例, 在群消息时为 [Member] 的实例, 在其他客户端消息时为 [Bot.asFriend]
+     */
+    public val sender: User
+
+    /**
+     * 发送人名称
+     */
+    public val senderName: String
+
+    /**
+     * 消息内容.
+     *
+     * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据.
+     * 随后的元素为拥有顺序的真实消息内容.
+     */
+    public val message: MessageChain
+
+    /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
+    public val time: Int
+
+    /**
+     * 消息源. 来自 [message] 的第一个元素,
+     */
+    public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
+}
+
+// endregion
+
+// region MessageSyncEvent
 
 /**
  * 机器人在其他客户端发送消息同步到这个客户端的事件.
@@ -625,462 +730,4 @@ public class GroupMessageSyncEvent(
         "GroupMessageSyncEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, message=$message)"
 }
 
-
-/**
- * 机器人收到的群临时会话消息的事件
- *
- * @see MessageEvent
- */
-public class TempMessageEvent(
-    public override val sender: Member,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
-    init {
-        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
-    }
-
-    public override val bot: Bot get() = sender.bot
-    public override val subject: Member get() = sender
-    public override val group: Group get() = sender.group
-    public override val senderName: String get() = sender.nameCardOrNick
-    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
-
-    public override fun toString(): String =
-        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
-}
-
-/**
- * 机器人收到的陌生人消息的事件
- *
- * @see MessageEvent
- */
-@Suppress("DEPRECATION")
-public class StrangerMessageEvent constructor(
-    public override val sender: Stranger,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, StrangerEvent {
-    init {
-        val source =
-            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessage must be an instance of OnlineMessageSource.Incoming.FromStranger" }
-    }
-
-    public override val stranger: Stranger get() = sender
-    public override val bot: Bot get() = super.bot
-    public override val subject: Stranger get() = sender
-    public override val senderName: String get() = sender.nick
-    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
-
-    public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
-}
-
-/**
- * 来自 [User] 的消息
- *
- * @see FriendMessageEvent
- * @see TempMessageEvent
- */
-public interface UserMessageEvent : MessageEvent {
-    public override val subject: User
-}
-
-@Suppress("OverridingDeprecatedMember")
-@MiraiInternalApi
-public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    public override suspend fun reply(message: Message): MessageReceipt<Contact> =
-        subject.sendMessage(message.toMessageChain())
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(plain)"), ERROR)
-    public override suspend fun reply(plain: String): MessageReceipt<Contact> =
-        subject.sendMessage(PlainText(plain).toMessageChain())
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.uploadAsImage(subject)"), ERROR)
-    public override suspend fun ExternalResource.uploadAsImage(): Image = this.uploadAsImage(subject)
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.sendAsImageTo(subject)"), ERROR)
-    public override suspend fun ExternalResource.sendAsImage(): MessageReceipt<Contact> = this.sendAsImageTo(subject)
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    public override suspend fun Message.send(): MessageReceipt<Contact> = this.sendTo(subject)
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    public override suspend fun String.send(): MessageReceipt<Contact> = PlainText(this).sendTo(subject)
-
-    // region 引用回复
-    /**
-     * 给这个消息事件的主体发送引用回复消息
-     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
-     */
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + msg)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    public override suspend fun quoteReply(msg: MessageChain): MessageReceipt<Contact> =
-        subject.sendMessage(this.message.quote() + msg)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + msg)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    public override suspend fun quoteReply(msg: Message): MessageReceipt<Contact> =
-        subject.sendMessage(this.message.quote() + msg)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + plain)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    public override suspend fun quoteReply(plain: String): MessageReceipt<Contact> =
-        subject.sendMessage(this.message.quote() + plain)
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.target == bot.id"), ERROR)
-    public override fun At.isBot(): Boolean = target == bot.id
-
-
-    /**
-     * 获取图片下载链接
-     * @return "http://gchat.qpic.cn/gchatpic_new/..."
-     */
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("image.queryUrl()", "net.mamoe.mirai.message.data.Image.Key.queryUrl"),
-        ERROR
-    )
-    public override suspend fun Image.url(): String = this@url.queryUrl()
-
-
-    // region 上传图片
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
-    // endregion
-
-    // region 发送图片
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.sendImage"),
-        ERROR,
-    )
-    public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
-    // endregion
-
-    // region 上传图片 (扩展)
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
-        ERROR,
-    )
-    public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
-        ERROR,
-    )
-    public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
-    // endregion 上传图片 (扩展)
-
-    // region 发送图片 (扩展)
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
-        ERROR,
-    )
-    public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
-        ERROR,
-    )
-    public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
-    // endregion 发送图片 (扩展)
-
-}
-
-/**
- * 一个 (收到的) 消息事件.
- *
- * 它是一个 [BotEvent], 因此可以被 [监听][EventChannel.subscribe]
- *
- * @see isContextIdenticalWith 判断语境相同
- */
-@Suppress("DEPRECATION")
-public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<User, Contact> {
-
-    /**
-     * 与这个消息事件相关的 [Bot]
-     */
-    public override val bot: Bot
-
-    /**
-     * 消息事件主体.
-     *
-     * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
-     * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
-     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 引用相同
-     *
-     * 在回复消息时, 可通过 [subject] 作为回复对象
-     */
-    public override val subject: Contact
-
-    /**
-     * 发送人.
-     *
-     * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
-     */
-    public override val sender: User
-
-    /**
-     * 发送人名称
-     */
-    public val senderName: String
-
-    /**
-     * 消息内容.
-     *
-     * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据.
-     * 随后的元素为拥有顺序的真实消息内容.
-     */
-    public override val message: MessageChain
-
-    /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
-    public val time: Int
-
-    /**
-     * 消息源. 来自 [message] 的第一个元素,
-     */
-    public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
-}
-
-internal const val DEPRECATED_MESSAGE_EXTENSIONS = """
-    MessageEvent 的扩展已被弃用. 
-    Kotlin 编译器在编译这些扩展的时候很容易出问题, 而且这些扩展有泛型冲突. 
-    在 Kotlin 支持多个接收者的函数前 mirai 不提供消息事件里的扩展.
-"""
-
-/** 消息事件的扩展函数 */
-
-@Deprecated(DEPRECATED_MESSAGE_EXTENSIONS)
-@Suppress("UNCHECKED_CAST", "DEPRECATION")
-@PlannedRemoval("2.0-RC")
-public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
-    MessageEventPlatformExtensions<TSender, TSubject> {
-
-    // region 发送 Message
-
-    /**
-     * 给这个消息事件的主体发送消息
-     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
-     */
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    @JvmBlockingBridge
-    public suspend fun reply(message: Message): MessageReceipt<TSubject>
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(plain)"), ERROR)
-    @JvmBlockingBridge
-    public suspend fun reply(plain: String): MessageReceipt<TSubject>
-
-    // endregion
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.uploadAsImage(subject)"), ERROR)
-    @JvmSynthetic
-    public suspend fun ExternalResource.uploadAsImage(): Image
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.sendAsImageTo(subject)"), ERROR)
-    @JvmSynthetic
-    public suspend fun ExternalResource.sendAsImage(): MessageReceipt<TSubject>
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    @JvmSynthetic
-    public suspend fun Image.send(): MessageReceipt<TSubject>
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    @JvmSynthetic
-    public suspend fun Message.send(): MessageReceipt<TSubject>
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
-    @JvmSynthetic
-    public suspend fun String.send(): MessageReceipt<TSubject>
-
-    // region 引用回复
-    /**
-     * 给这个消息事件的主体发送引用回复消息
-     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
-     */
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + msg)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    @JvmBlockingBridge
-    public suspend fun quoteReply(msg: MessageChain): MessageReceipt<TSubject>
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + msg)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    @JvmBlockingBridge
-    public suspend fun quoteReply(msg: Message): MessageReceipt<TSubject>
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith(
-            "subject.sendMessage(message.quote() + plain)",
-            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
-        ),
-        ERROR
-    )
-    @JvmBlockingBridge
-    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject>
-
-    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.target == bot.id"), ERROR)
-    @JvmSynthetic
-    public fun At.isBot(): Boolean
-
-
-    /**
-     * 获取图片下载链接
-     * @return "http://gchat.qpic.cn/gchatpic_new/..."
-     */
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("image.queryUrl()", "net.mamoe.mirai.message.data.Image.Key.queryUrl"),
-        ERROR
-    )
-    @JvmSynthetic
-    public suspend fun Image.url(): String
-}
-
-/**
- * 消息事件在 JVM 平台的扩展
- * @see MessageEventExtensions
- */
-@Deprecated(DEPRECATED_MESSAGE_EXTENSIONS)
-@PlannedRemoval("2.0-RC")
-public interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
-    public val subject: TSubject
-    public val sender: TSender
-    public val message: MessageChain
-    public val bot: Bot
-
-    // region 上传图片
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    @JvmBlockingBridge
-    public suspend fun uploadImage(image: InputStream): Image
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    @JvmBlockingBridge
-    public suspend fun uploadImage(image: File): Image
-    // endregion
-
-    // region 发送图片
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    @JvmBlockingBridge
-    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
-        ERROR,
-    )
-    @JvmBlockingBridge
-    public suspend fun sendImage(image: File): MessageReceipt<TSubject>
-    // endregion
-
-    // region 上传图片 (扩展)
-    @JvmSynthetic
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
-        ERROR,
-    )
-    public suspend fun InputStream.uploadAsImage(): Image
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
-        ERROR,
-    )
-    @JvmSynthetic
-    public suspend fun File.uploadAsImage(): Image
-    // endregion 上传图片 (扩展)
-
-    // region 发送图片 (扩展)
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
-        ERROR,
-    )
-    @JvmSynthetic
-    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
-
-    @Deprecated(
-        DEPRECATED_MESSAGE_EXTENSIONS,
-        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
-        ERROR,
-    )
-    @JvmSynthetic
-    public suspend fun File.sendAsImage(): MessageReceipt<TSubject>
-    // endregion 发送图片 (扩展)
-
-}
+// endregion
