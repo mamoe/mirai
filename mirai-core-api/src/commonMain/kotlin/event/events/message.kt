@@ -491,7 +491,7 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
  *
  * @see isContextIdenticalWith 判断语境相同
  */
-public interface MessageEvent : Event, Packet, BotEvent {
+public interface MessageEvent : Event, Packet, BotPassiveEvent {
     /**
      * 与这个消息事件相关的 [Bot]
      */
@@ -502,7 +502,9 @@ public interface MessageEvent : Event, Packet, BotEvent {
      *
      * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
      * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
+     * - 对于陌生人消息, 这个属性为 [Stranger] 的实例, 与 [sender] 引用相同
      * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 引用相同
+     * - 对于其他客户端消息, 这个属性为 [OtherClient] 的实例, 与 [OtherClientMessageEvent.client] 引用相同
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */

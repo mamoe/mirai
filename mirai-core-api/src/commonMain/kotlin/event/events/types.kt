@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,10 +14,7 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.Event
 import kotlin.internal.HidesMembers
 
@@ -48,14 +45,6 @@ public interface GroupEvent : BotEvent {
         get() = group.bot
 }
 
-/**
- * 有关群成员的事件
- */
-public interface GroupMemberEvent : GroupEvent {
-    public val member: Member
-    override val group: Group
-        get() = member.group
-}
 
 /**
  * 可由 [Member] 或 [Bot] 操作的事件
@@ -85,19 +74,36 @@ public inline val GroupOperableEvent.isByBot: Boolean
 public inline val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 
+/**
+ * 有关 [User] 的事件
+ */
+public interface UserEvent : BotEvent {
+    public val user: User
+}
 
 /**
  * 有关好友的事件
  */
-public interface FriendEvent : BotEvent {
+public interface FriendEvent : BotEvent, UserEvent {
     public val friend: Friend
-    public override val bot: Bot get() = friend.bot
+    override val bot: Bot get() = friend.bot
+    override val user: Friend get() = friend
 }
 
 /**
  * 有关陌生人的事件
  */
-public interface StrangerEvent : BotEvent {
+public interface StrangerEvent : BotEvent, UserEvent {
     public val stranger: Stranger
-    public override val bot: Bot get() = stranger.bot
+    override val bot: Bot get() = stranger.bot
+    override val user: Stranger get() = stranger
+}
+
+/**
+ * 有关群成员的事件
+ */
+public interface GroupMemberEvent : GroupEvent, UserEvent {
+    public val member: Member
+    override val group: Group get() = member.group
+    override val user: Member get() = member
 }
