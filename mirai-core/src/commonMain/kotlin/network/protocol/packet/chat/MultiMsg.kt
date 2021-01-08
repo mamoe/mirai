@@ -34,6 +34,7 @@ import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toLongUnsigned
 
 internal class MessageValidationData(
     val data: ByteArray,
@@ -44,8 +45,6 @@ internal class MessageValidationData(
     }
 }
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
 internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     sequenceId: Int,
     random: Int,

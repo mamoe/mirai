@@ -25,6 +25,7 @@ import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.utils.toLongUnsigned
 
 
 @MiraiExperimentalApi
@@ -575,9 +576,6 @@ public class ForwardMessageBuilder private constructor(
         else -> nick
     }
 }
-
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
 
 private fun ForwardMessage.INode.toNode(): ForwardMessage.Node {
     return ForwardMessage.Node(senderId, time, senderName, messageChain)
