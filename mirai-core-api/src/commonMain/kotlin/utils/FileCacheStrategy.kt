@@ -82,10 +82,15 @@ public interface FileCacheStrategy {
 
         @Throws(IOException::class)
         override fun newCache(input: InputStream, formatName: String?): ExternalResource {
-            return createTempFile().apply {
+            val file = createTempFile()
+            return file.apply {
                 deleteOnExit()
                 outputStream().use { out -> input.copyTo(out) }
-            }.toExternalResource(formatName)
+            }.toExternalResource(formatName).apply {
+                closed.invokeOnCompletion {
+                    kotlin.runCatching { file.delete() }
+                }
+            }
         }
     }
 
