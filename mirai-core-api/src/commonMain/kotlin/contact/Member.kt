@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
@@ -138,16 +139,29 @@ public fun Member.asFriend(): Friend = this.bot.getFriend(this.id) ?: error("$th
 public fun Member.asFriendOrNull(): Friend? = this.bot.getFriend(this.id)
 
 /**
+ * 得到此成员作为陌生人的对象.
+ *
+ * @throws IllegalStateException 当此成员不是陌生人时抛出
+ */
+public fun Member.asStranger(): Stranger = this.bot.getStranger(this.id) ?: error("$this is not a stranger")
+
+/**
  * 得到此成员作为陌生人的对象, 当此成员不是陌生人时返回 `null`
  */
 public fun Member.asStrangerOrNull(): Stranger? = this.bot.getStranger(this.id)
 
 
 /**
- * 判断此成员是否为好友
+ * 当此成员同时是 Bot 的好友时返回 `true`
  */
 public inline val Member.isFriend: Boolean
     get() = this.bot.friends.contains(this.id)
+
+/**
+ * 当此成员同时是 Bot 的陌生人时返回 `true`
+ */
+public inline val Member.isStranger: Boolean
+    get() = this.bot.strangers.contains(this.id)
 
 /**
  * 获取非空群名片或昵称.
@@ -155,5 +169,13 @@ public inline val Member.isFriend: Boolean
  * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [User.nick]
  */
 public val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
-public val Member.isNormal: Boolean get() = this is NormalMember
-public val Member.isAnonymous: Boolean get() = this is AnonymousMember
+
+@PlannedRemoval("2.0.0")
+@Deprecated("Use is NormalMember by yourself.", ReplaceWith("this is NormalMember"), DeprecationLevel.ERROR)
+public val Member.isNormal: Boolean
+    get() = this is NormalMember
+
+@PlannedRemoval("2.0.0")
+@Deprecated("Use is AnonymousMember by yourself.", ReplaceWith("this is AnonymousMember"), DeprecationLevel.ERROR)
+public val Member.isAnonymous: Boolean
+    get() = this is AnonymousMember
