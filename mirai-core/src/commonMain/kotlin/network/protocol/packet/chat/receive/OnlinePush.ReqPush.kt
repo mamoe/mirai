@@ -396,7 +396,8 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     recallReminder.recalledMsgList.mapToIntArray { it.msgRandom },
                     firstPkg.time,
                     operator,
-                    group
+                    group,
+                    group[firstPkg.authorUin] ?: return@lambda732 emptySequence()
                 )
             )
         }
@@ -469,13 +470,14 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         ) : ProtoBuf
 
         return@lambda528 vProtobuf.loadAs(Sub8A.serializer()).msgInfo.asSequence()
-            .filter { it.botUin == bot.id }.map {
+            .filter { it.botUin == bot.id }.mapNotNull { info ->
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
-                    messageIds = intArrayOf(it.srcId),
-                    messageInternalIds = intArrayOf(it.srcInternalId.toInt()),
-                    messageTime = it.time.toInt(),
-                    operatorId = it.fromUin
+                    messageIds = intArrayOf(info.srcId),
+                    messageInternalIds = intArrayOf(info.srcInternalId.toInt()),
+                    messageTime = info.time.toInt(),
+                    operatorId = info.fromUin,
+                    operator = bot.getFriend(info.fromUin) ?: return@mapNotNull null
                 )
             }
     },

@@ -290,9 +290,9 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public abstract val authorId: Long
 
     /**
-     * 消息原发送人, 为 `null` 表示原消息发送人已经不是 bot 的好友或已经被移出群。
+     * 消息原发送人.
      */
-    public abstract val author: UserOrBot?
+    public abstract val author: UserOrBot
 
     /**
      * 消息 ids.
@@ -307,7 +307,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public abstract val messageInternalIds: IntArray
 
     /**
-     * 原发送时间
+     * 原发送时间戳, 单位为秒.
      */
     public abstract val messageTime: Int // seconds
 
@@ -322,20 +322,13 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         /**
          * 撤回操作人, 好友的 [User.id]
          */
-        public val operatorId: Long
+        public val operatorId: Long,
+        public val operator: Friend,
     ) : MessageRecallEvent(), Packet {
-        @Deprecated("Binary compatibility.", level = DeprecationLevel.HIDDEN)
-        public fun getOperator(): Long = operatorId
-
-        /**
-         * 撤回操作人. 为 `null` 表示该用户已经不是 bot 的好友
-         */
-        public val operator: Friend? get() = bot.getFriend(operatorId)
-
         /**
          * 消息原发送人, 等于 [operator]
          */
-        override val author: Friend? get() = operator
+        override val author: Friend get() = operator
 
         public override val authorId: Long
             get() = operatorId
@@ -352,6 +345,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
             if (messageTime != other.messageTime) return false
             if (operatorId != other.operatorId) return false
+            if (operator != other.operator) return false
 
             return true
         }
@@ -362,6 +356,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             result = 31 * result + messageInternalIds.contentHashCode()
             result = 31 * result + messageTime
             result = 31 * result + operatorId.hashCode()
+            result = 31 * result + operator.hashCode()
             return result
         }
     }
@@ -379,9 +374,9 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
          * 操作人. 为 null 时则为 [Bot] 操作.
          */
         public override val operator: Member?,
-        public override val group: Group
+        public override val group: Group,
+        public override val author: NormalMember,
     ) : MessageRecallEvent(), GroupOperableEvent, Packet {
-        override val author: NormalMember? get() = group[authorId]
 
         @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
@@ -397,6 +392,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (messageTime != other.messageTime) return false
             if (operator != other.operator) return false
             if (group != other.group) return false
+            if (author != other.author) return false
 
             return true
         }
@@ -409,6 +405,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             result = 31 * result + messageTime
             result = 31 * result + (operator?.hashCode() ?: 0)
             result = 31 * result + group.hashCode()
+            result = 31 * result + author.hashCode()
             return result
         }
     }
