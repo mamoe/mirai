@@ -483,160 +483,6 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
 // endregion
 
 // region MessageEvent
-/**
- * 机器人收到的好友消息的事件
- *
- * @see MessageEvent
- */
-@Suppress("DEPRECATION")
-public class FriendMessageEvent constructor(
-    public override val sender: Friend,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, FriendEvent {
-    init {
-        val source =
-            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
-    }
-
-    public override val friend: Friend get() = sender
-    public override val bot: Bot get() = super.bot
-    public override val subject: Friend get() = sender
-    public override val senderName: String get() = sender.nick
-    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
-
-    public override fun toString(): String = "FriendMessageEvent(sender=${sender.id}, message=$message)"
-}
-
-/**
- * 机器人收到的好友消息的事件
- *
- * @see MessageEvent
- */
-@Suppress("DEPRECATION")
-public class OtherClientMessageEvent constructor(
-    public override val client: OtherClient,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, OtherClientEvent {
-    init {
-        val source =
-            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
-    }
-
-    public override val sender: User get() = client.bot.asFriend
-    public override val bot: Bot get() = super.bot
-    public override val subject: User get() = sender
-    public override val senderName: String get() = sender.nick
-    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
-
-    public override fun toString(): String = "OtherClientMessageEvent(client=${client.platform}, message=$message)"
-}
-
-/**
- * 来自一个可以知道其 [Group] 的用户消息
- *
- * @see FriendMessageEvent
- * @see TempMessageEvent
- */
-public interface GroupAwareMessageEvent : MessageEvent {
-    public val group: Group
-}
-
-/**
- * 机器人收到的群消息的事件
- *
- * @see MessageEvent
- */
-public class GroupMessageEvent(
-    public override val senderName: String,
-    /**
-     * 发送方权限.
-     */
-    public val permission: MemberPermission,
-    public override val sender: Member,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
-    init {
-        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
-    }
-
-    public override val group: Group get() = sender.group
-    public override val bot: Bot get() = sender.bot
-    public override val subject: Group get() = group
-    public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
-
-    public override fun toString(): String =
-        "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
-}
-
-/**
- * 机器人收到的群临时会话消息的事件
- *
- * @see MessageEvent
- */
-public class TempMessageEvent(
-    public override val sender: Member,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent {
-    init {
-        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
-    }
-
-    public override val bot: Bot get() = sender.bot
-    public override val subject: Member get() = sender
-    public override val group: Group get() = sender.group
-    public override val senderName: String get() = sender.nameCardOrNick
-    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
-
-    public override fun toString(): String =
-        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
-}
-
-/**
- * 机器人收到的陌生人消息的事件
- *
- * @see MessageEvent
- */
-@Suppress("DEPRECATION")
-public class StrangerMessageEvent constructor(
-    public override val sender: Stranger,
-    public override val message: MessageChain,
-    public override val time: Int
-) : AbstractMessageEvent(), MessageEvent, BroadcastControllable, StrangerEvent {
-    init {
-        val source =
-            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessage must be an instance of OnlineMessageSource.Incoming.FromStranger" }
-    }
-
-    public override val stranger: Stranger get() = sender
-    public override val bot: Bot get() = super.bot
-    public override val subject: Stranger get() = sender
-    public override val senderName: String get() = sender.nick
-    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
-
-    public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
-}
-
-/**
- * 来自 [User] 的消息
- *
- * @see FriendMessageEvent
- * @see TempMessageEvent
- */
-public interface UserMessageEvent : MessageEvent {
-    public override val subject: User
-}
-
-@MiraiInternalApi
-public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent()
 
 /**
  * 一个 (收到的) 消息事件.
@@ -691,6 +537,158 @@ public interface MessageEvent : Event, Packet, BotEvent {
     public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
+/**
+ * 来自 [User] 的消息
+ *
+ * @see FriendMessageEvent
+ * @see TempMessageEvent
+ */
+public interface UserMessageEvent : MessageEvent {
+    public override val subject: User
+}
+
+/**
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
+ */
+public class FriendMessageEvent constructor(
+    public override val sender: Friend,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), UserMessageEvent, FriendEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessageEvent must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val friend: Friend get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Friend get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+
+    public override fun toString(): String = "FriendMessageEvent(sender=${sender.id}, message=$message)"
+}
+
+/**
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
+ */
+public class OtherClientMessageEvent constructor(
+    public override val client: OtherClient,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), MessageEvent, OtherClientEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a OtherClientMessageEvent must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val sender: User get() = client.bot.asFriend
+    public override val bot: Bot get() = super.bot
+    public override val subject: OtherClient get() = client
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+
+    public override fun toString(): String = "OtherClientMessageEvent(client=${client.platform}, message=$message)"
+}
+
+/**
+ * 来自一个可以知道其 [Group] 的用户消息
+ *
+ * @see FriendMessageEvent
+ * @see TempMessageEvent
+ */
+public interface GroupAwareMessageEvent : MessageEvent {
+    public val group: Group
+}
+
+/**
+ * 机器人收到的群消息的事件
+ *
+ * @see MessageEvent
+ */
+public class GroupMessageEvent(
+    public override val senderName: String,
+    /**
+     * 发送方权限.
+     */
+    public val permission: MemberPermission,
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, GroupEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessageEvent must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
+    public override val group: Group get() = sender.group
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Group get() = group
+    public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
+
+    public override fun toString(): String =
+        "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
+}
+
+/**
+ * 机器人收到的群临时会话消息的事件
+ *
+ * @see MessageEvent
+ */
+public class TempMessageEvent(
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, UserMessageEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessageEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
+    }
+
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Member get() = sender
+    public override val group: Group get() = sender.group
+    public override val senderName: String get() = sender.nameCardOrNick
+    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
+
+    public override fun toString(): String =
+        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
+}
+
+/**
+ * 机器人收到的陌生人消息的事件
+ *
+ * @see MessageEvent
+ */
+public class StrangerMessageEvent constructor(
+    public override val sender: Stranger,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), UserMessageEvent, StrangerEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessageEvent must be an instance of OnlineMessageSource.Incoming.FromStranger" }
+    }
+
+    public override val stranger: Stranger get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Stranger get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
+
+    public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
+}
+
+@MiraiInternalApi
+public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent()
+
 // endregion
 
 // region MessageSyncEvent
@@ -719,7 +717,7 @@ public class GroupMessageSyncEvent(
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 
     override val bot: Bot get() = group.bot
