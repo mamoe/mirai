@@ -66,6 +66,12 @@ public typealias MessageEventSubscribersBuilder = MessageSubscribersBuilder<Mess
  *
  * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
+ *
+ * @see subscribeFriendMessages
+ * @see subscribeGroupMessages
+ * @see subscribeTempMessages
+ * @see subscribeOtherClientMessages
+ * @see subscribeStrangerMessages
  */
 public fun <R> EventChannel<*>.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
