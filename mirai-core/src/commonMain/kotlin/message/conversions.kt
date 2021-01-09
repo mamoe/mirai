@@ -336,14 +336,18 @@ internal fun List<MsgComm.Msg>.toMessageChain(
         } else {
             +OfflineMessageSourceImplData(bot, this@toMessageChain, botId)
         }
-        elements.joinToMessageChain(groupIdOrZero, botId, this)
+        elements.joinToMessageChain(groupIdOrZero, messageSourceKind, botId, this)
         addAll(ptts)
     }.cleanupRubbishMessageElements()
 }
 
 // These two functions have difference method signature, don't combine.
 
-internal fun ImMsgBody.SourceMsg.toMessageChain(botId: Long, groupIdOrZero: Long): MessageChain {
+internal fun ImMsgBody.SourceMsg.toMessageChain(
+    botId: Long,
+    messageSourceKind: MessageSourceKind,
+    groupIdOrZero: Long
+): MessageChain {
     val elements = this.elems
     if (elements.isEmpty())
         error("elements for SourceMsg is empty")
@@ -351,9 +355,10 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(botId: Long, groupIdOrZero: Long
         +OfflineMessageSourceImplData(
             delegate = this@toMessageChain,
             botId = botId,
+            messageSourceKind = messageSourceKind,
             groupIdOrZero = groupIdOrZero
         )
-        elements.joinToMessageChain(groupIdOrZero, botId, this)
+        elements.joinToMessageChain(groupIdOrZero, messageSourceKind, botId, this)
     }.cleanupRubbishMessageElements()
 }
 
@@ -416,13 +421,27 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId: Long, list: MessageChainBuilder) {
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(
+    groupIdOrZero: Long,
+    messageSourceKind: MessageSourceKind,
+    botId: Long,
+    list: MessageChainBuilder
+) {
     // (this._miraiContentToString().soutv())
     var marketFace: MarketFaceImpl? = null
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
-                list.add(QuoteReply(OfflineMessageSourceImplData(element.srcMsg, botId, groupIdOrZero)))
+                list.add(
+                    QuoteReply(
+                        OfflineMessageSourceImplData(
+                            element.srcMsg,
+                            botId,
+                            messageSourceKind,
+                            groupIdOrZero
+                        )
+                    )
+                )
             }
             element.notOnlineImage != null -> list.add(OnlineFriendImageImpl(element.notOnlineImage))
             element.customFace != null -> list.add(OnlineGroupImageImpl(element.customFace))

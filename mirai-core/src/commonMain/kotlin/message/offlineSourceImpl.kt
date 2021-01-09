@@ -7,7 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_OVERRIDE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.internal.message
 
@@ -108,14 +107,15 @@ internal fun OfflineMessageSourceImplData(
     delegate: List<MsgComm.Msg>,
     botId: Long,
 ): OfflineMessageSourceImplData {
+    val head = delegate.first().msgHead
     val kind = when {
-        delegate.first().msgHead.groupInfo != null -> {
+        head.groupInfo != null -> {
             MessageSourceKind.GROUP
         }
-        delegate.first().msgHead.c2cTmpMsgHead != null -> {
+        head.c2cTmpMsgHead != null -> {
             MessageSourceKind.TEMP
         }
-        bot?.getStranger(delegate.first().msgHead.fromUin) != null -> {
+        bot?.getStranger(head.fromUin) != null -> {
             MessageSourceKind.STRANGER
         }
         else -> {
@@ -124,13 +124,13 @@ internal fun OfflineMessageSourceImplData(
     }
     return OfflineMessageSourceImplData(
         kind = kind,
-        time = delegate.first().msgHead.msgTime,
-        fromId = delegate.first().msgHead.fromUin,
-        targetId = delegate.first().msgHead.groupInfo?.groupCode ?: delegate.first().msgHead.toUin,
+        time = head.msgTime,
+        fromId = head.fromUin,
+        targetId = head.groupInfo?.groupCode ?: head.toUin,
         originalMessage = delegate.toMessageChain(
             null,
             botId,
-            groupIdOrZero = delegate.first().msgHead.groupInfo?.groupCode ?: 0,
+            groupIdOrZero = head.groupInfo?.groupCode ?: 0,
             onlineSource = false,
             messageSourceKind = kind
         ),
@@ -165,15 +165,16 @@ internal fun OfflineMessageSourceImplData(
 internal fun OfflineMessageSourceImplData(
     delegate: ImMsgBody.SourceMsg,
     botId: Long,
+    messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long,
 ): OfflineMessageSourceImplData {
     return OfflineMessageSourceImplData(
-        kind = if (delegate.srcMsg == null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND,
+        kind = messageSourceKind,
         ids = delegate.origSeqs,
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessageLazy = lazy { delegate.toMessageChain(botId, groupIdOrZero) },
+        originalMessageLazy = lazy { delegate.toMessageChain(botId, messageSourceKind, groupIdOrZero) },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
