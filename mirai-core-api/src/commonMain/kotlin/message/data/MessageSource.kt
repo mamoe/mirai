@@ -66,7 +66,7 @@ import net.mamoe.mirai.utils.safeCast
  * @see OnlineMessageSource 在线消息的 [MessageSource]
  * @see OfflineMessageSource 离线消息的 [MessageSource]
  *
- * @see buildMessageSource 构造一个 [OfflineMessageSource]
+ * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
 @Serializable(MessageSource.Serializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
@@ -445,6 +445,8 @@ public sealed class OnlineMessageSource : MessageSource() {
  * 此消息源可能来自一条与机器人无关的消息. 因此无法提供对象化的 `sender` 或 `target` 获取.
  *
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
+ * @see IMirai.constructMessageSource
+ * @see OnlineMessageSource.toOffline
  */
 public abstract class OfflineMessageSource : MessageSource() {
     public companion object Key :

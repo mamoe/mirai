@@ -59,6 +59,12 @@ public interface IMirai : LowLevelApiAccessor {
     @MiraiInternalApi
     public val Http: HttpClient
 
+    public fun getUin(contactOrBot: ContactOrBot): Long {
+        return if (contactOrBot is Group)
+            calculateGroupUinByGroupCode(contactOrBot.id)
+        else contactOrBot.id
+    }
+
     /**
      * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
      */
@@ -137,15 +143,11 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @param ids 即 [MessageSource.ids]
      * @param internalIds 即 [MessageSource.internalIds]
-     *
-     * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [IMirai.calculateGroupUinByGroupCode] 计算
-     * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [IMirai.calculateGroupUinByGroupCode] 计算
      */
-    @MiraiExperimentalApi("This is very experimental and is subject to change.")
     public fun constructMessageSource(
         botId: Long,
         kind: MessageSourceKind,
-        fromUin: Long, targetUin: Long,
+        fromId: Long, targetId: Long,
         ids: IntArray, time: Int, internalIds: IntArray,
         originalMessage: MessageChain
     ): OfflineMessageSource

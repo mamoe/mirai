@@ -892,14 +892,14 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun constructMessageSource(
         botId: Long,
         kind: MessageSourceKind,
-        fromUin: Long,
-        targetUin: Long,
+        fromId: Long,
+        targetId: Long,
         ids: IntArray,
         time: Int,
         internalIds: IntArray,
         originalMessage: MessageChain
     ): OfflineMessageSource = OfflineMessageSourceImplData(
-        kind, ids, botId, time, fromUin, targetUin, originalMessage, internalIds
+        kind, ids, botId, time, fromId, targetId, originalMessage, internalIds
     )
 
 }
