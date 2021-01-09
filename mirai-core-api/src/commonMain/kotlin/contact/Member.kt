@@ -30,9 +30,10 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * 一个群成员可能也是机器人的好友, 但他们在对象类型上不同 ([Member] != [Friend]). 可以通过 [Member.asFriend] 得到相关好友对象.
  *
  * ## 相关的操作
- * [Member.isFriend] 判断此成员是否为好友
- * [Member.isAnonymous] 判断此成员是否为匿名群成员
- * [Member.isNormal] 判断此成员是否为正常群成员
+ * - [Member.isFriend] 判断此成员是否为好友
+ * - [Member.isStranger] 判断此成员是否为好友
+ * - [Member.asFriend] 转换为 [Friend]
+ * - [Member.asStranger] 转换为 [Stranger]
  */
 public interface Member : User {
     /**
@@ -50,9 +51,6 @@ public interface Member : User {
 
     /**
      * 群名片. 可能为空.
-     *
-     * @see [NormalMember.nameCard]
-     * @see [AnonymousMember.nameCard]
      */
     public val nameCard: String
 
