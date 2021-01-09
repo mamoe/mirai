@@ -187,7 +187,7 @@ public class GroupMessageEvent(
  * @see MessageEvent
  */
 public class TempMessageEvent(
-    public override val sender: Member,
+    public override val sender: NormalMember,
     public override val message: MessageChain,
     public override val time: Int
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, UserMessageEvent {
@@ -197,7 +197,7 @@ public class TempMessageEvent(
     }
 
     public override val bot: Bot get() = sender.bot
-    public override val subject: Member get() = sender
+    public override val subject: NormalMember get() = sender
     public override val group: Group get() = sender.group
     public override val senderName: String get() = sender.nameCardOrNick
     public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
