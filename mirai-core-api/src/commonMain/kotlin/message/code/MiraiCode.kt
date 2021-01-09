@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.code
 
@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.internal.parseMiraiCodeImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageChain.Companion.parseFromMiraiCode
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -22,11 +23,20 @@ import net.mamoe.mirai.utils.safeCast
  */
 public object MiraiCode {
     /**
-     * 解析形如 "[mirai:]" 的 mirai 码, 即 [Message.toString] 返回的内容.
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
+     * @see MessageChain.parseFromMiraiCode
+     */
+    @JvmName("parseMiraiCode1")
+    @JvmSynthetic
+    public inline fun String.parseMiraiCode(contact: Contact? = null): MessageChain = parseMiraiCode(this, contact)
+
+    /**
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
+     * @see MessageChain.parseFromMiraiCode
      */
     @JvmOverloads
     @JvmStatic
-    public fun String.parseMiraiCode(contact: Contact? = null): MessageChain = parseMiraiCodeImpl(contact)
+    public fun parseMiraiCode(code: String, contact: Contact? = null): MessageChain = code.parseMiraiCodeImpl(contact)
 
     /**
      * 转换得到 mirai 码.

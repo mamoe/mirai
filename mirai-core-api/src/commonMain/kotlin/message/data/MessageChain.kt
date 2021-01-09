@@ -21,10 +21,12 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.MiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -136,6 +138,26 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         }
 
         /**
+         * 从 JSON 字符串解析 [MessageChain]
+         * @param json 需要包含 [MessageSerializers.serializersModule]
+         * @see deserializeFromJsonString
+         * @see serializeToJsonString
+         */
+        @JvmSynthetic
+        @JvmStatic
+        public inline fun String.deserializeJsonToMessageChain(json: Json): MessageChain =
+            deserializeFromJsonString(this, json)
+
+        /**
+         * 从 JSON 字符串解析 [MessageChain]
+         * @see serializeToJsonString
+         * @see deserializeFromJsonString
+         */
+        @JvmSynthetic
+        @JvmStatic
+        public inline fun String.deserializeJsonToMessageChain(): MessageChain = deserializeFromJsonString(this)
+
+        /**
          * 将 [MessageChain] 序列化为 JSON 字符串.
          * @see deserializeFromJsonString
          */
@@ -155,6 +177,14 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         @JvmStatic
         public fun MessageChain.serializeToString(format: StringFormat): String =
             format.encodeToString(Serializer, this)
+
+        /**
+         * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
+         * @see MiraiCode.parseMiraiCode
+         */
+        @JvmStatic
+        public fun MessageChain.parseFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
+            miraiCode.parseMiraiCode(contact)
     }
 }
 
