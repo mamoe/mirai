@@ -9,17 +9,10 @@
 
 package net.mamoe.mirai.event.events
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiInternalApi
-
-public interface OtherClientEvent : BotEvent, Packet {
-    public val client: OtherClient
-    override val bot: Bot get() = client.bot
-}
 
 /**
  * 其他设备上线

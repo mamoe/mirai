@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -134,26 +133,3 @@ public data class BotNickChangedEvent(
     public val from: String,
     public val to: String
 ) : BotEvent, Packet, AbstractEvent()
-
-
-/**
- * 戳一戳事件
- */
-public data class NudgeEvent @MiraiInternalApi constructor(
-    /**
-     * 戳一戳发起人
-     */
-    public val from: UserOrBot,
-    /**
-     * 戳一戳目标, 可能与 [from] 相同.
-     */
-    public val target: UserOrBot,
-    /**
-     * 消息语境, 同 [MessageEvent.subject]. 可能为 [Group], [Stranger], [Friend], [Member].
-     */
-    public val subject: Contact,
-    public val action: String,
-    public val suffix: String,
-) : AbstractEvent(), BotEvent, Packet {
-    override val bot: Bot get() = from.bot
-}

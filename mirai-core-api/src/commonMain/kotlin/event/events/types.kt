@@ -7,7 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
 
@@ -16,7 +15,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.Event
-import kotlin.internal.HidesMembers
+import net.mamoe.mirai.internal.network.Packet
 
 /**
  * 有关一个 [Bot] 的事件
@@ -61,8 +60,9 @@ public interface GroupOperableEvent : GroupEvent {
 /**
  * 是否由 [Bot] 操作
  */
-@HidesMembers
 @get:JvmSynthetic
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.HidesMembers
 public inline val GroupOperableEvent.isByBot: Boolean
     get() = operator == null
 
@@ -106,4 +106,9 @@ public interface GroupMemberEvent : GroupEvent, UserEvent {
     public val member: Member
     override val group: Group get() = member.group
     override val user: Member get() = member
+}
+
+public interface OtherClientEvent : BotEvent, Packet {
+    public val client: OtherClient
+    override val bot: Bot get() = client.bot
 }
