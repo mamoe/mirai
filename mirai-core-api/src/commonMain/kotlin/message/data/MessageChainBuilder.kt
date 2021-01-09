@@ -55,13 +55,11 @@ public class MessageChainBuilder private constructor(
     public constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
     public override fun add(element: SingleMessage): Boolean {
-        checkBuilt()
         flushCache()
         return container.add(element)
     }
 
     public fun add(element: Message): Boolean {
-        checkBuilt()
         flushCache()
         @Suppress("UNCHECKED_CAST")
         return when (element) {
@@ -73,27 +71,23 @@ public class MessageChainBuilder private constructor(
     }
 
     public override fun addAll(elements: Collection<SingleMessage>): Boolean {
-        checkBuilt()
         flushCache()
         return addAll(elements.asSequence())
     }
 
     public fun addAll(elements: Iterable<SingleMessage>): Boolean {
-        checkBuilt()
         flushCache()
         return addAll(elements.asSequence())
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
     public fun addAll(elements: Iterable<Message>): Boolean {
-        checkBuilt()
         flushCache()
         return addAll(elements.toMessageChain().asSequence())
     }
 
     @JvmSynthetic
     public operator fun Message.unaryPlus() {
-        checkBuilt()
         flushCache()
         add(this)
     }
@@ -101,38 +95,32 @@ public class MessageChainBuilder private constructor(
 
     @JvmSynthetic
     public operator fun String.unaryPlus() {
-        checkBuilt()
         add(this)
     }
 
     @JvmSynthetic // they should use add
     public operator fun plusAssign(plain: String) {
-        checkBuilt()
         withCache { append(plain) }
     }
 
     @JvmSynthetic // they should use add
     public operator fun plusAssign(message: Message) {
-        checkBuilt()
         flushCache()
         this.add(message)
     }
 
     @JvmSynthetic // they should use add
     public operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
-        checkBuilt()
         flushCache()
         this.add(message)
     }
 
     public fun add(plain: String) {
-        checkBuilt()
         withCache { append(plain) }
     }
 
     @JvmSynthetic // they should use add
     public operator fun plusAssign(charSequence: CharSequence) {
-        checkBuilt()
         withCache { append(charSequence) }
     }
 
@@ -146,7 +134,6 @@ public class MessageChainBuilder private constructor(
 
     // avoid resolution to extensions
     public fun asMessageChain(): MessageChain {
-        built = true
         this.flushCache()
         return MessageChainImpl(this.constrainSingleMessages())
     }
@@ -161,31 +148,23 @@ public class MessageChainBuilder private constructor(
         return MessageChainBuilder(container.toMutableList())
     }
 
-    ///////
-    // FOR IMMUTABLE SAFETY
-
     public override fun remove(element: SingleMessage): Boolean {
-        checkBuilt()
         return container.remove(element)
     }
 
     public override fun removeAll(elements: Collection<SingleMessage>): Boolean {
-        checkBuilt()
         return container.removeAll(elements)
     }
 
     public override fun removeAt(index: Int): SingleMessage {
-        checkBuilt()
         return container.removeAt(index)
     }
 
     public override fun clear() {
-        checkBuilt()
         return container.clear()
     }
 
     public override fun set(index: Int, element: SingleMessage): SingleMessage {
-        checkBuilt()
         return container.set(index, element)
     }
 
@@ -200,7 +179,6 @@ public class MessageChainBuilder private constructor(
     }
 
     private inline fun withCache(block: StringBuilder.() -> Unit): MessageChainBuilder {
-        checkBuilt()
         if (cache == null) {
             cache = StringBuilder().apply(block)
         } else {
@@ -208,9 +186,6 @@ public class MessageChainBuilder private constructor(
         }
         return this
     }
-
-    private var built = false
-    private fun checkBuilt() = check(!built) { "MessageChainBuilder is already built therefore can't modify" }
 
     private var firstConstrainSingleIndex = -1
 
