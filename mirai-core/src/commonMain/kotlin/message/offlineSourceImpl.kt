@@ -75,13 +75,17 @@ internal class OfflineMessageSourceImplData(
 
         other as OfflineMessageSourceImplData
 
+        val originElems = originElems
+        if (originElems != null) {
+            if (originElems == other.originElems) return true
+        }
+
         if (kind != other.kind) return false
         if (!ids.contentEquals(other.ids)) return false
         if (botId != other.botId) return false
         if (time != other.time) return false
         if (fromId != other.fromId) return false
         if (targetId != other.targetId) return false
-        // TODO: 2021-01-09: 解决 QuoteReply 的 MessageSource 因为 originalMessage 造成的死循环
         if (originalMessage != other.originalMessage) return false
         if (!internalIds.contentEquals(other.internalIds)) return false
 
@@ -95,7 +99,6 @@ internal class OfflineMessageSourceImplData(
         result = 31 * result + time
         result = 31 * result + fromId.hashCode()
         result = 31 * result + targetId.hashCode()
-        // TODO: 2021-01-09: 解决 QuoteReply 的 MessageSource 因为 originalMessage 造成的死循环
         result = 31 * result + originalMessage.hashCode()
         result = 31 * result + internalIds.contentHashCode()
         return result
@@ -131,7 +134,7 @@ internal fun OfflineMessageSourceImplData(
             null,
             botId,
             groupIdOrZero = head.groupInfo?.groupCode ?: 0,
-            onlineSource = false,
+            onlineSource = null,
             messageSourceKind = kind
         ),
         ids = delegate.mapToIntArray { it.msgHead.msgSeq },

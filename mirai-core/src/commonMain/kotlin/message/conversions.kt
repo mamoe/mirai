@@ -306,7 +306,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot?,
     botId: Long,
     groupIdOrZero: Long,
-    onlineSource: Boolean,
+    onlineSource: Boolean?,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
     val elements = this.flatMap { it.msgBody.richText.elems }
@@ -324,17 +324,23 @@ internal fun List<MsgComm.Msg>.toMessageChain(
         }
     }
     return buildMessageChain(elements.size + 1 + ptts.size) {
-        if (onlineSource) {
-            checkNotNull(bot) { "bot is null" }
+        when (onlineSource) {
+            true -> {
+                checkNotNull(bot) { "bot is null" }
 
-            when (messageSourceKind) {
-                MessageSourceKind.TEMP -> +OnlineMessageSourceFromTempImpl(bot, this@toMessageChain)
-                MessageSourceKind.GROUP -> +OnlineMessageSourceFromGroupImpl(bot, this@toMessageChain)
-                MessageSourceKind.FRIEND -> +OnlineMessageSourceFromFriendImpl(bot, this@toMessageChain)
-                MessageSourceKind.STRANGER -> +OnlineMessageSourceFromStrangerImpl(bot, this@toMessageChain)
+                when (messageSourceKind) {
+                    MessageSourceKind.TEMP -> +OnlineMessageSourceFromTempImpl(bot, this@toMessageChain)
+                    MessageSourceKind.GROUP -> +OnlineMessageSourceFromGroupImpl(bot, this@toMessageChain)
+                    MessageSourceKind.FRIEND -> +OnlineMessageSourceFromFriendImpl(bot, this@toMessageChain)
+                    MessageSourceKind.STRANGER -> +OnlineMessageSourceFromStrangerImpl(bot, this@toMessageChain)
+                }
             }
-        } else {
-            +OfflineMessageSourceImplData(bot, this@toMessageChain, botId)
+            false -> {
+                +OfflineMessageSourceImplData(bot, this@toMessageChain, botId)
+            }
+            null -> {
+
+            }
         }
         elements.joinToMessageChain(groupIdOrZero, messageSourceKind, botId, this)
         addAll(ptts)
@@ -352,12 +358,13 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(
     if (elements.isEmpty())
         error("elements for SourceMsg is empty")
     return buildMessageChain(elements.size + 1) {
+        /*
         +OfflineMessageSourceImplData(
             delegate = this@toMessageChain,
             botId = botId,
             messageSourceKind = messageSourceKind,
             groupIdOrZero = groupIdOrZero
-        )
+        )*/
         elements.joinToMessageChain(groupIdOrZero, messageSourceKind, botId, this)
     }.cleanupRubbishMessageElements()
 }

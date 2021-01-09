@@ -90,7 +90,7 @@ internal class OnlineMessageSourceFromFriendImpl(
             bot,
             bot.id,
             0,
-            false,
+            null,
             MessageSourceKind.FRIEND
         )
     }
@@ -121,7 +121,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
             bot,
             bot.id,
             0,
-            false,
+            null,
             MessageSourceKind.STRANGER
         )
     }
@@ -185,7 +185,7 @@ internal class OnlineMessageSourceFromTempImpl(
             bot,
             bot.id,
             groupIdOrZero = 0,
-            onlineSource = false,
+            onlineSource = null,
             MessageSourceKind.TEMP
         )
     }
@@ -212,7 +212,7 @@ internal data class OnlineMessageSourceFromGroupImpl(
     override val ids: IntArray get() = sequenceIds
     override val time: Int get() = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChain(bot, bot.id, groupIdOrZero = group.id, onlineSource = false, MessageSourceKind.GROUP)
+        msg.toMessageChain(bot, bot.id, groupIdOrZero = group.id, onlineSource = null, MessageSourceKind.GROUP)
     }
 
     override val sender: Member by lazy {
