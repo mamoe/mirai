@@ -370,18 +370,21 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(
 }
 
 private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
+    var previousLast: SingleMessage? = null
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
+                    previousLast = last
                     last = element
                     return@forEach
                 }
             }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
+                    previousLast = last
                     last = element
                     return@forEach
                 }
@@ -389,6 +392,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             if (last is VipFace && element is PlainText) {
                 val l = last as VipFace
                 if (element.content.length == 4 + (l.count / 10) + l.kind.name.length) {
+                    previousLast = last
                     last = element
                     return@forEach
                 }
@@ -396,11 +400,23 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             // 解决tim发送的语音无法正常识别
             if (element is PlainText) {
                 if (element == UNSUPPORTED_VOICE_MESSAGE_PLAIN) {
+                    previousLast = last
                     last = element
                     return@forEach
                 }
             }
 
+            if (element is PlainText && last is At && previousLast is QuoteReply
+                && element.content.startsWith(' ')
+            ) {
+                // Android QQ 发送, 是 Quote+At+PlainText(" xxx") // 首空格
+                removeLastOrNull() // At
+                val new = PlainText(element.content.substring(1))
+                add(new)
+                previousLast = null
+                last = new
+                return@forEach
+            }
 
             if (element is QuoteReply) {
                 // 客户端为兼容早期不支持 QuoteReply 的客户端而添加的 At
@@ -412,6 +428,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                 }
             }
             add(element)
+            previousLast = last
             last = element
         }
     }
