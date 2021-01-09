@@ -25,19 +25,20 @@ import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Serializable(OfflineMessageSourceImplData.Serializer::class)
-internal data class OfflineMessageSourceImplData(
+internal class OfflineMessageSourceImplData(
     override val kind: MessageSourceKind,
     override val ids: IntArray,
     override val botId: Long,
     override val time: Int,
     override val fromId: Long,
     override val targetId: Long,
-    override val originalMessage: MessageChain,
+    originalMessageLazy: Lazy<MessageChain>,
     override val internalIds: IntArray,
 ) : OfflineMessageSource(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OfflineMessageSource")
 
     override val sequenceIds: IntArray get() = ids
+    override val originalMessage: MessageChain by originalMessageLazy
 
     // for override.
     // if provided, no need to serialize from message
@@ -81,6 +82,7 @@ internal data class OfflineMessageSourceImplData(
         if (time != other.time) return false
         if (fromId != other.fromId) return false
         if (targetId != other.targetId) return false
+        // TODO: 2021-01-09: 解决 QuoteReply 的 MessageSource 因为 originalMessage 造成的死循环
         if (originalMessage != other.originalMessage) return false
         if (!internalIds.contentEquals(other.internalIds)) return false
 
@@ -94,6 +96,7 @@ internal data class OfflineMessageSourceImplData(
         result = 31 * result + time
         result = 31 * result + fromId.hashCode()
         result = 31 * result + targetId.hashCode()
+        // TODO: 2021-01-09: 解决 QuoteReply 的 MessageSource 因为 originalMessage 造成的死循环
         result = 31 * result + originalMessage.hashCode()
         result = 31 * result + internalIds.contentHashCode()
         return result
@@ -139,6 +142,25 @@ internal fun OfflineMessageSourceImplData(
     }
 }
 
+internal fun OfflineMessageSourceImplData(
+    kind: MessageSourceKind,
+    ids: IntArray,
+    botId: Long,
+    time: Int,
+    fromId: Long,
+    targetId: Long,
+    originalMessage: MessageChain,
+    internalIds: IntArray,
+): OfflineMessageSourceImplData = OfflineMessageSourceImplData(
+    kind = kind,
+    ids = ids,
+    botId = botId,
+    time = time,
+    fromId = fromId,
+    targetId = targetId,
+    originalMessageLazy = lazyOf(originalMessage),
+    internalIds = internalIds
+)
 
 internal fun OfflineMessageSourceImplData(
     delegate: ImMsgBody.SourceMsg,
@@ -151,7 +173,7 @@ internal fun OfflineMessageSourceImplData(
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessage = delegate.toMessageChain(botId, groupIdOrZero),
+        originalMessageLazy = lazy { delegate.toMessageChain(botId, groupIdOrZero) },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
