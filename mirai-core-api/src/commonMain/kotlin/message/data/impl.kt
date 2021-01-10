@@ -51,8 +51,8 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
             /**
              * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
              */
-            this.forEachContent { thisElement ->
-                if (thisElement is PlainText) return@forEachContent
+            this.contentsSequence().forEach { thisElement ->
+                if (thisElement is PlainText) return@forEach
                 for (it in anotherIterator) {
                     if (it is PlainText || it !is MessageContent) continue
                     if (thisElement != it) return false
@@ -159,6 +159,14 @@ internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
 }
 
 /**
+ * @return [EmptyMessageChain] if [delegate] is empty, otherwise [MessageChainImpl]
+ */
+internal fun createMessageChainImplOptimized(delegate: List<SingleMessage>): MessageChain {
+    return if (delegate.isEmpty()) EmptyMessageChain
+    else MessageChainImpl(delegate)
+}
+
+/**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
 @Serializable(MessageChain.Serializer::class)
@@ -182,7 +190,7 @@ internal data class MessageChainImpl constructor(
 @Suppress("FunctionName") // source compatibility with 1.x
 internal fun MessageChainImplBySequence(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-): MessageChain = MessageChainImpl(delegate.constrainSingleMessages())
+): MessageChain = createMessageChainImplOptimized(delegate.constrainSingleMessages())
 
 
 //////////////////////

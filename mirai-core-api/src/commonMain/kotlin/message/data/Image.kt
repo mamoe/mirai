@@ -88,14 +88,12 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val imageId: String
 
-    @kotlinx.serialization.Serializer(forClass = Image::class)
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
         deserialize = { Image(it) },
     )
 
-    @kotlinx.serialization.Serializer(forClass = Image::class)
     public object Serializer : KSerializer<Image> by FallbackSerializer("Image")
 
     @MiraiInternalApi
@@ -133,7 +131,7 @@ public interface Image : Message, MessageContent, CodableMessage {
          * - 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
          * - 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
          *
-         * @return 原图 HTTP 下载链接 (非 HTTPS)
+         * @return 原图 HTTP 下载链接
          * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
          */
         @JvmStatic
@@ -198,6 +196,11 @@ public interface Image : Message, MessageContent, CodableMessage {
  */
 @JvmSynthetic
 public inline fun Image(imageId: String): Image = Image.fromId(imageId)
+
+
+///////////////////////////////////////////////////////////////////////////
+// Internals
+///////////////////////////////////////////////////////////////////////////
 
 /**
  * 计算图片的 md5 校验值.

@@ -11,16 +11,25 @@ package net.mamoe.mirai.message
 
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.*
 import net.mamoe.mirai.internal.message.MessageSerializersImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
  * 消息序列化器.
+ *
+ * [MessageSerializers] 存放 [SerializersModule], 用于协助 [SingleMessage.Serializer] 的多态序列化.
+ *
+ * 要序列化一个 [MessageChain], 请使用内建的 [MessageChain.serializeToJsonString]
+ *
+ * @see serializersModule
+ *
  *
  * @see SingleMessage.Serializer
  * @see MessageChain.Serializer
@@ -31,12 +40,17 @@ public interface MessageSerializers {
     /**
      * 包含 [SingleMessage] 多态序列化和 [Message] [ContextualSerializer] 信息的 [SerializersModule].
      *
-     * 在序列化消息时都需要
+     * 在序列化消息时都需要提供给相关 [Json] 配置的 [Json.serializersModule]. 如通过:
+     * ```
+     * val json = Json {
+     *     serializesModule = MessageSerializers.serializersModule
+     * }
+     * ```
      */
     public val serializersModule: SerializersModule
 
     /**
-     * 注册一个 [SerializersModuleBuilder.contextual] 和 [SingleMessage] 多态域的 [PolymorphicModuleBuilder.subclass]
+     * 注册一个 [SerializersModuleBuilder.contextual] 和 [SingleMessage] 多态域的 [PolymorphicModuleBuilder.subclass].
      *
      * 相当于
      * ```
@@ -45,6 +59,9 @@ public interface MessageSerializers {
      *     subclass(baseClass, serializer)
      * }
      * ```
+     *
+     *
+     * 若要自己实现消息类型, 务必在这里注册对应序列化器, 否则在 [MessageChain.serializeToJsonString] 时将会出错.
      */
     @MiraiExperimentalApi
     public fun <M : SingleMessage> registerSerializer(baseClass: KClass<M>, serializer: KSerializer<M>)

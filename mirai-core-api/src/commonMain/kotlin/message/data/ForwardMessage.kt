@@ -352,7 +352,7 @@ public class ForwardMessageBuilder private constructor(
      */
     public var currentTime: Int = currentTimeSeconds().toInt()
 
-    public inner class BuilderNode : ForwardMessage.INode {
+    public inner class BuilderNode internal constructor() : ForwardMessage.INode {
 
         /**
          * 发送人 [User.id]

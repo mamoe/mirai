@@ -35,7 +35,27 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *   - [MessageContent] 含内容的消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
  * - [MessageChain]: 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
  *
- * #### 在 Kotlin 使用 [Message]:
+ * ## 获得 [Message]
+ *
+ * 请先根据实际需求确定需要的类型.
+ *
+ *
+ * - [PlainText]: 纯文本
+ * - [Image]: 图片
+ * - [Face]: 原生表情
+ * - [At]: 一个群成员的引用
+ * - [AtAll]: 全体成员的引用
+ * - [QuoteReply]: 一条消息的引用
+ * - [RichMessage]: 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
+ * - [FlashImage]: 闪照
+ * - [PokeMessage]: 戳一戳 (消息)
+ * - [VipFace]: VIP 表情
+ * - [CustomMessage]: 自定义消息类型
+ * - ...
+ *
+ * ## 使用 [Message]
+ *
+ * ### 在 Kotlin 使用 [Message]:
  * 这与使用 [String] 的使用非常类似.
  *
  * - 比较 [SingleMessage] 与 [String]:
@@ -48,7 +68,9 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *  ```
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
- * #### 发送消息
+ *
+ *
+ * ### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
  * - 在 [MessageEvent] 中使用 [MessageEvent.reply] 等捷径
@@ -68,7 +90,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @see Contact.sendMessage 发送消息
  */
-public interface Message {
+public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
 
     /**
      * 将 `this` 和 [tail] 连接.
@@ -222,18 +244,18 @@ public suspend inline operator fun Message.plus(another: Flow<Message>): Message
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
 @Serializable(SingleMessage.Serializer::class)
-public interface SingleMessage : Message {
-    @kotlinx.serialization.Serializer(forClass = SingleMessage::class)
-    public object Serializer :
-        KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
+public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+    public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 
 /**
  * 消息元数据, 即不含内容的元素.
  *
- * 这种类型的 [Message] 只表示一条消息的属性. 其子类为 [MessageSource], [QuoteReply]
+ * 这种类型的 [Message] 只表示一条消息的属性. 其子类为 [MessageSource], [QuoteReply] 和 [CustomMessageMetadata]
  *
  * 所有子类的 [contentToString] 都应该返回空字符串.
+ *
+ * 要获取详细信息, 查看 [MessageChain].
  *
  * @see MessageSource 消息源
  * @see QuoteReply 引用回复
@@ -241,7 +263,7 @@ public interface SingleMessage : Message {
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-public interface MessageMetadata : SingleMessage {
+public interface MessageMetadata : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
     /**
      * 返回空字符串
      */
@@ -253,10 +275,8 @@ public interface MessageMetadata : SingleMessage {
  *
  * 实现此接口的元素将会在连接时自动处理替换.
  *
- * @see AbstractMessageKey
- * @see AbstractPolymorphicMessageKey
- *
- * @see MessageSource
+ * 要获取有关键的信息, 查看 [MessageKey].
+ * 要获取有关约束的处理方式, 查看 [AbstractPolymorphicMessageKey].
  */
 public interface ConstrainSingle : SingleMessage {
     /**
@@ -280,7 +300,7 @@ public interface ConstrainSingle : SingleMessage {
  * @see ForwardMessage 合并转发
  * @see Voice 语音
  */
-public interface MessageContent : SingleMessage {
+public interface MessageContent : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
 }
 

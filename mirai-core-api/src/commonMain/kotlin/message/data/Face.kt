@@ -9,6 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.message.data
 
@@ -28,20 +29,21 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 public data class Face(public val id: Int) : // used in delegation
     MessageContent, CodableMessage {
 
-    public override fun toString(): String = "[mirai:face:$id]"
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
-    public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
+
+    override fun toString(): String = toMiraiCode()
+    override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:face:").append(id).append(']')
     }
 
-    public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
-    public override fun hashCode(): Int = id
+    override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
+    override fun hashCode(): Int = id
 
     //Auto generated
-    @Suppress("NonAsciiCharacters", "unused", "SpellCheckingInspection", "all")
+    @Suppress("NonAsciiCharacters", "unused", "SpellCheckingInspection", "all", "ObjectPropertyName")
     public companion object {
         public const val SERIAL_NAME: String = "Face"
 
@@ -480,7 +482,10 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 请: Int = QING
         public const val ZHENG_YAN: Int = 289
         public const val 睁眼: Int = ZHENG_YAN
-        internal val names: Array<String> = Array(290) { "[表情]" }
+
+
+        @JvmField
+        public val names: Array<String> = Array(290) { "[表情]" }
 
         init {
             names[JING_YA] = "[惊讶]"

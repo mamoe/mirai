@@ -135,7 +135,7 @@ public class MessageChainBuilder private constructor(
     // avoid resolution to extensions
     public fun asMessageChain(): MessageChain {
         this.flushCache()
-        return MessageChainImpl(this.constrainSingleMessages())
+        return createMessageChainImplOptimized(this.constrainSingleMessages())
     }
 
     /** 同 [asMessageChain] */

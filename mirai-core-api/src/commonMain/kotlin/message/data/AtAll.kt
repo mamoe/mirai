@@ -18,8 +18,6 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
-private const val displayA = "@全体成员"
-
 /**
  * "@全体成员".
  *
@@ -34,30 +32,25 @@ private const val displayA = "@全体成员"
 @Serializable
 public object AtAll :
     MessageContent, CodableMessage {
-    public const val display: String = displayA
+    public const val display: String = "@全体成员"
     public const val SERIAL_NAME: String = "AtAll"
 
     @Suppress("SpellCheckingInspection")
-    public override fun toString(): String = "[mirai:atall]"
-    public override fun contentToString(): String = display
-    public override fun equals(other: Any?): Boolean {
-        return other === this
-    }
+    override fun contentToString(): String = display
+    override fun toString(): String = "[mirai:atall]"
+    override fun toMiraiCode(): String = toString()
 
-    override fun toMiraiCode(): String {
-        return toString()
-    }
+    override fun hashCode(): Int = display.hashCode()
+    override fun equals(other: Any?): Boolean = other === this
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append(toString())
     }
 
-    public override fun hashCode(): Int {
-        return display.hashCode()
-    }
 
     // 自动为消息补充 " "
+    @JvmSynthetic
     public override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.content.startsWith(' ')) {
             return super<MessageContent>.followedBy(tail)

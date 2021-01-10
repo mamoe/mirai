@@ -192,6 +192,8 @@ public fun <T : CustomMessage> T.toByteArray(): ByteArray {
  * 2. 添加伴生对象, 继承 [CustomMessage.ProtoBufSerializerFactory] 或 [CustomMessage.JsonSerializerFactory], 或 [CustomMessage.Factory]
  * 3. 在需要解析消息前调用一次伴生对象以注册
  *
+ * 注意: 这是实验性 API. 可能会在未来发生变动.
+ *
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
