@@ -355,6 +355,54 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "status", "states", "状态",
         description = "获取 Mirai Console 运行状态"
     ), BuiltInCommandInternal {
+
+        internal interface MemoryUsageGet {
+            val heapMemoryUsage: MUsage
+            val nonHeapMemoryUsage: MUsage
+            val objectPendingFinalizationCount:Int
+        }
+        internal val memoryUsageGet: MemoryUsageGet = kotlin.runCatching {
+            ByMemoryMXBean
+        }.getOrElse { ByRuntime }
+
+        internal object ByMemoryMXBean : MemoryUsageGet {
+            val memoryMXBean = ManagementFactory.getMemoryMXBean()
+            val MemoryUsage.m: MUsage
+                get() = MUsage(
+                    committed, init, used, max
+                )
+            override val heapMemoryUsage: MUsage
+                get() = memoryMXBean.heapMemoryUsage.m
+            override val nonHeapMemoryUsage: MUsage
+                get() = memoryMXBean.nonHeapMemoryUsage.m
+            override val objectPendingFinalizationCount: Int
+                get() = memoryMXBean.objectPendingFinalizationCount
+        }
+
+        internal object ByRuntime : MemoryUsageGet {
+            override val heapMemoryUsage: MUsage
+                get() {
+                    val runtime = Runtime.getRuntime()
+                    return MUsage(
+                        committed = 0,
+                        init = 0,
+                        used = runtime.maxMemory() - runtime.freeMemory(),
+                        max = runtime.maxMemory()
+                    )
+                }
+            override val nonHeapMemoryUsage: MUsage
+                get() = MUsage(-1, -1, -1, -1)
+            override val objectPendingFinalizationCount: Int
+                get() = -1
+        }
+
+        internal data class MUsage(
+            val committed: Long,
+            val init: Long,
+            val used: Long,
+            val max: Long,
+        )
+
         @Handler
         public suspend fun CommandSender.handle() {
             sendAnsiMessage {
@@ -393,16 +441,14 @@ public object BuiltInCommands {
                 }
                 reset().append("\n\n")
 
-                val memoryMXBean = ManagementFactory.getMemoryMXBean()
-
                 append("Object Pending Finalization Count: ")
                     .emeraldGreen()
-                    .append(memoryMXBean.objectPendingFinalizationCount)
+                    .append(memoryUsageGet.objectPendingFinalizationCount)
                     .reset()
                     .append("\n")
                 val l1 = arrayOf("committed", "init", "used", "max")
-                val l2 = renderMemoryUsage(memoryMXBean.heapMemoryUsage)
-                val l3 = renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
+                val l2 = renderMemoryUsage(memoryUsageGet.heapMemoryUsage)
+                val l3 = renderMemoryUsage(memoryUsageGet.nonHeapMemoryUsage)
                 val lmax = calculateMax(l1, l2.first, l3.first)
 
                 append("                 ")
@@ -451,7 +497,6 @@ public object BuiltInCommands {
                 rendMU(l2)
                 append("\nNon-Heap Memory: ")
                 rendMU(l3)
-                renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
             }
         }
 
@@ -484,7 +529,7 @@ public object BuiltInCommands {
             }
         }
 
-        private fun AnsiMessageBuilder.renderMemoryUsage(usage: MemoryUsage) = arrayOf(
+        private fun AnsiMessageBuilder.renderMemoryUsage(usage: MUsage) = arrayOf(
             renderMemoryUsageNumber(usage.committed),
             renderMemoryUsageNumber(usage.init),
             renderMemoryUsageNumber(usage.used),
