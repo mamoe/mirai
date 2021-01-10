@@ -216,50 +216,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         }
 
         /**
-         * 判断是否是发送给群, 或从群接收的消息的消息源
-         */
-        @JvmStatic
-        public fun MessageSource.isAboutGroup(): Boolean {
-            return when (this) {
-                is OnlineMessageSource -> subject is Group
-                is OfflineMessageSource -> kind == MessageSourceKind.GROUP
-            }
-        }
-
-        /**
-         * 判断是否是发送给陌生人 或从陌生人接收的消息的消息源
-         */
-        @JvmStatic
-        public fun MessageSource.isAboutStranger(): Boolean {
-            return when (this) {
-                is OnlineMessageSource -> subject is Stranger
-                is OfflineMessageSource -> kind == MessageSourceKind.STRANGER
-            }
-        }
-
-        /**
-         * 判断是否是发送给临时会话, 或从临时会话接收的消息的消息源
-         */
-        @JvmStatic
-        public fun MessageSource.isAboutTemp(): Boolean {
-            return when (this) {
-                is OnlineMessageSource -> subject is Member
-                is OfflineMessageSource -> kind == MessageSourceKind.TEMP
-            }
-        }
-
-        /**
-         * 判断是否是发送给好友, 或从好友接收的消息的消息源
-         */
-        @JvmStatic
-        public inline fun MessageSource.isAboutFriend(): Boolean {
-            return when (this) {
-                is OnlineMessageSource -> subject is Friend
-                is OfflineMessageSource -> kind == MessageSourceKind.FRIEND
-            }
-        }
-
-        /**
          * 引用这条消息
          * @see QuoteReply
          */
