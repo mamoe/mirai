@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.0-RC-dev-7"
+    const val project = "2.0-RC-dev-8"
 
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
