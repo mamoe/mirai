@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
 import net.mamoe.mirai.message.data.EmptyMessageChain
-import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.toMessageChain
 
 /**
  * Builtin implementation of [CommandCallResolver]
@@ -124,7 +124,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 val (varargParameter, _)
                     = zipped.removeLast()
 
-                zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.asMessageChain()))
+                zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.toMessageChain()))
             } else {
                 // add default empty vararg argument
                 val remainingVararg = remainingParameters.find { it.isVararg }

@@ -25,7 +25,7 @@ import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
@@ -135,7 +135,7 @@ internal suspend fun executeCommandImpl(
         .intercepted(caller)
         .getOrElse { return CommandExecuteResult.Intercepted(null, null, null, it) }
 
-    val call = message.asMessageChain()
+    val call = message.toMessageChain()
         .parseCommandCall(caller)
         .ifNull { return CommandExecuteResult.UnresolvedCommand(null) }
         .let { raw ->

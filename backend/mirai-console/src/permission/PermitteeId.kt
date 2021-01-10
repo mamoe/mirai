@@ -19,10 +19,7 @@ import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.permission.parseFromStringImpl
 import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
 
 /**
  * [被许可人][Permittee] 的标识符
@@ -139,23 +136,23 @@ public interface PermitteeId {
  *          Console                               AnyContact
  *                                                     ↑
  *                                                     |
- *                         +---------------------------+------------------------+
- *                         |                                                    |
- *                      AnyUser                                             AnyGroup
- *                         ↑                                                    ↑
- *                         |                                                    |
- *          +--------------+---------------------+                              |
- *          |              |                     |                              |
- *     AnyFriend           |            AnyMemberFromAnyGroup                   |
- *          ↑              |                     ↑                              |
- *          |              |                     |                              |
- *          |              |            +--------+--------------+               |
- *          |              |            |                       |               |
- *          |              |            |              AnyTempFromAnyGroup      |
- *          |              |            |                       ↑               |
- *          |              |        AnyMember                   |               |
- *          |              |            ↑                       |               |
- *          |          ExactUser        |                       |           ExactGroup
+ *                         +---------------------------+------------------------+---------------------+
+ *                         |                                                    |                     |
+ *                      AnyUser                                             AnyGroup            AnyOtherClient
+ *                         ↑                                                    ↑                     ↑
+ *                         |                                                    |                     |
+ *          +--------------+---------------------+                              |                     |
+ *          |              |                     |                              |                     |
+ *     AnyFriend           |            AnyMemberFromAnyGroup                   |                     |
+ *          ↑              |                     ↑                              |                     |
+ *          |              |                     |                              |                     |
+ *          |              |            +--------+--------------+               |                     |
+ *          |              |            |                       |               |                     |
+ *          |              |            |              AnyTempFromAnyGroup      |                     |
+ *          |              |            |                       ↑               |                     |
+ *          |              |        AnyMember                   |               |                     |
+ *          |              |            ↑                       |               |                     |
+ *          |          ExactUser        |                       |           ExactGroup         ExactOtherClient
  *          |            ↑   ↑          |                       |
  *          |            |   |          |                       |
  *          +------------+   +----------+                       |
@@ -314,6 +311,32 @@ public sealed class AbstractPermitteeId(
         override fun asString(): String = "t$groupId.$memberId"
     }
 
+    /**
+     * 表示唯一的一个 [陌生人][Stranger]
+     *
+     * - **直接父标识符**: [ExactUser], [AnyStranger]
+     * - **间接父标识符**: [AnyUser], [AnyContact]
+     * - 字符串表示: "s$id"
+     */
+    public data class ExactStranger(
+        public val id: Long,
+    ) : AbstractPermitteeId(ExactUser(id), AnyStranger) {
+        override fun asString(): String = "s$id"
+    }
+
+    /**
+     * 表示唯一的一个 [其他客户端][OtherClient]
+     *
+     * - **直接父标识符**: [AnyOtherClient]
+     * - **间接父标识符**: [AnyContact]
+     * - 字符串表示: "o$id"
+     */
+    public data class ExactOtherClient(
+        public val id: Long,
+    ) : AbstractPermitteeId(AnyOtherClient) {
+        override fun asString(): String = "o$id"
+    }
+
 
     /**
      * 表示任何 [用户][User]
@@ -327,7 +350,29 @@ public sealed class AbstractPermitteeId(
     }
 
     /**
-     * 表示任何 [用户][User]
+     * 表示任何 [陌生人][Stranger]
+     *
+     * - **直接父标识符**: [AnyUser]
+     * - **间接父标识符**: [AnyContact]
+     * - 字符串表示: "s*"
+     */
+    public object AnyStranger : AbstractPermitteeId(AnyUser) {
+        override fun asString(): String = "s*"
+    }
+
+    /**
+     * 表示任何 [其他客户端][OtherClient]
+     *
+     * - **直接父标识符**: [AnyContact]
+     * - **间接父标识符**: 无
+     * - 字符串表示: "o*"
+     */
+    public object AnyOtherClient : AbstractPermitteeId(AnyContact) {
+        override fun asString(): String = "o*"
+    }
+
+    /**
+     * 表示精确 [用户][User]
      *
      * - **直接父标识符**: [AnyUser]
      * - **间接父标识符**: [AnyContact]

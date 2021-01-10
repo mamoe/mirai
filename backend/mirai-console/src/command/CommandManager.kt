@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
+import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.executeCommand
 import net.mamoe.mirai.console.internal.command.executeCommandImpl
@@ -97,7 +98,7 @@ public interface CommandManager {
      *
      * ### 指令解析流程
      * 1. [CommandCallParser] 将 [MessageChain] 解析为 [CommandCall]
-     * 2. [CommandCallResolver] 将 [CommandCall] 解析为 []
+     * 2. [CommandCallResolver] 将 [CommandCall] 解析为 [ResolvedCommandCall]
      * 1. [message] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
      * 2. 参数语法分析.
      *   在当前的实现下, [message] 被以空格和 [SingleMessage] 分割.
@@ -228,7 +229,7 @@ public interface CommandManager {
 public suspend inline fun CommandSender.executeCommand(
     message: String,
     checkPermission: Boolean = true,
-): CommandExecuteResult = CommandManager.executeCommand(this, PlainText(message).asMessageChain(), checkPermission)
+): CommandExecuteResult = CommandManager.executeCommand(this, PlainText(message).toMessageChain(), checkPermission)
 
 
 /**
@@ -242,7 +243,7 @@ public suspend inline fun Command.execute(
     sender: CommandSender,
     vararg arguments: Message = emptyArray(),
     checkPermission: Boolean = true,
-): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments.asMessageChain(), checkPermission)
+): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments.toMessageChain(), checkPermission)
 
 /**
  * 执行一个确切的指令

@@ -71,7 +71,7 @@ public object MessageContentTypeVariant : TypeVariant<MessageContent> {
 public object MessageChainTypeVariant : TypeVariant<MessageChain> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageChain>()
-    override fun mapValue(valueArgument: Message): MessageChain = valueArgument.asMessageChain()
+    override fun mapValue(valueArgument: Message): MessageChain = valueArgument.toMessageChain()
 }
 
 @ExperimentalCommandDescriptors

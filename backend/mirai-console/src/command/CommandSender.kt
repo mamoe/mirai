@@ -9,7 +9,7 @@
 
 @file:Suppress(
     "NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME", "FunctionName", "SuspendFunctionOnCoroutineScope",
-    "unused"
+    "unused", "MemberVisibilityCanBePrivate"
 )
 
 package net.mamoe.mirai.console.command
@@ -51,12 +51,16 @@ import kotlin.coroutines.CoroutineContext
  * - [FriendMessageEvent.toCommandSender]
  * - [GroupMessageEvent.toCommandSender]
  * - [TempMessageEvent.toCommandSender]
+ * - [StrangerMessageEvent.toCommandSender]
+ * - [OtherClientMessageEvent.toCommandSender]
  *
  * - [Member.asCommandSender]
- * - [Member.asTempCommandSender]]
- * - [Member.asMemberCommandSender]]
+ * - [NormalMember.asTempCommandSender]
+ * - [Member.asMemberCommandSender]
  * - [Friend.asCommandSender]
  * - [User.asCommandSender]
+ * - [Stranger.asCommandSender]
+ * - [OtherClient.asCommandSender]
  *
  * ## 实现 [CommandSender]
  * 除 Console 前端外, 在任何时候都不要实现 [CommandSender] (包括使用委托). 必须使用上述扩展获取 [CommandSender] 实例.
@@ -75,11 +79,16 @@ import kotlin.coroutines.CoroutineContext
  * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSender]
  * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSender]
  * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSender]
+ * - 若在陌生人会话环境, 对应 [CommandSender] 为 [StrangerCommandSender]
+ * - 若在其他客户端会话环境, 对应 [CommandSender] 为 [OtherClientCommandSender]
  *
  * 三级子类, 当真实收到由用户执行的指令时:
  * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSenderOnMessage]
  * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSenderOnMessage]
  * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSenderOnMessage]
+ * - 若在陌生人会话环境, 对应 [CommandSender] 为 [StrangerCommandSenderOnMessage]
+ * - 若在其他客户端会话环境, 对应 [CommandSender] 为 [OtherClientCommandSenderOnMessage]
+ *
  *
  * 类型关系如图. 箭头指向的是父类.
  *
@@ -200,6 +209,20 @@ public interface CommandSender : CoroutineScope, Permittee {
         public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
 
         /**
+         * 构造 [StrangerCommandSenderOnMessage]
+         */
+        @JvmStatic
+        @JvmName("from")
+        public fun StrangerMessageEvent.toCommandSender(): StrangerCommandSenderOnMessage = StrangerCommandSenderOnMessage(this)
+
+        /**
+         * 构造 [OtherClientCommandSenderOnMessage]
+         */
+        @JvmStatic
+        @JvmName("from")
+        public fun OtherClientMessageEvent.toCommandSender(): OtherClientCommandSenderOnMessage = OtherClientCommandSenderOnMessage(this)
+
+        /**
          * 构造 [CommandSenderOnMessage]
          */
         @JvmStatic
@@ -209,6 +232,8 @@ public interface CommandSender : CoroutineScope, Permittee {
             is FriendMessageEvent -> toCommandSender()
             is GroupMessageEvent -> toCommandSender()
             is TempMessageEvent -> toCommandSender()
+            is StrangerMessageEvent -> toCommandSender()
+            is OtherClientMessageEvent -> toCommandSender()
             else -> throw IllegalArgumentException("Unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
         } as CommandSenderOnMessage<T>
 
@@ -245,6 +270,20 @@ public interface CommandSender : CoroutineScope, Permittee {
         public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
         /**
+         * 得到 [StrangerCommandSender]
+         */
+        @JvmStatic
+        @JvmName("of")
+        public fun Stranger.asCommandSender(): StrangerCommandSender = StrangerCommandSender(this)
+
+        /**
+         * 得到 [OtherClientCommandSender]
+         */
+        @JvmStatic
+        @JvmName("of")
+        public fun OtherClient.asCommandSender(): OtherClientCommandSender = OtherClientCommandSender(this)
+
+        /**
          * 得到 [UserCommandSender]
          *
          * @param isTemp
@@ -254,6 +293,7 @@ public interface CommandSender : CoroutineScope, Permittee {
         public fun User.asCommandSender(isTemp: Boolean): UserCommandSender = when (this) {
             is Friend -> this.asCommandSender()
             is Member -> if (isTemp && this is NormalMember) TempCommandSender(this) else MemberCommandSender(this)
+            is Stranger -> this.asCommandSender()
             else -> error("stub")
         }
     }
@@ -469,6 +509,7 @@ public fun CommandSender.getGroupOrNull(): Group? {
  * @see MemberCommandSender 代表一个 [群员][Member] 执行指令
  * @see FriendCommandSender 代表一个 [好友][Friend] 执行指令
  * @see TempCommandSender 代表一个 [群员][Member] 通过临时会话执行指令
+ * @see StrangerCommandSender 代表一个 [陌生人][Stranger] 执行指令
  *
  * @see CommandSenderOnMessage
  */
@@ -524,9 +565,7 @@ public open class FriendCommandSender internal constructor(
  */
 public open class MemberCommandSender internal constructor(
     public final override val user: Member,
-) : AbstractUserCommandSender(),
-    GroupAwareCommandSender,
-    CoroutineScope by user.childScope("MemberCommandSender") {
+) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("MemberCommandSender") {
     public final override val group: Group get() = user.group
     public override val subject: Group get() = group
     public override fun toString(): String = "MemberCommandSender($user)"
@@ -546,11 +585,9 @@ public open class MemberCommandSender internal constructor(
  */
 public open class TempCommandSender internal constructor(
     public final override val user: NormalMember,
-) : AbstractUserCommandSender(),
-    GroupAwareCommandSender,
-    CoroutineScope by user.childScope("TempCommandSender") {
+) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("TempCommandSender") {
     public override val group: Group get() = user.group
-    public override val subject: Contact get() = group
+    public override val subject: NormalMember get() = user
     public override fun toString(): String = "TempCommandSender($user)"
 
     public override val permitteeId: PermitteeId =
@@ -560,9 +597,48 @@ public open class TempCommandSender internal constructor(
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
-        return user.sendMessage(message) // just throw this error
-    }
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
+}
+
+/**
+ * 代表一个 [陌生人][Stranger] 通过私聊执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
+ * @see StrangerCommandSenderOnMessage 代表一个 [陌生人][Stranger] 主动在私聊发送消息执行指令
+ */
+public open class StrangerCommandSender internal constructor(
+    public final override val user: Stranger,
+) : AbstractUserCommandSender(), CoroutineScope by user.childScope("StrangerCommandSender") {
+    public override val subject: Stranger get() = user
+    public override fun toString(): String = "StrangerCommandSender($user)"
+
+    public override val permitteeId: PermitteeId = AbstractPermitteeId.ExactStranger(user.id)
+
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<Stranger> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Stranger> = user.sendMessage(message)
+}
+
+/**
+ * 代表一个 [其他客户端][OtherClient] 通过私聊执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
+ * @see OtherClientCommandSenderOnMessage 代表一个[其他客户端][OtherClient] 主动在私聊发送消息执行指令
+ */
+public open class OtherClientCommandSender internal constructor(
+    public val client: OtherClient,
+) : AbstractCommandSender(), CoroutineScope by client.childScope("OtherClientCommandSender") {
+    public final override val user: Friend get() = client.bot.asFriend
+    public final override val bot: Bot get() = client.bot
+    public final override val name: String get() = client.bot.nick
+    public override val subject: Friend get() = user
+    public override fun toString(): String = "OtherClientCommandSender($user)"
+
+    public override val permitteeId: PermitteeId = AbstractPermitteeId.ExactStranger(user.id)
+
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<OtherClient> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> = client.sendMessage(message)
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -576,9 +652,7 @@ public open class TempCommandSender internal constructor(
  * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
  * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  */
-public interface CommandSenderOnMessage<T : MessageEvent> :
-    CommandSender,
-    MessageEventExtensions<User, Contact> {
+public interface CommandSenderOnMessage<T : MessageEvent> : CommandSender {
 
     /**
      * 消息源 [MessageEvent]
@@ -592,12 +666,7 @@ public interface CommandSenderOnMessage<T : MessageEvent> :
  */
 public class FriendCommandSenderOnMessage internal constructor(
     public override val fromEvent: FriendMessageEvent,
-) : FriendCommandSender(fromEvent.sender),
-    CommandSenderOnMessage<FriendMessageEvent>,
-    MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Friend get() = fromEvent.subject
-    public override val bot: Bot get() = super.bot
-}
+) : FriendCommandSender(fromEvent.sender), CommandSenderOnMessage<FriendMessageEvent>
 
 /**
  * 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
@@ -605,22 +674,28 @@ public class FriendCommandSenderOnMessage internal constructor(
  */
 public class MemberCommandSenderOnMessage internal constructor(
     public override val fromEvent: GroupMessageEvent,
-) : MemberCommandSender(fromEvent.sender),
-    CommandSenderOnMessage<GroupMessageEvent>,
-    MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Group get() = fromEvent.subject
-    public override val bot: Bot get() = super.bot
-}
+) : MemberCommandSender(fromEvent.sender), CommandSenderOnMessage<GroupMessageEvent>
 
 /**
  * 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
- * @see TempCommandSender 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式
+ * @see TempCommandSender 代表一个 [群员][Member] 执行指令, 但不一定是通过私聊方式
  */
 public class TempCommandSenderOnMessage internal constructor(
     public override val fromEvent: TempMessageEvent,
-) : TempCommandSender(fromEvent.sender as NormalMember),
-    CommandSenderOnMessage<TempMessageEvent>,
-    MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Member get() = fromEvent.subject
-    public override val bot: Bot get() = super.bot
-}
+) : TempCommandSender(fromEvent.sender), CommandSenderOnMessage<TempMessageEvent>
+
+/**
+ * 代表一个 [陌生人][Stranger] 主动在私聊发送消息执行指令
+ * @see StrangerCommandSender 代表一个 [陌生人][Stranger] 执行指令, 但不一定是通过私聊方式
+ */
+public class StrangerCommandSenderOnMessage internal constructor(
+    public override val fromEvent: StrangerMessageEvent,
+) : StrangerCommandSender(fromEvent.sender), CommandSenderOnMessage<StrangerMessageEvent>
+
+/**
+ * 代表一个 [其他客户端][OtherClient] 主动在私聊发送消息执行指令
+ * @see OtherClientCommandSender 代表一个 [其他客户端][OtherClient] 执行指令, 但不一定是通过私聊方式
+ */
+public class OtherClientCommandSenderOnMessage internal constructor(
+    public override val fromEvent: OtherClientMessageEvent,
+) : OtherClientCommandSender(fromEvent.client), CommandSenderOnMessage<OtherClientMessageEvent>
