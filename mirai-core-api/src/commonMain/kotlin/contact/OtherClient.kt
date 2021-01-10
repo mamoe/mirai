@@ -115,6 +115,7 @@ public enum class Platform(
 public enum class ClientKind(
     @MiraiInternalApi public val id: Int,
 ) {
+
     ANDROID_PAD(68104),
     AOL_CHAOJIHUIYUAN(73730),
     AOL_HUIYUAN(73474),
@@ -132,16 +133,18 @@ public enum class ClientKind(
     MOBILE_IPAD_NEW(72194),
     MOBILE_IPHONE(67586),
     MOBILE_OTHER(65794),
-    MOBILE_PC(65793),
+    MOBILE_PC_QQ(65793),
+    MOBILE_PC_TIM(77313),
     MOBILE_WINPHONE_NEW(72706),
     QQ_FORELDER(70922),
     QQ_SERVICE(71170),
     TV_QQ(69130),
     WIN8(69899),
-    WINPHONE(65804);
+    WINPHONE(65804),
+    UNKNOWN(0);
 
     public companion object {
         @MiraiInternalApi
-        public operator fun get(id: Int): ClientKind? = values().find { it.id == id }
+        public operator fun get(id: Int): ClientKind = values().find { it.id == id } ?: UNKNOWN
     }
 }
