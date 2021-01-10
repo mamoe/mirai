@@ -140,11 +140,10 @@ public enum class ClientKind(
     QQ_SERVICE(71170),
     TV_QQ(69130),
     WIN8(69899),
-    WINPHONE(65804),
-    UNKNOWN(0);
+    WINPHONE(65804);
 
     public companion object {
         @MiraiInternalApi
-        public operator fun get(id: Int): ClientKind = values().find { it.id == id } ?: UNKNOWN
+        public operator fun get(id: Int): ClientKind? = values().find { it.id == id }
     }
 }
