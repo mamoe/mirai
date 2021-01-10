@@ -13,7 +13,7 @@ import org.gradle.api.attributes.Attribute
 
 object Versions {
     const val core = "2.0-RC-dev-8"
-    const val console = "2.0-RC"
+    const val console = "2.0-RC-dev-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
