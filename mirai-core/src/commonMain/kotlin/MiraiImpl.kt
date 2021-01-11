@@ -108,7 +108,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
-    override val Http: HttpClient = HttpClient(OkHttp) {
+    override var Http: HttpClient = HttpClient(OkHttp) {
         install(HttpTimeout) {
             this.requestTimeoutMillis = 30_0000
             this.connectTimeoutMillis = 30_0000

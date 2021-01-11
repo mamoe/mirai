@@ -7,13 +7,14 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INTERFACE_NOT_SUPPORTED")
+@file:Suppress("INTERFACE_NOT_SUPPORTED", "PropertyName")
 @file:JvmName("Mirai")
 @file:OptIn(LowLevelApi::class, MiraiExperimentalApi::class, MiraiInternalApi::class)
 
 package net.mamoe.mirai
 
 import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
@@ -45,20 +46,26 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @see BotFactory.INSTANCE
      */
-    @MiraiInternalApi
-    @Suppress("PropertyName")
     public val BotFactory: BotFactory
 
     /**
-     * Mirai 全局使用的 [FileCacheStrategy]. 覆盖后将会立即应用到全局.
+     * Mirai 全局使用的 [FileCacheStrategy].
+     *
+     * 覆盖后将会立即应用到全局.
      */
-    @Suppress("PropertyName")
     public var FileCacheStrategy: FileCacheStrategy
 
-    @Suppress("PropertyName")
-    @MiraiInternalApi
-    public val Http: HttpClient
+    /**
+     * Mirai 上传好友图片等使用的 Ktor [HttpClient].
+     * 默认使用 [OkHttp] 引擎, 连接超时为 30s.
+     *
+     * 覆盖后将会立即应用到全局.
+     */
+    public var Http: HttpClient
 
+    /**
+     * 获取 uin
+     */
     public fun getUin(contactOrBot: ContactOrBot): Long {
         return if (contactOrBot is Group)
             calculateGroupUinByGroupCode(contactOrBot.id)
