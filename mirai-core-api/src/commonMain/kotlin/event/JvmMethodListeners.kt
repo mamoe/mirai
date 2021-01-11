@@ -23,7 +23,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * ### Kotlin 函数
  * Kotlin 函数要求:
- * - 接收者 (英 receiver) 和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
+ * - 接收者和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
  *   接收者或函数参数的类型都必须为 [Event] 或其子类.
  * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [EventChannel.subscribeAlways], 为 [ListeningStatus] 时将注册为 [EventChannel.subscribe].
  *   任何其他类型的返回值将会在注册时抛出异常.
@@ -108,7 +108,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * // T 表示任何 Event 类型.
  * void onEvent(T)
  * Void onEvent(T)
- * @NotNull ListeningStatus onEvent(T) // 返回 null 时将抛出异常
+ * @NotNull ListeningStatus onEvent(T) // 禁止返回 null
  * ```
  *
  *

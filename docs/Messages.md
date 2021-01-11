@@ -10,19 +10,19 @@
   - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
   - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
 - [消息链](#消息链)
+  - [发送消息](#发送消息)
   - [构造消息链](#构造消息链)
   - [元素唯一性](#元素唯一性)
   - [获取消息链中的消息元素](#获取消息链中的消息元素)
 
 ## 消息系统
 
-在 Contacts 章节提到，要发送消息，使用 `Contact.sendMessage(Message)`。
+在 Contacts 章节提到，要发送消息，使用 `Contact.sendMessage(Message)`。`Message` 架构如下图所示。
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIE1lc3NhZ2VDaGFpblxuTWVzc2FnZUNoYWluIDogTGlzdH5TaW5nbGVNZXNzYWdlflxuXG5NZXNzYWdlPHwtLU1lc3NhZ2VDaGFpblxuTWVzc2FnZTx8LS1TaW5nbGVNZXNzYWdlXG5cbk1lc3NhZ2VDaGFpbiBvLS0gU2luZ2xlTWVzc2FnZVxuXG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VDb250ZW50XG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VNZXRhZGF0YVxuXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIE1lc3NhZ2VDaGFpblxuTWVzc2FnZUNoYWluIDogTGlzdH5TaW5nbGVNZXNzYWdlflxuXG5NZXNzYWdlPHwtLU1lc3NhZ2VDaGFpblxuTWVzc2FnZTx8LS1TaW5nbGVNZXNzYWdlXG5cbk1lc3NhZ2VDaGFpbiBvLS0gU2luZ2xlTWVzc2FnZVxuXG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VDb250ZW50XG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VNZXRhZGF0YVxuXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)
 
 `SingleMessage` 表示单个消息元素，`MessageChain`（消息链） 是 `List<SingleMessage>`。主动发送的消息和从服务器接收消息都是 `MessageChain`。
 
-mirai 提供大量消息链的扩展：[MessageChain.kt](../mirai-core-api/src/commonMain/kotlin/message/data/MessageChain.kt#L59)。
 
 > 回到 [目录](#目录)
 
@@ -130,6 +130,7 @@ at.toMiraiCode() // 结果为 `[mirai:at:123]`
 |     [`PokeMessage`]      | `[mirai:poke:$name,$pokeType,$id]`               |
 |       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
 |       [`LightApp`]       | `[mirai:app:$content]`                           |
+| [`SimpleServiceMessage`] | `[mirai:service:$serviceId,$content]`            |
 
 ### 由 mirai 码字符串取得 `MessageChain` 实例
 
@@ -149,6 +150,8 @@ MessageChain chain = MiraiCode.parseMiraiCode("[mirai:atall]");
 [`CodableMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/code/CodableMessage.kt
 
 前文已经介绍消息链，这里介绍消息链的使用。
+
+### 发送消息
 
 在 [Contacts 章节](Contacts.md) 提到，要发送消息使用 `Contact.sendMessage`。`Contact.sendMessage` 的定义是：
 ```kotlin
@@ -226,7 +229,7 @@ MessageChain chain = new MessageChainBuilder()
 ### 元素唯一性
 
 [`MessageKey`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageKey.kt
-[`ConstrainSingle`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt#L350-L370
+[`ConstrainSingle`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt#L273-L287
 [`HummerMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
 
 部分元素只能单一存在于消息链中。这样的元素实现接口 [`ConstrainSingle`]。
@@ -270,7 +273,7 @@ val image: Image? = chain.filterIsInstance<Image>().firstOrNull()
 Image image = (Image) chain.stream().filter(Image.class::isInstance).findFirst().orElse(null);
 ```
 
-在 Kotlin 要获取第一个指定类型实例还可以使用扩展。
+在 Kotlin 要获取第一个指定类型实例还可以使用快捷扩展。
 ```kotlin
 val image: Image? = chain.findIsInstance<Image>()
 val image: Image = chain.firstIsInstance<Image>() // 不存在时 NoSuchElementException
