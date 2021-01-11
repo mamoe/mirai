@@ -27,6 +27,7 @@ import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.MiraiCode
 import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.parseFromMiraiCode
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -107,7 +108,7 @@ import kotlin.streams.asSequence
  *   ```java
  *   MessageChain chain = new PlainText("Hello ").plus(new PlainText("Mirai!"))
  *   ```
- * - [MessageChainBuilder]:
+ * - [MessageChainBuilder][MessageChainBuilder]:
  *   ```java
  *   MessageChainBuilder builder = MessageChainBuilder.create();
  *   builder.append(new PlainText("Hello "));
@@ -121,7 +122,7 @@ import kotlin.streams.asSequence
  *
  * 当添加只允许单独存在的消息元素到一个消息链时, 已有的元素可能会被删除或替换. 详见 [AbstractPolymorphicMessageKey] 和 [ConstrainSingle].
  *
- * # 操作 [MessageChain]
+ * # 操作消息链
  *
  * [MessageChain] 继承 `List<SingleMessage>`. 可以以 [List] 的方式处理 [MessageChain].
  *
@@ -133,6 +134,14 @@ import kotlin.streams.asSequence
  * ```
  *
  * 相关地还可以使用 [MessageChain.contains] 和 [MessageChain.getOrFail]
+ *
+ * ## 撤回和引用
+ * - [MessageSource.quote]
+ * - [MessageSource.recall]
+ * - [MessageSource.recallIn]
+ * - `MessageChain.quote`
+ * - `MessageChain.recall`
+ * - `MessageChain.recallIn`
  *
  * ## Kotlin 扩展
  *
@@ -149,29 +158,20 @@ import kotlin.streams.asSequence
  * - [MessageChain.contentsList]
  * - [MessageChain.metadataList]
  *
+ * # 序列化
  *
- * ## 序列化
- *
- * ### kotlinx-serialization 序列化
+ * ## kotlinx-serialization 序列化
  *
  * - 使用 [MessageChain.serializeToJsonString] 将 [MessageChain] 序列化为 JSON [String].
  * - 使用 [MessageChain.deserializeFromJsonString] 将 JSON [String] 反序列化为 [MessageChain].
  *
- * ### Mirai Code 序列化
+ * ## Mirai Code 序列化
  *
  * 详见 [MiraiCode]
  *
  * - 使用 [MessageChain.toMiraiCode] 将 [MessageChain] 序列化为 Mirai Code [String].
- * - 使用 [MessageChain.toMiraiCode] 将 Mirai Code [String] 反序列化为 [MessageChain].
+ * - 使用 [MessageChain.parseFromMiraiCode] 将 Mirai Code [String] 反序列化为 [MessageChain].
  *
- *
- * ## 撤回和引用
- * - [MessageSource.quote]
- * - [MessageSource.recall]
- * - [MessageSource.recallIn]
- * - `MessageChain.quote`
- * - `MessageChain.recall`
- * - `MessageChain.recallIn`
  */
 @Serializable(MessageChain.Serializer::class)
 public interface MessageChain :
@@ -493,6 +493,7 @@ public fun Message.toMessageChain(): MessageChain = when (this) {
  *
  * val at: At by message
  * val image: Image by message
+ * ```
  */
 @JvmSynthetic
 public inline operator fun <reified T : SingleMessage> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T =
