@@ -248,7 +248,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     // region subscribe
 
     /**
-     * 在指定的 [协程作用域][CoroutineScope] 下创建一个事件监听器, 监听所有 [E] 及其子类事件.
+     * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件.
      *
      * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
      *
