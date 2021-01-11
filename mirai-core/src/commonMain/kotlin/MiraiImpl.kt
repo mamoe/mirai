@@ -378,7 +378,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         time: Int
     ): Boolean = bot.asQQAndroidBot().run {
         val response = network.run {
-            PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+            PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
                 client,
                 groupUin,
                 targetId,
@@ -447,7 +447,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     "can only recall a message sent by bot"
                 }
                 source as OnlineMessageSourceToTempImpl
-                PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+                PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
                     bot.client,
                     (source.target.group as GroupImpl).uin,
                     source.targetId,
@@ -474,7 +474,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }
-                        PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+                        PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
                             bot.client,
                             source.targetId, // groupUin
                             source.targetId, // memberUin

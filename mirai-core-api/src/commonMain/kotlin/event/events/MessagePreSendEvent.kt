@@ -73,16 +73,37 @@ public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
 ) : UserMessagePreSendEvent()
 
 /**
- * 在发送群临时会话消息前广播的事件.
+ * 在发送临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class TempMessagePreSendEvent @MiraiInternalApi constructor(
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempMessagePreSendEvent 已更改为 GroupTempMessagePreSendEvent",
+    replaceWith = ReplaceWith(
+        "GroupTempMessagePreSendEvent",
+        "net.mamoe.mirai.event.events.GroupTempMessagePreSendEvent"
+    ),
+    DeprecationLevel.ERROR
+)
+public sealed class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 修改后将会同时应用于发送. */
     public override var message: Message
 ) : UserMessagePreSendEvent() {
-    public val group: Group get() = target.group
+    public open val group: Group get() = target.group
+}
+
+/**
+ * 在发送群临时会话消息前广播的事件.
+ * @see MessagePreSendEvent
+ */
+public data class GroupTempMessagePreSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Member,
+    /** 待发送的消息. 修改后将会同时应用于发送. */
+    public override var message: Message
+) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message) {
+    public override val group: Group get() = target.group
 }
 
 /**

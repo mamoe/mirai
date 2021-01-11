@@ -69,13 +69,13 @@ internal class NormalMemberImpl constructor(
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<NormalMember> {
         val chain = kotlin.runCatching {
-            TempMessagePreSendEvent(this, message).broadcast()
+            GroupTempMessagePreSendEvent(this, message).broadcast()
         }.onSuccess {
             check(!it.isCancelled) {
-                throw EventCancelledException("cancelled by TempMessagePreSendEvent")
+                throw EventCancelledException("cancelled by GroupTempMessagePreSendEvent")
             }
         }.getOrElse {
-            throw EventCancelledException("exception thrown when broadcasting TempMessagePreSendEvent", it)
+            throw EventCancelledException("exception thrown when broadcasting GroupTempMessagePreSendEvent", it)
         }.message.toMessageChain()
 
         chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
@@ -98,10 +98,10 @@ internal class NormalMemberImpl constructor(
 
         result.fold(
             onSuccess = {
-                TempMessagePostSendEvent(this, chain, null, it)
+                GroupTempMessagePostSendEvent(this, chain, null, it)
             },
             onFailure = {
-                TempMessagePostSendEvent(this, chain, it, null)
+                GroupTempMessagePostSendEvent(this, chain, it, null)
             }
         ).broadcast()
 

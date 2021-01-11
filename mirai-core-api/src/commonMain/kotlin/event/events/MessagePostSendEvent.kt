@@ -147,7 +147,15 @@ public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
  * 在群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class TempMessagePostSendEvent @MiraiInternalApi constructor(
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempMessagePostSendEvent 已更改为 GroupTempMessagePostSendEvent",
+    replaceWith = ReplaceWith(
+        "GroupTempMessagePostSendEvent",
+        "net.mamoe.mirai.event.events.GroupTempMessagePostSendEvent"
+    ),
+    DeprecationLevel.ERROR
+)
+public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -163,7 +171,30 @@ public data class TempMessagePostSendEvent @MiraiInternalApi constructor(
      */
     public override val receipt: MessageReceipt<Member>?
 ) : UserMessagePostSendEvent<Member>() {
-    public val group: Group get() = target.group
+    public open val group: Group get() = target.group
+}
+
+/**
+ * 在群临时会话消息发送后广播的事件.
+ * @see MessagePostSendEvent
+ */
+public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Member,
+    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    public override val message: MessageChain,
+    /**
+     * 发送消息时抛出的异常. `null` 表示消息成功发送.
+     * @see result
+     */
+    public override val exception: Throwable?,
+    /**
+     * 发送消息成功时的回执. `null` 表示消息发送失败.
+     * @see result
+     */
+    public override val receipt: MessageReceipt<Member>?
+) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePostSendEvent(target, message, exception, receipt) {
+    public override val group: Group get() = target.group
 }
 
 /**

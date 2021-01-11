@@ -98,8 +98,8 @@ public interface NormalMember : Member {
      * @see FriendMessagePreSendEvent 当此成员是好友时发送消息前事件
      * @see FriendMessagePostSendEvent 当此成员是好友时发送消息后事件
      *
-     * @see TempMessagePreSendEvent 当此成员不是好友时发送消息前事件
-     * @see TempMessagePostSendEvent 当此成员不是好友时发送消息后事件
+     * @see GroupTempMessagePreSendEvent 当此成员不是好友时发送消息前事件
+     * @see GroupTempMessagePostSendEvent 当此成员不是好友时发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出

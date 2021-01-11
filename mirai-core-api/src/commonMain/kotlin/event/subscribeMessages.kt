@@ -69,7 +69,7 @@ public typealias MessageEventSubscribersBuilder = MessageSubscribersBuilder<Mess
  *
  * @see subscribeFriendMessages
  * @see subscribeGroupMessages
- * @see subscribeTempMessages
+ * @see subscribeGroupTempMessages
  * @see subscribeOtherClientMessages
  * @see subscribeStrangerMessages
  */

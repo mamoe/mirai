@@ -86,7 +86,7 @@ public interface MessageEvent : Event, Packet, BotPassiveEvent { // TODO: 2021/1
  * 来自 [User] 的消息
  *
  * @see FriendMessageEvent
- * @see TempMessageEvent
+ * @see GroupTempMessageEvent
  */
 public interface UserMessageEvent : MessageEvent {
     public override val subject: User
@@ -146,7 +146,7 @@ public class OtherClientMessageEvent constructor(
  * 来自一个可以知道其 [Group] 的用户消息
  *
  * @see FriendMessageEvent
- * @see TempMessageEvent
+ * @see GroupTempMessageEvent
  */
 public interface GroupAwareMessageEvent : MessageEvent {
     public val group: Group
@@ -198,21 +198,7 @@ public sealed class TempMessageEvent constructor(
     public override val sender: NormalMember,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractMessageEvent(), GroupAwareMessageEvent, UserMessageEvent {
-    init {
-        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessageEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
-    }
-
-    public override val bot: Bot get() = sender.bot
-    public override val subject: NormalMember get() = sender
-    public override val group: Group get() = sender.group
-    public override val senderName: String get() = sender.nameCardOrNick
-    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
-
-    public override fun toString(): String =
-        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
-}
+) : AbstractMessageEvent(), GroupAwareMessageEvent, UserMessageEvent
 
 // support by mirai 2.1
 //
@@ -233,7 +219,7 @@ public class GroupTempMessageEvent(
 ) : @Suppress("DEPRECATION_ERROR") TempMessageEvent(sender, message, time), GroupAwareMessageEvent, UserMessageEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessageEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 
     public override val bot: Bot get() = sender.bot

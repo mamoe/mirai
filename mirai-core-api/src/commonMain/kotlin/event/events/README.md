@@ -28,15 +28,21 @@
 - 被动收到消息：[MessageEvent](MessageEvent.kt)
   - 群消息：GroupMessageEvent
   - 好友消息：FriendMessageEvent
-  - 群临时会话消息：TempMessageEvent
+  - 群临时会话消息：GroupTempMessageEvent
+  - 陌生人消息：StrangerMessageEvent
+  - 其他客户端消息：OtherClientMessageEvent
 - 主动发送消息前: [MessagePreSendEvent](MessagePreSendEvent.kt)
   - 群消息: GroupMessagePreSendEvent
   - 好友消息: FriendMessagePreSendEvent
-  - 群临时会话消息: TempMessagePreSendEvent
+  - 群临时会话消息: GroupTempMessagePreSendEvent
+  - 陌生人消息：StrangerMessagePreSendEvent
+  - 其他客户端消息：OtherClientMessagePreSendEvent
 - 主动发送消息后: [MessagePostSendEvent](MessagePostSendEvent.kt)
   - 群消息: GroupMessagePostSendEvent
   - 好友消息: FriendMessagePostSendEvent
-  - 群临时会话消息: TempMessagePostSendEvent
+  - 群临时会话消息: GroupTempMessagePostSendEvent
+  - 陌生人消息：StrangerMessagePostSendEvent
+  - 其他客户端消息：OtherClientMessagePostSendEvent
 - 消息撤回: [MessageRecallEvent](MessageRecallEvent.kt)
   - 好友撤回: FriendRecall
   - 群撤回: GroupRecall

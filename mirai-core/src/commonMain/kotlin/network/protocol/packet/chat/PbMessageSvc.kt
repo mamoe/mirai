@@ -79,7 +79,7 @@ internal class PbMessageSvc {
             }
         }
 
-        fun createForTempMessage(
+        fun createForGroupTempMessage(
             client: QQAndroidClient,
             groupUin: Long,
             toUin: Long,
