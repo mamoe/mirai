@@ -279,7 +279,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         bot.otherClients.delegate.clear()
         bot.otherClients.delegate.addAll(list.map { bot.createOtherClient(it) })
 
-        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform.name})" } }
+        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform?.name ?: "unknown platform"})" } }
     }
 
     // caches

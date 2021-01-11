@@ -221,7 +221,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         fun SvcDevLoginInfo.toOtherClientInfo() = OtherClientInfo(
             iAppId.toInt(),
-            Platform.getByTerminalId(iTerType?.toInt() ?: 0) ?: Platform.UNKNOWN,
+            Platform.getByTerminalId(iTerType?.toInt() ?: 0),
             deviceName.orEmpty(),
             deviceTypeInfo.orEmpty()
         )

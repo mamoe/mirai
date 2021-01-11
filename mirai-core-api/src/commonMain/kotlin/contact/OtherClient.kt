@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PAD
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.toLongUnsigned
 
@@ -50,7 +49,7 @@ public interface OtherClient : Contact {
     }
 }
 
-public inline val OtherClient.platform: Platform get() = info.platform
+public inline val OtherClient.platform: Platform? get() = info.platform
 public inline val OtherClient.deviceName: String get() = info.deviceName
 public inline val OtherClient.deviceKind: String get() = info.deviceKind
 
@@ -67,7 +66,7 @@ public data class OtherClientInfo @MiraiInternalApi constructor(
     /**
      * 登录平台
      */
-    public val platform: Platform,
+    public val platform: Platform?,
 
     /**
      * 示例：
@@ -98,9 +97,6 @@ public enum class Platform(
     IOS(3, 1),
     MOBILE(2, 2), // android
     WINDOWS(1, 3),
-
-    @MiraiExperimentalApi
-    UNKNOWN(0, 0)
     ;
 
     public companion object {
