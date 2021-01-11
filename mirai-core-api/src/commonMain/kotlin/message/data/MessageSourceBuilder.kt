@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSourceBuilder.Companion.create
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 /**
@@ -62,10 +63,10 @@ public class MessageSourceAmender internal constructor(
     public override var internalIds: IntArray = origin.internalIds
 
     /** 从另一个 [MessageSource] 中复制 [ids], [internalIds], [time]*/
+    @Deprecated("use metadata", ReplaceWith("metadata(another)"))
+    @PlannedRemoval("2.0.0")
     public fun metadataFrom(another: MessageSource) {
-        this.ids = another.ids
-        this.internalIds = another.internalIds
-        this.time = another.time
+        metadata(another)
     }
 }
 
