@@ -9,15 +9,16 @@
 
 package net.mamoe.mirai.message.code
 
-import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 
 
 /**
  * 可以使用 mirai 码表示的 [Message] 类型.
  *
- * 从字符串解析 mirai 码：[MiraiCode.parseMiraiCode]
+ * 从字符串解析 mirai 码：[MiraiCode.deserializeMiraiCode]
  *
  * @see At
  * @see AtAll
@@ -33,7 +34,11 @@ public interface CodableMessage : Message {
     /**
      * 转换为 mirai 码.
      */
-    public fun toMiraiCode(): String = buildString { appendMiraiCodeTo(this) }
+    public fun serializeToMiraiCode(): String = buildString { appendMiraiCodeTo(this) }
+
+    @PlannedRemoval("2.0.0")
+    @Deprecated("Use serializeToMiraiCode()", ReplaceWith("serializeToMiraiCode()"), DeprecationLevel.ERROR)
+    public fun toMiraiCode(): String = this.serializeToMiraiCode()
 
     // Using StringBuilder faster than direct plus objects
     @MiraiExperimentalApi

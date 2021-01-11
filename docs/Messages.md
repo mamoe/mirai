@@ -38,11 +38,6 @@
 
 Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 
-消息拥有三种转换到字符串的表示方式。
-- `toMiraiCode()`: 消息的一种序列化方式，格式为 `[mirai:TYPE:PROP]`，其中 `TYPE` 为消息类型, `PROP` 为属性。
-- `contentToSting()`: QQ 对话框中以纯文本方式会显示的消息内容。无法用纯文字表示的消息会丢失信息，如图片总是 `[图片]`。
-- `toString()`: Java 对象的 `toString()`，会尽可能包含多的信息用于调试作用，**行为可能不确定**。
-
 [`PlainText`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
 [`At`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
 [`AtAll`]: ../mirai-core-api/src/commonMain/kotlin/message/data/AtAll.kt
@@ -60,29 +55,34 @@ Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 [`Voice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
 [`ForwardMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ForwardMessage.kt
 
-|          消息类型          | 属性                                        | 解释                 | `contentToString()`                |
-|:------------------------:|:--------------------------------------------|:--------------------|:-----------------------------------|
-|      [`PlainText`]       | `content: String`                           | 纯文本               | `$content`                         |
-|        [`Image`]         | `imageId: String`                           | 自定义图片            | `[图片]`                            |
-|          [`At`]          | `target: Int`                               | 提及某人              | `@$target`                         |
-|        [`AtAll`]         |                                             | 提及全体成员           | `@全体成员`                         |
-|         [`Face`]         | `id: Int`                                   | 原生表情              | `[表情对应的中文名]`                  |
-|      [`FlashImage`]      | `image: Image`                              | 闪照                 | `[闪照]`                            |
-|     [`PokeMessage`]      | `name: String`, `pokeType: Int` , `id: Int` | 戳一戳消息（消息非动作） | `[戳一戳]`                          |
-|       [`VipFace`]        | `kind: VipFace.Kind`, `count: Int`          | VIP 表情             | `[${kind.name}]x$count`            |
-|       [`LightApp`]       | `content: String`                           | 小程序               | `$content`                         |
-|        [`Voice`]         | `content: String`                           | 语音                 | `$content`                         |
-|      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`                  |
-|    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                           |
-|      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*                          |
-|    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[mirai:forward:NOT_IMPLEMENTED]` |
-| [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`                         |
+|          消息类型          | 属性                                        | 解释                 | `contentToString()`     |
+|:------------------------:|:--------------------------------------------|:--------------------|:------------------------|
+|      [`PlainText`]       | `content: String`                           | 纯文本               | `$content`              |
+|        [`Image`]         | `imageId: String`                           | 自定义图片            | `[图片]`                 |
+|          [`At`]          | `target: Int`                               | 提及某人              | `@$target`              |
+|        [`AtAll`]         |                                             | 提及全体成员           | `@全体成员`              |
+|         [`Face`]         | `id: Int`                                   | 原生表情              | `[表情对应的中文名]`       |
+|      [`FlashImage`]      | `image: Image`                              | 闪照                 | `[闪照]`                 |
+|     [`PokeMessage`]      | `name: String`, `pokeType: Int` , `id: Int` | 戳一戳消息（消息非动作） | `[戳一戳]`               |
+|       [`VipFace`]        | `kind: VipFace.Kind`, `count: Int`          | VIP 表情             | `[${kind.name}]x$count` |
+|       [`LightApp`]       | `content: String`                           | 小程序               | `$content`              |
+|        [`Voice`]         | `content: String`                           | 语音                 | `$content`              |
+|      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`       |
+|    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                |
+|      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*               |
+|    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[转发消息]`            |
+| [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`              |
 
 ***注意：内容会首先被转义，详见 [转义规则](#转义规则)***
 
 > 回到 [目录](#目录)
 
 ## Mirai 码
+
+消息拥有三种转换到字符串的表示方式。
+- `serializeToMiraiCode()`: 消息的一种序列化方式，格式为 `[mirai:TYPE:PROP]`，其中 `TYPE` 为消息类型, `PROP` 为属性。
+- `contentToSting()`: QQ 对话框中以纯文本方式会显示的消息内容。无法用纯文字表示的消息会丢失信息，如图片总是 `[图片]`。
+- `toString()`: Java 对象的 `toString()`，会尽可能包含多的信息用于调试作用，**行为可能不确定**。
 
 实现了接口 `CodableMessage` 的消息类型支持 mirai 码表示。
 
@@ -106,20 +106,20 @@ mirai 码内的属性字符串会被转义。
 ```
 val chain = messageChainOf(PlainText("plain"), At(123), AtAll)
 
-chain.toMiraiCode() // "plain[mirai:at:123][mirai:atall]"
+chain.serializeToMiraiCode() // "plain[mirai:at:123][mirai:atall]"
 ```
 
 ### 由 `CodableMessage` 取得 mirai 码字符串
 
-通过 `CodableMessage.toMiraiCode()`。
+通过 `CodableMessage.serializeToMiraiCode()`。
 
 ```
 val at = At(123)
 
-at.toMiraiCode() // 结果为 `[mirai:at:123]`
+at.serializeToMiraiCode() // 结果为 `[mirai:at:123]`
 ```
 
-|          消息类型          | `toMiraiCode()`                                  |
+|          消息类型          | `serializeToMiraiCode()`                                  |
 |:------------------------:|:-------------------------------------------------|
 |      [`PlainText`]       | `$content`                                       |
 |        [`Image`]         | `[mirai:image:$imageId]`                         |

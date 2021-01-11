@@ -52,7 +52,7 @@ public data class FlashImage(
         builder.append(stringValue)
     }
 
-    override fun toMiraiCode(): String = stringValue
+    override fun serializeToMiraiCode(): String = stringValue
     override fun toString(): String = stringValue
     override fun contentToString(): String = "[闪照]"
 

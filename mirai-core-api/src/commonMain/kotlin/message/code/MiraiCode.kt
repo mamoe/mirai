@@ -15,7 +15,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.internal.parseMiraiCodeImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageChain.Companion.parseFromMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.deserializeFromMiraiCode
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -23,54 +23,56 @@ import net.mamoe.mirai.utils.safeCast
  */
 public object MiraiCode {
     /**
-     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
-     * @see MessageChain.parseFromMiraiCode
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+     * @see MessageChain.deserializeFromMiraiCode
      */
     @JvmName("parseMiraiCode1")
     @JvmSynthetic
-    public inline fun String.parseMiraiCode(contact: Contact? = null): MessageChain = parseMiraiCode(this, contact)
+    public inline fun String.deserializeMiraiCode(contact: Contact? = null): MessageChain =
+        deserializeMiraiCode(this, contact)
 
     /**
-     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
-     * @see MessageChain.parseFromMiraiCode
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+     * @see MessageChain.deserializeFromMiraiCode
      */
     @JvmOverloads
     @JvmStatic
-    public fun parseMiraiCode(code: String, contact: Contact? = null): MessageChain = code.parseMiraiCodeImpl(contact)
+    public fun deserializeMiraiCode(code: String, contact: Contact? = null): MessageChain =
+        code.parseMiraiCodeImpl(contact)
 
     /**
      * 转换得到 mirai 码.
      */
     @JvmStatic
-    public fun Iterable<Message>.toMiraiCode(): String = iterator().toMiraiCode()
+    public fun Iterable<Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
 
     /**
      * 转换得到 mirai 码.
      */
     @JvmStatic
-    public fun Sequence<Message>.toMiraiCode(): String = iterator().toMiraiCode()
+    public fun Sequence<Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
 
     /**
      * 转换得到 mirai 码.
      */
     @JvmStatic
-    public fun Array<out Message>.toMiraiCode(): String = iterator().toMiraiCode()
+    public fun Array<out Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
 
     /**
      * 转换得到 mirai 码.
      */
     @JvmStatic
-    public fun Iterator<Message>.toMiraiCode(): String = buildString {
-        this@toMiraiCode.forEach {
+    public fun Iterator<Message>.serializeToMiraiCode(): String = buildString {
+        this@serializeToMiraiCode.forEach {
             it.safeCast<CodableMessage>()?.appendMiraiCodeTo(this)
         }
     }
 
     /**
      * 转换得到 mirai 码.
-     * @see CodableMessage.toMiraiCode
+     * @see CodableMessage.serializeToMiraiCode
      */
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")// for better Java API.
     @JvmStatic
-    public fun CodableMessage.toMiraiCode(): String = this.toMiraiCode() // member function
+    public fun CodableMessage.serializeToMiraiCode(): String = this.serializeToMiraiCode() // member function
 }

@@ -31,7 +31,7 @@ public data class Face(public val id: Int) : // used in delegation
 
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
 
-    override fun toString(): String = toMiraiCode()
+    override fun toString(): String = serializeToMiraiCode()
     override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
     @MiraiExperimentalApi

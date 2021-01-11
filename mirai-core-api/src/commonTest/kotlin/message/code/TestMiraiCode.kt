@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.message.code
 
-import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -17,31 +17,31 @@ import kotlin.test.assertEquals
 class TestMiraiCode {
     @Test
     fun testCodes() {
-        assertEquals(AtAll.toMessageChain(), "[mirai:atall]".parseMiraiCode())
-        assertEquals(PlainText("[Hello").toMessageChain(), "\\[Hello".parseMiraiCode())
+        assertEquals(AtAll.toMessageChain(), "[mirai:atall]".deserializeMiraiCode())
+        assertEquals(PlainText("[Hello").toMessageChain(), "\\[Hello".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +PlainText("1")
             +AtAll
             +PlainText("2345")
             +AtAll
-        }, "1[mirai:atall]2345[mirai:atall]".parseMiraiCode())
+        }, "1[mirai:atall]2345[mirai:atall]".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +PlainText("1")
             +AtAll
             +PlainText("2345[mirai:atall")
-        }, "1[mirai:atall]2345[mirai:atall".parseMiraiCode())
+        }, "1[mirai:atall]2345[mirai:atall".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +PlainText("[mirai:atall]")
-        }, "\\[mirai:atall]".parseMiraiCode())
+        }, "\\[mirai:atall]".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +PlainText("[mirai:atall]")
-        }, "[mirai:atall\\]".parseMiraiCode())
+        }, "[mirai:atall\\]".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +PlainText("[mirai:atall]")
-        }, "[mirai\\:atall]".parseMiraiCode())
+        }, "[mirai\\:atall]".deserializeMiraiCode())
         assertEquals(buildMessageChain {
             +SimpleServiceMessage(1, "[HiHi!!!\\]")
             +PlainText(" XE")
-        }, "[mirai:service:1,\\[HiHi!!!\\\\\\]] XE".parseMiraiCode())
+        }, "[mirai:service:1,\\[HiHi!!!\\\\\\]] XE".deserializeMiraiCode())
     }
 }

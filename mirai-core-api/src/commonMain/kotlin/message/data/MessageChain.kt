@@ -26,8 +26,8 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.MiraiCode
-import net.mamoe.mirai.message.code.MiraiCode.parseMiraiCode
-import net.mamoe.mirai.message.data.MessageChain.Companion.parseFromMiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.deserializeFromMiraiCode
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -169,8 +169,8 @@ import kotlin.streams.asSequence
  *
  * 详见 [MiraiCode]
  *
- * - 使用 [MessageChain.toMiraiCode] 将 [MessageChain] 序列化为 Mirai Code [String].
- * - 使用 [MessageChain.parseFromMiraiCode] 将 Mirai Code [String] 反序列化为 [MessageChain].
+ * - 使用 [MessageChain.serializeToMiraiCode] 将 [MessageChain] 序列化为 Mirai Code [String].
+ * - 使用 [MessageChain.deserializeFromMiraiCode] 将 Mirai Code [String] 反序列化为 [MessageChain].
  *
  */
 @Serializable(MessageChain.Serializer::class)
@@ -315,12 +315,12 @@ public interface MessageChain :
             format.encodeToString(Serializer, this)
 
         /**
-         * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.toMiraiCode] 返回的内容.
-         * @see MiraiCode.parseMiraiCode
+         * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+         * @see MiraiCode.deserializeMiraiCode
          */
         @JvmStatic
-        public fun MessageChain.parseFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
-            miraiCode.parseMiraiCode(contact)
+        public fun MessageChain.deserializeFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
+            miraiCode.deserializeMiraiCode(contact)
     }
 }
 
@@ -333,7 +333,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
 
     override fun toString(): String = ""
     override fun contentToString(): String = ""
-    override fun toMiraiCode(): String = ""
+    override fun serializeToMiraiCode(): String = ""
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {

@@ -38,7 +38,7 @@ public object AtAll :
     @Suppress("SpellCheckingInspection")
     override fun contentToString(): String = display
     override fun toString(): String = "[mirai:atall]"
-    override fun toMiraiCode(): String = toString()
+    override fun serializeToMiraiCode(): String = toString()
 
     override fun hashCode(): Int = display.hashCode()
     override fun equals(other: Any?): Boolean = other === this
