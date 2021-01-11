@@ -466,7 +466,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             member.lastMessageSequence.loop { instant ->
                 if (msgHead.msgSeq > instant) {
                     if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
-                        return TempMessageEvent(
+                        return GroupTempMessageEvent(
                             member,
                             toMessageChain(
                                 bot,

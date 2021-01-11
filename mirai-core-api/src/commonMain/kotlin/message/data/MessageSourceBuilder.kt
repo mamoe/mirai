@@ -207,7 +207,7 @@ public open class MessageSourceBuilder internal constructor() {
      * 设置发信人
      */
     public fun sender(sender: ContactOrBot): MessageSourceBuilder = apply {
-        this.fromId = Mirai.getUin(sender)
+        this.fromId = sender.id
     }
 
     /**
@@ -221,7 +221,7 @@ public open class MessageSourceBuilder internal constructor() {
      * 设置发信目标
      */
     public fun target(target: ContactOrBot): MessageSourceBuilder = apply {
-        this.targetId = Mirai.getUin(target)
+        this.targetId = target.id
     }
 
     /**

@@ -177,7 +177,7 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
             renderGroupMessage(group, senderName, sender, message)
         }
-        is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
+        is net.mamoe.mirai.event.events.GroupTempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
         }
         is net.mamoe.mirai.event.events.StrangerMessageEvent -> bot.logger.verbose {

@@ -119,7 +119,15 @@ public fun <R> EventChannel<*>.subscribeFriendMessages(
     return createBuilder(::FriendMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
-public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageEvent, Listener<TempMessageEvent>, Unit, Unit>
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此定义会变动. 请使用 GroupTempMessageSubscribersBuilder",
+    ReplaceWith(
+        "GroupTempMessageSubscribersBuilder",
+        "net.mamoe.mirai.event.GroupTempMessageSubscribersBuilder"
+    ),
+    DeprecationLevel.ERROR
+)
+public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
 /**
  * 通过 DSL 订阅来自所有 [Bot] 的所有临时会话消息事件. DSL 语法查看 [subscribeMessages].
@@ -127,14 +135,38 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempM
  * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此方法会变动. 请使用 subscribeGroupTempMessages",
+    ReplaceWith(
+        "subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)",
+        "net.mamoe.mirai.event.subscribeGroupTempMessages"
+    ),
+    DeprecationLevel.ERROR
+)
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: ConcurrencyKind = CONCURRENT,
     priority: EventPriority = EventPriority.MONITOR,
-    listeners: TempMessageSubscribersBuilder.() -> R
+    listeners: GroupTempMessageSubscribersBuilder.() -> R
+): R = subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)
+
+public typealias GroupTempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [GroupTempMessageEvent]. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ */
+public fun <R> EventChannel<*>.subscribeGroupTempMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: GroupTempMessageSubscribersBuilder.() -> R
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
-    return createBuilder(::TempMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
+    return createBuilder(::GroupTempMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
+        .run(listeners)
 }
 
 
