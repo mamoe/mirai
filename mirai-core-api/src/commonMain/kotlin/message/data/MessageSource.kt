@@ -25,6 +25,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.LazyProperty
@@ -199,20 +200,26 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          */
         @JvmStatic
         @Suppress("DeferredIsResult")
-        public fun MessageChain.recallIn(millis: Long): Deferred<Unit> = this.source.recallIn(millis)
+        public fun MessageChain.recallIn(millis: Long): AsyncRecallResult = this.source.recallIn(millis)
 
         /**
          * 在一段时间后撤回这条消息.
          *
+         * @return 返回撤回的结果 [Deferred]. [Deferred.await] 返回 `null` 表示成功执行
          * @see IMirai.recallMessage
          */
         @JvmStatic
         @Suppress("DeferredIsResult")
-        public fun MessageSource.recallIn(millis: Long): Deferred<Unit> {
-            return bot.async {
-                delay(millis)
-                Mirai.recallMessage(bot, this@recallIn)
-            }
+        public fun MessageSource.recallIn(millis: Long): AsyncRecallResult {
+            return AsyncRecallResult(bot.async {
+                try {
+                    delay(millis)
+                    Mirai.recallMessage(bot, this@recallIn)
+                    null
+                } catch (e: Throwable) {
+                    e
+                }
+            })
         }
 
         /**
