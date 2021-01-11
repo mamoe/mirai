@@ -427,7 +427,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                             ?: return null
 
                     with(data.msgHeader ?: return null) {
-                        if (srcUin != dstUin || dstUin != bot.id) return null
+                        if (dstUin != bot.id) return null
                         val client = bot.otherClients.find { it.appId == srcInstId }
                             ?: return null// don't compare with dstAppId. diff.
 
