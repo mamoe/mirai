@@ -71,8 +71,6 @@
 
 ### mirai-core API 文档
 
-***本文档正在更新中***
-
 - [Bots](Bots.md)
 - [Contacts](Contacts.md)
 - [Events](Events.md)
