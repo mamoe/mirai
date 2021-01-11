@@ -111,6 +111,7 @@ public enum class Platform(
 public enum class ClientKind(
     @MiraiInternalApi public val id: Int,
 ) {
+
     ANDROID_PAD(68104),
     AOL_CHAOJIHUIYUAN(73730),
     AOL_HUIYUAN(73474),
@@ -128,7 +129,8 @@ public enum class ClientKind(
     MOBILE_IPAD_NEW(72194),
     MOBILE_IPHONE(67586),
     MOBILE_OTHER(65794),
-    MOBILE_PC(65793),
+    MOBILE_PC_QQ(65793),
+    MOBILE_PC_TIM(77313),
     MOBILE_WINPHONE_NEW(72706),
     QQ_FORELDER(70922),
     QQ_SERVICE(71170),
