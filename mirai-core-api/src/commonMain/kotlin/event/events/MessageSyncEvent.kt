@@ -13,8 +13,7 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -30,6 +29,73 @@ import net.mamoe.mirai.message.data.source
  */
 public interface MessageSyncEvent : MessageEvent
 
+/**
+ * 机器人在其他客户端发送群临时会话消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class GroupTempMessageSyncEvent(
+    public override val sender: NormalMember,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
+    }
+
+    public override val bot: Bot get() = sender.bot
+    public override val subject: NormalMember get() = sender
+    public override val group: Group get() = sender.group
+    public override val senderName: String get() = sender.nameCardOrNick
+    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
+}
+
+/**
+ * 机器人在其他客户端发送好友消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class FriendMessageSyncEvent constructor(
+    public override val sender: Friend,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), FriendEvent, MessageSyncEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val friend: Friend get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Friend get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+}
+
+/**
+ * 机器人在其他客户端发送陌生人消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class StrangerMessageSyncEvent constructor(
+    public override val sender: Stranger,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), StrangerEvent, MessageSyncEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromStranger" }
+    }
+
+    public override val stranger: Stranger get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Stranger get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
+}
 
 /**
  * 机器人在其他客户端发送群消息同步到这个客户端的事件

@@ -192,6 +192,9 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         is GroupMessageSyncEvent -> bot.logger.verbose {
             renderGroupMessage(group, senderName, sender, message)
         }
+        is MessageSyncEvent -> bot.logger.verbose {
+            "${this.subject} <- $message".replaceMagicCodes()
+        }
         else -> bot.logger.verbose(toString())
     }
 }

@@ -240,7 +240,7 @@ private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
     )
 }
 
-internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
+internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean = false): Packet? {
     when (msgHead.msgType) {
         33 -> bot.groupListModifyLock.withLock {
             msgBody.msgContent.read {
@@ -363,7 +363,8 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
 
         //167 单向好友
         166, 167 -> {
-            if (msgHead.fromUin == bot.id) {
+            //我也不知道为什么要这样写，但它就是能跑
+            if (msgHead.fromUin == bot.id && !fromSync) {
                 loop@ while (true) {
                     val instance = bot.client.getFriendSeq()
                     if (instance < msgHead.msgSeq) {
@@ -377,34 +378,66 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             if (!bot.firstLoginSucceed) {
                 return null
             }
-            bot.getFriend(msgHead.fromUin)?.let { friend ->
+            val fromUin = if (fromSync) {
+                msgHead.toUin
+            } else {
+                msgHead.fromUin
+            }
+            bot.getFriend(fromUin)?.let { friend ->
                 friend.checkIsFriendImpl()
                 friend.lastMessageSequence.loop {
-                    return if (friend.lastMessageSequence.compareAndSet(
+                    //我也不知道为什么要这样写，但它就是能跑
+                    return if (friend.lastMessageSequence.value != msgHead.msgSeq && friend.lastMessageSequence.compareAndSet(
                             it,
                             msgHead.msgSeq
                         ) && contentHead?.autoReply != 1
                     ) {
-                        FriendMessageEvent(
-                            friend,
-                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.FRIEND),
-                            msgHead.msgTime
-                        )
+                        val msgs = friend.friendPkgMsgParsingCache.tryMerge(this)
+                        if (msgs.isNotEmpty()) {
+                            if (fromSync) {
+                                FriendMessageSyncEvent(
+                                    friend,
+                                    msgs.toMessageChain(
+                                        bot = bot, botId = bot.id, groupIdOrZero = 0, onlineSource = true,
+                                        messageSourceKind = MessageSourceKind.FRIEND
+                                    ),
+                                    msgHead.msgTime
+                                )
+                            } else {
+                                FriendMessageEvent(
+                                    friend,
+                                    msgs.toMessageChain(
+                                        bot = bot, botId = bot.id, groupIdOrZero = 0, onlineSource = true,
+                                        messageSourceKind = MessageSourceKind.FRIEND
+                                    ),
+                                    msgHead.msgTime
+                                )
+                            }
+                        } else return null
                     } else null
                 }
-            } ?: bot.getStranger(msgHead.fromUin)?.let { stranger ->
+            } ?: bot.getStranger(fromUin)?.let { stranger ->
                 stranger.checkIsImpl()
                 stranger.lastMessageSequence.loop {
-                    return if (stranger.lastMessageSequence.compareAndSet(
+                    //我也不知道为什么要这样写，但它就是能跑
+                    return if (stranger.lastMessageSequence.value != msgHead.msgSeq && stranger.lastMessageSequence.compareAndSet(
                             it,
                             msgHead.msgSeq
                         ) && contentHead?.autoReply != 1
                     ) {
-                        StrangerMessageEvent(
-                            stranger,
-                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
-                            msgHead.msgTime
-                        )
+                        if (fromSync) {
+                            StrangerMessageSyncEvent(
+                                stranger,
+                                toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                                msgHead.msgTime
+                            )
+                        } else {
+                            StrangerMessageEvent(
+                                stranger,
+                                toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                                msgHead.msgTime
+                            )
+                        }
                     } else null
                 }
             } ?: return null
@@ -453,29 +486,48 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             // 08 04 12 1E 08 E9 07 10 B7 F7 8B 80 02 18 E9 07 20 00 28 DD F1 92 B7 07 30 DD F1 92 B7 07 48 02 50 03 32 1E 08 88 80 F8 92 CD 84 80 80 10 10 01 18 00 20 01 2A 0C 0A 0A 08 01 12 06 E5 95 8A E5 95 8A
         }
         141 -> {
+
+            if (!bot.firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
+                return null
+            }
             val tmpHead = msgHead.c2cTmpMsgHead ?: return null
-            val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.get(msgHead.fromUin)
+            val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.get(
+                if (fromSync) {
+                    msgHead.toUin
+                } else {
+                    msgHead.fromUin
+                }
+            )
                 ?: return null
 
             member.checkIsMemberImpl()
 
-            if (msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
-                return null
-            }
-
             member.lastMessageSequence.loop { instant ->
                 if (msgHead.msgSeq > instant) {
                     if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
-                        return GroupTempMessageEvent(
-                            member,
-                            toMessageChain(
-                                bot,
-                                groupIdOrZero = 0,
-                                onlineSource = true,
-                                MessageSourceKind.TEMP
-                            ),
-                            msgHead.msgTime
-                        )
+                        if (fromSync) {
+                            return GroupTempMessageSyncEvent(
+                                member,
+                                toMessageChain(
+                                    bot,
+                                    groupIdOrZero = 0,
+                                    onlineSource = true,
+                                    MessageSourceKind.TEMP
+                                ),
+                                msgHead.msgTime
+                            )
+                        } else {
+                            return GroupTempMessageEvent(
+                                member,
+                                toMessageChain(
+                                    bot,
+                                    groupIdOrZero = 0,
+                                    onlineSource = true,
+                                    MessageSourceKind.TEMP
+                                ),
+                                msgHead.msgTime
+                            )
+                        }
                     }
                 } else return null
             }
