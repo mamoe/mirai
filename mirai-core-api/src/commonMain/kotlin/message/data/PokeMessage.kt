@@ -11,6 +11,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -19,6 +20,8 @@ import net.mamoe.mirai.utils.castOrNull
 
 /**
  * 戳一戳. 可以发送给好友或群.
+ *
+ * 备注: 这是消息对话框中显示的 "一个手指" 的戳一戳. 类似微信拍一拍的是 [Nudge].
  *
  * ## mirai 码支持
  * 格式: &#91;mirai:poke:*[name]*,*[pokeType]*,*[id]*&#93;

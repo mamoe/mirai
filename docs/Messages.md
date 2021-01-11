@@ -42,11 +42,11 @@ Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 [`At`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
 [`AtAll`]: ../mirai-core-api/src/commonMain/kotlin/message/data/AtAll.kt
 [`Face`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Face.kt
-[`PokeMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
-[`VipFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
+[`PokeMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/PokeMessage.kt
+[`VipFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/VipFace.kt
 [`Image`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Image.kt
-[`FlashImage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
-[`MarketFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
+[`FlashImage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/FlashImage.kt
+[`MarketFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MarketFace.kt
 
 [`MessageSource`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageSource.kt
 [`QuoteReply`]: ../mirai-core-api/src/commonMain/kotlin/message/data/QuoteReply.kt
@@ -74,6 +74,8 @@ Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 | [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`              |
 
 ***注意：内容会首先被转义，详见 [转义规则](#转义规则)***
+
+**请打开相关消息类型的源码查看用法。**
 
 > 回到 [目录](#目录)
 

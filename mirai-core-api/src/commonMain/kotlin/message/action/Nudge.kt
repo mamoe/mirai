@@ -13,11 +13,14 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.NudgeEvent
+import net.mamoe.mirai.message.data.PokeMessage
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 
 /**
- * 一个 "戳一戳" 消息.
+ * 一个 "戳一戳" 动作.
+ *
+ * 备注: 这类似微信拍一拍. 消息对话框中显示的 "一个手指" 的戳一戳是 [PokeMessage]
  *
  * 仅在手机 QQ 8.4.0 左右版本才受支持. 其他客户端会忽略这些消息.
  *
