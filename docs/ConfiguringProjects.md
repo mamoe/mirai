@@ -1,8 +1,6 @@
 # Mirai - Configuring Projects
 
-本文介绍如何在一个项目中使用 mirai。
-
-mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `JDK 1.8`，`Kotlin 1.4`。
+本文介绍如何在一个 JVM 项目中使用 mirai。
 
 ### 选择版本
 
@@ -21,7 +19,8 @@ mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `
 
 ### 配置项目
 
-如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
+- 如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
+- 如果你熟悉 Maven，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core-jvm:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
 
 本文提供如下三种配置方法，但推荐使用 Gradle 构建。
 
@@ -67,6 +66,17 @@ repositories {
 
 dependencies {
     api('net.mamoe', 'mirai-core', '1.3.3') // 替换为你需要的版本号
+}
+```
+
+### 分离 API 和实现（可选）
+
+mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`。
+```kotlin
+dependencies {
+    val miraiVersion = "1.3.3" // 替换为你需要的版本号
+    api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
+    runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
 ```
 
