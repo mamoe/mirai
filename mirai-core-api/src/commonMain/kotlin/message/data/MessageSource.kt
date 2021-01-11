@@ -35,29 +35,39 @@ import net.mamoe.mirai.utils.safeCast
 /**
  * 消息源. 消息源存在于 [MessageChain] 中, 用于表示这个消息的来源, 也可以用来分辨 [MessageChain].
  *
- * 对于来自 [MessageEvent.message] 的 [MessageChain]
- *
  *
  * ## 组成
- * [MessageSource] 由 metadata (元数据), form & target, content 组成
+ * [MessageSource] 由 定位属性, 发信人和收信人, 内容 组成
  *
- * ### metadata
+ * ### 定位属性
  * - [ids] 消息 ids (序列号)
  * - [internalIds] 消息内部 ids
  * - [time] 时间
  *
- * 官方客户端通过 metadata 这三个数据定位消息, 撤回和引用回复都是如此.
+ * 官方客户端通过这三个属性定位消息, 撤回和引用回复都是如此.
  *
- * ### form & target
+ * ### 发信人和收信人
  * - [fromId] 消息发送人
  * - [targetId] 消息发送目标
  *
- * ### content
+ * ### 内容
  * - [originalMessage] 消息内容
+ *
+ * ## 获取
+ * - 来自 [MessageEvent.message] 的 [MessageChain] 总是包含 [MessageSource]. 可通过 [MessageChain.get] 获取 [MessageSource]:
+ *    ```
+ *    val source = chain[MessageSource]
+ *    ```
+ * - 构造离线消息源 [IMirai.constructMessageSource]
+ *
  *
  * ## 使用
  *
  * 消息源可用于 [引用回复][MessageSource.quote] 或 [撤回][MessageSource.recall].
+ *
+ * 对于来自 [MessageEvent.message] 的 [MessageChain], 总是包含 [MessageSource].
+ * 因此也可以对这样的 [MessageChain] 进行 [引用回复][MessageChain.quote] 或 [撤回][MessageChain.recall].
+ *
  *
  * @see IMirai.recallMessage 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]

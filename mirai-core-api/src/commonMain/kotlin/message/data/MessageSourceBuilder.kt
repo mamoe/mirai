@@ -19,7 +19,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.message.data.MessageSourceBuilder.Companion.create
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.currentTimeSeconds
 
@@ -48,9 +47,12 @@ public fun MessageSource.copyAmend(
 }
 
 /**
- * 仅于 [copyAmend] 中修改 [MessageSource]
+ * [MessageSource] 复制修改器. 不会修改原 [MessageSource], 而是会创建一个新的 [MessageSource].
+ *
+ * @see copyAmend Kotlin DSL
+ * @see MessageSourceBuilder
  */
-public class MessageSourceAmender internal constructor(
+public class MessageSourceAmender public constructor(
     origin: MessageSource,
 ) : MessageSourceBuilder() {
     public var kind: MessageSourceKind = origin.kind
@@ -77,7 +79,31 @@ public class MessageSourceAmender internal constructor(
 
 
 /**
- * 构建一个 [OfflineMessageSource]
+ * 使用 DSL 构建一个 [OfflineMessageSource]. 用法参考 [MessageSourceBuilder].
+ *
+ * @see copyAmend
+ */
+@JvmSynthetic
+public inline fun IMirai.buildMessageSource(
+    botId: Long,
+    kind: MessageSourceKind,
+    block: MessageSourceBuilder.() -> Unit
+): OfflineMessageSource = MessageSourceBuilder().apply(block).build(botId, kind)
+
+/**
+ * 使用 DSL 构建一个 [OfflineMessageSource]. 用法参考 [MessageSourceBuilder].
+ *
+ * @see buildMessageSource
+ */
+@JvmSynthetic
+public inline fun Bot.buildMessageSource(
+    kind: MessageSourceKind,
+    block: MessageSourceBuilder.() -> Unit
+): OfflineMessageSource = Mirai.buildMessageSource(this.id, kind, block)
+
+
+/**
+ * 离线消息源构建器.
  *
  * ### 参数
  * 一个 [OfflineMessageSource] 需要以下参数:
@@ -89,10 +115,11 @@ public class MessageSourceAmender internal constructor(
  * - 消息内容: 通过 [MessageSourceBuilder.messages] 设置
  *
  * ### 性质
- * - 当两个消息的元数据相同时, 他们在群中会是同一条消息. 可通过此特性决定官方客户端 "定位原消息" 的目标
+ * - 当两个消息的元数据相同时, 它们在群中会是同一条消息. 可通过此特性决定官方客户端 "定位原消息" 的目标
  * - 发送人的信息和消息内容会在官方客户端显示在引用回复中.
  *
  * ### 实例
+ * Kotlin:
  * ```
  * bot.buildMessageSource(MessageSourceKind.GROUP) {
  *     from(bot)
@@ -105,32 +132,20 @@ public class MessageSourceAmender internal constructor(
  * }
  * ```
  *
- * @see copyAmend
- */
-public fun IMirai.buildMessageSource(
-    botId: Long,
-    kind: MessageSourceKind,
-    block: MessageSourceBuilder.() -> Unit
-): OfflineMessageSource = MessageSourceBuilder.create().apply(block).run {
-    Mirai.constructMessageSource(botId, kind, fromId, targetId, ids, time, internalIds, originalMessages.build())
-}
-
-/**
- * 构建一个 [OfflineMessageSource]
+ * Java:
+ * ```java
+ * MessageSourceBuilder
+ *     .create()
+ *     .from(bot)
+ *     .target(target)
+ *     .metadata(source) // 从另一个消息源复制 ids, internalIds, time
+ *     .messages(new PlainText("hi"))
+ *     .build(botId, MessageSourceKind.FRIEND);
+ * ```
  *
  * @see buildMessageSource
  */
-public fun Bot.buildMessageSource(
-    kind: MessageSourceKind,
-    block: MessageSourceBuilder.() -> Unit
-): OfflineMessageSource = Mirai.buildMessageSource(this.id, kind, block)
-
-
-/**
- * @see buildMessageSource
- * @see create
- */
-public open class MessageSourceBuilder internal constructor() {
+public open class MessageSourceBuilder public constructor() {
     public open var fromId: Long = 0
     public open var targetId: Long = 0
 
@@ -235,8 +250,16 @@ public open class MessageSourceBuilder internal constructor() {
     public fun setSenderAndTarget(sender: ContactOrBot, target: ContactOrBot): MessageSourceBuilder =
         sender(sender).target(target)
 
-    public companion object {
-        @JvmStatic
-        public fun create(): MessageSourceBuilder = MessageSourceBuilder()
+    public fun build(botId: Long, kind: MessageSourceKind): OfflineMessageSource {
+        return Mirai.constructMessageSource(
+            botId,
+            kind,
+            fromId,
+            targetId,
+            ids,
+            time,
+            internalIds,
+            originalMessages.build()
+        )
     }
 }

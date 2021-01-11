@@ -38,7 +38,7 @@
 
 Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 
-[`PlainText`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
+[`PlainText`]: ../mirai-core-api/src/commonMain/kotlin/message/data/PlainText.kt
 [`At`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
 [`AtAll`]: ../mirai-core-api/src/commonMain/kotlin/message/data/AtAll.kt
 [`Face`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Face.kt

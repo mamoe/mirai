@@ -20,13 +20,18 @@ import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
- * 纯文本. 可含 emoji 表情如 😊.
+ * 纯文本.
  *
- * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [Message.plus]
+ * 使用时直接构造即可. [Message] 也可以直接与 [String] 相加, 详见 [Message.plus].
+ *
+ * @see String.toPlainText
  */
 @Serializable
 @SerialName(PlainText.SERIAL_NAME)
 public data class PlainText(
+    /**
+     * 消息内容
+     */
     public val content: String
 ) : MessageContent, CodableMessage {
     @Suppress("unused")

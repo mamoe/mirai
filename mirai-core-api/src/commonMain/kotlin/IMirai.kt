@@ -146,7 +146,9 @@ public interface IMirai : LowLevelApiAccessor {
     public suspend fun queryImageUrl(bot: Bot, image: Image): String
 
     /**
-     * 构造一个 [OfflineMessageSource]
+     * 构造一个 [OfflineMessageSource].
+     *
+     * 更推荐使用 [MessageSourceBuilder] 和 [MessageSource.copyAmend] 创建 [OfflineMessageSource].
      *
      * @param ids 即 [MessageSource.ids]
      * @param internalIds 即 [MessageSource.internalIds]
