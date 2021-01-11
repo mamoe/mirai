@@ -92,7 +92,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
-        this@AbstractBot.eventChannel.subscribeAlways(
+        this@AbstractBot.eventChannel.parentScope(this).subscribeAlways(
             priority = MONITOR,
             concurrency = ConcurrencyKind.LOCKED
         ) { event ->
@@ -116,18 +116,14 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             when (event) {
                 is BotOfflineEvent.Active -> {
                     val cause = event.cause
-                    val msg = if (cause == null) {
-                        ""
-                    } else {
-                        " with exception: $cause"
-                    }
-                    bot.logger.info("Bot is closed manually: $msg", cause)
-                    bot.cancel(CancellationException("Bot is closed manually: $msg", cause))
+                    val msg = if (cause == null) "" else " with exception: $cause"
+                    bot.logger.info("Bot is closed manually $msg", cause)
+                    network.cancel(CancellationException("Bot offline manually $msg", cause))
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
                     if (!event.reconnect) {
-                        bot.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
+                        network.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
                     }
                 }
                 is BotOfflineEvent.MsfOffline,
@@ -284,6 +280,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
      * [AbstractBot.relogin] && [BotNetworkHandler.init]
      */
     final override suspend fun login() {
+        if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
         Login().doLogin()
     }
 
@@ -316,10 +313,15 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             // already cancelled
             return
         }
-        GlobalScope.launch {
-            runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
-                ?.let { logger.error(it) }
+
+        if (this.network.areYouOk()) {
+            GlobalScope.launch {
+                runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
+                    ?.let { logger.error(it) }
+            }
         }
+
+        this.network.close(cause)
 
         if (supervisorJob.isActive) {
             if (cause == null) {
