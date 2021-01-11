@@ -261,14 +261,13 @@ public interface ExternalResource : Closeable {
          * - 请手动关闭输入流
          * - 请使用 amr 或 silk 格式
          *
-         * @suppress 将来支持好友语音之后将会把参数修改为 [Contact], 这会是一个不兼容变更. 因此请优先使用 [Group.uploadVoice]
          * @throws OverFileSizeMaxException
          */
         @JvmBlockingBridge
         @JvmStatic
-        @MiraiExperimentalApi
-        public suspend fun ExternalResource.uploadAsVoice(group: Group): Voice {
-            return group.uploadVoice(this)
+        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
+            if (contact is Group) return contact.uploadVoice(this)
+            else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
         }
     }
 }
