@@ -68,3 +68,12 @@ internal class GroupPkgMsgParsingCache : FragmentedMsgParsingCache<MsgOnlinePush
     override val MsgOnlinePush.PbPushMsg.contentHead: MsgComm.ContentHead?
         get() = this.msg.contentHead
 }
+
+/**
+ * fragmented message
+ */
+internal class C2CPkgMsgParsingCache : FragmentedMsgParsingCache<MsgComm.Msg>() {
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+    override val MsgComm.Msg.contentHead: MsgComm.ContentHead?
+        get() = this.contentHead
+}

@@ -163,6 +163,7 @@ internal object KnownPacketFactories {
         MessageSvcPushReaded,
         MessageSvcRequestPushStatus,
         ConfigPushSvc.PushReq,
+        PbC2CMsgSync,
         StatSvc.ReqMSFOffline,
         StatSvc.SvcReqMSFLoginNotify
     )
