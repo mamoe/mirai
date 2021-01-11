@@ -87,7 +87,7 @@ public class StrangerMessageSyncEvent constructor(
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessageEvent must be an instance of OnlineMessageSource.Incoming.FromStranger" }
+        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromStranger" }
     }
 
     public override val stranger: Stranger get() = sender
