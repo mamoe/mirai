@@ -8,7 +8,7 @@
 
 ## 确定 SDK
 
-**mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不熟悉该语言，请使用以下社区提供的 SDK：**
+**mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果不熟悉这些语言，请使用以下社区 SDK：**
 
 [`mirai-console`]: https://github.com/mamoe/mirai-console
 
@@ -48,23 +48,21 @@
 | *酷 Q 插件*      | [iTXTech/mirai-native]                      |
 | *酷 Q HTTP*     | [yyuueexxiinngg/cqhttp-mirai]               |
 
-> *想在这里添加你的项目？欢迎提交 PR。*
+> *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
-特别的，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]
+特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：
 
-- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于 mirai-core 的 Lua SDK，并提供了 Java 扩展支持，可在 Lua 中调用 Java 代码开发机器人
+- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
 
 ## JVM 平台 Mirai 开发
 
 **Mirai 文档没有废话，请务必仔细阅读每一个字。仔细阅读文档花费的 1 分钟可能相当于不阅读文档而自己摸索解决办法的 1 小时。**
 
-1. [准备工作（2 分钟）](Preparations.md#mirai---preparations)
-
-2. 配置项目
-
+1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
+2. 配置项目依赖
    - 要把 mirai-core 嵌入一个应用使用，请阅读 [配置项目依赖](ConfiguringProjects.md)。
    - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
-
+3. 阅读 API 文档（见下文）
 
 > 如果你不知道 [`mirai-console`] 是什么，请阅读 [Mirai 生态概览](mirai-ecology.md)。
 >
