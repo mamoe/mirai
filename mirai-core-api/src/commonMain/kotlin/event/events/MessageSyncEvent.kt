@@ -64,7 +64,7 @@ public class FriendMessageSyncEvent constructor(
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessageEvent must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 
     public override val friend: Friend get() = sender
