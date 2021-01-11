@@ -41,7 +41,7 @@ public class GroupTempMessageSyncEvent(
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
-        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageSyncEventmust be an instance of OnlineMessageSource.Incoming.FromTemp" }
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 
     public override val bot: Bot get() = sender.bot
