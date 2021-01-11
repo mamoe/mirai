@@ -46,6 +46,8 @@ import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import network.protocol.packet.list.StrangerList
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -709,13 +711,19 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
+        check(channel.isOpen) { "network channel is closed" }
+
         logger.verbose { "Send: ${this.commandName}" }
-        channel.send(delegate)
+
+        delegate.withUse {
+            channel.send(delegate)
+        }
     }
 
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
+    @Suppress("UNCHECKED_CAST")
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry in 0..10) { "retry must in 0..10" }
@@ -724,39 +732,32 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         check(channel.isOpen) { "network channel is closed" }
 
-        suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
-            when (data) {
-                is ByteArray -> channel.send(data, 0, length)
-                is ByteReadPacket -> channel.send(data)
-                else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
-            }
-            logger.verbose { "Send: $commandName" }
+        val data = this.delegate.withUse { readBytes() }
 
-            @Suppress("UNCHECKED_CAST")
-            return withTimeout(timeoutMillis) {
-                handler.await()
-            } as E
-        }
+        return retryCatchingExceptions(
+            retry + 1,
+            except = CancellationException::class // CancellationException means network closed so don't retry
+        ) {
+            withPacketListener(commandName, sequenceId) { listener ->
+                return withTimeout(timeoutMillis) { // may throw CancellationException
+                    channel.send(data, 0, data.size)
+                    logger.verbose { "Send: $commandName" }
 
-        if (retry == 0) {
-            val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-            packetListeners.add(handler)
-            try {
-                return doSendAndReceive(handler, delegate, 0) // no need
-            } finally {
-                packetListeners.remove(handler)
+                    listener.await()
+                } as E
             }
-        } else {
-            val data = this.delegate.readBytes()
-            return retryCatchingExceptions(retry + 1) {
-                val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-                packetListeners.add(handler)
-                try {
-                    doSendAndReceive(handler, data, data.size)
-                } finally {
-                    packetListeners.remove(handler)
-                }
-            }.getOrThrow()
+        }.getOrThrow<E>()
+    }
+
+    private inline fun <R> withPacketListener(commandName: String, sequenceId: Int, block: (PacketListener) -> R): R {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
+        packetListeners.add(handler)
+        try {
+            return block(handler)
+        } finally {
+            kotlin.runCatching { if (handler.isActive) handler.cancel() } // ensure coroutine completion
+            packetListeners.remove(handler)
         }
     }
 
