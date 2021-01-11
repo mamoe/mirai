@@ -30,7 +30,7 @@ public data class BotOnlineEvent internal constructor(
 ) : BotActiveEvent, AbstractEvent()
 
 /**
- * [Bot] 离线.
+ * [Bot] 离线时广播的事件. Bot 离线不会 [关闭 Bot][Bot.close], 只会关闭 Bot 的网络层.
  */
 public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
@@ -39,7 +39,11 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public open val reconnect: Boolean get() = true
 
     /**
-     * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
+     * 主动离线.
+     *
+     * 在调用 [Bot.close] 时, 如果 Bot 连接正常, 将会广播 [Active].
+     *
+     * 主动广播这个事件也可以让 [Bot] 离线.
      */
     public data class Active(
         public override val bot: Bot,
