@@ -30,6 +30,7 @@ import kotlin.js.JsName
     ReplaceWith("this is PlainText", "net.mamoe.mirai.message.data.PlainText"),
     ERROR
 )
+@PlannedRemoval("2.0.0")
 public inline fun Message.isPlain(): Boolean {
     contract {
         returns(true) implies (this@isPlain is PlainText)
@@ -46,6 +47,7 @@ public inline fun Message.isPlain(): Boolean {
     ReplaceWith("this is PlainText", "net.mamoe.mirai.message.data.PlainText"),
     ERROR
 )
+@PlannedRemoval("2.0.0")
 public inline fun Message.isNotPlain(): Boolean {
     contract {
         returns(false) implies (this@isNotPlain is PlainText)
@@ -59,6 +61,7 @@ public inline fun Message.isNotPlain(): Boolean {
     ReplaceWith("!this.isContentEmpty()", "net.mamoe.mirai.message.data.isContentNotEmpty"),
     ERROR
 )
+@PlannedRemoval("2.0.0")
 public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
 
 

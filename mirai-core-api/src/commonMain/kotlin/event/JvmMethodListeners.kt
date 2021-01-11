@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -164,7 +163,7 @@ public annotation class EventHandler(
 )
 
 /**
- * 实现这个接口的对象可以通过 [EventHandler] 标注事件监听函数, 并通过 [registerEvents] 注册.
+ * 实现这个接口的对象可以通过 [EventHandler] 标注事件监听函数, 并通过 [registerTo] 注册.
  *
  * @see SimpleListenerHost 简单的实现
  * @see EventHandler 查看更多信息
@@ -249,33 +248,3 @@ public class ExceptionInEventHandlerException(
 // T 通常可以是 SimpleListenerHost
 public inline fun <T> T.registerTo(eventChannel: EventChannel<*>): Unit
         where T : CoroutineScope, T : ListenerHost = eventChannel.parentScope(this).registerListenerHost(this)
-
-
-@Deprecated(
-    "Use EventChannel.registerListenerHost",
-    ReplaceWith(
-        "this.globalEventChannel(coroutineContext).registerListenerHost(this)",
-        "net.mamoe.mirai.event.*"
-    ),
-    DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0-RC")
-@JvmOverloads
-public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
-        where T : CoroutineScope, T : ListenerHost =
-    this.globalEventChannel(coroutineContext).registerListenerHost(this)
-
-@Deprecated(
-    "Use EventChannel.registerListenerHost",
-    ReplaceWith(
-        "this.globalEventChannel(coroutineContext).registerListenerHost(host)",
-        "net.mamoe.mirai.event.*"
-    ),
-    DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0-RC")
-@JvmOverloads
-public fun CoroutineScope.registerEvents(
-    host: ListenerHost,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Unit = globalEventChannel(coroutineContext).registerListenerHost(host)

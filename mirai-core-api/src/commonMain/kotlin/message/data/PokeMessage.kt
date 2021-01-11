@@ -61,46 +61,21 @@ public data class PokeMessage @MiraiInternalApi constructor(
         @JvmField
         public val ChuoYiChuo: PokeMessage = PokeMessage("戳一戳", 1, -1)
 
-        /** 戳一戳 */
-        @JvmField
-        @Deprecated("Use ChuoYiChuo", replaceWith = ReplaceWith("ChuoYiChuo"))
-        public val Poke: PokeMessage = ChuoYiChuo
-
         /** 比心 */
         @JvmField
         public val BiXin: PokeMessage = PokeMessage("比心", 2, -1)
-
-        /** 比心 */
-        @JvmField
-        @Deprecated("Use BiXin", replaceWith = ReplaceWith("BiXin"))
-        public val ShowLove: PokeMessage = BiXin
 
         /** 点赞  */
         @JvmField
         public val DianZan: PokeMessage = PokeMessage("点赞", 3, -1)
 
-        /** 点赞 */
-        @JvmField
-        @Deprecated("Use DianZan", replaceWith = ReplaceWith("DianZan"))
-        public val Like: PokeMessage = DianZan
-
         /** 心碎 */
         @JvmField
         public val XinSui: PokeMessage = PokeMessage("心碎", 4, -1)
 
-        /** 心碎 */
-        @JvmField
-        @Deprecated("Use XinSui", replaceWith = ReplaceWith("XinSui"))
-        public val Heartbroken: PokeMessage = XinSui
-
         /** 666 */
         @JvmField
         public val LiuLiuLiu: PokeMessage = PokeMessage("666", 5, -1)
-
-        /** 666 */
-        @JvmField
-        @Deprecated("Use LiuLiuLiu", replaceWith = ReplaceWith("LiuLiuLiu"))
-        public val SixSixSix: PokeMessage = LiuLiuLiu
 
         /** 放大招 */
         @JvmField
