@@ -11,10 +11,7 @@ package net.mamoe.mirai
 
 import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.contact.AnonymousMember
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRef
@@ -57,6 +54,48 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     public fun newStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger
+
+    /**
+     * 撤回这条消息. 不会广播事件, 不会有安全性检查.
+     * @see recallMessage
+     */
+    @LowLevelApi
+    @JvmBlockingBridge
+    public suspend fun recallGroupMessageRaw(
+        bot: Bot,
+        groupCode: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+    ): Boolean
+
+    /**
+     * 撤回这条消息. 不会广播事件, 不会有安全性检查.
+     * @see recallMessage
+     */
+    @LowLevelApi
+    @JvmBlockingBridge
+    public suspend fun recallFriendMessageRaw(
+        bot: Bot,
+        targetId: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+        time: Int,
+    ): Boolean
+
+    /**
+     * 撤回这条消息. 不会广播事件, 不会有安全性检查.
+     * @see recallMessage
+     */
+    @LowLevelApi
+    @JvmBlockingBridge
+    public suspend fun recallGroupTempMessageRaw(
+        bot: Bot,
+        groupUin: Long,
+        targetId: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+        time: Int,
+    ): Boolean
 
     /**
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode

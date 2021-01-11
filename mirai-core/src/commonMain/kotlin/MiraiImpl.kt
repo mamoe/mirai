@@ -331,6 +331,66 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             return sequence
         }
 
+    override suspend fun recallGroupMessageRaw(
+        bot: Bot,
+        groupCode: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+    ): Boolean = bot.asQQAndroidBot().run {
+        val response = network.run {
+            PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
+                client,
+                groupCode,
+                messageIds,
+                messageInternalIds
+            ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+        }
+
+        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+    }
+
+    override suspend fun recallFriendMessageRaw(
+        bot: Bot,
+        targetId: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+        time: Int,
+    ): Boolean = bot.asQQAndroidBot().run {
+        val response = network.run {
+            PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
+                client,
+                targetId,
+                messageIds,
+                messageInternalIds,
+                time,
+            ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+        }
+
+        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+    }
+
+    override suspend fun recallGroupTempMessageRaw(
+        bot: Bot,
+        groupUin: Long,
+        targetId: Long,
+        messageIds: IntArray,
+        messageInternalIds: IntArray,
+        time: Int
+    ): Boolean = bot.asQQAndroidBot().run {
+        val response = network.run {
+            PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+                client,
+                groupUin,
+                targetId,
+                messageIds,
+                messageInternalIds,
+                time,
+            ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+        }
+
+        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+    }
+
     @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recallMessage(bot: Bot, source: MessageSource) = bot.asQQAndroidBot().run {
         check(source is MessageSourceInternal)
