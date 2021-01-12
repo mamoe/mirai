@@ -30,11 +30,11 @@ Mirai Console 内置一些指令。
 
 | 指令                                                                                         | 描述                   |
 |:--------------------------------------------------------------------------------------------|:----------------------|
-| `/<permission\|perm|权限> <permit\|grant\|add> [target] [permission]`                        | 授权一个权限            |
-| `/<permission\|perm|权限> <cancel\|deny\|remove> [target] [permission]`                      | 撤销一个权限            |
-| `/<permission\|perm|权限> <cancelAll\|denyAll\|removeAll> [target] [permission]`             | 撤销一个权限及其所有子权限 |
-| `/<permission\|perm|权限> <permittedPermissions\|pp\|grantedPermissions\|gp> [target] [all]` | 查看被授权权限列表       |
-| `/<permission\|perm|权限> <listPermissions\|lp>`                                             | 查看所有权限列表         |
+| `/<permission\|perm\|权限> <permit\|grant\|add> [target] [permission]`                        | 授权一个权限            |
+| `/<permission\|perm\|权限> <cancel\|deny\|remove> [target] [permission]`                      | 撤销一个权限            |
+| `/<permission\|perm\|权限> <cancelAll\|denyAll\|removeAll> [target] [permission]`             | 撤销一个权限及其所有子权限 |
+| `/<permission\|perm\|权限> <permittedPermissions\|pp\|grantedPermissions\|gp> [target] [all]` | 查看被授权权限列表       |
+| `/<permission\|perm\|权限> <listPermissions\|lp>`                                             | 查看所有权限列表         |
 
 ### `[target]` 和 `[permission]` 示例
 
