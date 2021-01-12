@@ -171,8 +171,8 @@ internal fun CommandReceiverParameter<*>.renderAsName(): String {
         classifier.isSubclassOf(FriendCommandSender::class) -> "好友"
         classifier.isSubclassOf(MemberCommandSenderOnMessage::class) -> "群内发言"
         classifier.isSubclassOf(MemberCommandSender::class) -> "群成员"
-        classifier.isSubclassOf(TempCommandSenderOnMessage::class) -> "临时会话"
-        classifier.isSubclassOf(TempCommandSender::class) -> "临时好友"
+        classifier.isSubclassOf(GroupTempCommandSenderOnMessage::class) -> "群临时会话"
+        classifier.isSubclassOf(GroupTempCommandSender::class) -> "群临时好友"
         classifier.isSubclassOf(UserCommandSender::class) -> "用户"
         else -> classifier.simpleName ?: classifier.toString()
     }

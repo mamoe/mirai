@@ -18,6 +18,7 @@ internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
     val str = string.trim { it.isWhitespace() }.toLowerCase()
     if (str == "*") return AnyContact
     if (str == "console") return Console
+    if (str == "client*") return AnyOtherClient
     if (str.isNotEmpty()) {
         when (str[0]) {
             'g' -> {
@@ -34,6 +35,11 @@ internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
                 val arg = str.substring(1)
                 if (arg == "*") return AnyUser
                 else arg.toLongOrNull()?.let(::ExactUser)?.let { return it }
+            }
+            's' -> {
+                val arg = str.substring(1)
+                if (arg == "*") return AnyStranger
+                else arg.toLongOrNull()?.let(::ExactStranger)?.let { return it }
             }
             'c' -> {
                 val arg = str.substring(1)
@@ -65,10 +71,10 @@ internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
                     if (components.size == 2) {
                         val groupId = components[0].toLongOrNull() ?: return@run
 
-                        if (components[1] == "*") return AnyTemp(groupId)
+                        if (components[1] == "*") return AnyGroupTemp(groupId)
                         else {
                             val memberId = components[1].toLongOrNull() ?: return@run
-                            return ExactTemp(groupId, memberId)
+                            return ExactGroupTemp(groupId, memberId)
                         }
                     }
                 }

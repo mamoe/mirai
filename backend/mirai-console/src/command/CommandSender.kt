@@ -605,7 +605,7 @@ public open class GroupTempCommandSender internal constructor(
     public override fun toString(): String = "GroupTempCommandSender($user)"
 
     public override val permitteeId: PermitteeId =
-        AbstractPermitteeId.ExactTemp(user.group.id, user.id)
+        AbstractPermitteeId.ExactGroupTemp(user.group.id, user.id)
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
@@ -646,7 +646,7 @@ public open class OtherClientCommandSender internal constructor(
     public override val subject: Friend get() = user
     public override fun toString(): String = "OtherClientCommandSender($user)"
 
-    public override val permitteeId: PermitteeId = AbstractPermitteeId.ExactStranger(user.id)
+    public override val permitteeId: PermitteeId = AbstractPermitteeId.AnyOtherClient
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<OtherClient> = sendMessage(PlainText(message))

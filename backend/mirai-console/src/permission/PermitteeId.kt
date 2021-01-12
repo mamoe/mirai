@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.internal.permission.parseFromStringImpl
 import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * [被许可人][Permittee] 的标识符
@@ -92,11 +93,26 @@ public interface PermitteeId {
             get() = ExactGroup(id)
 
         /**
-         * 创建 [AbstractPermitteeId.ExactTemp]
+         * 创建 [AbstractPermitteeId.ExactGroupTemp]
          */
         @get:JvmSynthetic
-        public val Member.permitteeIdOnTemp: ExactTemp
-            get() = ExactTemp(group.id, id)
+        public val Member.permitteeIdOnTemp: ExactGroupTemp
+            get() = ExactGroupTemp(group.id, id)
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactStranger]
+         */
+        @get:JvmSynthetic
+        public val Stranger.permitteeId: ExactStranger
+            get() = ExactStranger(id)
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactStranger]
+         */
+        @MiraiExperimentalApi
+        @get:JvmSynthetic
+        public inline val OtherClient.permitteeId: AnyOtherClient
+            get() = AnyOtherClient
     }
 }
 
@@ -111,24 +127,7 @@ public interface PermitteeId {
  *
  * (不区分大小写. 不区分 Bot).
  *
- *
- * |    被许可人类型    | 字符串表示示例 | 备注                                  |
- * |:----------------:|:-----------:|:-------------------------------------|
- * |      控制台       |   console   |                                      |
- * |      精确群       |   g123456   | 表示群, 而不表示群成员                   |
- * |      精确好友      |   f123456   | 必须通过好友消息                        |
- * |    精确临时会话    | t123456.789  | 群 123456 内的成员 789. 必须通过临时会话  |
- * |     精确群成员     | m123456.789 | 群 123456 内的成员 789. 同时包含临时会话. |
- * |      精确用户      |   u123456   | 同时包含群成员, 好友, 临时会话            |
- * |      任意群       |     g*      |                                      |
- * |  任意群的任意群员   |     m*      |                                      |
- * |  精确群的任意群员   |  m123456.*  | 群 123456 内的任意成员. 同时包含临时会话.  |
- * | 任意群的任意临时会话 |     t*      | 必须通过临时会话                        |
- * | 精确群的任意临时会话 |  t123456.*  | 群 123456 内的任意成员. 必须通过临时会话   |
- * |      任意好友      |     f*      |                                      |
- * |      任意用户      |     u*      | 任何人在任何环境                        |
- * |      任意对象      |      *      | 即任何人, 任何群, 控制台                 |
- *
+ * [查看字符串表示列表](https://github.com/mamoe/mirai-console/docs/Permissions.md#字符串表示)
  *
  * #### 关系图
  *
@@ -273,6 +272,15 @@ public sealed class AbstractPermitteeId(
         override fun asString(): String = "f$id"
     }
 
+    @Deprecated(
+        "use AnyGroupTemp",
+        ReplaceWith("AnyGroupTemp", "net.mamoe.mirai.console.permission.AbstractPermitteeId.AnyGroupTemp"),
+        DeprecationLevel.ERROR
+    )
+    public abstract class AnyTemp(
+        groupId: Long,
+    ) : AbstractPermitteeId(AnyMember(groupId), AnyTempFromAnyGroup)
+
     /**
      * 表示任何一个通过一个群 *在临时会话发送消息的* [群成员][Member]
      *
@@ -280,9 +288,9 @@ public sealed class AbstractPermitteeId(
      * - **间接父标识符**: [AnyMemberFromAnyGroup], [AnyUser], [AnyContact]
      * - 字符串表示: "t$groupId.*"
      */
-    public data class AnyTemp(
+    public data class AnyGroupTemp(
         public val groupId: Long,
-    ) : AbstractPermitteeId(AnyMember(groupId), AnyTempFromAnyGroup) {
+    ) : @Suppress("DEPRECATION_ERROR") AnyTemp(groupId) {
         override fun asString(): String = "t$groupId.*"
     }
 
@@ -297,6 +305,16 @@ public sealed class AbstractPermitteeId(
         override fun asString(): String = "t*"
     }
 
+    @Deprecated(
+        "use ExactGroupTemp",
+        ReplaceWith("ExactGroupTemp", "net.mamoe.mirai.console.permission.AbstractPermitteeId.ExactGroupTemp"),
+        DeprecationLevel.ERROR
+    )
+    public abstract class ExactTemp internal constructor(
+        groupId: Long,
+        memberId: Long,
+    ) : AbstractPermitteeId(ExactMember(groupId, memberId))
+
     /**
      * 表示唯一的一个 *在临时会话发送消息的* [群成员][Member]
      *
@@ -304,10 +322,10 @@ public sealed class AbstractPermitteeId(
      * - **间接父标识符**: [AnyUser], [AnyMember], [ExactUser], [AnyContact], [AnyMemberFromAnyGroup]
      * - 字符串表示: "t$groupId.$memberId"
      */
-    public data class ExactTemp(
+    public data class ExactGroupTemp(
         public val groupId: Long,
         public val memberId: Long,
-    ) : AbstractPermitteeId(ExactMember(groupId, memberId)) {
+    ) : @Suppress("DEPRECATION_ERROR") ExactTemp(groupId, memberId) {
         override fun asString(): String = "t$groupId.$memberId"
     }
 
@@ -322,19 +340,6 @@ public sealed class AbstractPermitteeId(
         public val id: Long,
     ) : AbstractPermitteeId(ExactUser(id), AnyStranger) {
         override fun asString(): String = "s$id"
-    }
-
-    /**
-     * 表示唯一的一个 [其他客户端][OtherClient]
-     *
-     * - **直接父标识符**: [AnyOtherClient]
-     * - **间接父标识符**: [AnyContact]
-     * - 字符串表示: "o$id"
-     */
-    public data class ExactOtherClient(
-        public val id: Long,
-    ) : AbstractPermitteeId(AnyOtherClient) {
-        override fun asString(): String = "o$id"
     }
 
 
@@ -358,17 +363,6 @@ public sealed class AbstractPermitteeId(
      */
     public object AnyStranger : AbstractPermitteeId(AnyUser) {
         override fun asString(): String = "s*"
-    }
-
-    /**
-     * 表示任何 [其他客户端][OtherClient]
-     *
-     * - **直接父标识符**: [AnyContact]
-     * - **间接父标识符**: 无
-     * - 字符串表示: "o*"
-     */
-    public object AnyOtherClient : AbstractPermitteeId(AnyContact) {
-        override fun asString(): String = "o*"
     }
 
     /**
@@ -404,5 +398,16 @@ public sealed class AbstractPermitteeId(
      */
     public object Console : AbstractPermitteeId() {
         override fun asString(): String = "console"
+    }
+
+    /**
+     * 表示任何其他客户端
+     *
+     * - **直接父标识符**: [AnyContact]
+     * - **间接父标识符**: 无
+     * - 字符串表示: "client*"
+     */
+    public object AnyOtherClient : AbstractPermitteeId(AnyContact) {
+        override fun asString(): String = "client*"
     }
 }
