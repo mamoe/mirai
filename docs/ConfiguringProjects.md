@@ -11,11 +11,9 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             1.3.3              |
-|  预览   |            2.0-M2-2            |
+|  稳定   |             2.0-RC             |
+|  预览   |               -                |
 |  开发   | [![Version]][Bintray Download] |
-
-**即使 2.0 还没有稳定，也建议使用 2.0 预览版本，因 1.x 版本将不会收到任何更新。**
 
 ### 配置项目
 
@@ -45,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "1.3.3") // 替换为你需要的版本号
+    api("net.mamoe", "mirai-core", "2.0-RC") // 替换为你需要的版本号
 }
 ```
 
@@ -65,7 +63,7 @@ repositories {
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '1.3.3') // 替换为你需要的版本号
+    api('net.mamoe', 'mirai-core', '2.0-RC') // 替换为你需要的版本号
 }
 ```
 
@@ -74,7 +72,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`。
 ```kotlin
 dependencies {
-    val miraiVersion = "1.3.3" // 替换为你需要的版本号
+    val miraiVersion = "2.0-RC" // 替换为你需要的版本号
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -102,7 +100,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>1.3.3</version> <!-- 替换版本为你需要的版本 -->
+        <version>2.0-RC</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```
