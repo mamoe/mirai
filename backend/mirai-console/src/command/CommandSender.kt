@@ -206,7 +206,7 @@ public interface CommandSender : CoroutineScope, Permittee {
          */
         @JvmStatic
         @JvmName("from")
-        public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
+        public fun GroupTempMessageEvent.toCommandSender(): GroupTempCommandSenderOnMessage = GroupTempCommandSenderOnMessage(this)
 
         /**
          * 构造 [StrangerCommandSenderOnMessage]
@@ -231,7 +231,7 @@ public interface CommandSender : CoroutineScope, Permittee {
         public fun <T : MessageEvent> T.toCommandSender(): CommandSenderOnMessage<T> = when (this) {
             is FriendMessageEvent -> toCommandSender()
             is GroupMessageEvent -> toCommandSender()
-            is TempMessageEvent -> toCommandSender()
+            is GroupTempMessageEvent -> toCommandSender()
             is StrangerMessageEvent -> toCommandSender()
             is OtherClientMessageEvent -> toCommandSender()
             else -> throw IllegalArgumentException("Unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
@@ -242,7 +242,7 @@ public interface CommandSender : CoroutineScope, Permittee {
          */
         @JvmStatic
         @JvmName("of")
-        public fun NormalMember.asTempCommandSender(): TempCommandSender = TempCommandSender(this)
+        public fun NormalMember.asTempCommandSender(): GroupTempCommandSender = GroupTempCommandSender(this)
 
         /**
          * 得到 [MemberCommandSender]
@@ -292,7 +292,7 @@ public interface CommandSender : CoroutineScope, Permittee {
         @JvmName("of")
         public fun User.asCommandSender(isTemp: Boolean): UserCommandSender = when (this) {
             is Friend -> this.asCommandSender()
-            is Member -> if (isTemp && this is NormalMember) TempCommandSender(this) else MemberCommandSender(this)
+            is Member -> if (isTemp && this is NormalMember) GroupTempCommandSender(this) else MemberCommandSender(this)
             is Stranger -> this.asCommandSender()
             else -> error("stub")
         }
@@ -583,12 +583,26 @@ public open class MemberCommandSender internal constructor(
  * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  */
-public open class TempCommandSender internal constructor(
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempCommandSender 已更改为 GroupTempCommandSender",
+    replaceWith = ReplaceWith("GroupTempCommandSender", "net.mamoe.mirai.console.command.GroupTempCommandSender"),
+    DeprecationLevel.ERROR
+)
+public sealed class TempCommandSender(
+    public override val user: NormalMember,
+) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("TempCommandSender")
+
+/**
+ * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
+ * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ */
+@Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
+public open class GroupTempCommandSender internal constructor(
     public final override val user: NormalMember,
-) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("TempCommandSender") {
+) : @Suppress("DEPRECATION_ERROR") TempCommandSender(user), CoroutineScope by user.childScope("GroupTempCommandSender") {
     public override val group: Group get() = user.group
     public override val subject: NormalMember get() = user
-    public override fun toString(): String = "TempCommandSender($user)"
+    public override fun toString(): String = "GroupTempCommandSender($user)"
 
     public override val permitteeId: PermitteeId =
         AbstractPermitteeId.ExactTemp(user.group.id, user.id)
@@ -680,9 +694,22 @@ public class MemberCommandSenderOnMessage internal constructor(
  * 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  * @see TempCommandSender 代表一个 [群员][Member] 执行指令, 但不一定是通过私聊方式
  */
-public class TempCommandSenderOnMessage internal constructor(
-    public override val fromEvent: TempMessageEvent,
-) : TempCommandSender(fromEvent.sender), CommandSenderOnMessage<TempMessageEvent>
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempCommandSenderOnMessage 已更改为 GroupTempCommandSenderOnMessage",
+    replaceWith = ReplaceWith("GroupTempCommandSenderOnMessage", "net.mamoe.mirai.console.command.GroupTempCommandSenderOnMessage"),
+    DeprecationLevel.ERROR
+)
+public sealed class TempCommandSenderOnMessage(
+    public override val fromEvent: GroupTempMessageEvent,
+) : GroupTempCommandSender(fromEvent.sender), CommandSenderOnMessage<GroupTempMessageEvent>
+
+/**
+ * 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ * @see TempCommandSender 代表一个 [群员][Member] 执行指令, 但不一定是通过私聊方式
+ */
+public class GroupTempCommandSenderOnMessage internal constructor(
+    public override val fromEvent: GroupTempMessageEvent,
+) : @Suppress("DEPRECATION_ERROR") TempCommandSenderOnMessage(fromEvent), CommandSenderOnMessage<GroupTempMessageEvent>
 
 /**
  * 代表一个 [陌生人][Stranger] 主动在私聊发送消息执行指令
