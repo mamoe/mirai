@@ -28,13 +28,13 @@ Mirai Console 内置一些指令。
 
 次指令:
 
-| 指令                                                                                     | 描述                   |
-|:----------------------------------------------------------------------------------------|:----------------------|
-| `/<permission|perm|权限> <permit|grant|add> [target] [permission]`                       | 授权一个权限            |
-| `/<permission|perm|权限> <cancel|deny|remove> [target] [permission]`                     | 撤销一个权限            |
-| `/<permission|perm|权限> <cancelAll|denyAll|removeAll> [target] [permission]`            | 撤销一个权限及其所有子权限 |
-| `/<permission|perm|权限> <permittedPermissions|pp|grantedPermissions|gp> [target] [all]` | 查看被授权权限列表       |
-| `/<permission|perm|权限> <listPermissions|lp>`                                           | 查看所有权限列表         |
+| 指令                                                                                         | 描述                   |
+|:--------------------------------------------------------------------------------------------|:----------------------|
+| `/<permission\|perm|权限> <permit\|grant\|add> [target] [permission]`                        | 授权一个权限            |
+| `/<permission\|perm|权限> <cancel\|deny\|remove> [target] [permission]`                      | 撤销一个权限            |
+| `/<permission\|perm|权限> <cancelAll\|denyAll\|removeAll> [target] [permission]`             | 撤销一个权限及其所有子权限 |
+| `/<permission\|perm|权限> <permittedPermissions\|pp\|grantedPermissions\|gp> [target] [all]` | 查看被授权权限列表       |
+| `/<permission\|perm|权限> <listPermissions\|lp>`                                             | 查看所有权限列表         |
 
 ### `[target]` 和 `[permission]` 示例
 
@@ -52,12 +52,12 @@ Mirai Console 内置一些指令。
 
 | 指令                                                           | 描述                 |
 |:--------------------------------------------------------------|:---------------------|
-| `/<autoLogin|自动登录> list`                                    | 查看自动登录账号列表    |
-| `/<autoLogin|自动登录> add [account] [password] [passwordKind]` | 添加自动登录           |
-| `/<autoLogin|自动登录> clear`                                   | 清除所有配置           |
-| `/<autoLogin|自动登录> remove [account]`                        | 删除一个账号           |
-| `/<autoLogin|自动登录> setConfig [account] [configKey] [value]` | 设置一个账号的一个配置项 |
-| `/<autoLogin|自动登录> removeConfig [account] [configKey]`      | 删除一个账号的一个配置项 |
+| `/<autoLogin\|自动登录> list`                                    | 查看自动登录账号列表    |
+| `/<autoLogin\|自动登录> add [account] [password] [passwordKind]` | 添加自动登录           |
+| `/<autoLogin\|自动登录> clear`                                   | 清除所有配置           |
+| `/<autoLogin\|自动登录> remove [account]`                        | 删除一个账号           |
+| `/<autoLogin\|自动登录> setConfig [account] [configKey] [value]` | 设置一个账号的一个配置项 |
+| `/<autoLogin\|自动登录> removeConfig [account] [configKey]`      | 删除一个账号的一个配置项 |
 
 
 | `configKey` |                       可选值                       |
