@@ -180,7 +180,7 @@ public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
  */
 public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
-    public override val target: Member,
+    public override val target: NormalMember,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
@@ -192,7 +192,7 @@ public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<Member>?
+    public override val receipt: MessageReceipt<NormalMember>?
 ) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePostSendEvent(target, message, exception, receipt) {
     public override val group: Group get() = target.group
 }

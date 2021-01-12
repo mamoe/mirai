@@ -46,7 +46,7 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
      */
     @MiraiExperimentalApi("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
     public data class Kick @MiraiInternalApi constructor(
-        public override val operator: Member
+        public override val operator: NormalMember
     ) : BotLeaveEvent(),
         GroupOperableEvent {
         public override val group: Group get() = operator.group
@@ -74,7 +74,7 @@ public data class BotMuteEvent @MiraiInternalApi constructor(
     /**
      * 操作人.
      */
-    public val operator: Member
+    public val operator: NormalMember
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     public override val group: Group
         get() = operator.group
@@ -87,7 +87,7 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
     /**
      * 操作人.
      */
-    public val operator: Member
+    public val operator: NormalMember
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     public override val group: Group
         get() = operator.group
@@ -119,7 +119,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
         /**
          * 邀请人
          */
-        public val invitor: Member
+        public val invitor: NormalMember
     ) : BotJoinGroupEvent() {
         public override val group: Group get() = invitor.group
 
@@ -163,7 +163,7 @@ public data class GroupNameChangeEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 /**
@@ -176,7 +176,7 @@ public data class GroupEntranceAnnouncementChangeEvent @MiraiInternalApi constru
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -190,7 +190,7 @@ public data class GroupMuteAllEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -204,7 +204,7 @@ public data class GroupAllowAnonymousChatEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -228,7 +228,7 @@ public data class GroupAllowMemberInviteEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -417,7 +417,7 @@ public data class MemberCardChangeEvent @MiraiInternalApi constructor(
      */
     public val new: String,
 
-    public override val member: Member
+    public override val member: NormalMember
 ) : GroupMemberEvent, Packet, AbstractEvent()
 
 /**
@@ -434,7 +434,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
      */
     public val new: String,
 
-    public override val member: Member,
+    public override val member: NormalMember,
 
     /**
      * 操作人.
@@ -453,7 +453,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
  * 成员权限改变的事件. 成员不可能是机器人自己.
  */
 public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
-    public override val member: Member,
+    public override val member: NormalMember,
     public val origin: MemberPermission,
     public val new: MemberPermission
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
@@ -513,7 +513,7 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
      */
     public data class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
         MemberHonorChangeEvent() {
-    
+
         override fun toString(): String {
             return "MemberHonorChangeEvent.Achieve(member=$member, honorType=$honorType)"
         }
@@ -524,7 +524,7 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
      */
     public data class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
         MemberHonorChangeEvent() {
-    
+
         override fun toString(): String {
             return "MemberHonorChangeEvent.Lose(member=$member, honorType=$honorType)"
         }

@@ -322,7 +322,7 @@ internal fun Group.newMember(memberInfo: MemberInfo): Member {
     )
 }
 
-internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMember(
+internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl = newMember(
     MemberInfoImpl(
         uin = 80000000L,
         nick = name,
@@ -333,4 +333,4 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMembe
         muteTimestamp = 0,
         anonymousId = id,
     )
-)
+) as AnonymousMemberImpl

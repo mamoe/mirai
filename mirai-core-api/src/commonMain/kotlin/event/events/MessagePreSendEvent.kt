@@ -99,7 +99,7 @@ public sealed class TempMessagePreSendEvent @MiraiInternalApi constructor(
  */
 public data class GroupTempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
-    public override val target: Member,
+    public override val target: NormalMember,
     /** 待发送的消息. 修改后将会同时应用于发送. */
     public override var message: Message
 ) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message) {
