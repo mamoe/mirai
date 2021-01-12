@@ -39,8 +39,8 @@ tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class
 }
 
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
-    sinceBuild("193.*")
-    untilBuild("205.*")
+    sinceBuild("201.*")
+    untilBuild("215.*")
     pluginDescription("""
         Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Console</a>
         
