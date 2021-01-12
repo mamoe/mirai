@@ -66,6 +66,8 @@ internal interface BuiltInCommandInternal : Command, BuiltInCommand
 
 /**
  * 内建指令列表
+ *
+ * [查看文档](https://github.com/mamoe/mirai-console/docs/BuiltInCommands.md)
  */
 @Suppress("unused")
 public object BuiltInCommands {
@@ -199,7 +201,7 @@ public object BuiltInCommands {
             sendMessage("OK")
         }
 
-        @Description("取消授权一个权限")
+        @Description("撤销一个权限")
         @SubCommand("cancel", "deny", "remove")
         public suspend fun CommandSender.cancel(
             @Name("被许可人 ID") target: PermitteeId,
@@ -209,7 +211,7 @@ public object BuiltInCommands {
             sendMessage("OK")
         }
 
-        @Description("取消授权一个权限及其所有子权限")
+        @Description("撤销一个权限及其所有子权限")
         @SubCommand("cancelAll", "denyAll", "removeAll")
         public suspend fun CommandSender.cancelAll(
             @Name("被许可人 ID") target: PermitteeId,
@@ -241,7 +243,7 @@ public object BuiltInCommands {
         @Description("查看所有权限列表")
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
-            sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() })
+            sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() + "    " + it.description })
         }
     }
 

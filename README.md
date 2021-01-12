@@ -22,6 +22,8 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 
 ## 使用
 
+- **[启动 Console](docs/Run.md)**
+
 ### 安装 JAR 插件
 
 将 `jar` 文件放入 `plugins` 并重启 Mirai Console 即可。
@@ -30,31 +32,13 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 
 在控制台输入 `?` 查看可用指令列表。
 
+### 内置指令
+
+[BuiltInCommands](docs/BuiltInCommands.md#mirai-console---builtin-commands)
+
 ## 开发
 
-**Mirai Console 基于 [Mirai](https://github.com/mamoe/mirai)，因此请先阅读 [Mirai 文档](https://github.com/mamoe/mirai/tree/dev/docs)。**
-
-- **[配置项目](docs/ConfiguringProjects.md)**
-- **[启动 Console](docs/Run.md)**
-
-### 后端插件开发基础
-
-- 插件 - [Plugin 模块](docs/Plugins.md)
-- 指令 - [Command 模块](docs/Commands.md)
-- 存储 - [PluginData 模块](docs/PluginData.md)
-- 权限 - [Permission 模块](docs/Permissions.md)
-
-
-**示例插件**：
-- [mirai-console-example-plugin (Kotlin DSL)](https://github.com/Him188/mirai-console-example-plugin)
-- [mirai-console-example-plugin (Groovy DSL)](https://github.com/Karlatemp/mirai-console-example-plugin)
-
-### 后端插件开发进阶
-
-- 扩展 - [Extension 模块和扩展点](docs/Extensions.md)
-
-### 实现前端
-- [FrontEnd](docs/FrontEnd.md)
+[开发文档](docs/README.md#mirai-console)
 
 ## 实用链接
 

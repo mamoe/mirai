@@ -1,3 +1,27 @@
 # Mirai Console
 
 欢迎来到 mirai-console 开发文档!
+
+**Mirai Console 基于 [Mirai](https://github.com/mamoe/mirai)，因此请先阅读 [Mirai 文档](https://github.com/mamoe/mirai/tree/dev/docs)。**
+
+- **[配置项目](ConfiguringProjects.md)**
+- **[启动 Console](Run.md)**
+
+### 后端插件开发基础
+
+- 插件 - [Plugin 模块](Plugins.md)
+- 指令 - [Command 模块](Commands.md)
+- 存储 - [PluginData 模块](PluginData.md)
+- 权限 - [Permission 模块](Permissions.md)
+
+
+**示例插件**：
+- [mirai-console-example-plugin (Kotlin DSL)](https://github.com/Him188/mirai-console-example-plugin)
+- [mirai-console-example-plugin (Groovy DSL)](https://github.com/Karlatemp/mirai-console-example-plugin)
+
+### 后端插件开发进阶
+
+- 扩展 - [Extension 模块和扩展点](Extensions.md)
+
+### 实现前端
+- [FrontEnd](FrontEnd.md)
