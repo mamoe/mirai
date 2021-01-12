@@ -120,27 +120,25 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ## 开始
 
-- 开发文档：[docs](docs/README.md)
+- 开发文档: [docs](docs/README.md)
 - 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
+- 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+  > 在 GitHub Discussions 提出的问题可能会收到 mirai 维护者的回复, 也欢迎分享你基于 mirai 的项目或想法.
 
-- 贡献: [CONTRIBUTING](CONTRIBUTING.md)
+- mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
+- mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) ****
 
-- [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) **mirai相关项目合集**
+- 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
 ## [贡献](CONTRIBUTING.md)
-
-我们欢迎一切形式的贡献。  
-我们也期待有更多人能加入 mirai 的开发。  
-
-若在使用过程中有任何疑问，可提交 [`issue`](https://github.com/mamoe/mirai/issues) 或在 [`Discussions`](https://github.com/mamoe/mirai/discussions) 讨论。 我们希望 mirai 变得更易用.
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
 开发交流：[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ### 加入 mirai 开发组
-若您有意加入 mirai, mirai-console 和相关社区开发, 请 [邮件联系](mailto:support@mamoe.net) (`support@mamoe.net`), 并附加相关开发经验证明.
+若您有意加入 mirai, mirai-console 和相关社区开发, 请 [邮件联系](mailto:support@mamoe.net) (`support@mamoe.net`), 并附加你的个人主页如 GitHub.
 
 ## 鸣谢
 
