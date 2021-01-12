@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
@@ -236,9 +235,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                                 }
                             }
                     }
-                    when (account.password.kind) {
+
+                    val bot = when (account.password.kind) {
                         PLAIN -> {
-                            MiraiConsole.addBot(id, account.password.value, BotConfiguration::configBot).alsoLogin()
+                            MiraiConsole.addBot(id, account.password.value, BotConfiguration::configBot)
                         }
                         MD5 -> {
                             val md5 = kotlin.runCatching {
@@ -246,8 +246,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                             }.getOrElse {
                                 error("Bad auto-login md5: '${account.password.value}' for account $id")
                             }
-                            MiraiConsole.addBot(id, md5, BotConfiguration::configBot).alsoLogin()
+                            MiraiConsole.addBot(id, md5, BotConfiguration::configBot)
                         }
+                    }
+
+                    runCatching { bot.login() }.getOrElse {
+                        mainLogger.error(it)
                     }
                 }
 
