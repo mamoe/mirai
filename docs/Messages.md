@@ -4,7 +4,6 @@
 - [消息系统](#消息系统)
 - [消息类型](#消息类型)
 - [消息元素](#消息元素)
-- [Mirai 码](#mirai-码)
   - [转义规则](#转义规则)
   - [消息链的 mirai 码](#消息链的-mirai-码)
   - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
@@ -14,6 +13,7 @@
   - [构造消息链](#构造消息链)
   - [元素唯一性](#元素唯一性)
   - [获取消息链中的消息元素](#获取消息链中的消息元素)
+- [Mirai 码](#mirai-码)
 
 ## 消息系统
 
@@ -36,7 +36,17 @@
 
 ## 消息元素
 
-Mirai 支持富文本消息。各类型消息元素如下文表格所示。
+Mirai 支持富文本消息。
+
+消息拥有三种转换到字符串的表示方式。
+
+| 方法                      | 解释                                                                                          |
+|:-------------------------|:---------------------------------------------------------------------------------------------|
+| `serializeToMiraiCode()` | 对应的 Mirai 码. 消息的一种序列化方式，格式为 `[mirai:TYPE:PROP]`，其中 `TYPE` 为消息类型, `PROP` 为属性 |
+| `contentToSting()`       | QQ 对话框中以纯文本方式会显示的消息内容。无法用纯文字表示的消息会丢失信息，如任何图片都是 `[图片]`             |
+| `toString()`             | Java 对象的 `toString()`，会尽可能包含多的信息用于调试作用，**行为可能不确定**                           |
+
+各类型消息元素及其 `contentToString()` 如下表格所示。
 
 [`PlainText`]: ../mirai-core-api/src/commonMain/kotlin/message/data/PlainText.kt
 [`At`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
@@ -73,75 +83,7 @@ Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 |    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[转发消息]`            |
 | [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`              |
 
-***注意：内容会首先被转义，详见 [转义规则](#转义规则)***
-
 **请打开相关消息类型的源码查看用法。**
-
-> 回到 [目录](#目录)
-
-## Mirai 码
-
-消息拥有三种转换到字符串的表示方式。
-- `serializeToMiraiCode()`: 消息的一种序列化方式，格式为 `[mirai:TYPE:PROP]`，其中 `TYPE` 为消息类型, `PROP` 为属性。
-- `contentToSting()`: QQ 对话框中以纯文本方式会显示的消息内容。无法用纯文字表示的消息会丢失信息，如图片总是 `[图片]`。
-- `toString()`: Java 对象的 `toString()`，会尽可能包含多的信息用于调试作用，**行为可能不确定**。
-
-实现了接口 `CodableMessage` 的消息类型支持 mirai 码表示。
-
-### 转义规则
-
-mirai 码内的属性字符串会被转义。
-
-|   原字符    | 转义结果字符 |
-|:----------:|:---------:|
-|    `[`     |   `\[`    |
-|    `]`     |   `\]`    |
-|    `:`     |   `\:`    |
-|    `,`     |   `\,`    |
-|    `\`     |   `\\`    |
-| *换行符 \n* |    `\n`    |
-| *换行符 \r* |    `\r`    |
-
-### 消息链的 mirai 码
-
-消息链 [`MessageChain`] 是多个 [`SingleMessage`] 的集合。[`MessageChain`] 也实现 [`CodableMessage`]。在转换为 mirai 码时所有 [`CodableMessage`] 直接相连：
-```
-val chain = messageChainOf(PlainText("plain"), At(123), AtAll)
-
-chain.serializeToMiraiCode() // "plain[mirai:at:123][mirai:atall]"
-```
-
-### 由 `CodableMessage` 取得 mirai 码字符串
-
-通过 `CodableMessage.serializeToMiraiCode()`。
-
-```
-val at = At(123)
-
-at.serializeToMiraiCode() // 结果为 `[mirai:at:123]`
-```
-
-|          消息类型          | `serializeToMiraiCode()`                                  |
-|:------------------------:|:-------------------------------------------------|
-|      [`PlainText`]       | `$content`                                       |
-|        [`Image`]         | `[mirai:image:$imageId]`                         |
-|          [`At`]          | `[mirai:at:$target]`                             |
-|        [`AtAll`]         | `[mirai:atall]`                                  |
-|         [`Face`]         | `[mirai:face:id]`                                |
-|      [`FlashImage`]      | `[mirai:flash:${image.imageId}]`                 |
-|     [`PokeMessage`]      | `[mirai:poke:$name,$pokeType,$id]`               |
-|       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
-|       [`LightApp`]       | `[mirai:app:$content]`                           |
-| [`SimpleServiceMessage`] | `[mirai:service:$serviceId,$content]`            |
-
-### 由 mirai 码字符串取得 `MessageChain` 实例
-
-```kotlin
-val chain = "[mirai:atall]".parseMiraiCode()
-```
-```java
-MessageChain chain = MiraiCode.parseMiraiCode("[mirai:atall]");
-```
 
 > 回到 [目录](#目录)
 
@@ -151,7 +93,7 @@ MessageChain chain = MiraiCode.parseMiraiCode("[mirai:atall]");
 [`SingleMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt
 [`CodableMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/code/CodableMessage.kt
 
-前文已经介绍消息链，这里介绍消息链的使用。
+前文已经介绍消息链，这里简略介绍消息链的使用。详细的使用请查看源码内注释。
 
 ### 发送消息
 
@@ -184,10 +126,10 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("/f
 
 | 定义                                                     |
 |:--------------------------------------------------------|
-| `fun Iterable<Messaged>.asMessageChain(): MessageChain` |
-| `fun Sequence<Messaged>.asMessageChain(): MessageChain` |
-| `fun Array<Message>.asMessageChain(): MessageChain`     |
-| `fun Message.asMessageChain(): MessageChain`            |
+| `fun Iterable<Messaged>.toMessageChain(): MessageChain` |
+| `fun Sequence<Messaged>.toMessageChain(): MessageChain` |
+| `fun Array<Message>.toMessageChain(): MessageChain`     |
+| `fun Message.toMessageChain(): MessageChain`            |
 | `fun messageChainOf(vararg Message): MessageChain`      |
 | `fun Message.plus(tail: Message): MessageChain`         |
 
@@ -303,6 +245,71 @@ val image: Image by chain // 不存在时 NoSuchElementException
 val image: Image? by chain.orNull()
 val image: Image? by chain.orElse { /* 返回一个 Image */ }
 ```
+
+### 序列化
+
+消息可以序列化为 JSON 字符串，使用 `MessageChain.serializeToJsonString` 和 `MessageChain.deserializeFromJsonString`。
+
+## Mirai 码
+
+实现了接口 `CodableMessage` 的消息类型支持 mirai 码表示。
+
+### 转义规则
+
+mirai 码内的属性字符串会被转义。
+
+|   原字符    | 转义结果字符 |
+|:----------:|:---------:|
+|    `[`     |   `\[`    |
+|    `]`     |   `\]`    |
+|    `:`     |   `\:`    |
+|    `,`     |   `\,`    |
+|    `\`     |   `\\`    |
+| *换行符 \n* |    `\n`    |
+| *换行符 \r* |    `\r`    |
+
+### 消息链的 mirai 码
+
+消息链 [`MessageChain`] 是多个 [`SingleMessage`] 的集合。[`MessageChain`] 也实现 [`CodableMessage`]。在转换为 mirai 码时所有 [`CodableMessage`] 直接相连：
+```
+val chain = messageChainOf(PlainText("plain"), At(123), AtAll)
+
+chain.serializeToMiraiCode() // "plain[mirai:at:123][mirai:atall]"
+```
+
+### 由 `CodableMessage` 取得 mirai 码字符串
+
+通过 `CodableMessage.serializeToMiraiCode()`。
+
+```
+val at = At(123)
+
+at.serializeToMiraiCode() // 结果为 `[mirai:at:123]`
+```
+
+|          消息类型          | `serializeToMiraiCode()`                         |
+|:------------------------:|:-------------------------------------------------|
+|      [`PlainText`]       | `$content`                                       |
+|        [`Image`]         | `[mirai:image:$imageId]`                         |
+|          [`At`]          | `[mirai:at:$target]`                             |
+|        [`AtAll`]         | `[mirai:atall]`                                  |
+|         [`Face`]         | `[mirai:face:id]`                                |
+|      [`FlashImage`]      | `[mirai:flash:${image.imageId}]`                 |
+|     [`PokeMessage`]      | `[mirai:poke:$name,$pokeType,$id]`               |
+|       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
+|       [`LightApp`]       | `[mirai:app:$content]`                           |
+| [`SimpleServiceMessage`] | `[mirai:service:$serviceId,$content]`            |
+
+### 由 mirai 码字符串取得 `MessageChain` 实例
+
+```kotlin
+val chain = "[mirai:atall]".deserializeMiraiCode()
+```
+```java
+MessageChain chain = MiraiCode.deserializeFromMiraiCode("[mirai:atall]");
+```
+
+> 回到 [目录](#目录)
 
 
 > 回到 [目录](#目录)

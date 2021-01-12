@@ -126,7 +126,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
   > *除这两个途径外，Mirai 在各个平台均没有官方交流群或论坛*
 
 - mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
-- mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) ****
+- mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
 
 - 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
