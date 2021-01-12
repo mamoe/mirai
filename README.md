@@ -1,8 +1,8 @@
 <div align="center">
-   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
+   <img width="160" src="https://github.com/mamoe/mirai/blob/dev/docs/mirai.png" alt="logo"></br>
 
 
-   <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
+   <img width="95" src="https://github.com/mamoe/mirai/blob/dev/docs/mirai.svg" alt="title">
 
 ----
 Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器人库
@@ -18,6 +18,7 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 高效率 QQ 机器人框架，机器人核心来自 [mirai](https://github.com/mamoe/mirai)
 
 ![Gradle CI](https://github.com/mamoe/mirai-console/workflows/Gradle%20CI/badge.svg?branch=master)
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-console/)
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## 使用
