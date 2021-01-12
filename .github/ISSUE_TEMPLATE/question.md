@@ -1,6 +1,6 @@
 ---
-name: 问题
-about: 提交一个通常问题
+name: 其他问题
+about: 提交一个问题
 title: ''
 labels: problem
 assignees: ''
