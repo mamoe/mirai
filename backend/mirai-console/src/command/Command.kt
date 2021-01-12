@@ -24,6 +24,9 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 /**
  * 指令
  *
+ * ### 权限
+ * 每个指令都会被分配一个权限 [permission]. 默认没有人拥有这个权限. 请通过 [BuiltInCommands.PermissionCommand] 赋予权限.
+ *
  * @see CommandManager.registerCommand 注册这个指令
  *
  * @see RawCommand 无参数解析, 接收原生参数的指令
