@@ -31,7 +31,7 @@ public data class StrangerAddEvent internal constructor(
  * 陌生人关系改变事件
  *
  */
-public abstract class StrangerRelationChangeEvent(
+public sealed class StrangerRelationChangeEvent(
     public override val stranger: Stranger
 ) : StrangerEvent, Packet, AbstractEvent() {
     /**
