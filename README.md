@@ -123,7 +123,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
   > 在 GitHub Discussions 提出的问题可能会收到 mirai 维护者的回复, 也欢迎分享你基于 mirai 的项目或想法.
   >
-  > *除本页的 Gitter 讨论组外，Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起*
+  > *除这两个途径外，Mirai 在各个平台均没有官方交流群或论坛*
 
 - mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
 - mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) ****
