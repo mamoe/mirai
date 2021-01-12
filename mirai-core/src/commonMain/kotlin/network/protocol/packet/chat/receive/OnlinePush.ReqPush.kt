@@ -169,7 +169,7 @@ internal inline fun lambda732(crossinline block: ByteReadPacket.(GroupImpl, QQAn
 private fun handleMuteMemberPacket(
     bot: QQAndroidBot,
     group: GroupImpl,
-    operator: Member,
+    operator: NormalMember,
     target: Long,
     timeSeconds: Int
 ): Packet? {
