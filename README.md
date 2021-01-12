@@ -29,9 +29,6 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - mirai 是完全免费且开放源代码的软件，仅供学习和娱乐用途使用
 - mirai 不会通过任何方式强制收取费用，或对使用者提出物质条件
 - mirai 由整个开源社区维护，并不是属于某个个体的作品，所有贡献者都享有其作品的著作权。
-```
-除本页的 Gitter 讨论组外，Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
-```
 
 ### 许可证
 
@@ -123,22 +120,15 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - 开发文档: [docs](docs/README.md)
 - 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
-- 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+- 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
   > 在 GitHub Discussions 提出的问题可能会收到 mirai 维护者的回复, 也欢迎分享你基于 mirai 的项目或想法.
+  >
+  > *除本页的 Gitter 讨论组外，Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起*
 
 - mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
 - mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) ****
 
 - 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
-
-## [贡献](CONTRIBUTING.md)
-
-您的 `star` 是对我们最大的鼓励(点击项目右上角)
-
-开发交流：[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-### 加入 mirai 开发组
-若您有意加入 mirai, mirai-console 和相关社区开发, 请 [邮件联系](mailto:support@mamoe.net) (`support@mamoe.net`), 并附加你的个人主页如 GitHub.
 
 ## 鸣谢
 
