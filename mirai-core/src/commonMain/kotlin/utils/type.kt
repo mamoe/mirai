@@ -49,7 +49,7 @@ internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int 
         is Image -> 40 //magic number
         is PlainText -> content.chineseLength(upTo)
         is At -> 60 //magic number
-        is AtAll -> 5 //magic number
+        is AtAll -> 60 //magic number
         else -> this.toString().chineseLength(upTo)
     }
 }
