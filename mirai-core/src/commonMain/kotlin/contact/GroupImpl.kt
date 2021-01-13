@@ -162,7 +162,7 @@ internal class GroupImpl(
                 imageCnt = it
             })
 
-            if (length > 702 || imageCnt > 2) {  // 阈值为700左右，限制到3的倍数
+            if (length > 702 || imageCnt > 1) {  // 阈值为700左右，限制到3的倍数
                 return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
                     bot,
                     this.id,
