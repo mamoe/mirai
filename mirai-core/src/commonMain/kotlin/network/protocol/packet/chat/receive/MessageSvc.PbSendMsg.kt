@@ -46,6 +46,10 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             override fun toString(): String = "MessageSvcPbSendMsg.Response.SUCCESS"
         }
 
+        object MessageTooLarge : Response() {
+            override fun toString(): String = "MessageSvcPbSendMsg.Response.MessageTooLarge"
+        }
+
         /**
          * 121: 被限制? 个别号才不能发
          */
@@ -338,14 +342,15 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
         val response = readProtoBuf(MsgSvc.PbSendMsgResp.serializer())
-        return if (response.result == 0) {
-            Response.SUCCESS
-        } else {
-            Response.Failed(
+        return when (response.result) {
+            0 -> Response.SUCCESS
+            10 -> Response.MessageTooLarge
+            else -> Response.Failed(
                 response.result,
                 response.errtype,
                 response.errmsg
             )
+
         }
     }
 }

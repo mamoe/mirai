@@ -46,10 +46,10 @@ internal fun MessageChain.estimateLength(target: ContactOrBot, upTo: Int): Int =
 internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int {
     return when (this) {
         is QuoteReply -> 444 + this.source.originalMessage.estimateLength(target, upTo) // Magic number
-        is Image -> 40 //magic number
+        is Image -> 260 //Magic number
         is PlainText -> content.chineseLength(upTo)
-        is At -> 60 //magic number
-        is AtAll -> 60 //magic number
+        is At -> 60 //Magic number
+        is AtAll -> 60 //Magic number
         else -> this.toString().chineseLength(upTo)
     }
 }
