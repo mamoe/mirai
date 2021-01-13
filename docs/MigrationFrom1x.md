@@ -102,6 +102,15 @@ Contact.uploadImage(contact, file);        // 返回 Image 消息
 
 ### `2.0-M2` -> `2.0-RC` (`2.0.0`)
 
-如果 `2.0.0` 已经发布，请更新到 `2.0.0` 而不需要更新到 `2.0-RC`。
+本文编写时 `2.0.0` 还未发布。如果你阅读时已经发布了，请更新到 `2.0.0` 而不需要更新到 `2.0-RC`。
 
-这个版本的修改基本不影响 Java 使用。至此你已经成功升级到了 mirai 2.0。[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
+1. 戳一戳事件由以前的多个事件变为了统一的单个 `NudgeEvent`。若有使用请直接参考 `NudgeEvent` 源码修改。
+
+2. `Listener.ConcurrencyKind` 和 `Listener.EventPriority` 由嵌套类移动到顶层，请执行全局替换：
+   - `Listener.ConcurrencyKind` -> `ConcurrencyKind`
+   - `Listener.EventPriority` -> `EventPriority`
+
+3. `IMirai` 低级 API 函数名现在不再带有 `_lowLevel` 前缀, 直接删除前缀即可。
+
+
+至此你已经成功升级到了 mirai 2.0。[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
