@@ -206,7 +206,6 @@ internal class GroupImpl(
                 source = it
             }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
                 if (!isLongOrForward && it is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                    bot.network.logger.warning { "Send group message failed, message is too large, trying long message..." }
                     return@sendMsg MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
                         bot,
                         this@GroupImpl.id,
