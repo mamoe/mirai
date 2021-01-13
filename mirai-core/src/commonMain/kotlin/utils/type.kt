@@ -46,10 +46,10 @@ internal fun MessageChain.estimateLength(target: ContactOrBot, upTo: Int): Int =
 internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int {
     return when (this) {
         is QuoteReply -> 444 + this.source.originalMessage.estimateLength(target, upTo) // Magic number
-        is Image -> 40 //magic number
+        is Image -> 80 //计算图片时应该允许50张图片 因此最大为 100 考虑到其他内容调整为40
         is PlainText -> content.chineseLength(upTo)
-        is At -> 60 //magic number
-        is AtAll -> 60 //magic number
+        is At -> 60 //从达到15个at开始应该应该为长消息发送 而长消息的条件长度为702 计算后最低为50+ 保守考虑为60
+        is AtAll -> 60 //与上述一致
         else -> this.toString().chineseLength(upTo)
     }
 }
