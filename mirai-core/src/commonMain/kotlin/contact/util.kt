@@ -154,9 +154,9 @@ internal inline fun MessageChain.verityLength(
     }
 
     val chain = this
-    val length = estimateLength(target, 5001)
+    val length = estimateLength(target, 15001)
     lengthCallback(length)
-    if (length > 5000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
+    if (length > 15000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
         throw MessageTooLargeException(
             target, message, this,
             "message(${
