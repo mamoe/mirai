@@ -244,7 +244,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
     when (msgHead.msgType) {
         33 -> bot.groupListModifyLock.withLock {
             msgBody.msgContent.read {
-                val groupUin = readUInt().toLong()
+                val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
                 val group = bot.getGroupByUinOrNull(groupUin) ?: bot.createGroupForBot(groupUin) ?: return null
                 discardExact(1)
                 val joinedMemberUin = readUInt().toLong()
