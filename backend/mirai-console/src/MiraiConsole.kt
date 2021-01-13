@@ -139,6 +139,7 @@ public interface MiraiConsole : CoroutineScope {
         @Suppress("UNREACHABLE_CODE")
         private fun addBotImpl(id: Long, password: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
             var config = BotConfiguration().apply {
+                workingDir = rootDir
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
                 this.botLoggerSupplier = {
@@ -153,6 +154,7 @@ public interface MiraiConsole : CoroutineScope {
             config = GlobalComponentStorage.run {
                 BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
                     extension.alterConfiguration(id, acc)
+
                 }
             }
 
