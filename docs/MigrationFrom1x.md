@@ -33,7 +33,7 @@
 
    **提示**: 如果你是想获取消息的内容，可以使用 `messageChain.content` 扩展，而不需要使用 `MessageChain[PlainText]`
 
-2. `Bot.getFriend` 等函数在找不到好友时会抛出异常，现在它们会返回 `null`。  
+2. `Bot.getFriend` 等函数以前在找不到好友时会抛出异常，现在它们会返回 `null`。  
    请替换 `Bot.getFriend` 为 `Bot.getFriendOrFail`。
 
 
@@ -72,7 +72,7 @@
 - 消息事件包名有调整, 请根据 IDE 提示自动导入引用失效的包.
 - Bot 构造方法调整, 将原 `BotFactoryKt.newBot(...)` 替换为 `BotFactory.INSTANCE.newBot(...)`
 - 如果有调用 `Utils.getDefaultLogger().invoke(...)`，替换为 `MiraiLogger.create(...)`
-- `Bot.getFriend` 等函数在找不到好友时会抛出异常，现在它们会返回 `null`。  
+- `Bot.getFriend` 等方法以前在找不到好友时会抛出异常，现在它们会返回 `null`。  
   请替换为 `Bot.getFriendOrFail`。
 
 ### `2.0-M1` -> `2.0-M2`
@@ -110,7 +110,7 @@ Contact.uploadImage(contact, file);        // 返回 Image 消息
    - `Listener.ConcurrencyKind` -> `ConcurrencyKind`
    - `Listener.EventPriority` -> `EventPriority`
 
-3. `IMirai` 低级 API 函数名现在不再带有 `_lowLevel` 前缀, 直接删除前缀即可。
+3. `IMirai` 低级 API 方法名现在不再带有 `_lowLevel` 前缀, 直接删除前缀即可。
 
 
 至此你已经成功升级到了 mirai 2.0。[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
