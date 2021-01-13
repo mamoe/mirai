@@ -209,7 +209,7 @@ internal object OnlinePushPbPushTransMsg :
                     A8 32 51 A1
                     83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 39 32 46 45 30 36 31 41 33 37 36 43 44 35 37 35 37 39 45 37 32 34 44 37 37 30 36 46 39 39 43 35 35 33 33 31 34 44 32 44 46 35 45 42 43 31 31 36
                      */
-                    readUInt().toLong() // groupUin
+                    readUInt().toLong() // groupCode
                     readByte().toInt() // follow type
                     val target = readUInt().toLong()
                     val type = readUByte().toInt()
