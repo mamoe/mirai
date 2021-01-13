@@ -462,6 +462,8 @@ reply("复读模式结束")
 
 ###### 　
 
+----
+
 > 下一步，[Messages](Messages.md)
 >
-> [回到 Mirai 文档索引](README.md)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)

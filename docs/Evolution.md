@@ -47,4 +47,6 @@ Mirai 的版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/#
 
 
 
-> [回到 Mirai 文档索引](README.md)
+----
+
+> [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

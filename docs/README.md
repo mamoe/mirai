@@ -59,7 +59,7 @@
 **Mirai 文档没有废话，请务必仔细阅读每一个字。仔细阅读文档花费的 1 分钟可能相当于不阅读文档而自己摸索解决办法的 1 小时。**
 
 1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
-2. 配置项目依赖
+2. **配置项目依赖**
    - 要把 mirai-core 嵌入一个应用使用，请阅读 [配置项目依赖](ConfiguringProjects.md)。
    - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
 3. 阅读 API 文档（见下文）
@@ -71,7 +71,11 @@
 
 ### mirai-core API 文档
 
+> *适用于 2.x 版本*
+
 - [Bots](Bots.md)
 - [Contacts](Contacts.md)
 - [Events](Events.md)
 - [Messages](Messages.md)
+
+> 希望改进文档? 请在 [#848](https://github.com/mamoe/mirai/discussions/848) 提出建议
