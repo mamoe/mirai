@@ -77,7 +77,7 @@ listener.complete(); // 停止监听
 
 > 现在你可以继续阅读，或跳到下一章 [Messages](Messages.md)
 >
-> 回到 [目录](#目录)
+> 回到 [目录](#目录)  
 > [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
 
 ## 事件通道
