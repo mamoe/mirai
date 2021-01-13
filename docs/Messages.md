@@ -135,20 +135,22 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("/f
 
 可以使用如上表格所示的方法构造，或使用 DSL builder。
 ```
-class MessageChainBuilder : MutableList<SingleMessage> {
+class MessageChainBuilder : MutableList<SingleMessage>, Appendable {
     operator fun Message.unaryPlus()
     operator fun String.unaryPlus()
+    fun add(vararg messages: Message)
 }
 ```
-
-每个 `Message.unaryPlus` 都会被加入到结果消息链中。
 
 ```kotlin
 val chain = buildMessageChain {
     +PlainText("a")
     +AtAll
-    +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")    
+    +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
+    add(At(123456))
 }
+
+// chain 结果是包含 PlainText, AtAll, Image, At 的 MessageChain
 ```
 
 #### 在 Java 构造消息链
@@ -164,7 +166,8 @@ val chain = buildMessageChain {
 使用 `MessageChainBuilder`:
 ```java
 MessageChain chain = new MessageChainBuilder()
-    .append(new PlainText("a"))
+    .append(new PlainText("string"))
+    .append("string") // 会被构造成 PlainText 再添加, 相当于上一行
     .append(AtAll.INSTANCE)
     .append(Image.fromId("/f8f1ab55-bf8e-4236-b55e-955848d7069f"))
     .build();

@@ -3,6 +3,7 @@
 ## 目录
 
 - [事件系统](#事件系统)
+- [快速指导](#快速指导)
 - [事件通道](#事件通道)
 - [通道操作](#通道操作)
   - [过滤](#过滤)
@@ -32,6 +33,52 @@ Mirai 以事件驱动。
 **[事件列表](../mirai-core-api/src/commonMain/kotlin/event/events/README.md#事件)**
 
 > 回到 [目录](#目录)
+
+
+## 快速指导
+
+如果你了解事件且不希望详细阅读，可以立即仿照下面示例创建事件监听并跳过本章节。
+
+Kotlin
+```kotlin
+// 事件监听器是协程任务。如果你有 CoroutineScope，可从 scope 继承生命周期管理和 coroutineContext
+GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent> { event ->
+    // this: GroupMessageEvent
+    // event: GroupMessageEvent
+    subject.sendMessage("Hello!")
+}
+
+// 如果不想限制生命周期，可获取 listener 处理
+val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEvent> { event -> }
+
+listener.complete() // 停止监听
+```
+
+Java
+```java
+// 创建监听
+Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
+    event.getSubject().sendMessage("Hello!");
+})
+
+listener.complete(); // 停止监听 
+```
+
+异常默认会被相关 Bot 日志记录。可以在 `subscribeAlways` 添加如下内容来处理异常。
+```
+// Kotlin
+.exceptionHandler { e -> e.printStackTrace() }
+
+// Java
+.exceptionHandler(e -> e.printStackTrace())
+```
+
+**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个，请使用 `bot.eventChannel`。**
+
+> 现在你可以继续阅读，或跳到下一章 [Messages](Messages.md)
+>
+> 回到 [目录](#目录)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
 
 ## 事件通道
 
