@@ -140,7 +140,8 @@ internal class GroupImpl(
             return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, message.nodeList, false, message)
         }
 
-        val msg: MessageChain = if (message !is LongMessage && message !is ForwardMessageInternal) {
+        val isLongOrForward = message is LongMessage || message is ForwardMessageInternal
+        val msg: MessageChain = if (!isLongOrForward) {
             val chain = kotlin.runCatching {
                 GroupMessagePreSendEvent(this, message).broadcast()
             }.onSuccess {
@@ -194,7 +195,7 @@ internal class GroupImpl(
             }
         }
 
-        val result = bot.network.runCatching {
+        val result = bot.network.runCatching sendMsg@{
             val source: OnlineMessageSourceToGroupImpl
             MessageSvcPbSendMsg.createToGroup(
                 bot.client,
@@ -204,6 +205,22 @@ internal class GroupImpl(
             ) {
                 source = it
             }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                if (!isLongOrForward && it is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                    bot.network.logger.warning { "Send group message failed, message is too large, trying long message..." }
+                    return@sendMsg MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
+                        bot,
+                        this@GroupImpl.id,
+                        listOf(
+                            ForwardMessage.Node(
+                                senderId = bot.id,
+                                time = currentTimeSeconds().toInt(),
+                                messageChain = msg,
+                                senderName = bot.nick
+                            )
+                        ),
+                        true, null
+                    )
+                }
                 check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
                     "Send group message failed: $it"
                 }
