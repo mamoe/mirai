@@ -179,4 +179,4 @@ setLoginSolver(new YourLoginSolver())
 
 > 下一步，[Contacts](Contacts.md)
 >
-> [回到 Mirai 文档索引](README.md)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)

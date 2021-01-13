@@ -29,10 +29,15 @@
 
 *如果你不知道这俩是什么，都安装就对了。*
 
-## 前置知识
+### Kotlin
 
 Kotlin 是[让开发人员更快乐的一门现代编程语言](https://www.kotlincn.net/)，由 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 的开发公司 [JetBrains](https://www.jetbrains.com/) 维护，被 Google 推举为 Android 首选编程语言。
 
 使用 Mirai 是一个不错的学习 Kotlin 机会，使用者有兴趣可以在 [官方中文文档](https://www.kotlincn.net/docs/reference/) 学习 Kotlin。
 
 Java 开发者如果只希望使用 Mirai 而不学习 Kotlin，也请阅读 [Kotlin 定义对应的 Java 定义](KotlinAndJava.md)（5 分钟）。
+
+
+----
+
+> [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

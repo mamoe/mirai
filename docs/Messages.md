@@ -135,20 +135,22 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("/f
 
 可以使用如上表格所示的方法构造，或使用 DSL builder。
 ```
-class MessageChainBuilder : MutableList<SingleMessage> {
+class MessageChainBuilder : MutableList<SingleMessage>, Appendable {
     operator fun Message.unaryPlus()
     operator fun String.unaryPlus()
+    fun add(vararg messages: Message)
 }
 ```
-
-每个 `Message.unaryPlus` 都会被加入到结果消息链中。
 
 ```kotlin
 val chain = buildMessageChain {
     +PlainText("a")
     +AtAll
-    +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")    
+    +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
+    add(At(123456))
 }
+
+// chain 结果是包含 PlainText, AtAll, Image, At 的 MessageChain
 ```
 
 #### 在 Java 构造消息链
@@ -164,7 +166,8 @@ val chain = buildMessageChain {
 使用 `MessageChainBuilder`:
 ```java
 MessageChain chain = new MessageChainBuilder()
-    .append(new PlainText("a"))
+    .append(new PlainText("string"))
+    .append("string") // 会被构造成 PlainText 再添加, 相当于上一行
     .append(AtAll.INSTANCE)
     .append(Image.fromId("/f8f1ab55-bf8e-4236-b55e-955848d7069f"))
     .build();
@@ -309,9 +312,15 @@ val chain = "[mirai:atall]".deserializeMiraiCode()
 MessageChain chain = MiraiCode.deserializeFromMiraiCode("[mirai:atall]");
 ```
 
-> 回到 [目录](#目录)
 
+---------
+
+到这里，你已经完成了 Mirai 所有文档的阅读。现在你已经熟悉了 Mirai，并可以开始使用了。
+
+你可以首先构造 Bot，登录，然后从监听事件起开始创建你的机器人，或从 Bot 获取到指定群主动发送消息。在使用中遇到问题可以参考 Mirai 源码内注释，该注释会包含更多实践上的帮助。
+
+如果你仍然对 Mirai 架构有不明确的地方，欢迎在 [#848](https://github.com/mamoe/mirai/discussions/848) 提出建议，或者直接在 PR 提交你的修改。
 
 > 回到 [目录](#目录)
 >
-> [回到 Mirai 文档索引](README.md)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
