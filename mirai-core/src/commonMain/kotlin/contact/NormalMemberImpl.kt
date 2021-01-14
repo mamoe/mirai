@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.internal.contact
 
@@ -51,7 +51,7 @@ internal class NormalMemberImpl constructor(
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
-        require(message.isContentNotEmpty()) { "message is empty" }
+        require(!message.isContentEmpty()) { "message is empty" }
 
         val asFriend = this.asFriendOrNull()
         val asStranger = this.asStrangerOrNull()

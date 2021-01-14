@@ -115,7 +115,7 @@ internal class GroupImpl(
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
-        require(message.isContentNotEmpty()) { "message is empty" }
+        require(!message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
         return sendMessageImpl(message, false).also {

@@ -6,7 +6,6 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.internal.contact
 
