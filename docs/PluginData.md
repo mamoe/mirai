@@ -244,3 +244,10 @@ value[bot] = listOf()
 [`PluginData`] 的存储仓库，将 [`PluginData`] 从内存序列化到文件或到数据库，或反之。
 
 内置的实现包含：[`MultiFilePluginDataStorage`], [`MemoryPluginDataStorage`]
+
+----
+
+> 下一步，[Permissions](Permissions.md#mirai-console-backend---permissions)
+>
+> 返回 [开发文档索引](README.md#mirai-console)
+

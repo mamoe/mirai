@@ -264,3 +264,11 @@ ConsoleCommandSender    AbstractUserCommandSender        |                      
 表示几个消息对象的’域‘，即消息对象的集合。用于最小化将同一条消息发送给多个类型不同的目标的付出。
 
 参考 [MessageScope](../backend/mirai-console/src/util/MessageScope.kt#L28-L99)
+
+
+----
+
+> 下一步，[PluginData](PluginData.md#mirai-console-backend---plugindata)
+>
+> 返回 [开发文档索引](README.md#mirai-console)
+

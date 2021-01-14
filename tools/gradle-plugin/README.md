@@ -8,13 +8,14 @@ Mirai Console Gradle 插件。
 
 ## 功能
 
-- 为 `main` 源集配置 `mirai-core`，`mirai-console` 依赖
-- 为 `test` 源集配置 `mirai-core-qqandroid`, `mirai-console-terminal` 的依赖 （用于启动测试）
-- 配置 Kotlin 编译目标为 Java 1.8
+- 为 `main` 源集配置 `mirai-core-api`，`mirai-console` 依赖
+- 为 `test` 源集配置 `mirai-core`, `mirai-console-terminal` 的依赖 （用于启动测试）
+- 配置 Kotlin 编译目标为 1.8
 - 配置 Kotlin 编译器 jvm-default 设置为 `all`, 即为所有接口中的默认实现生成 Java 1.8 起支持的 `default` 方法
-- 配置 Java 编译目标为 Java 1.8
+- 配置 Java 编译目标为 1.8
 - 配置 Java 编译编码为 UTF-8
 - 配置插件 JAR 打包构建任务 `buildPlugin`（带依赖, 成品 JAR 可以被 Mirai Console 加载）
+- 配置插件 JAR 发布任务 `publishPlugin`（到 Bintray）
 
 支持 Kotlin 多平台项目（Multiplatform Projects）。每个 JVM 或 Android 目标平台都会被如上配置，对应打包任务带有编译目标的名称，如 `buildPluginJvm`
 
@@ -34,11 +35,27 @@ Mirai Console Gradle 插件。
 若要修改 Mirai Console Gradle 插件的默认配置，在 `build.gradle.kts` 或 `build.gradle` 内，使用 `mirai`：
 ```kotlin
 mirai { // this: MiraiConsoleExtension
-    // 配置
+    // 配置，例如 
+    coreVersion = "2.0-RC" // 修改 mirai-core 版本
 }
 ```
 
 DSL 详见 [MiraiConsoleExtension](src/MiraiConsoleExtension.kt)。
+
+### `publishPlugin`
+
+配置好 Bintray 参数，使用 `./gradlew publishPlugin` 可自动发布并上传插件到 Bintray。
+
+如果仓库是公开的，上传的插件在未来可以被 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) 自动识别并展示在社区插件列表中。
+
+```kotlin
+mirai {
+    publishing {
+        repo = "mirai"
+        packageName = "chat-command"
+    }
+}
+```
 
 #### 排除依赖
 

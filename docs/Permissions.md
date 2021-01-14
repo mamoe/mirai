@@ -27,7 +27,7 @@ interface Permission {
 
 「权限」表示的意义是 “做一项工作的能力”。如 “执行指令 /stop”，“操作数据库” 都叫作权限。
 
-[`Permission`] 对象由 Console 内置或者由特定权限插件实现。其他插件不能实现 [`Permission`] 接口。
+[`Permission`] 对象由 Console 内置或者由特定权限插件实现。其他插件不能实现 [`Permission`] 接口，只能从 `PermissionService` 注册并获取。
 
 ### 权限 ID
 
@@ -154,7 +154,7 @@ fun Permission.testPermission(PermitteeId): Boolean
 // ... 
 ```
 
-请查看 [`PermissionService`] 中的伴生对象。
+在 Java，请查看 [`PermissionService`] 中的伴生对象。
 
 ### 注册权限
 
@@ -178,3 +178,10 @@ fun Permission.testPermission(PermitteeId): Boolean
 ```
 
 其中, 被许可人 ID 使用 [字符串表示](#字符串表示), 权限 ID 参见 [权限 ID](#权限-id)
+
+----
+
+> 这是文档的最后一个章节。
+>
+> 返回 [开发文档索引](README.md#mirai-console)
+

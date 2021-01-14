@@ -58,6 +58,10 @@ plugins {
 
 完成。Mirai Console Gradle 插件会为你配置依赖等所有编译环境。
 
+可以在 [README](../tools/gradle-plugin/README.md#mirai-console-gradle-plugin) 获取详细的 Gradle 插件使用方法，**如配置 mirai-core 版本**。
+
+> 现在你已经配置好了项目，返回 [开发文档索引](README.md#mirai-console)
+
 ### 手动配置项目
 
 添加依赖：
@@ -77,3 +81,6 @@ dependencies {
 
 之后还需要配置 Kotlin `jvm-default` 编译参数，Kotlin 和 Java 的编译目标等。  
 在打包插件时必须将依赖一并打包进插件 JAR，且排除 `mirai-core`，`mirai-console` 和它们的间接依赖，否则插件不会被加载。
+
+> 现在你已经配置好了项目，返回 [开发文档索引](README.md#mirai-console)
+

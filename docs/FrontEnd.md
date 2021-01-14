@@ -22,7 +22,7 @@ kotlin.sourceSets.all {
 
 [`MiraiConsole`] 是后端的公开对象，由 [MiraiConsoleImplementationBridge](../backend/mirai-console/src/internal/MiraiConsoleImplementationBridge.kt) 代理，与前端链接。
 
-前端需要实现 [MiraiConsoleImplementation.kt](../backend/mirai-console/src/MiraiConsoleImplementation)。
+前端需要实现 [MiraiConsoleImplementation.kt](../backend/mirai-console/src/MiraiConsoleImplementation.kt)。
 
 由于实现前端需要一定的技术能力，相信实现者都能理解源码内注释。
 

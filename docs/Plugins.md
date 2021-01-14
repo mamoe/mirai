@@ -416,3 +416,8 @@ object MyData : AutoSavePluginData() {
 
 ### 附录：Java 插件的多线程调度器 - [`JavaPluginScheduler`]
 拥有生命周期管理的简单 Java 线程池。其中所有的任务都会在插件被关闭时自动停止。
+
+> 下一步，[Commands](Commands.md#mirai-console-backend---commands)
+>
+> 返回 [开发文档索引](README.md#mirai-console)
+

@@ -44,6 +44,20 @@ Mirai Console 内置一些指令。
 
 示例：`/perm permit u123456 console:command.stop`
 
+### 授予一个用户执行所有指令的权限
+
+示例：
+- `/perm permit u123456 *:*` 允许用户 123456 执行任意指令
+- `/perm permit u123456 console:*` 允许用户 123456 执行任意 Console 内置指令
+- `/perm permit u123456 org.example.my-plugin:*` 允许用户 123456 执行插件 `org.example.my-plugin` 的任意指令
+
+### 授予所有用户执行某个指令的权限
+
+示例：
+- `/perm permit u* console:command.help` 允许所有用户执行 `console:command.help`（即 `/help`）
+- `/perm permit u* console:*` 允许所有用户执行任意 Console 内置指令
+- `/perm permit u* org.example.my-plugin:*` 允许所有用户执行插件 `org.example.my-plugin` 的任意指令
+
 ## AutoLoginCommand
 
 主指令: `/autoLogin`
