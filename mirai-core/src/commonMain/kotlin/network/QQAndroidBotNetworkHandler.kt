@@ -205,8 +205,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                                     if (allowSlider) {
                                         append(" 使用协议 ")
                                         append(bot.configuration.protocol)
-                                        append(" 强制要求滑块验证, 请更换协议后重试")
+                                        append(" 强制要求滑块验证, 请更换协议后重试.")
                                     }
+                                    append(" 另请参阅: https://github.com/project-mirai/mirai-login-solver-selenium")
                                 }
                             )
                         }
