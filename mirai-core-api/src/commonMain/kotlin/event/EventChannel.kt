@@ -355,11 +355,10 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     )
 
     /**
-     * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
+     * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件.
      * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
      *
      * 可在任意时候通过 [Listener.complete] 来主动停止监听.
-     * [CoroutineScope] 被关闭后事件监听会被 [取消][Listener.cancel].
      *
      * @param concurrency 并发类型默认为 [CONCURRENT]
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
@@ -395,10 +394,10 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     )
 
     /**
-     * 订阅所有 [E] 及其子类事件. 仅在第一次 [事件广播][Event.broadcast] 时, [handler] 会被执行.
+     * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件.
+     * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
      *
      * 可在任意时候通过 [Listener.complete] 来主动停止监听.
-     * [CoroutineScope] 被关闭后事件监听会被 [取消][Listener.cancel].
      *
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
      * @param priority 处理优先级, 优先级高的先执行
@@ -428,7 +427,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     // endregion
 
     /**
-     * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel].
+     * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel]. 查看 [EventHandler].
      *
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
      *
