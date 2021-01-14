@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.cancel
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.EventListenerLikeJava
 import org.junit.jupiter.api.Test
@@ -43,5 +44,6 @@ internal class JvmMethodEventsTestJava : SimpleListenerHost() {
         this.globalEventChannel().registerListenerHost(this)
         TestEvent().__broadcastJava()
         assertEquals(3, called.get(), null)
+        cancel() // reset listeners
     }
 }

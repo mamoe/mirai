@@ -11,7 +11,9 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.internal.event.GlobalEventListeners
 import org.jetbrains.annotations.NotNull
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
@@ -97,6 +99,7 @@ internal class JvmMethodEventsTest {
             }
 
             assertEquals(9, this.getCalled())
+            cancel() // reset listeners
         }
     }
 
@@ -124,6 +127,7 @@ internal class JvmMethodEventsTest {
             runBlocking {
                 TestEvent().broadcast()
             }
+            cancel() // reset listeners
         }
     }
 
@@ -155,6 +159,7 @@ internal class JvmMethodEventsTest {
             runBlocking {
                 TestEvent().broadcast()
             }
+            cancel() // reset listeners
 
             assertEquals(1, this.getCalled())
         }

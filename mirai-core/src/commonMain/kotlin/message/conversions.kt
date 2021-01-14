@@ -427,7 +427,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     }
                 }
             }
-            add(element)
+
+            if (element is PlainText) { // 处理分片消息
+                append(element.content)
+            } else {
+                add(element)
+            }
+
             previousLast = last
             last = element
         }
