@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -193,14 +193,20 @@ internal class TroopManagement {
     }
 
     internal object GroupOperation : OutgoingPacketFactory<GroupOperation.Response>("OidbSvc.0x89a_0") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response
-        }
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response = Response
 
         fun muteAll(
             client: QQAndroidClient,
             groupCode: Long,
             switch: Boolean
+        ): OutgoingPacket = impl(client, groupCode) {
+            shutupTime = if (switch) 1 else 0
+        }
+
+        private inline fun impl(
+            client: QQAndroidClient,
+            groupCode: Long,
+            info: Oidb0x89a.Groupinfo.() -> Unit
         ): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(
@@ -209,137 +215,44 @@ internal class TroopManagement {
                         command = 2202,
                         bodybuffer = Oidb0x89a.ReqBody(
                             groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                shutupTime = if (switch) {
-                                    1
-                                } else {
-                                    0
-                                }
-                            )
+                            stGroupInfo = Oidb0x89a.Groupinfo().apply(info)
                         ).toByteArray(Oidb0x89a.ReqBody.serializer())
                     )
                 )
             }
         }
-//
-//        fun confessTalk(
-//            client: QQAndroidClient,
-//            groupCode: Long,
-//            switch: Boolean
-//        ): OutgoingPacket {
-//            return buildOutgoingUniPacket(client) {
-//                writeProtoBuf(
-//                    OidbSso.OIDBSSOPkg.serializer(),
-//                    OidbSso.OIDBSSOPkg(
-//                        command = 2202,
-//                        bodybuffer = Oidb0x89a.ReqBody(
-//                            groupCode = groupCode,
-//                            stGroupInfo = Oidb0x89a.Groupinfo(
-//                                groupFlagext3Mask = 8192,
-//                                groupFlagext3 = if (switch) {
-//                                    0
-//                                } else {
-//                                    8192
-//                                }
-//                            )
-//                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-//                    )
-//                )
-//            }
-//        }
 
         fun autoApprove(
             client: QQAndroidClient,
             groupCode: Long,
             switch: Boolean
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2202,
-                        bodybuffer = Oidb0x89a.ReqBody(
-                            groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                groupFlagext3 = if (switch) {
-                                    0x00100000
-                                } else {
-                                    0x00000000
-                                }//暂时无效
-                            )
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-                    )
-                )
-            }
+        ): OutgoingPacket = impl(client, groupCode) {
+            groupFlagext3 = if (switch) 0x00100000 else 0x00000000//暂时无效
         }
 
         fun name(
             client: QQAndroidClient,
             groupCode: Long,
             newName: String
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2202,
-                        bodybuffer = Oidb0x89a.ReqBody(
-                            groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                ingGroupName = newName.toByteArray()
-                            )
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-                    )
-                )
-            }
+        ): OutgoingPacket = impl(client, groupCode) {
+            ingGroupName = newName.toByteArray()
         }
 
         fun memo(
             client: QQAndroidClient,
             groupCode: Long,
             newMemo: String
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2202,
-                        bodybuffer = Oidb0x89a.ReqBody(
-                            groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                ingGroupMemo = newMemo.toByteArray()
-                            )
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-                    )
-                )
-            }
+        ): OutgoingPacket = impl(client, groupCode) {
+            ingGroupMemo = newMemo.toByteArray()
         }
 
         fun allowMemberInvite(
             client: QQAndroidClient,
             groupCode: Long,
             switch: Boolean
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2202,
-                        bodybuffer = Oidb0x89a.ReqBody(
-                            groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                allowMemberInvite = if (switch) {
-                                    1
-                                } else {
-                                    0
-                                }
-                            )
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-                    )
-                )
-            }
+        ): OutgoingPacket = impl(client, groupCode) {
+            allowMemberInvite = if (switch) 1 else 0
         }
-
 
         object Response : Packet {
             override fun toString(): String {
