@@ -10,7 +10,7 @@
 
 仅 IntelliJ IDEA 和 Android Studio 支持这个功能。
 
-把光标放在一个错误中间（或者按 F2 自动跳转到错误），使用 `Alt + Enter` 快捷键，会得到弹窗如下图。
+把光标放在一个错误中间（或者按 F2 自动跳转到错误），在 Windows 使用 `Alt + Enter` 快捷键，macOS 使用 `Option + Enter`，会得到弹窗如下图。
 
 ![YBP47V_Z640J_YU5WZ_JVPW.png](https://i.loli.net/2020/12/18/CiX9qApu5BnVPch.png)
 
