@@ -17,7 +17,7 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 ### 准备文件
 
 要启动 Mirai Console，你需要：
-- mirai-core-qqandroid 
+- mirai-core
 - mirai-console 后端
 - mirai-console 任一前端
 - 相关依赖
@@ -108,9 +108,8 @@ repositories {
     jcenter()
 }
 dependencies {
-    implementation("net.mamoe:mirai-console:1.0.1")
-    implementation("net.mamoe:mirai-console-terminal:1.0.1")
-    implementation("net.mamoe:mirai-core:1.3.3")
+    implementation("net.mamoe:mirai-console-terminal:2.0.0") // 自行替换版本
+    implementation("net.mamoe:mirai-core:2.0.0")
 }
 ```
 
@@ -127,7 +126,6 @@ MiraiConsoleTerminalLoader.startAsDaemon()
 
 在嵌入使用时，插件可以直接加载：
 
-```kotlin
 ```kotlin
 MiraiConsoleTerminalLoader.startAsDaemon()
 // 先启动 Mirai Console

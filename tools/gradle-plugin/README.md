@@ -36,7 +36,7 @@ Mirai Console Gradle 插件。
 ```kotlin
 mirai { // this: MiraiConsoleExtension
     // 配置，例如 
-    coreVersion = "2.0-RC" // 修改 mirai-core 版本
+    coreVersion = "2.0.0" // 修改 mirai-core 版本
 }
 ```
 

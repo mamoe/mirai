@@ -12,8 +12,8 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val core = "2.0-RC"
-    const val console = "2.0-RC-dev-2"
+    const val core = "2.0.0"
+    const val console = "2.0.0"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
@@ -33,7 +33,7 @@ object Versions {
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "1.5.0"
+    const val blockingBridge = "1.6.0"
 
     @Suppress("SpellCheckingInspection")
     const val yamlkt = "0.7.5"
