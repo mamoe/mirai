@@ -30,7 +30,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.MAMOE_TOKEN }}
-          publish_dir: ./mirai-core-api/build/dokkaHtml
+          publish_dir: ./mirai-core-api/build/dokka
           external_repository: project-mirai/mirai-doc
           publish_branch: master
           user_name: 'mamoebot'
