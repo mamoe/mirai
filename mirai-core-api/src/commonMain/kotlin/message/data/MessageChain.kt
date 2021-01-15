@@ -33,7 +33,6 @@ import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import java.util.stream.Stream
 import kotlin.reflect.KProperty
@@ -544,77 +543,3 @@ public inline fun <reified T : R, R : SingleMessage?> MessageChain.orElse(
 ): OrNullDelegate<R> = OrNullDelegate<R>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
-
-
-///////////////////////////////////////////////////////////////////////////
-// Deprecated
-///////////////////////////////////////////////////////////////////////////
-
-
-/**
- * 遍历每一个 [消息内容][MessageContent]
- */
-@JvmSynthetic
-@Deprecated(
-    "Use operations on contentsSequence instead.",
-    ReplaceWith(
-        "this.contentsSequence().forEach(block)",
-        "net.mamoe.mirai.message.data.contentsSequence"
-    ),
-    DeprecationLevel.ERROR,
-)
-@PlannedRemoval("2.0.0")
-public inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
-    for (element in this) {
-        if (element !is MessageMetadata) {
-            check(element is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            block(element)
-        }
-    }
-}
-
-/**
- * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
- */
-@JvmSynthetic
-@Deprecated(
-    "Use operations on contentsSequence instead.",
-    ReplaceWith(
-        "this.contentsSequence().all(block)",
-        "net.mamoe.mirai.message.data.contentsSequence"
-    ),
-    DeprecationLevel.ERROR,
-)
-@PlannedRemoval("2.0.0")
-public inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean {
-    this.forEach {
-        if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            if (!block(it)) return false
-        }
-    }
-    return true
-}
-
-/**
- * 如果每一个 [消息内容][MessageContent] 都不满足 [block], 返回 `true`
- */
-@JvmSynthetic
-@Deprecated(
-    "Use operations on contentsSequence instead.",
-    ReplaceWith(
-        "this.contentsSequence().none(block)",
-        "net.mamoe.mirai.message.data.contentsSequence"
-    ),
-    DeprecationLevel.ERROR,
-)
-@PlannedRemoval("2.0.0")
-public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean {
-    this.forEach {
-        if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            if (block(it)) return false
-        }
-    }
-    return true
-}
