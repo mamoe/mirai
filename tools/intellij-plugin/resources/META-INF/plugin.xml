@@ -38,7 +38,7 @@
                          groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
                          implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
 
-        <localInspection groupPath="Mirai console" language="JAVA" shortName="PluginMainServiceNotConfigured"
+        <localInspection groupPath="Mirai console" language="JAVA" shortName="PluginMainServiceNotConfiguredJava"
                          bundle="messages.InspectionGadgetsBundle"
                          key="plugin.service.not.configured.display.name" groupBundle="messages.InspectionsBundle"
                          groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
