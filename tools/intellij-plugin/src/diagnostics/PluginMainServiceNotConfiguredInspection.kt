@@ -12,7 +12,10 @@ package net.mamoe.mirai.console.intellij.diagnostics
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.impl.CancellationCheck.Companion.runWithCancellationCheck
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.PsiNameIdentifierOwner
 import net.mamoe.mirai.console.compiler.common.resolve.AUTO_SERVICE
 import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
 import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServiceFix
@@ -42,7 +45,7 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
     }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return classOrObjectVisitor visitor@{ element ->
+        val ktVisitor = classOrObjectVisitor visitor@{ element ->
             if (element !is KtObjectDeclaration) return@visitor
             if (element.allSuperNames.none { it == PLUGIN_FQ_NAME }) return@visitor
             val fqName = element.fqName?.asString() ?: return@visitor
@@ -51,26 +54,53 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
                 || isServiceConfiguredWithResource(element, fqName)
 
             if (!found) {
-                holder.registerProblem(
-                    element.nameIdentifier ?: element.identifyingElement ?: element,
-                    "插件主类服务未配置",
-                    ProblemHighlightType.WARNING,
-                    ConfigurePluginMainServiceFix(element)
-                )
+                registerProblemImpl(holder, element, fqName)
+            }
+        }
+
+        val javaVisitor = object : PsiElementVisitor() {
+            override fun visitElement(element: PsiElement) {
+                if (element !is PsiClass) return
+                if (element.allSuperNames.none { it == PLUGIN_FQ_NAME }) return
+
+                if (element.hasAnnotation(AUTO_SERVICE.asString())) return
+                val fqName = element.qualifiedName ?: return
+                if (isServiceConfiguredWithResource(element, fqName)) return
+
+                registerProblemImpl(holder, element, fqName)
+            }
+        }
+
+        return object : PsiElementVisitor() {
+            override fun visitElement(element: PsiElement) {
+                super.visitElement(element)
+                if (element is KtClassOrObject) ktVisitor.visitClassOrObject(element)
+                else javaVisitor.visitElement(element)
             }
         }
     }
 
+    private fun registerProblemImpl(holder: ProblemsHolder, element: PsiNameIdentifierOwner, fqName: String) {
+        holder.registerProblem(
+            element.nameIdentifier ?: element.identifyingElement ?: element,
+            @Suppress("DialogTitleCapitalization") "插件主类服务未配置",
+            ProblemHighlightType.WARNING,
+            ConfigurePluginMainServiceFix(element, fqName)
+        )
+    }
+
     private fun isServiceConfiguredWithAutoService(
         ktClass: KtClassOrObject,
-    ): Boolean = ktClass.hasAnnotation(AUTO_SERVICE)
+    ): Boolean {
+        return ktClass.hasAnnotation(AUTO_SERVICE)
+    }
 
     private fun isServiceConfiguredWithResource(
-        ktClass: KtClassOrObject,
+        psiOrKtClass: PsiElement,
         fqName: String,
     ): Boolean {
         return runWithCancellationCheck {
-            val sourceRoots = ktClass.module?.rootManager?.sourceRoots ?: return@runWithCancellationCheck false
+            val sourceRoots = psiOrKtClass.module?.rootManager?.sourceRoots ?: return@runWithCancellationCheck false
             val services = sourceRoots.asSequence().flatMap { file ->
                 SERVICE_FILE_NAMES.asSequence().mapNotNull { serviceFileName ->
                     file.findFileByRelativePath("META-INF/services/$serviceFileName")

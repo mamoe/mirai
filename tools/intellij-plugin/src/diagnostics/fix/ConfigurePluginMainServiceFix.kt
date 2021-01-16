@@ -13,6 +13,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.writeChild
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
@@ -23,14 +24,15 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 
 
 class ConfigurePluginMainServiceFix(
-    element: KtClassOrObject,
-) : KotlinCrossLanguageQuickFixAction<KtClassOrObject>(element), KotlinUniversalQuickFix, LocalQuickFix {
+    element: PsiElement,
+    private val fqName: String,
+) : KotlinCrossLanguageQuickFixAction<PsiElement>(element), KotlinUniversalQuickFix, LocalQuickFix {
 
     override fun getFamilyName(): String = "Mirai Console"
     override fun getText(): String = "配置插件主类服务"
 
     override fun invokeImpl(project: Project, editor: Editor?, file: PsiFile) {
-        val elementFqName = element?.fqName ?: return
+        val elementFqName = fqName
         val sourceRoots = file.module?.rootManager?.sourceRoots ?: return
 
         val sourceRoot = sourceRoots.find { it.name.endsWith("resources") }
@@ -38,7 +40,7 @@ class ConfigurePluginMainServiceFix(
             ?: sourceRoots.last()
 
         project.executeWriteCommand(name) {
-            sourceRoot.writeChild("META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", elementFqName.asString().toByteArray())
+            sourceRoot.writeChild("META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", elementFqName.toByteArray())
         }
     }
 }
