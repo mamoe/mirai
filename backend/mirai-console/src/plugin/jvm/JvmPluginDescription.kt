@@ -41,7 +41,7 @@ public interface JvmPluginDescription : PluginDescription {
          * @param filename [ClassLoader.getResourceAsStream] 的参数 `name`
          * @param pluginClassloader 默认通过 [CallerFinder.getCaller] 获取调用方 [StackFrame] 然后获取其 [Class.getClassLoader].
          */
-        // @JvmOverloads // compiler error
+        @JvmOverloads
         @JvmStatic
         @ConsoleExperimentalApi
         public fun loadFromResource(
