@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
+import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal class MemberInfoImpl(
     override val uin: Long,
@@ -22,6 +23,8 @@ internal class MemberInfoImpl(
     override val specialTitle: String,
     override val muteTimestamp: Int,
     override val anonymousId: String?,
+    override val joinTimestamp: Int = currentTimeSeconds().toInt(),
+    override var lastSpeakTimestamp: Int = 0
 ) : MemberInfo, UserInfoImpl(uin, nick, remark) {
     constructor(
         jceInfo: StTroopMemberInfo,
@@ -39,5 +42,7 @@ internal class MemberInfoImpl(
         specialTitle = jceInfo.sSpecialTitle.orEmpty(),
         muteTimestamp = jceInfo.dwShutupTimestap?.toInt() ?: 0,
         anonymousId = null,
+        joinTimestamp = jceInfo.dwJoinTime?.toInt() ?: 0,
+        lastSpeakTimestamp = jceInfo.dwLastSpeakTime?.toInt() ?: 0
     )
 }

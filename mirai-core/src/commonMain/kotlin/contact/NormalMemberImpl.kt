@@ -43,6 +43,9 @@ internal class NormalMemberImpl constructor(
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
 
+    override val joinTimestamp: Int get() = info.joinTimestamp
+    override val lastSpeakTimestamp: Int get() = info.lastSpeakTimestamp
+
     override fun toString(): String = "NormalMember($id)"
 
     @Suppress("UNCHECKED_CAST")

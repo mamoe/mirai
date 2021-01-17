@@ -64,6 +64,20 @@ public interface NormalMember : Member {
     public val muteTimeRemaining: Int
 
     /**
+     * 入群时间. 单位为秒.
+     *
+     * @since 2.1
+     */
+    public val joinTimestamp: Int
+
+    /**
+     * 最后发言时间. 单位为秒.
+     *
+     * @since 2.1
+     */
+    public val lastSpeakTimestamp: Int
+
+    /**
      * 解除禁言.
      *
      * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
