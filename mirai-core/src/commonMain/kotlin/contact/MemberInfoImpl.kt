@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 internal class MemberInfoImpl(
     override val uin: Long,
     override var nick: String,
-    override val permission: MemberPermission,
+    override var permission: MemberPermission,
     override var remark: String,
     override val nameCard: String,
     override val specialTitle: String,
