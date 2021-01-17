@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,6 +24,8 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readPacketExact
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,
@@ -156,6 +158,23 @@ internal fun <T : JceStruct> jceRequestSBuffer(
             name to JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
         )
     ).toByteArray(RequestDataVersion3.serializer())
+}
+
+internal inline fun jceRequestSBuffer(block: JceRequestSBufferBuilder.() -> Unit): ByteArray {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return JceRequestSBufferBuilder().apply(block).complete()
+}
+
+internal class JceRequestSBufferBuilder {
+    val map: MutableMap<String, ByteArray> = LinkedHashMap()
+    operator fun <T : JceStruct> String.invoke(
+        serializer: SerializationStrategy<T>,
+        jceStruct: T
+    ) {
+        map[this] = JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
+    }
+
+    fun complete(): ByteArray = RequestDataVersion3(map).toByteArray(RequestDataVersion3.serializer())
 }
 
 private val JCE_STRUCT_HEAD_OF_TAG_0 = byteArrayOf(0x0A)
