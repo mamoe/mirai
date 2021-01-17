@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.profile
+package net.mamoe.mirai.data
 
 public interface UserProfile {
     public val nickname: String

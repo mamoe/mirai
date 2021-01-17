@@ -26,7 +26,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.readJceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.internal.utils.soutv
-import net.mamoe.mirai.profile.UserProfile
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.internal.network.protocol.data.jce.ReqSummaryCard as JceReqSummaryCard
 import net.mamoe.mirai.internal.network.protocol.data.jce.RespSummaryCard as JceRespSummaryCard
