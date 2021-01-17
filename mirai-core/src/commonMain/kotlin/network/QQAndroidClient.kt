@@ -307,6 +307,11 @@ internal open class QQAndroidClient(
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
     var tlv113: ByteArray? = null
+
+    /**
+     * from tlvMap119
+     */
+    var tlv16a: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
@@ -373,6 +378,9 @@ internal class LoginExtraData(
 internal class WLoginSigInfo(
     val uin: Long,
     val encryptA1: ByteArray?, // sigInfo[0]
+    /**
+     * WARNING, please check [QQAndroidClient.tlv16a]
+     */
     val noPicSig: ByteArray?, // sigInfo[1]
     val G: ByteArray, // sigInfo[2]
     val dpwd: ByteArray,
