@@ -30,23 +30,23 @@
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
 [yyuueexxiinngg/cqhttp-mirai]: https://github.com/yyuueexxiinngg/cqhttp-mirai
 
-| 技术             | 维护者及项目地址                               |
-|:----------------|:--------------------------------------------|
-| *Http*          | [mamoe/mirai-api-http]                      |
-| `JavaScript`    | [iTXTech/mirai-js]                          |
-| `Python`        | [Graia Framework][GraiaProject/Application] |
-| `Node.js`       | [RedBeanN/node-mirai]                       |
-| `Go`            | [Logiase/gomirai]                           |
-| `Mozilla Rhino` | [StageGuard/mirai-rhinojs-sdk]              |
-| `C++`           | [cyanray/mirai-cpp]                         |
-| `C++`           | [Chlorie/miraipp]                           |
-| `C#`            | [Executor-Cheng/mirai-CSharp]               |
-| `Rust`          | [HoshinoTented/mirai-rs]                    |
-| `TypeScript`    | [YunYouJun/mirai-ts]                        |
-| `易语言`         | [only52607/e-mirai]                         |
-| `.Net/C#`       | [Hyperai][theGravityLab/ProjHyperai]        |
-| *酷 Q 插件*      | [iTXTech/mirai-native]                      |
-| *酷 Q HTTP*     | [yyuueexxiinngg/cqhttp-mirai]               |
+| 技术                                     | 维护者及项目地址                               |
+|:----------------------------------------|:--------------------------------------------|
+| *Http*                                  | [mamoe/mirai-api-http]                      |
+| `JavaScript`                            | [iTXTech/mirai-js]                          |
+| `Python`                                | [Graia Framework][GraiaProject/Application] |
+| `Node.js`                               | [RedBeanN/node-mirai]                       |
+| `Go`                                    | [Logiase/gomirai]                           |
+| `Mozilla Rhino`                         | [StageGuard/mirai-rhinojs-sdk]              |
+| `C++`                                   | [cyanray/mirai-cpp]                         |
+| `C++`                                   | [Chlorie/miraipp]                           |
+| `C#`                                    | [Executor-Cheng/mirai-CSharp]               |
+| `Rust`                                  | [HoshinoTented/mirai-rs]                    |
+| `JavaScript/TypeScript` (兼容浏览器端)    | [YunYouJun/mirai-ts]                        |
+| `易语言`                                 | [only52607/e-mirai]                         |
+| `.Net/C#`                               | [Hyperai][theGravityLab/ProjHyperai]        |
+| *酷 Q 插件*                              | [iTXTech/mirai-native]                      |
+| *酷 Q HTTP*                             | [yyuueexxiinngg/cqhttp-mirai]               |
 
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
