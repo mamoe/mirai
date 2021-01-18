@@ -808,15 +808,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    override suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile {
-        bot.asQQAndroidBot().run {
-            network.apply {
-                return SummaryCard.ReqSummaryCard(bot.client, targetId)
-                    .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
-            }
-        }
-    }
-
     @LowLevelApi
     @MiraiExperimentalApi
     override suspend fun solveBotInvitedJoinGroupRequestEvent(

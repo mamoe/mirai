@@ -17,6 +17,7 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
@@ -170,6 +171,10 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     public override fun nudge(): BotNudge = BotNudge(this)
+
+
+    @JvmBlockingBridge
+    public suspend fun queryProfile(targetId: Long): UserProfile
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.

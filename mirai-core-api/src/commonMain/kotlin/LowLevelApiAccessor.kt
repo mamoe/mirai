@@ -272,7 +272,4 @@ public interface LowLevelApiAccessor {
         seconds: Int,
     )
 
-    @LowLevelApi
-    @JvmBlockingBridge
-    public suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile
 }
