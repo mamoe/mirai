@@ -24,7 +24,7 @@
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)
-- [D. 下载 JAR 包](#c-下载-jar-包)
+- [C. 下载 JAR 包](#c-下载-jar-包)
 
 
 ## A. 使用 Gradle
