@@ -173,6 +173,11 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override fun nudge(): BotNudge = BotNudge(this)
 
 
+    /**
+     * 查询某个用户的信息
+     *
+     * @since 2.1.0
+     */
     @JvmBlockingBridge
     public suspend fun queryProfile(targetId: Long): UserProfile
 
