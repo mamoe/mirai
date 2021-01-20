@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -22,11 +23,11 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.SendGroupMessageReceipt
-import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.utils.toLongUnsigned
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -72,7 +73,8 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
     )
 }
 
-internal class MessageSourceToFriendImpl(
+@Serializable(OnlineMessageSourceToFriendImpl.Serializer::class)
+internal class OnlineMessageSourceToFriendImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
@@ -80,6 +82,8 @@ internal class MessageSourceToFriendImpl(
     override val sender: Bot,
     override val target: Friend
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
+
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -89,7 +93,8 @@ internal class MessageSourceToFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
-internal class MessageSourceToStrangerImpl(
+@Serializable(OnlineMessageSourceToStrangerImpl.Serializer::class)
+internal class OnlineMessageSourceToStrangerImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
@@ -97,6 +102,8 @@ internal class MessageSourceToStrangerImpl(
     override val sender: Bot,
     override val target: Stranger
 ) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
+
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -106,7 +113,8 @@ internal class MessageSourceToStrangerImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
-internal class MessageSourceToTempImpl(
+@Serializable(OnlineMessageSourceToTempImpl.Serializer::class)
+internal class OnlineMessageSourceToTempImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
@@ -114,6 +122,8 @@ internal class MessageSourceToTempImpl(
     override val sender: Bot,
     override val target: Member
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
+
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -123,7 +133,8 @@ internal class MessageSourceToTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
-internal class MessageSourceToGroupImpl(
+@Serializable(OnlineMessageSourceToGroupImpl.Serializer::class)
+internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
     override val internalIds: IntArray,
     override val time: Int,
@@ -131,6 +142,8 @@ internal class MessageSourceToGroupImpl(
     override val sender: Bot,
     override val target: Group
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+
     override val ids: IntArray
         get() = sequenceIds
     override val bot: Bot
@@ -141,7 +154,7 @@ internal class MessageSourceToGroupImpl(
         coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
             timeoutMillis = 3000
         ) {
-            if (it.messageRandom in this@MessageSourceToGroupImpl.internalIds) {
+            if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
                 it.sequenceId
             } else null
         }

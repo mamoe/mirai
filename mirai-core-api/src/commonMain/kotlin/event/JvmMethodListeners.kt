@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -24,9 +23,9 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * ### Kotlin 函数
  * Kotlin 函数要求:
- * - 接收者 (英 receiver) 和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
+ * - 接收者和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
  *   接收者或函数参数的类型都必须为 [Event] 或其子类.
- * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [CoroutineScope.subscribeAlways], 为 [ListeningStatus] 时将注册为 [CoroutineScope.subscribe].
+ * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [EventChannel.subscribeAlways], 为 [ListeningStatus] 时将注册为 [EventChannel.subscribe].
  *   任何其他类型的返回值将会在注册时抛出异常.
  *
  * 所有 Kotlin 非 `suspend` 的函数都将会在 [Dispatchers.IO] 中调用
@@ -109,7 +108,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * // T 表示任何 Event 类型.
  * void onEvent(T)
  * Void onEvent(T)
- * @NotNull ListeningStatus onEvent(T) // 返回 null 时将抛出异常
+ * @NotNull ListeningStatus onEvent(T) // 禁止返回 null
  * ```
  *
  *
@@ -147,10 +146,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 public annotation class EventHandler(
     /**
      * 监听器优先级
-     * @see Listener.EventPriority 查看优先级相关信息
+     * @see EventPriority 查看优先级相关信息
      * @see Event.intercept 拦截事件
      */
-    public val priority: Listener.EventPriority = EventPriority.NORMAL,
+    public val priority: EventPriority = EventPriority.NORMAL,
     /**
      * 是否自动忽略被 [取消][CancellableEvent.isCancelled]
      * @see CancellableEvent
@@ -158,13 +157,13 @@ public annotation class EventHandler(
     public val ignoreCancelled: Boolean = true,
     /**
      * 并发类型
-     * @see Listener.ConcurrencyKind
+     * @see ConcurrencyKind
      */
-    public val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
+    public val concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT
 )
 
 /**
- * 实现这个接口的对象可以通过 [EventHandler] 标注事件监听函数, 并通过 [registerEvents] 注册.
+ * 实现这个接口的对象可以通过 [EventHandler] 标注事件监听函数, 并通过 [registerTo] 注册.
  *
  * @see SimpleListenerHost 简单的实现
  * @see EventHandler 查看更多信息
@@ -249,33 +248,3 @@ public class ExceptionInEventHandlerException(
 // T 通常可以是 SimpleListenerHost
 public inline fun <T> T.registerTo(eventChannel: EventChannel<*>): Unit
         where T : CoroutineScope, T : ListenerHost = eventChannel.parentScope(this).registerListenerHost(this)
-
-
-@Deprecated(
-    "Use EventChannel.registerListenerHost",
-    ReplaceWith(
-        "this.globalEventChannel(coroutineContext).registerListenerHost(this)",
-        "net.mamoe.mirai.event.*"
-    ),
-    DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0-RC")
-@JvmOverloads
-public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
-        where T : CoroutineScope, T : ListenerHost =
-    this.globalEventChannel(coroutineContext).registerListenerHost(this)
-
-@Deprecated(
-    "Use EventChannel.registerListenerHost",
-    ReplaceWith(
-        "this.globalEventChannel(coroutineContext).registerListenerHost(host)",
-        "net.mamoe.mirai.event.*"
-    ),
-    DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0-RC")
-@JvmOverloads
-public fun CoroutineScope.registerEvents(
-    host: ListenerHost,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Unit = globalEventChannel(coroutineContext).registerListenerHost(host)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,7 +19,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendInfoImpl
@@ -170,7 +169,7 @@ internal inline fun lambda732(crossinline block: ByteReadPacket.(GroupImpl, QQAn
 private fun handleMuteMemberPacket(
     bot: QQAndroidBot,
     group: GroupImpl,
-    operator: Member,
+    operator: NormalMember,
     target: Long,
     timeSeconds: Int
 ): Packet? {
@@ -269,15 +268,15 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                         }
                     }
                 }
-                if (target.id == bot.id) {
-                    return@lambda732 sequenceOf(
-                        if (from.id == bot.id)
-                            BotNudgedEvent.InGroup.ByBot(action, suffix, group)
-                        else
-                            BotNudgedEvent.InGroup.ByMember(action, suffix, from)
+                return@lambda732 sequenceOf(
+                    NudgeEvent(
+                        from = if (from.id == bot.id) bot else from,
+                        target = if (target.id == bot.id) bot else target,
+                        action = action,
+                        suffix = suffix,
+                        subject = group
                     )
-                }
-                return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
+                )
             }
             //龙王
             10093L, 1053L, 1054L -> {
@@ -478,7 +477,8 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     recallReminder.recalledMsgList.mapToIntArray { it.msgRandom },
                     firstPkg.time,
                     operator,
-                    group
+                    group,
+                    group[firstPkg.authorUin] ?: return@lambda732 emptySequence()
                 )
             )
         }
@@ -551,13 +551,14 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         ) : ProtoBuf
 
         return@lambda528 vProtobuf.loadAs(Sub8A.serializer()).msgInfo.asSequence()
-            .filter { it.botUin == bot.id }.map {
+            .filter { it.botUin == bot.id }.mapNotNull { info ->
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
-                    messageIds = intArrayOf(it.srcId),
-                    messageInternalIds = intArrayOf(it.srcInternalId.toInt()),
-                    messageTime = it.time.toInt(),
-                    operatorId = it.fromUin
+                    messageIds = intArrayOf(info.srcId),
+                    messageInternalIds = intArrayOf(info.srcInternalId.toInt()),
+                    messageTime = info.time.toInt(),
+                    operatorId = info.fromUin,
+                    operator = bot.getFriend(info.fromUin) ?: return@mapNotNull null
                 )
             }
     },
@@ -571,7 +572,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0xB3L to lambda528 { bot ->
         // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
         val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
-        val new = Mirai._lowLevelNewFriend(
+        val new = Mirai.newFriend(
             bot, FriendInfoImpl(
                 uin = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,
@@ -647,8 +648,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 var action = ""
                 var target: User? = null
                 var suffix = ""
-                body.msgTemplParam.asSequence().map {
-                    it.name.decodeToString() to it.value.decodeToString()
+                body.msgTemplParam.asSequence().map { param ->
+                    param.name.decodeToString() to param.value.decodeToString()
                 }.forEach { (key, value) ->
                     when (key) {
                         "action_str" -> action = value
@@ -659,44 +660,26 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         "suffix_str" -> suffix = value
                     }
                 }
-                val subject: User = bot.getFriend(msgInfo.lFromUin) ?: bot.getStranger(msgInfo.lFromUin)
-                ?: return@lambda528 emptySequence()
-                //机器人自己戳自己
-                if ((target == null && from == null) || (target?.id == from?.id && from?.id == bot.id)) {
-                    sequenceOf(BotNudgedEvent.InPrivateSession.ByBot(subject, action, suffix))
-                } else sequenceOf(
-                    when (subject) {
-                        is Friend -> when {
-                            //机器人自身为目标
-                            target == null || target!!.id == bot.id -> BotNudgedEvent.InPrivateSession.ByFriend(
-                                subject,
-                                action,
-                                suffix
-                            )
-                            //机器人自身为发起者
-                            from == null || from!!.id == bot.id -> FriendNudgedEvent.NudgedByBot(
-                                subject,
-                                action,
-                                suffix
-                            )
-                            else -> FriendNudgedEvent.NudgedByHimself(subject, action, suffix)
+
+                val subject: User = bot.getFriend(msgInfo.lFromUin)
+                    ?: bot.getStranger(msgInfo.lFromUin)
+                    ?: return@lambda528 emptySequence()
+
+                sequenceOf(
+                    when {
+                        target == null && from == null || target?.id == from?.id && from?.id == bot.id -> {
+                            //机器人自己戳自己
+                            NudgeEvent(from = bot, target = bot, subject = subject, action, suffix)
                         }
-                        is Stranger -> when {
+                        target == null || target!!.id == bot.id -> {
                             //机器人自身为目标
-                            target == null || target!!.id == bot.id -> BotNudgedEvent.InPrivateSession.ByStranger(
-                                subject,
-                                action,
-                                suffix
-                            )
-                            //机器人自身为发起者
-                            from == null || from!!.id == bot.id -> StrangerNudgedEvent.NudgedByBot(
-                                subject,
-                                action,
-                                suffix
-                            )
-                            else -> StrangerNudgedEvent.NudgedByHimself(subject, action, suffix)
+                            NudgeEvent(from = subject, target = bot, subject = subject, action, suffix)
                         }
-                        else -> error("Internal Error: Unable to find nudge type")
+                        from == null || from!!.id == bot.id -> {
+                            //机器人自身为发起者
+                            NudgeEvent(from = bot, target = subject, subject = subject, action, suffix)
+                        }
+                        else -> NudgeEvent(from = subject, target = subject, subject = subject, action, suffix)
                     }
                 )
             }

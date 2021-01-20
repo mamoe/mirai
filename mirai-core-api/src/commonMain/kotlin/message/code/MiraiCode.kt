@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,8 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiCode")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.code
 
@@ -16,17 +15,64 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.internal.parseMiraiCodeImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageChain.Companion.deserializeFromMiraiCode
 import net.mamoe.mirai.utils.safeCast
 
 /**
- * 解析形如 "[mirai:]" 的 mirai 码, 即 [Message.toString] 返回的内容.
+ * Mirai 码相关操作.
  */
-@JvmOverloads
-public fun String.parseMiraiCode(contact: Contact? = null): MessageChain = parseMiraiCodeImpl(contact)
+public object MiraiCode {
+    /**
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+     * @see MessageChain.deserializeFromMiraiCode
+     */
+    @JvmName("parseMiraiCode1")
+    @JvmSynthetic
+    public inline fun String.deserializeMiraiCode(contact: Contact? = null): MessageChain =
+        deserializeMiraiCode(this, contact)
 
-public fun <T : Message> Iterable<T>.toMiraiCode(): String = iterator().toMiraiCode()
-public fun <T : Message> Iterator<T>.toMiraiCode(): String = buildString {
-    this@toMiraiCode.forEach {
-        it.safeCast<CodableMessage>()?.appendMiraiCode(this)
+    /**
+     * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+     * @see MessageChain.deserializeFromMiraiCode
+     */
+    @JvmOverloads
+    @JvmStatic
+    public fun deserializeMiraiCode(code: String, contact: Contact? = null): MessageChain =
+        code.parseMiraiCodeImpl(contact)
+
+    /**
+     * 转换得到 mirai 码.
+     */
+    @JvmStatic
+    public fun Iterable<Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
+
+    /**
+     * 转换得到 mirai 码.
+     */
+    @JvmStatic
+    public fun Sequence<Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
+
+    /**
+     * 转换得到 mirai 码.
+     */
+    @JvmStatic
+    public fun Array<out Message>.serializeToMiraiCode(): String = iterator().serializeToMiraiCode()
+
+    /**
+     * 转换得到 mirai 码.
+     */
+    @JvmStatic
+    public fun Iterator<Message>.serializeToMiraiCode(): String = buildString {
+        this@serializeToMiraiCode.forEach {
+            it.safeCast<CodableMessage>()?.appendMiraiCodeTo(this)
+        }
     }
+
+    /**
+     * 转换得到 mirai 码.
+     * @see CodableMessage.serializeToMiraiCode
+     */
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")// for better Java API.
+    @JvmStatic
+    public fun CodableMessage.serializeToMiraiCode(): String = this.serializeToMiraiCode() // member function
 }

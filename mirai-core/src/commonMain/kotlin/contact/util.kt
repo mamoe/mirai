@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,8 +16,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
-import net.mamoe.mirai.internal.message.MessageSourceToStrangerImpl
+import net.mamoe.mirai.internal.message.OnlineMessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
@@ -37,8 +37,8 @@ internal inline val Bot.uin: Long get() = this.id
 
 internal suspend fun <T : User> Friend.sendMessageImpl(
     message: Message,
-    friendReceiptConstructor: (MessageSourceToFriendImpl) -> MessageReceipt<Friend>,
-    tReceiptConstructor: (MessageSourceToFriendImpl) -> MessageReceipt<T>
+    friendReceiptConstructor: (OnlineMessageSourceToFriendImpl) -> MessageReceipt<Friend>,
+    tReceiptConstructor: (OnlineMessageSourceToFriendImpl) -> MessageReceipt<T>
 ): MessageReceipt<T> {
     contract { callsInPlace(friendReceiptConstructor, InvocationKind.EXACTLY_ONCE) }
     val bot = bot.asQQAndroidBot()
@@ -51,12 +51,12 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
         }
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting FriendMessagePreSendEvent", it)
-    }.message.asMessageChain()
+    }.message.toMessageChain()
     chain.verityLength(message, this, {}, {})
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
-    lateinit var source: MessageSourceToFriendImpl
+    lateinit var source: OnlineMessageSourceToFriendImpl
     val result = bot.network.runCatching {
         MessageSvcPbSendMsg.createToFriend(
             bot.client,
@@ -89,8 +89,8 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 
 internal suspend fun <T : User> Stranger.sendMessageImpl(
     message: Message,
-    strangerReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<Stranger>,
-    tReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<T>
+    strangerReceiptConstructor: (OnlineMessageSourceToStrangerImpl) -> MessageReceipt<Stranger>,
+    tReceiptConstructor: (OnlineMessageSourceToStrangerImpl) -> MessageReceipt<T>
 ): MessageReceipt<T> {
     contract { callsInPlace(strangerReceiptConstructor, InvocationKind.EXACTLY_ONCE) }
     val bot = bot.asQQAndroidBot()
@@ -103,12 +103,12 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
         }
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting StrangerMessagePreSendEvent", it)
-    }.message.asMessageChain()
+    }.message.toMessageChain()
     chain.verityLength(message, this, {}, {})
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
-    lateinit var source: MessageSourceToStrangerImpl
+    lateinit var source: OnlineMessageSourceToStrangerImpl
     val result = bot.network.runCatching {
         MessageSvcPbSendMsg.createToStranger(
             bot.client,
@@ -154,9 +154,9 @@ internal inline fun MessageChain.verityLength(
     }
 
     val chain = this
-    val length = estimateLength(target, 5001)
+    val length = estimateLength(target, 15001)
     lengthCallback(length)
-    if (length > 5000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
+    if (length > 15000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
         throw MessageTooLargeException(
             target, message, this,
             "message(${
@@ -177,7 +177,7 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
             renderGroupMessage(group, senderName, sender, message)
         }
-        is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
+        is net.mamoe.mirai.event.events.GroupTempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
         }
         is net.mamoe.mirai.event.events.StrangerMessageEvent -> bot.logger.verbose {
@@ -191,6 +191,9 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         }
         is GroupMessageSyncEvent -> bot.logger.verbose {
             renderGroupMessage(group, senderName, sender, message)
+        }
+        is MessageSyncEvent -> bot.logger.verbose {
+            "${this.subject} <- $message".replaceMagicCodes()
         }
         else -> bot.logger.verbose(toString())
     }

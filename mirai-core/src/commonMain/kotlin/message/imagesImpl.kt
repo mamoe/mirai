@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,41 +15,31 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
+import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.FriendImage
-import net.mamoe.mirai.message.data.GroupImage
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
-import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
-import net.mamoe.mirai.message.data.md5
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.generateImageId
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
 
-/*
- * ImgType:
- *  JPG:    1000
- *  PNG:    1001
- *  WEBP:   1002
- *  BMP:    1005
- *  GIG:    2000 // gig? gif?
- *  APNG:   2001
- *  SHARPP: 1004
- */
-
+@Serializable(with = OnlineGroupImageImpl.Serializer::class)
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
-) : @Suppress("DEPRECATION")
-OnlineGroupImage() {
+) : OnlineGroupImage() {
+    object Serializer : Image.FallbackSerializer("OnlineGroupImage")
+
+
     override val imageId: String = generateImageId(
-        delegate.md5,
+        delegate.picMd5,
         delegate.filePath.substringAfterLast('.')
     ).takeIf {
-        GROUP_IMAGE_ID_REGEX.matches(it)
-    } ?: generateImageId(delegate.md5)
+        IMAGE_ID_REGEX.matches(it)
+    } ?: generateImageId(delegate.picMd5)
 
     override val originUrl: String
         get() = if (delegate.origUrl.isBlank()) {
@@ -68,11 +58,15 @@ OnlineGroupImage() {
     }
 }
 
+@Serializable(with = OnlineFriendImageImpl.Serializer::class)
 internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
 ) : @Suppress("DEPRECATION")
 OnlineFriendImage() {
-    override val imageId: String get() = delegate.resId
+    object Serializer : Image.FallbackSerializer("OnlineFriendImage")
+
+    override val imageId: String =
+        generateImageIdFromResourceId(delegate.resId, getImageType(delegate.imgType)) ?: delegate.resId
     override val originUrl: String
         get() = if (delegate.origUrl.isNotBlank()) {
             "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
@@ -90,11 +84,80 @@ OnlineFriendImage() {
     }
 }
 
+/*
+ * ImgType:
+ *  JPG:    1000
+ *  PNG:    1001
+ *  WEBP:   1002
+ *  BMP:    1005
+ *  GIG:    2000 // gig? gif?
+ *  APNG:   2001
+ *  SHARPP: 1004
+ */
+
+internal fun getImageType(id: Int): String {
+    return when (id) {
+        1000 -> "jpg"
+        1001 -> "png"
+        1002 -> "webp"
+        1005 -> "bmp"
+        2000 -> "gif"
+        2001, 3 -> "png"
+        else -> DEFAULT_FORMAT_NAME
+    }
+}
+
+internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
+
+    return ImMsgBody.CustomFace(
+        filePath = generateImageId(picMd5, getImageType(imgType)),
+        picMd5 = picMd5,
+        flag = ByteArray(4),
+        bigUrl = bigUrl,
+        origUrl = origUrl,
+        //_400Height = 235,
+        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+        //_400Width = 351,
+        oldData = this.oldVerSendFile
+    )
+}
+
+// aka friend image id
+internal fun ImMsgBody.NotOnlineImageOrCustomFace.calculateResId(): String {
+    val url = origUrl.takeIf { it.isNotBlank() }
+        ?: thumbUrl.takeIf { it.isNotBlank() }
+        ?: _400Url.takeIf { it.isNotBlank() }
+        ?: ""
+
+    // gchatpic_new
+    // offpic_new
+    val picSenderId = url.substringAfter("pic_new/").substringBefore("/")
+        .takeIf { it.isNotBlank() } ?: "000000000"
+    val unknownInt = url.substringAfter("-").substringBefore("-")
+        .takeIf { it.isNotBlank() } ?: "000000000"
+
+    return "/$picSenderId-$unknownInt-${picMd5.toUHexString("")}"
+}
+
+internal fun ImMsgBody.CustomFace.toNotOnlineImage(): ImMsgBody.NotOnlineImage {
+    val resId = calculateResId()
+
+    return ImMsgBody.NotOnlineImage(
+        filePath = filePath,
+        resId = resId,
+        oldPicMd5 = false,
+        picMd5 = picMd5,
+        downloadPath = resId,
+        original = 1,
+        pbReserve = byteArrayOf(0x78, 0x02),
+    )
+}
+
 @Suppress("DEPRECATION")
 internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.imageId,
-        md5 = this.md5,
+        picMd5 = this.md5,
         flag = ByteArray(4),
         //_400Height = 235,
         //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
@@ -109,12 +172,13 @@ private val oldData: ByteArray =
 
 @Suppress("DEPRECATION")
 internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
+    val friendImageId = this.friendImageId
     return ImMsgBody.NotOnlineImage(
-        filePath = this.imageId,
-        resId = this.imageId,
+        filePath = friendImageId,
+        resId = friendImageId,
         oldPicMd5 = false,
         picMd5 = this.md5,
-        downloadPath = this.imageId,
+        downloadPath = friendImageId,
         original = 1,
         pbReserve = byteArrayOf(0x78, 0x02)
     )
@@ -134,39 +198,24 @@ internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
 
-    override fun appendMiraiCode(builder: StringBuilder) {
+    @MiraiExperimentalApi
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:image:").append(imageId).append("]")
     }
 }
 
-internal interface ConstOriginUrlAware : Image {
+internal interface ConstOriginUrlAware {
     val originUrl: String
 }
 
-internal interface DeferredOriginUrlAware : Image {
+internal interface DeferredOriginUrlAware {
     fun getUrl(bot: Bot): String
 }
 
-internal interface SuspendDeferredOriginUrlAware : Image {
+internal interface SuspendDeferredOriginUrlAware {
     suspend fun getUrl(bot: Bot): String
 }
 
-/**
- * 由 [ExternalImage] 委托的 [Image] 类型.
- */
-@MiraiExperimentalApi("Will be renamed to OfflineImage on 1.2.0")
-@Suppress("DEPRECATION_ERROR")
-internal class ExperimentalDeferredImage internal constructor(
-    @Suppress("CanBeParameter") private val externalImage: ExternalResource // for future use
-) : AbstractImage(), SuspendDeferredOriginUrlAware {
-    override suspend fun getUrl(bot: Bot): String {
-        TODO()
-    }
-
-    override val imageId: String = externalImage.calculateResourceId()
-}
-
-@Suppress("EXPOSED_SUPER_INTERFACE")
 internal interface OnlineImage : Image, ConstOriginUrlAware {
     override val originUrl: String
 }
@@ -180,15 +229,14 @@ internal interface OnlineImage : Image, ConstOriginUrlAware {
 internal interface OfflineImage : Image
 
 /**
- * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [IMirai.queryImageUrl]
- *
  * @param imageId 参考 [Image.imageId]
  */
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@Serializable
+@Serializable(with = OfflineGroupImage.Serializer::class)
 internal data class OfflineGroupImage(
     override val imageId: String
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    object Serializer : Image.FallbackSerializer("OfflineGroupImage")
+
     override fun getUrl(bot: Bot): String {
         return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
             imageId.substring(1..36)
@@ -198,7 +246,7 @@ internal data class OfflineGroupImage(
 
     init {
         @Suppress("DEPRECATION")
-        require(imageId matches GROUP_IMAGE_ID_REGEX) {
+        require(imageId matches IMAGE_ID_REGEX) {
             "Illegal imageId. It must matches GROUP_IMAGE_ID_REGEX"
         }
     }
@@ -210,23 +258,25 @@ internal data class OfflineGroupImage(
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal abstract class OnlineGroupImage : GroupImage(), OnlineImage
 
+internal val Image.friendImageId: String
+    get() {
+//    /1234567890-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
+        return "/000000000-000000000-${md5.toUHexString("")}"
+    }
+
 /**
  * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [IMirai.queryImageUrl]
  *
  * @param imageId 参考 [Image.imageId]
  */
-@Serializable
+@Serializable(with = OfflineFriendImage.Serializer::class)
 internal data class OfflineFriendImage(
     override val imageId: String
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
-    override fun getUrl(bot: Bot): String {
-        return "http://c2cpicdw.qpic.cn/offpic_new/${bot.id}/${this.imageId}/0?term=2"
-    }
+    object Serializer : Image.FallbackSerializer("OfflineFriendImage")
 
-    init {
-        require(imageId matches FRIEND_IMAGE_ID_REGEX_1 || imageId matches FRIEND_IMAGE_ID_REGEX_2) {
-            "Illegal imageId. It must matches either FRIEND_IMAGE_ID_REGEX_1 or FRIEND_IMAGE_ID_REGEX_2"
-        }
+    override fun getUrl(bot: Bot): String {
+        return "http://c2cpicdw.qpic.cn/offpic_new/${bot.id}${this.friendImageId}/0?term=2"
     }
 }
 
@@ -236,3 +286,38 @@ internal data class OfflineFriendImage(
 internal abstract class OnlineFriendImage : FriendImage(), OnlineImage
 
 // endregion
+
+
+internal fun FlashImage.toJceData(messageTarget: ContactOrBot?): ImMsgBody.Elem {
+    return if (messageTarget is User) {
+        ImMsgBody.Elem(
+            commonElem = ImMsgBody.CommonElem(
+                serviceType = 3,
+                businessType = 0,
+                pbElem = HummerCommelem.MsgElemInfoServtype3(
+                    flashC2cPic = ImMsgBody.NotOnlineImage(
+                        filePath = image.friendImageId,
+                        resId = image.friendImageId,
+                        picMd5 = image.md5,
+                        oldPicMd5 = false,
+                        pbReserve = byteArrayOf(0x78, 0x06)
+                    )
+                ).toByteArray(HummerCommelem.MsgElemInfoServtype3.serializer())
+            )
+        )
+    } else {
+        ImMsgBody.Elem(
+            commonElem = ImMsgBody.CommonElem(
+                serviceType = 3,
+                businessType = 0,
+                pbElem = HummerCommelem.MsgElemInfoServtype3(
+                    flashTroopPic = ImMsgBody.CustomFace(
+                        filePath = image.imageId,
+                        picMd5 = image.md5,
+                        pbReserve = byteArrayOf(0x78, 0x06)
+                    )
+                ).toByteArray(HummerCommelem.MsgElemInfoServtype3.serializer())
+            )
+        )
+    }
+}

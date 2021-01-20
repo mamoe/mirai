@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -47,6 +47,8 @@ import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import network.protocol.packet.list.StrangerList
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -280,7 +282,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         bot.otherClients.delegate.clear()
         bot.otherClients.delegate.addAll(list.map { bot.createOtherClient(it) })
 
-        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform.name})" } }
+        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform?.name ?: "unknown platform"})" } }
     }
 
     // caches
@@ -344,7 +346,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     coroutineContext = bot.coroutineContext,
                     id = groupCode,
                     groupInfo = GroupInfoImpl(this),
-                    members = Mirai._lowLevelQueryGroupMemberList(
+                    members = Mirai.getRawGroupMemberList(
                         bot,
                         groupUin,
                         groupCode,
@@ -483,7 +485,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     init {
         @Suppress("RemoveRedundantQualifierName")
-        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = Listener.EventPriority.MONITOR) {
+        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
             this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
         }
         supervisor.invokeOnCompletion { listener.cancel() }
@@ -713,59 +715,58 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
+        check(channel.isOpen) { "network channel is closed" }
+
         logger.verbose { "Send: ${this.commandName}" }
-        channel.send(delegate)
+
+        delegate.withUse {
+            channel.send(delegate)
+        }
     }
 
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
+    @Suppress("UNCHECKED_CAST")
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
-        require(retry in 1..10) { "retry must in 1..10" }
+        require(retry in 0..10) { "retry must in 0..10" }
 
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         check(channel.isOpen) { "network channel is closed" }
 
-        suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
-            when (data) {
-                is ByteArray -> channel.send(data, 0, length)
-                is ByteReadPacket -> channel.send(data)
-                else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
-            }
-            logger.verbose { "Send: $commandName" }
+        val data = this.delegate.withUse { readBytes() }
 
-            @Suppress("UNCHECKED_CAST")
-            return withTimeout(timeoutMillis) {
-                handler.await()
-            } as E
-        }
+        return retryCatchingExceptions(
+            retry + 1,
+            except = CancellationException::class // CancellationException means network closed so don't retry
+        ) {
+            withPacketListener(commandName, sequenceId) { listener ->
+                return withTimeout(timeoutMillis) { // may throw CancellationException
+                    channel.send(data, 0, data.size)
+                    logger.verbose { "Send: $commandName" }
 
-        if (retry == 0) {
-            val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-            packetListeners.addLast(handler)
-            try {
-                return doSendAndReceive(handler, delegate, 0) // no need
-            } finally {
-                packetListeners.remove(handler)
+                    listener.await()
+                } as E
             }
-        } else {
-            val data = this.delegate.readBytes()
-            return retryCatching(retry + 1) {
-                val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-                packetListeners.addLast(handler)
-                try {
-                    doSendAndReceive(handler, data, data.size)
-                } finally {
-                    packetListeners.remove(handler)
-                }
-            }.getOrThrow()
+        }.getOrThrow<E>()
+    }
+
+    private inline fun <R> withPacketListener(commandName: String, sequenceId: Int, block: (PacketListener) -> R): R {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
+        packetListeners.add(handler)
+        try {
+            return block(handler)
+        } finally {
+            kotlin.runCatching { if (handler.isActive) handler.cancel() } // ensure coroutine completion
+            packetListeners.remove(handler)
         }
     }
 
     @PublishedApi
-    internal val packetListeners = LockFreeLinkedList<PacketListener>()
+    internal val packetListeners = ConcurrentLinkedQueue<PacketListener>()
 
     @PublishedApi
     internal inner class PacketListener(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,18 +12,22 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.events.BotNudgedEvent
-import net.mamoe.mirai.event.events.MemberNudgedEvent
+import net.mamoe.mirai.event.events.NudgeEvent
+import net.mamoe.mirai.message.data.PokeMessage
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 
 /**
- * 一个 "戳一戳" 消息.
+ * 一个 "戳一戳" 动作.
+ *
+ * 备注: 这类似微信拍一拍. 消息对话框中显示的 "一个手指" 的戳一戳是 [PokeMessage]
  *
  * 仅在手机 QQ 8.4.0 左右版本才受支持. 其他客户端会忽略这些消息.
  *
- * @see User.nudge 创建 [Nudge] 对象
- * @see Bot.nudge 创建 [Nudge] 对象
+ * 示例，要机器人戳一个群员并发送到群里，使用 `member.nudge().sendTo(group)`.
+ * 要机器人戳一个好友并发送给该好友，使用 `friend.nudge().sendTo(friend)`.
+ *
+ * @see UserOrBot.nudge 创建 [Nudge] 对象
  */
 public sealed class Nudge {
     /**
@@ -32,7 +36,7 @@ public sealed class Nudge {
     public abstract val target: UserOrBot
 
     /**
-     * 发送戳一戳该成员的消息.
+     * 发送戳一戳该成员的消息到 [receiver].
      *
      * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
      *
@@ -40,8 +44,7 @@ public sealed class Nudge {
      * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
      * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
      *
-     * @see MemberNudgedEvent 成员被戳事件
-     * @see BotNudgedEvent [Bot] 被戳事件
+     * @see NudgeEvent 事件
      * @see Contact.sendNudge
      */
     @JvmBlockingBridge
@@ -60,8 +63,7 @@ public sealed class Nudge {
          *
          * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
          *
-         * @see MemberNudgedEvent 成员被戳事件
-         * @see BotNudgedEvent [Bot] 被戳事件
+         * @see NudgeEvent 事件
          */
         @JvmSynthetic
         @JvmStatic
@@ -106,5 +108,5 @@ public data class FriendNudge(
  * @see Nudge
  */
 public data class StrangerNudge(
-    public override val target: UserOrBot
+    public override val target: Stranger
 ) : UserNudge()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -25,7 +25,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.encodeToBase64
 import net.mamoe.mirai.utils.encodeToString
@@ -71,10 +70,13 @@ internal suspend inline fun Message.ensureSequenceIdAvailable() {
     }*/
 }
 
-internal class MessageSourceFromFriendImpl(
+@Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
+internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
     val msg: List<MsgComm.Msg>
 ) : OnlineMessageSource.Incoming.FromFriend(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
+
     override val sequenceIds: IntArray get() = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val ids: IntArray get() = sequenceIds// msg.msgBody.richText.attr!!.random
@@ -88,7 +90,7 @@ internal class MessageSourceFromFriendImpl(
             bot,
             bot.id,
             0,
-            false,
+            null,
             MessageSourceKind.FRIEND
         )
     }
@@ -99,10 +101,13 @@ internal class MessageSourceFromFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
-internal class MessageSourceFromStrangerImpl(
+@Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
+internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
     val msg: List<MsgComm.Msg>
 ) : OnlineMessageSource.Incoming.FromStranger(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
+
     override val sequenceIds: IntArray get() = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val ids: IntArray get() = sequenceIds// msg.msgBody.richText.attr!!.random
@@ -116,7 +121,7 @@ internal class MessageSourceFromStrangerImpl(
             bot,
             bot.id,
             0,
-            false,
+            null,
             MessageSourceKind.STRANGER
         )
     }
@@ -163,10 +168,13 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
     )
 }
 
-internal class MessageSourceFromTempImpl(
+@Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
+internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
     private val msg: List<MsgComm.Msg>
 ) : OnlineMessageSource.Incoming.FromTemp(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
+
     override val sequenceIds: IntArray get() = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray get() = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
@@ -177,7 +185,7 @@ internal class MessageSourceFromTempImpl(
             bot,
             bot.id,
             groupIdOrZero = 0,
-            onlineSource = false,
+            onlineSource = null,
             MessageSourceKind.TEMP
         )
     }
@@ -190,12 +198,12 @@ internal class MessageSourceFromTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
-@Serializable(MessageSourceFromGroupImpl.Serializer::class)
-internal data class MessageSourceFromGroupImpl(
+@Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
+internal data class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,
     private val msg: List<MsgComm.Msg>
 ) : OnlineMessageSource.Incoming.FromGroup(), MessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("net.mamoe.mirai.internal.message.MessageSourceFromGroupImpl")
+    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
     @Transient
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
@@ -204,7 +212,7 @@ internal data class MessageSourceFromGroupImpl(
     override val ids: IntArray get() = sequenceIds
     override val time: Int get() = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChain(bot, bot.id, groupIdOrZero = group.id, onlineSource = false, MessageSourceKind.GROUP)
+        msg.toMessageChain(bot, bot.id, groupIdOrZero = group.id, onlineSource = null, MessageSourceKind.GROUP)
     }
 
     override val sender: Member by lazy {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,12 +11,12 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.coroutines.Deferred
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
@@ -70,7 +70,7 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
      * @see IMirai.recallMessage
      */
     @Suppress("DeferredIsResult")
-    public fun recallIn(millis: Long): Deferred<Unit> = this.source.recallIn(millis)
+    public fun recallIn(millis: Long): AsyncRecallResult = this.source.recallIn(millis)
 
     /**
      * 引用这条消息.

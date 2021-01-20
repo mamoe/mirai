@@ -3,9 +3,10 @@
 ## 目录
 
 - [事件系统](#事件系统)
+- [快速指导](#快速指导)
 - [事件通道](#事件通道)
 - [通道操作](#通道操作)
-  - [缩窄（过滤）](#缩窄过滤)
+  - [过滤](#过滤)
   - [添加 `CoroutineContext`](#添加-coroutinecontext)
   - [限制作用域](#限制作用域)
   - [链式调用](#链式调用)
@@ -22,7 +23,7 @@
 
 ## 事件系统
 
-Mirai 以事件驱动，使用者需要监听如 `收到消息`，`收到入群申请` 等事件。
+Mirai 以事件驱动。
 
 [`Event`]: ../mirai-core-api/src/commonMain/kotlin/event/Event.kt#L21-L62
 
@@ -33,19 +34,65 @@ Mirai 以事件驱动，使用者需要监听如 `收到消息`，`收到入群�
 
 > 回到 [目录](#目录)
 
+
+## 快速指导
+
+如果你了解事件且不希望详细阅读，可以立即仿照下面示例创建事件监听并跳过本章节。
+
+Kotlin
+```kotlin
+// 事件监听器是协程任务。如果你有 CoroutineScope，可从 scope 继承生命周期管理和 coroutineContext
+GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent> { event ->
+    // this: GroupMessageEvent
+    // event: GroupMessageEvent
+    subject.sendMessage("Hello!")
+}
+
+// 如果不想限制生命周期，可获取 listener 处理
+val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEvent> { event -> }
+
+listener.complete() // 停止监听
+```
+
+Java
+```java
+// 创建监听
+Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
+    event.getSubject().sendMessage("Hello!");
+})
+
+listener.complete(); // 停止监听 
+```
+
+异常默认会被相关 Bot 日志记录。可以在 `subscribeAlways` 添加如下内容来处理异常。
+```
+// Kotlin
+.exceptionHandler { e -> e.printStackTrace() }
+
+// Java
+.exceptionHandler(e -> e.printStackTrace())
+```
+
+**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个，请使用 `bot.eventChannel`。**
+
+> 现在你可以继续阅读，或跳到下一章 [Messages](Messages.md)
+>
+> 回到 [目录](#目录)  
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+
 ## 事件通道
 
 [`EventChannel`]: ../mirai-core-api/src/commonMain/kotlin/event/EventChannel.kt
 
 [事件通道][`EventChannel`]是监听事件的入口。 **在不同的事件通道中可以监听到不同类型的事件**。
 
-> 对通道的转换操作可以在使用时查看源码内注释 ([`EventChannel`])。
-
 ### 获取事件通道
 
-`GlobalEventChannel` 是最大的通道：所有的事件都可以在 `GlobalEventChannel` 监听到。**因此，`GlobalEventChannel` 会包含来自所有 `Bot` 实例的事件。**
+[`GlobalEventChannel`]: ../mirai-core-api/src/commonMain/kotlin/event/GlobalEventChannel.kt
 
-通常不会直接使用 `GlobalEventChannel`，而是使用经过 [通道操作](#通道操作) 操作的子通道。
+[`GlobalEventChannel`] 是最大的通道：所有的事件都可以在 [`GlobalEventChannel`] 监听到。**因此，[`GlobalEventChannel`] 会包含来自所有 `Bot` 实例的事件。**
+
+通常不会直接使用 [`GlobalEventChannel`]，而是使用经过 [通道操作](#通道操作) 操作的子通道。
 
 > 回到 [目录](#目录)
 
@@ -55,7 +102,7 @@ Mirai 以事件驱动，使用者需要监听如 `收到消息`，`收到入群�
 
 **一个通道的属性都是*不变的*：每个转换操作都会创建一个新的通道而不会修改原通道。**
 
-### 缩窄（过滤）
+### 过滤
 
 `GlobalEventChannel` 包含任何 `Event`，可以通过 `EventChannel.filter` 过滤得到一个只包含期望的事件的 `EventChannel`。
 
@@ -68,11 +115,13 @@ EventChannel channel = GlobalEventChannel.INSTANCE.filter(ev -> ev instanceof Bo
 
 > 回到 [通道操作](#通道操作)
 
+> 你可以选择跳过下文介绍的协程属性和作用域，直接阅读 [在 `EventChannel` 监听事件](#在-eventchannel-监听事件)
+
 ### 添加 `CoroutineContext`
 
 一个通道持有属性 `defaultCoroutineContext`，将会自动添加给每个事件监听器（见后文）。
 
-可以为通道添加一些 `CoroutineContext`，如 `CoroutineExceptionHandler`。
+可以为通道添加一些 `CoroutineContext`，如 `CoroutineExceptionHandler`（用于处理监听时产生的异常）。
 ```kotlin
 channel.exceptionHandler { exception ->
     logger.error(exception)
@@ -171,7 +220,7 @@ bot.eventChannel.subscribeAlways(GroupMessageEvent.class, event -> {
 })
 ```
 
-> 有关监听事件的实现细节可在使用时查看源码内注释。
+> 实现细节可查看源码内注释。
 
 
 > 回到 [目录](#目录)
@@ -180,14 +229,12 @@ bot.eventChannel.subscribeAlways(GroupMessageEvent.class, event -> {
 
 监听都需要在*事件通道*中进行。如下几种方法都本质上会调用上述 `EventChannel.subscribe` 等方法。
 
-- [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
+- [使用 `@EventHandler` 注解标注的方法监听事件](#使用-eventhandler-注解标注的方法监听事件)
 - [在 Kotlin 使用 DSL 监听事件](#在-kotlin-使用-dsl-监听事件)
 
 ### 使用 `@EventHandler` 注解标注的方法监听事件
 
 标注一个函数（方法）为事件监听器。mirai 通过反射获取他们并为之注册事件。
-
-> 详见 [EventHandler](../mirai-core-api/src/commonMain/kotlin/event/JvmMethodListeners.kt#L22-L144)
 
 - [Kotlin 函数](#kotlin-函数)
 - [Java 方法](#java-方法)
@@ -195,10 +242,8 @@ bot.eventChannel.subscribeAlways(GroupMessageEvent.class, event -> {
 #### Kotlin 函数
 
 Kotlin 函数要求:
-- 接收者 (英 receiver) 和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
+- 接收者和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
   接收者或函数参数的类型都必须为 `Event` 或其子类.
-- 返回值: 为 `Unit` 或不指定返回值时将注册为 `EventChannel.subscribeAlways`, 为 `ListeningStatus` 时将注册为 `EventChannel.subscribe`.
-  任何其他类型的返回值将会在注册时抛出异常.
 
 所有 Kotlin 非 `suspend` 的函数都将会在 `Dispatchers.IO` 中调用
 
@@ -266,14 +311,14 @@ eventChannel.registerListenerHost(MyEvents)
 
 #### Java 方法
 
-所有 Java 方法都会在 `Dispatchers.IO` 中调用，因此在 Java 可以调用阻塞方法。
+所有 Java 方法都会在 `Dispatchers.IO` 中调用，因此在 Java 也可以调用阻塞方法。
 
 支持的方法类型：
 ```
 // T 表示任何 Event 类型.
 void onEvent(T)
 Void onEvent(T)
-ListeningStatus onEvent(T) // 返回 null 时将抛出异常
+ListeningStatus onEvent(T) // 禁止返回 null
 ```
 
 Java 使用示例:
@@ -356,13 +401,13 @@ eventChannel.subscribeMessages {
 > 回到 [目录](#目录)
 
 ## 工具函数（Kotlin）
-
-*可能需要较好的 Kotlin 技能才能理解以下内容。*
+> *可能需要较好的 Kotlin 技能才能理解以下内容。*
+> **可以[跳过本节](#　)**
 
 基于 Kotlin 协程特性，mirai 提供 `
 
 ### 线性同步（`syncFromEvent`）
-[linear.kt](../mirai-core-api/src/commonMain/kotlin/event/linear.kt)
+[syncFromEvent.kt](../mirai-core-api/src/commonMain/kotlin/event/syncFromEvent.kt)
 
 挂起协程并获取下一个戳 Bot 的对象：
 ```kotlin
@@ -462,7 +507,10 @@ reply("复读模式结束")
 
 > 回到 [目录](#目录)
 
+###### 　
+
+----
 
 > 下一步，[Messages](Messages.md)
 >
-> [回到 Mirai 文档索引](README.md)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)

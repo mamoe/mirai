@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -27,14 +27,14 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * eventChannel.subscribe(GroupMessageEvent::onMessage)
  * ```
- * @see subscribe
+ * @see EventChannel.subscribe
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: suspend E.(E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -48,7 +48,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  *
  * eventChannel.subscribe(::onMessage)
  * ```
- * @see subscribe
+ * @see EventChannel.subscribe
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
@@ -56,7 +56,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: suspend (E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -70,14 +70,14 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  *
  * eventChannel.subscribe(GroupMessageEvent::onMessage)
  * ```
- * @see subscribe
+ * @see EventChannel.subscribe
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: E.(E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -91,14 +91,14 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  *
  * eventChannel.subscribe(::onMessage)
  * ```
- * @see subscribe
+ * @see EventChannel.subscribe
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribe(
     crossinline handler: (E) -> ListeningStatus,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -110,7 +110,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  * }
  * eventChannel.subscribeAlways(::onMessage)
  * ```
- * @see subscribeAlways
+ * @see EventChannel.subscribeAlways
  */
 @JvmName("subscribeAlways1")
 @JvmSynthetic
@@ -118,7 +118,7 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: suspend (E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -131,14 +131,14 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  * }
  * eventChannel.subscribeAlways(GroupMessageEvent::onMessage)
  * ```
- * @see subscribeAlways
+ * @see EventChannel.subscribeAlways
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: suspend E.(E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -150,14 +150,14 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  * }
  * eventChannel.subscribeAlways(GroupMessageEvent::onMessage)
  * ```
- * @see subscribeAlways
+ * @see EventChannel.subscribeAlways
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: E.(E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
@@ -169,13 +169,13 @@ public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>
  * }
  * eventChannel.subscribeAlways(::onMessage)
  * ```
- * @see subscribeAlways
+ * @see EventChannel.subscribeAlways
  */
 @JvmSynthetic
 @LowPriorityInOverloadResolution
 public inline fun <BaseEvent : Event, reified E : Event> EventChannel<BaseEvent>.subscribeAlways(
     crossinline handler: (E) -> Unit,
     priority: EventPriority = EventPriority.NORMAL,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }

@@ -11,12 +11,16 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
+import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
@@ -61,9 +65,11 @@ public interface ExternalResource : Closeable {
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
-     * png, jpg, gif, tif, bmp, wav, amr, silk
+     * png, jpg, gif, tif, bmp, amr, silk
      *
      * @see net.mamoe.mirai.utils.getFileType
+     * @see net.mamoe.mirai.utils.FILE_TYPES
+     * @see DEFAULT_FORMAT_NAME
      */
     public val formatName: String
 
@@ -71,6 +77,11 @@ public interface ExternalResource : Closeable {
      * 文件大小 bytes
      */
     public val size: Long
+
+    /**
+     * 当 [close] 时会 [CompletableDeferred.complete] 的 [Deferred].
+     */
+    public val closed: Deferred<Unit>
 
     /**
      * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
@@ -87,7 +98,7 @@ public interface ExternalResource : Closeable {
 
     public companion object {
         /**
-         * 在无法识别文件格式时使用的默认格式名.
+         * 在无法识别文件格式时使用的默认格式名. "mirai".
          *
          * @see ExternalResource.formatName
          */
@@ -98,7 +109,7 @@ public interface ExternalResource : Closeable {
          *
          * 将以只读模式打开这个文件 (因此文件会处于被占用状态), 直到 [ExternalResource.close].
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -112,7 +123,7 @@ public interface ExternalResource : Closeable {
          *
          * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -124,9 +135,9 @@ public interface ExternalResource : Closeable {
             ExternalResourceImplByFile(this, formatName, closeOriginalFileOnClose)
 
         /**
-         * 创建 [ExternalResource]
+         * 创建 [ExternalResource].
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -138,9 +149,9 @@ public interface ExternalResource : Closeable {
         /**
          * 立即使用 [FileCacheStrategy] 缓存 [InputStream] 并创建 [ExternalResource].
          *
-         * **注意**：本函数不会关闭流
+         * **注意**：本函数不会关闭流.
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -153,7 +164,7 @@ public interface ExternalResource : Closeable {
         /**
          * 将图片作为单独的消息发送给指定联系人.
          *
-         * **注意**：本函数不会关闭 [ExternalResource]
+         * **注意**：本函数不会关闭 [ExternalResource].
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
@@ -167,9 +178,9 @@ public interface ExternalResource : Closeable {
             contact.uploadImage(this).sendTo(contact)
 
         /**
-         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人.
          *
-         * 注意：本函数不会关闭流
+         * 注意：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -189,7 +200,7 @@ public interface ExternalResource : Closeable {
             }.withUse { sendAsImageTo(contact) }
 
         /**
-         * 将文件作为图片发送到指定联系人
+         * 将文件作为图片发送到指定联系人.
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
@@ -205,9 +216,9 @@ public interface ExternalResource : Closeable {
         /**
          * 上传图片并构造 [Image]. 这个函数可能需消耗一段时间.
          *
-         * **注意**：本函数不会关闭 [ExternalResource]
+         * **注意**：本函数不会关闭 [ExternalResource].
          *
-         * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+         * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人.
          *
          * @see Contact.uploadImage 最终调用, 上传图片.
          */
@@ -216,9 +227,9 @@ public interface ExternalResource : Closeable {
         public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = contact.uploadImage(this)
 
         /**
-         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
+         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image].
          *
-         * 注意：本函数不会关闭流
+         * 注意：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -232,7 +243,7 @@ public interface ExternalResource : Closeable {
             runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
 
         /**
-         * 将文件作为图片上传后构造 [Image]
+         * 将文件作为图片上传后构造 [Image].
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -245,107 +256,18 @@ public interface ExternalResource : Closeable {
 
 
         /**
-         * 将文件作为语音上传后构造 [Voice]
+         * 将文件作为语音上传后构造 [Voice].
          *
          * - 请手动关闭输入流
          * - 请使用 amr 或 silk 格式
          *
-         * @suppress 将来支持好友语音之后将会把参数修改为 [Contact], 这会是一个不兼容变更. 因此请优先使用 [Group.uploadVoice]
          * @throws OverFileSizeMaxException
          */
         @JvmBlockingBridge
         @JvmStatic
-        @MiraiExperimentalApi
-        public suspend fun ExternalResource.uploadAsVoice(group: Group): Voice {
-            return group.uploadVoice(this)
+        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
+            if (contact is Group) return contact.uploadVoice(this)
+            else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
         }
     }
 }
-
-
-private fun InputStream.detectFileTypeAndClose(): String? {
-    val buffer = ByteArray(10)
-    return use {
-        kotlin.runCatching { it.read(buffer) }.onFailure { return null }
-        getFileType(buffer)
-    }
-}
-
-internal class ExternalResourceImplByFileWithMd5(
-    private val file: RandomAccessFile,
-    override val md5: ByteArray,
-    formatName: String?
-) : ExternalResource {
-    override val size: Long = file.length()
-    override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
-    }
-
-    override fun inputStream(): InputStream {
-        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
-        return file.inputStream()
-    }
-
-    override fun close() {
-        file.close()
-    }
-}
-
-internal class ExternalResourceImplByFile(
-    private val file: RandomAccessFile,
-    formatName: String?,
-    private val closeOriginalFileOnClose: Boolean = true
-) : ExternalResource {
-    override val size: Long = file.length()
-    override val md5: ByteArray by lazy { inputStream().md5() }
-    override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
-    }
-
-    override fun inputStream(): InputStream {
-        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
-        return file.inputStream()
-    }
-
-    override fun close() {
-        if (closeOriginalFileOnClose) file.close()
-    }
-}
-
-internal class ExternalResourceImplByByteArray(
-    private val data: ByteArray,
-    formatName: String?
-) : ExternalResource {
-    override val size: Long = data.size.toLong()
-    override val md5: ByteArray by lazy { data.md5() }
-    override val formatName: String by lazy {
-        formatName ?: getFileType(data.copyOf(8)).orEmpty()
-    }
-
-    override fun inputStream(): InputStream = data.inputStream()
-    override fun close() {}
-}
-
-private fun RandomAccessFile.inputStream(): InputStream {
-    val file = this
-    return object : InputStream() {
-        override fun read(): Int = file.read()
-        override fun read(b: ByteArray, off: Int, len: Int): Int = file.read(b, off, len)
-        override fun close() {
-            file.seek(0)
-        }
-        // don't close file on stream.close. stream may be obtained at multiple times.
-    }.buffered()
-}
-
-
-/*
- * ImgType:
- *  JPG:    1000
- *  PNG:    1001
- *  WEBP:   1002
- *  BMP:    1005
- *  GIG:    2000 // gig? gif?
- *  APNG:   2001
- *  SHARPP: 1004
- */

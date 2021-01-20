@@ -129,8 +129,8 @@ mirai-console-loader 应运而生，它的工作就是简化 console 启动流�
 
 ------
 
-以上就是整个 Mirai 生态的概览，如有疏漏或错误，欢迎提出 Issue 修正。
+本文作者 [@StageGuard](https://github.com/StageGuard)。如有疏漏或错误，欢迎[提出 Issue](https://github.com/mamoe/mirai/issues/new) 修正。
 
 实体关系图采用 [Mermaid](https://github.com/mermaid-js/mermaid) 绘制。
 
-> [回到 Mirai 文档索引](README.md)
+> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,9 +14,9 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
-import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.native.concurrent.SharedImmutable
 
@@ -51,10 +51,10 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
             /**
              * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
              */
-            this.forEachContent { thisElement ->
-                if (thisElement.isPlain()) return@forEachContent
+            this.contentsSequence().forEach { thisElement ->
+                if (thisElement is PlainText) return@forEach
                 for (it in anotherIterator) {
-                    if (it.isPlain() || it !is MessageContent) continue
+                    if (it is PlainText || it !is MessageContent) continue
                     if (thisElement != it) return false
                 }
             }
@@ -66,7 +66,7 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
 
 @JvmSynthetic
 internal fun Message.followedByImpl(tail: Message): MessageChain {
-    return MessageChainImplBySequence(this.flatten() + tail.flatten())
+    return MessageChainImplBySequence(this.toMessageChain().asSequence() + tail.toMessageChain().asSequence())
     /*
     when {
         this is SingleMessage && tail is SingleMessage -> {
@@ -113,7 +113,7 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
 
 @JvmSynthetic
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
-    constrainSingleMessagesImpl(this.asSequence())
+    constrainSingleMessagesImpl(this)
 
 /**
  * - [Sequence.toMutableList]
@@ -146,6 +146,11 @@ internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): Lis
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
     constrainSingleMessagesImpl(this.asSequence())
 
+@JvmName("constrainSingleMessages_Sequence")
+@JvmSynthetic
+internal fun Sequence<Message>.constrainSingleMessages(): List<SingleMessage> =
+    this.flatMap { it.toMessageChain() }.constrainSingleMessages()
+
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
@@ -154,9 +159,17 @@ internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
 }
 
 /**
+ * @return [EmptyMessageChain] if [delegate] is empty, otherwise [MessageChainImpl]
+ */
+internal fun createMessageChainImplOptimized(delegate: List<SingleMessage>): MessageChain {
+    return if (delegate.isEmpty()) EmptyMessageChain
+    else MessageChainImpl(delegate)
+}
+
+/**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
-@Serializable
+@Serializable(MessageChain.Serializer::class)
 internal data class MessageChainImpl constructor(
     @JvmField
     internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
@@ -177,12 +190,7 @@ internal data class MessageChainImpl constructor(
 @Suppress("FunctionName") // source compatibility with 1.x
 internal fun MessageChainImplBySequence(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-): MessageChain = MessageChainImpl(delegate.constrainSingleMessages())
-
-@Suppress("FunctionName")
-internal fun SingleMessageChainImpl(
-    delegate: SingleMessage
-): MessageChain = MessageChainImpl(listOf(delegate))
+): MessageChain = createMessageChainImplOptimized(delegate.constrainSingleMessages())
 
 
 //////////////////////
@@ -240,9 +248,9 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
 internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
     @Suppress("DEPRECATION")
     return when {
-        imageId matches FRIEND_IMAGE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
-        imageId matches FRIEND_IMAGE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
-        imageId matches GROUP_IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+        imageId matches IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+        imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
+        imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
 
         else -> error(
             "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
@@ -251,8 +259,8 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE: String =
-    "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
-            "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
-            "`${GROUP_IMAGE_ID_REGEX.pattern}`"
+    "ImageId must match Regex `${IMAGE_RESOURCE_ID_REGEX_1.pattern}`, " +
+            "`${IMAGE_RESOURCE_ID_REGEX_2.pattern}` or " +
+            "`${IMAGE_ID_REGEX.pattern}`"
 
 // endregion

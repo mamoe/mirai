@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,14 +9,16 @@
 
 package net.mamoe.mirai.message.code
 
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 
 
 /**
  * 可以使用 mirai 码表示的 [Message] 类型.
  *
- * 从字符串解析 mirai 码：[parseMiraiCode]
+ * 从字符串解析 mirai 码：[MiraiCode.deserializeMiraiCode]
  *
  * @see At
  * @see AtAll
@@ -25,14 +27,20 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * @see Image
  * @see FlashImage
  * @see PokeMessage
+ *
+ * @see MiraiCode
  */
 public interface CodableMessage : Message {
     /**
      * 转换为 mirai 码.
      */
-    public fun toMiraiCode(): String = buildString { appendMiraiCode(this) }
+    public fun serializeToMiraiCode(): String = buildString { appendMiraiCodeTo(this) }
+
+    @PlannedRemoval("2.0.0")
+    @Deprecated("Use serializeToMiraiCode()", ReplaceWith("serializeToMiraiCode()"), DeprecationLevel.ERROR)
+    public fun toMiraiCode(): String = this.serializeToMiraiCode()
 
     // Using StringBuilder faster than direct plus objects
     @MiraiExperimentalApi
-    public fun appendMiraiCode(builder: StringBuilder)
+    public fun appendMiraiCodeTo(builder: StringBuilder)
 }

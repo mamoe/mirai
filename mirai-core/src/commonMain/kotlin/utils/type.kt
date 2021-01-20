@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,15 +7,10 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmName("Utils")
-@file:JvmMultifileClass
-
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.AtAll.display
-import net.mamoe.mirai.utils.safeCast
 
 
 internal fun Int.toIpV4AddressString(): String {
@@ -51,10 +46,10 @@ internal fun MessageChain.estimateLength(target: ContactOrBot, upTo: Int): Int =
 internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int {
     return when (this) {
         is QuoteReply -> 444 + this.source.originalMessage.estimateLength(target, upTo) // Magic number
-        is Image -> 260 // Magic number
+        is Image -> 260 //Magic number
         is PlainText -> content.chineseLength(upTo)
-        is At -> this.getDisplay(target.safeCast()).chineseLength(upTo)
-        is AtAll -> display.chineseLength(upTo)
+        is At -> 60 //Magic number
+        is AtAll -> 60 //Magic number
         else -> this.toString().chineseLength(upTo)
     }
 }

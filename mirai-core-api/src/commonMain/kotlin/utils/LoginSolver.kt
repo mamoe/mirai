@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,12 +18,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
+import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
+import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
-import net.mamoe.mirai.utils.internal.SeleniumLoginSolver
-import net.mamoe.mirai.utils.internal.isSliderCaptchaSupportKind
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -221,9 +222,9 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 //////////////// internal
 ///////////////////////////////
 
-internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(filename: String): (Bot) -> DeviceInfo {
+internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
     return {
-        File(filename).loadAsDeviceInfo(json)
+        file().loadAsDeviceInfo(json)
     }
 }
 

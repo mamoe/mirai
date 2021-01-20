@@ -20,9 +20,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
-import net.mamoe.mirai.internal.message.OfflineGroupImage
-import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
@@ -142,7 +140,8 @@ internal class GroupImpl(
             return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, message.nodeList, false, message)
         }
 
-        val msg: MessageChain = if (message !is LongMessage && message !is ForwardMessageInternal) {
+        val isLongOrForward = message is LongMessage || message is ForwardMessageInternal
+        val msg: MessageChain = if (!isLongOrForward) {
             val chain = kotlin.runCatching {
                 GroupMessagePreSendEvent(this, message).broadcast()
             }.onSuccess {
@@ -151,17 +150,20 @@ internal class GroupImpl(
                 }
             }.getOrElse {
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
-            }.message.asMessageChain()
+            }.message.toMessageChain()
 
-            var length: Int = 0
-            var imageCnt: Int = 0
+            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
+            var length = 0
+
+            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER") // stupid compiler
+            var imageCnt = 0
             chain.verityLength(message, this, lengthCallback = {
                 length = it
             }, imageCntCallback = {
                 imageCnt = it
             })
 
-            if (length > 702 || imageCnt > 2) {  // 阈值为700左右，限制到3的倍数
+            if (length > 702 || imageCnt > 1) {  // 阈值为700左右，限制到3的倍数
                 return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
                     bot,
                     this.id,
@@ -169,7 +171,7 @@ internal class GroupImpl(
                         ForwardMessage.Node(
                             senderId = bot.id,
                             time = currentTimeSeconds().toInt(),
-                            message = chain,
+                            messageChain = chain,
                             senderName = bot.nick
                         )
                     ),
@@ -177,13 +179,24 @@ internal class GroupImpl(
                 )
             }
             chain
-        } else message.asMessageChain()
+        } else message.toMessageChain()
 
         msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
+        msg.filterIsInstance<FriendImage>().forEach { image ->
+            bot.network.run {
+                ImgStore.GroupPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    groupCode = id,
+                    md5 = image.md5,
+                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
+                ).sendAndExpect<ImgStore.GroupPicUp.Response>()
+            }
+        }
 
-        val result = bot.network.runCatching {
-            val source: MessageSourceToGroupImpl
+        val result = bot.network.runCatching sendMsg@{
+            val source: OnlineMessageSourceToGroupImpl
             MessageSvcPbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,
@@ -192,6 +205,21 @@ internal class GroupImpl(
             ) {
                 source = it
             }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                if (!isLongOrForward && it is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                    return@sendMsg MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
+                        bot,
+                        this@GroupImpl.id,
+                        listOf(
+                            ForwardMessage.Node(
+                                senderId = bot.id,
+                                time = currentTimeSeconds().toInt(),
+                                messageChain = msg,
+                                senderName = bot.nick
+                            )
+                        ),
+                        true, null
+                    )
+                }
                 check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
                     "Send group message failed: $it"
                 }
@@ -310,7 +338,7 @@ internal fun Group.newMember(memberInfo: MemberInfo): Member {
     )
 }
 
-internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMember(
+internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl = newMember(
     MemberInfoImpl(
         uin = 80000000L,
         nick = name,
@@ -321,4 +349,4 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMembe
         muteTimestamp = 0,
         anonymousId = id,
     )
-)
+) as AnonymousMemberImpl

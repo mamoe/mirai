@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -38,7 +38,7 @@ buildscript {
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
-    id("org.jetbrains.dokka") version Versions.dokka apply false
+    id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge apply false
     id("com.jfrog.bintray") version Versions.bintray
 }
@@ -94,8 +94,12 @@ allprojects {
         if (isKotlinJvmProject) {
             configureFlattenSourceSets()
         }
+    }
+}
 
-        configureDokka()
+subprojects {
+    afterEvaluate {
+        if (project.name == "mirai-core-api") configureDokka()
     }
 }
 
@@ -108,34 +112,28 @@ fun Project.useIr() {
 fun Project.configureDokka() {
     apply(plugin = "org.jetbrains.dokka")
     tasks {
-        val dokka by getting(DokkaTask::class) {
-            outputFormat = "html"
-            outputDirectory = "$buildDir/dokka"
+        val dokkaHtml by getting(DokkaTask::class) {
+            outputDirectory.set(buildDir.resolve("dokka"))
         }
-        val dokkaMarkdown by creating(DokkaTask::class) {
-            outputFormat = "markdown"
-            outputDirectory = "$buildDir/dokka-markdown"
-        }
-        val dokkaGfm by creating(DokkaTask::class) {
-            outputFormat = "gfm"
-            outputDirectory = "$buildDir/dokka-gfm"
+        val dokkaGfm by getting(DokkaTask::class) {
+            outputDirectory.set(buildDir.resolve("dokka-gfm"))
         }
     }
-    for (task in tasks.filterIsInstance<DokkaTask>()) {
-        task.configuration {
+    tasks.withType<DokkaTask>().configureEach {
+        dokkaSourceSets.configureEach {
             perPackageOption {
-                prefix = "net.mamoe.mirai"
-                skipDeprecated = true
+                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
+                skipDeprecated.set(true)
             }
+
             for (suppressedPackage in arrayOf(
-                "net.mamoe.mirai.internal",
-                "net.mamoe.mirai.event.internal",
-                "net.mamoe.mirai.utils.internal",
-                "net.mamoe.mirai.internal"
+                """net.mamoe.mirai.internal""",
+                """net.mamoe.mirai.internal.message""",
+                """net.mamoe.mirai.internal.network"""
             )) {
                 perPackageOption {
-                    prefix = suppressedPackage
-                    suppress = true
+                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
+                    suppress.set(true)
                 }
             }
         }

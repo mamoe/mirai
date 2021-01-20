@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,151 +13,216 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.event.events.TempMessageEvent
+import net.mamoe.mirai.contact.OtherClient
+import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
+import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.message.data.content
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-public typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEvent, Listener<MessageEvent>, Unit, Unit>
+public typealias MessageEventSubscribersBuilder = MessageSubscribersBuilder<MessageEvent, Listener<MessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
+ * 通过 DSL 订阅来自所有 [Bot] 的所有联系人的消息事件.
  *
- * @see subscribe 事件监听基础
+ * ```
+ * eventChannel.subscribeMessages {
+ *     "test" {
+ *         // 当消息内容为 "test" 时执行
+ *         // this: MessageEvent
+ *         reply("test!")
+ *     }
+ *
+ *     "Hello" reply "Hi" // 当消息内容为 "Hello" 时回复 "Hi"
+ *     "quote me" quoteReply "ok" // 当消息内容为 "quote me" 时引用该消息并回复 "ok"
+ *     "quote me2" quoteReply {
+ *         // lambda 也是允许的：
+ *         // 返回值接受 Any?
+ *         // 为 Unit 时不发送任何内容；
+ *         // 为 Message 时直接发送；
+ *         // 为 String 时发送为 PlainText；
+ *         // 否则 toString 并发送为 PlainText
+ *
+ *         "ok"
+ *     }
+ *
+ *     case("iGNorECase", ignoreCase=true) reply "OK" // 忽略大小写
+ *     startsWith("-") reply { cmd ->
+ *         // 当消息内容以 "-" 开头时执行
+ *         // cmd 为消息去除开头 "-" 的内容
+ *     }
+ *
+ *
+ *     val listener: Listener<MessageEvent> = "1" reply "2"
+ *     // 每个语句都会被注册为事件监听器，可以这样获取监听器
+ *
+ *     listener.complete() // 停止 "1" reply "2" 这个事件监听
+ * }
+ * ```
+ *
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
+ *
+ * @see subscribeFriendMessages
+ * @see subscribeGroupMessages
+ * @see subscribeGroupTempMessages
+ * @see subscribeOtherClientMessages
+ * @see subscribeStrangerMessages
  */
 public fun <R> EventChannel<*>.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
-    listeners: MessagePacketSubscribersBuilder.() -> R
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: MessageEventSubscribersBuilder.() -> R
 ): R {
-    // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-
-    return MessageSubscribersBuilder(Unit)
-    { filter, messageListener: MessageListener<MessageEvent, Unit> ->
-        // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
-        // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
-        subscribeAlways<MessageEvent>(coroutineContext, concurrencyKind, priority) {
-            // this.message.contentToString() 即为 messageListener 中 it 接收到的值
-            val toString = this.message.contentToString()
-            if (filter.invoke(this, toString))
-                messageListener.invoke(this, toString)
-        }
-    }.run(listeners)
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::MessageEventSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
 public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessageEvent, Listener<GroupMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有群消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有群会话消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::GroupMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
 public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMessageEvent, Listener<FriendMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有好友消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有好友消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
 public fun <R> EventChannel<*>.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::FriendMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
-public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageEvent, Listener<TempMessageEvent>, Unit, Unit>
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此定义会变动. 请使用 GroupTempMessageSubscribersBuilder",
+    ReplaceWith(
+        "GroupTempMessageSubscribersBuilder",
+        "net.mamoe.mirai.event.GroupTempMessageSubscribersBuilder"
+    ),
+    DeprecationLevel.ERROR
+)
+public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
 /**
- * 订阅来自所有 [Bot] 的所有临时会话消息事件
+ * 通过 DSL 订阅来自所有 [Bot] 的所有临时会话消息事件. DSL 语法查看 [subscribeMessages].
  *
- * @see subscribe 事件监听基础
+ * @see EventChannel.subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
+@Deprecated(
+    "mirai 正计划支持其他渠道发起的临时会话, 届时此方法会变动. 请使用 subscribeGroupTempMessages",
+    ReplaceWith(
+        "subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)",
+        "net.mamoe.mirai.event.subscribeGroupTempMessages"
+    ),
+    DeprecationLevel.ERROR
+)
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
-    listeners: TempMessageSubscribersBuilder.() -> R
-): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return TempMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
-}
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: GroupTempMessageSubscribersBuilder.() -> R
+): R = subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)
 
+public typealias GroupTempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
 /**
- * 打开一个指定事件的接收通道
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [GroupTempMessageEvent]. DSL 语法查看 [subscribeMessages].
  *
- * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
- *
- * @see capacity 默认无限大小. 详见 [Channel.Factory] 中的常量 [Channel.UNLIMITED], [Channel.CONFLATED], [Channel.RENDEZVOUS].
- * 请谨慎使用 [Channel.RENDEZVOUS]: 在 [Channel] 未被 [接收][Channel.receive] 时他将会阻塞事件处理
- *
- * @see subscribe 事件监听基础
- *
- * @see subscribeFriendMessages
- * @see subscribeMessages
- * @see subscribeGroupMessages
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
  */
-@Deprecated("Use asChannel", ReplaceWith("asChannel(capacity, coroutineContext, concurrencyKind, priority)"))
-public fun <E : Event> EventChannel<E>.incoming(
+public fun <R> EventChannel<*>.subscribeGroupTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = EventPriority.MONITOR,
-    capacity: Int = Channel.UNLIMITED
-): ReceiveChannel<E> {
-    return asChannel(capacity, coroutineContext, concurrencyKind, priority)
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: GroupTempMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::GroupTempMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
+        .run(listeners)
 }
 
+
+public typealias StrangerMessageSubscribersBuilder = MessageSubscribersBuilder<StrangerMessageEvent, Listener<StrangerMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [Stranger] 消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ */
+public fun <R> EventChannel<*>.subscribeStrangerMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: StrangerMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::StrangerMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
+        .run(listeners)
+}
+
+
+public typealias OtherClientMessageSubscribersBuilder = MessageSubscribersBuilder<OtherClientMessageEvent, Listener<OtherClientMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所有 [OtherClient] 消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ */
+public fun <R> EventChannel<*>.subscribeOtherClientMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: OtherClientMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::OtherClientMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority)
+        .run(listeners)
+}
+
+private typealias MessageSubscriberBuilderConstructor<E> = (
+    Unit,
+    (E.(String) -> Boolean, MessageListener<E, Unit>) -> Listener<E>
+) -> MessageSubscribersBuilder<E, Listener<E>, Unit, Unit>
+
+private inline fun <reified E : MessageEvent> EventChannel<*>.createBuilder(
+    constructor: MessageSubscriberBuilderConstructor<E>,
+    coroutineContext: CoroutineContext,
+    concurrencyKind: ConcurrencyKind,
+    priority: EventPriority
+): MessageSubscribersBuilder<E, Listener<E>, Unit, Unit> = constructor(Unit) { filter, listener ->
+    subscribeAlways(coroutineContext, concurrencyKind, priority) {
+        val toString = this.message.content
+        if (filter(this, toString))
+            listener(this, toString)
+    }
+}

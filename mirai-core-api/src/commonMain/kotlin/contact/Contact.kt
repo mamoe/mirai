@@ -87,12 +87,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
     @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): Image
 
-    /**
-     * @return "Friend($id)", "Group($id)", "Member($id)", "AnonymousMember($id)",
-     * "OtherClient(bot=${bot.id},deviceName=${info.deviceName},platform=${info.platform})"
-     */
-    public override fun toString(): String
-
     public companion object {
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人

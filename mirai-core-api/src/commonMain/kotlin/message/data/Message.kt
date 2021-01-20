@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -20,15 +20,10 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageSerializer
-import net.mamoe.mirai.message.MessageSerializerImpl
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
-import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -40,7 +35,27 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *   - [MessageContent] 含内容的消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
  * - [MessageChain]: 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
  *
- * #### 在 Kotlin 使用 [Message]:
+ * ## 获得 [Message]
+ *
+ * 请先根据实际需求确定需要的类型.
+ *
+ *
+ * - [PlainText]: 纯文本
+ * - [Image]: 图片
+ * - [Face]: 原生表情
+ * - [At]: 一个群成员的引用
+ * - [AtAll]: 全体成员的引用
+ * - [QuoteReply]: 一条消息的引用
+ * - [RichMessage]: 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
+ * - [FlashImage]: 闪照
+ * - [PokeMessage]: 戳一戳 (消息)
+ * - [VipFace]: VIP 表情
+ * - [CustomMessage]: 自定义消息类型
+ * - ...
+ *
+ * ## 使用 [Message]
+ *
+ * ### 在 Kotlin 使用 [Message]:
  * 这与使用 [String] 的使用非常类似.
  *
  * - 比较 [SingleMessage] 与 [String]:
@@ -53,7 +68,9 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *  ```
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
- * #### 发送消息
+ *
+ *
+ * ### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
  * - 在 [MessageEvent] 中使用 [MessageEvent.reply] 等捷径
@@ -73,9 +90,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @see Contact.sendMessage 发送消息
  */
-@Suppress("DEPRECATION_ERROR")
-@Serializable(Message.Serializer::class)
-public interface Message { // must be interface. Don't consider any changes.
+public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
 
     /**
      * 将 `this` 和 [tail] 连接.
@@ -102,7 +117,7 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      *
-     * 各个 [SingleMessage] 的转换示例:
+     * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
      * - [GroupImage] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
      * - [FriendImage] : `"[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"`
@@ -119,7 +134,7 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
      *
-     * 各个 [SingleMessage] 的转换示例:
+     * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
      * - [Image] : `"[图片]"`
      * - [PokeMessage] : `"[戳一戳]"`
@@ -127,6 +142,7 @@ public interface Message { // must be interface. Don't consider any changes.
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
+     * @see contentEquals
      * @see Message.content Kotlin 扩展
      */
     public fun contentToString(): String
@@ -152,6 +168,12 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 单个消息的顺序和内容不会被检查, 即只要比较两个 [Image], 总是会得到 `true`, 因为 [Image] 的 [contentToString] 都是 `"[图片]"`.
      *
+     *
+     * 相当于
+     * ```
+     * this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
+     * ```
+     *
      * @param ignoreCase 为 `true` 时忽略大小写
      */
     @LowPriorityInOverloadResolution
@@ -161,6 +183,13 @@ public interface Message { // must be interface. Don't consider any changes.
 
     /**
      * 判断内容是否与 [another] 相等.
+     *
+     *
+     * 相当于
+     * ```
+     * this.contentToString().equals(another, ignoreCase = ignoreCase)
+     * ```
+     *
      *
      * 若本函数返回 `true`, 则表明:
      * - `this` 与 [another] 的 [contentToString] 相等
@@ -187,151 +216,46 @@ public interface Message { // must be interface. Don't consider any changes.
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Iterable<Message>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
+    public operator fun plus(another: Array<out Message>): MessageChain =
+        another.fold(this, Message::plus).toMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
     public operator fun plus(another: Iterable<String>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Sequence<Message>): MessageChain =
-        another.fold(this, Message::plus).asMessageChain()
+        another.fold(this, Message::plus).toMessageChain()
 
-    @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-    public object Serializer :
-        MessageSerializer by MessageSerializerImpl,
-        KSerializer<Message> by PolymorphicSerializer(Message::class)
-
-    @Suppress("DEPRECATION_ERROR")
-    public companion object {
-        /**
-         * 从 JSON 字符串解析 [Message]
-         * @see serializeToJsonString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @JvmOverloads
-        @JvmStatic
-        public fun deserializeFromJsonString(
-            string: String,
-            json: Json = Json { serializersModule = Serializer.serializersModule }
-        ): Message {
-            return json.decodeFromString(Serializer, string)
-        }
-
-        /**
-         * 将 [Message] 序列化为 JSON 字符串.
-         * @see deserializeFromJsonString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @JvmOverloads
-        @JvmStatic
-        public fun Message.serializeToJsonString(
-            json: Json = Json { serializersModule = Serializer.serializersModule }
-        ): String = json.encodeToString(Serializer, this)
-
-        /**
-         * 将 [Message] 序列化为指定格式的字符串.
-         *
-         * @see serializeToJsonString
-         * @see StringFormat.encodeToString
-         */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
-        @ExperimentalSerializationApi
-        @JvmStatic
-        public fun Message.serializeToString(format: StringFormat): String =
-            format.encodeToString(Serializer, this)
-    }
+    public companion object
 }
 
-
-@MiraiExperimentalApi
+/** 将 [another] 按顺序连接到这个消息的尾部. */
 @JvmSynthetic
 public suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
-    another.fold(this) { acc, it -> acc + it }.asMessageChain()
+    another.fold(this) { acc, it -> acc + it }.toMessageChain()
 
-
-/**
- * [Message.contentToString] 的捷径
- */
-@get:JvmSynthetic
-public inline val Message.content: String
-    get() = contentToString()
-
-
-/**
- * 判断消息内容是否为空.
- *
- * 以下情况视为 "空消息":
- *
- * - 是 [MessageMetadata] (因为 [MessageMetadata.contentToString] 都必须返回空字符串)
- * - [PlainText] 长度为 0
- * - [MessageChain] 所有元素都满足 [isContentEmpty]
- */
-public fun Message.isContentEmpty(): Boolean {
-    return when (this) {
-        is MessageMetadata -> true
-        is PlainText -> this.content.isEmpty()
-        is MessageChain -> this.all { it.isContentEmpty() }
-        else -> false
-    }
-}
-
-public inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
-
-public inline fun Message.isPlain(): Boolean {
-    contract {
-        returns(true) implies (this@isPlain is PlainText)
-        returns(false) implies (this@isPlain !is PlainText)
-    }
-    return this is PlainText
-}
-
-public inline fun Message.isNotPlain(): Boolean {
-    contract {
-        returns(false) implies (this@isNotPlain is PlainText)
-        returns(true) implies (this@isNotPlain !is PlainText)
-    }
-    return this !is PlainText
-}
-
-/**
- * 将此消息元素按顺序重复 [count] 次.
- */
-// inline: for future removal
-public inline fun Message.repeat(count: Int): MessageChain {
-    if (this is ConstrainSingle) {
-        // fast-path
-        return this.asMessageChain()
-    }
-    return buildMessageChain(count) {
-        repeat(count) {
-            add(this@repeat)
-        }
-    }
-}
-
-/**
- * 将此消息元素按顺序重复 [count] 次.
- */
-@JvmSynthetic
-public inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-// @Serializable(SingleMessage.Serializer::class)
-public interface SingleMessage : Message {
-    // @kotlinx.serialization.Serializer(forClass = SingleMessage::class)
-    //  public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
+@Serializable(SingleMessage.Serializer::class)
+public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+    public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 
 /**
  * 消息元数据, 即不含内容的元素.
  *
- * 这种类型的 [Message] 只表示一条消息的属性. 其子类为 [MessageSource], [QuoteReply]
+ * 这种类型的 [Message] 只表示一条消息的属性. 其子类为 [MessageSource], [QuoteReply] 和 [CustomMessageMetadata]
  *
  * 所有子类的 [contentToString] 都应该返回空字符串.
+ *
+ * 要获取详细信息, 查看 [MessageChain].
  *
  * @see MessageSource 消息源
  * @see QuoteReply 引用回复
@@ -339,14 +263,11 @@ public interface SingleMessage : Message {
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-@Serializable(MessageMetadata.Serializer::class)
-public interface MessageMetadata : SingleMessage {
+public interface MessageMetadata : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
     /**
      * 返回空字符串
      */
     override fun contentToString(): String = ""
-
-    public object Serializer : KSerializer<MessageMetadata> by PolymorphicSerializer(MessageMetadata::class)
 }
 
 /**
@@ -354,10 +275,8 @@ public interface MessageMetadata : SingleMessage {
  *
  * 实现此接口的元素将会在连接时自动处理替换.
  *
- * @see AbstractMessageKey
- * @see AbstractPolymorphicMessageKey
- *
- * @see MessageSource
+ * 要获取有关键的信息, 查看 [MessageKey].
+ * 要获取有关约束的处理方式, 查看 [AbstractPolymorphicMessageKey].
  */
 public interface ConstrainSingle : SingleMessage {
     /**
@@ -381,22 +300,67 @@ public interface ConstrainSingle : SingleMessage {
  * @see ForwardMessage 合并转发
  * @see Voice 语音
  */
-@Serializable(MessageContent.Serializer::class)
-public interface MessageContent : SingleMessage {
+public interface MessageContent : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
-
-    public object Serializer : KSerializer<MessageContent> by PolymorphicSerializer(MessageContent::class)
 }
+
+
+/**
+ * [Message.contentToString] 的捷径
+ */
+@get:JvmSynthetic
+public inline val Message.content: String
+    get() = contentToString()
 
 /**
  * 将 [this] 发送给指定联系人
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> =
-    contact.sendMessage(this) as MessageReceipt<C>
-
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
 public suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> =
     contact.sendMessage(this) as MessageReceipt<C>
+
+
+/**
+ * 当消息内容为空时返回 `true`.
+ * @see String.isEmpty
+ */
+public fun Message.isContentEmpty(): Boolean {
+    return when (this) {
+        is MessageChain -> this.all { it.isContentEmpty() }
+        else -> this.content.isEmpty()
+    }
+}
+
+/**
+ * 当消息内容为空白时返回 `true`.
+ * @see String.isBlank
+ */
+public fun Message.isContentBlank(): Boolean {
+    return when (this) {
+        is MessageChain -> this.all { it.isContentBlank() }
+        else -> this.content.isBlank()
+    }
+}
+
+/**
+ * 将此消息元素按顺序重复 [count] 次.
+ */
+// inline: for future removal
+public inline fun Message.repeat(count: Int): MessageChain {
+    if (this is ConstrainSingle) {
+        // fast-path
+        return this.toMessageChain()
+    }
+    return buildMessageChain(count) {
+        repeat(count) {
+            add(this@repeat)
+        }
+    }
+}
+
+/**
+ * 将此消息元素按顺序重复 [count] 次.
+ */
+@JvmSynthetic
+public inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)

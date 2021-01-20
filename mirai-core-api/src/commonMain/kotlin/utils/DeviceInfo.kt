@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,22 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.utils.internal.getRandomByteArray
-import net.mamoe.mirai.utils.internal.getRandomIntString
-import net.mamoe.mirai.utils.internal.getRandomString
 import java.io.File
-
-/**
- * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
- */
-public fun File.loadAsDeviceInfo(json: Json): DeviceInfo {
-    if (!this.exists() || this.length() == 0L) {
-        return DeviceInfo.random().also {
-            this.writeText(json.encodeToString(DeviceInfo.serializer(), it))
-        }
-    }
-    return json.decodeFromString(DeviceInfo.serializer(), this.readText())
-}
 
 @Serializable
 public class DeviceInfo(
@@ -66,6 +51,25 @@ public class DeviceInfo(
     )
 
     public companion object {
+
+        /**
+         * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
+         */
+        @JvmOverloads
+        @JvmStatic
+        @JvmName("from")
+        public fun File.loadAsDeviceInfo(
+            json: Json = Json
+        ): DeviceInfo {
+            if (!this.exists() || this.length() == 0L) {
+                return random().also {
+                    this.writeText(json.encodeToString(serializer(), it))
+                }
+            }
+            return json.decodeFromString(serializer(), this.readText())
+        }
+
+
         @JvmStatic
         public fun random(): DeviceInfo {
             return DeviceInfo(

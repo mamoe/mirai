@@ -26,6 +26,7 @@ import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentNotEmpty
@@ -65,6 +66,7 @@ internal class FriendImpl(
 ) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
+    val friendPkgMsgParsingCache = C2CPkgMsgParsingCache()
 
     override suspend fun delete() {
         check(bot.friends[this.id] != null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,13 +11,12 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.event.internal.broadcastInternal
+import net.mamoe.mirai.internal.event.broadcastInternal
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.internal.runBlocking
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -29,13 +28,13 @@ import net.mamoe.mirai.utils.internal.runBlocking
  * ### 广播
  * 广播事件的唯一方式为 [broadcast].
  *
- * @see subscribeAlways
- * @see subscribeOnce
+ * @see EventChannel.subscribeAlways
+ * @see EventChannel.subscribeOnce
  *
- * @see subscribeMessages
+ * @see EventChannel.subscribeMessages
  *
  * @see [broadcast] 广播事件
- * @see [CoroutineScope.subscribe] 监听事件
+ * @see [EventChannel.subscribe] 监听事件
  *
  * @see CancellableEvent 可被取消的事件
  */
@@ -54,9 +53,9 @@ public interface Event {
      *
      * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
      *
-     * 优先级为 [Listener.EventPriority.MONITOR] 的监听器不应该调用这个函数.
+     * 优先级为 [EventPriority.MONITOR] 的监听器不应该调用这个函数.
      *
-     * @see Listener.EventPriority 查看优先级相关信息
+     * @see EventPriority 查看优先级相关信息
      */
     public fun intercept()
 }

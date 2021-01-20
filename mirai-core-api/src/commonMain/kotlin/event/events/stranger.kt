@@ -1,3 +1,12 @@
+/*
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
+ *
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
@@ -5,8 +14,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.message.action.Nudge
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 新增陌生人的事件
@@ -24,7 +31,7 @@ public data class StrangerAddEvent internal constructor(
  * 陌生人关系改变事件
  *
  */
-public abstract class StrangerRelationChangeEvent(
+public sealed class StrangerRelationChangeEvent(
     public override val stranger: Stranger
 ) : StrangerEvent, Packet, AbstractEvent() {
     /**
@@ -58,57 +65,4 @@ public abstract class StrangerRelationChangeEvent(
         public val friend: Friend
     ) : StrangerRelationChangeEvent(stranger)
 
-}
-
-/**
- * 在 [Stranger] 与 [Bot] 的对话中, [Stranger] 被 [戳][Nudge] 事件
- *
- * 注: 此事件仅可能在私聊中发生
- */
-@MiraiExperimentalApi
-public sealed class StrangerNudgedEvent : AbstractEvent(), StrangerEvent, Packet {
-    /**
-     * 戳一戳的发起人, 为 [Bot] 的某一好友, 或是 [Bot.asFriend]
-     */
-    public abstract val from: Stranger
-
-    /**
-     * 戳一戳的动作名称
-     */
-    public abstract val action: String
-
-    /**
-     * 戳一戳中设置的自定义后缀
-     */
-    public abstract val suffix: String
-
-    /** 在 [Bot] 与 [Stranger] 的对话中 [Stranger] 戳了自己事件 */
-    @MiraiExperimentalApi
-    public data class NudgedByHimself internal constructor(
-        override val stranger: Stranger,
-        override val action: String,
-        override val suffix: String
-    ) : StrangerNudgedEvent() {
-        override fun toString(): String {
-            return "StrangerNudgedEvent.NudgedByHimself(stranger=$stranger, action=$action, suffix=$suffix)"
-        }
-
-        override val from: Stranger
-            get() = stranger
-    }
-
-    /** [Bot] 戳了 [Stranger] */
-    @MiraiExperimentalApi
-    public data class NudgedByBot internal constructor(
-        override val stranger: Stranger,
-        override val action: String,
-        override val suffix: String
-    ) : StrangerNudgedEvent() {
-        override fun toString(): String {
-            return "StrangerNudgedEvent.NudgedByBot(stranger=$stranger, action=$action, suffix=$suffix)"
-        }
-
-        override val from: Stranger
-            get() = bot.asStranger
-    }
 }

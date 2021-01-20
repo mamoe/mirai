@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -270,10 +270,10 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(10) @JvmField val fileType: Int = 0,
         @ProtoNumber(11) @JvmField val signature: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(12) @JvmField val useful: Int = 0,
-        @ProtoNumber(13) @JvmField val md5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(14) @JvmField val thumbUrl: String = "",
+        @ProtoNumber(13) override val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(14) override val thumbUrl: String = "",
         @ProtoNumber(15) @JvmField val bigUrl: String = "",
-        @ProtoNumber(16) @JvmField val origUrl: String = "",
+        @ProtoNumber(16) override val origUrl: String = "",
         @ProtoNumber(17) @JvmField val bizType: Int = 0,
         @ProtoNumber(18) @JvmField val repeatIndex: Int = 0,
         @ProtoNumber(19) @JvmField val repeatImage: Int = 0,
@@ -288,11 +288,11 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(28) @JvmField val thumbHeight: Int = 0,
         @ProtoNumber(29) @JvmField val showLen: Int = 0,
         @ProtoNumber(30) @JvmField val downloadLen: Int = 0,
-        @ProtoNumber(31) @JvmField val _400Url: String = "",
+        @ProtoNumber(31) override val _400Url: String = "",
         @ProtoNumber(32) @JvmField val _400Width: Int = 0,
         @ProtoNumber(33) @JvmField val _400Height: Int = 0,
         @ProtoNumber(34) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ProtoBuf, NotOnlineImageOrCustomFace
 
     @Serializable
     internal class DeliverGiftMsg(
@@ -564,7 +564,7 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal data class MarketFace(
-        @ProtoNumber(1) @JvmField val faceName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField var faceName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val itemType: Int = 0,
         @ProtoNumber(3) @JvmField val faceInfo: Int = 0,
         @ProtoNumber(4) @JvmField val faceId: ByteArray = EMPTY_BYTE_ARRAY,
@@ -671,6 +671,13 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(56) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
+    interface NotOnlineImageOrCustomFace {
+        val thumbUrl: String
+        val origUrl: String
+        val _400Url: String
+        val picMd5: ByteArray
+    }
+
     @Serializable
     internal class NotOnlineImage(
         @ProtoNumber(1) @JvmField val filePath: String = "",
@@ -679,15 +686,15 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(4) @JvmField val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val imgType: Int = 0,
         @ProtoNumber(6) @JvmField val previewsImage: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(7) @JvmField val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(7) override val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(8) @JvmField val picHeight: Int = 0,
         @ProtoNumber(9) @JvmField val picWidth: Int = 0,
         @ProtoNumber(10) @JvmField val resId: String = "",
         @ProtoNumber(11) @JvmField val flag: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(12) @JvmField val thumbUrl: String = "",
+        @ProtoNumber(12) override val thumbUrl: String = "",
         @ProtoNumber(13) @JvmField val original: Int = 0,
         @ProtoNumber(14) @JvmField val bigUrl: String = "",
-        @ProtoNumber(15) @JvmField val origUrl: String = "",
+        @ProtoNumber(15) override val origUrl: String = "",
         @ProtoNumber(16) @JvmField val bizType: Int = 0,
         @ProtoNumber(17) @JvmField val result: Int = 0,
         @ProtoNumber(18) @JvmField val index: Int = 0,
@@ -698,11 +705,11 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(23) @JvmField val fileId: Int = 0,
         @ProtoNumber(24) @JvmField val showLen: Int = 0,
         @ProtoNumber(25) @JvmField val downloadLen: Int = 0,
-        @ProtoNumber(26) @JvmField val _400Url: String = "",
+        @ProtoNumber(26) override val _400Url: String = "",
         @ProtoNumber(27) @JvmField val _400Width: Int = 0,
         @ProtoNumber(28) @JvmField val _400Height: Int = 0,
         @ProtoNumber(29) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ProtoBuf, NotOnlineImageOrCustomFace
 
     @Serializable // 非官方.
     internal class PbReserve(

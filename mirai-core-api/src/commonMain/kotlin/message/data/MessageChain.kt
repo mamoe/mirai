@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,61 +13,174 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.MiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.deserializeFromMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
-import kotlin.js.JsName
+import java.util.stream.Stream
 import kotlin.reflect.KProperty
+import kotlin.streams.asSequence
 
 /**
- * 消息链. 空的实现为 [EmptyMessageChain]
+ * 消息链, `List<SingleMessage>`, 即 [单个消息元素][SingleMessage] 的有序集合.
  *
- * 要获取更多消息相关的信息, 查看 [Message]
+ * [MessageChain] 代表一条完整的聊天中的消息, 可包含 [带内容的消息 `MessageContent`][MessageContent]
+ * 和 [不带内容的元数据 `MessageMetadata`][MessageMetadata].
  *
- * ### 构造消息链
- * - [buildMessageChain][buildMessageChain]: 使用构建器
- * - [Message.plus][Message.plus]: 将两个消息相连成为一个消息链
- * - [asMessageChain][asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
- * - [messageChainOf][messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
+ * # 元素类型
  *
- * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
- * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
- * @see MessageSource.quote 引用这条消息
- * @see MessageSource.recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
+ * [MessageContent] 如 [纯文字][PlainText], [图片][Image], [语音][Voice], 是能被用户看到的内容.
  *
- * @see buildMessageChain 构造一个 [MessageChain]
- * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
- * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
- * @see forEachContent 遍历内容
- * @see allContent 判断是否每一个 [MessageContent] 都满足条件
- * @see noneContent 判断是否每一个 [MessageContent] 都不满足条件
+ * [MessageMetadata] 是用来形容这条消息的状态的数据, 因此称为 *元数据 (metadata)*.
+ * 元数据目前只分为 [消息来源 `MessageSource`][MessageSource] 和 [引用回复 `QuoteReply`][QuoteReply].
  *
- * @see orNull 属性委托扩展
- * @see orElse 属性委托扩展
- * @see getValue 属性委托扩展
- * @see flatten 扁平化
+ * [MessageSource] 存储这条消息的发送人, 接收人, 识别 ID (服务器提供), 发送时间等信息.
+ * **[MessageSource] 是精确的**. 凭 [MessageSource] 就可以在服务器上定位一条消息, 因此可以用来 [撤回消息][MessageSource.recall].
+ *
+ * [QuoteReply] 是一个标记, 表示这条消息引用了另一条消息 (在官方客户端中可通过 "回复" 功能发起引用). [QuoteReply.source] 则指代那条被引用的消息.
+ * 由于 [MessageSource] 是精确的, 如果对 [QuoteReply.source] 使用 [MessageSource.recall], 则可以撤回那条被引用的消息.
+ *
+ *
+ * # 获得消息链
+ *
+ * 在消息事件中可以获得消息内容作为 [MessageChain]: [MessageEvent.message]
+ *
+ * 在主动发送消息时, 可使用如下方案.
+ *
+ * ## 在 Kotlin 构造消息链
+ * - 获取不包含任何元素的消息链: [EmptyMessageChain]
+ * - [messageChainOf][messageChainOf]: 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]:
+ *   ```
+ *   val chain = messageChainOf(PlainText("..."), Image("..."), ...)
+ *   ```
+ * - [buildMessageChain][buildMessageChain]: 使用 DSL 构建器.
+ *   ```
+ *   val chain = buildMessageChain {
+ *      +"你想要的图片是:"
+ *      +Image("...")
+ *   }
+ *   ```
+ * - [Message.plus][Message.plus]: 将两个消息相连成为一个消息链:
+ *   ```
+ *   val chain = PlainText("Hello ") + PlainText("Mirai!") // chain: MessageChain
+ *   ```
+ * - [toMessageChain][toMessageChain] 将 [Iterable], [Array], [Sequence], [Iterator], [Flow], [Stream] 转换为 [MessageChain].
+ *   相关定义为:
+ *   ```
+ *   public fun Sequence<Message>.toMessageChain(): MessageChain
+ *   public fun Iterable<Message>.toMessageChain(): MessageChain
+ *   public fun Iterator<Message>.toMessageChain(): MessageChain
+ *   public fun Stream<Message>.toMessageChain(): MessageChain
+ *   public fun Flow<Message>.toMessageChain(): MessageChain
+ *   public fun Array<Message>.toMessageChain(): MessageChain
+ *   ```
+ * - [Message.toMessageChain][Message.toMessageChain] 将单个 [Message] 包装成一个单元素的 [MessageChain]
+ *
+ * ## 在 Java 构造消息链
+ * - `MessageUtils.newChain`: 有多个重载, 相关定义如下:
+ *   ```java
+ *   public static MessageChain newChain(Message messages...)
+ *   public static MessageChain newChain(Iterable<Message> iterable)
+ *   public static MessageChain newChain(Iterator<Message> iterator)
+ *   public static MessageChain newChain(Stream<Message> stream)
+ *   public static MessageChain newChain(Message[] array)
+ *   ```
+ * - [Message.plus][Message.plus]: 将两个消息相连成为一个消息链:
+ *   ```java
+ *   MessageChain chain = new PlainText("Hello ").plus(new PlainText("Mirai!"))
+ *   ```
+ * - [MessageChainBuilder][MessageChainBuilder]:
+ *   ```java
+ *   MessageChainBuilder builder = MessageChainBuilder.create();
+ *   builder.append(new PlainText("Hello "));
+ *   builder.append(new PlainText(" Mirai!"));
+ *   MessageChain chain = builder.build();
+ *   ```
+ *
+ * # 元素唯一性
+ *
+ * 部分消息类型如 [语音][Voice], [小程序][LightApp] 在官方客户端限制中只允许单独存在于一条消息. 在创建 [MessageChain] 时这种限制会被体现.
+ *
+ * 当添加只允许单独存在的消息元素到一个消息链时, 已有的元素可能会被删除或替换. 详见 [AbstractPolymorphicMessageKey] 和 [ConstrainSingle].
+ *
+ * # 操作消息链
+ *
+ * [MessageChain] 继承 `List<SingleMessage>`. 可以以 [List] 的方式处理 [MessageChain].
+ *
+ * 额外地, 若要获取一个 [ConstrainSingle] 的元素, 可以通过 [ConstrainSingle.key]:
+ * ```
+ * val quote = chain[QuoteReply] // Kotlin
+ *
+ * QuoteReply quote = chain.get(QuoteReply.Key) // Java
+ * ```
+ *
+ * 相关地还可以使用 [MessageChain.contains] 和 [MessageChain.getOrFail]
+ *
+ * ## 撤回和引用
+ * - [MessageSource.quote]
+ * - [MessageSource.recall]
+ * - [MessageSource.recallIn]
+ * - `MessageChain.quote`
+ * - `MessageChain.recall`
+ * - `MessageChain.recallIn`
+ *
+ * ## Kotlin 扩展
+ *
+ * ### 属性委托
+ * ```
+ * val at: At? by chain.orNull()
+ * val at: At by chain.orElse { /* 返回一个 At */ }
+ * val at: At by chain
+ * ```
+ *
+ * ### 筛选得到 [Sequence] 与 [List]
+ * - [MessageChain.contentsSequence]
+ * - [MessageChain.metadataSequence]
+ * - [MessageChain.contentsList]
+ * - [MessageChain.metadataList]
+ *
+ * # 序列化
+ *
+ * ## kotlinx-serialization 序列化
+ *
+ * - 使用 [MessageChain.serializeToJsonString] 将 [MessageChain] 序列化为 JSON [String].
+ * - 使用 [MessageChain.deserializeFromJsonString] 将 JSON [String] 反序列化为 [MessageChain].
+ *
+ * ## Mirai Code 序列化
+ *
+ * 详见 [MiraiCode]
+ *
+ * - 使用 [MessageChain.serializeToMiraiCode] 将 [MessageChain] 序列化为 Mirai Code [String].
+ * - 使用 [MessageChain.deserializeFromMiraiCode] 将 Mirai Code [String] 反序列化为 [MessageChain].
+ *
  */
 @Serializable(MessageChain.Serializer::class)
-@Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public interface MessageChain : Message, List<SingleMessage>, RandomAccess, CodableMessage {
-    /**
-     * 元素数量. [EmptyMessageChain] 不参加计数.
-     */
-    public override val size: Int
+public interface MessageChain :
+    Message, List<SingleMessage>, RandomAccess, CodableMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`.
      *
-     * 此方法仅适用于 [ConstrainSingle] 的消息类型, 如 [MessageSource]
+     * 此方法目前仅适用于 [ConstrainSingle] 的消息类型, 如 [MessageSource].
      *
      * ### Kotlin 使用方法
      * ```
@@ -89,47 +202,106 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
     public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? =
         asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
 
+    /**
+     * 当存在 [ConstrainSingle.key] 为 [key] 的 [SingleMessage] 实例时返回 `true`.
+     *
+     * 此方法目前仅适用于 [ConstrainSingle] 的消息类型, 如 [MessageSource].
+     *
+     * ### Kotlin 使用方法
+     * ```
+     * val chain: MessageChain = ...
+     *
+     * if (chain.contains(QuoteReply)) {
+     *     // 包含引用回复
+     * }
+     * ```
+     *
+     * ### Java 使用方法
+     * ```java
+     * MessageChain chain = ...
+     * if (chain.contains(QuoteReply.Key)) {
+     *     // 包含引用回复
+     * }
+     * ```
+     *
+     * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
+     *
+     * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
+     */
     public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
         asSequence().any { key.safeCast.invoke(it) != null }
 
+    @MiraiExperimentalApi
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        forEach { it.safeCast<CodableMessage>()?.appendMiraiCodeTo(builder) }
+    }
+
+    /**
+     * 将 [MessageChain] 作为 `List<SingleMessage>` 序列化. 使用 [多态序列化][Polymorphic].
+     *
+     * 在实践时请提供 [MessageSerializers.serializersModule] 到指定 [SerialFormat].
+     *
+     * @see ListSerializer
+     * @see MessageSerializers
+     */
     public object Serializer : KSerializer<MessageChain> {
         @Suppress("DEPRECATION_ERROR")
-        private val delegate = ListSerializer<Message>(Message.Serializer)
+        private val delegate = ListSerializer(PolymorphicSerializer(SingleMessage::class))
         override val descriptor: SerialDescriptor = delegate.descriptor
-        override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
+        override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).toMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
     }
 
-    override fun appendMiraiCode(builder: StringBuilder) {
-        forEach { it.safeCast<CodableMessage>()?.appendMiraiCode(builder) }
-    }
-
-    @Suppress("DEPRECATION_ERROR")
     public companion object {
+        private fun getDefaultJson() = Json {
+            serializersModule =
+                MessageSerializers.serializersModule // don't convert to property, serializersModule is volatile.
+            ignoreUnknownKeys = true
+        }
+
         /**
          * 从 JSON 字符串解析 [MessageChain]
+         * @param json 需要包含 [MessageSerializers.serializersModule]
          * @see serializeToJsonString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun deserializeFromJsonString(
             string: String,
-            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
+            json: Json = getDefaultJson()
         ): MessageChain {
             return json.decodeFromString(Serializer, string)
         }
 
         /**
+         * 从 JSON 字符串解析 [MessageChain]
+         * @param json 需要包含 [MessageSerializers.serializersModule]
+         * @see deserializeFromJsonString
+         * @see serializeToJsonString
+         */
+        @JvmSynthetic
+        @JvmStatic
+        public inline fun String.deserializeJsonToMessageChain(json: Json): MessageChain =
+            deserializeFromJsonString(this, json)
+
+        /**
+         * 从 JSON 字符串解析 [MessageChain]
+         * @see serializeToJsonString
+         * @see deserializeFromJsonString
+         */
+        @JvmSynthetic
+        @JvmStatic
+        public inline fun String.deserializeJsonToMessageChain(): MessageChain = deserializeFromJsonString(this)
+
+        /**
          * 将 [MessageChain] 序列化为 JSON 字符串.
          * @see deserializeFromJsonString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun MessageChain.serializeToJsonString(
-            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
-        ): String = json.encodeToString(Message.Serializer, this)
+            json: Json = getDefaultJson()
+        ): String = json.encodeToString(Serializer, this)
 
         /**
          * 将 [MessageChain] 序列化为指定格式的字符串.
@@ -137,11 +309,44 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * @see serializeToJsonString
          * @see StringFormat.encodeToString
          */
-        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @ExperimentalSerializationApi
         @JvmStatic
         public fun MessageChain.serializeToString(format: StringFormat): String =
             format.encodeToString(Serializer, this)
+
+        /**
+         * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+         * @see MiraiCode.deserializeMiraiCode
+         */
+        @JvmStatic
+        public fun MessageChain.deserializeFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
+            miraiCode.deserializeMiraiCode(contact)
+    }
+}
+
+/**
+ * 不含任何元素的 [MessageChain].
+ */
+@Serializable(MessageChain.Serializer::class)
+public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList() {
+    override val size: Int get() = 0
+
+    override fun toString(): String = ""
+    override fun contentToString(): String = ""
+    override fun serializeToMiraiCode(): String = ""
+
+    @MiraiExperimentalApi
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+    }
+
+    override fun equals(other: Any?): Boolean = other === this
+    override fun hashCode(): Int = 1
+
+    override fun iterator(): Iterator<SingleMessage> = EmptyMessageChainIterator
+
+    private object EmptyMessageChainIterator : Iterator<SingleMessage> {
+        override fun hasNext(): Boolean = false
+        override fun next(): Nothing = throw NoSuchElementException("EmptyMessageChain is empty.")
     }
 }
 
@@ -152,53 +357,37 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
  *
  * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
  */
-@JvmOverloads
+@JvmSynthetic
 public inline fun <M : SingleMessage> MessageChain.getOrFail(
     key: MessageKey<M>,
     crossinline lazyMessage: (key: MessageKey<M>) -> String = { key.toString() }
 ): M = get(key) ?: throw NoSuchElementException(lazyMessage(key))
 
-
 /**
- * 遍历每一个 [消息内容][MessageContent]
+ * 获取 `Sequence<MessageContent>`
+ * 相当于 `this.asSequence().filterIsInstance<MessageContent>()`
  */
 @JvmSynthetic
-public inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
-    for (element in this) {
-        if (element !is MessageMetadata) {
-            check(element is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            block(element)
-        }
-    }
-}
+public fun MessageChain.contentsSequence(): Sequence<MessageContent> =
+    this.asSequence().filterIsInstance<MessageContent>()
 
 /**
- * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
+ * 获取 `Sequence<MessageMetadata>`
+ * 相当于 `this.asSequence().filterIsInstance<MessageMetadata>()`
  */
 @JvmSynthetic
-public inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean {
-    this.forEach {
-        if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            if (!block(it)) return false
-        }
-    }
-    return true
-}
+public fun MessageChain.metadataSequence(): Sequence<MessageMetadata> =
+    this.asSequence().filterIsInstance<MessageMetadata>()
 
 /**
- * 如果每一个 [消息内容][MessageContent] 都不满足 [block], 返回 `true`
+ * 筛选 [MessageMetadata]
  */
-@JvmSynthetic
-public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean {
-    this.forEach {
-        if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
-            if (block(it)) return false
-        }
-    }
-    return true
-}
+public fun MessageChain.metadataList(): List<MessageMetadata> = this.filterIsInstance<MessageMetadata>()
+
+/**
+ * 筛选 [MessageContent]
+ */
+public fun MessageChain.contentsList(): List<MessageContent> = this.filterIsInstance<MessageContent>()
 
 
 /**
@@ -232,6 +421,67 @@ public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Bool
 // endregion accessors
 
 
+// region toMessageChain
+
+/**
+ * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ * @see buildMessageChain
+ */
+@JvmName("newChain")
+public inline fun messageChainOf(vararg messages: Message): MessageChain = messages.toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public fun Sequence<Message>.toMessageChain(): MessageChain =
+    createMessageChainImplOptimized(this.constrainSingleMessages())
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public fun Stream<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public suspend fun Flow<Message>.toMessageChain(): MessageChain =
+    buildMessageChain { collect(::add) }
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public inline fun Iterable<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmName("newChain")
+public inline fun Iterator<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+/**
+ * 扁平化 [this] 并创建一个 [MessageChain].
+ */
+@JvmSynthetic
+// no JvmName because 'fun messageChainOf(vararg messages: Message)'
+public inline fun Array<out Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
+@kotlin.internal.LowPriorityInOverloadResolution // prefer Iterable<Message>.toMessageChain() for MessageChain
+@JvmName("newChain")
+public fun Message.toMessageChain(): MessageChain = when (this) {
+    is MessageChain -> (this as List<SingleMessage>).toMessageChain()
+    else -> MessageChainImpl(
+        listOf(
+            this as? SingleMessage ?: error("Message is either MessageChain nor SingleMessage: $this")
+        )
+    )
+}
+
+
 // region delegate
 
 /**
@@ -243,6 +493,7 @@ public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Bool
  *
  * val at: At by message
  * val image: Image by message
+ * ```
  */
 @JvmSynthetic
 public inline operator fun <reified T : SingleMessage> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T =
@@ -295,158 +546,75 @@ public inline fun <reified T : R, R : SingleMessage?> MessageChain.orElse(
 // endregion delegate
 
 
-// region asMessageChain
+///////////////////////////////////////////////////////////////////////////
+// Deprecated
+///////////////////////////////////////////////////////////////////////////
+
 
 /**
- * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
- */
-@JvmName("newChain")
-public inline fun messageChainOf(vararg messages: Message): MessageChain = messages.asMessageChain()
-
-/**
- * 得到包含 [this] 的 [MessageChain].
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("UNCHECKED_CAST")
-public fun Message.asMessageChain(): MessageChain = when (this) {
-    is MessageChain -> this
-    else -> SingleMessageChainImpl(this as SingleMessage)
-}
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
+ * 遍历每一个 [消息内容][MessageContent]
  */
 @JvmSynthetic
-public fun SingleMessage.asMessageChain(): MessageChain = SingleMessageChainImpl(this)
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Collection<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImpl(this.constrainSingleMessages())
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-@JvmName("newChain1")
-// @JsName("newChain")
-public fun Array<out Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-@JvmSynthetic
-@JvmName("newChain2")
-public fun Array<out SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.asSequence())
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImpl(this.constrainSingleMessages())
-
-@JvmSynthetic
-public inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 直接将 [this] 构建为一个 [MessageChain]
- */
-@JvmSynthetic
-public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
-
-/**
- * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
- */
-@JvmName("newChain")
-// @JsName("newChain")
-public fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
-
-/**
- * 扁平化消息序列.
- *
- * 原 [this]:
- * ```
- * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
- * ```
- * 结果 [Sequence]:
- * ```
- * A <- B <- C <- D <- E <- F <- G
- * ```
- */
-public inline fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
-
-// @JsName("flatten1")
-@JvmName("flatten1")// avoid platform declare clash
-@JvmSynthetic
-public inline fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-/**
- * 扁平化消息序列.
- *
- * 原 [this]:
- * ```
- * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
- * ```
- * 结果 [Sequence]:
- * ```
- * A <- B <- C <- D <- E <- F <- G
- * ```
- */
-public inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
-
-@JsName("flatten1") // avoid platform declare clash
-@JvmName("flatten1")
-@JvmSynthetic
-public inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
-
-public inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.asSequence().flatten()
-
-public inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-/**
- * 返回 [MessageChain.asSequence] 或 `sequenceOf(this as SingleMessage)`
- */
-public fun Message.flatten(): Sequence<SingleMessage> {
-    return when (this) {
-        is MessageChain -> this.asSequence()
-        else -> sequenceOf(this as SingleMessage)
+@Deprecated(
+    "Use operations on contentsSequence instead.",
+    ReplaceWith(
+        "this.contentsSequence().forEach(block)",
+        "net.mamoe.mirai.message.data.contentsSequence"
+    ),
+    DeprecationLevel.ERROR,
+)
+@PlannedRemoval("2.0.0")
+public inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
+    for (element in this) {
+        if (element !is MessageMetadata) {
+            check(element is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
+            block(element)
+        }
     }
 }
 
-@JvmSynthetic // make Java user happier with less methods
-public inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
-
-// endregion converters
-
+/**
+ * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
+ */
+@JvmSynthetic
+@Deprecated(
+    "Use operations on contentsSequence instead.",
+    ReplaceWith(
+        "this.contentsSequence().all(block)",
+        "net.mamoe.mirai.message.data.contentsSequence"
+    ),
+    DeprecationLevel.ERROR,
+)
+@PlannedRemoval("2.0.0")
+public inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean {
+    this.forEach {
+        if (it !is MessageMetadata) {
+            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
+            if (!block(it)) return false
+        }
+    }
+    return true
+}
 
 /**
- * 不含任何元素的 [MessageChain].
+ * 如果每一个 [消息内容][MessageContent] 都不满足 [block], 返回 `true`
  */
-public object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<SingleMessage> by emptyList() {
-
-    public override val size: Int get() = 0
-    public override fun toString(): String = ""
-    public override fun contentToString(): String = ""
-    public override fun equals(other: Any?): Boolean = other === this
-
-    public override fun iterator(): Iterator<SingleMessage> = this
-    public override fun hasNext(): Boolean = false
-    public override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
-    override fun toMiraiCode(): String = ""
-    override fun appendMiraiCode(builder: StringBuilder) {}
+@JvmSynthetic
+@Deprecated(
+    "Use operations on contentsSequence instead.",
+    ReplaceWith(
+        "this.contentsSequence().none(block)",
+        "net.mamoe.mirai.message.data.contentsSequence"
+    ),
+    DeprecationLevel.ERROR,
+)
+@PlannedRemoval("2.0.0")
+public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean {
+    this.forEach {
+        if (it !is MessageMetadata) {
+            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
+            if (block(it)) return false
+        }
+    }
+    return true
 }

@@ -21,9 +21,10 @@ import io.ktor.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.OtherClientList
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
+import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -34,7 +35,6 @@ import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.internal.retryCatching
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -80,7 +80,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
     val otherClientsLock = Mutex() // lock sync
-    override val otherClients: OtherClientList = OtherClientList()
+    override val otherClients: ContactList<OtherClient> = ContactList()
 
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]
@@ -92,9 +92,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
-        this@AbstractBot.eventChannel.subscribeAlways(
+        this@AbstractBot.eventChannel.parentScope(this).subscribeAlways(
             priority = MONITOR,
-            concurrency = Listener.ConcurrencyKind.LOCKED
+            concurrency = ConcurrencyKind.LOCKED
         ) { event ->
             if (!event.bot.isActive) {
                 // bot closed
@@ -116,18 +116,14 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             when (event) {
                 is BotOfflineEvent.Active -> {
                     val cause = event.cause
-                    val msg = if (cause == null) {
-                        ""
-                    } else {
-                        " with exception: $cause"
-                    }
-                    bot.logger.info("Bot is closed manually: $msg", cause)
-                    bot.cancel(CancellationException("Bot is closed manually: $msg", cause))
+                    val msg = if (cause == null) "" else " with exception: $cause"
+                    bot.logger.info("Bot is closed manually $msg", cause)
+                    network.cancel(CancellationException("Bot offline manually $msg", cause))
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
                     if (!event.reconnect) {
-                        bot.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
+                        network.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
                     }
                 }
                 is BotOfflineEvent.MsfOffline,
@@ -164,7 +160,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     private inner class Reconnect {
         suspend fun reconnect(event: BotOfflineEvent): Boolean {
             while (true) {
-                retryCatching<Unit>(
+                retryCatchingExceptions<Unit>(
                     configuration.reconnectionRetryTimes,
                     except = LoginFailedException::class
                 ) { tryCount, _ ->
@@ -229,7 +225,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         }
 
         private suspend fun doInit() {
-            retryCatching(5) { count, lastException ->
+            retryCatchingExceptions(5) { count, lastException ->
                 if (count != 0) {
                     if (!isActive) {
                         logger.error("Cannot init due to fatal error")
@@ -284,6 +280,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
      * [AbstractBot.relogin] && [BotNetworkHandler.init]
      */
     final override suspend fun login() {
+        if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
         Login().doLogin()
     }
 
@@ -316,10 +313,15 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             // already cancelled
             return
         }
-        GlobalScope.launch {
-            runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
-                ?.let { logger.error(it) }
+
+        if (this.network.areYouOk()) {
+            GlobalScope.launch {
+                runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
+                    ?.let { logger.error(it) }
+            }
         }
+
+        this.network.close(cause)
 
         if (supervisorJob.isActive) {
             if (cause == null) {

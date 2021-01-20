@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,7 +21,6 @@ import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.atomic.AtomicBoolean
@@ -47,7 +46,7 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
      */
     @MiraiExperimentalApi("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
     public data class Kick @MiraiInternalApi constructor(
-        public override val operator: Member
+        public override val operator: NormalMember
     ) : BotLeaveEvent(),
         GroupOperableEvent {
         public override val group: Group get() = operator.group
@@ -75,7 +74,7 @@ public data class BotMuteEvent @MiraiInternalApi constructor(
     /**
      * 操作人.
      */
-    public val operator: Member
+    public val operator: NormalMember
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     public override val group: Group
         get() = operator.group
@@ -88,7 +87,7 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
     /**
      * 操作人.
      */
-    public val operator: Member
+    public val operator: NormalMember
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     public override val group: Group
         get() = operator.group
@@ -120,7 +119,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
         /**
          * 邀请人
          */
-        public val invitor: Member
+        public val invitor: NormalMember
     ) : BotJoinGroupEvent() {
         public override val group: Group get() = invitor.group
 
@@ -164,7 +163,7 @@ public data class GroupNameChangeEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 /**
@@ -177,7 +176,7 @@ public data class GroupEntranceAnnouncementChangeEvent @MiraiInternalApi constru
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -191,7 +190,7 @@ public data class GroupMuteAllEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -205,7 +204,7 @@ public data class GroupAllowAnonymousChatEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -229,7 +228,7 @@ public data class GroupAllowMemberInviteEvent @MiraiInternalApi constructor(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -418,7 +417,7 @@ public data class MemberCardChangeEvent @MiraiInternalApi constructor(
      */
     public val new: String,
 
-    public override val member: Member
+    public override val member: NormalMember
 ) : GroupMemberEvent, Packet, AbstractEvent()
 
 /**
@@ -435,7 +434,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
      */
     public val new: String,
 
-    public override val member: Member,
+    public override val member: NormalMember,
 
     /**
      * 操作人.
@@ -454,7 +453,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
  * 成员权限改变的事件. 成员不可能是机器人自己.
  */
 public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
-    public override val member: Member,
+    public override val member: NormalMember,
     public val origin: MemberPermission,
     public val new: MemberPermission
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
@@ -493,34 +492,6 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
 
 // endregion
 
-// region 戳一戳
-
-
-/**
- * [Member] 被 [戳][Nudge] 的事件.
- */
-@MiraiExperimentalApi
-public data class MemberNudgedEvent @MiraiInternalApi constructor(
-    /**
-     * 戳一戳的发起人, 不可能是 bot
-     */
-    public val from: Member,
-    /**
-     * 戳一戳的目标 (被戳的群员), 不可能是 bot
-     */
-    public override val member: Member,
-    /**
-     * 戳一戳的动作名称
-     */
-    public val action: String,
-    /**
-     * 戳一戳中设置的自定义后缀
-     */
-    public val suffix: String,
-) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
-
-// endregion
-
 // region 群荣誉
 /**
  * [Member] 荣誉改变时的事件, 目前只支持龙王
@@ -540,20 +511,30 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 获得荣誉时的事件
      */
-    public class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent()
+    public data class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent() {
+
+        override fun toString(): String {
+            return "MemberHonorChangeEvent.Achieve(member=$member, honorType=$honorType)"
+        }
+    }
 
     /**
      * 失去荣誉时的事件
      */
-    public class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent()
+    public data class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent() {
+
+        override fun toString(): String {
+            return "MemberHonorChangeEvent.Lose(member=$member, honorType=$honorType)"
+        }
+    }
 }
 
 /**
  * [Group] 龙王改变时的事件
  */
-public class GroupTalkativeChangeEvent(
+public data class GroupTalkativeChangeEvent(
     /**
      * 改变的群
      */

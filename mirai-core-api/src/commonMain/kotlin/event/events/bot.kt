@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -31,7 +30,7 @@ public data class BotOnlineEvent internal constructor(
 ) : BotActiveEvent, AbstractEvent()
 
 /**
- * [Bot] 离线.
+ * [Bot] 离线时广播的事件. Bot 离线不会 [关闭 Bot][Bot.close], 只会关闭 Bot 的网络层.
  */
 public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
@@ -40,7 +39,11 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public open val reconnect: Boolean get() = true
 
     /**
-     * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
+     * 主动离线.
+     *
+     * 在调用 [Bot.close] 时, 如果 Bot 连接正常, 将会广播 [Active].
+     *
+     * 主动广播这个事件也可以让 [Bot] 离线.
      */
     public data class Active(
         public override val bot: Bot,
@@ -134,151 +137,3 @@ public data class BotNickChangedEvent(
     public val from: String,
     public val to: String
 ) : BotEvent, Packet, AbstractEvent()
-
-
-@MiraiExperimentalApi
-public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
-    /**
-     * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.asFriend]
-     */
-    public abstract val from: UserOrBot
-
-    /** 戳一戳的动作名称 */
-    public abstract val action: String
-
-    /** 戳一戳中设置的自定义后缀 */
-    public abstract val suffix: String
-
-    @MiraiExperimentalApi
-    /** [Bot] 在群聊中被戳 */
-    public sealed class InGroup : BotNudgedEvent(), GroupMemberEvent {
-        abstract override val from: Member
-        override val bot: Bot get() = from.bot
-
-        /** [Bot] 在 [Group] 中被 [Member] 戳了 */
-        public data class ByMember internal constructor(
-            override val action: String,
-            override val suffix: String,
-            override val member: Member
-        ) : InGroup() {
-            override val from: Member
-                get() = member
-
-            override fun toString(): String {
-                return "BotNudgedEvent.InGroup.ByMember(member=$member, action=$action, suffix=$suffix)"
-            }
-        }
-
-        /** [Bot] 在 [Group] 中自己戳了自己 */
-        public data class ByBot internal constructor(
-            override val action: String,
-            override val suffix: String,
-            override val group: Group
-        ) : InGroup() {
-            override val member: Member get() = group.botAsMember
-            override val from: Member get() = member
-
-            override fun toString(): String {
-                return "BotNudgedEvent.InGroup.ByBot(group=$group, action=$action, suffix=$suffix)"
-            }
-        }
-    }
-
-    @MiraiExperimentalApi
-    /** [Bot] 在私聊中被戳 */
-    public sealed class InPrivateSession : BotNudgedEvent() {
-        abstract override val from: User
-        override val bot: Bot get() = from.bot
-
-        /** 在私聊中 [Friend] 戳了 [Bot] */
-        public data class ByFriend internal constructor(
-            override val friend: Friend,
-            override val action: String,
-            override val suffix: String
-        ) : InPrivateSession(), FriendEvent {
-            override val from: Friend get() = friend
-            override val bot: Bot get() = from.bot
-
-            override fun toString(): String {
-                return "BotNudgedEvent.InPrivateSession.ByFriend(friend=$friend, action=$action, suffix=$suffix)"
-            }
-        }
-
-        /** 在私聊中 [Stranger] 戳了 [Bot] */
-        public data class ByStranger internal constructor(
-            override val stranger: Stranger,
-            override val action: String,
-            override val suffix: String
-        ) : InPrivateSession(), StrangerEvent {
-            override val from: Stranger get() = stranger
-            override val bot: Bot get() = stranger.bot
-
-            override fun toString(): String {
-                return "BotNudgedEvent.InPrivateSession.ByFriend(friend=$stranger, action=$action, suffix=$suffix)"
-            }
-        }
-
-        /** [Bot] 在私聊中自己戳了自己 */
-        public data class ByBot internal constructor(
-            /** [Bot] 的对话对象 */
-            /** 可能是 [Stranger] 或 [Friend] */
-            val user: User,
-            override val action: String,
-            override val suffix: String
-        ) : InPrivateSession(), BotEvent {
-            override val from: User
-                get() = if (user is Stranger) {
-                    bot.asStranger
-                } else {
-                    bot.asFriend
-                }
-
-            override fun toString(): String {
-                return "BotNudgedEvent.InPrivateSession.ByBot(friend=$user, action=$action, suffix=$suffix)"
-            }
-        }
-    }
-}
-
-/*
-/**
- * [Bot] 被 [戳][Nudge] 的事件.
- */
-@MiraiExperimentalAPI
-public data class BotNudgedEvent internal constructor(
-    /**
-     * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.selfQQ]
-     */
-    public val from: User,
-    /**
-     * 戳一戳的动作名称
-     */
-    public val action: String,
-    /**
-     * 戳一戳中设置的自定义后缀
-     */
-    public val suffix: String,
-) : BotEvent, Packet, AbstractEvent() {
-    /**
-     * 戳一戳的目标
-     */
-    public override val bot: Bot get() = from.bot
-
-}
-*/
-
-/**
- * 戳一戳发起的会话环境, 可能是 [Friend] 或者 [Group]
- *
- * @see MessageEvent.subject
- */
-@MiraiExperimentalApi
-public val BotNudgedEvent.subject: ContactOrBot
-    get() = when (val inlineFrom = from) {
-        is Member -> inlineFrom.group
-        else -> inlineFrom
-    }
-
-// region 图片
-
-// endregion

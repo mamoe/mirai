@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,8 +17,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.message.MessageSerializer
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.message.MessageSerializers
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * 自定义消息
@@ -29,12 +31,12 @@ import net.mamoe.mirai.utils.*
  * 目前在回复时无法通过 [MessageSource.originalMessage] 获取自定义类型消息
  *
  * ## 序列化
- * 若要支持序列化, 需 [MessageSerializer.registerSerializer]
+ * 若要支持序列化, 需 [MessageSerializers.registerSerializer]
  *
  * @sample samples.CustomMessageIdentifier 实现示例
  *
  * @see CustomMessageMetadata 自定义消息元数据
- * @see MessageSerializer
+ * @see MessageSerializers
  */
 @Serializable
 @MiraiExperimentalApi
@@ -114,15 +116,15 @@ public sealed class CustomMessage : SingleMessage {
     }
 
     public companion object {
-        private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
+        private val factories: ConcurrentLinkedQueue<Factory<*>> = ConcurrentLinkedQueue()
 
         internal fun register(factory: Factory<out CustomMessage>) {
             factories.removeIf { it::class == factory::class }
-            val exist = factories.asSequence().firstOrNull { it.typeName == factory.typeName }
+            val exist = factories.firstOrNull { it.typeName == factory.typeName }
             if (exist != null) {
                 error("CustomMessage.Factory typeName ${factory.typeName} is already registered by ${exist::class.qualifiedName}")
             }
-            factories.addLast(factory)
+            factories.add(factory)
         }
 
         @Serializable
@@ -149,7 +151,7 @@ public sealed class CustomMessage : SingleMessage {
             }
             return kotlin.runCatching {
                 when (msg.miraiVersionFlag) {
-                    1 -> factories.asSequence().firstOrNull { it.typeName == msg.typeName }?.load(msg.data)
+                    1 -> factories.firstOrNull { it.typeName == msg.typeName }?.load(msg.data)
                     else -> null
                 }
             }.getOrElse {
@@ -189,6 +191,8 @@ public fun <T : CustomMessage> T.toByteArray(): ByteArray {
  * 1. 实现一个类继承 [CustomMessageMetadata], 添加 `@Serializable` (来自 `kotlinx.serialization`)
  * 2. 添加伴生对象, 继承 [CustomMessage.ProtoBufSerializerFactory] 或 [CustomMessage.JsonSerializerFactory], 或 [CustomMessage.Factory]
  * 3. 在需要解析消息前调用一次伴生对象以注册
+ *
+ * 注意: 这是实验性 API. 可能会在未来发生变动.
  *
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素

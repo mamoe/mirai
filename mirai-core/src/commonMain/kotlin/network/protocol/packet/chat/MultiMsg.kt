@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -31,9 +31,10 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ForwardMessage
-import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toLongUnsigned
 
 internal class MessageValidationData(
     val data: ByteArray,
@@ -44,8 +45,6 @@ internal class MessageValidationData(
     }
 }
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
 internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     sequenceId: Int,
     random: Int,
@@ -71,7 +70,7 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
             ),
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
-                    elems = chain.message.asMessageChain()
+                    elems = chain.messageChain.toMessageChain()
                         .toRichTextElems(targetGroup, withGeneralFlags = false).toMutableList()
                 )
             )

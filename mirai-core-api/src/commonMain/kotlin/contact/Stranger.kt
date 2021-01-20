@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.action.StrangerNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 代表一位陌生人.
@@ -91,6 +90,5 @@ public interface Stranger : User, CoroutineScope {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): StrangerNudge = StrangerNudge(this)
 }

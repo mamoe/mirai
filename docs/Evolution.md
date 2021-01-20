@@ -2,7 +2,7 @@
 
 ### Mirai 演进
 
-Mirai 是不断前进的库，将来必定会发生 API 弃用和重构。  
+Mirai 是不断前进的库，目标是提供稳定且高效的 API。  
 维护者会严谨地推进每一项修改，并提供迁移周期（至少 2 个次版本）。
 
 ### 版本规范
@@ -47,4 +47,6 @@ Mirai 的版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/#
 
 
 
-> [回到 Mirai 文档索引](README.md)
+----
+
+> [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

@@ -29,9 +29,6 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - mirai 是完全免费且开放源代码的软件，仅供学习和娱乐用途使用
 - mirai 不会通过任何方式强制收取费用，或对使用者提出物质条件
 - mirai 由整个开源社区维护，并不是属于某个个体的作品，所有贡献者都享有其作品的著作权。
-```
-除本页的 Gitter 讨论组外，Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
-```
 
 ### 许可证
 
@@ -70,33 +67,44 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 <details>
   <summary>支持的协议列表</summary>
 
-| 消息相关                    | 支持              |
-|:----------------------|:----------------|
-| 文字                  | 群聊 \| 好友 \| 临时会话 |
-| 原生表情                  | 群聊 \| 好友 \| 临时会话 |
-| 图片 上传 / 发送 / 解析 (最大 20M)           | 群聊 \| 好友 \| 临时会话 |
-| 图片下载           | 群聊 \| 好友 \| 临时会话 |
-| XML，JSON 等富文本消息           | 群聊 \| 好友 \| 临时会话 |
-| 长消息 (5000 字符 + 50 图片) | 群聊               |
-| 引用回复                  | 群聊 \| 好友 \| 临时会话 |
-| 合并转发 (最大 200 条)                  | 群聊  |
-| 撤回                  | 群聊 \| 好友 \| 临时会话 |
-| At (含 At 全体成员)                  | 群聊 |
-| 撤回群员消息                  | 群聊 |
+**消息相关**
 
-| 群相关                    |
-|:----------------------|
-| 完整群列表; 完整群成员列表|
-| 群员权限获取|
-| 禁言群员; 全员禁言; 禁言时间获取|
-| 群公告管理(获取，发布，删除)|
-| 群设置(自动审批，入群公告，坦白说，成员邀请，匿名聊天)|
-| 处理入群申请; 移除群员 |
+- 文字
+- 原生表情
+- 商城表情
+- 戳一戳
+- 图片 （自定义表情）
+- XML，JSON 等富文本消息
+- 长消息（5000 字符 + 50 图片）
+- 引用回复
+- 合并转发
+- 撤回
+- 提及群员
+- 提及全体成员
+- 语音
+- 闪照
+- 撤回群员消息
+- 自定义消息
 
-| 好友相关 |
-|:----|
-| 完整好友列表 |
-| 处理新好友申请 |
+**群相关**
+- 群列表
+- 成员列表
+- 群员权限
+- 禁言
+- 全体禁言
+- 群公告管理
+- 群设置（自动审批、入群公告、坦白说、成员邀请、匿名聊天）
+- 处理入群申请
+- 移除群员
+
+**好友相关**
+- 完整好友列表
+- 处理新好友申请
+- 删除好友
+
+**其他客户端**
+- 同步其他客户端的消息
+- 向其他客户端发送消息
 
 </details>
 
@@ -109,27 +117,18 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ## 开始
 
-- 开发文档：[docs](docs/README.md)
+- 开发文档: [docs](docs/README.md)
 - 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
+- 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+  > 在 GitHub Discussions 提出的问题可能会收到 mirai 维护者的回复, 也欢迎分享你基于 mirai 的项目或想法.
+  >
+  > *除这两个途径外，Mirai 在各个平台均没有官方交流群或论坛*
 
-- 贡献: [CONTRIBUTING](CONTRIBUTING.md)
+- mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
+- mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
 
-- [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) **mirai相关项目合集**
-
-## [贡献](CONTRIBUTING.md)
-
-我们欢迎一切形式的贡献。  
-我们也期待有更多人能加入 mirai 的开发。  
-
-若在使用过程中有任何疑问，可提交 [`issue`](https://github.com/mamoe/mirai/issues) 或在 [`Discussions`](https://github.com/mamoe/mirai/discussions) 讨论。 我们希望 mirai 变得更易用.
-
-您的 `star` 是对我们最大的鼓励(点击项目右上角)
-
-开发交流：[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-### 加入 mirai 开发组
-若您有意加入 mirai, mirai-console 和相关社区开发, 请 [邮件联系](mailto:support@mamoe.net) (`support@mamoe.net`), 并附加相关开发经验证明.
+- 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
 ## 鸣谢
 

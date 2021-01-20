@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,7 +13,6 @@ package net.mamoe.mirai.message.code.internal
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiInternalApi
 
 
 internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildMessageChain {
@@ -38,7 +37,7 @@ internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildM
     }
 }
 
-internal fun String.forEachMiraiCode(block: (origin: String, name: String?, args: String) -> Unit) {
+private fun String.forEachMiraiCode(block: (origin: String, name: String?, args: String) -> Unit) {
     var pos = 0
     var lastPos = 0
     val len = length - 7 // [mirai:
@@ -98,7 +97,7 @@ internal fun String.forEachMiraiCode(block: (origin: String, name: String?, args
     }
 }
 
-internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
+private object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     "at" to MiraiCodeParser(Regex("""(\d*)""")) { (target) ->
         At(target.toLong())
     },
@@ -128,13 +127,12 @@ internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     }
 )
 
-internal class MiraiCodeParser(
+private class MiraiCodeParser(
     val argsRegex: Regex,
     val mapper: Contact?.(MatchResult.Destructured) -> Message?
 )
 
-@MiraiInternalApi
-public fun StringBuilder.appendAsMiraiCode(value: String): StringBuilder = apply {
+internal fun StringBuilder.appendStringAsMiraiCode(value: String): StringBuilder = apply {
     value.forEach { char ->
         when (char) {
             '[', ']',
@@ -148,9 +146,8 @@ public fun StringBuilder.appendAsMiraiCode(value: String): StringBuilder = apply
     }
 }
 
-@Suppress("RegExpRedundantEscape")
-internal val DECODE_MIRAI_CODE_REGEX = """\\.""".toRegex()
-internal val DECODE_MIRAI_CODE_TRANSLATOR: (MatchResult) -> String = {
+private val DECODE_MIRAI_CODE_REGEX = """\\.""".toRegex()
+private val DECODE_MIRAI_CODE_TRANSLATOR: (MatchResult) -> String = {
     when (it.value[1]) {
         'n' -> "\n"
         'r' -> "\r"
@@ -159,4 +156,4 @@ internal val DECODE_MIRAI_CODE_TRANSLATOR: (MatchResult) -> String = {
     }
 }
 
-internal fun String.decodeMiraiCode() = replace(DECODE_MIRAI_CODE_REGEX, DECODE_MIRAI_CODE_TRANSLATOR)
+private fun String.decodeMiraiCode() = replace(DECODE_MIRAI_CODE_REGEX, DECODE_MIRAI_CODE_TRANSLATOR)

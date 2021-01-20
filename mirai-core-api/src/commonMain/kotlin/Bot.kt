@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -85,7 +85,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * 其他设备列表
      */
-    public val otherClients: OtherClientList
+    public val otherClients: ContactList<OtherClient>
 
 
     /**
@@ -171,16 +171,20 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override fun nudge(): BotNudge = BotNudge(this)
 
     /**
-     * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob].
-     * 之后 [isActive] 将会返回 `false`.
+     * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.
      *
      * **注意:** 不可重新登录. 必须重新实例化一个 [Bot].
      *
-     * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+     * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭. 在关闭 [Bot] 作用域下的协程时将会传递这个原因.
      *
      * @see closeAndJoin 取消并 [Bot.join], 以确保 [Bot] 相关的活动被完全关闭
      */
     public fun close(cause: Throwable? = null)
+
+    /**
+     * 关闭这个 [Bot]. 查看 [close] 获取更多信息.
+     */
+    public fun close(): Unit = close(null)
 
 
     public companion object {

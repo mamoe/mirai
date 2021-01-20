@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,9 +17,10 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.event.internal.*
+import net.mamoe.mirai.internal.event.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import kotlin.annotation.AnnotationTarget.CONSTRUCTOR
 
 
 /**
@@ -39,10 +40,10 @@ public typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @param R 消息监听器内部的返回值
  * @param Ret 每个 DSL 函数创建监听器之后的返回值
  *
- * @see subscribeFriendMessages
+ * @see EventChannel.subscribeMessages
  */
 @MessageDsl
-public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
+public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR> internal constructor(
     /**
      * 用于 [MessageListener] 无返回值的替代.
      */
@@ -53,17 +54,17 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
      */
     public val subscriber: (M.(String) -> Boolean, MessageListener<M, RR>) -> Ret
 ) {
-    @Suppress("DEPRECATION_ERROR")
+    @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+    @Target(CONSTRUCTOR)
+    private annotation class UseNewListenerFilterInstead
+
+    @OptIn(UseNewListenerFilterInstead::class)
     public open fun newListeningFilter(filter: M.(String) -> Boolean): ListeningFilter = ListeningFilter(filter)
 
     /**
      * 由 [contains], [startsWith] 等 DSL 创建出的监听条件, 使用 [invoke] 将其注册给事件
      */
-    public open inner class ListeningFilter @Deprecated( // keep it for development warning
-        "use newListeningFilter instead",
-        ReplaceWith("newListeningFilter(filter)"),
-        level = DeprecationLevel.ERROR
-    ) constructor(
+    public inner class ListeningFilter @UseNewListenerFilterInstead internal constructor(
         public val filter: M.(String) -> Boolean
     ) {
         /** 进行逻辑 `or`. */
@@ -269,7 +270,12 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
 
     /** 如果是群临时会话消息 */
     @MessageDsl
-    public fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessageEvent }
+    @Deprecated("use sentByGroupTemp()", ReplaceWith("sentByGroupTemp()"), DeprecationLevel.ERROR)
+    public fun sentByTemp(): ListeningFilter = sentByGroupTemp()
+
+    /** 如果是群临时会话消息 */
+    @MessageDsl
+    public fun sentByGroupTemp(): ListeningFilter = newListeningFilter { this is GroupTempMessageEvent }
 
     /** 如果是管理员或群主发的消息 */
     @MessageDsl

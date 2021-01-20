@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,7 +19,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -69,19 +69,19 @@ internal class NormalMemberImpl constructor(
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<NormalMember> {
         val chain = kotlin.runCatching {
-            TempMessagePreSendEvent(this, message).broadcast()
+            GroupTempMessagePreSendEvent(this, message).broadcast()
         }.onSuccess {
             check(!it.isCancelled) {
-                throw EventCancelledException("cancelled by TempMessagePreSendEvent")
+                throw EventCancelledException("cancelled by GroupTempMessagePreSendEvent")
             }
         }.getOrElse {
-            throw EventCancelledException("exception thrown when broadcasting TempMessagePreSendEvent", it)
-        }.message.asMessageChain()
+            throw EventCancelledException("exception thrown when broadcasting GroupTempMessagePreSendEvent", it)
+        }.message.toMessageChain()
 
         chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
         val result = bot.network.runCatching {
-            val source: MessageSourceToTempImpl
+            val source: OnlineMessageSourceToTempImpl
             MessageSvcPbSendMsg.createToTemp(
                 bot.client,
                 this@NormalMemberImpl,
@@ -98,10 +98,10 @@ internal class NormalMemberImpl constructor(
 
         result.fold(
             onSuccess = {
-                TempMessagePostSendEvent(this, chain, null, it)
+                GroupTempMessagePostSendEvent(this, chain, null, it)
             },
             onFailure = {
-                TempMessagePostSendEvent(this, chain, it, null)
+                GroupTempMessagePostSendEvent(this, chain, it, null)
             }
         ).broadcast()
 
