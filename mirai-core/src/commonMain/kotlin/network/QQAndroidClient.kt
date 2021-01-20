@@ -207,6 +207,18 @@ internal open class QQAndroidClient(
      */
     val protocolVersion: Short = 8001
 
+    internal val groupConfig: GroupConfig = GroupConfig()
+
+    internal class GroupConfig {
+        var robotConfigVersion: Int = 0
+        var aioKeyWordVersion: Int = 0
+        var robotUinRangeList: List<LongRange> = emptyList()
+
+        fun isOfficialRobot(uin: Long): Boolean {
+            return robotUinRangeList.any { range -> range.contains(uin) }
+        }
+    }
+
     class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
 
