@@ -10,6 +10,7 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
@@ -39,7 +40,7 @@ plugins {
     kotlin("jvm") version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("org.jetbrains.dokka") version Versions.dokka
-    id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge apply false
+    id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.jfrog.bintray") version Versions.bintray
 }
 
@@ -89,6 +90,11 @@ allprojects {
         configureKotlinTestSettings()
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
+
+        blockingBridge {
+            unitCoercion = COMPATIBILITY
+        }
+
         //  useIr()
 
         if (isKotlinJvmProject) {
@@ -96,7 +102,6 @@ allprojects {
         }
     }
 }
-
 subprojects {
     afterEvaluate {
         if (project.name == "mirai-core-api") configureDokka()
