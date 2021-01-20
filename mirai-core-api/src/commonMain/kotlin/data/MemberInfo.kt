@@ -33,4 +33,9 @@ public interface MemberInfo : UserInfo {
      * 上次发言时间 秒
      */
     public val lastSpeakTimestamp: Int
+
+    /**
+     * 是否为官方机器人
+     */
+    public val isOfficialBot: Boolean
 }

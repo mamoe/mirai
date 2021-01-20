@@ -308,6 +308,87 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     },
     // 传字符串信息
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
+        discardExact(1)
+        readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).let { body ->
+            when (body.optEnumType) {
+                1 -> body.optMsgGraytips?.let { tipsInfo ->
+                    val message = tipsInfo.optBytesContent.decodeToString()
+                    //机器人信息
+                    if (tipsInfo.robotGroupOpt != 0) {
+                        when (tipsInfo.robotGroupOpt) {
+                            //添加
+                            1 -> {
+                                val dataList = message.parseToMessageDataList()
+                                val invitor = dataList.first().let { messageData ->
+                                    group.getOrFail(messageData.data.toLong())
+                                }
+                                val member = dataList.last().let { messageData ->
+                                    group.newMember(
+                                        MemberInfoImpl(
+                                            uin = messageData.data.toLong(),
+                                            nick = messageData.text,
+                                            permission = MemberPermission.MEMBER,
+                                            remark = "",
+                                            nameCard = "",
+                                            specialTitle = "",
+                                            muteTimestamp = 0,
+                                            anonymousId = null,
+                                            isOfficialBot = true
+                                        )
+                                    ).cast<NormalMember>().also {
+                                        group.members.delegate.add(it)
+                                    }
+                                }
+                                return@lambda732 sequenceOf(MemberJoinEvent.Invite(member, invitor))
+                            }
+                            //移除
+                            2 -> {
+                                message.parseToMessageDataList().first().let {
+                                    val member = group.getOrFail(it.data.toLong())
+                                    group.members.delegate.remove(member)
+                                    return@lambda732 sequenceOf(MemberLeaveEvent.Quit(member))
+                                }
+                            }
+
+                            else -> {
+                                bot.network.logger.debug { "Unknown robotGroupOpt ${tipsInfo.robotGroupOpt}, message=$message" }
+                                return@lambda732 emptySequence()
+                            }
+                        }
+                    } else when {
+                        message.endsWith("群聊坦白说") -> {
+                            val new = when (message) {
+                                "管理员已关闭群聊坦白说" -> false
+                                "管理员已开启群聊坦白说" -> true
+                                else -> {
+                                    bot.network.logger.debug { "Unknown server confess talk messages $message" }
+                                    return@lambda732 emptySequence()
+                                }
+                            }
+                            return@lambda732 sequenceOf(
+                                GroupAllowConfessTalkEvent(
+                                    new,
+                                    !new,
+                                    group,
+                                    false
+                                )
+                            )
+                        }
+                        else -> {
+                            bot.network.logger.debug { "Unknown server messages $message" }
+                            return@lambda732 emptySequence()
+                        }
+                    }
+                }
+                else -> {
+                    bot.network.logger.debug {
+                        "Unknown Transformers732 0x10 optEnumType\noptEnumType=${body.optEnumType}\ncontent=${body._miraiContentToString()}"
+                    }
+                    return@lambda732 emptySequence()
+                }
+            } ?: return@lambda732 emptySequence()
+        }
+        /*
         val dataBytes = readBytes(26)
 
         when (dataBytes[0].toInt() and 0xFF) {
@@ -371,7 +452,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     )
                 )*/
             }
-        }
+        }*/
     },
 
     // recall

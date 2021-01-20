@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalStateException
 import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
@@ -386,6 +387,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         if (initGroupOk) {
             return
         }
+        logger.info { "Start syncing group config..." }
+        TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>()
+        logger.info { "Successfully synced group config." }
 
         logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)

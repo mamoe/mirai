@@ -147,6 +147,50 @@ internal class TroopManagement {
         }
     }
 
+    internal object GetTroopConfig : OutgoingPacketFactory<GetTroopConfig.Response>("OidbSvc.0x496") {
+        class Response(
+            val success: Boolean
+        ) : Packet {
+            override fun toString(): String = "TroopManagement.GetTroopConfig.Response($success)"
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(), OidbSso.OIDBSSOPkg(
+                    command = 1174,
+                    result = 0,
+                    serviceType = 0,
+                    clientVersion = "android 8.4.18",
+                    bodybuffer = Oidb0x496.ReqBody(
+                        updateTime = 0,
+                        firstUnreadManagerMsgSeq = 1,
+                        version = client.groupConfig.robotConfigVersion,
+                        aioKeywordVersion = client.groupConfig.aioKeyWordVersion,
+                        type = 3
+                    ).toByteArray(Oidb0x496.ReqBody.serializer())
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
+                pkg.bodybuffer.loadAs(Oidb0x496.RspBody.serializer()).let { data ->
+                    bot.client.groupConfig.let { config ->
+                        config.aioKeyWordVersion = data.aioKeywordConfig!!.version
+                        config.robotConfigVersion = data.robotConfig!!.version
+                        config.robotUinRangeList = data.robotConfig.uinRange.asSequence().map { range ->
+                            LongRange(range.startUin, range.endUin)
+                        }.toList()
+                    }
+                }
+
+                return Response(pkg.result == 0)
+            }
+        }
+    }
+
     internal object Kick : OutgoingPacketFactory<Kick.Response>("OidbSvc.0x8a0_0") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val ret = this.readBytes()

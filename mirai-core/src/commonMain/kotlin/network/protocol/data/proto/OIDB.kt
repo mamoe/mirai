@@ -102,6 +102,98 @@ internal class Oidb0x5d2 : ProtoBuf {
     ) : ProtoBuf
 }
 
+internal class Oidb0x496 {
+    @Serializable
+    internal class AioKeyword(
+        @JvmField @ProtoNumber(1) val keywords: List<AioKeywordInfo> = emptyList(),
+        @JvmField @ProtoNumber(2) val rules: List<AioKeywordRuleInfo> = emptyList(),
+        @JvmField @ProtoNumber(3) val version: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class AioKeywordInfo(
+        @JvmField @ProtoNumber(1) val word: String = "",
+        @JvmField @ProtoNumber(2) val ruleId: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class AioKeywordRuleInfo(
+        @JvmField @ProtoNumber(1) val ruleId: Int = 0,
+        @JvmField @ProtoNumber(2) val startTime: Int = 0,
+        @JvmField @ProtoNumber(3) val endTime: Int = 0,
+        @JvmField @ProtoNumber(4) val postionFlag: Int = 0,
+        @JvmField @ProtoNumber(5) val matchGroupClass: List<Int> = emptyList(),
+        @JvmField @ProtoNumber(6) val version: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class GroupMsgConfig(
+        @JvmField @ProtoNumber(1) val boolUinEnable: Boolean = false,
+        @JvmField @ProtoNumber(2) val maxAioMsg: Int = 0,
+        @JvmField @ProtoNumber(3) val enableHelper: Int = 0,
+        @JvmField @ProtoNumber(4) val groupMaxNumber: Int = 0,
+        @JvmField @ProtoNumber(5) val nextUpdateTime: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class MsgSeqInfo(
+        @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
+        @JvmField @ProtoNumber(2) val managerUinList: List<Long> = emptyList(),
+        @JvmField @ProtoNumber(3) val updateTime: Long = 0L,
+        @JvmField @ProtoNumber(4) val firstUnreadManagerMsgSeq: Long = 0L,
+        @JvmField @ProtoNumber(5) val uint64ManagerMsgSeq: List<Long> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
+        @JvmField @ProtoNumber(2) val updateTime: Long = 0L,
+        @JvmField @ProtoNumber(3) val managerUinList: Long = 0L,
+        @JvmField @ProtoNumber(4) val firstUnreadManagerMsgSeq: Long = 0L,
+        @JvmField @ProtoNumber(5) val justFetchMsgConfig: Int = 0,
+        @JvmField @ProtoNumber(6) val type: Int = 0,
+        @JvmField @ProtoNumber(7) val version: Int = 0,
+        @JvmField @ProtoNumber(8) val aioKeywordVersion: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class Robot(
+        @JvmField @ProtoNumber(1) val version: Int = 0,
+        @JvmField @ProtoNumber(2) val uinRange: List<UinRange> = emptyList(),
+        @JvmField @ProtoNumber(3) val fireKeywords: List<String> = emptyList(),
+        @JvmField @ProtoNumber(4) val startKeywords: List<String> = emptyList(),
+        @JvmField @ProtoNumber(5) val endKeywords: List<String> = emptyList(),
+        @JvmField @ProtoNumber(6) val sessionTimeout: Int = 0,
+        @JvmField @ProtoNumber(7) val subscribeCategories: List<RobotSubscribeCategory> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RobotSubscribeCategory(
+        @JvmField @ProtoNumber(1) val id: Int = 0,
+        @JvmField @ProtoNumber(2) val name: String = "",
+        @JvmField @ProtoNumber(3) val type: Int = 0,
+        @JvmField @ProtoNumber(4) val nextWording: String = "",
+        @JvmField @ProtoNumber(5) val nextContent: String = ""
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspBody(
+        @JvmField @ProtoNumber(1) val msgSeqInfo: List<MsgSeqInfo> = emptyList(),
+        @JvmField @ProtoNumber(2) val maxAioMsg: Long = 0L,
+        @JvmField @ProtoNumber(3) val maxPositionMsg: Long = 0L,
+        @JvmField @ProtoNumber(4) val msgGroupMsgConfig: GroupMsgConfig? = null,
+        @JvmField @ProtoNumber(5) val robotConfig: Robot? = null,
+        @JvmField @ProtoNumber(6) val aioKeywordConfig: AioKeyword? = null
+    ) : ProtoBuf
+
+    @Serializable
+    internal class UinRange(
+        @JvmField @ProtoNumber(1) val startUin: Long = 0L,
+        @JvmField @ProtoNumber(2) val endUin: Long = 0L
+    ) : ProtoBuf
+}
+
+
 @Serializable
 internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
