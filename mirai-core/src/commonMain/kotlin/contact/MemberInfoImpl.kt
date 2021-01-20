@@ -25,7 +25,7 @@ internal class MemberInfoImpl(
     override val muteTimestamp: Int,
     override val anonymousId: String?,
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
-    override var lastSpeakTimestamp: Int = 0
+    override var lastSpeakTimestamp: Int = 0,
     override val isOfficialBot: Boolean = false
 ) : MemberInfo, UserInfoImpl(uin, nick, remark) {
     constructor(
@@ -46,7 +46,7 @@ internal class MemberInfoImpl(
         muteTimestamp = jceInfo.dwShutupTimestap?.toInt() ?: 0,
         anonymousId = null,
         joinTimestamp = jceInfo.dwJoinTime?.toInt() ?: 0,
-        lastSpeakTimestamp = jceInfo.dwLastSpeakTime?.toInt() ?: 0
+        lastSpeakTimestamp = jceInfo.dwLastSpeakTime?.toInt() ?: 0,
         isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin)
     )
 }
