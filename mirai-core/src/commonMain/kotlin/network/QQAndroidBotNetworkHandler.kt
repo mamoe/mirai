@@ -387,9 +387,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         if (initGroupOk) {
             return
         }
-        logger.info { "Start getting group config..." }
+        logger.info { "Start syncing group config..." }
         TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>()
-        logger.info { "Successfully synced group config..." }
+        logger.info { "Successfully synced group config." }
 
         logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
