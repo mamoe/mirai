@@ -6,35 +6,28 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.AnonymousMember
-import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.MiraiImpl
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.utils.ExternalResource
 import kotlin.coroutines.CoroutineContext
 
 internal class AnonymousMemberImpl(
-    override val group: GroupImpl,
-    override val coroutineContext: CoroutineContext,
-    private val memberInfo: MemberInfo,
+    group: GroupImpl,
+    coroutineContext: CoroutineContext,
+    memberInfo: MemberInfo,
     override val anonymousId: String
-) : AnonymousMember {
-    override val nameCard: String get() = memberInfo.nameCard
-    override val specialTitle: String get() = memberInfo.specialTitle
-    override val permission: MemberPermission get() = memberInfo.permission
-    override val bot: Bot get() = group.bot
-    override val id: Long get() = memberInfo.uin
-    override val nick: String get() = memberInfo.nick
-    override val remark: String get() = memberInfo.remark
-
+) : AnonymousMember, AbstractMember(group, coroutineContext, memberInfo) {
     override suspend fun mute(durationSeconds: Int) {
         checkBotPermissionHigherThanThis("mute")
         MiraiImpl.muteAnonymousMember(bot, anonymousId, nameCard, group.uin, durationSeconds)
     }
 
     override fun toString(): String = "AnonymousMember($nameCard, $anonymousId)"
+    override suspend fun uploadImage(resource: ExternalResource): Image =
+        throw UnsupportedOperationException("Cannot upload image to AnonymousMember")
 }

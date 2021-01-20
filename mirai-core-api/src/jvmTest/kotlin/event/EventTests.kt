@@ -12,8 +12,10 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.event.GlobalEventListeners
 import net.mamoe.mirai.utils.StepUtil
+import org.junit.jupiter.api.AfterEach
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -22,10 +24,16 @@ class TestEvent : AbstractEvent() {
 }
 
 class EventTests {
+    var scope = CoroutineScope(EmptyCoroutineContext)
+    @AfterEach
+    fun finiallyReset() {
+        resetEventListeners()
+    }
+
     @Test
     fun testSubscribeInplace() {
         resetEventListeners()
-        runBlocking {
+        runBlocking(scope.coroutineContext) {
             val subscriber = globalEventChannel().subscribeAlways<TestEvent> {
                 triggered = true
             }
@@ -39,11 +47,12 @@ class EventTests {
     fun testSubscribeGlobalScope() {
         resetEventListeners()
         runBlocking {
-            GlobalScope.globalEventChannel().subscribeAlways<TestEvent> {
+            val listener = GlobalScope.globalEventChannel().subscribeAlways<TestEvent> {
                 triggered = true
             }
 
             assertTrue(TestEvent().broadcast().triggered)
+            listener.complete()
         }
     }
 
@@ -55,7 +64,7 @@ class EventTests {
         for (p in EventPriority.values()) {
             repeat(2333) {
                 listeners++
-                GlobalScope.globalEventChannel().subscribeAlways<ParentEvent> {
+                scope.globalEventChannel().subscribeAlways<ParentEvent> {
                     counter.getAndIncrement()
                 }
             }
@@ -82,7 +91,7 @@ class EventTests {
                     launch {
                         repeat(5000) {
                             registered.getAndIncrement()
-                            GlobalScope.globalEventChannel().subscribeAlways<ParentEvent>(
+                            scope.globalEventChannel().subscribeAlways<ParentEvent>(
                                 priority = priority
                             ) {
                                 called.getAndIncrement()
@@ -135,6 +144,7 @@ class EventTests {
 
         val calledCount = called.get()
         val shouldCalled = registered.get() * postCount
+        supervisor.cancel()
 
         println("Should call $shouldCalled times and $called called")
         if (shouldCalled != calledCount) {
@@ -188,6 +198,7 @@ class EventTests {
         kotlinx.coroutines.runBlocking {
             job.join()
         }
+        scope.cancel()
         step.throws()
     }
 
@@ -216,9 +227,9 @@ class EventTests {
     }
     */
     fun resetEventListeners() {
-        for (p in EventPriority.values()) {
-            GlobalEventListeners[p].clear()
-        }
+        scope.cancel()
+        runBlocking { scope.coroutineContext[Job]?.join() }
+        scope = CoroutineScope(EmptyCoroutineContext)
     }
 
     @Test
@@ -236,6 +247,7 @@ class EventTests {
             }
             ParentEvent().broadcast()
         }
+        resetEventListeners()
     }
 
     @Test

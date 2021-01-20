@@ -42,6 +42,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
@@ -176,12 +179,12 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         fun loginSolverNotNull() = bot.configuration.loginSolver.notnull()
 
         var response: WtLogin.Login.LoginPacketResponse =
-            WtLogin.Login.SubCommand9(bot.client, allowSlider).sendAndExpect()
+            WtLogin9(bot.client, allowSlider).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
                 is WtLogin.Login.LoginPacketResponse.UnsafeLogin -> {
                     loginSolverNotNull().onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                    response = WtLogin.Login.SubCommand9(bot.client, allowSlider).sendAndExpect()
+                    response = WtLogin9(bot.client, allowSlider).sendAndExpect()
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
@@ -191,7 +194,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                             //refresh captcha
                             result = "ABCD"
                         }
-                        response = WtLogin.Login.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result)
+                        response = WtLogin2.SubmitPictureCaptcha(bot.client, response.sign, result)
                             .sendAndExpect()
                         continue@mainloop
                     }
@@ -206,8 +209,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                                     if (allowSlider) {
                                         append(" 使用协议 ")
                                         append(bot.configuration.protocol)
-                                        append(" 强制要求滑块验证, 请更换协议后重试")
+                                        append(" 强制要求滑块验证, 请更换协议后重试.")
                                     }
+                                    append(" 另请参阅: https://github.com/project-mirai/mirai-login-solver-selenium")
                                 }
                             )
                         }
@@ -224,7 +228,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                             }
                             throw error
                         }
-                        response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
+                        response = WtLogin2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }
                 }
@@ -243,7 +247,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
 
                 is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
-                    response = WtLogin.Login.SubCommand20(
+                    response = WtLogin20(
                         bot.client,
                         response.t402
                     ).sendAndExpect()

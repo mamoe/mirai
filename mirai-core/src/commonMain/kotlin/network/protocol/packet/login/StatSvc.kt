@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.login
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -255,7 +256,10 @@ internal class StatSvc {
                         if (bot.otherClients.any { it.appId == appId }) return null
 
                         val info = Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
-                            ?: throw  contextualBugReportException(
+                            ?: kotlin.run {
+                                delay(1000) // sometimes server sync slow
+                                Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
+                            } ?: throw contextualBugReportException(
                                 "SvcReqMSFLoginNotify (OtherClient online)",
                                 notify._miraiContentToString(),
                                 additional = "Failed to find corresponding instanceInfo."

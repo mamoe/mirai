@@ -20,9 +20,8 @@ import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
@@ -135,6 +134,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             accept = true,
             blackList = false
         )
+
+        event.bot.getFriend(event.fromId)?.let { friend ->
+            FriendAddEvent(friend).broadcast()
+        }
     }
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
@@ -176,6 +179,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             accept = true,
             blackList = false
         )
+
+        event.group?.getMember(event.fromId)?.let { member ->
+            MemberJoinEvent.Active(member).broadcast()
+        }
     }
 
     @Suppress("DuplicatedCode")

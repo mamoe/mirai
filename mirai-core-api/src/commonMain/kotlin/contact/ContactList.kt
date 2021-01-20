@@ -12,7 +12,6 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
@@ -52,19 +51,3 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
     override fun equals(other: Any?): Boolean = other is ContactList<*> && delegate == other.delegate
     override fun hashCode(): Int = delegate.hashCode()
 }
-
-/**
- * ID 列表的字符串表示.
- * 如:
- * ```
- * [123456, 321654, 123654]
- * ```
- */
-@Deprecated(
-    "deprecated.",
-    ReplaceWith("\"[\" + delegate.joinToString { it.id.toString() } + \"]\""),
-    DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0.0")
-public val ContactList<*>.idContentString: String
-    get() = "[" + delegate.joinToString { it.id.toString() } + "]"

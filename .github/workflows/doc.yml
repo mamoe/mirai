@@ -24,13 +24,13 @@ jobs:
         run: chmod +x gradlew
       - name: Gradle build
         run: ./gradlew clean build # if test's failed, don't publish
-      - name: Gradle :mirai-core:dokkaGenerator
-        run: ./gradlew :mirai-core:dokka
+      - name: Dokka
+        run: ./gradlew :mirai-core-api:dokkaHtml
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.MAMOE_TOKEN }}
-          publish_dir: ./mirai-core/build/dokka
+          publish_dir: ./mirai-core-api/build/dokka
           external_repository: project-mirai/mirai-doc
           publish_branch: master
           user_name: 'mamoebot'

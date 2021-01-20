@@ -170,20 +170,18 @@ public class MessageChainBuilder private constructor(
 
     ///////
     // IMPLEMENTATION
-    private var cache: StringBuilder? = null
+    private val cache: StringBuilder = StringBuilder()
     private fun flushCache() {
-        cache?.let {
-            container.add(PlainText(it.toString()))
+        if (cache.isNotEmpty()) {
+            container.add(PlainText(cache.toString()))
+            cache.setLength(0)
         }
-        cache = null
     }
 
     private inline fun withCache(block: StringBuilder.() -> Unit): MessageChainBuilder {
-        if (cache == null) {
-            cache = StringBuilder().apply(block)
-        } else {
-            cache!!.apply(block)
-        }
+        contract { callsInPlace(block, EXACTLY_ONCE) }
+
+        cache.apply(block)
         return this
     }
 

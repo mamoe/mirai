@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,10 +15,16 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.LoginType
+import net.mamoe.mirai.internal.utils.GuidSource
+import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
+import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.utils.currentTimeMillis
+import net.mamoe.mirai.utils.generateDeviceInfoData
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toByteArray
 import kotlin.random.Random
@@ -79,6 +85,26 @@ internal fun BytePacketBuilder.t18(
     } shouldEqualsTo 22
 }
 
+internal fun BytePacketBuilder.t106(
+    appId: Long = 16L,
+    client: QQAndroidClient
+) {
+    return t106(
+        appId,
+        client.subAppId /* maybe 1*/,
+        client.appClientVersion,
+        client.uin,
+        true,
+        client.account.passwordMd5,
+        0,
+        client.uin.toByteArray(),
+        client.tgtgtKey,
+        true,
+        client.device.guid,
+        LoginType.PASSWORD,
+        client.ssoVersion
+    )
+}
 
 internal fun BytePacketBuilder.t106(
     appId: Long = 16L,
@@ -292,6 +318,29 @@ internal fun BytePacketBuilder.t112(
 }
 
 internal fun BytePacketBuilder.t144(
+    client: QQAndroidClient
+) {
+    return t144(
+        androidId = client.device.androidId,
+        androidDevInfo = client.device.generateDeviceInfoData(),
+        osType = client.device.osType,
+        osVersion = client.device.version.release,
+        networkType = client.networkType,
+        simInfo = client.device.simInfo,
+        unknown = byteArrayOf(),
+        apn = client.device.apn,
+        isGuidFromFileNull = false,
+        isGuidAvailable = true,
+        isGuidChanged = false,
+        guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag(0)),
+        buildModel = client.device.model,
+        guid = client.device.guid,
+        buildBrand = client.device.brand,
+        tgtgtKey = client.tgtgtKey
+    )
+}
+
+internal fun BytePacketBuilder.t144(
     // t109
     androidId: ByteArray,
 
@@ -499,7 +548,22 @@ internal fun BytePacketBuilder.t141(
 }
 
 internal fun BytePacketBuilder.t511(
-    domains: List<String>
+    domains: List<String> = listOf(
+        "tenpay.com",
+        "openmobile.qq.com",
+        "docs.qq.com",
+        "connect.qq.com",
+        "qzone.qq.com",
+        "vip.qq.com",
+        "gamecenter.qq.com",
+        "qun.qq.com",
+        "game.qq.com",
+        "qqweb.qq.com",
+        "office.qq.com",
+        "ti.qq.com",
+        "mail.qq.com",
+        "mma.qq.com",
+    )
 ) {
     writeShort(0x511)
     writeShortLVPacket {

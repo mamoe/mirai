@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -26,7 +26,7 @@ import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.isContentNotEmpty
+import net.mamoe.mirai.message.data.isContentEmpty
 import network.protocol.packet.list.StrangerList
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -77,7 +77,7 @@ internal class StrangerImpl(
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Stranger> {
-        require(message.isContentNotEmpty()) { "message is empty" }
+        require(!message.isContentEmpty()) { "message is empty" }
         return sendMessageImpl(
             message,
             strangerReceiptConstructor = { MessageReceipt(it, this) },

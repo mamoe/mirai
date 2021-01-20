@@ -10,7 +10,7 @@
 
 仅 IntelliJ IDEA 和 Android Studio 支持这个功能。
 
-把光标放在一个错误中间（或者按 F2 自动跳转到错误），使用 `Alt + Enter` 快捷键，会得到弹窗如下图。
+把光标放在一个错误中间（或者按 F2 自动跳转到错误），在 Windows 使用 `Alt + Enter` 快捷键，macOS 使用 `Option + Enter`，会得到弹窗如下图。
 
 ![YBP47V_Z640J_YU5WZ_JVPW.png](https://i.loli.net/2020/12/18/CiX9qApu5BnVPch.png)
 
@@ -59,7 +59,7 @@
 
 ### `2.0-RC` -> `2.0.0`
 
-本文编写时 `2.0.0` 还未发布。如果你阅读时已经发布了，请更新到 `2.0.0`。不需要额外迁移。
+直接把版本号更改为 `2.0.0`。
 
 至此你已经成功升级到了 mirai 2.0。[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
 
@@ -100,9 +100,7 @@ Contact.uploadImage(contact, inputStream); // 返回 Image 消息
 Contact.uploadImage(contact, file);        // 返回 Image 消息
 ```
 
-### `2.0-M2` -> `2.0-RC` (`2.0.0`)
-
-本文编写时 `2.0.0` 还未发布。如果你阅读时已经发布了，请更新到 `2.0.0` 而不需要更新到 `2.0-RC`。
+### `2.0-M2` -> `2.0-RC`
 
 1. 戳一戳事件由以前的多个事件变为了统一的单个 `NudgeEvent`。若有使用请直接参考 `NudgeEvent` 源码修改。
 
@@ -112,5 +110,9 @@ Contact.uploadImage(contact, file);        // 返回 Image 消息
 
 3. `IMirai` 低级 API 方法名现在不再带有 `_lowLevel` 前缀, 直接删除前缀即可。
 
+
+### `2.0-RC` -> `2.0.0`
+
+直接把版本号更改为 `2.0.0`。
 
 至此你已经成功升级到了 mirai 2.0。[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

@@ -27,13 +27,12 @@ import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.generateImageIdFromResourceId
-import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
+
+internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
 
 internal open class UserInfoImpl(override val uin: Long, override val nick: String, override val remark: String = "") :
     UserInfo
@@ -46,6 +45,8 @@ internal abstract class AbstractUser(
     final override val id: Long = userInfo.uin
     final override var nick: String = userInfo.nick
     final override val remark: String = userInfo.remark
+
+    open val info: UserInfo = userInfo
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     override suspend fun uploadImage(resource: ExternalResource): Image {

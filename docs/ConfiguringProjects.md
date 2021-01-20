@@ -11,7 +11,7 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             2.0-RC             |
+|  稳定   |             2.0.0             |
 |  预览   |               -                |
 |  开发   | [![Version]][Bintray Download] |
 
@@ -24,7 +24,7 @@
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)
-- [D. 下载 JAR 包](#c-下载-jar-包)
+- [C. 下载 JAR 包](#c-下载-jar-包)
 
 
 ## A. 使用 Gradle
@@ -43,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "2.0-RC") // 替换为你需要的版本号
+    api("net.mamoe", "mirai-core", "2.0.0") // 替换为你需要的版本号
 }
 ```
 
@@ -67,7 +67,7 @@ repositories {
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '2.0-RC') // 替换为你需要的版本号
+    api('net.mamoe', 'mirai-core', '2.0.0') // 替换为你需要的版本号
 }
 ```
 
@@ -80,7 +80,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.0-RC" // 替换为你需要的版本号
+    val miraiVersion = "2.0.0" // 替换为你需要的版本号
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -108,7 +108,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.0-RC</version> <!-- 替换版本为你需要的版本 -->
+        <version>2.0.0</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```

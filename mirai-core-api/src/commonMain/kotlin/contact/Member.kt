@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
@@ -167,13 +166,3 @@ public inline val Member.isStranger: Boolean
  * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [User.nick]
  */
 public val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
-
-@PlannedRemoval("2.0.0")
-@Deprecated("Use is NormalMember by yourself.", ReplaceWith("this is NormalMember"), DeprecationLevel.ERROR)
-public val Member.isNormal: Boolean
-    get() = this is NormalMember
-
-@PlannedRemoval("2.0.0")
-@Deprecated("Use is AnonymousMember by yourself.", ReplaceWith("this is AnonymousMember"), DeprecationLevel.ERROR)
-public val Member.isAnonymous: Boolean
-    get() = this is AnonymousMember

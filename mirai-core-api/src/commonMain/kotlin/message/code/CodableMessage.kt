@@ -12,7 +12,6 @@ package net.mamoe.mirai.message.code
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 
 
 /**
@@ -35,10 +34,6 @@ public interface CodableMessage : Message {
      * 转换为 mirai 码.
      */
     public fun serializeToMiraiCode(): String = buildString { appendMiraiCodeTo(this) }
-
-    @PlannedRemoval("2.0.0")
-    @Deprecated("Use serializeToMiraiCode()", ReplaceWith("serializeToMiraiCode()"), DeprecationLevel.ERROR)
-    public fun toMiraiCode(): String = this.serializeToMiraiCode()
 
     // Using StringBuilder faster than direct plus objects
     @MiraiExperimentalApi
