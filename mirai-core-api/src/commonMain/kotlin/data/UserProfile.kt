@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+
+@MiraiExperimentalApi
 public interface UserProfile {
     public val nickname: String
     public val email: String

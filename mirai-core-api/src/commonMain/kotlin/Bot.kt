@@ -24,6 +24,7 @@ import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentHashMap
 
@@ -178,6 +179,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      *
      * @since 2.1.0
      */
+    @MiraiExperimentalApi
     @JvmBlockingBridge
     public suspend fun queryProfile(targetId: Long): UserProfile
 

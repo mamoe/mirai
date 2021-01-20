@@ -13,7 +13,6 @@ import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
