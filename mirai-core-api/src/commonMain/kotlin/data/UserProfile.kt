@@ -15,5 +15,9 @@ public interface UserProfile {
     public val age: Int
     public val qLevel: Int
     public val sex: Int
+    
+    /**
+     * 个性签名
+     */
     public val sign: String
 }
