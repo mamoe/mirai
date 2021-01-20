@@ -17,6 +17,13 @@ public interface UserProfile {
     public val email: String
     public val age: Int
     public val qLevel: Int
-    public val sex: Int
+    public val sex: Sex
     public val sign: String
+
+    public enum class Sex {
+        MALE,
+        FEMALE,
+        /** 保密 */
+        UNKNOWN;
+    }
 }

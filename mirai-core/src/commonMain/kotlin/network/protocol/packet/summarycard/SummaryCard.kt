@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.summarycard
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -26,7 +27,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.readJceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.internal.utils.soutv
-import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.internal.network.protocol.data.jce.ReqSummaryCard as JceReqSummaryCard
 import net.mamoe.mirai.internal.network.protocol.data.jce.RespSummaryCard as JceRespSummaryCard
@@ -40,7 +40,7 @@ internal object SummaryCard {
             override val email: String,
             override val age: Int,
             override val qLevel: Int,
-            override val sex: Int,
+            override val sex: UserProfile.Sex,
             override val sign: String,
         ) : Packet, UserProfile {
             override fun toString(): String {
@@ -104,7 +104,11 @@ internal object SummaryCard {
                 email = response.email ?: "",
                 age = response.age?.let { it.toInt() and 0xFF } ?: -1,
                 qLevel = response.iLevel ?: -1,
-                sex = response.sex?.let { it.toInt() and 0xFF } ?: 0,
+                sex = when (response.sex?.let { it.toInt() and 0xFF }) {
+                    0 -> UserProfile.Sex.MALE
+                    1 -> UserProfile.Sex.FEMALE
+                    else -> UserProfile.Sex.UNKNOWN
+                },
                 sign = response.sign ?: ""
             )
         }
