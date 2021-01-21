@@ -87,9 +87,7 @@ internal object SummaryCard {
             val fullMap = readJceStruct(
                 RequestPacket.serializer()
             ).sBuffer.read {
-                readJceStruct(RequestDataVersion2.serializer()).also {
-                    it.map._miraiContentToString().soutv("The Map")
-                }
+                readJceStruct(RequestDataVersion2.serializer())
             }.map
             val map = fullMap["RespSummaryCard"] ?: error("Missing RespSummaryCard in response")
             val pck = map["SummaryCard.RespSummaryCard"]
