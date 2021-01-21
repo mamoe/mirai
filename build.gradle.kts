@@ -44,8 +44,19 @@ plugins {
 }
 
 // https://github.com/kotlin/binary-compatibility-validator
-//apply(plugin = "binary-compatibility-validator")
+apply(plugin = "binary-compatibility-validator")
 
+configure<kotlinx.validation.ApiValidationExtension> {
+    ignoredProjects.add("mirai-core")
+    ignoredProjects.add("mirai-core-api")
+    ignoredProjects.add("mirai-core-utils")
+    ignoredProjects.add("mirai-core-all")
+    ignoredProjects.add("mirai")
+
+    ignoredPackages.add("net.mamoe.mirai.internal")
+    nonPublicMarkers.add("net.mamoe.mirai.MiraiInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.MiraiExperimentalApi")
+}
 
 project.ext.set("isAndroidSDKAvailable", false)
 

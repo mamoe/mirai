@@ -112,3 +112,7 @@ fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNo
     }
 
 configureMppPublishing()
+
+afterEvaluate {
+    project(":binary-compatibility-validator").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
+}
