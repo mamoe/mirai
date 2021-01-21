@@ -29,6 +29,7 @@
 [only52607/e-mirai]: https://github.com/only52607/e-mirai
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
 [yyuueexxiinngg/cqhttp-mirai]: https://github.com/yyuueexxiinngg/cqhttp-mirai
+[Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP 
 
 | 技术             | 维护者及项目地址                               |
 |:----------------|:--------------------------------------------|
@@ -40,6 +41,7 @@
 | `Mozilla Rhino` | [StageGuard/mirai-rhinojs-sdk]              |
 | `C++`           | [cyanray/mirai-cpp]                         |
 | `C++`           | [Chlorie/miraipp]                           |
+| `C++`           | [Nambers/MiraiCP]                           |
 | `C#`            | [Executor-Cheng/mirai-CSharp]               |
 | `Rust`          | [HoshinoTented/mirai-rs]                    |
 | `TypeScript`    | [YunYouJun/mirai-ts]                        |
