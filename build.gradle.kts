@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
+@file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
@@ -41,7 +41,7 @@ plugins {
     kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
-    id("com.jfrog.bintray") version Versions.bintray
+    id("com.jfrog.bintray") // version Versions.bintray
 }
 
 // https://github.com/kotlin/binary-compatibility-validator

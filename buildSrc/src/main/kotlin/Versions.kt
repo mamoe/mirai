@@ -33,6 +33,7 @@ object Versions {
     const val androidGradlePlugin = "3.5.3"
 
     const val bintray = "1.8.5"
+    const val shadow = "6.1.0"
 
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"

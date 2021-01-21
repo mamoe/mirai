@@ -10,7 +10,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
     kotlin("multiplatform")
@@ -41,18 +40,7 @@ kotlin {
             publishAllLibraryVariants()
         }
     } else {
-        println(
-            """Android SDK 可能未安装.
-                $name 的 Android 目标编译将不会进行. 
-                这不会影响 Android 以外的平台的编译.
-            """.trimIndent()
-        )
-        println(
-            """Android SDK might not be installed.
-                Android target of $name will not be compiled. 
-                It does no influence on the compilation of other platforms.
-            """.trimIndent()
-        )
+        printAndroidNotInstalled()
     }
 
     jvm("common") {
@@ -127,20 +115,6 @@ kotlin {
     }
 }
 
-val NamedDomainObjectContainer<KotlinSourceSet>.androidMain: NamedDomainObjectProvider<KotlinSourceSet>
-    get() = named<KotlinSourceSet>("androidMain")
-
-val NamedDomainObjectContainer<KotlinSourceSet>.androidTest: NamedDomainObjectProvider<KotlinSourceSet>
-    get() = named<KotlinSourceSet>("androidTest")
-
-
-val NamedDomainObjectContainer<KotlinSourceSet>.jvmMain: NamedDomainObjectProvider<KotlinSourceSet>
-    get() = named<KotlinSourceSet>("jvmMain")
-
-val NamedDomainObjectContainer<KotlinSourceSet>.jvmTest: NamedDomainObjectProvider<KotlinSourceSet>
-    get() = named<KotlinSourceSet>("jvmTest")
-
-
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
@@ -159,21 +133,4 @@ fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNo
         exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
     }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
-
-
-tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
-    doFirst {
-        publishing.publications
-            .filterIsInstance<MavenPublication>()
-            .forEach { publication ->
-                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
-                if (moduleFile.exists()) {
-                    publication.artifact(object :
-                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
-                        override fun getDefaultExtension() = "module"
-                    })
-                }
-            }
-    }
-}
+configureMppPublishing()
