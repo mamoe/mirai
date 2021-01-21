@@ -28,7 +28,7 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "1.7.3"
+    const val blockingBridge = "1.6.0"
 
     const val androidGradlePlugin = "3.5.3"
 

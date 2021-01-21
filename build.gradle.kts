@@ -10,7 +10,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
@@ -91,9 +90,9 @@ allprojects {
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
 
-        blockingBridge {
-            unitCoercion = COMPATIBILITY
-        }
+        // blockingBridge {
+        //     unitCoercion = COMPATIBILITY
+        // }
 
         //  useIr()
 
