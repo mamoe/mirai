@@ -404,7 +404,7 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      */
     @JvmBlockingBridge
     public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
-    
+
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
     public constructor(
         bot: Bot, eventId: Long, message: String,
@@ -415,17 +415,18 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
     public fun copy(
         bot: Bot, eventId: Long, message: String,
         fromId: Long, groupId: Long, groupName: String, fromNick: String
-    ): MemberJoinRequestEvent {
-        return copy(bot = bot, eventId = eventId, message = message, fromId = fromId, groupId = groupId, groupName = groupName, fromNick = fromNick, invitorId = null)
-    }
+    ): MemberJoinRequestEvent = copy(
+        bot = bot, eventId = eventId, message = message, fromId = fromId,
+        groupId = groupId, groupName = groupName, fromNick = fromNick, invitorId = null
+    )
 
     internal companion object {
         @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
         @JvmStatic
         @JvmName("copy\$default") // avoid being mangled
-        public fun `copy$default`(
-            var0: MemberJoinRequestEvent, var1: Bot, var2: Long, var4: String, var5: Long, var7: Long, 
-            var9: String, var10: String, var11: Int, var12: Any
+        fun `copy$default`(
+            var0: MemberJoinRequestEvent, var1: Bot, var2: Long, var4: String, var5: Long, var7: Long,
+            var9: String, var10: String, var11: Int, @Suppress("UNUSED_PARAMETER") var12: Any
         ): MemberJoinRequestEvent {
             var bot = var1
             var eventId = var2
@@ -441,7 +442,10 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
             if (var11 and 16 != 0) groupId = var0.groupId
             if (var11 and 32 != 0) groupName = var0.groupName
             if (var11 and 64 != 0) fromNick = var0.fromNick
-            return var0.copy(bot = bot, eventId = eventId, message = message, fromId = fromId, groupId = groupId, groupName = groupName, fromNick = fromNick)
+            return var0.copy(
+                bot = bot, eventId = eventId, message = message,
+                fromId = fromId, groupId = groupId, groupName = groupName, fromNick = fromNick
+            )
         }
     }
 }

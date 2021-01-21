@@ -2728,10 +2728,6 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent$Companion {
-	public final synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
-}
-
 public abstract class net/mamoe/mirai/event/events/MemberLeaveEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent {
 }
 
