@@ -410,50 +410,49 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
         var0: MemberJoinRequestEvent,
         var1: Bot,
         var2: Long,
-        var4: String?,
+        var4: String,
         var5: Long,
         var7: Long,
-        var9: String?,
-        var10: String?,
+        var9: String,
+        var10: String,
         var11: Int,
-        var12: Any?
+        var12: Any
     ): MemberJoinRequestEvent {
-        var var1 = var1
-        var var2 = var2
-        var var4 = var4
-        var var5 = var5
-        var var7 = var7
-        var var9 = var9
-        var var10 = var10
+        var bot = var1
+        var eventId = var2
+        var message = var4
+        var fromId = var5
+        F
+        var fromNick = var10
         if (var11 and 1 != 0) {
-            var1 = var0.bot
+            bot = var0.bot
         }
         if (var11 and 2 != 0) {
-            var2 = var0.eventId
+            eventId = var0.eventId
         }
         if (var11 and 4 != 0) {
-            var4 = var0.message
+            message = var0.message
         }
         if (var11 and 8 != 0) {
-            var5 = var0.fromId
+            fromId = var0.fromId
         }
         if (var11 and 16 != 0) {
-            var7 = var0.groupId
+            groupId = var0.groupId
         }
         if (var11 and 32 != 0) {
-            var9 = var0.groupName
+            groupName = var0.groupName
         }
         if (var11 and 64 != 0) {
-            var10 = var0.fromNick
+            fromNick = var0.fromNick
         }
         return var0.copy(
-            bot = var1,
-            eventId = var2,
-            message = var4!!,
-            fromId = var5,
-            groupId = var7,
-            groupName = var9!!,
-            fromNick = var10!!
+            bot = bot,
+            eventId = eventId,
+            message = message,
+            fromId = fromId,
+            groupId = groupId,
+            groupName = groupName,
+            fromNick = fromNick
         )
     }
 
