@@ -371,95 +371,6 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      */
     val invitorId: Long? = null
 ) : BotEvent, Packet, AbstractEvent() {
-
-    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public constructor(
-        bot: Bot,
-        eventId: Long,
-        message: String,
-        fromId: Long,
-        groupId: Long,
-        groupName: String,
-        fromNick: String
-    ) : this(bot, eventId, message, fromId, groupId, groupName, fromNick, null)
-
-    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public fun copy(
-        bot: Bot,
-        eventId: Long,
-        message: String,
-        fromId: Long,
-        groupId: Long,
-        groupName: String,
-        fromNick: String
-    ): MemberJoinRequestEvent {
-        return copy(
-            bot = bot,
-            eventId = eventId,
-            message = message,
-            fromId = fromId,
-            groupId = groupId,
-            groupName = groupName,
-            fromNick = fromNick,
-            invitorId = null
-        )
-    }
-
-    public companion object {
-        @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-        @JvmStatic
-        public fun `copy$default`(
-            var0: MemberJoinRequestEvent,
-            var1: Bot,
-            var2: Long,
-            var4: String,
-            var5: Long,
-            var7: Long,
-            var9: String,
-            var10: String,
-            var11: Int,
-            var12: Any
-        ): MemberJoinRequestEvent {
-            var bot = var1
-            var eventId = var2
-            var message = var4
-            var fromId = var5
-            var groupId = var7
-            var groupName = var9
-            var fromNick = var10
-            if (var11 and 1 != 0) {
-                bot = var0.bot
-            }
-            if (var11 and 2 != 0) {
-                eventId = var0.eventId
-            }
-            if (var11 and 4 != 0) {
-                message = var0.message
-            }
-            if (var11 and 8 != 0) {
-                fromId = var0.fromId
-            }
-            if (var11 and 16 != 0) {
-                groupId = var0.groupId
-            }
-            if (var11 and 32 != 0) {
-                groupName = var0.groupName
-            }
-            if (var11 and 64 != 0) {
-                fromNick = var0.fromNick
-            }
-            return var0.copy(
-                bot = bot,
-                eventId = eventId,
-                message = message,
-                fromId = fromId,
-                groupId = groupId,
-                groupName = groupName,
-                fromNick = fromNick
-            )
-        }
-    }
-
     /**
      * 相关群. 若在事件发生后机器人退出这个群, [group] 为 `null`.
      */
@@ -493,6 +404,46 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      */
     @JvmBlockingBridge
     public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
+    
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        bot: Bot, eventId: Long, message: String,
+        fromId: Long, groupId: Long, groupName: String, fromNick: String
+    ) : this(bot, eventId, message, fromId, groupId, groupName, fromNick, null)
+
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun copy(
+        bot: Bot, eventId: Long, message: String,
+        fromId: Long, groupId: Long, groupName: String, fromNick: String
+    ): MemberJoinRequestEvent {
+        return copy(bot = bot, eventId = eventId, message = message, fromId = fromId, groupId = groupId, groupName = groupName, fromNick = fromNick, invitorId = null)
+    }
+
+    internal companion object {
+        @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+        @JvmStatic
+        @JvmName("copy\$default") // avoid being mangled
+        public fun `copy$default`(
+            var0: MemberJoinRequestEvent, var1: Bot, var2: Long, var4: String, var5: Long, var7: Long, 
+            var9: String, var10: String, var11: Int, var12: Any
+        ): MemberJoinRequestEvent {
+            var bot = var1
+            var eventId = var2
+            var message = var4
+            var fromId = var5
+            var groupId = var7
+            var groupName = var9
+            var fromNick = var10
+            if (var11 and 1 != 0) bot = var0.bot
+            if (var11 and 2 != 0) eventId = var0.eventId
+            if (var11 and 4 != 0) message = var0.message
+            if (var11 and 8 != 0) fromId = var0.fromId
+            if (var11 and 16 != 0) groupId = var0.groupId
+            if (var11 and 32 != 0) groupName = var0.groupName
+            if (var11 and 64 != 0) fromNick = var0.fromNick
+            return var0.copy(bot = bot, eventId = eventId, message = message, fromId = fromId, groupId = groupId, groupName = groupName, fromNick = fromNick)
+        }
+    }
 }
 
 // endregion
