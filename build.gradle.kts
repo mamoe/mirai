@@ -10,7 +10,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
@@ -45,8 +44,19 @@ plugins {
 }
 
 // https://github.com/kotlin/binary-compatibility-validator
-//apply(plugin = "binary-compatibility-validator")
+apply(plugin = "binary-compatibility-validator")
 
+configure<kotlinx.validation.ApiValidationExtension> {
+    ignoredProjects.add("mirai-core")
+    ignoredProjects.add("mirai-core-api")
+    ignoredProjects.add("mirai-core-utils")
+    ignoredProjects.add("mirai-core-all")
+    ignoredProjects.add("mirai")
+
+    ignoredPackages.add("net.mamoe.mirai.internal")
+    nonPublicMarkers.add("net.mamoe.mirai.MiraiInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.MiraiExperimentalApi")
+}
 
 project.ext.set("isAndroidSDKAvailable", false)
 
@@ -91,9 +101,9 @@ allprojects {
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
 
-        blockingBridge {
-            unitCoercion = COMPATIBILITY
-        }
+        // blockingBridge {
+        //     unitCoercion = COMPATIBILITY
+        // }
 
         //  useIr()
 

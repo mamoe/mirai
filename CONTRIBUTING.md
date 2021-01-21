@@ -46,3 +46,4 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 ### 注意事项
 - 尽量不要引用新的库
 - 遵守 Kotlin 官方代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
+- 保证二进制兼容性: 在提交前执行 `gradlew build`, 若有不兼容变更会得到错误. 在提交时将 `binary-compatibility-validator.api` 一并提交 (如果有修改). (使用 [Kotlin/binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator))

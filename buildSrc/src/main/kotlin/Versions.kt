@@ -23,12 +23,12 @@ object Versions {
     const val serialization = "1.0.1"
     const val ktor = "1.5.0"
 
-    const val binaryValidator = "0.2.3"
+    const val binaryValidator = "0.3.0"
 
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "1.7.2"
+    const val blockingBridge = "1.6.0"
 
     const val androidGradlePlugin = "3.5.3"
 
