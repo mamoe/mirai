@@ -36,6 +36,8 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun login (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/BotNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
+	public fun queryProfile (J)Lnet/mamoe/mirai/data/UserProfile;
+	public abstract fun queryProfile (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/Bot$Companion {
@@ -1414,6 +1416,23 @@ public abstract interface class net/mamoe/mirai/data/UserInfo {
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun getUin ()J
+}
+
+public abstract interface class net/mamoe/mirai/data/UserProfile {
+	public abstract fun getAge ()I
+	public abstract fun getEmail ()Ljava/lang/String;
+	public abstract fun getNickname ()Ljava/lang/String;
+	public abstract fun getQLevel ()I
+	public abstract fun getSex ()Lnet/mamoe/mirai/data/UserProfile$Sex;
+	public abstract fun getSign ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/data/UserProfile$Sex : java/lang/Enum {
+	public static final field FEMALE Lnet/mamoe/mirai/data/UserProfile$Sex;
+	public static final field MALE Lnet/mamoe/mirai/data/UserProfile$Sex;
+	public static final field UNKNOWN Lnet/mamoe/mirai/data/UserProfile$Sex;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/data/UserProfile$Sex;
+	public static fun values ()[Lnet/mamoe/mirai/data/UserProfile$Sex;
 }
 
 public abstract class net/mamoe/mirai/event/AbstractEvent : net/mamoe/mirai/event/Event {
