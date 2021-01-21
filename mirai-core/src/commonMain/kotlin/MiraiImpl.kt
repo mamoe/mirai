@@ -181,7 +181,11 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         )
 
         event.group?.getMember(event.fromId)?.let { member ->
-            MemberJoinEvent.Active(member).broadcast()
+            if (event.invitor != null) {
+                MemberJoinEvent.Invite(member, event.invitor!!).broadcast()
+            } else {
+                MemberJoinEvent.Active(member).broadcast()
+            }
         }
     }
 

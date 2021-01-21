@@ -2704,7 +2704,10 @@ public final class net/mamoe/mirai/event/events/MemberJoinEvent$Retrieve : net/m
 }
 
 public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
-	public fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)V
+	public static final field Companion Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent$Companion;
+	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun accept ()Lkotlin/Unit;
 	public final fun accept (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
@@ -2714,8 +2717,11 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public final fun component5 ()J
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
+	public final fun component8 ()Ljava/lang/Long;
+	public final synthetic fun copy (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
+	public final fun copy (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
+	public static final synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getEventId ()J
@@ -2724,6 +2730,8 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public final fun getGroupId ()J
 	public final fun getGroupName ()Ljava/lang/String;
+	public final fun getInvitor ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getInvitorId ()Ljava/lang/Long;
 	public final fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun ignore (Z)Lkotlin/Unit;
