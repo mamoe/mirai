@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -143,7 +143,7 @@ internal class NewContact {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
+            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs.firstOrNull() ?: return null // 会有重复且无法过滤, 不要用 map
 
                 if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
@@ -153,7 +153,7 @@ internal class NewContact {
                     return null
                 }
 
-                return struct.msg?.run {
+                struct.msg?.run {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { // 处理被邀请入群 或 处理成员入群申请
@@ -193,6 +193,12 @@ internal class NewContact {
                         5 -> {
                             val group = bot.getGroup(groupCode) ?: return null
                             when (groupMsgType) {
+                                3 -> {
+                                    // https://github.com/mamoe/mirai/issues/651
+                                    // msgDescribe=将你设置为管理员
+                                    // msgTitle=管理员设置
+                                    null
+                                }
                                 13 -> { // 成员主动退出, 机器人是管理员, 接到通知
                                     // 但无法获取是哪个成员.
                                     null
@@ -203,7 +209,7 @@ internal class NewContact {
                                 }
                                 else -> {
                                     throw contextualBugReportException(
-                                        "解析 NewContact.SystemMsgNewGroup, subType=5",
+                                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
                                         this._miraiContentToString(),
                                         null,
                                         "并描述此时机器人是否被踢出群等"
@@ -212,7 +218,7 @@ internal class NewContact {
                             }
                         }
                         else -> throw contextualBugReportException(
-                            "parse SystemMsgNewGroup",
+                            "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
                             forDebug = this._miraiContentToString(),
                             additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
                         )

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,14 +13,15 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
+
+    id("kotlinx-atomicfu")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray")
 }
 
-description = "mirai-core ultilities"
+description = "mirai-core utilities"
 
 val isAndroidSDKAvailable: Boolean by project
 
@@ -103,20 +104,6 @@ kotlin {
     }
 }
 
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidMain")
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidTest")
-
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmMain")
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmTest")
-
-
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
@@ -135,20 +122,4 @@ fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNo
         exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
     }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
-
-tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
-    doFirst {
-        publishing.publications
-            .filterIsInstance<MavenPublication>()
-            .forEach { publication ->
-                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
-                if (moduleFile.exists()) {
-                    publication.artifact(object :
-                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
-                        override fun getDefaultExtension() = "module"
-                    })
-                }
-            }
-    }
-}
+configureMppPublishing()

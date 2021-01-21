@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -22,9 +22,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.NormalMemberImpl
-import net.mamoe.mirai.internal.contact.newAnonymous
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -103,6 +101,10 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         } else { // normal member chat
             sender = group[msgHead.fromUin] as NormalMemberImpl
             name = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.nameCardOrNick
+        }
+
+        sender.info?.castOrNull<MemberInfoImpl>()?.run {
+            lastSpeakTimestamp = currentTimeSeconds().toInt()
         }
 
         if (isFromSelfAccount) {

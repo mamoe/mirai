@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -36,7 +37,7 @@ public data class FriendRemarkChangeEvent internal constructor(
 /**
  * 成功添加了一个新好友的事件
  */
-public data class FriendAddEvent internal constructor(
+public data class FriendAddEvent @MiraiInternalApi constructor(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */

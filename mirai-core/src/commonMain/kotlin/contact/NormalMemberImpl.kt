@@ -28,8 +28,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToTem
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -40,11 +38,13 @@ internal class NormalMemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : NormalMember, AbstractUser(group.bot, coroutineContext, memberInfo) {
-    override val group: GroupImpl by group.unsafeWeakRef()
+) : NormalMember, AbstractMember(group, coroutineContext, memberInfo) {
 
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
+
+    override val joinTimestamp: Int get() = info.joinTimestamp
+    override val lastSpeakTimestamp: Int get() = info.lastSpeakTimestamp
 
     override fun toString(): String = "NormalMember($id)"
 
@@ -107,8 +107,6 @@ internal class NormalMemberImpl constructor(
 
         return result.getOrThrow()
     }
-
-    override var permission: MemberPermission = memberInfo.permission
 
     @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard

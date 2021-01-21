@@ -123,6 +123,7 @@ internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         WtLogin.Login,
+        WtLogin.ExchangeEmp,
         StatSvc.Register,
         StatSvc.GetOnlineStatus,
         StatSvc.GetDevLoginInfo,
@@ -142,6 +143,7 @@ internal object KnownPacketFactories {
         TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
         TroopManagement.GroupOperation,
+        TroopManagement.GetTroopConfig,
         //  TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,

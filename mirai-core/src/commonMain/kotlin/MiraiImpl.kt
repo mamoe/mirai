@@ -21,10 +21,7 @@ import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
@@ -137,6 +134,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             accept = true,
             blackList = false
         )
+
+        event.bot.getFriend(event.fromId)?.let { friend ->
+            FriendAddEvent(friend).broadcast()
+        }
     }
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
@@ -327,7 +328,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     nextUin = nextUin
                 ).sendAndExpect<FriendList.GetTroopMemberList.Response>(retry = 3)
                 sequence += data.members.asSequence().map { troopMemberInfo ->
-                    MemberInfoImpl(troopMemberInfo, ownerId)
+                    MemberInfoImpl(bot.client, troopMemberInfo, ownerId)
                 }
                 nextUin = data.nextUin
                 if (nextUin == 0L) {

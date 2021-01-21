@@ -207,6 +207,18 @@ internal open class QQAndroidClient(
      */
     val protocolVersion: Short = 8001
 
+    internal val groupConfig: GroupConfig = GroupConfig()
+
+    internal class GroupConfig {
+        var robotConfigVersion: Int = 0
+        var aioKeyWordVersion: Int = 0
+        var robotUinRangeList: List<LongRange> = emptyList()
+
+        fun isOfficialRobot(uin: Long): Boolean {
+            return robotUinRangeList.any { range -> range.contains(uin) }
+        }
+    }
+
     class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
 
@@ -307,6 +319,11 @@ internal open class QQAndroidClient(
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
     var tlv113: ByteArray? = null
+
+    /**
+     * from tlvMap119
+     */
+    var tlv16a: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
@@ -373,6 +390,9 @@ internal class LoginExtraData(
 internal class WLoginSigInfo(
     val uin: Long,
     val encryptA1: ByteArray?, // sigInfo[0]
+    /**
+     * WARNING, please check [QQAndroidClient.tlv16a]
+     */
     val noPicSig: ByteArray?, // sigInfo[1]
     val G: ByteArray, // sigInfo[2]
     val dpwd: ByteArray,

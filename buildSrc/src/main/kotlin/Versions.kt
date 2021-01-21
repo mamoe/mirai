@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.0.0"
+    const val project = "2.1.0-dev-1"
 
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
@@ -23,7 +23,7 @@ object Versions {
     const val serialization = "1.0.1"
     const val ktor = "1.5.0"
 
-    const val binaryValidator = "0.2.3"
+    const val binaryValidator = "0.3.0"
 
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
@@ -33,6 +33,7 @@ object Versions {
     const val androidGradlePlugin = "3.5.3"
 
     const val bintray = "1.8.5"
+    const val shadow = "6.1.0"
 
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"

@@ -12,25 +12,17 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
+
+    id("kotlinx-atomicfu")
     id("signing")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
+
     `maven-publish`
     id("com.jfrog.bintray")
 }
 
 description = "Mirai API module"
-
-val isAndroidSDKAvailable: Boolean by project
-
-afterEvaluate {
-    tasks.getByName("compileKotlinCommon").enabled = false
-    tasks.getByName("compileTestKotlinCommon").enabled = false
-
-    tasks.getByName("compileCommonMainKotlinMetadata").enabled = false
-    tasks.getByName("compileKotlinMetadata").enabled = false
-}
 
 kotlin {
     explicitApi()
@@ -41,18 +33,7 @@ kotlin {
             publishAllLibraryVariants()
         }
     } else {
-        println(
-            """Android SDK 可能未安装.
-                $name 的 Android 目标编译将不会进行. 
-                这不会影响 Android 以外的平台的编译.
-            """.trimIndent()
-        )
-        println(
-            """Android SDK might not be installed.
-                Android target of $name will not be compiled. 
-                It does no influence on the compilation of other platforms.
-            """.trimIndent()
-        )
+        printAndroidNotInstalled()
     }
 
     jvm("common") {
@@ -66,28 +47,30 @@ kotlin {
 //    }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":mirai-core-utils"))
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api1(`kotlinx-serialization-core`)
-                api1(`kotlinx-serialization-json`)
-                implementation1(`kotlinx-serialization-protobuf`)
-                api1(`kotlinx-io-jvm`)
-                api1(`kotlinx-coroutines-io-jvm`)
+                api(`kotlinx-serialization-core`)
+                api(`kotlinx-serialization-json`)
+                implementation(`kotlinx-serialization-protobuf`)
                 api(`kotlinx-coroutines-core`)
-               // api(`kotlinx-coroutines-jdk8`)
+                // api(`kotlinx-coroutines-jdk8`)
 
-                implementation1(`kotlinx-atomicfu`)
-
-                api1(`ktor-client-okhttp`)
-                api1(`ktor-client-core`)
-                api1(`ktor-network`)
+                api(`ktor-client-okhttp`)
+                api(`ktor-client-core`)
+                api(`ktor-network`)
 
                 compileOnly(`log4j-api`)
                 compileOnly(slf4j)
+
+
+                // they use Kotlin 1.3 so we need to ignore transitive dependencies
+                api1(`kotlinx-io-jvm`)
+                api1(`kotlinx-coroutines-io-jvm`)
+                implementation1(`kotlinx-atomicfu`)
             }
         }
 
@@ -101,28 +84,13 @@ kotlin {
 
         val jvmMain by getting
 
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
-                api("org.pcap4j:pcap4j-distribution:1.8.2")
-
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
     }
 }
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidMain")
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidTest")
-
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmMain")
-
-val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
-    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmTest")
 
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
@@ -143,20 +111,8 @@ fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNo
         exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
     }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
+configureMppPublishing()
 
-tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
-    doFirst {
-        publishing.publications
-            .filterIsInstance<MavenPublication>()
-            .forEach { publication ->
-                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
-                if (moduleFile.exists()) {
-                    publication.artifact(object :
-                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
-                        override fun getDefaultExtension() = "module"
-                    })
-                }
-            }
-    }
+afterEvaluate {
+    project(":binary-compatibility-validator").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
 }
