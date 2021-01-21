@@ -422,7 +422,8 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
         var eventId = var2
         var message = var4
         var fromId = var5
-        F
+        var groupId = var7
+        var groupName = var9
         var fromNick = var10
         if (var11 and 1 != 0) {
             bot = var0.bot
