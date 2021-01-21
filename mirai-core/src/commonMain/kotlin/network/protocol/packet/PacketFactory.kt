@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.network.readUShortLVByteArray
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
@@ -154,7 +155,8 @@ internal object KnownPacketFactories {
         NewContact.SystemMsgNewGroup,
         ProfileService.GroupMngReq,
         StrangerList.GetStrangerList,
-        StrangerList.DelStranger
+        StrangerList.DelStranger,
+        SummaryCard.ReqSummaryCard,
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

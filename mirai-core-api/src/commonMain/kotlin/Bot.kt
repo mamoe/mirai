@@ -17,12 +17,14 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentHashMap
 
@@ -170,6 +172,16 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     public override fun nudge(): BotNudge = BotNudge(this)
+
+
+    /**
+     * 查询某个用户的信息
+     *
+     * @since 2.1.0
+     */
+    @MiraiExperimentalApi
+    @JvmBlockingBridge
+    public suspend fun queryProfile(targetId: Long): UserProfile
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.
