@@ -365,12 +365,107 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
     /**
      * 申请人昵称
      */
-    val fromNick: String
+    val fromNick: String,
+    /**
+     * 邀请人 id（如果是邀请入群）
+     */
+    val invitorId: Long? = null
 ) : BotEvent, Packet, AbstractEvent() {
+
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        bot: Bot,
+        eventId: Long,
+        message: String,
+        fromId: Long,
+        groupId: Long,
+        groupName: String,
+        fromNick: String
+    ) : this(bot, eventId, message, fromId, groupId, groupName, fromNick, null)
+
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun copy(
+        bot: Bot,
+        eventId: Long,
+        message: String,
+        fromId: Long,
+        groupId: Long,
+        groupName: String,
+        fromNick: String
+    ): MemberJoinRequestEvent {
+        return copy(
+            bot = bot,
+            eventId = eventId,
+            message = message,
+            fromId = fromId,
+            groupId = groupId,
+            groupName = groupName,
+            fromNick = fromNick,
+            invitorId = null
+        )
+    }
+
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun `copy$default`(
+        var0: MemberJoinRequestEvent,
+        var1: Bot,
+        var2: Long,
+        var4: String?,
+        var5: Long,
+        var7: Long,
+        var9: String?,
+        var10: String?,
+        var11: Int,
+        var12: Any?
+    ): MemberJoinRequestEvent {
+        var var1 = var1
+        var var2 = var2
+        var var4 = var4
+        var var5 = var5
+        var var7 = var7
+        var var9 = var9
+        var var10 = var10
+        if (var11 and 1 != 0) {
+            var1 = var0.bot
+        }
+        if (var11 and 2 != 0) {
+            var2 = var0.eventId
+        }
+        if (var11 and 4 != 0) {
+            var4 = var0.message
+        }
+        if (var11 and 8 != 0) {
+            var5 = var0.fromId
+        }
+        if (var11 and 16 != 0) {
+            var7 = var0.groupId
+        }
+        if (var11 and 32 != 0) {
+            var9 = var0.groupName
+        }
+        if (var11 and 64 != 0) {
+            var10 = var0.fromNick
+        }
+        return var0.copy(
+            bot = var1,
+            eventId = var2,
+            message = var4!!,
+            fromId = var5,
+            groupId = var7,
+            groupName = var9!!,
+            fromNick = var10!!
+        )
+    }
+
     /**
      * 相关群. 若在事件发生后机器人退出这个群, [group] 为 `null`.
      */
     public val group: Group? get() = this.bot.getGroup(groupId)
+
+    /**
+     * 邀请入群的成员. 若在事件发生时机器人或该成员退群, [invitor] 为 `null`.
+     */
+    public val invitor: NormalMember? by lazy { invitorId?.let { group?.get(it) } }
 
     @JvmField
     @PublishedApi

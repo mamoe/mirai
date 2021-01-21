@@ -166,10 +166,17 @@ internal class NewContact {
                                     )
                                 }
                                 2 -> {
-                                    // 被邀请入群
+                                    // Bot 被邀请入群
                                     BotInvitedJoinGroupRequestEvent(
                                         bot, struct.msgSeq, actionUin,
                                         groupCode, groupName, actionUinNick
+                                    )
+                                }
+                                22 -> {
+                                    // 成员邀请入群
+                                    MemberJoinRequestEvent(
+                                        bot, struct.msgSeq, msgAdditional,
+                                        struct.reqUin, groupCode, groupName, reqUinNick, actionUin
                                     )
                                 }
                                 else -> throw contextualBugReportException(
