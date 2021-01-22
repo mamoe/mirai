@@ -131,7 +131,7 @@ internal class QQAndroidBot constructor(
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
+internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
     val limited: String = if (brief.length > 30) {
         brief.take(30) + "…"
     } else {
@@ -154,7 +154,7 @@ internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSecon
                 </msg>
             """.trimIndent()
 
-    return LongMessage(template, resId)
+    return LongMessageInternal(template, resId)
 }
 
 
