@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -136,28 +137,35 @@ internal class OnlineMessageSourceToTempImpl(
 @Serializable(OnlineMessageSourceToGroupImpl.Serializer::class)
 internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
-    override val internalIds: IntArray,
+    override val internalIds: IntArray, // aka random
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: Group
+    override val target: Group,
+    providedSequenceIds: IntArray? = null,
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+
+    private var providedSequenceIds: IntArray? = null
+
+    private val sequenceIdDeferred: Deferred<Int?>
+
+    init {
+        sequenceIdDeferred = providedSequenceIds?.singleOrNull()?.let { CompletableDeferred(it) }
+            ?: coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
+                timeoutMillis = 3000
+            ) {
+                if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
+                    it.sequenceId
+                } else null
+            }
+    }
 
     override val ids: IntArray
         get() = sequenceIds
     override val bot: Bot
         get() = sender
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-
-    private val sequenceIdDeferred: Deferred<Int?> =
-        coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
-            timeoutMillis = 3000
-        ) {
-            if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
-                it.sequenceId
-            } else null
-        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceIds: IntArray

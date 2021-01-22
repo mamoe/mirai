@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
+package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.contact.takeSingleContent
@@ -15,7 +15,8 @@ import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.MusicShare

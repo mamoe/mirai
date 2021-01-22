@@ -20,24 +20,43 @@ import net.mamoe.mirai.utils.safeCast
  *
  * @since 2.1
  */
-@MiraiExperimentalApi("This is very experimental")
-public class MusicShare @MiraiExperimentalApi("Constructor is subject to change") constructor(
+@MiraiExperimentalApi
+public class MusicShare(
+    /**
+     * 音乐应用类型
+     */
     public val type: MusicType,
+    /**
+     * 消息卡片标题
+     */
     public val title: String,
+    /**
+     * 消息卡片内容
+     */
     public val summary: String,
+    /**
+     * 在消息列表显示
+     */
     public val brief: String,
+    /**
+     * 点击卡片跳转网页 URL
+     */
     public val url: String,
+    /**
+     * 消息卡片图片 URL
+     */
     public val pictureUrl: String,
+    /**
+     * 音乐文件 URL
+     */
     public val musicUrl: String,
 ) : MessageContent, ConstrainSingle {
 
     override val key: MessageKey<*> get() = Key
 
-    @MiraiExperimentalApi
-    override fun contentToString(): String {
-        return "[$title]"
-    }
+    override fun contentToString(): String = "[分享]$title"
 
+    // MusicShare(type=NeteaseCloudMusic, title='ファッション', summary='rinahamu/Yunomi', brief='', url='http://music.163.com/song/1338728297/?userid=324076307', pictureUrl='http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg', musicUrl='http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307')
     override fun toString(): String {
         return "MusicShare(type=$type, title='$title', summary='$summary', brief='$brief', url='$url', pictureUrl='$pictureUrl', musicUrl='$musicUrl')"
     }
@@ -81,7 +100,6 @@ public class MusicShare @MiraiExperimentalApi("Constructor is subject to change"
 /**
  * @since 2.1
  */
-@MiraiExperimentalApi
 public enum class MusicType constructor(
     @MiraiInternalApi public val appId: Long,
     @MiraiInternalApi public val platform: Int,

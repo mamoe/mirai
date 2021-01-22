@@ -232,6 +232,7 @@ internal fun MessageChain.toRichTextElems(
                     )
                 )
             }
+            is MusicShare, // ignore MusicShare in MessageSource.originMessage transformation
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above

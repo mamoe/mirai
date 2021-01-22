@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbCmd0xb77
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
@@ -20,18 +21,25 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.MusicShare
 
-internal typealias MusicSharePacketResponse = OidbCmd0xb77.RspBody
-
 internal object MusicSharePacket :
-    OutgoingPacketFactory<MusicSharePacketResponse>("OidbSvc.0xb77_9") {
+    OutgoingPacketFactory<MusicSharePacket.Response>("OidbSvc.0xb77_9") {
 
-    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MusicSharePacketResponse {
-        val resp = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
-        return resp.bodybuffer.loadAs(OidbCmd0xb77.RspBody.serializer())
+    class Response(
+        val pkg: OidbSso.OIDBSSOPkg,
+    ) : Packet {
+        val response by lazy {
+            pkg.bodybuffer.loadAs(OidbCmd0xb77.RspBody.serializer())
+        }
+
+        override fun toString(): String =
+            "MusicSharePacket.Response(success=${pkg.result == 0}, error=${pkg.errorMsg})"
+    }
+
+    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+        return Response(readProtoBuf(OidbSso.OIDBSSOPkg.serializer()))
     }
 
     operator fun invoke(
@@ -75,9 +83,7 @@ internal object MusicSharePacket :
                             pictureUrl = pictureUrl,
                             musicUrl = musicUrl
                         )
-                    ).toByteArray(OidbCmd0xb77.ReqBody.serializer()).also {
-                        it.loadAs(OidbCmd0xb77.ReqBody.serializer()).soutv("SENT")
-                    }
+                    ).toByteArray(OidbCmd0xb77.ReqBody.serializer())
                 )
             )
         }

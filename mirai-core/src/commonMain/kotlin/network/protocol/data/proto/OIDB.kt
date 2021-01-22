@@ -964,9 +964,9 @@ internal class OidbSso : ProtoBuf {
         @ProtoNumber(5) @JvmField val errorMsg: String = "",
         @ProtoNumber(6) @JvmField val clientVersion: String = ""
     ) : ProtoBuf, Packet {
-        fun checkSuccess() {
+        fun checkSuccess(actionName: String) {
             check(result == 0) {
-                "command$command, result=$result, errorMsg=$errorMsg"
+                "${actionName.capitalize()} failed. result=$result, errorMsg=$errorMsg"
             }
         }
     }

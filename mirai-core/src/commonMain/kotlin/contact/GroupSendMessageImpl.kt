@@ -15,16 +15,17 @@ import net.mamoe.mirai.contact.MessageTooLargeException
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.GroupMessagePreSendEvent
+import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.forwardMessage
 import net.mamoe.mirai.internal.longMessage
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacketResponse
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.SendMessageMultiProtocol
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.SendMessageMultiProtocol
-import net.mamoe.mirai.internal.utils.soutv
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -129,8 +130,22 @@ private suspend fun GroupImpl.sendMessagePacket(
                     "Send group message failed: $resp"
                 }
             }
-            is MusicSharePacketResponse -> {
-                resp.soutv("OidbSso.OIDBSSOPkg RESP")
+            is MusicSharePacket.Response -> {
+                resp.pkg.checkSuccess("send group music share")
+
+                val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
+                    nextEventOrNull(3000) { it.fromAppId == 3116 }
+                        ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
+
+                source = OnlineMessageSourceToGroupImpl(
+                    group,
+                    internalIds = intArrayOf(receipt.messageRandom),
+                    providedSequenceIds = intArrayOf(receipt.sequenceId),
+                    sender = bot,
+                    target = group,
+                    time = currentTimeSeconds().toInt(),
+                    originalMessage = finalMessage
+                )
             }
         }
     }
