@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
 @Serializable
@@ -95,13 +96,13 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(3) val msgStyle: Int = 0,
         @JvmField @ProtoNumber(4) val senderUin: Long = 0L,
         @JvmField @ProtoNumber(5) val clientInfo: ClientInfo? = null,
-        @JvmField @ProtoNumber(6) val textMsg: String = "",
+        // @JvmField @ProtoNumber(6) val textMsg: String? = null,
         @JvmField @ProtoNumber(7) val extInfo: ExtInfo? = null,
         @JvmField @ProtoNumber(10) val sendType: Int = 0,
         @JvmField @ProtoNumber(11) val recvUin: Long = 0L,
         @JvmField @ProtoNumber(12) val richMsgBody: RichMsgBody? = null,
         @JvmField @ProtoNumber(13) val arkMsgBody: ArkMsgBody? = null,
-        @JvmField @ProtoNumber(14) val recvOpenid: String = "",
+        // @JvmField @ProtoNumber(14) val recvOpenid: String? = null, // don't be ""
         @JvmField @ProtoNumber(15) val arkv1MsgBody: ArkV1MsgBody? = null,
         @JvmField @ProtoNumber(16) val arkJsonBody: ArkJsonBody? = null,
         @JvmField @ProtoNumber(17) val xmlMsgBody: XmlMsgBody? = null,
@@ -138,7 +139,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(4) val level: Int = 0,
         @JvmField @ProtoNumber(5) val subLevel: Int = 0,
         @JvmField @ProtoNumber(6) val developMsg: String = ""
-    ) : ProtoBuf
+    ) : ProtoBuf, Packet
 
     @Serializable
     internal class TemplateItem(

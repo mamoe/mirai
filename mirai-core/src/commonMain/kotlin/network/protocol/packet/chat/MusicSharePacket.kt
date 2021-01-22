@@ -16,19 +16,22 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbCmd0xb77
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.MusicShare
-import kotlin.math.absoluteValue
-import kotlin.random.Random
+
+internal typealias MusicSharePacketResponse = OidbCmd0xb77.RspBody
 
 internal object MusicSharePacket :
-    OutgoingPacketFactory<OidbSso.OIDBSSOPkg>("OidbSvc.0xb77_9") {
+    OutgoingPacketFactory<MusicSharePacketResponse>("OidbSvc.0xb77_9") {
 
-    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): OidbSso.OIDBSSOPkg {
-        return readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
+    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MusicSharePacketResponse {
+        val resp = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
+        return resp.bodybuffer.loadAs(OidbCmd0xb77.RspBody.serializer())
     }
 
     operator fun invoke(
@@ -44,8 +47,9 @@ internal object MusicSharePacket :
                 OidbSso.OIDBSSOPkg(
                     command = 2935,
                     serviceType = 9,
+                    clientVersion = client.clientVersion,
                     bodybuffer = OidbCmd0xb77.ReqBody(
-                        appid = musicType.appID,
+                        appid = musicType.appId,
                         appType = 1,
                         msgStyle = if (url.isNotBlank()) 4 else 0, // 有播放连接为4, 无播放连接为0
                         clientInfo = OidbCmd0xb77.ClientInfo(
@@ -54,8 +58,8 @@ internal object MusicSharePacket :
                             androidPackageName = musicType.packageName,
                             androidSignature = musicType.signature
                         ),
-                        extInfo = OidbCmd0xb77.ExtInfo( // TODO: 2021/1/22
-                            msgSeq = Random.nextLong().absoluteValue
+                        extInfo = OidbCmd0xb77.ExtInfo(
+                            msgSeq = 0
                         ),
                         sendType = when (targetKind) {
                             MessageSourceKind.FRIEND -> 0
@@ -71,7 +75,9 @@ internal object MusicSharePacket :
                             pictureUrl = pictureUrl,
                             musicUrl = musicUrl
                         )
-                    ).toByteArray(OidbCmd0xb77.ReqBody.serializer())
+                    ).toByteArray(OidbCmd0xb77.ReqBody.serializer()).also {
+                        it.loadAs(OidbCmd0xb77.ReqBody.serializer()).soutv("SENT")
+                    }
                 )
             )
         }

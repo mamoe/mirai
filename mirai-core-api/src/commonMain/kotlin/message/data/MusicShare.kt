@@ -83,7 +83,7 @@ public class MusicShare @MiraiExperimentalApi("Constructor is subject to change"
  */
 @MiraiExperimentalApi
 public enum class MusicType constructor(
-    @MiraiInternalApi public val appID: Long,
+    @MiraiInternalApi public val appId: Long,
     @MiraiInternalApi public val platform: Int,
     @MiraiInternalApi public val sdkVersion: String,
     @MiraiInternalApi public val packageName: String,

@@ -19,9 +19,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readPacketExact
 import kotlin.contracts.InvocationKind
@@ -135,6 +137,14 @@ internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>):
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
     return ProtoBufWithNullableSupport.decodeFromByteArray(deserializer, this)
+}
+
+internal fun <T : ProtoBuf> ByteArray.loadOidb(deserializer: DeserializationStrategy<T>, log: Boolean = false): T {
+    val oidb = loadAs(OidbSso.OIDBSSOPkg.serializer())
+    if (log) {
+        oidb.soutv("OIDB")
+    }
+    return oidb.bodybuffer.loadAs(deserializer)
 }
 
 /**

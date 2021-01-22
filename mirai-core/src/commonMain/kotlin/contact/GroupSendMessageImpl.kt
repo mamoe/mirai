@@ -19,9 +19,12 @@ import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.forwardMessage
 import net.mamoe.mirai.internal.longMessage
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.SendMessageMultiProtocol
+import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -102,11 +105,14 @@ private suspend fun GroupImpl.sendMessagePacket(
 ): MessageReceipt<Group> {
     val group = this
 
-    val source: OnlineMessageSourceToGroupImpl
+    var source: OnlineMessageSourceToGroupImpl? = null
 
     bot.network.run {
-        MessageSvcPbSendMsg.createToGroup(bot.client, group, finalMessage) { source = it }
-            .sendAndExpect<MessageSvcPbSendMsg.Response>().let { resp ->
+        val resp = SendMessageMultiProtocol.createToGroup(bot.client, group, finalMessage) { source = it }
+            .sendAndExpect<Packet>()
+
+        when (resp) {
+            is MessageSvcPbSendMsg.Response -> {
                 if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                     if (allowResendAsLongMessage) {
                         return sendMessageImpl(originalMessage, finalMessage, true).second.getOrThrow()
@@ -123,10 +129,18 @@ private suspend fun GroupImpl.sendMessagePacket(
                     "Send group message failed: $resp"
                 }
             }
+            is MusicSharePacketResponse -> {
+                resp.soutv("OidbSso.OIDBSSOPkg RESP")
+            }
+        }
+    }
+
+    check(source != null) {
+        "Internal error: source is not initialized"
     }
 
     try {
-        source.ensureSequenceIdAvailable()
+        source!!.ensureSequenceIdAvailable()
     } catch (e: Exception) {
         bot.network.logger.warning(
             "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
@@ -135,7 +149,7 @@ private suspend fun GroupImpl.sendMessagePacket(
         )
     }
 
-    return MessageReceipt(source, group)
+    return MessageReceipt(source!!, group)
 }
 
 private suspend fun GroupImpl.uploadGroupLongMessageHighway(
