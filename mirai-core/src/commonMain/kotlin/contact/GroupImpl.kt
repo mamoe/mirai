@@ -116,10 +116,12 @@ internal class GroupImpl(
 
         val chain = broadcastGroupMessagePreSendEvent(message)
 
-        val (finalMessage, result) = sendMessageImpl(message, chain, false)
+        val result = sendMessageImpl(message, chain, false)
 
-        logMessageSent(finalMessage)
-        GroupMessagePostSendEvent(this, finalMessage, result.exceptionOrNull(), result.getOrNull()).broadcast()
+        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+        logMessageSent(chain)
+
+        GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
 
         return result.getOrThrow()
     }
