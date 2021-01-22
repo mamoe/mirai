@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MessageTooLargeException
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.GroupMessagePostSendEvent
 import net.mamoe.mirai.event.events.GroupMessagePreSendEvent
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.forwardMessage
@@ -34,7 +33,7 @@ internal suspend fun GroupImpl.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: Message,
     forceAsLongMessage: Boolean,
-): MessageReceipt<Group> {
+): Pair<MessageChain, Result<MessageReceipt<Group>>> {
     val chain = transformedMessage
         .transformSpecialMessages(this)
         .convertToLongMessageIfNeeded(originalMessage, forceAsLongMessage, this)
@@ -45,11 +44,13 @@ internal suspend fun GroupImpl.sendMessageImpl(
         updateFriendImageForGroupMessage(image)
     }
 
-    return sendMessagePacket(
-        originalMessage,
-        chain,
-        allowResendAsLongMessage = transformedMessage.takeSingleContent<LongMessageInternal>() == null
-    )
+    return chain to kotlin.runCatching {
+        sendMessagePacket(
+            originalMessage,
+            chain,
+            allowResendAsLongMessage = transformedMessage.takeSingleContent<LongMessageInternal>() == null
+        )
+    }
 }
 
 
@@ -101,42 +102,40 @@ private suspend fun GroupImpl.sendMessagePacket(
 ): MessageReceipt<Group> {
     val group = this
 
-    val result = bot.network.runCatching sendMsg@{
-        val source: OnlineMessageSourceToGroupImpl
-        MessageSvcPbSendMsg.createToGroup(bot.client, group, finalMessage) {
-            source = it
-        }.sendAndExpect<MessageSvcPbSendMsg.Response>().let { resp ->
-            if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                if (allowResendAsLongMessage) {
-                    return@sendMsg sendMessageImpl(originalMessage, finalMessage, true)
-                } else throw MessageTooLargeException(
-                    group,
-                    originalMessage,
-                    finalMessage,
-                    "Message '${finalMessage.content.take(10)}' is too large."
-                )
+    val source: OnlineMessageSourceToGroupImpl
+
+    bot.network.run {
+        MessageSvcPbSendMsg.createToGroup(bot.client, group, finalMessage) { source = it }
+            .sendAndExpect<MessageSvcPbSendMsg.Response>().let { resp ->
+                if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                    if (allowResendAsLongMessage) {
+                        return sendMessageImpl(originalMessage, finalMessage, true).second.getOrThrow()
+                    } else {
+                        throw MessageTooLargeException(
+                            group,
+                            originalMessage,
+                            finalMessage,
+                            "Message '${finalMessage.content.take(10)}' is too large."
+                        )
+                    }
+                }
+                check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send group message failed: $resp"
+                }
             }
-            check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                "Send group message failed: $resp"
-            }
-        }
-
-        try {
-            source.ensureSequenceIdAvailable()
-        } catch (e: Exception) {
-            bot.network.logger.warning(
-                "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
-                e
-
-            )
-        }
-
-        MessageReceipt(source, group)
     }
 
-    GroupMessagePostSendEvent(this, finalMessage, result.exceptionOrNull(), result.getOrNull()).broadcast()
+    try {
+        source.ensureSequenceIdAvailable()
+    } catch (e: Exception) {
+        bot.network.logger.warning(
+            "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
+            e
 
-    return result.getOrThrow()
+        )
+    }
+
+    return MessageReceipt(source, group)
 }
 
 private suspend fun GroupImpl.uploadGroupLongMessageHighway(

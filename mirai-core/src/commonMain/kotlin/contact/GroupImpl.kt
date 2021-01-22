@@ -116,9 +116,12 @@ internal class GroupImpl(
 
         val chain = broadcastGroupMessagePreSendEvent(message)
 
-        return sendMessageImpl(message, chain, false).also {
-            logMessageSent(chain)
-        }
+        val (finalMessage, result) = sendMessageImpl(message, chain, false)
+
+        logMessageSent(finalMessage)
+        GroupMessagePostSendEvent(this, finalMessage, result.exceptionOrNull(), result.getOrNull()).broadcast()
+
+        return result.getOrThrow()
     }
 
     @OptIn(ExperimentalTime::class)
