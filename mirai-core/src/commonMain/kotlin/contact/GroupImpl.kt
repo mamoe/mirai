@@ -129,15 +129,17 @@ internal class GroupImpl(
                 return sendMessageImpl(message.singleOrNull() ?: error("ForwardMessage must be standalone"), true)
             }
         }
-        if (message is ForwardMessage) {
-            check(message.nodeList.size < 200) {
+
+        val forward = message as? ForwardMessage ?: message.castOrNull<MessageChain>()?.findIsInstance<ForwardMessage>()
+        if (forward != null) {
+            check(forward.nodeList.size < 200) {
                 throw MessageTooLargeException(
-                    this, message, message,
-                    "ForwardMessage allows up to 200 nodes, but found ${message.nodeList.size}"
+                    this, forward, forward,
+                    "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
                 )
             }
 
-            return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, message.nodeList, false, message)
+            return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, forward.nodeList, false, forward)
         }
 
         val isLongOrForward = message is LongMessage || message is ForwardMessageInternal
