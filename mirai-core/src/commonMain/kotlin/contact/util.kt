@@ -165,34 +165,57 @@ internal fun MessageChain.verityLength(
 
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
-    fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
-        val displayId = if (sender is AnonymousMember) "匿名" else sender.id.toString()
-        return "[${group.name}(${group.id})] ${senderName}($displayId) -> $message".replaceMagicCodes()
+    fun renderMessage(message: MessageChain): String {
+        return message.filterNot { it is MessageSource }.joinToString("").replaceMagicCodes()
     }
 
-    when (this) {
-        is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
-            renderGroupMessage(group, senderName, sender, message)
+    fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
+        val displayId = if (sender is AnonymousMember) "匿名" else sender.id.toString()
+        return "[${group.name}(${group.id})] ${senderName}($displayId) -> ${renderMessage(message)}"
+    }
+
+    fun renderGroupTempMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
+        return "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderStrangerMessage(senderName: String, sender: User, message: MessageChain): String {
+        return "[$senderName(Stranger ${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderFriendMessage(sender: User, message: MessageChain): String {
+        return "${sender.nick}(${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderOtherClientMessage(client: OtherClient): String {
+        return "${client.platform} -> ${renderMessage(message)}"
+    }
+
+
+    bot.logger.verbose {
+        when (this) {
+            is net.mamoe.mirai.event.events.GroupMessageEvent ->
+                renderGroupMessage(group, senderName, sender, message)
+            is net.mamoe.mirai.event.events.GroupMessageSyncEvent ->
+                renderGroupMessage(group, senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.GroupTempMessageEvent ->
+                renderGroupTempMessage(group, senderName, sender, message)
+            is net.mamoe.mirai.event.events.GroupTempMessageSyncEvent ->
+                renderGroupTempMessage(group, senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.StrangerMessageEvent,
+            is net.mamoe.mirai.event.events.StrangerMessageSyncEvent ->
+                renderStrangerMessage(senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.FriendMessageEvent,
+            is net.mamoe.mirai.event.events.FriendMessageSyncEvent ->
+                renderFriendMessage(sender, message)
+
+            is net.mamoe.mirai.event.events.OtherClientMessageEvent ->
+                renderOtherClientMessage(client)
+
+            else -> toString()
         }
-        is net.mamoe.mirai.event.events.GroupTempMessageEvent -> bot.logger.verbose {
-            "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.StrangerMessageEvent -> bot.logger.verbose {
-            "[$senderName(Stranger ${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
-            "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.OtherClientMessageEvent -> bot.logger.verbose {
-            "${client.platform} -> $message".replaceMagicCodes()
-        }
-        is GroupMessageSyncEvent -> bot.logger.verbose {
-            renderGroupMessage(group, senderName, sender, message)
-        }
-        is MessageSyncEvent -> bot.logger.verbose {
-            "${this.subject} <- $message".replaceMagicCodes()
-        }
-        else -> bot.logger.verbose(toString())
     }
 }
 

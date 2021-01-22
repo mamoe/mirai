@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("RESULT_CLASS_IN_RETURN_TYPE") // inline ABI not stable but we don't care about internal ABI
+
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.Contact
@@ -37,7 +39,7 @@ internal suspend fun GroupImpl.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: Message,
     forceAsLongMessage: Boolean,
-): Pair<MessageChain, Result<MessageReceipt<Group>>> {
+): Result<MessageReceipt<Group>> { // Result<MessageReceipt<Group>>
     val chain = transformedMessage
         .transformSpecialMessages(this)
         .convertToLongMessageIfNeeded(originalMessage, forceAsLongMessage, this)
@@ -48,7 +50,7 @@ internal suspend fun GroupImpl.sendMessageImpl(
         updateFriendImageForGroupMessage(image)
     }
 
-    return chain to kotlin.runCatching {
+    return kotlin.runCatching {
         sendMessagePacket(
             originalMessage,
             chain,
@@ -116,7 +118,7 @@ private suspend fun GroupImpl.sendMessagePacket(
             is MessageSvcPbSendMsg.Response -> {
                 if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                     if (allowResendAsLongMessage) {
-                        return sendMessageImpl(originalMessage, finalMessage, true).second.getOrThrow()
+                        return sendMessageImpl(originalMessage, finalMessage, true).getOrThrow()
                     } else {
                         throw MessageTooLargeException(
                             group,
