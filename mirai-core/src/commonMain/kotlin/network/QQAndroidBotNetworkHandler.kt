@@ -275,6 +275,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         bot.otherClientsLock.withLock {
             updateOtherClientsList()
         }
+
+        bot.refreshSKey()
     }
 
     private suspend fun registerClientOnline() {
@@ -770,7 +772,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     @PublishedApi
-    internal val packetListeners = ConcurrentLinkedQueue<PacketListener>()
+    internal val packetListeners: ConcurrentLinkedQueue<PacketListener> = ConcurrentLinkedQueue()
 
     @PublishedApi
     internal inner class PacketListener(

@@ -415,7 +415,7 @@ internal class WLoginSigInfo(
     val userA5: UserA5,
     val userA8: UserA8,
     val lsKey: LSKey,
-    val sKey: SKey,
+    var sKey: SKey,
     val userSig64: UserSig64,
     val openId: ByteArray,
     val openKey: OpenKey,

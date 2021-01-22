@@ -26,6 +26,8 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin15
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -116,6 +118,16 @@ internal class QQAndroidBot constructor(
             return SummaryCard.ReqSummaryCard(client, targetId)
                 .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
         }
+    }
+
+    suspend fun refreshSKey() {
+        client.wLoginSigInfo.sKey
+
+        val resp = network.run {
+            WtLogin15(client).sendAndExpect<WtLogin.Login.LoginPacketResponse>()
+        }
+
+        logger.debug { resp.toString() }
     }
 
     /**
