@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -96,6 +97,15 @@ public open class BotConfiguration { // open for Java
     public var reconnectionRetryTimes: Int = Int.MAX_VALUE
 
     /**
+     * 在被挤下线时 ([BotOfflineEvent.Force]) 自动重连. 默认为 `false`.
+     *
+     * 其他情况掉线都默认会自动重连, 详见 [BotOfflineEvent.reconnect]
+     *
+     * @since 2.1
+     */
+    public var autoReconnectOnForceOffline: Boolean = false
+
+    /**
      * 验证码处理器
      *
      * - 在 Android 需要手动提供 [LoginSolver]
@@ -128,6 +138,14 @@ public open class BotConfiguration { // open for Java
             prettyPrint = true
         }
     }.getOrElse { Json {} }
+
+    /**
+     * 设置 [autoReconnectOnForceOffline] 为 `true`, 即在被挤下线时自动重连.
+     * @since 2.1
+     */
+    public fun autoReconnectOnForceOffline() {
+        autoReconnectOnForceOffline = true
+    }
 
     /**
      * 使用随机设备信息.

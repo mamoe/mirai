@@ -60,7 +60,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public val title: String,
         public val message: String,
     ) : BotOfflineEvent(), Packet, BotPassiveEvent {
-        override var reconnect: Boolean = false
+        override var reconnect: Boolean = bot.configuration.autoReconnectOnForceOffline
     }
 
     /**
