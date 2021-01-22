@@ -4616,6 +4616,41 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun toPlainText (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/PlainText;
 }
 
+public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/MusicShare$Key;
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrief ()Ljava/lang/String;
+	public final fun getJumpUrl ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public final fun getMusicUrl ()Ljava/lang/String;
+	public final fun getPictureUrl ()Ljava/lang/String;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getType ()Lnet/mamoe/mirai/message/data/MusicType;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public final class net/mamoe/mirai/message/data/MusicType : java/lang/Enum {
+	public static final field MiguMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public static final field NeteaseCloudMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public static final field QQMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public final fun getAppId ()J
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getPlatform ()I
+	public final fun getSdkVersion ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MusicType;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/MusicType;
+}
+
 public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/mamoe/mirai/message/data/MessageSource {
 	public static final field Key Lnet/mamoe/mirai/message/data/OfflineMessageSource$Key;
 	public fun <init> ()V
