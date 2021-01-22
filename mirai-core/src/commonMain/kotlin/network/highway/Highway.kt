@@ -15,7 +15,6 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull
@@ -34,7 +33,6 @@ import net.mamoe.mirai.internal.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import kotlin.math.roundToInt
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 
@@ -83,10 +81,9 @@ internal suspend fun HttpClient.postImage(
 } == HttpStatusCode.OK
 
 
-internal object HighwayHelper {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @OptIn(ExperimentalTime::class)
-    suspend fun uploadImageToServers(
+internal object Highway {
+
+    suspend fun uploadResource(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
@@ -104,7 +101,7 @@ internal object HighwayHelper {
         }
 
         val time = measureTime {
-            uploadImage(
+            uploadResourceImpl(
                 client = bot.client,
                 serverIp = ip,
                 serverPort = port,
@@ -120,9 +117,7 @@ internal object HighwayHelper {
         }
     }
 
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @OptIn(InternalCoroutinesApi::class)
-    internal suspend fun uploadImage(
+    private suspend fun uploadResourceImpl(
         client: QQAndroidClient,
         serverIp: String,
         serverPort: Int,
@@ -209,30 +204,6 @@ internal object HighwayHelper {
             parameter("mType", "pttDu")
             parameter("voice_encodec", resource.voiceCodec)
             body = resource.consumeAsWriteChannelContent(null)
-        }
-    }
-}
-
-internal class ChunkedFlowSession<T>(
-    private val input: InputStream,
-    private val buffer: ByteArray,
-    private val mapper: (buffer: ByteArray, size: Int, offset: Long) -> T
-) : Closeable {
-    override fun close() {
-        input.close()
-    }
-
-    private var offset = 0L
-
-    @Suppress("BlockingMethodInNonBlockingContext")
-    internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) = withUse {
-        runBIO {
-            while (true) {
-                val size = input.read(buffer)
-                if (size == -1) return@runBIO
-                block(mapper(buffer, size, offset))
-                offset += size
-            }
         }
     }
 }

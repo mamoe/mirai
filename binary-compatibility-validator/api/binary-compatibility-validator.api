@@ -4093,6 +4093,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public synthetic fun add (ILjava/lang/Object;)V
 	public fun add (ILnet/mamoe/mirai/message/data/ForwardMessage$INode;)V
 	public synthetic fun add (Ljava/lang/Object;)Z
+	public final fun add (Lnet/mamoe/mirai/event/events/MessageEvent;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public fun add (Lnet/mamoe/mirai/message/data/ForwardMessage$INode;)Z
 	public fun addAll (ILjava/util/Collection;)Z
 	public fun addAll (Ljava/util/Collection;)Z

@@ -72,7 +72,7 @@ internal fun MessageChain.toRichTextElems(
                     )
                     transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
                 }
-                is LongMessage -> {
+                is LongMessageInternal -> {
                     check(longTextResId == null) { "There must be no more than one LongMessage element in the message chain" }
                     elements.add(
                         ImMsgBody.Elem(
@@ -375,7 +375,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            if (last is LongMessage && element is PlainText) {
+            if (last is LongMessageInternal && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     previousLast = last
                     last = element
@@ -535,7 +535,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(
                     1 -> @Suppress("DEPRECATION_ERROR")
                     list.add(SimpleServiceMessage(1, content))
                     /**
-                     * [LongMessage], [ForwardMessage]
+                     * [LongMessageInternal], [ForwardMessage]
                      */
                     35 -> {
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
