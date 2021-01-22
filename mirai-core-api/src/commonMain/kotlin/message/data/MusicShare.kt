@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.safeCast
  * @since 2.1
  */
 @MiraiExperimentalApi
-public class MusicShare(
+public class MusicShare @JvmOverloads constructor(
     /**
      * 音乐应用类型
      */
@@ -35,13 +35,9 @@ public class MusicShare(
      */
     public val summary: String,
     /**
-     * 在消息列表显示
-     */
-    public val brief: String,
-    /**
      * 点击卡片跳转网页 URL
      */
-    public val url: String,
+    public val jumpUrl: String,
     /**
      * 消息卡片图片 URL
      */
@@ -50,15 +46,20 @@ public class MusicShare(
      * 音乐文件 URL
      */
     public val musicUrl: String,
+    /**
+     * 在消息列表显示
+     */
+    public val brief: String = "[分享]$title",
 ) : MessageContent, ConstrainSingle {
 
     override val key: MessageKey<*> get() = Key
 
-    override fun contentToString(): String = "[分享]$title"
+    override fun contentToString(): String =
+        brief.takeIf { it.isNotBlank() } ?: "[分享]$title" // empty content is not accepted by `sendMessage`
 
     // MusicShare(type=NeteaseCloudMusic, title='ファッション', summary='rinahamu/Yunomi', brief='', url='http://music.163.com/song/1338728297/?userid=324076307', pictureUrl='http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg', musicUrl='http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307')
     override fun toString(): String {
-        return "MusicShare(type=$type, title='$title', summary='$summary', brief='$brief', url='$url', pictureUrl='$pictureUrl', musicUrl='$musicUrl')"
+        return "MusicShare(type=$type, title='$title', summary='$summary', brief='$brief', url='$jumpUrl', pictureUrl='$pictureUrl', musicUrl='$musicUrl')"
     }
 
 
@@ -74,7 +75,7 @@ public class MusicShare(
         if (title != other.title) return false
         if (summary != other.summary) return false
         if (brief != other.brief) return false
-        if (url != other.url) return false
+        if (jumpUrl != other.jumpUrl) return false
         if (pictureUrl != other.pictureUrl) return false
         if (musicUrl != other.musicUrl) return false
 
@@ -86,7 +87,7 @@ public class MusicShare(
         result = 31 * result + title.hashCode()
         result = 31 * result + summary.hashCode()
         result = 31 * result + brief.hashCode()
-        result = 31 * result + url.hashCode()
+        result = 31 * result + jumpUrl.hashCode()
         result = 31 * result + pictureUrl.hashCode()
         result = 31 * result + musicUrl.hashCode()
         return result

@@ -59,7 +59,7 @@ internal object MusicSharePacket :
                     bodybuffer = OidbCmd0xb77.ReqBody(
                         appid = musicType.appId,
                         appType = 1,
-                        msgStyle = if (url.isNotBlank()) 4 else 0, // 有播放连接为4, 无播放连接为0
+                        msgStyle = if (jumpUrl.isNotBlank()) 4 else 0, // 有播放连接为4, 无播放连接为0
                         clientInfo = OidbCmd0xb77.ClientInfo(
                             platform = musicType.platform,
                             sdkVersion = musicType.sdkVersion,
@@ -79,7 +79,7 @@ internal object MusicSharePacket :
                             title = title,
                             summary = summary,
                             brief = brief,
-                            url = url,
+                            url = jumpUrl,
                             pictureUrl = pictureUrl,
                             musicUrl = musicUrl
                         )
