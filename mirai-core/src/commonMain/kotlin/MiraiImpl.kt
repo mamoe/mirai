@@ -102,6 +102,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
+    @Suppress("DEPRECATION")
     override val BotFactory: BotFactory
         get() = BotFactoryImpl
 

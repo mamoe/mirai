@@ -20,8 +20,12 @@ import net.mamoe.mirai.utils.BotConfiguration
 /**
  * QQ for Android
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
-object BotFactoryImpl : BotFactory {
+@Deprecated(
+    "BotFactoryImpl was accidentally made public, use BotFactory.INSTANCE instead",
+    ReplaceWith("BotFactory", "net.mamoe.mirai.BotFactory"),
+    DeprecationLevel.WARNING,
+)
+public object BotFactoryImpl : BotFactory {
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
