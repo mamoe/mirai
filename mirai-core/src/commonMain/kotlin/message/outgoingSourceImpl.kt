@@ -146,12 +146,8 @@ internal class OnlineMessageSourceToGroupImpl(
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
 
-    private var providedSequenceIds: IntArray? = null
-
-    private val sequenceIdDeferred: Deferred<Int?>
-
-    init {
-        sequenceIdDeferred = providedSequenceIds?.singleOrNull()?.let { CompletableDeferred(it) }
+    private val sequenceIdDeferred: Deferred<Int?> =
+        providedSequenceIds?.singleOrNull()?.let { CompletableDeferred(it) }
             ?: coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
                 timeoutMillis = 3000
             ) {
@@ -159,7 +155,6 @@ internal class OnlineMessageSourceToGroupImpl(
                     it.sequenceId
                 } else null
             }
-    }
 
     override val ids: IntArray
         get() = sequenceIds
