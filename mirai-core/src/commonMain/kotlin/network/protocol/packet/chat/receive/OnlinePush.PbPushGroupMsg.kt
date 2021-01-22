@@ -33,7 +33,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 
@@ -63,7 +62,6 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         val msgHead = pbPushMsg.msg.msgHead
 
-        msgHead.fromAppid.soutv("fromAppId")
         val isFromSelfAccount = msgHead.fromUin == bot.id
         if (isFromSelfAccount) {
             val messageRandom = pbPushMsg.msg.msgBody.richText.attr?.random ?: return null
