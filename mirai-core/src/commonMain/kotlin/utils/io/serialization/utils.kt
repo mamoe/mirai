@@ -27,6 +27,8 @@ import net.mamoe.mirai.utils.readPacketExact
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+internal typealias KtProtoBuf = kotlinx.serialization.protobuf.ProtoBuf
+
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,
     name: String? = null
@@ -127,14 +129,14 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.encodeToByteArray(serializer, this)
+    return KtProtoBuf.encodeToByteArray(serializer, this)
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.decodeFromByteArray(deserializer, this)
+    return KtProtoBuf.decodeFromByteArray(deserializer, this)
 }
 
 /**
@@ -143,7 +145,7 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
-): T = ProtoBufWithNullableSupport.decodeFromByteArray(serializer, this.readBytes(length))
+): T = KtProtoBuf.decodeFromByteArray(serializer, this.readBytes(length))
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
