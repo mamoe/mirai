@@ -13,8 +13,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.message.data.LightApp
+import net.mamoe.mirai.message.data.MusicKind
 import net.mamoe.mirai.message.data.MusicShare
-import net.mamoe.mirai.message.data.MusicType
 import net.mamoe.mirai.message.data.SingleMessage
 
 private val json = Json {
@@ -34,10 +34,10 @@ internal fun LightApp.refine(): SingleMessage {
     val struct = tryDeserialize() ?: return this
     struct.run {
         if (meta.music != null) {
-            MusicType.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
+            MusicKind.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
                 meta.music.run {
                     return MusicShare(
-                        type = musicType, title = title, summary = desc,
+                        kind = musicType, title = title, summary = desc,
                         jumpUrl = jumpUrl, pictureUrl = preview, musicUrl = musicUrl, brief = prompt
                     )
                 }

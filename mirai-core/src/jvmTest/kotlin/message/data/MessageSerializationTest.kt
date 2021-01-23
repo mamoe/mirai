@@ -28,7 +28,7 @@ internal class MessageSerializationTest {
     private val format
         get() = Json {
             serializersModule = module
-            useArrayPolymorphism = false // ?
+            useArrayPolymorphism = false
             ignoreUnknownKeys = true
         }
 
@@ -101,6 +101,7 @@ internal class MessageSerializationTest {
         LightApp("lightApp"),
         image.flash(),
         image.toForwardMessage(1L, "test"),
+        MusicShare(MusicKind.NeteaseCloudMusic, "123", "123", "123", "123", "123", "123")
     )
 
     companion object {
