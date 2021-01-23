@@ -459,7 +459,12 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         syncMessageSvc()
 
         bot.firstLoginSucceed = true
+        postInitActions()
 
+        Unit // dont remove. can help type inference
+    }
+
+    override suspend fun postInitActions() {
         _pendingEnabled.value = false
         pendingIncomingPackets?.forEach {
             runCatching {
@@ -474,6 +479,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 logger.error("Exception on processing pendingIncomingPackets.", it)
             }
         }
+
         val list = pendingIncomingPackets
         pendingIncomingPackets = null // release, help gc
         list?.clear() // help gc
@@ -483,15 +489,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.getOrElse {
             logger.error("Exception on broadcasting BotOnlineEvent.", it)
         }
-
-        Unit // dont remove. can help type inference
     }
 
     init {
         @Suppress("RemoveRedundantQualifierName")
-        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
-            this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
-        }
+        val listener = bot.eventChannel
+            .parentJob(supervisor)
+            .subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
+                this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
+            }
         supervisor.invokeOnCompletion { listener.cancel() }
     }
 

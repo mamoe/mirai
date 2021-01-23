@@ -45,12 +45,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 ) : Bot, CoroutineScope {
     // FASTEST INIT
 
+    val supervisor = SupervisorJob(configuration.parentCoroutineContext[Job])
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
-            .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
+            .plus(supervisor)
             .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
                 ?: CoroutineExceptionHandler { _, e ->
                     logger.error("An exception was thrown under a coroutine of Bot", e)
@@ -92,20 +93,18 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
-        this@AbstractBot.eventChannel.parentScope(this).subscribeAlways(
+        this@AbstractBot.eventChannel.parentJob(supervisor).subscribeAlways(
             priority = MONITOR,
             concurrency = ConcurrencyKind.LOCKED
         ) { event ->
-            if (!event.bot.isActive) {
-                // bot closed
-                return@subscribeAlways
-            }
-            if (!::_network.isInitialized) {
-                // bot 还未登录就被 close
-                return@subscribeAlways
-            }
-            if (_isConnecting) {
-                // bot 还在登入
+            if (
+                !event.bot.isActive // bot closed
+                || !::_network.isInitialized // bot 还未登录就被 close
+                || _isConnecting // bot 还在登入
+            ) {
+                // Close network to avoid endless reconnection while network is ok
+                // https://github.com/mamoe/mirai/issues/894
+                kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
                 return@subscribeAlways
             }
             /*
@@ -122,7 +121,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
-                    if (!event.reconnect) {
+                    if (event.reconnect) {
+                        bot.logger.info { "Waiting for reconnection..." }
+                        delay(3000)
+                    } else {
                         network.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
                     }
                 }
@@ -167,13 +169,21 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     if (tryCount != 0) {
                         delay(configuration.reconnectPeriodMillis)
                     }
-                    network.withConnectionLock {
-                        /**
-                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
-                         */
-                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
-                    }
+
+
+                    // Close network to avoid endless reconnection while network is ok
+                    // https://github.com/mamoe/mirai/issues/894
+                    kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
+
+                    login()
+                    _network.postInitActions()
+//                    network.withConnectionLock {
+//                        /**
+//                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
+//                         */
+//                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+//                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
+//                    }
                     launch {
                         BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
                     }
