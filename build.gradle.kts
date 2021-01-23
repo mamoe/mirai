@@ -101,9 +101,9 @@ allprojects {
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
 
-        // blockingBridge {
-        //     unitCoercion = COMPATIBILITY
-        // }
+        blockingBridge {
+            unitCoercion = net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
+        }
 
         //  useIr()
 
