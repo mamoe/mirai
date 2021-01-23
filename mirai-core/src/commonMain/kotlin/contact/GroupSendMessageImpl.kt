@@ -109,10 +109,6 @@ private suspend fun GroupImpl.sendMessagePacket(
     step: GroupMessageSendingStep,
 ): MessageReceipt<Group> {
 
-    println("SENDING")
-    println(originalMessage)
-    println(finalMessage)
-
     val group = this
 
     val source: OnlineMessageSourceToGroupImpl
