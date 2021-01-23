@@ -511,7 +511,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         // 1001: No message meets the requirements (实际上是没权限, 管理员在尝试撤回群主的消息)
         // 154: timeout
         // 3: <no message>
-        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids}: $response" }
+        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
     @LowLevelApi
