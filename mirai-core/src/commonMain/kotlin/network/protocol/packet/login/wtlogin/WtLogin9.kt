@@ -32,6 +32,7 @@ internal object WtLogin9 : WtLoginExt {
 
                 t18(appId, client.appClientVersion, client.uin)
                 t1(client.uin, client.device.ipAddress)
+
                 t106(appId, client)
 
                 /* // from GetStWithPasswd

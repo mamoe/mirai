@@ -347,8 +347,9 @@ internal class WtLogin {
                         outPt4TokenMap
                     )
 
-                    var a1: ByteArray? = null
-                    var noPicSig: ByteArray? = null
+                    var a1: ByteArray? =
+                        (tlvMap119[0x106] ?: EMPTY_BYTE_ARRAY) //+ (tlvMap119[0x10c] ?: EMPTY_BYTE_ARRAY)
+                    var noPicSig: ByteArray? = tlvMap119[0x16a]
                     tlvMap119[0x531]?.let {
                         analysisTlv0x531(it) { arg1, arg2 ->
                             a1 = arg1

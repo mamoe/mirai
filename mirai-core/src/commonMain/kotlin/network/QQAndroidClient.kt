@@ -331,6 +331,8 @@ internal open class QQAndroidClient(
 
     var transportSequenceId = 1
 
+    var lastT106Full: ByteArray? = null
+
     lateinit var t104: ByteArray
 }
 

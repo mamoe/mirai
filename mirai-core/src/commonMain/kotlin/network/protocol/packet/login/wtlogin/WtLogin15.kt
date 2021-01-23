@@ -13,6 +13,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
 internal object WtLogin15 : WtLoginExt {
     private const val subCommand = 15.toShort()
@@ -29,14 +30,21 @@ internal object WtLogin15 : WtLoginExt {
 
                 t18(16, uin = client.uin)
                 t1(client.uin, client.device.ipAddress)
-                t106(appId, client)
+
+                writeShort(0x106)
+                writeShortLVByteArray(client.wLoginSigInfo.encryptA1!!)
+
+                client.wLoginSigInfo.encryptA1
                 t116(client.miscBitMap, client.subSigMap)
                 t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
                 t107(0)
                 t142(client.apkId)
                 t144(client)
                 t145(client.device.guid)
-                t16a(client.tlv16a ?: byteArrayOf()) // new
+
+                val t16a = client.tlv16a ?: error("Internal error: doing exchange emp 15 while tlv16a=null")
+                t16a(t16a) // new
+
                 t154(sequenceId)
                 t141(client.device.simInfo, client.networkType, client.device.apn)
                 t8(2052)
