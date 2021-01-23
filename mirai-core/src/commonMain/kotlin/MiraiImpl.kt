@@ -433,7 +433,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         group.id,
                         source.sequenceIds,
                         source.internalIds
-                    ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                    ).sendAndExpect()
                 }
             }
             is OnlineMessageSourceFromFriendImpl,

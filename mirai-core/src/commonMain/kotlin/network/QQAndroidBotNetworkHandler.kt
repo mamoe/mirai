@@ -736,6 +736,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
     }
 
+    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2
+    ): E {
+        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+    }
+
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
