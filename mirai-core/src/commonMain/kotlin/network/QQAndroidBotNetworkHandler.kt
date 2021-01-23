@@ -15,7 +15,9 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
@@ -393,11 +395,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
             .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 5)
 
-        troopListData.groups.chunked(30).forEach { chunk ->
-            coroutineScope {
-                chunk.forEach {
-                    launch {
-                        retryCatching(5) { it.reloadGroup() }.getOrThrow()
+        val semaphore = Semaphore(30)
+
+        coroutineScope {
+            troopListData.groups.forEach { group ->
+                launch {
+                    semaphore.withPermit {
+                        retryCatching(5) { group.reloadGroup() }.getOrThrow()
                     }
                 }
             }
