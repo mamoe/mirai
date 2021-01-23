@@ -119,14 +119,11 @@ private suspend fun GroupImpl.sendMessagePacket(
 
     bot.network.run {
         SendMessageMultiProtocol.createToGroup(
-            bot.client,
-            group,
-            finalMessage,
+            bot.client, group, finalMessage,
             step == GroupMessageSendingStep.FRAGMENTED
         ) { source = it }.forEach { packet ->
-            val resp = packet.sendAndExpect<Packet>()
 
-            when (resp) {
+            when (val resp = packet.sendAndExpect<Packet>()) {
                 is MessageSvcPbSendMsg.Response -> {
                     if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                         return when (step) {

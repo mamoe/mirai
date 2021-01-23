@@ -28,14 +28,15 @@ internal object SendMessageMultiProtocol {
         client: QQAndroidClient,
         group: Group,
         message: MessageChain,
+        fragmented: Boolean,
         crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit
-    ): OutgoingPacket {
+    ): List<OutgoingPacket> {
         contract { callsInPlace(sourceCallback, InvocationKind.AT_MOST_ONCE) }
 
         message.takeSingleContent<MusicShare>()?.let { musicShare ->
-            return MusicSharePacket(client, musicShare, group.uin, targetKind = MessageSourceKind.GROUP)
+            return listOf(MusicSharePacket(client, musicShare, group.uin, targetKind = MessageSourceKind.GROUP))
         }
 
-        return MessageSvcPbSendMsg.createToGroup(client, group, message, sourceCallback)
+        return MessageSvcPbSendMsg.createToGroup(client, group, message, fragmented, sourceCallback)
     }
 }
