@@ -122,8 +122,8 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
                     if (event.reconnect) {
-                        bot.logger.info { "Waiting for reconnection..." }
-                        delay(3000)
+                        bot.logger.info { "Reconnecting..." }
+                        // delay(3000)
                     } else {
                         network.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
                     }
