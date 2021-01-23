@@ -11,6 +11,9 @@ package net.mamoe.mirai.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
+/**
+ * 用户详细资料
+ */
 @MiraiExperimentalApi
 public interface UserProfile {
     public val nickname: String
@@ -27,6 +30,7 @@ public interface UserProfile {
     public enum class Sex {
         MALE,
         FEMALE,
+
         /** 保密 */
         UNKNOWN;
     }

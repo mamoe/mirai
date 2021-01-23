@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,8 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.UserMessagePostSendEvent
 import net.mamoe.mirai.event.events.UserMessagePreSendEvent
@@ -87,6 +89,14 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
     public override fun nudge(): UserNudge
+
+    /**
+     * 查询用户信息
+     *
+     * @since 2.1
+     */
+    @JvmBlockingBridge
+    public suspend fun queryProfile(): UserProfile = Mirai.queryProfile(bot, this.id)
 }
 
 /**

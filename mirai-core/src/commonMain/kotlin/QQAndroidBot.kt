@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
-import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -111,12 +110,6 @@ internal class QQAndroidBot constructor(
         return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
 
-    override suspend fun queryProfile(targetId: Long): UserProfile {
-        network.apply {
-            return SummaryCard.ReqSummaryCard(client, targetId)
-                .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
-        }
-    }
 
     /**
      * 获取 获取群公告 所需的 bkn 参数

@@ -39,8 +39,6 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun login (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/BotNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
-	public fun queryProfile (J)Lnet/mamoe/mirai/data/UserProfile;
-	public abstract fun queryProfile (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/Bot$Companion {
@@ -118,6 +116,8 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)V
 	public fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public abstract fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun queryProfile (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/data/UserProfile;
+	public abstract fun queryProfile (Lnet/mamoe/mirai/Bot;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recallFriendMessageRaw (Lnet/mamoe/mirai/Bot;J[I[II)Z
 	public fun recallGroupMessageRaw (Lnet/mamoe/mirai/Bot;J[I[I)Z
 	public fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[II)Z
@@ -205,6 +205,7 @@ public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/ma
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -367,6 +368,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -430,6 +432,7 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
@@ -483,6 +486,7 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -562,6 +566,7 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/StrangerNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -570,6 +575,7 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 }
 
 public abstract interface class net/mamoe/mirai/contact/TempUser : net/mamoe/mirai/contact/User {
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
@@ -580,6 +586,8 @@ public abstract interface class net/mamoe/mirai/contact/User : kotlinx/coroutine
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
+	public fun queryProfile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;

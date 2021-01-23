@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
@@ -908,6 +909,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         is DeferredOriginUrlAware -> image.getUrl(bot)
         is SuspendDeferredOriginUrlAware -> image.getUrl(bot)
         else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
+    }
+
+    override suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile {
+        bot.asQQAndroidBot().network.apply {
+            return SummaryCard.ReqSummaryCard(bot.client, targetId)
+                .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
+        }
     }
 
     override suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean {
