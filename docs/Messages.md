@@ -57,6 +57,7 @@ Mirai 支持富文本消息。
 [`Image`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Image.kt
 [`FlashImage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/FlashImage.kt
 [`MarketFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MarketFace.kt
+[`MusicShare`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MusicShare.kt
 
 [`MessageSource`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageSource.kt
 [`QuoteReply`]: ../mirai-core-api/src/commonMain/kotlin/message/data/QuoteReply.kt
@@ -80,8 +81,9 @@ Mirai 支持富文本消息。
 |      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`       |
 |    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                |
 |      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*               |
-|    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[转发消息]`            |
+|    [`ForwardMessage`]    | ...                                         | 合并转发              | `[转发消息]`             |
 | [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`              |
+|      [`MusicShare`]      | ...                                          | (自 2.1) 音乐分享     | `[分享]曲名`              |
 
 **请打开相关消息类型的源码查看用法。**
 
