@@ -12,6 +12,7 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
@@ -87,8 +88,12 @@ public data class MusicShare(
 
     // MusicShare(type=NeteaseCloudMusic, title='ファッション', summary='rinahamu/Yunomi', brief='', url='http://music.163.com/song/1338728297/?userid=324076307', pictureUrl='http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg', musicUrl='http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307')
 
+    /**
+     * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
+     */
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, MusicShare>(MessageContent, { it.safeCast() })
+        AbstractPolymorphicMessageKey<@MiraiExperimentalApi MessageContent, MusicShare>
+            (MessageContent, { it.safeCast() })
 }
 
 /**
@@ -123,4 +128,6 @@ public enum class MusicKind constructor(
         "cmccwm.mobilemusic",
         "6cdc72a439cef99a3418d2a78aa28c73"
     )
+
+    // add more?  https://github.com/mamoe/mirai/issues/new/choose
 }
