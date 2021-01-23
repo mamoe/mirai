@@ -42,10 +42,15 @@ import net.mamoe.mirai.utils.*
 internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("OnlinePush.PbPushGroupMsg") {
     internal class SendGroupMessageReceipt(
         val messageRandom: Int,
-        val sequenceId: Int
+        val sequenceId: Int,
+        val fromAppId: Int,
     ) : Packet, Event, Packet.NoLog, AbstractEvent() {
         override fun toString(): String {
             return "OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt(messageRandom=$messageRandom, sequenceId=$sequenceId)"
+        }
+
+        companion object {
+            val EMPTY = SendGroupMessageReceipt(0, 0, 0)
         }
     }
 
@@ -61,11 +66,13 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         if (isFromSelfAccount) {
             val messageRandom = pbPushMsg.msg.msgBody.richText.attr?.random ?: return null
 
-            if (bot.client.syncingController.pendingGroupMessageReceiptCacheList.contains { it.messageRandom == messageRandom }) {
+            if (bot.client.syncingController.pendingGroupMessageReceiptCacheList.contains { it.messageRandom == messageRandom }
+                || msgHead.fromAppid == 3116) {
                 // message sent by bot
                 return SendGroupMessageReceipt(
                     messageRandom,
-                    msgHead.msgSeq
+                    msgHead.msgSeq,
+                    msgHead.fromAppid
                 )
             }
             // else: sync form other device

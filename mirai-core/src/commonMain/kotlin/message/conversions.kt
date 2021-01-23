@@ -232,6 +232,12 @@ internal fun MessageChain.toRichTextElems(
                     )
                 )
             }
+            is MusicShare -> {
+                // 只有在 QuoteReply 的 source 里才会进行 MusicShare 转换, 因此可以转 PT.
+                // 发送消息时会被特殊处理
+                transformOneMessage(PlainText(currentMessage.content))
+            }
+
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
@@ -510,7 +516,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(
                         else -> error("unknown compression flag=${element.lightApp.data[0]}")
                     }
                 }
-                list.add(LightApp(content))
+
+                list.add(LightApp(content).refine())
             }
             element.richMsg != null -> {
                 val content = runWithBugReport("解析 richMsg", { element.richMsg.template1.toUHexString() }) {

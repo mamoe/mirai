@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
@@ -962,7 +963,13 @@ internal class OidbSso : ProtoBuf {
         @ProtoNumber(4) @JvmField val bodybuffer: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val errorMsg: String = "",
         @ProtoNumber(6) @JvmField val clientVersion: String = ""
-    ) : ProtoBuf
+    ) : ProtoBuf, Packet {
+        fun checkSuccess(actionName: String) {
+            check(result == 0) {
+                "${actionName.capitalize()} failed. result=$result, errorMsg=$errorMsg"
+            }
+        }
+    }
 }
 
 @Serializable

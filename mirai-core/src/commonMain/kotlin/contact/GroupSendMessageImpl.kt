@@ -17,13 +17,17 @@ import net.mamoe.mirai.contact.MessageTooLargeException
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.GroupMessagePreSendEvent
+import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.forwardMessage
 import net.mamoe.mirai.internal.longMessage
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.SendMessageMultiProtocol
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -111,61 +115,83 @@ private suspend fun GroupImpl.sendMessagePacket(
 
     val group = this
 
-    val source: OnlineMessageSourceToGroupImpl
+    var source: OnlineMessageSourceToGroupImpl? = null
 
     bot.network.run {
-        MessageSvcPbSendMsg.createToGroup(
-            bot.client,
-            group,
-            finalMessage,
+        SendMessageMultiProtocol.createToGroup(
+            bot.client, group, finalMessage,
             step == GroupMessageSendingStep.FRAGMENTED
         ) { source = it }.forEach { packet ->
-            packet.sendAndExpect<MessageSvcPbSendMsg.Response>().let { resp ->
-                if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                    return when (step) {
-                        GroupMessageSendingStep.FIRST -> {
-                            sendMessageImpl(
-                                originalMessage,
-                                transformedMessage,
-                                GroupMessageSendingStep.LONG_MESSAGE
-                            )
-                        }
-                        GroupMessageSendingStep.LONG_MESSAGE -> {
-                            sendMessageImpl(
-                                originalMessage,
-                                transformedMessage,
-                                GroupMessageSendingStep.FRAGMENTED
-                            )
 
-                        }
-                        else -> {
-                            throw MessageTooLargeException(
-                                group,
-                                originalMessage,
-                                finalMessage,
-                                "Message '${finalMessage.content.take(10)}' is too large."
-                            )
-                        }
-                    }.getOrThrow()
+            when (val resp = packet.sendAndExpect<Packet>()) {
+                is MessageSvcPbSendMsg.Response -> {
+                    if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                        return when (step) {
+                            GroupMessageSendingStep.FIRST -> {
+                                sendMessageImpl(
+                                    originalMessage,
+                                    transformedMessage,
+                                    GroupMessageSendingStep.LONG_MESSAGE
+                                )
+                            }
+                            GroupMessageSendingStep.LONG_MESSAGE -> {
+                                sendMessageImpl(
+                                    originalMessage,
+                                    transformedMessage,
+                                    GroupMessageSendingStep.FRAGMENTED
+                                )
+
+                            }
+                            else -> {
+                                throw MessageTooLargeException(
+                                    group,
+                                    originalMessage,
+                                    finalMessage,
+                                    "Message '${finalMessage.content.take(10)}' is too large."
+                                )
+                            }
+                        }.getOrThrow()
+                    }
+                    check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                        "Send group message failed: $resp"
+                    }
                 }
-                check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send group message failed: $resp"
+                is MusicSharePacket.Response -> {
+                    resp.pkg.checkSuccess("send group music share")
+
+                    val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
+                        nextEventOrNull(3000) { it.fromAppId == 3116 }
+                            ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
+
+                    source = OnlineMessageSourceToGroupImpl(
+                        group,
+                        internalIds = intArrayOf(receipt.messageRandom),
+                        providedSequenceIds = intArrayOf(receipt.sequenceId),
+                        sender = bot,
+                        target = group,
+                        time = currentTimeSeconds().toInt(),
+                        originalMessage = finalMessage
+                    )
                 }
             }
         }
+
+        check(source != null) {
+            "Internal error: source is not initialized"
+        }
+
+        try {
+            source!!.ensureSequenceIdAvailable()
+        } catch (e: Exception) {
+            bot.network.logger.warning(
+                "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
+                e
+
+            )
+        }
+
+        return MessageReceipt(source!!, group)
     }
-
-    try {
-        source.ensureSequenceIdAvailable()
-    } catch (e: Exception) {
-        bot.network.logger.warning(
-            "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
-            e
-
-        )
-    }
-
-    return MessageReceipt(source, group)
 }
 
 private suspend fun GroupImpl.uploadGroupLongMessageHighway(

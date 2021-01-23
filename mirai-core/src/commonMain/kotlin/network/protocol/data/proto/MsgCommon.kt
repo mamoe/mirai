@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -95,6 +95,13 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(7) var msgUid: Long = 0L,
         @ProtoNumber(8) @JvmField val c2cTmpMsgHead: C2CTmpMsgHead? = null,
         @ProtoNumber(9) @JvmField val groupInfo: GroupInfo? = null,
+        /**
+         * 1: 群消息 by pc tim
+         * 1001: 群消息 sent by android phone
+         *
+         *
+         * 3116: music share, ANDROID_PHONE 发送
+         */
         @ProtoNumber(10) @JvmField val fromAppid: Int = 0,
         @ProtoNumber(11) @JvmField val fromInstid: Int = 0,
         @ProtoNumber(12) @JvmField val userActive: Int = 0,

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -136,11 +137,12 @@ internal class OnlineMessageSourceToTempImpl(
 @Serializable(OnlineMessageSourceToGroupImpl.Serializer::class)
 internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
-    override val internalIds: IntArray,
+    override val internalIds: IntArray, // aka random
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: Group
+    override val target: Group,
+    providedSequenceIds: IntArray? = null,
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
 
@@ -150,7 +152,7 @@ internal class OnlineMessageSourceToGroupImpl(
         get() = sender
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
-    private val sequenceIdDeferred: Deferred<IntArray?> = run {
+    private val sequenceIdDeferred: Deferred<IntArray?> = providedSequenceIds?.let { CompletableDeferred(it) } ?: run {
         val multi = mutableMapOf<Int, Int>()
         coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, IntArray>(
             timeoutMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
