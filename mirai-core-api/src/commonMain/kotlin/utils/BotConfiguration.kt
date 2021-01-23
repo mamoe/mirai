@@ -143,6 +143,7 @@ public open class BotConfiguration { // open for Java
      * 设置 [autoReconnectOnForceOffline] 为 `true`, 即在被挤下线时自动重连.
      * @since 2.1
      */
+    @ConfigurationDsl
     public fun autoReconnectOnForceOffline() {
         autoReconnectOnForceOffline = true
     }
