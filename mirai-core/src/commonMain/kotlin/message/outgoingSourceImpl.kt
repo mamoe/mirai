@@ -56,9 +56,9 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
                 toUin = targetId, // group
                 msgType = 9, // 82?
                 c2cCmd = 11,
-                msgSeq = sequenceIds.single(), // TODO !!
+                msgSeq = sequenceIds.first(),
                 msgTime = time,
-                msgUid = pdReserve.origUids!!.single(), // TODO !!
+                msgUid = pdReserve.origUids!!.first(),
                 // groupInfo = MsgComm.GroupInfo(groupCode = delegate.msgHead.groupInfo.groupCode),
                 isSrcMsg = true
             ),
@@ -150,24 +150,30 @@ internal class OnlineMessageSourceToGroupImpl(
         get() = sender
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
-    private val sequenceIdDeferred: Deferred<Int?> =
-        coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
-            timeoutMillis = 3000
+    private val sequenceIdDeferred: Deferred<IntArray?> = run {
+        val multi = mutableMapOf<Int, Int>()
+        coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, IntArray>(
+            timeoutMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
         ) {
             if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
-                it.sequenceId
+                multi[it.messageRandom] = it.sequenceId
+                if (multi.size == this@OnlineMessageSourceToGroupImpl.internalIds.size) {
+                    IntArray(multi.size) { index ->
+                        multi[this@OnlineMessageSourceToGroupImpl.internalIds[index]]!!
+                    }
+                } else null
             } else null
         }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceIds: IntArray
-        get() = intArrayOf(
-            when {
-                sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: -1
-                !sequenceIdDeferred.isActive -> -1
+        get() = when {
+                sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: intArrayOf()
+                !sequenceIdDeferred.isActive -> intArrayOf()
                 else -> error("sequenceIds not yet available")
             }
-        )
+
 
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
