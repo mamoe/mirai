@@ -38,11 +38,11 @@ import net.mamoe.mirai.utils.currentTimeSeconds
 internal suspend fun GroupImpl.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: Message,
-    forceAsLongMessage: Boolean,
+    step: GroupMessageSendingStep,
 ): Result<MessageReceipt<Group>> { // Result<MessageReceipt<Group>>
     val chain = transformedMessage
         .transformSpecialMessages(this)
-        .convertToLongMessageIfNeeded(originalMessage, forceAsLongMessage, this)
+        .convertToLongMessageIfNeeded(step, this)
 
     chain.findIsInstance<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
@@ -53,8 +53,9 @@ internal suspend fun GroupImpl.sendMessageImpl(
     return kotlin.runCatching {
         sendMessagePacket(
             originalMessage,
+            transformedMessage,
             chain,
-            allowResendAsLongMessage = transformedMessage.takeSingleContent<LongMessageInternal>() == null
+            step
         )
     }
 }
@@ -98,75 +99,102 @@ private suspend fun Message.transformSpecialMessages(contact: Contact): MessageC
     }?.toMessageChain() ?: toMessageChain()
 }
 
+internal enum class GroupMessageSendingStep {
+    FIRST, LONG_MESSAGE, FRAGMENTED
+}
+
 /**
  * Final process
  */
 private suspend fun GroupImpl.sendMessagePacket(
     originalMessage: Message,
+    transformedMessage: Message,
     finalMessage: MessageChain,
-    allowResendAsLongMessage: Boolean,
+    step: GroupMessageSendingStep,
 ): MessageReceipt<Group> {
+
     val group = this
 
     var source: OnlineMessageSourceToGroupImpl? = null
 
     bot.network.run {
-        val resp = SendMessageMultiProtocol.createToGroup(bot.client, group, finalMessage) { source = it }
-            .sendAndExpect<Packet>()
+        SendMessageMultiProtocol.createToGroup(
+            bot.client,
+            group,
+            finalMessage,
+            step == GroupMessageSendingStep.FRAGMENTED
+        ) { source = it }.forEach { packet ->
+            val resp = packet.sendAndExpect<Packet>()
 
-        when (resp) {
-            is MessageSvcPbSendMsg.Response -> {
-                if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                    if (allowResendAsLongMessage) {
-                        return sendMessageImpl(originalMessage, finalMessage, true).getOrThrow()
-                    } else {
-                        throw MessageTooLargeException(
-                            group,
-                            originalMessage,
-                            finalMessage,
-                            "Message '${finalMessage.content.take(10)}' is too large."
-                        )
+            when (resp) {
+                is MessageSvcPbSendMsg.Response -> {
+                    if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                        return when (step) {
+                            GroupMessageSendingStep.FIRST -> {
+                                sendMessageImpl(
+                                    originalMessage,
+                                    transformedMessage,
+                                    GroupMessageSendingStep.LONG_MESSAGE
+                                )
+                            }
+                            GroupMessageSendingStep.LONG_MESSAGE -> {
+                                sendMessageImpl(
+                                    originalMessage,
+                                    transformedMessage,
+                                    GroupMessageSendingStep.FRAGMENTED
+                                )
+
+                            }
+                            else -> {
+                                throw MessageTooLargeException(
+                                    group,
+                                    originalMessage,
+                                    finalMessage,
+                                    "Message '${finalMessage.content.take(10)}' is too large."
+                                )
+                            }
+                        }.getOrThrow()
+                    }
+                    check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                        "Send group message failed: $resp"
                     }
                 }
-                check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send group message failed: $resp"
+                is MusicSharePacket.Response -> {
+                    resp.pkg.checkSuccess("send group music share")
+
+                    val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
+                        nextEventOrNull(3000) { it.fromAppId == 3116 }
+                            ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
+
+                    source = OnlineMessageSourceToGroupImpl(
+                        group,
+                        internalIds = intArrayOf(receipt.messageRandom),
+                        providedSequenceIds = intArrayOf(receipt.sequenceId),
+                        sender = bot,
+                        target = group,
+                        time = currentTimeSeconds().toInt(),
+                        originalMessage = finalMessage
+                    )
                 }
             }
-            is MusicSharePacket.Response -> {
-                resp.pkg.checkSuccess("send group music share")
-
-                val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
-                    nextEventOrNull(3000) { it.fromAppId == 3116 }
-                        ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
-
-                source = OnlineMessageSourceToGroupImpl(
-                    group,
-                    internalIds = intArrayOf(receipt.messageRandom),
-                    providedSequenceIds = intArrayOf(receipt.sequenceId),
-                    sender = bot,
-                    target = group,
-                    time = currentTimeSeconds().toInt(),
-                    originalMessage = finalMessage
-                )
-            }
         }
+
+        check(source != null) {
+            "Internal error: source is not initialized"
+        }
+
+        try {
+            source!!.ensureSequenceIdAvailable()
+        } catch (e: Exception) {
+            bot.network.logger.warning(
+                "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
+                e
+
+            )
+        }
+
+        return MessageReceipt(source!!, group)
     }
-
-    check(source != null) {
-        "Internal error: source is not initialized"
-    }
-
-    try {
-        source!!.ensureSequenceIdAvailable()
-    } catch (e: Exception) {
-        bot.network.logger.warning(
-            "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
-            e
-
-        )
-    }
-
-    return MessageReceipt(source!!, group)
 }
 
 private suspend fun GroupImpl.uploadGroupLongMessageHighway(
@@ -185,21 +213,26 @@ private suspend fun GroupImpl.uploadGroupLongMessageHighway(
 )
 
 private suspend fun MessageChain.convertToLongMessageIfNeeded(
-    originalMessage: Message,
-    forceAsLongMessage: Boolean,
+    step: GroupMessageSendingStep,
     groupImpl: GroupImpl,
 ): MessageChain {
-    if (forceAsLongMessage || this.shouldSendAsLongMessage(originalMessage, groupImpl)) {
-        val resId = groupImpl.uploadGroupLongMessageHighway(this)
-
-        return this + RichMessage.longMessage(
-            brief = takeContent(27),
-            resId = resId,
-            timeSeconds = currentTimeSeconds()
-        ) // LongMessageInternal replaces all contents and preserves metadata
+    return when (step) {
+        GroupMessageSendingStep.FIRST -> {
+            // 只需要在第一次发送的时候验证长度
+            // 后续重试直接跳过
+            verityLength(this, groupImpl)
+            this
+        }
+        GroupMessageSendingStep.LONG_MESSAGE -> {
+            val resId = groupImpl.uploadGroupLongMessageHighway(this)
+            this + RichMessage.longMessage(
+                brief = takeContent(27),
+                resId = resId,
+                timeSeconds = currentTimeSeconds()
+            ) // LongMessageInternal replaces all contents and preserves metadata
+        }
+        GroupMessageSendingStep.FRAGMENTED -> this
     }
-
-    return this
 }
 
 /**
@@ -215,10 +248,4 @@ private suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImag
             size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
         ).sendAndExpect<ImgStore.GroupPicUp.Response>()
     }
-}
-
-private fun MessageChain.shouldSendAsLongMessage(originalMessage: Message, target: Contact): Boolean {
-    val length = verityLength(originalMessage, target)
-
-    return length > 700 || countImages() > 1
 }
