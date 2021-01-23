@@ -343,22 +343,20 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     suspend fun StTroopNum.reloadGroup() {
-        retryCatching(3) {
-            bot.groups.delegate.add(
-                GroupImpl(
-                    bot = bot,
-                    coroutineContext = bot.coroutineContext,
-                    id = groupCode,
-                    groupInfo = GroupInfoImpl(this),
-                    members = Mirai.getRawGroupMemberList(
-                        bot,
-                        groupUin,
-                        groupCode,
-                        dwGroupOwnerUin
-                    )
+        bot.groups.delegate.add(
+            GroupImpl(
+                bot = bot,
+                coroutineContext = bot.coroutineContext,
+                id = groupCode,
+                groupInfo = GroupInfoImpl(this),
+                members = Mirai.getRawGroupMemberList(
+                    bot,
+                    groupUin,
+                    groupCode,
+                    dwGroupOwnerUin
                 )
             )
-        }.getOrThrow()
+        )
     }
 
     suspend fun reloadStrangerList() {
