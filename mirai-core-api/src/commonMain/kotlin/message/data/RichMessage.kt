@@ -266,16 +266,3 @@ public class XmlMessageBuilder(
         }
     }
 }
-
-// internal runtime value, not serializable
-internal data class LongMessage internal constructor(override val content: String, val resId: String) :
-    AbstractServiceMessage() {
-    override val serviceId: Int get() = 35
-
-    companion object Key : AbstractPolymorphicMessageKey<ServiceMessage, LongMessage>(ServiceMessage, { it.safeCast() })
-}
-
-// internal runtime value, not serializable
-internal data class ForwardMessageInternal(override val content: String) : AbstractServiceMessage() {
-    override val serviceId: Int get() = 35
-}

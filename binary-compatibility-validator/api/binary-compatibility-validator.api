@@ -3,7 +3,8 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public fun close ()V
 	public abstract fun close (Ljava/lang/Throwable;)V
 	public static synthetic fun close$default (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;ILjava/lang/Object;)V
-	public fun closeAndJoin (Ljava/lang/Throwable;)Lkotlin/Unit;
+	public synthetic fun closeAndJoin (Ljava/lang/Throwable;)Lkotlin/Unit;
+	public fun closeAndJoin (Ljava/lang/Throwable;)V
 	public fun closeAndJoin (Ljava/lang/Throwable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun closeAndJoin$default (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static fun findInstance (J)Lnet/mamoe/mirai/Bot;
@@ -30,9 +31,11 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public fun getStrangerOrFail (J)Lnet/mamoe/mirai/contact/Stranger;
 	public abstract fun getStrangers ()Lnet/mamoe/mirai/contact/ContactList;
 	public abstract fun isOnline ()Z
-	public fun join ()Lkotlin/Unit;
+	public synthetic fun join ()Lkotlin/Unit;
+	public fun join ()V
 	public fun join (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun login ()Lkotlin/Unit;
+	public synthetic fun login ()Lkotlin/Unit;
+	public fun login ()V
 	public abstract fun login (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/BotNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
@@ -75,17 +78,21 @@ public final class net/mamoe/mirai/BotKt {
 }
 
 public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLevelApiAccessor {
-	public fun acceptInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)Lkotlin/Unit;
+	public synthetic fun acceptInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)Lkotlin/Unit;
+	public fun acceptInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)V
 	public abstract fun acceptInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun acceptMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;)Lkotlin/Unit;
+	public synthetic fun acceptMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;)Lkotlin/Unit;
+	public fun acceptMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;)V
 	public abstract fun acceptMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)Lkotlin/Unit;
+	public synthetic fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)Lkotlin/Unit;
+	public fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)V
 	public abstract fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun calculateGroupCodeByGroupUin (J)J
 	public fun calculateGroupUinByGroupCode (J)J
 	public abstract fun constructMessageSource (JLnet/mamoe/mirai/message/data/MessageSourceKind;JJ[II[ILnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public abstract fun createImage (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
-	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
+	public synthetic fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
+	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)V
 	public abstract fun getBotFactory ()Lnet/mamoe/mirai/BotFactory;
 	public abstract fun getFileCacheStrategy ()Lnet/mamoe/mirai/utils/FileCacheStrategy;
 	public fun getGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lnet/mamoe/mirai/data/GroupAnnouncement;
@@ -100,23 +107,29 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun getRawGroupList (Lnet/mamoe/mirai/Bot;)Lkotlin/sequences/Sequence;
 	public fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJ)Lkotlin/sequences/Sequence;
 	public fun getUin (Lnet/mamoe/mirai/contact/ContactOrBot;)J
-	public fun ignoreInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)Lkotlin/Unit;
+	public synthetic fun ignoreInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)Lkotlin/Unit;
+	public fun ignoreInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;)V
 	public abstract fun ignoreInvitedJoinGroupRequest (Lnet/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun ignoreMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Z)Lkotlin/Unit;
+	public synthetic fun ignoreMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Z)Lkotlin/Unit;
+	public fun ignoreMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;Z)V
 	public abstract fun ignoreMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun ignoreMemberJoinRequest$default (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)Lkotlin/Unit;
+	public synthetic fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)Lkotlin/Unit;
+	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)V
 	public fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public abstract fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recallFriendMessageRaw (Lnet/mamoe/mirai/Bot;J[I[II)Z
 	public fun recallGroupMessageRaw (Lnet/mamoe/mirai/Bot;J[I[I)Z
 	public fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[II)Z
-	public fun recallMessage (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSource;)Lkotlin/Unit;
+	public synthetic fun recallMessage (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSource;)Lkotlin/Unit;
+	public fun recallMessage (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSource;)V
 	public abstract fun recallMessage (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun rejectMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;)Lkotlin/Unit;
+	public synthetic fun rejectMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;)Lkotlin/Unit;
+	public fun rejectMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;)V
 	public abstract fun rejectMemberJoinRequest (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun rejectMemberJoinRequest$default (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public fun rejectNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Z)Lkotlin/Unit;
+	public synthetic fun rejectNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Z)Lkotlin/Unit;
+	public fun rejectNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Z)V
 	public abstract fun rejectNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun rejectNewFriendRequest$default (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
@@ -124,16 +137,20 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun sendNudge (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/action/Nudge;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setFileCacheStrategy (Lnet/mamoe/mirai/utils/FileCacheStrategy;)V
 	public abstract fun setHttp (Lio/ktor/client/HttpClient;)V
-	public fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
-	public fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)Lkotlin/Unit;
-	public fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)Lkotlin/Unit;
+	public synthetic fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
+	public fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)V
+	public synthetic fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)Lkotlin/Unit;
+	public fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)V
+	public synthetic fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)Lkotlin/Unit;
+	public fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)V
 }
 
 public abstract interface annotation class net/mamoe/mirai/LowLevelApi : java/lang/annotation/Annotation {
 }
 
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
-	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
+	public synthetic fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
+	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)V
 	public abstract fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lnet/mamoe/mirai/data/GroupAnnouncement;
 	public abstract fun getGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -151,7 +168,8 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun getRawGroupList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJ)Lkotlin/sequences/Sequence;
 	public abstract fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)Lkotlin/Unit;
+	public synthetic fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)Lkotlin/Unit;
+	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)V
 	public abstract fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun newFriend (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/data/FriendInfo;)Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun newStranger (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/data/StrangerInfo;)Lnet/mamoe/mirai/contact/Stranger;
@@ -163,12 +181,15 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
 	public abstract fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
+	public synthetic fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
+	public fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)V
 	public abstract fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)Lkotlin/Unit;
+	public synthetic fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)Lkotlin/Unit;
+	public fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;)V
 	public abstract fun solveMemberJoinRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun solveMemberJoinRequestEvent$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JJLjava/lang/String;JLjava/lang/Boolean;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)Lkotlin/Unit;
+	public synthetic fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)Lkotlin/Unit;
+	public fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)V
 	public abstract fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -179,7 +200,8 @@ public final class net/mamoe/mirai/Mirai {
 
 public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/mamoe/mirai/contact/Member {
 	public abstract fun getAnonymousId ()Ljava/lang/String;
-	public fun mute (I)Lkotlin/Unit;
+	public synthetic fun mute (I)Lkotlin/Unit;
+	public fun mute (I)V
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
@@ -243,6 +265,8 @@ public abstract interface class net/mamoe/mirai/contact/Contact : kotlinx/corout
 	public static fun sendImage (Lnet/mamoe/mirai/contact/Contact;Ljava/io/InputStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun sendImage (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static fun sendImage (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendImage$default (Lnet/mamoe/mirai/contact/Contact$Companion;Lnet/mamoe/mirai/contact/Contact;Ljava/io/File;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendImage$default (Lnet/mamoe/mirai/contact/Contact$Companion;Lnet/mamoe/mirai/contact/Contact;Ljava/io/InputStream;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -259,6 +283,8 @@ public abstract interface class net/mamoe/mirai/contact/Contact : kotlinx/corout
 	public static fun uploadImage (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadImage$default (Lnet/mamoe/mirai/contact/Contact$Companion;Lnet/mamoe/mirai/contact/Contact;Ljava/io/File;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
+	public static synthetic fun uploadImage$default (Lnet/mamoe/mirai/contact/Contact$Companion;Lnet/mamoe/mirai/contact/Contact;Ljava/io/InputStream;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 }
 
 public final class net/mamoe/mirai/contact/Contact$Companion {
@@ -332,7 +358,8 @@ public final class net/mamoe/mirai/contact/ExceptionsKt {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
-	public fun delete ()Lkotlin/Unit;
+	public synthetic fun delete ()Lkotlin/Unit;
+	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()J
 	public abstract fun getNick ()Ljava/lang/String;
@@ -399,7 +426,8 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
-	public fun mute (I)Lkotlin/Unit;
+	public synthetic fun mute (I)Lkotlin/Unit;
+	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -447,9 +475,11 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public abstract fun getMuteTimeRemaining ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
-	public fun kick (Ljava/lang/String;)Lkotlin/Unit;
+	public synthetic fun kick (Ljava/lang/String;)Lkotlin/Unit;
+	public fun kick (Ljava/lang/String;)V
 	public abstract fun kick (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun mute (I)Lkotlin/Unit;
+	public synthetic fun mute (I)Lkotlin/Unit;
+	public fun mute (I)V
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
@@ -459,7 +489,8 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setNameCard (Ljava/lang/String;)V
 	public abstract fun setSpecialTitle (Ljava/lang/String;)V
-	public fun unmute ()Lkotlin/Unit;
+	public synthetic fun unmute ()Lkotlin/Unit;
+	public fun unmute ()V
 	public abstract fun unmute (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
 }
@@ -523,7 +554,8 @@ public final class net/mamoe/mirai/contact/Platform$Companion {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
-	public fun delete ()Lkotlin/Unit;
+	public synthetic fun delete ()Lkotlin/Unit;
+	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()J
 	public abstract fun getNick ()Ljava/lang/String;
@@ -1873,7 +1905,8 @@ public final class net/mamoe/mirai/event/events/BotGroupPermissionChangeEvent : 
 
 public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/Bot;JJJLjava/lang/String;Ljava/lang/String;)V
-	public final fun accept ()Lkotlin/Unit;
+	public final synthetic fun accept ()Lkotlin/Unit;
+	public final fun accept ()V
 	public final fun accept (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
 	public final fun component2 ()J
@@ -1892,7 +1925,8 @@ public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent 
 	public final fun getInvitorId ()J
 	public final fun getInvitorNick ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun ignore ()Lkotlin/Unit;
+	public final synthetic fun ignore ()Lkotlin/Unit;
+	public final fun ignore ()V
 	public final fun ignore (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
@@ -2708,7 +2742,8 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun accept ()Lkotlin/Unit;
+	public final synthetic fun accept ()Lkotlin/Unit;
+	public final fun accept ()V
 	public final fun accept (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
 	public final fun component2 ()J
@@ -2734,15 +2769,19 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public final fun getInvitorId ()Ljava/lang/Long;
 	public final fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun ignore (Z)Lkotlin/Unit;
+	public final synthetic fun ignore (Z)Lkotlin/Unit;
+	public final fun ignore (Z)V
 	public final fun ignore (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun ignore$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZILjava/lang/Object;)V
 	public static synthetic fun ignore$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun reject ()V
 	public final fun reject (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reject (Z)V
-	public final fun reject (ZLjava/lang/String;)Lkotlin/Unit;
+	public final synthetic fun reject (ZLjava/lang/String;)Lkotlin/Unit;
+	public final fun reject (ZLjava/lang/String;)V
 	public final fun reject (ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reject (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun reject$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;ILjava/lang/Object;)V
 	public static synthetic fun reject$default (Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
@@ -2927,7 +2966,8 @@ public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : 
 }
 
 public final class net/mamoe/mirai/event/events/NewFriendRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
-	public final fun accept ()Lkotlin/Unit;
+	public final synthetic fun accept ()Lkotlin/Unit;
+	public final fun accept ()V
 	public final fun accept (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
 	public final fun component2 ()J
@@ -2946,8 +2986,10 @@ public final class net/mamoe/mirai/event/events/NewFriendRequestEvent : net/mamo
 	public final fun getFromNick ()Ljava/lang/String;
 	public final fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun reject (Z)Lkotlin/Unit;
+	public final synthetic fun reject (Z)Lkotlin/Unit;
+	public final fun reject (Z)V
 	public final fun reject (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun reject$default (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;ZILjava/lang/Object;)V
 	public static synthetic fun reject$default (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
@@ -3172,7 +3214,8 @@ public class net/mamoe/mirai/message/MessageReceipt {
 	public final fun quoteReply (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun quoteReply (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public final fun quoteReply (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun recall ()Lkotlin/Unit;
+	public synthetic fun recall ()Lkotlin/Unit;
+	public fun recall ()V
 	public final fun recall (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun recallIn (J)Lnet/mamoe/mirai/message/action/AsyncRecallResult;
 }
@@ -4093,6 +4136,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public synthetic fun add (ILjava/lang/Object;)V
 	public fun add (ILnet/mamoe/mirai/message/data/ForwardMessage$INode;)V
 	public synthetic fun add (Ljava/lang/Object;)Z
+	public final fun add (Lnet/mamoe/mirai/event/events/MessageEvent;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public fun add (Lnet/mamoe/mirai/message/data/ForwardMessage$INode;)Z
 	public fun addAll (ILjava/util/Collection;)Z
 	public fun addAll (Ljava/util/Collection;)Z
@@ -4479,9 +4523,11 @@ public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mir
 public final class net/mamoe/mirai/message/data/MessageSource$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 	public final fun quote (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/QuoteReply;
 	public final fun quote (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/QuoteReply;
-	public final fun recall (Lnet/mamoe/mirai/message/data/MessageChain;)Lkotlin/Unit;
+	public final synthetic fun recall (Lnet/mamoe/mirai/message/data/MessageChain;)Lkotlin/Unit;
+	public final fun recall (Lnet/mamoe/mirai/message/data/MessageChain;)V
 	public final fun recall (Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun recall (Lnet/mamoe/mirai/message/data/MessageSource;)Lkotlin/Unit;
+	public final synthetic fun recall (Lnet/mamoe/mirai/message/data/MessageSource;)Lkotlin/Unit;
+	public final fun recall (Lnet/mamoe/mirai/message/data/MessageSource;)V
 	public final fun recall (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun recallIn (Lnet/mamoe/mirai/message/data/MessageChain;J)Lnet/mamoe/mirai/message/action/AsyncRecallResult;
 	public final fun recallIn (Lnet/mamoe/mirai/message/data/MessageSource;J)Lnet/mamoe/mirai/message/action/AsyncRecallResult;
@@ -4613,6 +4659,41 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun toMessageChain ([Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static final fun toOfflineMessageSource (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public static final synthetic fun toPlainText (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/PlainText;
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/MusicShare$Key;
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrief ()Ljava/lang/String;
+	public final fun getJumpUrl ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public final fun getMusicUrl ()Ljava/lang/String;
+	public final fun getPictureUrl ()Ljava/lang/String;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getType ()Lnet/mamoe/mirai/message/data/MusicType;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public final class net/mamoe/mirai/message/data/MusicType : java/lang/Enum {
+	public static final field MiguMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public static final field NeteaseCloudMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public static final field QQMusic Lnet/mamoe/mirai/message/data/MusicType;
+	public final fun getAppId ()J
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getPlatform ()I
+	public final fun getSdkVersion ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MusicType;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/MusicType;
 }
 
 public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/mamoe/mirai/message/data/MessageSource {
@@ -5206,10 +5287,12 @@ public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mi
 public class net/mamoe/mirai/utils/BotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V
+	public final fun autoReconnectOnForceOffline ()V
 	public final fun copy ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun fileBasedDeviceInfo ()V
 	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun getAutoReconnectOnForceOffline ()Z
 	public final fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
@@ -5247,6 +5330,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun redirectNetworkLogToFile (Ljava/io/File;)V
 	public final fun redirectNetworkLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun setAutoReconnectOnForceOffline (Z)V
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
@@ -5395,6 +5479,8 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun sendAsImage (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun sendAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static fun sendAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static fun uploadAsImage (Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -5405,6 +5491,8 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun uploadAsImage (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
+	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

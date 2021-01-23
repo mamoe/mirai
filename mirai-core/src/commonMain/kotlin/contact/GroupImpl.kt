@@ -18,15 +18,11 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
@@ -118,136 +114,14 @@ internal class GroupImpl(
         require(!message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
-        return sendMessageImpl(message, false).also {
-            logMessageSent(message)
-        }
-    }
+        val chain = broadcastGroupMessagePreSendEvent(message)
 
-    private suspend fun sendMessageImpl(message: Message, isForward: Boolean): MessageReceipt<Group> {
-        if (message is MessageChain) {
-            if (message.anyIsInstance<ForwardMessage>()) {
-                return sendMessageImpl(message.singleOrNull() ?: error("ForwardMessage must be standalone"), true)
-            }
-        }
-        if (message is ForwardMessage) {
-            check(message.nodeList.size < 200) {
-                throw MessageTooLargeException(
-                    this, message, message,
-                    "ForwardMessage allows up to 200 nodes, but found ${message.nodeList.size}"
-                )
-            }
+        val result = sendMessageImpl(message, chain, GroupMessageSendingStep.FIRST)
 
-            return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, message.nodeList, false, message)
-        }
+        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+        logMessageSent(chain)
 
-        val isLongOrForward = message is LongMessage || message is ForwardMessageInternal
-        val msg: MessageChain = if (!isLongOrForward) {
-            val chain = kotlin.runCatching {
-                GroupMessagePreSendEvent(this, message).broadcast()
-            }.onSuccess {
-                check(!it.isCancelled) {
-                    throw EventCancelledException("cancelled by GroupMessagePreSendEvent")
-                }
-            }.getOrElse {
-                throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
-            }.message.toMessageChain()
-
-            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
-            var length = 0
-
-            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER") // stupid compiler
-            var imageCnt = 0
-            chain.verityLength(message, this, lengthCallback = {
-                length = it
-            }, imageCntCallback = {
-                imageCnt = it
-            })
-
-            if (length > 702 || imageCnt > 1) {  // 阈值为700左右，限制到3的倍数
-                return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
-                    bot,
-                    this.id,
-                    listOf(
-                        ForwardMessage.Node(
-                            senderId = bot.id,
-                            time = currentTimeSeconds().toInt(),
-                            messageChain = chain,
-                            senderName = bot.nick
-                        )
-                    ),
-                    true, null
-                )
-            }
-            chain
-        } else message.toMessageChain()
-
-        msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
-
-        msg.filterIsInstance<FriendImage>().forEach { image ->
-            bot.network.run {
-                ImgStore.GroupPicUp(
-                    bot.client,
-                    uin = bot.id,
-                    groupCode = id,
-                    md5 = image.md5,
-                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
-                ).sendAndExpect<ImgStore.GroupPicUp.Response>()
-            }
-        }
-
-        val result = bot.network.runCatching sendMsg@{
-            val source: OnlineMessageSourceToGroupImpl
-            MessageSvcPbSendMsg.createToGroup(
-                bot.client,
-                this@GroupImpl,
-                msg,
-                isForward
-            ) {
-                source = it
-            }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
-                if (!isLongOrForward && it is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                    return@sendMsg MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
-                        bot,
-                        this@GroupImpl.id,
-                        listOf(
-                            ForwardMessage.Node(
-                                senderId = bot.id,
-                                time = currentTimeSeconds().toInt(),
-                                messageChain = msg,
-                                senderName = bot.nick
-                            )
-                        ),
-                        true, null
-                    )
-                }
-                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send group message failed: $it"
-                }
-            }
-
-            try {
-                source.ensureSequenceIdAvailable()
-            } catch (e: Exception) {
-                bot.network.logger.warning {
-                    "Timeout awaiting sequenceId for group message(${
-                        message.contentToString()
-                            .take(10)
-                    }). Some features may not work properly"
-                }
-                bot.network.logger.warning(e)
-            }
-
-            MessageReceipt(source, this@GroupImpl)
-        }
-
-        result.fold(
-            onSuccess = {
-                GroupMessagePostSendEvent(this, msg, null, it)
-            },
-            onFailure = {
-                GroupMessagePostSendEvent(this, msg, it, null)
-            }
-        ).broadcast()
+        GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
 
         return result.getOrThrow()
     }
@@ -278,7 +152,7 @@ internal class GroupImpl(
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    HighwayHelper.uploadImageToServers(
+                    Highway.uploadResource(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
@@ -302,7 +176,7 @@ internal class GroupImpl(
             val response: PttStore.GroupPttUp.Response.RequireUpload =
                 PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
 
-            HighwayHelper.uploadPttToServers(
+            Highway.uploadPttToServers(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
                 resource,

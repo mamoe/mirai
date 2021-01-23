@@ -102,7 +102,7 @@ internal class MultiMsg {
                     if (PacketLogger.isEnabled) {
                         return _miraiContentToString()
                     }
-                    return "MultiMsg.ApplyUp.Response.RequireUpload(proto=$proto)"
+                    return "MultiMsg.ApplyUp.Response.RequireUpload"
                 }
             }
 
@@ -110,7 +110,7 @@ internal class MultiMsg {
         }
 
         // captured from group
-        fun createForGroupLongMessage(
+        fun createForGroup(
             buType: Int,
             client: QQAndroidClient,
             messageData: MessageValidationData,

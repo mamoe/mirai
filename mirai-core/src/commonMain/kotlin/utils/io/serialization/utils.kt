@@ -19,13 +19,17 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readPacketExact
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+
+internal typealias KtProtoBuf = kotlinx.serialization.protobuf.ProtoBuf
 
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,
@@ -127,14 +131,22 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.encodeToByteArray(serializer, this)
+    return KtProtoBuf.encodeToByteArray(serializer, this)
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.decodeFromByteArray(deserializer, this)
+    return KtProtoBuf.decodeFromByteArray(deserializer, this)
+}
+
+internal fun <T : ProtoBuf> ByteArray.loadOidb(deserializer: DeserializationStrategy<T>, log: Boolean = false): T {
+    val oidb = loadAs(OidbSso.OIDBSSOPkg.serializer())
+    if (log) {
+        oidb.soutv("OIDB")
+    }
+    return oidb.bodybuffer.loadAs(deserializer)
 }
 
 /**
@@ -143,7 +155,7 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
-): T = ProtoBufWithNullableSupport.decodeFromByteArray(serializer, this.readBytes(length))
+): T = KtProtoBuf.decodeFromByteArray(serializer, this.readBytes(length))
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]

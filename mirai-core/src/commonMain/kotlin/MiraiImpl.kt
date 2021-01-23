@@ -24,7 +24,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
@@ -32,7 +32,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
@@ -512,7 +511,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         // 1001: No message meets the requirements (实际上是没权限, 管理员在尝试撤回群主的消息)
         // 154: timeout
         // 3: <no message>
-        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids}: $response" }
+        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
     @LowLevelApi
@@ -690,102 +689,76 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
-    @JvmSynthetic
-    @LowLevelApi
-    @MiraiExperimentalApi
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    internal suspend fun lowLevelSendGroupLongOrForwardMessage(
+    internal suspend fun uploadGroupMessageHighway(
         bot: Bot,
         groupCode: Long,
         message: Collection<ForwardMessage.INode>,
         isLong: Boolean,
-        forwardMessage: ForwardMessage?
-    ): MessageReceipt<Group> = with(bot.asQQAndroidBot()) {
+    ): String = with(bot.asQQAndroidBot()) {
         message.forEach {
             it.messageChain.ensureSequenceIdAvailable()
         }
 
         val group = getGroupOrFail(groupCode)
 
-        val time = currentTimeSeconds()
         val sequenceId = client.atomicNextMessageSequenceId()
 
-        network.run {
-            val data = message.calculateValidationDataForGroup(
-                sequenceId = sequenceId,
-                random = Random.nextInt().absoluteValue,
-                group
-            )
+        val data = message.calculateValidationDataForGroup(
+            sequenceId = sequenceId,
+            random = Random.nextInt().absoluteValue,
+            group
+        )
 
-            val response =
-                MultiMsg.ApplyUp.createForGroupLongMessage(
-                    buType = if (isLong) 1 else 2,
-                    client = bot.client,
-                    messageData = data,
-                    dstUin = Mirai.calculateGroupUinByGroupCode(groupCode)
-                ).sendAndExpect<MultiMsg.ApplyUp.Response>()
+        val response = network.run {
+            MultiMsg.ApplyUp.createForGroup(
+                buType = if (isLong) 1 else 2,
+                client = bot.client,
+                messageData = data,
+                dstUin = Mirai.calculateGroupUinByGroupCode(groupCode)
+            ).sendAndExpect<MultiMsg.ApplyUp.Response>()
+        }
 
-            val resId: String
-            when (response) {
-                is MultiMsg.ApplyUp.Response.MessageTooLarge ->
-                    error(
-                        "Internal error: message is too large, but this should be handled before sending. "
-                    )
-                is MultiMsg.ApplyUp.Response.RequireUpload -> {
-                    resId = response.proto.msgResid
-
-                    val body = LongMsg.ReqBody(
-                        subcmd = 1,
-                        platformType = 9,
-                        termType = 5,
-                        msgUpReq = listOf(
-                            LongMsg.MsgUpReq(
-                                msgType = 3, // group
-                                dstUin = Mirai.calculateGroupUinByGroupCode(groupCode),
-                                msgId = 0,
-                                msgUkey = response.proto.msgUkey,
-                                needCache = 0,
-                                storeType = 2,
-                                msgContent = data.data
-                            )
-                        )
-                    ).toByteArray(LongMsg.ReqBody.serializer())
-
-                    HighwayHelper.uploadImageToServers(
-                        bot,
-                        response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
-                        response.proto.msgSig,
-                        body.toExternalResource(null),
-                        "group long message",
-                        27
-                    )
-                }
-            }
-
-            if (isLong) {
-                group.sendMessage(
-                    RichMessage.longMessage(
-                        brief = message.joinToString(limit = 27) { it.messageChain.contentToString() },
-                        resId = resId,
-                        timeSeconds = time
-                    )
+        val resId: String
+        when (response) {
+            is MultiMsg.ApplyUp.Response.MessageTooLarge ->
+                error(
+                    "Internal error: message is too large, but this should be handled before sending. "
                 )
-            } else {
-                checkNotNull(forwardMessage) { "Internal error: forwardMessage is null when sending forward" }
-                group.sendMessage(
-                    RichMessage.forwardMessage(
-                        resId = resId,
-                        timeSeconds = time,
-                        //  preview = message.take(5).joinToString {
-                        //      """
-                        //          <title size="26" color="#777777" maxLines="2" lineSpace="12">${it.message.asMessageChain().joinToString(limit = 10)}</title>
-                        //      """.trimIndent()
-                        //  },
-                        forwardMessage = forwardMessage,
+            is MultiMsg.ApplyUp.Response.RequireUpload -> {
+                resId = response.proto.msgResid
+
+                val body = LongMsg.ReqBody(
+                    subcmd = 1,
+                    platformType = 9,
+                    termType = 5,
+                    msgUpReq = listOf(
+                        LongMsg.MsgUpReq(
+                            msgType = 3, // group
+                            dstUin = Mirai.calculateGroupUinByGroupCode(groupCode),
+                            msgId = 0,
+                            msgUkey = response.proto.msgUkey,
+                            needCache = 0,
+                            storeType = 2,
+                            msgContent = data.data
+                        )
                     )
+                ).toByteArray(LongMsg.ReqBody.serializer())
+
+                Highway.uploadResource(
+                    bot,
+                    response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
+                    response.proto.msgSig,
+                    body.toExternalResource(null),
+                    when (isLong) {
+                        true -> "group long message"
+                        false -> "group forward message"
+                    },
+                    27
                 )
             }
         }
+
+        return resId
     }
 
 

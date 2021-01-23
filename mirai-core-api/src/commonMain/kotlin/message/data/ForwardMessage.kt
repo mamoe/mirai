@@ -559,6 +559,22 @@ public class ForwardMessageBuilder private constructor(
     @ForwardMessageDsl
     public infix fun User.named(name: String): BuilderNode = this.id.named(name)
 
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution // due to inference problem, `add(MessageEvent)` results in resolution ambiguity
+    override fun add(element: ForwardMessage.INode): Boolean = container.add(element)
+
+    /**
+     * 从消息事件添加一个消息
+     *
+     * `event.sender named event.senderName at event.time says event.message`
+     *
+     * @since 2.1
+     */
+    @ForwardMessageDsl
+    public fun add(event: MessageEvent): ForwardMessageBuilder {
+        return event.sender named event.senderName at event.time says event.message
+    }
+
     // endregion
 
     /** 构造 [ForwardMessage] */

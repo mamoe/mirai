@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.1.0-dev-1"
+    const val project = "2.1.0-dev-3"
 
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
@@ -28,7 +28,7 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "1.6.0"
+    const val blockingBridge = "1.7.4"
 
     const val androidGradlePlugin = "3.5.3"
 

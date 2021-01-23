@@ -16,6 +16,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
@@ -26,6 +27,7 @@ import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -52,7 +54,7 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting FriendMessagePreSendEvent", it)
     }.message.toMessageChain()
-    chain.verityLength(message, this, {}, {})
+    chain.verityLength(message, this)
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
@@ -104,7 +106,7 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting StrangerMessagePreSendEvent", it)
     }.message.toMessageChain()
-    chain.verityLength(message, this, {}, {})
+    chain.verityLength(message, this)
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
@@ -138,64 +140,82 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
 }
 
 internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessage) {
+    if (message !is LongMessageInternal) {
         bot.logger.verbose("$this <- $message".replaceMagicCodes())
     }
 }
 
-internal inline fun MessageChain.verityLength(
-    message: Message, target: Contact,
-    lengthCallback: (Int) -> Unit,
-    imageCntCallback: (Int) -> Unit
-) {
-    contract {
-        callsInPlace(lengthCallback, InvocationKind.EXACTLY_ONCE)
-        callsInPlace(imageCntCallback, InvocationKind.EXACTLY_ONCE)
-    }
+internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
+internal fun MessageChain.verityLength(
+    originalMessage: Message, target: Contact,
+): Int {
     val chain = this
     val length = estimateLength(target, 15001)
-    lengthCallback(length)
-    if (length > 15000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
+    if (length > 15000 || countImages() > 50) {
         throw MessageTooLargeException(
-            target, message, this,
+            target, originalMessage, this,
             "message(${
                 chain.joinToString("", limit = 10)
             }) is too large. Allow up to 50 images or 5000 chars"
         )
     }
+    return length
 }
 
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
-    fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
-        val displayId = if (sender is AnonymousMember) "匿名" else sender.id.toString()
-        return "[${group.name}(${group.id})] ${senderName}($displayId) -> $message".replaceMagicCodes()
+    fun renderMessage(message: MessageChain): String {
+        return message.filterNot { it is MessageSource }.joinToString("").replaceMagicCodes()
     }
 
-    when (this) {
-        is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
-            renderGroupMessage(group, senderName, sender, message)
+    fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
+        val displayId = if (sender is AnonymousMember) "匿名" else sender.id.toString()
+        return "[${group.name}(${group.id})] ${senderName}($displayId) -> ${renderMessage(message)}"
+    }
+
+    fun renderGroupTempMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
+        return "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderStrangerMessage(senderName: String, sender: User, message: MessageChain): String {
+        return "[$senderName(Stranger ${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderFriendMessage(sender: User, message: MessageChain): String {
+        return "${sender.nick}(${sender.id}) -> ${renderMessage(message)}"
+    }
+
+    fun renderOtherClientMessage(client: OtherClient): String {
+        return "${client.platform} -> ${renderMessage(message)}"
+    }
+
+
+    bot.logger.verbose {
+        when (this) {
+            is net.mamoe.mirai.event.events.GroupMessageEvent ->
+                renderGroupMessage(group, senderName, sender, message)
+            is net.mamoe.mirai.event.events.GroupMessageSyncEvent ->
+                renderGroupMessage(group, senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.GroupTempMessageEvent ->
+                renderGroupTempMessage(group, senderName, sender, message)
+            is net.mamoe.mirai.event.events.GroupTempMessageSyncEvent ->
+                renderGroupTempMessage(group, senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.StrangerMessageEvent,
+            is net.mamoe.mirai.event.events.StrangerMessageSyncEvent ->
+                renderStrangerMessage(senderName, sender, message)
+
+            is net.mamoe.mirai.event.events.FriendMessageEvent,
+            is net.mamoe.mirai.event.events.FriendMessageSyncEvent ->
+                renderFriendMessage(sender, message)
+
+            is net.mamoe.mirai.event.events.OtherClientMessageEvent ->
+                renderOtherClientMessage(client)
+
+            else -> toString()
         }
-        is net.mamoe.mirai.event.events.GroupTempMessageEvent -> bot.logger.verbose {
-            "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.StrangerMessageEvent -> bot.logger.verbose {
-            "[$senderName(Stranger ${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
-            "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
-        }
-        is net.mamoe.mirai.event.events.OtherClientMessageEvent -> bot.logger.verbose {
-            "${client.platform} -> $message".replaceMagicCodes()
-        }
-        is GroupMessageSyncEvent -> bot.logger.verbose {
-            renderGroupMessage(group, senderName, sender, message)
-        }
-        is MessageSyncEvent -> bot.logger.verbose {
-            "${this.subject} <- $message".replaceMagicCodes()
-        }
-        else -> bot.logger.verbose(toString())
     }
 }
 
@@ -214,3 +234,11 @@ internal fun String.applyCharMapping() = buildString(capacity = this.length) {
 
 internal fun String.replaceMagicCodes(): String = this
     .applyCharMapping()
+
+
+internal fun Message.takeContent(length: Int): String =
+    this.toMessageChain().joinToString("", limit = length) { it.content }
+
+internal inline fun <reified T : MessageContent> Message.takeSingleContent(): T? {
+    return this as? T ?: this.castOrNull<MessageChain>()?.findIsInstance()
+}
