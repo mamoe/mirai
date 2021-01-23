@@ -96,14 +96,16 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             priority = MONITOR,
             concurrency = ConcurrencyKind.LOCKED
         ) { event ->
-            if (
-                !event.bot.isActive // bot closed
-                || !::_network.isInitialized // bot 还未登录就被 close
-                || _isConnecting // bot 还在登入
-            ) {
-                // Close network to avoid endless reconnection while network is ok
-                // https://github.com/mamoe/mirai/issues/894
-                kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
+            if (!event.bot.isActive) {
+                // bot closed
+                return@subscribeAlways
+            }
+            if (!::_network.isInitialized) {
+                // bot 还未登录就被 close
+                return@subscribeAlways
+            }
+            if (_isConnecting) {
+                // bot 还在登入
                 return@subscribeAlways
             }
             /*
@@ -165,20 +167,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     if (tryCount != 0) {
                         delay(configuration.reconnectPeriodMillis)
                     }
-
-
-                    // Close network to avoid endless reconnection while network is ok
-                    // https://github.com/mamoe/mirai/issues/894
-                    kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
-
-                    login()
-//                    network.withConnectionLock {
-//                        /**
-//                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
-//                         */
-//                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-//                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
-//                    }
+                    network.withConnectionLock {
+                        /**
+                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
+                         */
+                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
+                    }
                     launch {
                         BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
                     }
