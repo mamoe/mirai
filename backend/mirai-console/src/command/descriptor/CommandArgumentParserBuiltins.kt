@@ -364,6 +364,102 @@ public object RawContentValueArgumentParser : CommandValueArgumentParser<Message
     override fun parse(raw: MessageContent, sender: CommandSender): MessageContent = raw
 }
 
+/**
+ * 解析参数为枚举 [T]
+ *
+ * 注:
+ * - 当枚举值大小写无冲突时会尝试忽略大小写
+ * - 当大小写驼峰可用时会尝试使用大小写驼峰
+ *
+ * 例如:
+ * ```
+ * enum class StdType { STD_IN, STD_OUT, STD_ERR }
+ * ```
+ * 对于 StdType 有以下值可用:
+ * - `STD_IN`, `STD_OUT`, `STD_ERR`  (忽视大小写)
+ * - `stdIn`,  `stdOut`,  `stdErr`   (不忽视大小写)
+ *
+ * @since 2.1.0
+ */
+public class EnumValueArgumentParser<T : Enum<T>>(
+    private val type: Class<T>,
+) : InternalCommandValueArgumentParserExtensions<T>() {
+    // 此 Exception 仅用于中断 enum 搜索, 不需要使用堆栈信息
+    private object NoEnumException : RuntimeException()
+
+
+    init {
+        check(Enum::class.java.isAssignableFrom(type)) {
+            "$type not a enum class"
+        }
+    }
+
+    private fun <T> Sequence<T>.hasDuplicates(): Boolean = iterator().hasDuplicates()
+    private fun <T> Iterator<T>.hasDuplicates(): Boolean {
+        val observed = HashSet<T>()
+        for (elem in this) {
+            if (!observed.add(elem))
+                return true
+        }
+        return false
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun noConstant(): Nothing {
+        throw NoEnumException
+    }
+
+    private val delegate: (String) -> T = kotlin.run {
+        val enums = type.enumConstants.asSequence()
+        // step 1: 分析是否能够忽略大小写
+        if (enums.map { it.name.toLowerCase() }.hasDuplicates()) {
+            ({ java.lang.Enum.valueOf(type, it) })
+        } else { // step 2: 分析是否能使用小驼峰命名
+            val lowerCaseEnumDirection = enums.map { it.name.toLowerCase() to it }.toList().toMap()
+
+            val camelCase = enums.mapNotNull { elm ->
+                val name = elm.name.split('_')
+                if (name.size == 1) { // No splitter
+                    null
+                } else {
+                    buildString {
+                        val iterator = name.iterator()
+                        append(iterator.next().toLowerCase())
+                        for (v in iterator) {
+                            if (v.isEmpty()) continue
+                            append(v[0].toUpperCase())
+                            append(v.substring(1, v.length).toLowerCase())
+                        }
+                    } to elm
+                }
+            }
+
+            val camelCaseDirection = if ((
+                    enums.map { it.name.toLowerCase() } + camelCase.map { it.first.toLowerCase() }
+                    ).hasDuplicates()
+            ) { // 确认驼峰命名与源没有冲突
+                emptyMap()
+            } else {
+                camelCase.toList().toMap()
+            }
+
+            ({
+                camelCaseDirection[it]
+                    ?: lowerCaseEnumDirection[it.toLowerCase()]
+                    ?: noConstant()
+            })
+        }
+    }
+
+    override fun parse(raw: String, sender: CommandSender): T {
+        return try {
+            delegate(raw)
+        } catch (e: Throwable) {
+            illegalArgument("无法解析 $raw 为 ${type.simpleName}")
+        }
+    }
+}
+
 internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : AbstractCommandValueArgumentParser<T>() {
     private fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
 

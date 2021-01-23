@@ -64,9 +64,38 @@ object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
     }
 }
 
+@Suppress("EnumEntryName")
+object TestEnumArgCommand : CompositeCommand(owner, "testenum") {
+    enum class TestEnum {
+        V1, V2, V3
+    }
+    enum class TestCase {
+        A, a
+    }
+    enum class TestCamelCase {
+        A, B, A_B
+    }
+
+    @SubCommand("tcc")
+    fun CommandSender.testCamelCase(enum: TestCamelCase) {
+        Testing.ok(enum)
+    }
+
+    @SubCommand("tc")
+    fun CommandSender.testCase(enum: TestCase) {
+        Testing.ok(enum)
+    }
+
+    @SubCommand
+    fun CommandSender.e1(enum: TestEnum) {
+        Testing.ok(enum)
+    }
+}
+
 internal val sender by lazy { ConsoleCommandSender }
 
 internal object TestUnitCommandOwner : CommandOwner by ConsoleCommandOwner
+
 internal val owner by lazy { TestUnitCommandOwner }
 
 
@@ -135,6 +164,75 @@ internal class TestCommand {
         assertSame(image, result[1])
 
         assertEquals(2, result.size)
+    }
+
+    @Test
+    fun `test enum argument`() = runBlocking {
+        TestEnumArgCommand.withRegistration {
+
+            assertEquals(TestEnumArgCommand.TestEnum.V1, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V1")))
+            })
+            assertEquals(TestEnumArgCommand.TestEnum.V2, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V2")))
+            })
+            assertEquals(TestEnumArgCommand.TestEnum.V3, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V3")))
+            })
+            withTesting<Unit> {
+                assertFailure(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("ENUM_NOT_FOUND")))
+                Testing.ok(Unit)
+            }
+            assertEquals(TestEnumArgCommand.TestEnum.V1, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v1")))
+            })
+            assertEquals(TestEnumArgCommand.TestEnum.V2, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v2")))
+            })
+            assertEquals(TestEnumArgCommand.TestEnum.V3, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v3")))
+            })
+
+
+            assertEquals(TestEnumArgCommand.TestCase.A, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("A")))
+            })
+            assertEquals(TestEnumArgCommand.TestCase.a, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("a")))
+            })
+            withTesting<Unit> {
+                assertFailure(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
+                Testing.ok(Unit)
+            }
+
+
+            assertEquals(TestEnumArgCommand.TestCamelCase.A, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("A")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.A, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("a")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.B, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("B")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.B, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("b")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("A_B")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("a_b")))
+            })
+            assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
+                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("aB")))
+            })
+            withTesting<Unit> {
+                assertFailure(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
+                Testing.ok(Unit)
+            }
+
+        }
     }
 
     @Test
@@ -360,5 +458,12 @@ fun <T> assertArrayEquals(expected: Array<out T>, actual: Array<out T>, message:
 internal fun assertSuccess(result: CommandExecuteResult) {
     if (result.isFailure()) {
         throw result.exception ?: AssertionError(result.toString())
+    }
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal fun assertFailure(result: CommandExecuteResult) {
+    if (!result.isFailure()) {
+        throw AssertionError("$result not a failure")
     }
 }

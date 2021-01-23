@@ -23,6 +23,9 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -75,34 +78,53 @@ public interface CommandArgumentContext {
         public val EMPTY: CommandArgumentContext = EmptyCommandArgumentContext
     }
 
+    private object EnumCommandArgumentContext : CommandArgumentContext {
+        private val cache = WeakHashMap<Class<*>, CommandValueArgumentParser<*>>()
+        private val enumKlass = Enum::class
+        override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? {
+            return if (kClass.isSubclassOf(enumKlass)) {
+                val jclass = kClass.java.asSubclass(Enum::class.java)
+                @Suppress("UNCHECKED_CAST")
+                (cache[jclass] ?: kotlin.run {
+                    EnumValueArgumentParser(jclass).also { cache[jclass] = it }
+                }) as CommandValueArgumentParser<T>
+            } else null
+        }
+
+        override fun toList(): List<ParserPair<*>> = emptyList()
+    }
+
     /**
      * 内建的默认 [CommandValueArgumentParser]
      */
-    public object Builtins : CommandArgumentContext by (buildCommandArgumentContext {
-        Int::class with IntValueArgumentParser
-        Byte::class with ByteValueArgumentParser
-        Short::class with ShortValueArgumentParser
-        Boolean::class with BooleanValueArgumentParser
-        String::class with StringValueArgumentParser
-        Long::class with LongValueArgumentParser
-        Double::class with DoubleValueArgumentParser
-        Float::class with FloatValueArgumentParser
+    public object Builtins : CommandArgumentContext by listOf(
+        EnumCommandArgumentContext,
+        buildCommandArgumentContext {
+            Int::class with IntValueArgumentParser
+            Byte::class with ByteValueArgumentParser
+            Short::class with ShortValueArgumentParser
+            Boolean::class with BooleanValueArgumentParser
+            String::class with StringValueArgumentParser
+            Long::class with LongValueArgumentParser
+            Double::class with DoubleValueArgumentParser
+            Float::class with FloatValueArgumentParser
 
-        Image::class with ImageValueArgumentParser
-        PlainText::class with PlainTextValueArgumentParser
+            Image::class with ImageValueArgumentParser
+            PlainText::class with PlainTextValueArgumentParser
 
-        Contact::class with ExistingContactValueArgumentParser
-        User::class with ExistingUserValueArgumentParser
-        Member::class with ExistingMemberValueArgumentParser
-        Group::class with ExistingGroupValueArgumentParser
-        Friend::class with ExistingFriendValueArgumentParser
-        Bot::class with ExistingBotValueArgumentParser
+            Contact::class with ExistingContactValueArgumentParser
+            User::class with ExistingUserValueArgumentParser
+            Member::class with ExistingMemberValueArgumentParser
+            Group::class with ExistingGroupValueArgumentParser
+            Friend::class with ExistingFriendValueArgumentParser
+            Bot::class with ExistingBotValueArgumentParser
 
-        PermissionId::class with PermissionIdValueArgumentParser
-        PermitteeId::class with PermitteeIdValueArgumentParser
+            PermissionId::class with PermissionIdValueArgumentParser
+            PermitteeId::class with PermitteeIdValueArgumentParser
 
-        MessageContent::class with RawContentValueArgumentParser
-    })
+            MessageContent::class with RawContentValueArgumentParser
+        },
+    ).fold(EmptyCommandArgumentContext, CommandArgumentContext::plus)
 }
 
 /**
@@ -127,7 +149,7 @@ public object EmptyCommandArgumentContext : CommandArgumentContext by SimpleComm
  * 合并两个 [buildCommandArgumentContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
 public operator fun CommandArgumentContext.plus(replacer: CommandArgumentContext): CommandArgumentContext {
-    if (replacer == EmptyCommandArgumentContext) return this
+    if (replacer === EmptyCommandArgumentContext) return this
     if (this == EmptyCommandArgumentContext) return replacer
     return object : CommandArgumentContext {
         override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? =
@@ -142,7 +164,7 @@ public operator fun CommandArgumentContext.plus(replacer: CommandArgumentContext
  */
 public operator fun CommandArgumentContext.plus(replacer: List<ParserPair<*>>): CommandArgumentContext {
     if (replacer.isEmpty()) return this
-    if (this == EmptyCommandArgumentContext) return SimpleCommandArgumentContext(replacer)
+    if (this === EmptyCommandArgumentContext) return SimpleCommandArgumentContext(replacer)
     return object : CommandArgumentContext {
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? =
