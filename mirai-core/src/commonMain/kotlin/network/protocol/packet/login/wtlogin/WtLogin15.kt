@@ -22,41 +22,85 @@ internal object WtLogin15 : WtLoginExt {
 
     operator fun invoke(
         client: QQAndroidClient,
-    ) = WtLogin.ExchangeEmp.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
-            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
-                writeShort(subCommand) // subCommand
-                writeShort(21)
+    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = ByteArray(16)) { sequenceId ->
+//        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
+        writeOicqRequestPacket(
+            client,
+            EncryptMethodSessionKeyNew(
+                client.wLoginSigInfo.wtSessionTicket.data,
+                client.wLoginSigInfo.wtSessionTicketKey
+            ),
+            0x0810
+        ) {
+            writeShort(subCommand) // subCommand
+            writeShort(21) // doesn't matter
 
-                t18(16, uin = client.uin)
-                t1(client.uin, client.device.ipAddress)
+            t18(16, uin = client.uin)
+            t1(client.uin, client.device.ipAddress)
 
-                writeShort(0x106)
-                writeShortLVByteArray(client.wLoginSigInfo.encryptA1!!)
+            //  t106(client = client)
+            writeShort(0x106)
+            val encryptA1 = client.wLoginSigInfo.encryptA1!!
+//            kotlin.run {
+//                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
+//                kotlin.runCatching {
+//                    TEA.decrypt(encryptA1, key).toUHexString()
+//                }.soutv("DEC") // success
+//            }
 
-                client.wLoginSigInfo.encryptA1
-                t116(client.miscBitMap, client.subSigMap)
-                t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                t107(0)
-                t142(client.apkId)
-                t144(client)
-                t145(client.device.guid)
+            writeShortLVByteArray(encryptA1)
+            // val a1 = kotlin.runCatching {
+            //     TEA.decrypt(encryptA1, buildPacket {
+            //         writeFully(client.device.guid)
+            //         writeFully(client.dpwd)
+            //         writeFully(client.randSeed)
+            //     }.readBytes().md5())
+            // }.recoverCatching {
+            //     client.tryDecryptOrNull(encryptA1) { it }!!
+            // }.getOrElse {
+            //     encryptA1.soutv("ENCRYPT A1")
+            //     client.soutv("CLIENT")
+            //     // exitProcess(1)
+            //     // error("Failed to decrypt A1")
+            //     encryptA1
+            // }
 
-                val t16a = client.tlv16a ?: error("Internal error: doing exchange emp 15 while tlv16a=null")
-                t16a(t16a) // new
+            //t116(client.miscBitMap, client.subSigMap)
+            t116(client.miscBitMap, client.subSigMap)
 
-                t154(sequenceId)
-                t141(client.device.simInfo, client.networkType, client.device.apn)
-                t8(2052)
-                t511()
-                t147(appId, client.apkVersionName, client.apkSignatureMd5)
-                t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
-                t187(client.device.macAddress)
-                t188(client.device.androidId)
-                t194(client.device.imsiMd5)
-                t202(client.device.wifiBSSID, client.device.wifiSSID)
-                t516()
-            }
+            //t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+            t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, mainSigMap = client.mainSigMap)
+
+            t107(0)
+            // t108(client.ksid) // new
+            t144(client)
+            t142(client.apkId)
+            t145(client.device.guid)
+
+            val noPicSig =
+                client.wLoginSigInfo.noPicSig ?: error("Internal error: doing exchange emp 15 while noPicSig=null")
+            t16a(noPicSig)
+
+            t154(sequenceId)
+            t141(client.device.simInfo, client.networkType, client.device.apn)
+            t8(2052)
+            t511()
+            t147(appId, client.apkVersionName, client.apkSignatureMd5)
+            t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
+
+            // new
+            t400(client.G, client.uin, client.device.guid, client.dpwd, appId, client.subAppId, client.randSeed)
+
+            t187(client.device.macAddress)
+            t188(client.device.androidId)
+            t194(client.device.imsiMd5)
+            t202(client.device.wifiBSSID, client.device.wifiSSID)
+            t516()
+
+            t521() // new
+            t525() // new
+            t544() // new
         }
+        //  }
     }
 }

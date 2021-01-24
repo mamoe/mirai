@@ -11,10 +11,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
-import kotlinx.io.core.writeFully
+import kotlinx.io.core.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.LoginType
@@ -23,10 +20,7 @@ import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.generateDeviceInfoData
-import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.*
 import kotlin.random.Random
 
 /**
@@ -41,7 +35,7 @@ internal fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
-        writeInt(currentTimeMillis().toInt())
+        writeInt(currentTimeSeconds().toInt())
         writeFully(ip)
         writeShort(0)
     } shouldEqualsTo 20
@@ -106,6 +100,9 @@ internal fun BytePacketBuilder.t106(
     )
 }
 
+/**
+ * A1
+ */
 internal fun BytePacketBuilder.t106(
     appId: Long = 16L,
     subAppId: Long,
@@ -143,7 +140,7 @@ internal fun BytePacketBuilder.t106(
                 writeLong(uin)
             }
 
-            writeInt(currentTimeMillis().toInt())
+            writeInt(currentTimeSeconds().toInt())
             writeFully(ByteArray(4)) // ip // no need to write actual ip
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
@@ -607,6 +604,11 @@ internal fun BytePacketBuilder.t185() {
 }
 
 internal fun BytePacketBuilder.t400(
+    /**
+     *  if (var1[2] != null && var1[2].length > 0) {
+    this._G = (byte[])var1[2].clone();
+    }
+     */
     g: ByteArray, // 用于加密这个 tlv
     uin: Long,
     guid: ByteArray,
@@ -758,12 +760,26 @@ internal fun BytePacketBuilder.t536( // 1334
 }
 
 internal fun BytePacketBuilder.t525(
-    t536: ByteReadPacket
+    t536: ByteReadPacket = buildPacket {
+        t536(buildPacket {
+            //com.tencent.loginsecsdk.ProtocolDet#packExtraData
+            writeByte(1) // const
+            writeByte(0) // data count
+        }.readBytes())
+    }
 ) {
     writeShort(0x525)
     writeShortLVPacket {
         writeShort(1)
         writePacket(t536)
+    }
+}
+
+internal fun BytePacketBuilder.t544( // 1334
+) {
+    writeShort(0x536)
+    writeShortLVPacket {
+        writeFully(byteArrayOf(0, 0, 0, 13)) // fake
     }
 }
 

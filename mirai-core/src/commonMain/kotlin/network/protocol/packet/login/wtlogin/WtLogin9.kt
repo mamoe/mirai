@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
@@ -99,13 +97,7 @@ internal object WtLogin9 : WtLoginExt {
                 t516()
                 t521()
 
-                t525(buildPacket {
-                    t536(buildPacket {
-                        //com.tencent.loginsecsdk.ProtocolDet#packExtraData
-                        writeByte(1) // const
-                        writeByte(0) // data count
-                    }.readBytes())
-                })
+                t525()
                 // this.build().debugPrint("傻逼")
 
                 // ignored t318 because not logging in by QR

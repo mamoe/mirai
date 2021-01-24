@@ -278,7 +278,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             updateOtherClientsList()
         }
 
-        bot.refreshSKey()
+        launch {
+            delay(3000)
+            bot.refreshSKey()
+        }
     }
 
     private suspend fun registerClientOnline() {

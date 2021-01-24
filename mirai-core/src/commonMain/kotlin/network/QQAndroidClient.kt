@@ -33,6 +33,8 @@ import kotlin.random.Random
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
 
+internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
+
 /**
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
@@ -93,7 +95,10 @@ internal open class QQAndroidClient(
             "tgtgtKey" to tgtgtKey,
             "tgtKey" to wLoginSigInfo.tgtKey,
             "deviceToken" to wLoginSigInfo.deviceToken,
-            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey
+            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey,
+            "randomKey" to randomKey,
+            "guid" to device.guid,
+
             //"t108" to wLoginSigInfo.t1,
             //"t10c" to t10c,
             //"t163" to t163
@@ -197,7 +202,7 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
-    val ssoVersion: Int = 13
+    val ssoVersion: Int = 15
 
     var networkType: NetworkType = NetworkType.WIFI
 
@@ -319,6 +324,12 @@ internal open class QQAndroidClient(
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
+    val wLoginSigInfoInitialized get() = ::wLoginSigInfo.isInitialized
+
+    var G: ByteArray = device.guid // sigInfo[2]
+    val dpwd: ByteArray = account.passwordMd5 // password md5
+    var randSeed: ByteArray = EMPTY_BYTE_ARRAY // t403
+
     var tlv113: ByteArray? = null
 
     /**
@@ -392,14 +403,11 @@ internal class LoginExtraData(
 
 internal class WLoginSigInfo(
     val uin: Long,
-    val encryptA1: ByteArray?, // sigInfo[0]
+    val encryptA1: ByteArray?, // sigInfo[0] // ??
     /**
      * WARNING, please check [QQAndroidClient.tlv16a]
      */
     val noPicSig: ByteArray?, // sigInfo[1]
-    val G: ByteArray, // sigInfo[2]
-    val dpwd: ByteArray,
-    val randSeed: ByteArray,
 
     val simpleInfo: WLoginSimpleInfo,
 
@@ -441,7 +449,7 @@ internal class WLoginSigInfo(
     val deviceToken: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
     }
 }
 

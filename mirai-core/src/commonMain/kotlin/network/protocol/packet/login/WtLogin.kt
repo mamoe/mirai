@@ -144,6 +144,15 @@ internal class WtLogin {
             val tlvMap: TlvMap = this._readTLVMap()
             // tlvMap.printTLVMap()
             tlvMap[0x161]?.let { bot.client.analysisTlv161(it) }
+            tlvMap[0x403]?.let { bot.client.randSeed = it }
+
+            tlvMap[0x402]?.let { t402 ->
+                bot.client.G = buildPacket {
+                    writeFully(bot.client.device.guid)
+                    writeFully(bot.client.dpwd)
+                    writeFully(t402)
+                }.readBytes().md5()
+            }
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
@@ -223,7 +232,9 @@ internal class WtLogin {
                     val tlvMap119 = this._readTLVMap()
 
                     // added for exchange_emp sub command 15
-                    tlvMap119[0x16a]?.let { bot.client.tlv16a = it }
+                    tlvMap119[0x16a]?.let {
+                        bot.client.tlv16a = it
+                    }
 
                     // ???
                     tlvMap119[0x1c]?.read {
@@ -347,8 +358,8 @@ internal class WtLogin {
                         outPt4TokenMap
                     )
 
-                    var a1: ByteArray? =
-                        (tlvMap119[0x106] ?: EMPTY_BYTE_ARRAY) //+ (tlvMap119[0x10c] ?: EMPTY_BYTE_ARRAY)
+                    var a1: ByteArray? = // 应该要加
+                        tlvMap119.getOrFail(0x106) //+ tlvMap119.getOrFail(0x10c)
                     var noPicSig: ByteArray? = tlvMap119[0x16a]
                     tlvMap119[0x531]?.let {
                         analysisTlv0x531(it) { arg1, arg2 ->
@@ -361,9 +372,6 @@ internal class WtLogin {
                         uin = client.uin,
                         encryptA1 = a1,
                         noPicSig = noPicSig,
-                        G = byteArrayOf(), // defaults {}, from asyncContext._G
-                        dpwd = byteArrayOf(), // defaults {}, from asyncContext._G
-                        randSeed = tlvMap119.getOrEmpty(0x403), // or from asyncContext._t403.get_body_data()
                         simpleInfo = WLoginSimpleInfo(
                             uin = client.uin,
                             face = face,
@@ -374,19 +382,26 @@ internal class WtLogin {
                             imgFormat = client.reserveUinInfo?.imgFormat ?: byteArrayOf(),
                             imgUrl = client.reserveUinInfo?.imgUrl ?: byteArrayOf(),
                             mainDisplayName = tlvMap119[0x118] ?: error("Cannot find tlv 0x118")
-                        ),
+                        ), // defaults {}, from asyncContext._G
                         appPri = tlvMap119[0x11f]?.let { it.read { discardExact(4); readUInt().toLong() } }
-                            ?: 4294967295L,
-                        a2ExpiryTime = expireTime,
-                        loginBitmap = 0, // from asyncContext._login_bitmap
+                            ?: 4294967295L, // defaults {}, from asyncContext._G
+                        a2ExpiryTime = expireTime, // or from asyncContext._t403.get_body_data()
+                        loginBitmap = 0,
                         tgt = tlvMap119.getOrEmpty(0x10a),
                         a2CreationTime = creationTime,
-                        tgtKey = tlvMap119.getOrEmpty(0x10d),
+                        tgtKey = tlvMap119.getOrEmpty(0x10d), // from asyncContext._login_bitmap
+                        userStSig = UserStSig((tlvMap119.getOrEmpty(0x114)), creationTime),
+                        userStKey = tlvMap119.getOrEmpty(0x10e),
+                        userStWebSig = UserStWebSig(tlvMap119.getOrEmpty(0x103), creationTime, expireTime),
+                        userA5 = UserA5(tlvMap119.getOrEmpty(0x10b), creationTime),
+                        userA8 = UserA8(tlvMap119.getOrEmpty(0x102), creationTime, expireTime),
+                        lsKey = LSKey(tlvMap119.getOrEmpty(0x11c), creationTime, expireTime),
                         sKey = SKey(tlvMap119.getOrEmpty(0x120), creationTime, expireTime),
                         userSig64 = UserSig64(tlvMap119.getOrEmpty(0x121), creationTime),
-                        accessToken = AccessToken(tlvMap119.getOrEmpty(0x136), creationTime),
                         openId = openId,
                         openKey = OpenKey(openKey, creationTime),
+                        vKey = VKey(tlvMap119.getOrEmpty(0x136), creationTime, expireTime),
+                        accessToken = AccessToken(tlvMap119.getOrEmpty(0x136), creationTime),
                         d2 = D2(tlvMap119.getOrEmpty(0x143), creationTime, expireTime),
                         d2Key = tlvMap119.getOrEmpty(0x305),
                         sid = Sid(tlvMap119.getOrEmpty(0x164), creationTime, expireTime),
@@ -400,14 +415,7 @@ internal class WtLogin {
                         da2 = tlvMap119.getOrEmpty(0x203),
                         wtSessionTicket = WtSessionTicket(tlvMap119.getOrEmpty(0x133), creationTime),
                         wtSessionTicketKey = tlvMap119.getOrEmpty(0x134),
-                        deviceToken = tlvMap119.getOrEmpty(0x322),
-                        vKey = VKey(tlvMap119.getOrEmpty(0x136), creationTime, expireTime),
-                        userStWebSig = UserStWebSig(tlvMap119.getOrEmpty(0x103), creationTime, expireTime),
-                        userStSig = UserStSig((tlvMap119.getOrEmpty(0x114)), creationTime),
-                        userStKey = tlvMap119.getOrEmpty(0x10e),
-                        lsKey = LSKey(tlvMap119.getOrEmpty(0x11c), creationTime, expireTime),
-                        userA5 = UserA5(tlvMap119.getOrEmpty(0x10b), creationTime),
-                        userA8 = UserA8(tlvMap119.getOrEmpty(0x102), creationTime, expireTime)
+                        deviceToken = tlvMap119.getOrEmpty(0x322)
                     )
                     //bot.network.logger.error(client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString())
                 }
