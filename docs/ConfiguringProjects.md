@@ -107,15 +107,17 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-jvm</artifactId>
+        <artifactId>mirai-core</artifactId>
         <version>2.1.0</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```
 
+> artifactId 在 `2.1.0` 起才可以使用 `mirai-core`。在 `2.0.0` 需要使用 `mirai-core-jvm`。
+
 ### 3. 添加 Kotlin 依赖
 
-通常 mirai 可以直接使用。但 mirai 使用的 Kotlin 1.4 可能与你的项目使用的其他库依赖的 Kotlin 版本冲突，Maven 无法正确处理这种冲突。此时请手动添加 Kotlin 标准库依赖。
+通常 mirai 可以直接使用。但 mirai 使用的 Kotlin 1.4 可能与你的项目使用的其他库依赖的 Kotlin 版本冲突，Maven 有时候无法正确处理这种冲突。此时请手动添加 Kotlin 标准库依赖。
 
 ```xml
 <properties>

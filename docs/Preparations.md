@@ -28,9 +28,9 @@
 
 推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 或 [Android Studio](https://developer.android.com/studio)。Mirai 提供 IntelliJ 插件来提升开发体验。
 
-|            插件名             |                         描述                         |             一键安装              |        JetBrains 插件仓库        |
-|:----------------------------:|:---------------------------------------------------:|:-------------------------------:|:-------------------------------:|
-|   [Mirai Console IntelliJ]   | 提供 mirai-core 的错误检查和 mirai-console 的插件开发辅助 |   [Mirai Console IntelliJ-OK]   |   [Mirai Console IntelliJ-JB]   |
+|          插件名           |                         描述                         |               一键安装                |         JetBrains 插件仓库          |
+|:------------------------:|:---------------------------------------------------:|:-----------------------------------:|:----------------------------------:|
+| [Mirai Console IntelliJ] | 提供 mirai-core 的错误检查和 mirai-console 的插件开发辅助 | [一键安装][Mirai Console IntelliJ-OK] | [说明页][Mirai Console IntelliJ-JB] |
 
 <!--| [Kotlin Jvm Blocking Bridge] |         帮助 Java 用户调用 Kotlin suspend 函数         | [Kotlin Jvm Blocking Bridge-OK] | [Kotlin Jvm Blocking Bridge-JB] |-->
 
