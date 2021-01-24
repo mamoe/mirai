@@ -17,10 +17,7 @@
 
 ### 配置项目
 
-- 如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
-- 如果你熟悉 Maven，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core-jvm:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
-
-本文提供如下三种配置方法，但推荐使用 Gradle 构建。
+本文提供如下三种配置方法。推荐使用 Gradle 构建。
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)

@@ -28,27 +28,30 @@
 [YunYouJun/mirai-ts]: https://github.com/YunYouJun/mirai-ts
 [only52607/e-mirai]: https://github.com/only52607/e-mirai
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
-[yyuueexxiinngg/cqhttp-mirai]: https://github.com/yyuueexxiinngg/cqhttp-mirai
-[Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP 
+[yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
+[Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
 
-| 技术             | 维护者及项目地址                               |
-|:----------------|:--------------------------------------------|
-| *Http*          | [mamoe/mirai-api-http]                      |
-| `JavaScript`    | [iTXTech/mirai-js]                          |
-| `Python`        | [Graia Framework][GraiaProject/Application] |
-| `Node.js`       | [RedBeanN/node-mirai]                       |
-| `Go`            | [Logiase/gomirai]                           |
-| `Mozilla Rhino` | [StageGuard/mirai-rhinojs-sdk]              |
-| `C++`           | [cyanray/mirai-cpp]                         |
-| `C++`           | [Chlorie/miraipp]                           |
-| `C++`           | [Nambers/MiraiCP]                           |
-| `C#`            | [Executor-Cheng/mirai-CSharp]               |
-| `Rust`          | [HoshinoTented/mirai-rs]                    |
-| `TypeScript`    | [YunYouJun/mirai-ts]                        |
-| `易语言`         | [only52607/e-mirai]                         |
-| `.Net/C#`       | [Hyperai][theGravityLab/ProjHyperai]        |
-| *酷 Q 插件*      | [iTXTech/mirai-native]                      |
-| *酷 Q HTTP*     | [yyuueexxiinngg/cqhttp-mirai]               |
+[Rhino]: https://github.com/mozilla/rhino
+[OneBot]: https://github.com/howmanybots/onebot
+
+| 技术              | 实现                       | 维护者及项目地址                               |
+|:-----------------|:--------------------------|:--------------------------------------------|
+| ***Mirai Http*** | Mirai 标准                 | [mamoe/mirai-api-http]                      |
+| *OneBot Http*    | [OneBot] 标准              | [yyuueexxiinngg/onebot-kotlin]              |
+| `Python`         | *Mirai Http*              | [Graia Framework][GraiaProject/Application] |
+| `C++`            | *Mirai Http*              | [cyanray/mirai-cpp]                         |
+| `C++`            | *Mirai Http*              | [Chlorie/miraipp]                           |
+| `C++`            | JNI                       | [Nambers/MiraiCP]                           |
+| `C#`             | *Mirai Http*              | [Executor-Cheng/mirai-CSharp]               |
+| `Rust`           | *Mirai Http*              | [HoshinoTented/mirai-rs]                    |
+| `JavaScript`     | [Rhino] / JVM             | [iTXTech/mirai-js]                          |
+| `JavaScript`     | Node.js / *Mirai Http*    | [RedBeanN/node-mirai]                       |
+| `JavaScript`     | TypeScript / *Mirai Http* | [YunYouJun/mirai-ts]                        |
+| `JavaScript`     | [Rhino] / JVM             | [StageGuard/mirai-rhinojs-sdk]              |
+| `.Net/C#`        | *Mirai Http*              | [Hyperai][theGravityLab/ProjHyperai]        |
+| `Go`             | *Mirai Http*              | [Logiase/gomirai]                           |
+| `易语言`          | *Mirai Http*              | [only52607/e-mirai]                         |
+| *酷 Q DLL 插件*   | JNI                       | [iTXTech/mirai-native]                      |
 
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
