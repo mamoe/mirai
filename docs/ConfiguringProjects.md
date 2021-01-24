@@ -17,10 +17,7 @@
 
 ### 配置项目
 
-- 如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
-- 如果你熟悉 Maven，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core-jvm:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
-
-本文提供如下三种配置方法，但推荐使用 Gradle 构建。
+本文提供如下三种配置方法。推荐使用 Gradle 构建。
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)
@@ -107,19 +104,21 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-jvm</artifactId>
+        <artifactId>mirai-core</artifactId>
         <version>2.1.0</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```
 
+> artifactId 在 `2.1.0` 起才可以使用 `mirai-core`。在 `2.0.0` 需要使用 `mirai-core-jvm`。
+
 ### 3. 添加 Kotlin 依赖
 
-通常 mirai 可以直接使用。但 mirai 使用的 Kotlin 1.4 可能与你的项目使用的其他库依赖的 Kotlin 版本冲突，Maven 无法正确处理这种冲突。此时请手动添加 Kotlin 标准库依赖。
+通常 mirai 可以直接使用。但 mirai 使用的 Kotlin 1.4 可能与你的项目使用的其他库依赖的 Kotlin 版本冲突，Maven 有时候无法正确处理这种冲突。此时请手动添加 Kotlin 标准库依赖。
 
 ```xml
 <properties>
-    <kotlin.version>1.4.20</kotlin.version>
+    <kotlin.version>1.4.21</kotlin.version>
 </properties>
 ```
 ```xml
