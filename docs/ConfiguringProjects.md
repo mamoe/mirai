@@ -121,7 +121,7 @@ dependencies {
 
 ```xml
 <properties>
-    <kotlin.version>1.4.20</kotlin.version>
+    <kotlin.version>1.4.21</kotlin.version>
 </properties>
 ```
 ```xml
