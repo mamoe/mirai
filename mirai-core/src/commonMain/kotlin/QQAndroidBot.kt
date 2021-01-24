@@ -113,12 +113,6 @@ internal class QQAndroidBot constructor(
         return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
 
-    override suspend fun queryProfile(targetId: Long): UserProfile {
-        network.apply {
-            return SummaryCard.ReqSummaryCard(client, targetId)
-                .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
-        }
-    }
 
     suspend fun refreshSKey() {
         client.wLoginSigInfo.sKey

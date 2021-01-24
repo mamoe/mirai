@@ -39,8 +39,6 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun login (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/BotNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
-	public fun queryProfile (J)Lnet/mamoe/mirai/data/UserProfile;
-	public abstract fun queryProfile (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/Bot$Companion {
@@ -118,6 +116,8 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun muteAnonymousMember (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Ljava/lang/String;JI)V
 	public fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public abstract fun queryImageUrl (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun queryProfile (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/data/UserProfile;
+	public abstract fun queryProfile (Lnet/mamoe/mirai/Bot;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recallFriendMessageRaw (Lnet/mamoe/mirai/Bot;J[I[II)Z
 	public fun recallGroupMessageRaw (Lnet/mamoe/mirai/Bot;J[I[I)Z
 	public fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[II)Z
@@ -205,6 +205,7 @@ public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/ma
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -367,6 +368,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -430,6 +432,7 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
@@ -483,6 +486,7 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -562,6 +566,7 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/StrangerNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -570,6 +575,7 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 }
 
 public abstract interface class net/mamoe/mirai/contact/TempUser : net/mamoe/mirai/contact/User {
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
@@ -580,6 +586,8 @@ public abstract interface class net/mamoe/mirai/contact/User : kotlinx/coroutine
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
+	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
+	public fun queryProfile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -4661,39 +4669,61 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun toPlainText (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/PlainText;
 }
 
-public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
-	public static final field Key Lnet/mamoe/mirai/message/data/MusicShare$Key;
-	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lnet/mamoe/mirai/message/data/MusicType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun contentToString ()Ljava/lang/String;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBrief ()Ljava/lang/String;
-	public final fun getJumpUrl ()Ljava/lang/String;
-	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
-	public final fun getMusicUrl ()Ljava/lang/String;
-	public final fun getPictureUrl ()Ljava/lang/String;
-	public final fun getSummary ()Ljava/lang/String;
-	public final fun getTitle ()Ljava/lang/String;
-	public final fun getType ()Lnet/mamoe/mirai/message/data/MusicType;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/message/data/MusicShare$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
-}
-
-public final class net/mamoe/mirai/message/data/MusicType : java/lang/Enum {
-	public static final field MiguMusic Lnet/mamoe/mirai/message/data/MusicType;
-	public static final field NeteaseCloudMusic Lnet/mamoe/mirai/message/data/MusicType;
-	public static final field QQMusic Lnet/mamoe/mirai/message/data/MusicType;
+public final class net/mamoe/mirai/message/data/MusicKind : java/lang/Enum {
+	public static final field MiguMusic Lnet/mamoe/mirai/message/data/MusicKind;
+	public static final field NeteaseCloudMusic Lnet/mamoe/mirai/message/data/MusicKind;
+	public static final field QQMusic Lnet/mamoe/mirai/message/data/MusicKind;
 	public final fun getAppId ()J
 	public final fun getPackageName ()Ljava/lang/String;
 	public final fun getPlatform ()I
 	public final fun getSdkVersion ()Ljava/lang/String;
 	public final fun getSignature ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MusicType;
-	public static fun values ()[Lnet/mamoe/mirai/message/data/MusicType;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MusicKind;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/MusicKind;
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/MusicShare$Key;
+	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Lnet/mamoe/mirai/message/data/MusicKind;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public fun contentToString ()Ljava/lang/String;
+	public final fun copy (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MusicShare;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/MusicShare;Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MusicShare;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrief ()Ljava/lang/String;
+	public final fun getJumpUrl ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MusicKind;
+	public final fun getMusicUrl ()Ljava/lang/String;
+	public final fun getPictureUrl ()Ljava/lang/String;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/MusicShare;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MusicShare$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MusicShare;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MusicShare;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/MusicShare$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/mamoe/mirai/message/data/MessageSource {

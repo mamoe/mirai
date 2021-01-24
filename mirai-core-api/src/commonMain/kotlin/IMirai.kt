@@ -17,6 +17,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -144,6 +145,14 @@ public interface IMirai : LowLevelApiAccessor {
      */
     @JvmBlockingBridge
     public suspend fun queryImageUrl(bot: Bot, image: Image): String
+
+    /**
+     * 查询某个用户的信息
+     *
+     * @since 2.1
+     */
+    @JvmBlockingBridge
+    public suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile
 
     /**
      * 构造一个 [OfflineMessageSource].

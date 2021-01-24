@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgRevokeUserDef
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -50,7 +51,7 @@ internal class PbMessageSvc {
             messageSequenceId: IntArray, // 56639
             messageRandom: IntArray, // 921878719
             messageType: Int = 0
-        ): OutgoingPacket {
+        ): OutgoingPacketWithRespType<Response> {
             require(messageSequenceId.size == messageRandom.size)
 
             return buildOutgoingUniPacket(client) {

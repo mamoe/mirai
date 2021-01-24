@@ -15,7 +15,9 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
@@ -345,22 +347,20 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     suspend fun StTroopNum.reloadGroup() {
-        retryCatching(3) {
-            bot.groups.delegate.add(
-                GroupImpl(
-                    bot = bot,
-                    coroutineContext = bot.coroutineContext,
-                    id = groupCode,
-                    groupInfo = GroupInfoImpl(this),
-                    members = Mirai.getRawGroupMemberList(
-                        bot,
-                        groupUin,
-                        groupCode,
-                        dwGroupOwnerUin
-                    )
+        bot.groups.delegate.add(
+            GroupImpl(
+                bot = bot,
+                coroutineContext = bot.coroutineContext,
+                id = groupCode,
+                groupInfo = GroupInfoImpl(this),
+                members = Mirai.getRawGroupMemberList(
+                    bot,
+                    groupUin,
+                    groupCode,
+                    dwGroupOwnerUin
                 )
             )
-        }.getOrThrow()
+        )
     }
 
     suspend fun reloadStrangerList() {
@@ -397,11 +397,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
             .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 5)
 
-        troopListData.groups.chunked(30).forEach { chunk ->
-            coroutineScope {
-                chunk.forEach {
-                    launch {
-                        retryCatching(5) { it.reloadGroup() }.getOrThrow()
+        val semaphore = Semaphore(30)
+
+        coroutineScope {
+            troopListData.groups.forEach { group ->
+                launch {
+                    semaphore.withPermit {
+                        retryCatching(5) { group.reloadGroup() }.getOrThrow()
                     }
                 }
             }
@@ -461,7 +463,12 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         syncMessageSvc()
 
         bot.firstLoginSucceed = true
+        postInitActions()
 
+        Unit // dont remove. can help type inference
+    }
+
+    override suspend fun postInitActions() {
         _pendingEnabled.value = false
         pendingIncomingPackets?.forEach {
             runCatching {
@@ -476,6 +483,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 logger.error("Exception on processing pendingIncomingPackets.", it)
             }
         }
+
         val list = pendingIncomingPackets
         pendingIncomingPackets = null // release, help gc
         list?.clear() // help gc
@@ -485,15 +493,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.getOrElse {
             logger.error("Exception on broadcasting BotOnlineEvent.", it)
         }
-
-        Unit // dont remove. can help type inference
     }
 
     init {
         @Suppress("RemoveRedundantQualifierName")
-        val listener = bot.eventChannel.subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
-            this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
-        }
+        val listener = bot.eventChannel
+            .parentJob(supervisor)
+            .subscribeAlways<BotReloginEvent>(priority = EventPriority.MONITOR) {
+                this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
+            }
         supervisor.invokeOnCompletion { listener.cancel() }
     }
 
@@ -728,6 +736,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         delegate.withUse {
             channel.send(delegate)
         }
+    }
+
+    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2
+    ): E {
+        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
     }
 
     /**

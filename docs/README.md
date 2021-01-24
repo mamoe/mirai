@@ -6,7 +6,7 @@
 
 **[Mirai 生态概览](mirai-ecology.md)**
 
-## 确定 SDK
+## 社区 SDK
 
 **mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果不熟悉这些语言，请使用以下社区 SDK：**
 
@@ -17,6 +17,7 @@
 [mamoe/mirai-api-http]: https://github.com/mamoe/mirai-api-http
 [iTXTech/mirai-native]: https://github.com/iTXTech/mirai-native
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
+[iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
 [GraiaProject/Application]: https://github.com/GraiaProject/Application
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
@@ -28,27 +29,31 @@
 [YunYouJun/mirai-ts]: https://github.com/YunYouJun/mirai-ts
 [only52607/e-mirai]: https://github.com/only52607/e-mirai
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
-[yyuueexxiinngg/cqhttp-mirai]: https://github.com/yyuueexxiinngg/cqhttp-mirai
-[Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP 
+[yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
+[Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
 
-| 技术             | 维护者及项目地址                               |
-|:----------------|:--------------------------------------------|
-| *Http*          | [mamoe/mirai-api-http]                      |
-| `JavaScript`    | [iTXTech/mirai-js]                          |
-| `Python`        | [Graia Framework][GraiaProject/Application] |
-| `Node.js`       | [RedBeanN/node-mirai]                       |
-| `Go`            | [Logiase/gomirai]                           |
-| `Mozilla Rhino` | [StageGuard/mirai-rhinojs-sdk]              |
-| `C++`           | [cyanray/mirai-cpp]                         |
-| `C++`           | [Chlorie/miraipp]                           |
-| `C++`           | [Nambers/MiraiCP]                           |
-| `C#`            | [Executor-Cheng/mirai-CSharp]               |
-| `Rust`          | [HoshinoTented/mirai-rs]                    |
-| `TypeScript`    | [YunYouJun/mirai-ts]                        |
-| `易语言`         | [only52607/e-mirai]                         |
-| `.Net/C#`       | [Hyperai][theGravityLab/ProjHyperai]        |
-| *酷 Q 插件*      | [iTXTech/mirai-native]                      |
-| *酷 Q HTTP*     | [yyuueexxiinngg/cqhttp-mirai]               |
+[Rhino]: https://github.com/mozilla/rhino
+[OneBot]: https://github.com/howmanybots/onebot
+
+| 技术                | 实现                       | 维护者及项目地址                               |
+|:-------------------|:--------------------------|:--------------------------------------------|
+| ***Mirai Http***   | Mirai 标准                 | [mamoe/mirai-api-http]                      |
+| *OneBot Http*      | [OneBot] 标准              | [yyuueexxiinngg/onebot-kotlin]              |
+| `C++`              | JNI                       | [Nambers/MiraiCP]                           |
+| `Kotlin Scripting` | JVM                       | [iTXTech/mirai-kts]                         |
+| `Python`           | *Mirai Http*              | [Graia Framework][GraiaProject/Application] |
+| `C++`              | *Mirai Http*              | [cyanray/mirai-cpp]                         |
+| `C++`              | *Mirai Http*              | [Chlorie/miraipp]                           |
+| `C#`               | *Mirai Http*              | [Executor-Cheng/mirai-CSharp]               |
+| `Rust`             | *Mirai Http*              | [HoshinoTented/mirai-rs]                    |
+| `JavaScript`       | [Rhino] / JVM             | [iTXTech/mirai-js]                          |
+| `JavaScript`       | Node.js / *Mirai Http*    | [RedBeanN/node-mirai]                       |
+| `JavaScript`       | TypeScript / *Mirai Http* | [YunYouJun/mirai-ts]                        |
+| `JavaScript`       | [Rhino] / JVM             | [StageGuard/mirai-rhinojs-sdk]              |
+| `.Net/C#`          | *Mirai Http*              | [Hyperai][theGravityLab/ProjHyperai]        |
+| `Go`               | *Mirai Http*              | [Logiase/gomirai]                           |
+| `易语言`            | *Mirai Http*              | [only52607/e-mirai]                         |
+| *酷 Q DLL 插件*     | JNI                       | [iTXTech/mirai-native]                      |
 
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
@@ -58,7 +63,7 @@
 
 ## JVM 平台 Mirai 开发
 
-**Mirai 文档没有废话，请务必仔细阅读每一个字。仔细阅读文档花费的 1 分钟可能相当于不阅读文档而自己摸索解决办法的 1 小时。**
+**为了避免遇到各种问题，请仔细阅读。**
 
 1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
 2. **配置项目依赖**
@@ -66,7 +71,7 @@
    - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
 3. 阅读 API 文档（见下文）
 
-> 如果你不知道 [`mirai-console`] 是什么，请阅读 [Mirai 生态概览](mirai-ecology.md)。
+> 如果你不知道 `mirai-core` 或 [`mirai-console`] 是什么，请阅读 [Mirai 生态概览](mirai-ecology.md)。
 >
 > 如果你希望先确认 mirai 能够正常运行才能安心阅读文档，可克隆 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world) 并运行其中 Kotlin 或 Java 入口点 `main`。
 

@@ -49,7 +49,7 @@ internal object MusicSharePacket :
         targetKind: MessageSourceKind
     ) = buildOutgoingUniPacket(client) {
         with(musicShare) {
-            val musicType = musicShare.type
+            val musicType = musicShare.kind
             writeProtoBuf(
                 OidbSso.OIDBSSOPkg.serializer(),
                 OidbSso.OIDBSSOPkg(
