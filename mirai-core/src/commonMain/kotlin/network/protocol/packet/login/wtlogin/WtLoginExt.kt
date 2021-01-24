@@ -97,15 +97,22 @@ internal interface WtLoginExt { // so as not to register to global extension
 
     /**
      * login extra data
+     *
+     * oicq/wlogin_sdk/request/oicq_request.java:1445
      */
     fun QQAndroidClient.analysisTlv537(t537: ByteArray) = t537.read {
         //discardExact(2)
-        loginExtraData = LoginExtraData( // args are to correct order
-            uin = readUInt().toLong(),
-            ip = readBytes(readByte().toInt() and 0xff),
-            time = readInt(), // correct
-            version = readInt()
-        )
+        discardExact(1)
+        repeat(readByte().toInt()) {
+            loginExtraData.add(
+                LoginExtraData( // args are to correct order
+                    uin = readLong(),
+                    ip = readBytes(readByte().toInt() and 0xff),
+                    time = readInt(), // correct
+                    version = readInt()
+                )
+            )
+        }
     }
 
     /**

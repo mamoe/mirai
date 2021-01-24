@@ -147,12 +147,15 @@ internal class WtLogin {
             tlvMap[0x403]?.let { bot.client.randSeed = it }
 
             tlvMap[0x402]?.let { t402 ->
-                bot.client.G = buildPacket {
-                    writeFully(bot.client.device.guid)
-                    writeFully(bot.client.dpwd)
-                    writeFully(t402)
-                }.readBytes().md5()
+                bot.client.t402 = t402
             }
+            // tlvMap[0x402]?.let { t402 ->
+            bot.client.G = buildPacket {
+                writeFully(bot.client.device.guid)
+                writeFully(bot.client.dpwd)
+                writeFully(tlvMap[0x402] ?: EMPTY_BYTE_ARRAY)
+            }.readBytes().md5()
+            //   }
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)

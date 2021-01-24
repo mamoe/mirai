@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*
+import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
@@ -320,7 +321,7 @@ internal open class QQAndroidClient(
     /**
      * t537
      */
-    var loginExtraData: LoginExtraData? = null
+    var loginExtraData: MutableSet<LoginExtraData> = CopyOnWriteArraySet()
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
@@ -336,6 +337,7 @@ internal open class QQAndroidClient(
      * from tlvMap119
      */
     var tlv16a: ByteArray? = null
+    var t402: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
@@ -390,14 +392,24 @@ internal class WLoginSimpleInfo(
     }
 }
 
-internal class LoginExtraData(
+internal data class LoginExtraData(
     val uin: Long,
     val ip: ByteArray,
     val time: Int,
-    val version: Int
+    val version: Int // app id, = 537066978
 ) {
     override fun toString(): String {
         return "LoginExtraData(uin=$uin, ip=${ip.toUHexString()}, time=$time, version=$version)"
+    }
+}
+
+internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
+    loginExtraData.run {
+        writeLong(uin)
+        writeByte(ip.size.toByte())
+        writeFully(ip)
+        writeInt(time)
+        writeInt(version)
     }
 }
 

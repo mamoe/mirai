@@ -9,11 +9,13 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
+import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
+import net.mamoe.mirai.utils.md5
 
 internal object WtLogin15 : WtLoginExt {
     private const val subCommand = 15.toShort()
@@ -33,9 +35,9 @@ internal object WtLogin15 : WtLoginExt {
             0x0810
         ) {
             writeShort(subCommand) // subCommand
-            writeShort(21) // doesn't matter
+            writeShort(25)
 
-            t18(16, uin = client.uin)
+            t18(appId, uin = client.uin)
             t1(client.uin, client.device.ipAddress)
 
             //  t106(client = client)
@@ -66,13 +68,13 @@ internal object WtLogin15 : WtLoginExt {
             // }
 
             //t116(client.miscBitMap, client.subSigMap)
-            t116(client.miscBitMap, client.subSigMap)
+            t116(0x08F7FF7C, 0x00010400)
 
             //t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-            t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, mainSigMap = client.mainSigMap)
+            t100(appId, 1, client.appClientVersion, client.ssoVersion, mainSigMap = 1048768)
 
             t107(0)
-            // t108(client.ksid) // new
+            // t108(client.ksid) // 第一次 exchange 没有 108
             t144(client)
             t142(client.apkId)
             t145(client.device.guid)
@@ -89,7 +91,15 @@ internal object WtLogin15 : WtLoginExt {
             t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
 
             // new
-            t400(client.G, client.uin, client.device.guid, client.dpwd, appId, client.subAppId, client.randSeed)
+            t400(
+                g = (client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + (client.t402 ?: EMPTY_BYTE_ARRAY)).md5(),
+                uin = client.uin,
+                guid = client.device.guid,
+                dpwd = client.dpwd,
+                appId = appId,
+                subAppId = client.subAppId,
+                randomSeed = client.randSeed
+            )
 
             t187(client.device.macAddress)
             t188(client.device.androidId)
@@ -98,7 +108,7 @@ internal object WtLogin15 : WtLoginExt {
             t516()
 
             t521() // new
-            t525() // new
+            t525(client.loginExtraData) // new
             t544() // new
         }
         //  }

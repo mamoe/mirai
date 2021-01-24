@@ -12,15 +12,20 @@
 package net.mamoe.mirai.internal.network.protocol.packet
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.LoginType
+import net.mamoe.mirai.internal.network.writeLoginExtraData
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.generateDeviceInfoData
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toByteArray
 import kotlin.random.Random
 
 /**
@@ -70,7 +75,7 @@ internal fun BytePacketBuilder.t18(
     writeShort(0x18)
     writeShortLVPacket {
         writeShort(1) //_ping_version
-        writeInt(1536) //_sso_version
+        writeInt(0x00_00_06_00) //_sso_version=1536
         writeInt(appId.toInt())
         writeInt(appClientVersion)
         writeInt(uin.toInt())
@@ -627,7 +632,7 @@ internal fun BytePacketBuilder.t400(
             writeFully(dpwd)
             writeInt(appId.toInt())
             writeInt(subAppId.toInt())
-            writeLong(currentTimeMillis())
+            writeLong(currentTimeSeconds())
             writeFully(randomSeed)
         }
     }
@@ -759,6 +764,30 @@ internal fun BytePacketBuilder.t536( // 1334
     }
 }
 
+internal fun BytePacketBuilder.t536( // 1334
+    loginExtraData: Collection<LoginExtraData>
+) {
+    writeShort(0x536)
+    writeShortLVPacket {
+        //com.tencent.loginsecsdk.ProtocolDet#packExtraData
+        writeByte(1) // const
+        writeByte(loginExtraData.size.toByte()) // data count
+        for (extraData in loginExtraData) {
+            writeLoginExtraData(extraData)
+        }
+    }
+}
+
+internal fun BytePacketBuilder.t525(
+    loginExtraData: Collection<LoginExtraData>,
+) {
+    writeShort(0x525)
+    writeShortLVPacket {
+        writeShort(1)
+        t536(loginExtraData)
+    }
+}
+
 internal fun BytePacketBuilder.t525(
     t536: ByteReadPacket = buildPacket {
         t536(buildPacket {
@@ -779,7 +808,7 @@ internal fun BytePacketBuilder.t544( // 1334
 ) {
     writeShort(0x536)
     writeShortLVPacket {
-        writeFully(byteArrayOf(0, 0, 0, 13)) // fake
+        writeFully(byteArrayOf(0, 0, 0, 11)) // means native throws exception
     }
 }
 
