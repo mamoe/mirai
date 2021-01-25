@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcLi
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.crypto.TEA
@@ -32,16 +33,8 @@ import net.mamoe.mirai.utils.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
 
-internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
 
 internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
-
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-@Suppress("RemoveRedundantQualifierName") // bug
-private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    (androidId + macAddress).md5()
 
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
@@ -123,7 +116,7 @@ internal open class QQAndroidClient(
 
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    internal var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
+    internal var tgtgtKey: ByteArray = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
     internal val randomKey: ByteArray = getRandomByteArray(16)
 
 
@@ -328,15 +321,11 @@ internal open class QQAndroidClient(
     val wLoginSigInfoInitialized get() = ::wLoginSigInfo.isInitialized
 
     var G: ByteArray = device.guid // sigInfo[2]
-    val dpwd: ByteArray = account.passwordMd5 // password md5
+    var dpwd: ByteArray = get_mpasswd().toByteArray()
     var randSeed: ByteArray = EMPTY_BYTE_ARRAY // t403
 
     var tlv113: ByteArray? = null
 
-    /**
-     * from tlvMap119
-     */
-    var tlv16a: ByteArray? = null
     var t402: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
@@ -378,19 +367,15 @@ internal class WFastLoginInfo(
 
 internal class WLoginSimpleInfo(
     val uin: Long, // uin
-    val face: Int, // ubyte actually
-    val age: Int, // ubyte
-    val gender: Int, // ubyte
-    val nick: String, // ubyte lv string
+    // val face: Int, // ubyte actually
+    // val age: Int, // ubyte
+    // val gender: Int, // ubyte
+    // val nick: String, // ubyte lv string
     val imgType: ByteArray,
     val imgFormat: ByteArray,
     val imgUrl: ByteArray,
     val mainDisplayName: ByteArray
-) {
-    override fun toString(): String {
-        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
-    }
-}
+)
 
 internal data class LoginExtraData(
     val uin: Long,
@@ -415,50 +400,49 @@ internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraDat
 
 internal class WLoginSigInfo(
     val uin: Long,
-    val encryptA1: ByteArray?, // sigInfo[0] // ??
+    var encryptA1: ByteArray?, // sigInfo[0] // ??
     /**
      * WARNING, please check [QQAndroidClient.tlv16a]
      */
-    val noPicSig: ByteArray?, // sigInfo[1]
+    var noPicSig: ByteArray?, // sigInfo[1]
 
-    val simpleInfo: WLoginSimpleInfo,
+    var simpleInfo: WLoginSimpleInfo,
 
-    val appPri: Long,
-    val a2ExpiryTime: Long,
-    val loginBitmap: Long,
-    val tgt: ByteArray,
-    val a2CreationTime: Long,
-    val tgtKey: ByteArray,
-    val userStSig: UserStSig,
+    var appPri: Long,
+    var a2ExpiryTime: Long,
+    var loginBitmap: Long,
+    var tgt: ByteArray,
+    var a2CreationTime: Long,
+    var tgtKey: ByteArray,
+    var userStSig: UserStSig,
     /**
      * TransEmpPacket 加密使用
      */
-    val userStKey: ByteArray,
-    val userStWebSig: UserStWebSig,
-    val userA5: UserA5,
-    val userA8: UserA8,
-    val lsKey: LSKey,
+    var userStKey: ByteArray,
+    var userStWebSig: UserStWebSig,
+    var userA5: UserA5,
+    var userA8: UserA8,
+    var lsKey: LSKey,
     var sKey: SKey,
-    val userSig64: UserSig64,
-    val openId: ByteArray,
-    val openKey: OpenKey,
-    val vKey: VKey,
-    val accessToken: AccessToken,
-    val d2: D2,
-    val d2Key: ByteArray,
-    val sid: Sid,
-    val aqSig: AqSig,
-    val psKeyMap: PSKeyMap,
-    val pt4TokenMap: Pt4TokenMap,
-    val superKey: ByteArray,
-    val payToken: ByteArray,
-    val pf: ByteArray,
-    val pfKey: ByteArray,
-    val da2: ByteArray,
-    //  val pt4Token: ByteArray,
-    val wtSessionTicket: WtSessionTicket,
-    val wtSessionTicketKey: ByteArray,
-    val deviceToken: ByteArray
+    var userSig64: UserSig64,
+    var openId: ByteArray,
+    var openKey: OpenKey,
+    var vKey: VKey,
+    var accessToken: AccessToken,
+    var d2: D2,
+    var d2Key: ByteArray,
+    var sid: Sid,
+    var aqSig: AqSig,
+    var psKeyMap: PSKeyMap,
+    var pt4TokenMap: Pt4TokenMap,
+    var superKey: ByteArray,
+    var payToken: ByteArray,
+    var pf: ByteArray,
+    var pfKey: ByteArray,
+    var da2: ByteArray, //  val pt4Token: ByteArray,
+    var wtSessionTicket: WtSessionTicket,
+    var wtSessionTicketKey: ByteArray,
+    var deviceToken: ByteArray
 ) {
     override fun toString(): String {
         return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
@@ -538,6 +522,9 @@ internal open class KeyWithExpiry(
 
 internal open class KeyWithCreationTime(
     val data: ByteArray,
+    /**
+     * seconds
+     */
     val creationTime: Long
 ) {
     override fun toString(): String {

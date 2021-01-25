@@ -14,7 +14,6 @@ package net.mamoe.mirai.internal.network.protocol.packet
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.network.writeLoginExtraData
 import net.mamoe.mirai.internal.utils.GuidSource
@@ -22,11 +21,28 @@ import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.generateDeviceInfoData
-import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.*
 import kotlin.random.Random
+
+private val Char.isHumanReadable get() = this in '0'..'9' || this in 'a'..'z' || this in 'A'..'Z' || this in """ <>?,.";':/\][{}~!@#$%^&*()_+-=`""" || this in "\n\r"
+
+internal fun TlvMap.smartToString(leadingLineBreak: Boolean = true, sorted: Boolean = true): String {
+    fun ByteArray.valueToString(): String {
+        val str = this.encodeToString()
+        return if (str.all { it.isHumanReadable }) str
+        else this.toUHexString()
+    }
+
+    val map = if (sorted) entries.sortedBy { it.key } else this.entries
+
+    return buildString {
+        if (leadingLineBreak) appendLine()
+        appendLine("count=${map.size}")
+        appendLine(map.joinToString("\n") { (key, value) ->
+            "0x" + key.toShort().toUHexString("") + " = " + value.valueToString()
+        })
+    }
+}
 
 /**
  * 显式表示一个 [ByteArray] 是一个 tlv 的 body
@@ -624,15 +640,14 @@ internal fun BytePacketBuilder.t400(
 ) {
     writeShort(0x400)
     writeShortLVPacket {
-        writeByte(1) // version
-        writeLong(uin)
-
         encryptAndWrite(g) {
+            writeByte(1) // version
+            writeLong(uin)
             writeFully(guid)
             writeFully(dpwd)
             writeInt(appId.toInt())
             writeInt(subAppId.toInt())
-            writeLong(currentTimeSeconds())
+            writeInt(currentTimeSeconds().toInt())
             writeFully(randomSeed)
         }
     }
@@ -806,7 +821,7 @@ internal fun BytePacketBuilder.t525(
 
 internal fun BytePacketBuilder.t544( // 1334
 ) {
-    writeShort(0x536)
+    writeShort(0x544)
     writeShortLVPacket {
         writeFully(byteArrayOf(0, 0, 0, 11)) // means native throws exception
     }

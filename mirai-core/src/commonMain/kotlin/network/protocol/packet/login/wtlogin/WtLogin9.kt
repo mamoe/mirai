@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 

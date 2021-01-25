@@ -141,6 +141,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
+    override suspend fun refreshKeys(bot: Bot) {
+        bot.asQQAndroidBot().network.refreshKeys()
+    }
+
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         check(event.responded.compareAndSet(false, true)) {

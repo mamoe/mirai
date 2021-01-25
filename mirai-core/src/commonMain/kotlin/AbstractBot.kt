@@ -177,13 +177,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                     login()
                     _network.postInitActions()
-//                    network.withConnectionLock {
-//                        /**
-//                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
-//                         */
-//                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-//                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
-//                    }
+                    //                    network.withConnectionLock {
+                    //                        /**
+                    //                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
+                    //                         */
+                    //                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+                    //                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
+                    //                    }
                     launch {
                         BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
                     }
