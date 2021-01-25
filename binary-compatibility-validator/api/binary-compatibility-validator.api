@@ -179,6 +179,7 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun recallGroupMessageRaw (Lnet/mamoe/mirai/Bot;J[I[ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[II)Z
 	public abstract fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun refreshKeys (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
 	public abstract fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public synthetic fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
@@ -5407,6 +5408,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getDevice ()[B
 	public final fun getDisplay ()[B
 	public final fun getFingerprint ()[B
+	public final fun getGuid ()[B
 	public final fun getImei ()Ljava/lang/String;
 	public final fun getImsiMd5 ()[B
 	public final fun getIpAddress ()[B
