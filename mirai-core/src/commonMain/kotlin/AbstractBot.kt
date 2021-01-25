@@ -142,7 +142,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     // normally closed
                     return@subscribeAlways
                 }
-                bot.logger.info { "Connection lost, retrying login" }
+
+                val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
+                bot.logger.info { "Connection lost, retrying login ($causeMessage)" }
 
                 bot.asQQAndroidBot().client.run {
                     if (serverList.isEmpty()) {
@@ -171,9 +173,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     }
 
 
-                    // Close network to avoid endless reconnection while network is ok
-                    // https://github.com/mamoe/mirai/issues/894
-                    kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
+                // Close network to avoid endless reconnection while network is ok
+                // https://github.com/mamoe/mirai/issues/894
+                kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
 
                     login()
                     _network.postInitActions()
