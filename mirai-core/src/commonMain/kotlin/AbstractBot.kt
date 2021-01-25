@@ -163,46 +163,46 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
     private inner class Reconnect {
         suspend fun reconnect(event: BotOfflineEvent): Boolean {
-            while (true) {
-                retryCatchingExceptions<Unit>(
-                    configuration.reconnectionRetryTimes,
-                    except = LoginFailedException::class
-                ) { tryCount, _ ->
-                    if (tryCount != 0) {
-                        delay(configuration.reconnectPeriodMillis)
-                    }
+            retryCatchingExceptions<Unit>(
+                configuration.reconnectionRetryTimes,
+                except = LoginFailedException::class
+            ) { tryCount, _ ->
+                if (tryCount != 0) {
+                    delay(configuration.reconnectPeriodMillis)
+                }
 
 
                 // Close network to avoid endless reconnection while network is ok
                 // https://github.com/mamoe/mirai/issues/894
                 kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
 
-                    login()
-                    _network.postInitActions()
-//                    network.withConnectionLock {
-//                        /**
-//                         * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
-//                         */
-//                        @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-//                        relogin((event as? BotOfflineEvent.Dropped)?.cause)
-//                    }
-                    launch {
-                        BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
-                    }
-                    return true
-                }.getOrElse { exception ->
-                    if (exception is LoginFailedException && !exception.killBot) {
-                        logger.info { "Cannot reconnect." }
-                        logger.warning(exception)
-                        logger.info { "Retrying in 3s..." }
-                        delay(3000)
-                        return@getOrElse
-                    }
-                    logger.info { "Cannot reconnect due to fatal error." }
-                    bot.cancel(CancellationException("Cannot reconnect due to fatal error.", exception))
+                login()
+                _network.postInitActions()
+//              network.withConnectionLock {
+//                  /**
+//                   * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
+//                   */
+//                  @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+//                  relogin((event as? BotOfflineEvent.Dropped)?.cause)
+//              }
+                launch {
+                    BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
+                }
+                return true
+            }.getOrElse { exception ->
+                if (exception is LoginFailedException && !exception.killBot) {
+                    logger.info { "Cannot reconnect." }
+                    logger.error(exception)
+                    // logger.info { "Retrying in 3s..." }
+                    // delay(3000)
                     return false
                 }
+                logger.info { "Cannot reconnect." }
+                bot.cancel(CancellationException("Cannot reconnect.", exception))
+                return false
             }
+
+            return false
         }
     }
 
