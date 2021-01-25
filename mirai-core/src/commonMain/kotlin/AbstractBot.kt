@@ -152,11 +152,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     } else serverList.removeAt(0)
                 }
 
-                val success: Boolean
-                val time = measureTime { success = Reconnect().reconnect(event) }
+                bot.launch {
+                    val success: Boolean
+                    val time = measureTime { success = Reconnect().reconnect(event) }
 
-                if (success) {
-                    logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
+                    if (success) {
+                        logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
+                    }
                 }
             }
         }
