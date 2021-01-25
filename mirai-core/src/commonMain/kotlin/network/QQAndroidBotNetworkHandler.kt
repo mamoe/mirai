@@ -82,7 +82,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
         _packetReceiverJob?.cancel(cancelCause)
-        _packetReceiverJob?.join()
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
             while (channel.isOpen && isActive) {
@@ -91,6 +90,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
+                    logger.warning { "Channel closed." }
                     if (this@QQAndroidBotNetworkHandler.isActive) {
                         bot.launch { BotOfflineEvent.Dropped(bot, e).broadcast() }
                     }
@@ -139,7 +139,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             // }
             channel.close()
         }
+
         channel = PlatformSocket()
+        bot.initClient()
 
         while (isActive) {
             try {
@@ -570,6 +572,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      */
     @Throws(ForceOfflineException::class)
     suspend fun parsePacket(input: ByteReadPacket) {
+        if (input.isEmpty) return
         generifiedParsePacket<Packet>(input)
     }
 
@@ -662,6 +665,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     if (rawInput.remaining == 0L) {
                         cachedPacket.value = null // 表示包长度正好
                         cachedPacketTimeoutJob?.cancel()
+                        rawInput.close()
                         return
                     }
                     length = rawInput.readInt() - 4
@@ -674,6 +678,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 } else {
                     cachedPacket.value = null // 表示包长度正好
                     cachedPacketTimeoutJob?.cancel()
+                    rawInput.close()
                     return
                 }
             }.getOrElse {
@@ -689,12 +694,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     writePacket(cache)
                     writePacket(rawInput, expectingLength)
                 })
+                cache.close()
+
                 cachedPacket.value = null // 缺少的长度已经给上了.
                 cachedPacketTimeoutJob?.cancel()
 
                 if (rawInput.remaining != 0L) {
                     return processPacket(rawInput) // 继续处理剩下内容
                 } else {
+                    rawInput.close()
                     // 处理好了.
                     return
                 }
@@ -713,8 +721,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         cachedPacketTimeoutJob?.cancel()
         cachedPacketTimeoutJob = launch {
             delay(1000)
-            if (cachedPacketTimeoutJob == this.coroutineContext[Job] && cachedPacket.getAndSet(null) != null) {
-                PacketLogger.verbose { "等待另一部分包时超时. 将舍弃已接收的半个包" }
+            val get = cachedPacket.getAndSet(null)
+            get?.close()
+            if (cachedPacketTimeoutJob == this.coroutineContext[Job] && get != null) {
+                logger.warning { "等待另一部分包时超时. 将舍弃已接收的半个包" }
             }
         }
     }
@@ -759,7 +769,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         return retryCatchingExceptions(
             retry + 1,
-            except = CancellationException::class // CancellationException means network closed so don't retry
+            except = CancellationException::class.cast() // CancellationException means network closed so don't retry
         ) {
             withPacketListener(commandName, sequenceId) { listener ->
                 return withTimeout(timeoutMillis) { // may throw CancellationException

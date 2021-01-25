@@ -118,8 +118,7 @@ internal open class QQAndroidClient(
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     internal var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
-    internal val randomKey: ByteArray = getRandomByteArray(16)
-
+    internal var randomKey: ByteArray = getRandomByteArray(16)
 
     internal val miscBitMap: Int = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
     internal val mainSigMap: Int = protocol.mainSigMap
