@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.contact.takeSingleContent
-import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -34,7 +33,7 @@ internal object SendMessageMultiProtocol {
         contract { callsInPlace(sourceCallback, InvocationKind.AT_MOST_ONCE) }
 
         message.takeSingleContent<MusicShare>()?.let { musicShare ->
-            return listOf(MusicSharePacket(client, musicShare, group.uin, targetKind = MessageSourceKind.GROUP))
+            return listOf(MusicSharePacket(client, musicShare, group.id, targetKind = MessageSourceKind.GROUP))
         }
 
         return MessageSvcPbSendMsg.createToGroup(client, group, message, fragmented, sourceCallback)
