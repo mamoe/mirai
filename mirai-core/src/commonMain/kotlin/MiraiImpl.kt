@@ -745,7 +745,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     )
                 ).toByteArray(LongMsg.ReqBody.serializer())
 
-                Highway.uploadResource(
+                Highway.uploadResourceHighway(
                     bot,
                     response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                     response.proto.msgSig,

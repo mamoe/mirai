@@ -287,6 +287,6 @@ internal open class QQAndroidClient(
 internal class BdhSession(
     val sigSession: ByteArray,
     val sessionKey: ByteArray,
-    var ssoAddresses: MutableSet<Pair<String, Int>> = CopyOnWriteArraySet(),
-    var otherAddresses: MutableSet<Pair<String, Int>> = CopyOnWriteArraySet(),
+    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
 )

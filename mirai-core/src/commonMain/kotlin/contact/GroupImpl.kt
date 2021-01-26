@@ -22,11 +22,13 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -152,7 +154,7 @@ internal class GroupImpl(
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    Highway.uploadResource(
+                    Highway.uploadResourceHighway(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
@@ -169,28 +171,21 @@ internal class GroupImpl(
     }
 
     override suspend fun uploadVoice(resource: ExternalResource): Voice {
-        if (resource.size > 1048576) {
-            throw  OverFileSizeMaxException()
-        }
         return bot.network.run {
-            val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
-
-            Highway.uploadResource(
+            val (_) = Highway.uploadResourceBdh(
                 bot = bot,
-                servers = response.uploadIpList.zip(response.uploadPortList),
-                uKey = response.uKey,
                 resource = resource,
                 kind = "group voice",
-                commandId = 29
+                commandId = 29,
+                extendInfo = PttStore.GroupPttUp.createTryUpPttPack(bot.id, id, resource)
+                    .toByteArray(Cmd0x388.ReqBody.serializer()),
+                encrypt = false
             )
-//            Highway.uploadPttHttp(
-//                bot,
-//                response.uploadIpList.zip(response.uploadPortList),
-//                resource,
-//                response.uKey,
-//                response.fileKey,
-//            )
+
+            // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
+            //     ?.msgTryupPttRsp
+            //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
+
             Voice(
                 "${resource.md5.toUHexString("")}.amr",
                 resource.md5,

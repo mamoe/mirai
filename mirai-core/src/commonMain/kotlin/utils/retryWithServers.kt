@@ -13,11 +13,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 
-internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
+internal suspend inline fun <R> Collection<Pair<Int, Int>>.retryWithServers(
     timeoutMillis: Long,
-    onFail: (exception: Throwable?) -> Unit,
-    crossinline block: suspend (ip: String, port: Int) -> Unit
-) {
+    onFail: (exception: Throwable?) -> Nothing,
+    crossinline block: suspend (ip: String, port: Int) -> R
+): R {
     require(this.isNotEmpty()) { "receiver of retryWithServers must not be empty" }
 
     var exception: Throwable? = null

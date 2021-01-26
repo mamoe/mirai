@@ -17,7 +17,6 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
-import net.mamoe.mirai.internal.utils.toIpV4AddressString
 
 
 /**
@@ -426,7 +425,7 @@ internal class Subcmd0x501 : ProtoBuf {
             @JvmField @ProtoNumber(4) val area: Int = 0,
             @JvmField @ProtoNumber(5) val sameIsp: Int = 0
         ) : ProtoBuf {
-            fun decode(): Pair<String, Int> = ip.toIpV4AddressString() to port
+            fun decode(): Pair<Int, Int> = ip to port
         }
 
         @Serializable

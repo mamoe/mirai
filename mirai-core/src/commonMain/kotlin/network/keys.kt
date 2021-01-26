@@ -157,9 +157,9 @@ internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
 
-internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
+internal fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
 
-internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
+internal fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
 internal fun parsePSKeyMapAndPt4TokenMap(
     data: ByteArray,
@@ -206,16 +206,16 @@ internal open class KeyWithCreationTime(
 }
 
 internal suspend inline fun QQAndroidClient.useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
-    if (bot.client.serverList.isEmpty()) {
-        bot.client.serverList.addAll(DefaultServerList)
+    if (bot.serverList.isEmpty()) {
+        bot.serverList.addAll(DefaultServerList)
     }
-    retryCatchingExceptions(bot.client.serverList.size, except = LoginFailedException::class) l@{
-        val pair = bot.client.serverList[0]
+    retryCatchingExceptions(bot.serverList.size, except = LoginFailedException::class) l@{
+        val pair = bot.serverList[0]
         runCatchingExceptions {
             block(pair.first, pair.second)
             return@l
         }.getOrElse {
-            bot.client.serverList.remove(pair)
+            bot.serverList.remove(pair)
             if (it !is LoginFailedException) {
                 // 不要重复打印.
                 bot.logger.warning(it)
@@ -226,7 +226,7 @@ internal suspend inline fun QQAndroidClient.useNextServers(crossinline block: su
         if (it is LoginFailedException) {
             throw it
         }
-        bot.client.serverList.addAll(DefaultServerList)
+        bot.serverList.addAll(DefaultServerList)
         throw NoServerAvailableException(it)
     }
 }

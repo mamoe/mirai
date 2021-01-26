@@ -9,10 +9,14 @@
 
 package net.mamoe.mirai.internal.network.highway
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.utils.runBIO
 import net.mamoe.mirai.utils.withUse
 import java.io.InputStream
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal class ChunkedFlowSession<T>(
     private val input: InputStream,
@@ -25,12 +29,17 @@ internal class ChunkedFlowSession<T>(
 
     private var offset = 0L
 
-    internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) = withUse {
-        while (true) {
-            val size = runBIO { input.read(buffer) }
-            if (size == -1) return
-            block(mapper(buffer, size, offset))
-            offset += size
+    internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.UNKNOWN) }
+        withUse {
+            while (true) {
+                val size = runBIO { input.read(buffer) }
+                if (size == -1) return
+                block(mapper(buffer, size, offset))
+                offset += size
+            }
         }
     }
+
+    internal suspend fun asFlow(): Flow<T> = flow { useAll { emit(it) } }
 }
