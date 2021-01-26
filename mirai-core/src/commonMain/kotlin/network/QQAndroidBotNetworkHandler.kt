@@ -456,7 +456,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
                 is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
                     bot.logger.info { "Server requires reconnect." }
-                    logger.debug { "ChangeServer.unknown = ${resp.unknown}." }
                     bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
 
                     resp.serverList.forEach {

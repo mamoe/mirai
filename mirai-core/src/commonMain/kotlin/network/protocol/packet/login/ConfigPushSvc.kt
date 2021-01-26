@@ -15,6 +15,7 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
@@ -29,6 +30,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
+import net.mamoe.mirai.utils.toUHexString
 import java.lang.IllegalStateException
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushReq as PushReqJceStruct
 
@@ -51,15 +53,14 @@ internal class ConfigPushSvc {
 
             @Serializable
             data class ChangeServer(
-                @ProtoNumber(1) val unknown: Int, // =08
-                @ProtoNumber(2) val serverList: List<ServerInfo>
+                @ProtoNumber(1) val serverList: List<ServerInfo>
             ) : ProtoBuf, PushReqResponse() {
 
                 @Serializable
                 data class ServerInfo(
                     @ProtoNumber(1) val host: String,
                     @ProtoNumber(2) val port: Int,
-                    @ProtoNumber(3) val unknown: Int
+                    @ProtoNumber(8) val unknown: String
                 ) : ProtoBuf {
                     override fun toString(): String {
                         return "$host:$port"
@@ -79,6 +80,10 @@ internal class ConfigPushSvc {
                 when (pushReq.type) {
                     1 -> {
                         // change sso server
+                        throw contextualBugReportException(
+                            "ConfigPush.ReqPush type=1",
+                            forDebug = pushReq.jcebuf.toUHexString(),
+                        )
                     }
 
                     2 -> {

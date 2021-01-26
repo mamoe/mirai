@@ -116,7 +116,7 @@ internal class FileStoragePushFSSvcList(
     @TarsId(7) @JvmField val vC2CPicDownList: List<FileStorageServerListInfo> = emptyList(),
     @TarsId(8) @JvmField val fmtIPInfo: FmtIPInfo? = null,
     @TarsId(9) @JvmField val domainIpChannel: DomainIpChannel? = null,
-    @TarsId(10) @JvmField val pttlist: ByteArray? = null
+    @TarsId(10) @JvmField val pttlist: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
