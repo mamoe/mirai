@@ -134,7 +134,6 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 is BotOfflineEvent.RequireReconnect,
                 is BotOfflineEvent.PacketFactoryErrorCode
                 -> {
-                    network.cancel(CancellationException("Server requires reconnect"))
                     // nothing to do
                 }
             }
