@@ -121,6 +121,16 @@ public open class BotConfiguration { // open for Java
     public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PHONE
 
     /**
+     * Highway 通道上传图片, 语音, 文件等资源时的协程数量.
+     *
+     * 每个协程的速度约为 200KB/s. 协程数量越多越快, 同时也更要求性能.
+     * 默认 [CPU 核心数][Runtime.availableProcessors].
+     *
+     * @since 2.2
+     */
+    public var highwayUploadCoroutineCount: Int = Runtime.getRuntime().availableProcessors()
+
+    /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
      * @see fileBasedDeviceInfo 使用指定文件存储设备信息
      * @see randomDeviceInfo 使用随机设备信息

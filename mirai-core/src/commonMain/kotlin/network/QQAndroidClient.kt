@@ -14,31 +14,28 @@ package net.mamoe.mirai.internal.network
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.io.core.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.io.core.BytePacketBuilder
+import kotlinx.io.core.String
+import kotlinx.io.core.toByteArray
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
-import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcListFuckKotlin
+import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
+import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
+import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.crypto.ECDH
-import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*
+import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
 
-internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
 
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-@Suppress("RemoveRedundantQualifierName") // bug
-private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    (androidId + macAddress).md5()
+internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
 
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
@@ -82,43 +79,16 @@ internal open class QQAndroidClient(
         get() = protocol.id
 
     internal var strangerSeq: Int = 0
-    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
-    val keys: Map<String, ByteArray> by lazy {
-        mapOf(
-            "16 zero" to ByteArray(16),
-            "D2 key" to wLoginSigInfo.d2Key,
-            "wtSessionTicketKey" to wLoginSigInfo.wtSessionTicketKey,
-            "userStKey" to wLoginSigInfo.userStKey,
-            "tgtgtKey" to tgtgtKey,
-            "tgtKey" to wLoginSigInfo.tgtKey,
-            "deviceToken" to wLoginSigInfo.deviceToken,
-            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey
-            //"t108" to wLoginSigInfo.t1,
-            //"t10c" to t10c,
-            //"t163" to t163
-        )
-    }
-
-    internal inline fun <R> tryDecryptOrNull(data: ByteArray, size: Int = data.size, mapper: (ByteArray) -> R): R? {
-        keys.forEach { (key, value) ->
-            kotlin.runCatching {
-                return mapper(TEA.decrypt(data, value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
-            }
-        }
-        return null
-    }
-
-    override fun toString(): String { // extremely slow
-        return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.toUHexString()}, randomKey=${randomKey.toUHexString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.toUHexString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.toUHexString()}, protocolVersion=$protocolVersion, apkId=${apkId.toUHexString()}, t150=${t150?.value?.toUHexString()}, rollbackSig=${rollbackSig?.toUHexString()}, ipFromT149=${ipFromT149?.toUHexString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.toUHexString()}, t528=${t528?.toUHexString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.toUHexString()}, qrPushSig=${qrPushSig.toUHexString()}, mainDisplayName='$mainDisplayName')"
-    }
+    val keys: Map<String, ByteArray> by lazy { allKeys() }
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    internal var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
-    internal var randomKey: ByteArray = getRandomByteArray(16)
+    internal var tgtgtKey: ByteArray = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
+    internal val randomKey: ByteArray = getRandomByteArray(16)
+
 
     internal val miscBitMap: Int = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
     internal val mainSigMap: Int = protocol.mainSigMap
@@ -126,33 +96,7 @@ internal open class QQAndroidClient(
 
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
-    lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcListFuckKotlin
-
-    internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
-        if (bot.client.serverList.isEmpty()) {
-            bot.client.serverList.addAll(DefaultServerList)
-        }
-        retryCatchingExceptions(bot.client.serverList.size, except = LoginFailedException::class) l@{
-            val pair = bot.client.serverList[0]
-            runCatchingExceptions {
-                block(pair.first, pair.second)
-                return@l
-            }.getOrElse {
-                bot.client.serverList.remove(pair)
-                if (it !is LoginFailedException) {
-                    // 不要重复打印.
-                    bot.logger.warning(it)
-                }
-                throw it
-            }
-        }.getOrElse {
-            if (it is LoginFailedException) {
-                throw it
-            }
-            bot.client.serverList.addAll(DefaultServerList)
-            throw NoServerAvailableException(it)
-        }
-    }
+    var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
 
     @MiraiInternalApi("Do not use directly. Get from the lambda param of buildSsoPacket")
     internal fun nextSsoSequenceId() = _ssoSequenceId.addAndGet(2)
@@ -196,7 +140,7 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
-    val ssoVersion: Int = 13
+    val ssoVersion: Int = 15
 
     var networkType: NetworkType = NetworkType.WIFI
 
@@ -314,210 +258,49 @@ internal open class QQAndroidClient(
     /**
      * t537
      */
-    var loginExtraData: LoginExtraData? = null
+    var loginExtraData: MutableSet<LoginExtraData> = CopyOnWriteArraySet()
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
+    val wLoginSigInfoInitialized get() = ::wLoginSigInfo.isInitialized
+
+    var G: ByteArray = device.guid // sigInfo[2]
+    var dpwd: ByteArray = get_mpasswd().toByteArray()
+    var randSeed: ByteArray = EMPTY_BYTE_ARRAY // t403
+
     var tlv113: ByteArray? = null
 
-    /**
-     * from tlvMap119
-     */
-    var tlv16a: ByteArray? = null
+    var t402: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
 
     var transportSequenceId = 1
 
+    var lastT106Full: ByteArray? = null
+
     lateinit var t104: ByteArray
-}
 
-@Suppress("RemoveRedundantQualifierName") // bug
-internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    (getRandomByteArray(16) + guid).md5()
-
-
-internal class ReserveUinInfo(
-    val imgType: ByteArray,
-    val imgFormat: ByteArray,
-    val imgUrl: ByteArray
-) {
-    override fun toString(): String {
-        return "ReserveUinInfo(imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()})"
-    }
-}
-
-internal class WFastLoginInfo(
-    val outA1: ByteReadPacket,
-    var adUrl: String = "",
-    var iconUrl: String = "",
-    var profileUrl: String = "",
-    var userJson: String = ""
-) {
-    override fun toString(): String {
-        return "WFastLoginInfo(outA1=$outA1, adUrl='$adUrl', iconUrl='$iconUrl', profileUrl='$profileUrl', userJson='$userJson')"
-    }
-}
-
-internal class WLoginSimpleInfo(
-    val uin: Long, // uin
-    val face: Int, // ubyte actually
-    val age: Int, // ubyte
-    val gender: Int, // ubyte
-    val nick: String, // ubyte lv string
-    val imgType: ByteArray,
-    val imgFormat: ByteArray,
-    val imgUrl: ByteArray,
-    val mainDisplayName: ByteArray
-) {
-    override fun toString(): String {
-        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
-    }
-}
-
-internal class LoginExtraData(
-    val uin: Long,
-    val ip: ByteArray,
-    val time: Int,
-    val version: Int
-) {
-    override fun toString(): String {
-        return "LoginExtraData(uin=$uin, ip=${ip.toUHexString()}, time=$time, version=$version)"
-    }
-}
-
-internal class WLoginSigInfo(
-    val uin: Long,
-    val encryptA1: ByteArray?, // sigInfo[0]
     /**
-     * WARNING, please check [QQAndroidClient.tlv16a]
+     * from ConfigPush.PushReq
      */
-    val noPicSig: ByteArray?, // sigInfo[1]
-    val G: ByteArray, // sigInfo[2]
-    val dpwd: ByteArray,
-    val randSeed: ByteArray,
+    @JvmField
+    val bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
+}
 
-    val simpleInfo: WLoginSimpleInfo,
-
-    val appPri: Long,
-    val a2ExpiryTime: Long,
-    val loginBitmap: Long,
-    val tgt: ByteArray,
-    val a2CreationTime: Long,
-    val tgtKey: ByteArray,
-    val userStSig: UserStSig,
-    /**
-     * TransEmpPacket 加密使用
-     */
-    val userStKey: ByteArray,
-    val userStWebSig: UserStWebSig,
-    val userA5: UserA5,
-    val userA8: UserA8,
-    val lsKey: LSKey,
-    val sKey: SKey,
-    val userSig64: UserSig64,
-    val openId: ByteArray,
-    val openKey: OpenKey,
-    val vKey: VKey,
-    val accessToken: AccessToken,
-    val d2: D2,
-    val d2Key: ByteArray,
-    val sid: Sid,
-    val aqSig: AqSig,
-    val psKeyMap: PSKeyMap,
-    val pt4TokenMap: Pt4TokenMap,
-    val superKey: ByteArray,
-    val payToken: ByteArray,
-    val pf: ByteArray,
-    val pfKey: ByteArray,
-    val da2: ByteArray,
-    //  val pt4Token: ByteArray,
-    val wtSessionTicket: WtSessionTicket,
-    val wtSessionTicketKey: ByteArray,
-    val deviceToken: ByteArray
-) {
-    override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
+internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
+    loginExtraData.run {
+        writeLong(uin)
+        writeByte(ip.size.toByte())
+        writeFully(ip)
+        writeInt(time)
+        writeInt(version)
     }
 }
 
-internal class UserStSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class UserStWebSig(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class UserA8(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class UserA5(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class SKey(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class UserSig64(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class OpenKey(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class VKey(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class AccessToken(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class D2(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-internal class Sid(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class AqSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-
-internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal typealias PSKeyMap = MutableMap<String, PSKey>
-internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
-
-internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
-
-internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
-
-internal fun parsePSKeyMapAndPt4TokenMap(
-    data: ByteArray,
-    creationTime: Long,
-    expireTime: Long,
-    outPSKeyMap: PSKeyMap,
-    outPt4TokenMap: Pt4TokenMap
-) =
-    data.read {
-        repeat(readShort().toInt()) {
-            val domain = readUShortLVString()
-            val psKey = readUShortLVByteArray()
-            val pt4token = readUShortLVByteArray()
-
-            when {
-                psKey.isNotEmpty() -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
-                pt4token.isNotEmpty() -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
-            }
-        }
-    }
-
-internal class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) :
-    KeyWithExpiry(data, creationTime, expireTime)
-
-internal class WtSessionTicket(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-
-internal open class KeyWithExpiry(
-    data: ByteArray,
-    creationTime: Long,
-    val expireTime: Long
-) : KeyWithCreationTime(data, creationTime) {
-    override fun toString(): String {
-        return "KeyWithExpiry(data=${data.toUHexString()}, creationTime=$creationTime)"
-    }
-}
-
-internal open class KeyWithCreationTime(
-    val data: ByteArray,
-    val creationTime: Long
-) {
-    override fun toString(): String {
-        return "KeyWithCreationTime(data=${data.toUHexString()}, creationTime=$creationTime)"
-    }
-}
+internal class BdhSession(
+    val sigSession: ByteArray,
+    val sessionKey: ByteArray,
+    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+)

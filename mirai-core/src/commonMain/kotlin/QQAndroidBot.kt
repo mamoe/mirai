@@ -23,9 +23,13 @@ import net.mamoe.mirai.internal.contact.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.useNextServers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -62,6 +66,8 @@ internal class QQAndroidBot constructor(
         )
         return client
     }
+
+    override val bot: QQAndroidBot get() = this
 
     internal var firstLoginSucceed: Boolean = false
 
@@ -114,6 +120,14 @@ internal class QQAndroidBot constructor(
         return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
 
+
+    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2
+    ): E = network.run { sendAndExpect(timeoutMillis, retry) }
+
+    suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E =
+        network.run { sendAndExpect(timeoutMillis, retry) }
 
     /**
      * 获取 获取群公告 所需的 bkn 参数

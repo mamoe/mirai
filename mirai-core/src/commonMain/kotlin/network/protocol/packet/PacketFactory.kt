@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.network.readUShortLVByteArray
+import net.mamoe.mirai.internal.network.tryDecryptOrNull
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
@@ -395,7 +396,8 @@ internal object KnownPacketFactories {
         this.discardExact(1)
         val packet = when (encryptionMethod) {
             4 -> {
-                var data = TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
+                var data =
+                    TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, length = (this.remaining - 1).toInt())
 
                 val peerShareKey =
                     bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
@@ -403,19 +405,26 @@ internal object KnownPacketFactories {
 
                 packetFactory.decode(bot, data)
             }
+            3 -> {
+                // session
+                val data = TEA.decrypt(
+                    this,
+                    bot.client.wLoginSigInfo.wtSessionTicketKey,
+                    length = (this.remaining - 1).toInt()
+                )
+
+                packetFactory.decode(bot, data)
+            }
             0 -> {
                 val data = if (bot.client.loginState == 0) {
-                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                    ByteArrayPool.useInstance(this.remaining.toInt()) { byteArrayBuffer ->
-                        val size = (this.remaining - 1).toInt()
-                        this.readFully(byteArrayBuffer, 0, size)
+                    val size = (this.remaining - 1).toInt()
+                    val byteArrayBuffer = this.readBytes(size)
 
-                        runCatching {
-                            TEA.decrypt(byteArrayBuffer, bot.client.ecdh.keyPair.initialShareKey, size)
-                        }.getOrElse {
-                            TEA.decrypt(byteArrayBuffer, bot.client.randomKey, size)
-                        }.toReadPacket()
-                    }
+                    runCatching {
+                        TEA.decrypt(byteArrayBuffer, bot.client.ecdh.keyPair.initialShareKey, size)
+                    }.getOrElse {
+                        TEA.decrypt(byteArrayBuffer, bot.client.randomKey, size)
+                    }.toReadPacket()
                 } else {
                     TEA.decrypt(this, bot.client.randomKey, 0, (this.remaining - 1).toInt())
                 }

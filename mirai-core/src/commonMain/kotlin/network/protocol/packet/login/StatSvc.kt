@@ -27,7 +27,6 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.getRandomByteArray
-import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline

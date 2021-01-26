@@ -135,7 +135,7 @@ internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 /**
  * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
  */
-internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
+internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     bodyType: Byte,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
@@ -143,10 +143,10 @@ internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
     commandName: String = this.commandName,
     key: ByteArray = KEY_16_ZEROS,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
-): OutgoingPacket {
+): OutgoingPacketWithRespType<R> {
     val sequenceId: Int = client.nextSsoSequenceId()
 
-    return OutgoingPacket(name, commandName, sequenceId, buildPacket {
+    return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x00_00_00_0A)
             writeByte(bodyType)

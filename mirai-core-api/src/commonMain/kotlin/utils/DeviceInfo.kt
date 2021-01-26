@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
@@ -41,6 +42,10 @@ public class DeviceInfo(
 ) {
     public val androidId: ByteArray get() = display
     public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
+
+    @Transient
+    @MiraiInternalApi
+    public val guid: ByteArray = generateGuid(androidId, macAddress)
 
     @Serializable
     public class Version(
@@ -126,6 +131,14 @@ public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
         )
     )
 }
+
+/**
+ * Defaults "%4;7t>;28<fc.5*6".toByteArray()
+ */
+@Suppress("RemoveRedundantQualifierName") // bug
+private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
+    (androidId + macAddress).md5()
+
 
 /*
 fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(
