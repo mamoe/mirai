@@ -5330,6 +5330,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getFirstReconnectDelayMillis ()J
 	public final fun getHeartbeatPeriodMillis ()J
 	public final fun getHeartbeatTimeoutMillis ()J
+	public final fun getHighwayUploadCoroutineCount ()I
 	public final fun getJson ()Lkotlinx/serialization/json/Json;
 	public final fun getLoginSolver ()Lnet/mamoe/mirai/utils/LoginSolver;
 	public final fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
@@ -5367,6 +5368,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setFirstReconnectDelayMillis (J)V
 	public final fun setHeartbeatPeriodMillis (J)V
 	public final fun setHeartbeatTimeoutMillis (J)V
+	public final fun setHighwayUploadCoroutineCount (I)V
 	public final fun setJson (Lkotlinx/serialization/json/Json;)V
 	public final fun setLoginSolver (Lnet/mamoe/mirai/utils/LoginSolver;)V
 	public final fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V

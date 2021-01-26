@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.useNextServers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -52,16 +53,22 @@ internal fun QQAndroidBot.createOtherClient(
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
-    account: BotAccount,
+    private val account: BotAccount,
     configuration: BotConfiguration
 ) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
-    @Suppress("LeakingThis")
-    val client: QQAndroidClient =
-        QQAndroidClient(
+    var client: QQAndroidClient = initClient()
+
+    fun initClient(): QQAndroidClient {
+        client = QQAndroidClient(
             account,
             bot = this,
             device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
         )
+        return client
+    }
+
+    override val bot: QQAndroidBot get() = this
+
     internal var firstLoginSucceed: Boolean = false
 
     inline val json get() = configuration.json

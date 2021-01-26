@@ -195,7 +195,6 @@ public interface ExternalResource : Closeable {
         ): MessageReceipt<C> =
             runBIO {
                 // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
-                @Suppress("BlockingMethodInNonBlockingContext")
                 toExternalResource(formatName)
             }.withUse { sendAsImageTo(contact) }
 
@@ -239,7 +238,6 @@ public interface ExternalResource : Closeable {
         @JvmOverloads
         public suspend fun InputStream.uploadAsImage(contact: Contact, formatName: String? = null): Image =
             // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
-            @Suppress("BlockingMethodInNonBlockingContext")
             runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
 
         /**

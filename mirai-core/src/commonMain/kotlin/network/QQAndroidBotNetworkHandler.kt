@@ -85,7 +85,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
         _packetReceiverJob?.cancel(cancelCause)
-        _packetReceiverJob?.join()
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
             while (channel.isOpen && isActive) {
@@ -94,6 +93,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
+                    logger.verbose { "Channel closed." }
                     if (this@QQAndroidBotNetworkHandler.isActive) {
                         bot.launch { BotOfflineEvent.Dropped(bot, e).broadcast() }
                     }
@@ -142,7 +142,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             // }
             channel.close()
         }
+
         channel = PlatformSocket()
+        bot.initClient()
 
         while (isActive) {
             try {
@@ -309,7 +311,11 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         bot.otherClients.delegate.clear()
         bot.otherClients.delegate.addAll(list.map { bot.createOtherClient(it) })
 
-        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform?.name ?: "unknown platform"})" } }
+        if (bot.otherClients.isEmpty()) {
+            bot.logger.info { "No OtherClient online." }
+        } else {
+            bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform?.name ?: "unknown platform"})" } }
+        }
     }
 
     // caches
@@ -462,19 +468,26 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
             logger.info { "Awaiting ConfigPushSvc.PushReq." }
             when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
-                null -> logger.info { "Missing ConfigPushSvc.PushReq." }
+                null -> {
+                    kotlin.runCatching { bot.client.bdhSession.completeExceptionally(TimeoutCancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
+                    logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+                }
                 is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
                     logger.info { "ConfigPushSvc.PushReq: Success." }
                 }
                 is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
                     bot.logger.info { "Server requires reconnect." }
-                    logger.debug { "ChangeServer.unknown = ${resp.unknown}." }
                     bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
 
-                    resp.serverList.forEach {
-                        bot.client.serverList.add(it.host to it.port)
+                    if (resp.serverList.isNotEmpty()) {
+                        bot.serverList.clear()
+                        resp.serverList.forEach {
+                            bot.serverList.add(it.host to it.port)
+                        }
                     }
-                    BotOfflineEvent.RequireReconnect(bot).broadcast()
+
+                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
+                    return@launch
                 }
             }
         }
@@ -483,8 +496,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         bot.firstLoginSucceed = true
         postInitActions()
-
-        Unit // dont remove. can help type inference
     }
 
     override suspend fun postInitActions() {
@@ -591,6 +602,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      */
     @Throws(ForceOfflineException::class)
     suspend fun parsePacket(input: ByteReadPacket) {
+        if (input.isEmpty) return
         generifiedParsePacket<Packet>(input)
     }
 
@@ -683,6 +695,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     if (rawInput.remaining == 0L) {
                         cachedPacket.value = null // 表示包长度正好
                         cachedPacketTimeoutJob?.cancel()
+                        rawInput.close()
                         return
                     }
                     length = rawInput.readInt() - 4
@@ -695,6 +708,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 } else {
                     cachedPacket.value = null // 表示包长度正好
                     cachedPacketTimeoutJob?.cancel()
+                    rawInput.close()
                     return
                 }
             }.getOrElse {
@@ -710,12 +724,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     writePacket(cache)
                     writePacket(rawInput, expectingLength)
                 })
+                cache.close()
+
                 cachedPacket.value = null // 缺少的长度已经给上了.
                 cachedPacketTimeoutJob?.cancel()
 
                 if (rawInput.remaining != 0L) {
                     return processPacket(rawInput) // 继续处理剩下内容
                 } else {
+                    rawInput.close()
                     // 处理好了.
                     return
                 }
@@ -734,8 +751,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         cachedPacketTimeoutJob?.cancel()
         cachedPacketTimeoutJob = launch {
             delay(1000)
-            if (cachedPacketTimeoutJob == this.coroutineContext[Job] && cachedPacket.getAndSet(null) != null) {
-                PacketLogger.verbose { "等待另一部分包时超时. 将舍弃已接收的半个包" }
+            val get = cachedPacket.getAndSet(null)
+            get?.close()
+            if (cachedPacketTimeoutJob == this.coroutineContext[Job] && get != null) {
+                logger.warning { "等待另一部分包时超时. 将舍弃已接收的半个包" }
             }
         }
     }
