@@ -458,10 +458,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     bot.logger.info { "Server requires reconnect." }
                     bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
 
-                    resp.serverList.forEach {
-                        bot.client.serverList.add(it.host to it.port)
+                    if (resp.serverList.isNotEmpty()) {
+                        bot.serverList.clear()
+                        resp.serverList.forEach {
+                            bot.serverList.add(it.host to it.port)
+                        }
                     }
-                    BotOfflineEvent.RequireReconnect(bot).broadcast()
+
+                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
+                    return@launch
                 }
             }
         }

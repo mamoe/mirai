@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -25,10 +24,11 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Subcmd0x501
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.utils.toUHexString
 import java.lang.IllegalStateException
@@ -53,15 +53,28 @@ internal class ConfigPushSvc {
 
             @Serializable
             data class ChangeServer(
-                @ProtoNumber(1) val serverList: List<ServerInfo>
-            ) : ProtoBuf, PushReqResponse() {
+                @TarsId(1) val serverList: List<ServerInfo>,
+                // @TarsId(3) val serverList2: List<ServerInfo>,
+                // @TarsId(8) val serverList3: List<ServerInfo>,
+            ) : JceStruct, PushReqResponse() {
 
                 @Serializable
                 data class ServerInfo(
-                    @ProtoNumber(1) val host: String,
-                    @ProtoNumber(2) val port: Int,
-                    @ProtoNumber(8) val unknown: String
-                ) : ProtoBuf {
+                    /*
+                    skipping String1
+                    skipping Short
+                    skipping Byte
+                    skipping Zero
+                    skipping Zero
+                    skipping Byte
+                    skipping Byte
+                    skipping String1
+                    skipping String1
+                     */
+                    @TarsId(1) val host: String,
+                    @TarsId(2) val port: Int,
+                    @TarsId(8) val location: String
+                ) : JceStruct {
                     override fun toString(): String {
                         return "$host:$port"
                     }
@@ -71,62 +84,61 @@ internal class ConfigPushSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse {
             val pushReq = readUniPacket(PushReqJceStruct.serializer(), "PushReq")
-            return PushReqResponse.Success(pushReq)
+            return when (pushReq.type) {
+                1 -> kotlin.runCatching {
+                    pushReq.jcebuf.loadAs(PushReqResponse.ChangeServer.serializer())
+                }.getOrElse {
+                    throw contextualBugReportException(
+                        "ConfigPush.ReqPush type=1",
+                        forDebug = pushReq.jcebuf.toUHexString(),
+                    )
+                }
+                else -> PushReqResponse.Success(pushReq)
+            }
         }
 
         override suspend fun QQAndroidBot.handle(packet: PushReqResponse, sequenceId: Int): OutgoingPacket? {
             fun handleSuccess(packet: PushReqResponse.Success) {
                 val pushReq = packet.struct
-                when (pushReq.type) {
-                    1 -> {
-                        // change sso server
-                        throw contextualBugReportException(
-                            "ConfigPush.ReqPush type=1",
-                            forDebug = pushReq.jcebuf.toUHexString(),
-                        )
-                    }
 
-                    2 -> {
-                        // FS server
-                        val fileStoragePushFSSvcList = pushReq.jcebuf.loadAs(FileStoragePushFSSvcList.serializer())
-                        bot.client.fileStoragePushFSSvcList = fileStoragePushFSSvcList
+                // FS server
+                val fileStoragePushFSSvcList = pushReq.jcebuf.loadAs(FileStoragePushFSSvcList.serializer())
+                bot.client.fileStoragePushFSSvcList = fileStoragePushFSSvcList
 
-                        val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
-                        if (bigDataChannel?.vBigdataPbBuf == null) {
-                            client.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
-                            return
-                        }
-
-                        kotlin.runCatching {
-                            val resp =
-                                bigDataChannel.vBigdataPbBuf.loadAs(Subcmd0x501.RspBody.serializer()).msgSubcmd0x501RspBody
-                                    ?: error("msgSubcmd0x501RspBody not found")
-
-                            val session = BdhSession(
-                                sigSession = resp.httpconnSigSession,
-                                sessionKey = resp.sessionKey
-                            )
-
-                            for ((type, addresses) in resp.msgHttpconnAddrs) {
-                                when (type) {
-                                    10 -> session.ssoAddresses.addAll(addresses.map { it.decode() })
-                                    21 -> session.otherAddresses.addAll(addresses.map { it.decode() })
-                                }
-                            }
-
-                            session
-                        }.fold(
-                            onSuccess = {
-                                client.bdhSession.complete(it)
-                            },
-                            onFailure = { cause ->
-                                val e = IllegalStateException("Failed to decode BdhSession", cause)
-                                client.bdhSession.completeExceptionally(e)
-                                logger.error(e)
-                            }
-                        )
-                    }
+                val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
+                if (bigDataChannel?.vBigdataPbBuf == null) {
+                    client.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    return
                 }
+
+                kotlin.runCatching {
+                    val resp =
+                        bigDataChannel.vBigdataPbBuf.loadAs(Subcmd0x501.RspBody.serializer()).msgSubcmd0x501RspBody
+                            ?: error("msgSubcmd0x501RspBody not found")
+
+                    val session = BdhSession(
+                        sigSession = resp.httpconnSigSession,
+                        sessionKey = resp.sessionKey
+                    )
+
+                    for ((type, addresses) in resp.msgHttpconnAddrs) {
+                        when (type) {
+                            10 -> session.ssoAddresses.addAll(addresses.map { it.decode() })
+                            21 -> session.otherAddresses.addAll(addresses.map { it.decode() })
+                        }
+                    }
+
+                    session
+                }.fold(
+                    onSuccess = {
+                        client.bdhSession.complete(it)
+                    },
+                    onFailure = { cause ->
+                        val e = IllegalStateException("Failed to decode BdhSession", cause)
+                        client.bdhSession.completeExceptionally(e)
+                        logger.error(e)
+                    }
+                )
             }
 
             when (packet) {

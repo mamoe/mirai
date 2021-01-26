@@ -82,7 +82,6 @@ internal open class QQAndroidClient(
         get() = protocol.id
 
     internal var strangerSeq: Int = 0
-    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
     val keys: Map<String, ByteArray> by lazy { allKeys() }
 

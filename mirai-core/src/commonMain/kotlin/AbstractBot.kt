@@ -68,6 +68,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     }
 
     // region network
+    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
     val network: N get() = _network
 
@@ -133,6 +134,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 is BotOfflineEvent.RequireReconnect,
                 is BotOfflineEvent.PacketFactoryErrorCode
                 -> {
+                    network.cancel(CancellationException("Server requires reconnect"))
                     // nothing to do
                 }
             }
