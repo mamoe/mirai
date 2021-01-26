@@ -85,7 +85,8 @@ internal class PttStore {
                         innerIp = 0,
                         buildVer = "6.5.5.663".encodeToByteArray(),
                         voiceLength = 1,
-                        codec = resource.voiceCodec, // don't use resource.codec if upload by http.
+                        codec = resource.voiceCodec, // HTTP 时只支持 0
+                        // 2021/1/26 因为 #577 修改为 resource.voiceCodec
                         voiceType = 1,
                         boolNewUpChan = true
                     )
@@ -93,7 +94,7 @@ internal class PttStore {
             )
         }
 
-        @OptIn(ExperimentalStdlibApi::class)
+        @Deprecated("Since 2.2, upload through highway")
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
