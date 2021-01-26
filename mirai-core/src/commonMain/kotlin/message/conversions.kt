@@ -244,6 +244,9 @@ internal fun MessageChain.toRichTextElems(
             -> {
 
             }
+            is InternalFlagOnlyMessage -> {
+                // ignore
+            }
             else -> error("unsupported message type: ${currentMessage::class.simpleName}")
         }
     }

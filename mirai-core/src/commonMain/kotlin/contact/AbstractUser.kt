@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.tryServers
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.*
@@ -94,8 +93,6 @@ internal abstract class AbstractUser(
                         resource = resource,
                         kind = PRIVATE_IMAGE,
                         commandId = 1,
-                        extendInfo = EMPTY_BYTE_ARRAY,
-                        encrypt = false,
                         initialTicket = resp.uKey
                     )
                 }.recoverCatchingSuppressed {

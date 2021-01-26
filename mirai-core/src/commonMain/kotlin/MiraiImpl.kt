@@ -746,17 +746,18 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     )
                 ).toByteArray(LongMsg.ReqBody.serializer())
 
-                Highway.uploadResourceHighway(
-                    bot,
-                    response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
-                    response.proto.msgSig,
-                    body.toExternalResource(),
-                    when (isLong) {
-                        true -> ResourceKind.GROUP_LONG_MESSAGE
-                        false -> ResourceKind.GROUP_FORWARD_MESSAGE
-                    },
-                    27
-                )
+                body.toExternalResource().use { resource ->
+                    Highway.uploadResourceBdh(
+                        bot = bot,
+                        resource = resource,
+                        kind = when (isLong) {
+                            true -> ResourceKind.GROUP_LONG_MESSAGE
+                            false -> ResourceKind.GROUP_FORWARD_MESSAGE
+                        },
+                        commandId = 27,
+                        initialTicket = response.proto.msgSig
+                    )
+                }
             }
         }
 

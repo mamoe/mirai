@@ -157,8 +157,14 @@ internal class GroupImpl(
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    val servers = response.uploadIpList.zip(response.uploadPortList)
-                    Highway.uploadResourceHighway(bot, servers, response.uKey, resource, GROUP_IMAGE, 2)
+                    // val servers = response.uploadIpList.zip(response.uploadPortList)
+                    Highway.uploadResourceBdh(
+                        bot = bot,
+                        resource = resource,
+                        kind = GROUP_IMAGE,
+                        commandId = 2,
+                        initialTicket = response.uKey
+                    )
 
                     return OfflineGroupImage(imageId = resource.calculateResourceId())
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
@@ -177,7 +183,6 @@ internal class GroupImpl(
                     commandId = 29,
                     extendInfo = PttStore.GroupPttUp.createTryUpPttPack(bot.id, id, resource)
                         .toByteArray(Cmd0x388.ReqBody.serializer()),
-                    encrypt = false
                 )
             }.recoverCatchingSuppressed {
                 when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()) {

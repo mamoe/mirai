@@ -9,6 +9,13 @@
 
 package net.mamoe.mirai.internal.network.highway
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.receiveOrNull
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
@@ -31,38 +38,6 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 internal object Highway {
-    suspend fun uploadResourceHighway(
-        bot: QQAndroidBot,
-        servers: List<Pair<Int, Int>>,
-        uKey: ByteArray,
-        resource: ExternalResource,
-        kind: ResourceKind,
-        /**
-         * group image = 2
-         * friend image = 1
-         * group long = 27
-         * group ptt= 29
-         */
-        commandId: Int,
-    ) {
-        tryServers(bot, servers, resource.size, kind, ChannelKind.HIGHWAY) { ip, port ->
-            val md5 = resource.md5
-            require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
-
-            PlatformSocket.withConnection(ip, port) {
-                highwayPacketSession(
-                    client = bot.client,
-                    appId = bot.client.subAppId.toInt(),
-                    command = "PicUp.DataUp",
-                    commandId = commandId,
-                    initialTicket = uKey,
-                    data = resource,
-                    fileMd5 = md5,
-                ).sendSequentially(this)
-            }
-        }
-    }
-
     @Suppress("ArrayInDataClass")
     data class BdhUploadResponse(
         var extendInfo: ByteArray? = null,
@@ -73,8 +48,8 @@ internal object Highway {
         resource: ExternalResource,
         kind: ResourceKind,
         commandId: Int,  // group image=2, friend image=1, groupPtt=29
-        extendInfo: ByteArray,
-        encrypt: Boolean,
+        extendInfo: ByteArray = EMPTY_BYTE_ARRAY,
+        encrypt: Boolean = false,
         initialTicket: ByteArray? = null,
     ): BdhUploadResponse {
         val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
@@ -83,24 +58,25 @@ internal object Highway {
             val md5 = resource.md5
             require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
 
-            PlatformSocket.withConnection(ip, port) {
-                val resp = BdhUploadResponse()
-                highwayPacketSession(
-                    client = bot.client,
-                    appId = bot.client.subAppId.toInt(),
-                    command = "PicUp.DataUp",
-                    commandId = commandId,
-                    initialTicket = initialTicket ?: bdhSession.sigSession,
-                    data = resource,
-                    fileMd5 = md5,
-                    extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
-                ).sendSequentially(this) { head ->
-                    if (head.rspExtendinfo.isNotEmpty()) {
-                        resp.extendInfo = head.rspExtendinfo
-                    }
+            val resp = BdhUploadResponse()
+            highwayPacketSession(
+                client = bot.client,
+                appId = bot.client.subAppId.toInt(),
+                command = "PicUp.DataUp",
+                commandId = commandId,
+                initialTicket = initialTicket ?: bdhSession.sigSession,
+                data = resource,
+                fileMd5 = md5,
+                extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
+            ).sendConcurrently(
+                createConnection = { PlatformSocket.connect(ip, port) },
+                coroutines = bot.configuration.highwayUploadCoroutineCount
+            ) { head ->
+                if (head.rspExtendinfo.isNotEmpty()) {
+                    resp.extendInfo = head.rspExtendinfo
                 }
-                resp
             }
+            resp
         }
     }
 }
@@ -181,6 +157,72 @@ internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendSequentially(
             check(proto.errorCode == 0) { "highway transfer failed, error ${proto.errorCode}" }
             respCallback(proto)
         }
+    }
+}
+
+private fun <T> Flow<T>.produceIn0(coroutineScope: CoroutineScope): ReceiveChannel<T> {
+    return kotlin.runCatching {
+        @OptIn(FlowPreview::class)
+        produceIn(coroutineScope) // this is experimental api
+    }.getOrElse {
+        // fallback strategy in case binary changes.
+
+        val channel = Channel<T>()
+        coroutineScope.launch(CoroutineName("Flow collector")) {
+            collect {
+                channel.send(it)
+            }
+            channel.close()
+        }
+        channel
+    }
+}
+
+internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendConcurrently(
+    createConnection: suspend () -> PlatformSocket,
+    coroutines: Int = 5,
+    respCallback: (resp: CSDataHighwayHead.RspDataHighwayHead) -> Unit = {}
+) = coroutineScope {
+    val channel = asFlow().produceIn0(this)
+    // 'single thread' producer emits chunks to channel
+
+    repeat(coroutines) {
+        launch(CoroutineName("Worker $it")) {
+            val socket = createConnection()
+            while (isActive) {
+                val next = channel.tryReceive() ?: break // concurrent-safe receive
+                val result = next.withUse {
+                    socket.sendReceiveHighway(next)
+                }
+                respCallback(result)
+            }
+        }
+    }
+}
+
+private suspend fun <E : Any> ReceiveChannel<E>.tryReceive(): E? {
+    return kotlin.runCatching {
+        @OptIn(ExperimentalCoroutinesApi::class)
+        receiveOrNull() // this is experimental api
+    }.recoverCatching {
+        // in case binary changes
+        receive()
+    }.getOrNull()
+}
+
+private suspend fun PlatformSocket.sendReceiveHighway(
+    it: ByteReadPacket,
+): CSDataHighwayHead.RspDataHighwayHead {
+    send(it)
+    //0A 3C 08 01 12 0A 31 39 39 34 37 30 31 30 32 31 1A 0C 50 69 63 55 70 2E 44 61 74 61 55 70 20 E9 A7 05 28 00 30 BD DB 8B 80 02 38 80 20 40 02 4A 0A 38 2E 32 2E 30 2E 31 32 39 36 50 84 10 12 3D 08 00 10 FD 08 18 00 20 FD 08 28 C6 01 38 00 42 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 4A 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 50 89 92 A2 FB 06 58 00 60 00 18 53 20 01 28 00 30 04 3A 00 40 E6 B7 F7 D9 80 2E 48 00 50 00
+
+    read().withUse {
+        discardExact(1)
+        val headLength = readInt()
+        discardExact(4)
+        val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
+        check(proto.errorCode == 0) { "highway transfer failed, error ${proto.errorCode}" }
+        return proto
     }
 }
 

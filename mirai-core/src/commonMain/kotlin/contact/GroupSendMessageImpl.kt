@@ -213,20 +213,26 @@ private suspend fun MessageChain.convertToLongMessageIfNeeded(
     step: GroupMessageSendingStep,
     groupImpl: GroupImpl,
 ): MessageChain {
+    suspend fun sendLongImpl(): MessageChain {
+        val resId = groupImpl.uploadGroupLongMessageHighway(this)
+        return this + RichMessage.longMessage(
+            brief = takeContent(27),
+            resId = resId,
+            timeSeconds = currentTimeSeconds()
+        ) // LongMessageInternal replaces all contents and preserves metadata
+    }
     return when (step) {
         GroupMessageSendingStep.FIRST -> {
             // 只需要在第一次发送的时候验证长度
             // 后续重试直接跳过
+            if (contains(ForceAsLongMessage)) {
+                sendLongImpl()
+            }
             verityLength(this, groupImpl)
             this
         }
         GroupMessageSendingStep.LONG_MESSAGE -> {
-            val resId = groupImpl.uploadGroupLongMessageHighway(this)
-            this + RichMessage.longMessage(
-                brief = takeContent(27),
-                resId = resId,
-                timeSeconds = currentTimeSeconds()
-            ) // LongMessageInternal replaces all contents and preserves metadata
+            sendLongImpl()
         }
         GroupMessageSendingStep.FRAGMENTED -> this
     }

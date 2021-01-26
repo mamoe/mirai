@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.utils.runBIO
+import net.mamoe.mirai.utils.toLongUnsigned
 import net.mamoe.mirai.utils.withUse
 import java.io.InputStream
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -27,7 +29,7 @@ internal class ChunkedFlowSession<T>(
         input.close()
     }
 
-    private var offset = 0L
+    private var offset = AtomicLong(0L)
 
     internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) {
         contract { callsInPlace(block, InvocationKind.UNKNOWN) }
@@ -35,11 +37,10 @@ internal class ChunkedFlowSession<T>(
             while (true) {
                 val size = runBIO { input.read(buffer) }
                 if (size == -1) return
-                block(mapper(buffer, size, offset))
-                offset += size
+                block(mapper(buffer, size, offset.getAndAdd(size.toLongUnsigned())))
             }
         }
     }
 
-    internal suspend fun asFlow(): Flow<T> = flow { useAll { emit(it) } }
+    internal suspend fun asFlow(): Flow<T> = flow { useAll { emit(it) } } // 'single thread' producer
 }
