@@ -13,6 +13,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0xeac
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
@@ -147,6 +148,7 @@ internal object KnownPacketFactories {
         //  TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,
+        TroopEssenceMsgManager.SetEssence,
         NudgePacket,
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,

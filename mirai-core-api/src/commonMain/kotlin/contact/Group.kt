@@ -166,6 +166,18 @@ public interface Group : Contact, CoroutineScope {
     @JvmBlockingBridge
     public suspend fun uploadVoice(resource: ExternalResource): Voice
 
+
+    /**
+     * 将一条消息设置为群精华消息
+     * 需要管理员或群主权限
+     *
+     * @return 成功时返回true
+     *
+     * @throws PermissionDeniedException 没有权限
+     * */
+    @JvmBlockingBridge
+    public suspend fun setEssenceMessage(source: MessageSource): Boolean
+
     public companion object
 }
 

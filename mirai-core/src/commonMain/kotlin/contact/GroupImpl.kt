@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
@@ -192,6 +193,21 @@ internal class GroupImpl(
             )
         }
 
+    }
+
+    override suspend fun setEssenceMessage(source: MessageSource): Boolean {
+        if (botPermission < MemberPermission.ADMINISTRATOR) {
+            throw PermissionDeniedException("没有权限设置精华消息")
+        }
+        val result = bot.network.run {
+            TroopEssenceMsgManager.SetEssence(
+                bot.client,
+                this@GroupImpl.uin,
+                source.internalIds.first(),
+                source.ids.first()
+            ).sendAndExpect()
+        }
+        return result.success
     }
 
     override fun toString(): String = "Group($id)"
