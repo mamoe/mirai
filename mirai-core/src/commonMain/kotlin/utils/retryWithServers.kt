@@ -28,9 +28,9 @@ internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
             }
         }.recover {
             if (exception != null) {
-                exception!!.addSuppressed(it)
+                it.addSuppressed(exception!!)
             }
-            exception = it
+            exception = it // so as to show last exception followed by suppressed others
             null
         }.getOrNull() ?: continue
     }
