@@ -104,13 +104,13 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core</artifactId>
+        <artifactId>mirai-core-jvm</artifactId>
         <version>2.1.0</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```
 
-> artifactId 在 `2.1.0` 起才可以使用 `mirai-core`。在 `2.0.0` 需要使用 `mirai-core-jvm`。
+> 注意在 Maven，artifactId 要使用带 `-jvm` 后缀的
 
 ### 3. 添加 Kotlin 依赖
 
