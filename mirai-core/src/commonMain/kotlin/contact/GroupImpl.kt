@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
-import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
@@ -218,9 +217,7 @@ internal class GroupImpl(
     }
 
     override suspend fun setEssenceMessage(source: MessageSource): Boolean {
-        if (botPermission < MemberPermission.ADMINISTRATOR) {
-            throw PermissionDeniedException("没有权限设置精华消息")
-        }
+        checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = bot.network.run {
             TroopEssenceMsgManager.SetEssence(
                 bot.client,
