@@ -9,22 +9,14 @@
 
 package net.mamoe.mirai.internal.network.highway
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -32,70 +24,28 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.retryWithServers
 import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
-import java.io.InputStream
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
-
-/**
- * 在发送完成后将会 [InputStream.close]
- */
-internal fun ExternalResource.consumeAsWriteChannelContent(contentType: ContentType?): OutgoingContent.WriteChannelContent {
-    return object : OutgoingContent.WriteChannelContent() {
-        override val contentType: ContentType? = contentType
-        override val contentLength: Long = size
-
-        override suspend fun writeTo(channel: ByteWriteChannel) {
-            inputStream().withUse { copyTo(channel) }
-        }
-    }
-}
-
-@Suppress("SpellCheckingInspection")
-internal suspend fun HttpClient.postImage(
-    htcmd: String,
-    uin: Long,
-    groupcode: Long?,
-    imageInput: ExternalResource,
-    uKeyHex: String
-): Boolean = post<HttpStatusCode> {
-    url {
-        protocol = URLProtocol.HTTP
-        host = "htdata2.qq.com"
-        path("cgi-bin/httpconn")
-
-        parameters["htcmd"] = htcmd
-        parameters["uin"] = uin.toString()
-
-        if (groupcode != null) parameters["groupcode"] = groupcode.toString()
-
-        parameters["term"] = "pc"
-        parameters["ver"] = "5603"
-        parameters["filesize"] = imageInput.size.toString()
-        parameters["range"] = 0.toString()
-        parameters["ukey"] = uKeyHex
-
-        userAgent("QQClient")
-    }
-
-    body = imageInput.consumeAsWriteChannelContent(ContentType.Image.Any)
-} == HttpStatusCode.OK
-
-
 internal object Highway {
-
     suspend fun uploadResourceHighway(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
         resource: ExternalResource,
-        kind: String,
-        commandId: Int,  // group=2, friend=1, groupPtt=29
+        kind: ResourceKind,
+        /**
+         * group image = 2
+         * friend image = 1
+         * group long = 27
+         * group ptt= 29
+         */
+        commandId: Int,
     ) {
-        runWithLogs(bot, servers, resource.size, kind) { ip, port ->
+        tryServers(bot, servers, resource.size, kind, ChannelKind.HIGHWAY) { ip, port ->
             val md5 = resource.md5
             require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
 
@@ -121,14 +71,15 @@ internal object Highway {
     suspend fun uploadResourceBdh(
         bot: QQAndroidBot,
         resource: ExternalResource,
-        kind: String,
-        commandId: Int,  // group=2, friend=1, groupPtt=29
+        kind: ResourceKind,
+        commandId: Int,  // group image=2, friend image=1, groupPtt=29
         extendInfo: ByteArray,
         encrypt: Boolean,
+        initialTicket: ByteArray? = null,
     ): BdhUploadResponse {
         val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
 
-        return runWithLogs(bot, bdhSession.ssoAddresses, resource.size, kind) { ip, port ->
+        return tryServers(bot, bdhSession.ssoAddresses, resource.size, kind, ChannelKind.HIGHWAY) { ip, port ->
             val md5 = resource.md5
             require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
 
@@ -139,7 +90,7 @@ internal object Highway {
                     appId = bot.client.subAppId.toInt(),
                     command = "PicUp.DataUp",
                     commandId = commandId,
-                    initialTicket = bdhSession.sigSession,
+                    initialTicket = initialTicket ?: bdhSession.sigSession,
                     data = resource,
                     fileMd5 = md5,
                     extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
@@ -152,65 +103,46 @@ internal object Highway {
             }
         }
     }
-
-    suspend fun uploadPttHttp(
-        bot: QQAndroidBot,
-        servers: List<Pair<Int, Int>>,
-        resource: ExternalResource,
-        uKey: ByteArray,
-        fileKey: ByteArray,
-    ) {
-        servers.retryWithServers(
-            10 * 1000,
-            onFail = { throw IllegalStateException("cannot upload ptt, failed on all servers.", it) }
-        ) { s: String, i: Int ->
-            bot.network.logger.verbose {
-                "[Highway] Uploading ptt to ${s}:$i, size=${resource.size.sizeToString()}"
-            }
-            val time = measureTime {
-                uploadPttToServer(s, i, resource, uKey, fileKey)
-            }
-            bot.network.logger.verbose {
-                "[Highway] Uploading ptt: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
-            }
-
-        }
-
-    }
-
-    private suspend fun uploadPttToServer(
-        serverIp: String,
-        serverPort: Int,
-        resource: ExternalResource,
-        uKey: ByteArray,
-        fileKey: ByteArray,
-    ) {
-        Mirai.Http.post<String> {
-            url("http://$serverIp:$serverPort")
-            parameter("ver", 4679)
-            parameter("ukey", uKey.toUHexString(""))
-            parameter("filekey", fileKey.toUHexString(""))
-            parameter("filesize", resource.size)
-            parameter("bmd5", resource.md5.toUHexString(""))
-            parameter("mType", "pttDu")
-            parameter("voice_encodec", resource.voiceCodec)
-            body = resource.consumeAsWriteChannelContent(null)
-        }
-    }
 }
 
-internal suspend inline fun <reified R> runWithLogs(
+internal enum class ResourceKind(
+    private val display: String
+) {
+    PRIVATE_IMAGE("private image"),
+    GROUP_IMAGE("group image"),
+    PRIVATE_VOICE("private voice"),
+    GROUP_VOICE("group voice"),
+
+    GROUP_LONG_MESSAGE("group long message"),
+    GROUP_FORWARD_MESSAGE("group forward message"),
+    ;
+
+    override fun toString(): String = display
+}
+
+internal enum class ChannelKind(
+    private val display: String
+) {
+    HIGHWAY("Highway"),
+    HTTP("Http")
+    ;
+
+    override fun toString(): String = display
+}
+
+internal suspend inline fun <reified R> tryServers(
     bot: QQAndroidBot,
     servers: Collection<Pair<Int, Int>>,
     resourceSize: Long,
-    kind: String,
+    resourceKind: ResourceKind,
+    channelKind: ChannelKind,
     crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
 ) = servers.retryWithServers(
     (resourceSize * 1000 / 1024 / 10).coerceAtLeast(5000),
-    onFail = { throw IllegalStateException("cannot upload $kind, failed on all servers.", it) }
+    onFail = { throw IllegalStateException("cannot upload $resourceKind, failed on all servers.", it) }
 ) { ip, port ->
     bot.network.logger.verbose {
-        "[Highway] Uploading $kind to ${ip}:$port, size=${resourceSize.sizeToString()}"
+        "[${channelKind}] Uploading $resourceKind to ${ip}:$port, size=${resourceSize.sizeToString()}"
     }
 
     var resp: R? = null
@@ -219,14 +151,14 @@ internal suspend inline fun <reified R> runWithLogs(
             resp = implOnEachServer(ip, port)
         }.onFailure {
             bot.network.logger.verbose {
-                "[Highway] Uploading $kind to ${ip}:$port, size=${resourceSize.sizeToString()} failed: $it"
+                "[${channelKind}] Uploading $resourceKind to ${ip}:$port, size=${resourceSize.sizeToString()} failed: $it"
             }
             throw it
         }
     }
 
     bot.network.logger.verbose {
-        "[Highway] Uploading $kind: succeed at ${(resourceSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+        "[${channelKind}] Uploading $resourceKind: succeed at ${(resourceSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
     }
 
     resp as R

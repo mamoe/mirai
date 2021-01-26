@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
@@ -94,13 +95,12 @@ internal class PttStore {
             )
         }
 
-        @Deprecated("Since 2.2, upload through highway")
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
             groupCode: Long,
             resource: ExternalResource
-        ): OutgoingPacket {
+        ): OutgoingPacketWithRespType<Response> {
             val pack = createTryUpPttPack(uin, groupCode, resource)
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(Cmd0x388.ReqBody.serializer(), pack)

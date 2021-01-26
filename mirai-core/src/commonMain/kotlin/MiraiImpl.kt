@@ -25,6 +25,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
@@ -749,10 +750,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     bot,
                     response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                     response.proto.msgSig,
-                    body.toExternalResource(null),
+                    body.toExternalResource(),
                     when (isLong) {
-                        true -> "group long message"
-                        false -> "group forward message"
+                        true -> ResourceKind.GROUP_LONG_MESSAGE
+                        false -> ResourceKind.GROUP_FORWARD_MESSAGE
                     },
                     27
                 )

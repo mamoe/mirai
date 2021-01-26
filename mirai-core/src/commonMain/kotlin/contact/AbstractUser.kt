@@ -22,15 +22,17 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.getImageType
+import net.mamoe.mirai.internal.network.highway.ChannelKind
+import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
+import net.mamoe.mirai.internal.network.highway.tryServers
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
 
@@ -53,7 +55,7 @@ internal abstract class AbstractUser(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        val response = bot.network.run {
+        val resp = bot.network.run {
             LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
                     srcUin = bot.id.toInt(),
@@ -73,56 +75,66 @@ internal abstract class AbstractUser(
             is Member -> "temp"
             else -> "unknown"
         }
-        return when (response) {
+        return when (resp) {
             is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
                 imageId = generateImageIdFromResourceId(
-                    resourceId = response.resourceId,
-                    format = getImageType(response.imageInfo.fileType).takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
+                    resourceId = resp.resourceId,
+                    format = getImageType(resp.imageInfo.fileType).takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
                         ?: resource.formatName
-                ) ?: response.resourceId
+                ) ?: resp.resourceId
             ).also {
                 ImageUploadEvent.Succeed(this, resource, it).broadcast()
             }
 
             is LongConn.OffPicUp.Response.RequireUpload -> {
-                bot.network.logger.verbose {
-                    "[Http] Uploading $kind image, size=${resource.size.sizeToString()}"
-                }
 
-                val time = measureTime {
-                    Mirai.Http.postImage(
-                        "0x6ff0070",
-                        bot.id,
-                        null,
-                        imageInput = resource,
-                        uKeyHex = response.uKey.toUHexString("")
+                kotlin.runCatching {
+                    Highway.uploadResourceBdh(
+                        bot = bot,
+                        resource = resource,
+                        kind = PRIVATE_IMAGE,
+                        commandId = 1,
+                        extendInfo = EMPTY_BYTE_ARRAY,
+                        encrypt = false,
+                        initialTicket = resp.uKey
                     )
-                }
-
-                bot.network.logger.verbose {
-                    "[Http] Uploading $kind image: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
-                }
-
-                /*
-                HighwayHelper.uploadImageToServers(
-                    bot,
-                    response.serverIp.zip(response.serverPort),
-                    response.uKey,
-                    image,
-                    kind = "friend",
-                    commandId = 1
-                )*/
-                // 为什么不能 ??
+                }.recoverCatchingSuppressed {
+                    tryServers(
+                        bot = bot,
+                        servers = resp.serverIp.zip(resp.serverPort),
+                        resourceSize = resource.size,
+                        resourceKind = PRIVATE_IMAGE,
+                        channelKind = ChannelKind.HTTP
+                    ) { ip, port ->
+                        Mirai.Http.postImage(
+                            serverIp = ip, serverPort = port,
+                            htcmd = "0x6ff0070",
+                            uin = bot.id,
+                            groupcode = null,
+                            imageInput = resource,
+                            uKeyHex = resp.uKey.toUHexString("")
+                        )
+                    }
+                }.recoverCatchingSuppressed {
+                    Mirai.Http.postImage(
+                        serverIp = "htdata2.qq.com",
+                        htcmd = "0x6ff0070",
+                        uin = bot.id,
+                        groupcode = null,
+                        imageInput = resource,
+                        uKeyHex = resp.uKey.toUHexString("")
+                    )
+                }.getOrThrow()
 
                 OfflineFriendImage(
-                    generateImageIdFromResourceId(response.resourceId, resource.formatName) ?: response.resourceId
+                    generateImageIdFromResourceId(resp.resourceId, resource.formatName) ?: resp.resourceId
                 ).also {
                     ImageUploadEvent.Succeed(this, resource, it).broadcast()
                 }
             }
             is LongConn.OffPicUp.Response.Failed -> {
-                ImageUploadEvent.Failed(this, resource, -1, response.message).broadcast()
-                error(response.message)
+                ImageUploadEvent.Failed(this, resource, -1, resp.message).broadcast()
+                error(resp.message)
             }
         }
     }
