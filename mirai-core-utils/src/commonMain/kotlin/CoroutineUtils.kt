@@ -12,10 +12,11 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DeprecatedCallableAddReplaceWith")
 @Deprecated(
@@ -31,3 +32,13 @@ public suspend inline fun <R> runBIO(
 public suspend inline fun <R> runBIO(
     noinline block: () -> R
 ): R = runInterruptible(context = Dispatchers.IO, block = block)
+
+public inline fun CoroutineScope.launchWithPermit(
+    semaphore: Semaphore,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline block: suspend () -> Unit
+): Job {
+    return launch(coroutineContext) {
+        semaphore.withPermit { block() }
+    }
+}

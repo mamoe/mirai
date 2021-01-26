@@ -13,6 +13,7 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -21,12 +22,16 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
+import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
+import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -152,16 +157,16 @@ internal class GroupImpl(
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    Highway.uploadResource(
-                        bot,
-                        response.uploadIpList.zip(response.uploadPortList),
-                        response.uKey,
-                        resource,
-                        kind = "group image",
-                        commandId = 2
+                    // val servers = response.uploadIpList.zip(response.uploadPortList)
+                    Highway.uploadResourceBdh(
+                        bot = bot,
+                        resource = resource,
+                        kind = GROUP_IMAGE,
+                        commandId = 2,
+                        initialTicket = response.uKey
                     )
-                    val resourceId = resource.calculateResourceId()
-                    return OfflineGroupImage(imageId = resourceId)
+
+                    return OfflineGroupImage(imageId = resource.calculateResourceId())
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
@@ -169,20 +174,36 @@ internal class GroupImpl(
     }
 
     override suspend fun uploadVoice(resource: ExternalResource): Voice {
-        if (resource.size > 1048576) {
-            throw  OverFileSizeMaxException()
-        }
         return bot.network.run {
-            val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
+            kotlin.runCatching {
+                val (_) = Highway.uploadResourceBdh(
+                    bot = bot,
+                    resource = resource,
+                    kind = GROUP_VOICE,
+                    commandId = 29,
+                    extendInfo = PttStore.GroupPttUp.createTryUpPttPack(bot.id, id, resource)
+                        .toByteArray(Cmd0x388.ReqBody.serializer()),
+                )
+            }.recoverCatchingSuppressed {
+                when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()) {
+                    is PttStore.GroupPttUp.Response.RequireUpload -> {
+                        tryServers(
+                            bot,
+                            resp.uploadIpList.zip(resp.uploadPortList),
+                            resource.size,
+                            GROUP_VOICE,
+                            ChannelKind.HTTP
+                        ) { ip, port ->
+                            Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
+                        }
+                    }
+                }
+            }.getOrThrow()
 
-            Highway.uploadPttToServers(
-                bot,
-                response.uploadIpList.zip(response.uploadPortList),
-                resource,
-                response.uKey,
-                response.fileKey,
-            )
+            // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
+            //     ?.msgTryupPttRsp
+            //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
+
             Voice(
                 "${resource.md5.toUHexString("")}.amr",
                 resource.md5,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
@@ -63,14 +64,12 @@ internal class PttStore {
             }
         }
 
-        @OptIn(ExperimentalStdlibApi::class)
-        operator fun invoke(
-            client: QQAndroidClient,
+        fun createTryUpPttPack(
             uin: Long,
             groupCode: Long,
             resource: ExternalResource
-        ): OutgoingPacket {
-            val pack = Cmd0x388.ReqBody(
+        ): Cmd0x388.ReqBody {
+            return Cmd0x388.ReqBody(
                 netType = 3, // wifi
                 subcmd = 3,
                 msgTryupPttReq = listOf(
@@ -87,12 +86,22 @@ internal class PttStore {
                         innerIp = 0,
                         buildVer = "6.5.5.663".encodeToByteArray(),
                         voiceLength = 1,
-                        codec = 0, // don't use resource.codec
+                        codec = resource.voiceCodec, // HTTP 时只支持 0
+                        // 2021/1/26 因为 #577 修改为 resource.voiceCodec
                         voiceType = 1,
                         boolNewUpChan = true
                     )
                 )
             )
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            uin: Long,
+            groupCode: Long,
+            resource: ExternalResource
+        ): OutgoingPacketWithRespType<Response> {
+            val pack = createTryUpPttPack(uin, groupCode, resource)
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(Cmd0x388.ReqBody.serializer(), pack)
             }

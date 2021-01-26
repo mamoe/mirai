@@ -447,19 +447,26 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
             logger.info { "Awaiting ConfigPushSvc.PushReq." }
             when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
-                null -> logger.info { "Missing ConfigPushSvc.PushReq." }
+                null -> {
+                    kotlin.runCatching { bot.client.bdhSession.completeExceptionally(TimeoutCancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
+                    logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+                }
                 is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
                     logger.info { "ConfigPushSvc.PushReq: Success." }
                 }
                 is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
                     bot.logger.info { "Server requires reconnect." }
-                    logger.debug { "ChangeServer.unknown = ${resp.unknown}." }
                     bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
 
-                    resp.serverList.forEach {
-                        bot.client.serverList.add(it.host to it.port)
+                    if (resp.serverList.isNotEmpty()) {
+                        bot.serverList.clear()
+                        resp.serverList.forEach {
+                            bot.serverList.add(it.host to it.port)
+                        }
                     }
-                    BotOfflineEvent.RequireReconnect(bot).broadcast()
+
+                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
+                    return@launch
                 }
             }
         }

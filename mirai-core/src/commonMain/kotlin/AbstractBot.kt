@@ -68,6 +68,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     }
 
     // region network
+    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
     val network: N get() = _network
 
