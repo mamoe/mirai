@@ -15,9 +15,10 @@ import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.String
 import kotlinx.io.core.toByteArray
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
