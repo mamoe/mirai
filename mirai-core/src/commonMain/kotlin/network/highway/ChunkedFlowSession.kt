@@ -25,15 +25,12 @@ internal class ChunkedFlowSession<T>(
 
     private var offset = 0L
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) = withUse {
-        runBIO {
-            while (true) {
-                val size = input.read(buffer)
-                if (size == -1) return@runBIO
-                block(mapper(buffer, size, offset))
-                offset += size
-            }
+        while (true) {
+            val size = runBIO { input.read(buffer) }
+            if (size == -1) return
+            block(mapper(buffer, size, offset))
+            offset += size
         }
     }
 }
