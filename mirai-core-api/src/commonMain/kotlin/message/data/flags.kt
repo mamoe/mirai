@@ -9,11 +9,17 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.safeCast
+
 /**
  * [MessageChain] 中包含秀图时的标记
  *
  * 秀图已被 QQ 弃用, 仅作识别处理
+ *
+ * @since 2.2
  */
-public object ShowImageFlag : MessageMetadata {
+public object ShowImageFlag : MessageMetadata, ConstrainSingle, AbstractMessageKey<ShowImageFlag>({ it.safeCast() }) {
+    override val key: ShowImageFlag get() = this
+
     override fun toString(): String = "ShowImageFlag"
 }
