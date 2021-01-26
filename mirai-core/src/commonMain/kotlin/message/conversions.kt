@@ -244,7 +244,7 @@ internal fun MessageChain.toRichTextElems(
             -> {
 
             }
-            is InternalFlagOnlyMessage -> {
+            is InternalFlagOnlyMessage, is ShowImageFlag -> {
                 // ignore
             }
             else -> error("unsupported message type: ${currentMessage::class.simpleName}")
@@ -483,7 +483,14 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(
                 )
             }
             element.notOnlineImage != null -> list.add(OnlineFriendImageImpl(element.notOnlineImage))
-            element.customFace != null -> list.add(OnlineGroupImageImpl(element.customFace))
+            element.customFace != null -> {
+                list.add(OnlineGroupImageImpl(element.customFace))
+                element.customFace.pbReserve.let {
+                    if (it.isNotEmpty() && it.loadAs(CustomFace.ResvAttr.serializer()).msgImageShow != null) {
+                        list.add(ShowImageFlag)
+                    }
+                }
+            }
             element.face != null -> list.add(Face(element.face.index))
             element.text != null -> {
                 if (element.text.attr6Buf.isEmpty()) {
