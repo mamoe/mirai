@@ -90,7 +90,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
-                    logger.warning { "Channel closed." }
+                    logger.verbose { "Channel closed." }
                     if (this@QQAndroidBotNetworkHandler.isActive) {
                         bot.launch { BotOfflineEvent.Dropped(bot, e).broadcast() }
                     }
@@ -468,8 +468,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         bot.firstLoginSucceed = true
         postInitActions()
-
-        Unit // dont remove. can help type inference
     }
 
     override suspend fun postInitActions() {
