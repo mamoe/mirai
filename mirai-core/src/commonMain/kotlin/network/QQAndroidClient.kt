@@ -15,8 +15,10 @@ import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.String
 import kotlinx.io.core.toByteArray
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -24,6 +26,7 @@ import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.crypto.ECDH
@@ -31,14 +34,8 @@ import net.mamoe.mirai.utils.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
 
-internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
 
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-@Suppress("RemoveRedundantQualifierName") // bug
-private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    (androidId + macAddress).md5()
+internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
 
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
@@ -89,8 +86,9 @@ internal open class QQAndroidClient(
 
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    internal var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
-    internal var randomKey: ByteArray = getRandomByteArray(16)
+    internal var tgtgtKey: ByteArray = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
+    internal val randomKey: ByteArray = getRandomByteArray(16)
+
 
     internal val miscBitMap: Int = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
     internal val mainSigMap: Int = protocol.mainSigMap
@@ -142,7 +140,7 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
-    val ssoVersion: Int = 13
+    val ssoVersion: Int = 15
 
     var networkType: NetworkType = NetworkType.WIFI
 
@@ -260,20 +258,26 @@ internal open class QQAndroidClient(
     /**
      * t537
      */
-    var loginExtraData: LoginExtraData? = null
+    var loginExtraData: MutableSet<LoginExtraData> = CopyOnWriteArraySet()
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
     lateinit var wLoginSigInfo: WLoginSigInfo
+    val wLoginSigInfoInitialized get() = ::wLoginSigInfo.isInitialized
 
-    /**
-     * from tlvMap119
-     */
-    var tlv16a: ByteArray? = null
+    var G: ByteArray = device.guid // sigInfo[2]
+    var dpwd: ByteArray = get_mpasswd().toByteArray()
+    var randSeed: ByteArray = EMPTY_BYTE_ARRAY // t403
+
+    var tlv113: ByteArray? = null
+
+    var t402: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
 
     var transportSequenceId = 1
+
+    var lastT106Full: ByteArray? = null
 
     lateinit var t104: ByteArray
 
@@ -282,6 +286,16 @@ internal open class QQAndroidClient(
      */
     @JvmField
     val bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
+}
+
+internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
+    loginExtraData.run {
+        writeLong(uin)
+        writeByte(ip.size.toByte())
+        writeFully(ip)
+        writeInt(time)
+        writeInt(version)
+    }
 }
 
 internal class BdhSession(

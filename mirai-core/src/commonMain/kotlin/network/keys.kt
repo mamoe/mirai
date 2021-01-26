@@ -45,17 +45,13 @@ internal class WFastLoginInfo(
 
 internal class WLoginSimpleInfo(
     val uin: Long, // uin
-    val face: Int, // ubyte actually
-    val age: Int, // ubyte
-    val gender: Int, // ubyte
-    val nick: String, // ubyte lv string
     val imgType: ByteArray,
     val imgFormat: ByteArray,
     val imgUrl: ByteArray,
     val mainDisplayName: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
+        return "WLoginSimpleInfo(uin=$uin, imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
     }
 }
 
@@ -77,51 +73,48 @@ internal class WLoginSigInfo(
      * WARNING, please check [QQAndroidClient.tlv16a]
      */
     val noPicSig: ByteArray?, // sigInfo[1]
-    val G: ByteArray, // sigInfo[2]
-    val dpwd: ByteArray,
-    val randSeed: ByteArray,
 
     val simpleInfo: WLoginSimpleInfo,
 
-    val appPri: Long,
-    val a2ExpiryTime: Long,
-    val loginBitmap: Long,
-    val tgt: ByteArray,
-    val a2CreationTime: Long,
-    val tgtKey: ByteArray,
-    val userStSig: UserStSig,
+    var appPri: Long,
+    var a2ExpiryTime: Long,
+    var loginBitmap: Long,
+    var tgt: ByteArray,
+    var a2CreationTime: Long,
+    var tgtKey: ByteArray,
+    var userStSig: UserStSig,
     /**
      * TransEmpPacket 加密使用
      */
-    val userStKey: ByteArray,
-    val userStWebSig: UserStWebSig,
-    val userA5: UserA5,
-    val userA8: UserA8,
-    val lsKey: LSKey,
-    val sKey: SKey,
-    val userSig64: UserSig64,
-    val openId: ByteArray,
-    val openKey: OpenKey,
-    val vKey: VKey,
-    val accessToken: AccessToken,
-    val d2: D2,
-    val d2Key: ByteArray,
-    val sid: Sid,
-    val aqSig: AqSig,
-    val psKeyMap: PSKeyMap,
-    val pt4TokenMap: Pt4TokenMap,
-    val superKey: ByteArray,
-    val payToken: ByteArray,
-    val pf: ByteArray,
-    val pfKey: ByteArray,
-    val da2: ByteArray,
-    //  val pt4Token: ByteArray,
-    val wtSessionTicket: WtSessionTicket,
-    val wtSessionTicketKey: ByteArray,
-    val deviceToken: ByteArray
+    var userStKey: ByteArray,
+    var userStWebSig: UserStWebSig,
+    var userA5: UserA5,
+    var userA8: UserA8,
+    var lsKey: LSKey,
+    var sKey: SKey,
+    var userSig64: UserSig64,
+    var openId: ByteArray,
+    var openKey: OpenKey,
+    var vKey: VKey,
+    var accessToken: AccessToken,
+    var d2: D2,
+    var d2Key: ByteArray,
+    var sid: Sid,
+    var aqSig: AqSig,
+    var psKeyMap: PSKeyMap,
+    var pt4TokenMap: Pt4TokenMap,
+    var superKey: ByteArray,
+    var payToken: ByteArray,
+    var pf: ByteArray,
+    var pfKey: ByteArray,
+    var da2: ByteArray,
+    // val pt4Token: ByteArray,
+    var wtSessionTicket: WtSessionTicket,
+    var wtSessionTicketKey: ByteArray,
+    var deviceToken: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
     }
 }
 

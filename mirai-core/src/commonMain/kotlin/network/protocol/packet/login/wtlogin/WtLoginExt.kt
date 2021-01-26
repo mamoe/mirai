@@ -12,11 +12,12 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.guid
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.t145
 import net.mamoe.mirai.internal.network.readUShortLVByteArray
+import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.utils.*
 
@@ -97,15 +98,22 @@ internal interface WtLoginExt { // so as not to register to global extension
 
     /**
      * login extra data
+     *
+     * oicq/wlogin_sdk/request/oicq_request.java:1445
      */
     fun QQAndroidClient.analysisTlv537(t537: ByteArray) = t537.read {
         //discardExact(2)
-        loginExtraData = LoginExtraData( // args are to correct order
-            uin = readUInt().toLong(),
-            ip = readBytes(readByte().toInt() and 0xff),
-            time = readInt(), // correct
-            version = readInt()
-        )
+        discardExact(1)
+        repeat(readByte().toInt()) {
+            loginExtraData.add(
+                LoginExtraData( // args are to correct order
+                    uin = readLong(),
+                    ip = readBytes(readByte().toInt() and 0xff),
+                    time = readInt(), // correct
+                    version = readInt()
+                )
+            )
+        }
     }
 
     /**
@@ -180,5 +188,23 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
     }
 
+    fun QQAndroidClient.analyzeTlv106(t106: ByteArray) {
+        val tgtgtKey = decodeA1(t106) {
+            discardExact(51)
+            readBytes(16)
+        }
+        this.tgtgtKey = tgtgtKey
+    }
+
     fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
+}
+
+internal inline fun <R> QQAndroidClient.decodeA1(a1: ByteArray, block: ByteReadPacket.() -> R): R {
+    val key = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
+    val v = TEA.decrypt(a1, key)
+    return v.toReadPacket().withUse(block)
+}
+
+internal fun ByteArray?.orEmpty(size: Int = 0): ByteArray {
+    return this ?: if (size == 0) EMPTY_BYTE_ARRAY else ByteArray(size)
 }

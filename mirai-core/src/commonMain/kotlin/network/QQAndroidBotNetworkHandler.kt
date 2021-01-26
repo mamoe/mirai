@@ -44,6 +44,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin15
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
@@ -55,6 +56,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.minutes
+import kotlin.time.seconds
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
@@ -252,8 +255,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
                 is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
                     response = WtLogin20(
-                        bot.client,
-                        response.t402
+                        bot.client
                     ).sendAndExpect()
                     continue@mainloop
                 }
@@ -279,6 +281,25 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         bot.otherClientsLock.withLock {
             updateOtherClientsList()
         }
+
+        launch {
+            while (isActive) {
+                bot.client.wLoginSigInfo.sKey.run {
+                    val delay = (expireTime - creationTime).seconds - 5.minutes
+                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                    delay(delay)
+                }
+                runCatching {
+                    refreshKeys()
+                }.onFailure {
+                    logger.error("Failed to refresh key.", it)
+                }
+            }
+        }
+    }
+
+    suspend fun refreshKeys() {
+        WtLogin15(bot.client).sendAndExpect()
     }
 
     private suspend fun registerClientOnline() {
@@ -778,7 +799,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         return retryCatchingExceptions(
             retry + 1,
-            except = CancellationException::class.cast() // CancellationException means network closed so don't retry
+            except = CancellationException::class.cast() // explicit cast due for stupid IDE.
+            // CancellationException means network closed so don't retry
         ) {
             withPacketListener(commandName, sequenceId) { listener ->
                 return withTimeout(timeoutMillis) { // may throw CancellationException

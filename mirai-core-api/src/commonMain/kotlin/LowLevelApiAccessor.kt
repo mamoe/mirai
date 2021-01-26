@@ -38,6 +38,16 @@ public annotation class LowLevelApi
 @LowLevelApi
 public interface LowLevelApiAccessor {
     /**
+     * 主动刷新 keys, 如 SKey, PSKey 等.
+     *
+     * 通常 mirai 会自动刷新, 不需要手动刷新.
+     *
+     * @since 2.2
+     */
+    @MiraiExperimentalApi
+    public suspend fun refreshKeys(bot: Bot)
+
+    /**
      * 构造一个 [Friend] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
      *
      * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
