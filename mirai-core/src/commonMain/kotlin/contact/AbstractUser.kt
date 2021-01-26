@@ -23,9 +23,9 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.getImageType
 import net.mamoe.mirai.internal.network.highway.postImage
-import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
+import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext

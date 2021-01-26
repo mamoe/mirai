@@ -176,7 +176,7 @@ internal class GroupImpl(
             val response: PttStore.GroupPttUp.Response.RequireUpload =
                 PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
 
-            Highway.uploadPttToServers(
+            Highway.uploadPttHttp(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
                 resource,

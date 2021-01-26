@@ -17,7 +17,6 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -29,7 +28,8 @@ import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.SocketException
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.internal.utils.toIpV4AddressString
+import net.mamoe.mirai.internal.utils.retryWithServers
+import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import kotlin.math.roundToInt
@@ -140,7 +140,7 @@ internal object Highway {
             }
         }
         socket.use {
-            createImageDataPacketSequence(
+            highwayPacketSession(
                 client = client,
                 appId = client.subAppId.toInt(),
                 command = "PicUp.DataUp",
@@ -163,7 +163,7 @@ internal object Highway {
         }
     }
 
-    suspend fun uploadPttToServers(
+    suspend fun uploadPttHttp(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         resource: ExternalResource,
@@ -209,7 +209,7 @@ internal object Highway {
 }
 
 
-internal fun createImageDataPacketSequence(
+internal fun highwayPacketSession(
     // RequestDataTrans
     client: QQAndroidClient,
     command: String,
@@ -267,36 +267,4 @@ internal fun createImageDataPacketSequence(
             writeByte(41)
         }
     }
-}
-
-internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
-    timeoutMillis: Long,
-    onFail: (exception: Throwable?) -> Unit,
-    crossinline block: suspend (ip: String, port: Int) -> Unit
-) {
-    require(this.isNotEmpty()) { "receiver of retryWithServers must not be empty" }
-
-    var exception: Throwable? = null
-    for (pair in this) {
-        return kotlin.runCatching {
-            withTimeoutOrNull(timeoutMillis) {
-                block(pair.first.toIpV4AddressString(), pair.second)
-            }
-        }.recover {
-            if (exception != null) {
-                exception!!.addSuppressed(it)
-            }
-            exception = it
-            null
-        }.getOrNull() ?: continue
-    }
-
-    onFail(exception)
-}
-
-internal fun Int.sizeToString() = this.toLong().sizeToString()
-internal fun Long.sizeToString(): String {
-    return if (this < 1024) {
-        "$this B"
-    } else ((this * 100.0 / 1024).roundToInt() / 100.0).toString() + " KiB"
 }
