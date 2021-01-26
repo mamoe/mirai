@@ -89,7 +89,7 @@ internal object Highway {
         uKey: ByteArray,
         resource: ExternalResource,
         kind: String,
-        commandId: Int
+        commandId: Int  // group=2, friend=1, groupPtt=29
     ) = servers.retryWithServers(
         (resource.size * 1000 / 1024 / 10).coerceAtLeast(5000),
         onFail = {
@@ -124,7 +124,7 @@ internal object Highway {
         ticket: ByteArray,
         resource: ExternalResource,
         fileMd5: ByteArray,
-        commandId: Int  // group=2, friend=1
+        commandId: Int
     ) {
         require(fileMd5.size == 16) { "bad md5. Required size=16, got ${fileMd5.size}" }
         //  require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
@@ -235,6 +235,7 @@ internal fun highwayPacketSession(
                     2 -> client.nextHighwayDataTransSequenceIdForGroup()
                     1 -> client.nextHighwayDataTransSequenceIdForFriend()
                     27 -> client.nextHighwayDataTransSequenceIdForApplyUp()
+                    29 -> client.nextHighwayDataTransSequenceIdForGroup()
                     else -> error("illegal commandId: $commandId")
                 },
                 retryTimes = 0,

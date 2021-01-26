@@ -176,13 +176,21 @@ internal class GroupImpl(
             val response: PttStore.GroupPttUp.Response.RequireUpload =
                 PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
 
-            Highway.uploadPttHttp(
-                bot,
-                response.uploadIpList.zip(response.uploadPortList),
-                resource,
-                response.uKey,
-                response.fileKey,
+            Highway.uploadResource(
+                bot = bot,
+                servers = response.uploadIpList.zip(response.uploadPortList),
+                uKey = response.uKey,
+                resource = resource,
+                kind = "group voice",
+                commandId = 29
             )
+//            Highway.uploadPttHttp(
+//                bot,
+//                response.uploadIpList.zip(response.uploadPortList),
+//                resource,
+//                response.uKey,
+//                response.fileKey,
+//            )
             Voice(
                 "${resource.md5.toUHexString("")}.amr",
                 resource.md5,

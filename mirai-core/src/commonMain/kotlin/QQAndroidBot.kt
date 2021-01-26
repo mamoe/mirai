@@ -26,6 +26,7 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.useNextServers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -62,6 +63,8 @@ internal class QQAndroidBot constructor(
         )
         return client
     }
+
+    override val bot: QQAndroidBot get() = this
 
     internal var firstLoginSucceed: Boolean = false
 
