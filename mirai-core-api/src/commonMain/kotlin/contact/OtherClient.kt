@@ -58,7 +58,7 @@ public data class OtherClientInfo @MiraiInternalApi constructor(
     /**
      * 仅运行时识别. 随着客户端更新此 ID 可能有变化.
      *
-     * 不可能有 [appId] 相同的两个客户端t在线.
+     * 不可能有 [appId] 相同的两个客户端同时在线.
      */
     @MiraiInternalApi
     public val appId: Int,
