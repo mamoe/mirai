@@ -32,7 +32,7 @@ internal class StrangerList {
 
         class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>) : Packet {
             override fun toString(): String {
-                return "StrangerList.GetStrangerList(result=$result)"
+                return "StrangerList.GetStrangerList.Response(result=$result)"
             }
         }
 
