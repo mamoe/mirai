@@ -25,14 +25,6 @@ description = "mirai-core utilities"
 
 val isAndroidSDKAvailable: Boolean by project
 
-afterEvaluate {
-    tasks.getByName("compileKotlinCommon").enabled = false
-    tasks.getByName("compileTestKotlinCommon").enabled = false
-
-    tasks.getByName("compileCommonMainKotlinMetadata").enabled = false
-    tasks.getByName("compileKotlinMetadata").enabled = false
-}
-
 kotlin {
     explicitApi()
 

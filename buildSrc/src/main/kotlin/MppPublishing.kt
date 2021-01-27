@@ -68,7 +68,7 @@ fun Project.configureMppPublishing() {
                 when (val type = publication.name) {
                     "kotlinMultiplatform" -> {
                         publication.artifactId = project.name
-                        publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
+                        // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
                     }
                     "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
                         publication.artifactId = "${project.name}-metadata"
