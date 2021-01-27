@@ -22,7 +22,7 @@
 hs_err_pid*
 
 target/
-build/
+../build/
 
 .idea/
 *.iml
