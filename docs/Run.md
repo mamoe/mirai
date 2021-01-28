@@ -4,8 +4,63 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 ## 使用工具自动独立启动
 
+独立启动 Mirai Console 作为一个应用程序，由 Console 扫描 plugins 目录加载插件。
+
 官方: https://github.com/iTXTech/mirai-console-loader  
 第三方: https://github.com/LXY1226/MiraiOK
+
+## 嵌入应用启动（实验性）
+
+将 Mirai Console 作为一个依赖嵌入一个 JVM 应用启动，开发者主动加载插件。
+
+### 环境
+
+- JDK 1.8+ / Android SDK 26+ (Android 8+)
+- Kotlin 1.4+
+
+### 添加依赖
+
+[选择版本](ConfiguringProjects.md#选择版本)
+
+`build.gradle.kts`:
+```kotlin
+repositories {
+    jcenter()
+}
+dependencies {
+    implementation("net.mamoe:mirai-console-terminal:2.0.0") // 自行替换版本
+    implementation("net.mamoe:mirai-core:2.0.0")
+}
+```
+
+### 启动 Terminal 前端
+
+一行启动：
+```kotlin
+MiraiConsoleTerminalLoader.startAsDaemon()
+```
+
+注意, Mirai Console 将会以 '守护进程' 形式启动，不会阻止主线程退出。
+
+### 从内存加载 JVM 插件（实验性）
+
+在嵌入使用时，插件可以直接加载：
+
+```kotlin
+MiraiConsoleTerminalLoader.startAsDaemon()
+// 先启动 Mirai Console
+
+// Kotlin
+Plugin.load() // 扩展函数
+Plugin.enable() // 扩展函数 
+
+// Java
+PluginManager.INSTANCE.loadPlugin(Plugin)
+PluginManager.INSTANCE.enablePlugin(Plugin)
+```
+
+但注意：这种方法目前是实验性的——一些特定的功能如注册扩展可能不会正常工作。
+
 
 ## 手动配置独立启动
 
@@ -87,56 +142,3 @@ java -cp "./libs/*" net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader 
 [mirai-repo]: https://github.com/project-mirai/mirai-repo/tree/master/shadow
 [mirai-bintray-repo]: https://bintray.com/him188moe/mirai
 [mirai-core-all]: https://bintray.com/him188moe/mirai/mirai-core-all
-
-
-## 嵌入应用启动（实验性）
-
-Mirai Console 可以嵌入一个 JVM 应用启动。
-
-### 环境
-
-- JDK 1.8+ / Android SDK 26+ (Android 8+)
-- Kotlin 1.4+
-
-### 添加依赖
-
-[选择版本](ConfiguringProjects.md#选择版本)
-
-`build.gradle.kts`:
-```kotlin
-repositories {
-    jcenter()
-}
-dependencies {
-    implementation("net.mamoe:mirai-console-terminal:2.0.0") // 自行替换版本
-    implementation("net.mamoe:mirai-core:2.0.0")
-}
-```
-
-### 启动 Terminal 前端
-
-一行启动：
-```kotlin
-MiraiConsoleTerminalLoader.startAsDaemon()
-```
-
-注意, Mirai Console 将会以 '守护进程' 形式启动，不会阻止主线程退出。
-
-### 从内存加载 JVM 插件（实验性）
-
-在嵌入使用时，插件可以直接加载：
-
-```kotlin
-MiraiConsoleTerminalLoader.startAsDaemon()
-// 先启动 Mirai Console
-
-// Kotlin
-Plugin.load() // 扩展函数
-Plugin.enable() // 扩展函数 
-
-// Java
-PluginManager.INSTANCE.loadPlugin(Plugin)
-PluginManager.INSTANCE.enablePlugin(Plugin)
-```
-
-但注意：这种方法目前是实验性的——一些特定的功能如注册扩展可能不会正常工作。
