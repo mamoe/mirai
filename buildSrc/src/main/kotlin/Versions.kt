@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val core = "2.0.0"
+    const val core = "2.0.0"  // WARNING: This might not be up-to-date since included in mirai build.
     const val console = "2.0.0"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
