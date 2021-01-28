@@ -12,9 +12,8 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.groupCode
+import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -45,15 +44,16 @@ internal class MessageValidationData(
     }
 }
 
-internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
+internal fun Collection<ForwardMessage.INode>.calculateValidationData(
     sequenceId: Int,
     random: Int,
-    targetGroup: Group,
+    handler: SendMessageHandler<*>,
 ): MessageValidationData {
     val msgList = map { chain ->
         MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
                 fromUin = chain.senderId,
+                toUin = handler.targetUserUin ?: 0,
                 msgSeq = sequenceId,
                 msgTime = chain.time,
                 msgUid = 0x01000000000000000L or random.toLongUnsigned(),
@@ -62,16 +62,13 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
                     msgId = 1
                 ),
                 msgType = 82, // troop
-                groupInfo = MsgComm.GroupInfo(
-                    groupCode = targetGroup.groupCode,
-                    groupCard = chain.senderName // Cinnamon
-                ),
+                groupInfo = handler.groupInfo,
                 isSrcMsg = false
             ),
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
                     elems = chain.messageChain.toMessageChain()
-                        .toRichTextElems(targetGroup, withGeneralFlags = false).toMutableList()
+                        .toRichTextElems(handler.contact, withGeneralFlags = false).toMutableList()
                 )
             )
         )

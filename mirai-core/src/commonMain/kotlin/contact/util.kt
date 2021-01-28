@@ -58,12 +58,14 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
+
     lateinit var source: OnlineMessageSourceToFriendImpl
     val result = bot.network.runCatching {
         MessageSvcPbSendMsg.createToFriend(
             bot.client,
             this@sendMessageImpl,
-            chain
+            chain,
+            false
         ) {
             source = it
         }.forEach { packet ->
@@ -116,12 +118,16 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
             bot.client,
             this@sendMessageImpl,
             chain,
+            false,
         ) {
             source = it
-        }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
-            check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                "Send stranger message failed: $it"
-            }
+        }.forEach { pk ->
+            pk.sendAndExpect<net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg.Response>()
+                .let {
+                    kotlin.check(it is net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg.Response.SUCCESS) {
+                        "Send temp message failed: $it"
+                    }
+                }
         }
         strangerReceiptConstructor(source)
     }

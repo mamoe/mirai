@@ -103,6 +103,12 @@ internal class OnlineMessageSourceToStrangerImpl(
     override val sender: Bot,
     override val target: Stranger
 ) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
+
+    constructor(
+        delegate: OnlineMessageSource.Outgoing,
+        target: Stranger
+    ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
+
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
 
     override val bot: Bot
@@ -123,6 +129,11 @@ internal class OnlineMessageSourceToTempImpl(
     override val sender: Bot,
     override val target: Member
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
+    constructor(
+        delegate: OnlineMessageSource.Outgoing,
+        target: Member
+    ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
+
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
 
     override val bot: Bot

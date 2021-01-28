@@ -20,13 +20,10 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
-import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
-import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToTemp
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -48,65 +45,23 @@ internal class NormalMemberImpl constructor(
 
     override fun toString(): String = "NormalMember($id)"
 
-    @Suppress("UNCHECKED_CAST")
-    @JvmSynthetic
+    private val handler by lazy { GroupTempSendMessageHandler(this) }
+
+    @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
-        require(!message.isContentEmpty()) { "message is empty" }
-
-        val asFriend = this.asFriendOrNull()
-        val asStranger = this.asStrangerOrNull()
-
-        return (asFriend?.sendMessageImpl(
-            message,
-            friendReceiptConstructor = { MessageReceipt(it, asFriend) },
-            tReceiptConstructor = { MessageReceipt(it, this) }
-        ) ?: asStranger?.sendMessageImpl(
-            message,
-            strangerReceiptConstructor = { MessageReceipt(it, asStranger) },
-            tReceiptConstructor = { MessageReceipt(it, this) }
-        ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
+        return asFriendOrNull()?.sendMessage(message)?.convert()
+            ?: asStrangerOrNull()?.sendMessage(message)?.convert()
+            ?: handler.sendMessageImpl<NormalMember>(
+                message = message,
+                preSendEventConstructor = ::GroupTempMessagePreSendEvent,
+                postSendEventConstructor = ::GroupTempMessagePostSendEvent.cast()
+            )
     }
 
-    private suspend fun sendMessageImpl(message: Message): MessageReceipt<NormalMember> {
-        val chain = kotlin.runCatching {
-            GroupTempMessagePreSendEvent(this, message).broadcast()
-        }.onSuccess {
-            check(!it.isCancelled) {
-                throw EventCancelledException("cancelled by GroupTempMessagePreSendEvent")
-            }
-        }.getOrElse {
-            throw EventCancelledException("exception thrown when broadcasting GroupTempMessagePreSendEvent", it)
-        }.message.toMessageChain()
-
-        chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
-
-        val result = bot.network.runCatching {
-            val source: OnlineMessageSourceToTempImpl
-            MessageSvcPbSendMsg.createToTemp(
-                bot.client,
-                this@NormalMemberImpl,
-                chain
-            ) {
-                source = it
-            }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
-                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send temp message failed: $it"
-                }
-            }
-            MessageReceipt(source, this@NormalMemberImpl)
-        }
-
-        result.fold(
-            onSuccess = {
-                GroupTempMessagePostSendEvent(this, chain, null, it)
-            },
-            onFailure = {
-                GroupTempMessagePostSendEvent(this, chain, it, null)
-            }
-        ).broadcast()
-
-        return result.getOrThrow()
+    private fun MessageReceipt<User>.convert(): MessageReceipt<NormalMemberImpl> {
+        return MessageReceipt(OnlineMessageSourceToTempImpl(source, this@NormalMemberImpl), this@NormalMemberImpl)
     }
+
 
     @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard

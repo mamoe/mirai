@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.message.data.*
@@ -19,7 +21,24 @@ internal object ForceAsLongMessage : MessageMetadata, ConstrainSingle, InternalF
     AbstractMessageKey<ForceAsLongMessage>({ it.safeCast() }) {
     override val key: MessageKey<ForceAsLongMessage> get() = this
 
-    override fun toString(): String = "ForceLongMessage"
+    override fun toString(): String = ""
+}
+
+/**
+ * 强制不发 long
+ */
+internal object DontAsLongMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    AbstractMessageKey<DontAsLongMessage>({ it.safeCast() }) {
+    override val key: MessageKey<DontAsLongMessage> get() = this
+
+    override fun toString(): String = ""
+}
+
+internal object IgnoreLengthCheck : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    AbstractMessageKey<IgnoreLengthCheck>({ it.safeCast() }) {
+    override val key: MessageKey<IgnoreLengthCheck> get() = this
+
+    override fun toString(): String = ""
 }
 
 /**

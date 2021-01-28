@@ -89,8 +89,8 @@ internal enum class ResourceKind(
     PRIVATE_VOICE("private voice"),
     GROUP_VOICE("group voice"),
 
-    GROUP_LONG_MESSAGE("group long message"),
-    GROUP_FORWARD_MESSAGE("group forward message"),
+    LONG_MESSAGE("long message"),
+    FORWARD_MESSAGE("forward message"),
     ;
 
     override fun toString(): String = display

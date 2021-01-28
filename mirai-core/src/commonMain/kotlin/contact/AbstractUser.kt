@@ -17,9 +17,7 @@ import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.BeforeImageUploadEvent
-import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.ImageUploadEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.getImageType
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -29,7 +27,11 @@ import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.tryServers
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 
@@ -135,4 +137,25 @@ internal abstract class AbstractUser(
             }
         }
     }
+}
+
+@Suppress("DuplicatedCode")
+internal suspend fun <C : User> SendMessageHandler<out C>.sendMessageImpl(
+    message: Message,
+    preSendEventConstructor: (C, Message) -> MessagePreSendEvent,
+    postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<C>,
+): MessageReceipt<C> {
+    require(!message.isContentEmpty()) { "message is empty" }
+
+    val chain = contact.broadcastMessagePreSendEvent(message, preSendEventConstructor)
+
+    val result = this
+        .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
+
+    // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+    contact.logMessageSent(chain)
+
+    postSendEventConstructor(contact, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
+
+    return result.getOrThrow()
 }

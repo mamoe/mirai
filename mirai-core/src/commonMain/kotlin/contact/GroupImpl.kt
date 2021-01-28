@@ -120,9 +120,10 @@ internal class GroupImpl(
         require(!message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
-        val chain = broadcastGroupMessagePreSendEvent(message)
+        val chain = broadcastMessagePreSendEvent(message, ::GroupMessagePreSendEvent)
 
-        val result = sendMessageImpl(message, chain, GroupMessageSendingStep.FIRST)
+        val result = GroupSendMessageHandler(this)
+            .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
 
         // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
         logMessageSent(chain)

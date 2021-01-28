@@ -24,12 +24,13 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.FriendInfoImpl
+import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
+import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -80,16 +81,12 @@ internal class FriendImpl(
         }
     }
 
+
+    private val handler: FriendSendMessageHandler by lazy { FriendSendMessageHandler(this) }
+
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
-        require(!message.isContentEmpty()) { "message is empty" }
-        return sendMessageImpl(
-            message,
-            friendReceiptConstructor = { MessageReceipt(it, this) },
-            tReceiptConstructor = { MessageReceipt(it, this) }
-        ).also {
-            logMessageSent(message)
-        }
+        return handler.sendMessageImpl(message, ::FriendMessagePreSendEvent, ::FriendMessagePostSendEvent)
     }
 
     override fun toString(): String = "Friend($id)"

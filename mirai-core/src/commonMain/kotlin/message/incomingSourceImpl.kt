@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal interface MessageSourceInternal {
     @Transient
-    val sequenceIds: IntArray
+    val sequenceIds: IntArray // ids
 
     @Transient
     val internalIds: IntArray // randomId

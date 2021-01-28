@@ -9,33 +9,3 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.contact.takeSingleContent
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.MusicShare
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-
-internal object SendMessageMultiProtocol {
-    inline fun createToGroup(
-        client: QQAndroidClient,
-        group: Group,
-        message: MessageChain,
-        fragmented: Boolean,
-        crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit
-    ): List<OutgoingPacket> {
-        contract { callsInPlace(sourceCallback, InvocationKind.AT_MOST_ONCE) }
-
-        message.takeSingleContent<MusicShare>()?.let { musicShare ->
-            return listOf(MusicSharePacket(client, musicShare, group.id, targetKind = MessageSourceKind.GROUP))
-        }
-
-        return MessageSvcPbSendMsg.createToGroup(client, group, message, fragmented, sourceCallback)
-    }
-}
