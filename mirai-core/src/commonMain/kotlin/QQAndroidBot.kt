@@ -176,20 +176,29 @@ internal fun RichMessage.Key.forwardMessage(
 ): ForwardMessageInternal = with(forwardMessage) {
     val template = """
         <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="$brief"
+        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30)}"
              m_resid="$resId" m_fileName="$timeSeconds"
              tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
             <item layout="1" advertiser_id="0" aid="0">
-                <title size="34" maxLines="2" lineSpace="12">$title</title>
+                <title size="34" maxLines="2" lineSpace="12">${title.take(50)}</title>
                 ${
-        preview.joinToString("") {
-            """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+        when {
+            preview.size > 4 -> {
+                preview.take(3).joinToString("") {
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
+            }
+            else -> {
+                preview.joinToString("") {
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                }
+            }
         }
     }
                 <hr hidden="false" style="0"/>
-                <summary size="26" color="#777777">$summary</summary>
+                <summary size="26" color="#777777">${summary.take(50)}</summary>
             </item>
-            <source name="$source" icon="" action="" appid="-1"/>
+            <source name="${source.take(50)}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ")
     return ForwardMessageInternal(template)

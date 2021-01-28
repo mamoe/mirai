@@ -171,7 +171,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         }
     }
 
-    fun sendMessageMultiProtocol(
+    private fun sendMessageMultiProtocol(
         client: QQAndroidClient,
         message: MessageChain,
         fragmented: Boolean,
@@ -231,11 +231,13 @@ internal abstract class SendMessageHandler<C : Contact> {
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessages(message: Message): MessageChain {
     return message.takeSingleContent<ForwardMessage>()?.let { forward ->
-        check(forward.nodeList.size <= 200) {
-            throw MessageTooLargeException(
-                contact, forward, forward,
-                "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
-            )
+        if (!(message is MessageChain && message.contains(IgnoreLengthCheck))) {
+            check(forward.nodeList.size <= 200) {
+                throw MessageTooLargeException(
+                    contact, forward, forward,
+                    "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
+                )
+            }
         }
 
         val resId = MiraiImpl.uploadMessageHighway(
@@ -253,7 +255,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
 }
 
 /**
- * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed ([sendMessagePacket])
+ * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed (sendMessagePacket)
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
     originalMessage: Message,

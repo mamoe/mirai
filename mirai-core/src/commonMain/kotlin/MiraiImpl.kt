@@ -233,7 +233,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getOnlineOtherClientsList(bot: Bot, mayIncludeSelf: Boolean): List<OtherClientInfo> {
         bot.asQQAndroidBot()
         val response = bot.network.run {
-            StatSvc.GetDevLoginInfo(bot.client).sendAndExpect<StatSvc.GetDevLoginInfo.Response>()
+            StatSvc.GetDevLoginInfo(bot.client).sendAndExpect()
         }
 
         fun SvcDevLoginInfo.toOtherClientInfo() = OtherClientInfo(
@@ -360,7 +360,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 groupCode,
                 messageIds,
                 messageInternalIds
-            ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            ).sendAndExpect()
         }
 
         response is PbMessageSvc.PbMsgWithDraw.Response.Success
