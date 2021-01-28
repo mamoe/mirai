@@ -1,22 +1,16 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused")
 
 package net.mamoe.mirai.console.compiler.common
 
-import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.console.permission.PermissionId
-import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.util.SemVersion
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -41,53 +35,57 @@ public annotation class ResolveContext(
          */
 
         /**
-         * @see PluginDescription.id
+         * PluginDescription.id
          */
         PLUGIN_ID, // ILLEGAL_PLUGIN_DESCRIPTION
 
         /**
-         * @see PluginDescription.name
+         * PluginDescription.name
          */
         PLUGIN_NAME, // ILLEGAL_PLUGIN_DESCRIPTION
 
         /**
-         * @see PluginDescription.version
-         * @see SemVersion.Companion.invoke
+         * PluginDescription.version
+         * SemVersion.Companion.invoke
          */
         SEMANTIC_VERSION, // ILLEGAL_PLUGIN_DESCRIPTION
 
         /**
-         * @see SemVersion.Companion.parseRangeRequirement
+         * SemVersion.Companion.parseRangeRequirement
          */
         VERSION_REQUIREMENT, // ILLEGAL_VERSION_REQUIREMENT
 
         /**
-         * @see Command.allNames
+         * Command.allNames
          */
         COMMAND_NAME, // ILLEGAL_COMMAND_NAME
 
         /**
-         * @see PermissionId.name
+         * PermissionId.name
          */
         PERMISSION_NAMESPACE, // ILLEGAL_PERMISSION_NAMESPACE
 
         /**
-         * @see PermissionId.name
+         * PermissionId.name
          */
         PERMISSION_NAME, // ILLEGAL_PERMISSION_NAME
 
         /**
-         * @see PermissionId.parseFromString
+         * PermissionId.parseFromString
          */
         PERMISSION_ID, // ILLEGAL_PERMISSION_ID
 
         /**
          * 标注一个泛型, 要求这个泛型必须拥有一个公开无参 (或所有参数都可选) 构造器.
          *
-         * @see PluginData.value
+         * PluginData.value
          */
         RESTRICTED_NO_ARG_CONSTRUCTOR, // NOT_CONSTRUCTABLE_TYPE
 
-        RESTRICTED_CONSOLE_COMMAND_OWNER,
+        RESTRICTED_CONSOLE_COMMAND_OWNER, ;
+
+        public companion object
     }
+
+    public companion object
 }

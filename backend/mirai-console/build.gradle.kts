@@ -39,6 +39,8 @@ dependencies {
     compileAndTestRuntime(`kotlinx-serialization-json`)
     compileAndTestRuntime(`kotlin-reflect`)
 
+    implementation(project(":mirai-console-compiler-annotations"))
+
     smartImplementation(yamlkt)
     smartImplementation(`jetbrains-annotations`)
     smartImplementation(`caller-finder`)

@@ -16,20 +16,11 @@ plugins {
     id("com.jfrog.bintray")
 }
 
-repositories {
-    maven("http://maven.aliyun.com/nexus/content/groups/public/")
-}
-
 version = Versions.console
-description = "Mirai Console compiler resolve"
+description = "Mirai Console compiler annotations"
 
-dependencies {
-    api(`jetbrains-annotations`)
-    // api(`kotlinx-coroutines-jdk8`)
-    api(project(":mirai-console-compiler-annotations"))
-
-    compileOnly(`kotlin-compiler`)
-    testRuntimeOnly(`kotlin-compiler`)
+kotlin {
+    explicitApi()
 }
 
-configurePublishing("mirai-console-compiler-resolve")
+configurePublishing("mirai-console-compiler-annotations")
