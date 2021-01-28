@@ -13,7 +13,6 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0xeac
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
@@ -21,6 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -31,7 +31,6 @@ import net.mamoe.mirai.internal.network.tryDecryptOrNull
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
-import network.protocol.packet.list.StrangerList
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**

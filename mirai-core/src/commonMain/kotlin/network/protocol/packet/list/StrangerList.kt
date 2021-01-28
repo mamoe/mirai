@@ -1,4 +1,13 @@
-package network.protocol.packet.list;
+/*
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
+ *
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
+package net.mamoe.mirai.internal.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.Stranger
@@ -21,7 +30,11 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 internal class StrangerList {
     object GetStrangerList : OutgoingPacketFactory<GetStrangerList.Response>("OidbSvc.0x5d2_0") {
 
-        class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>) : Packet
+        class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>) : Packet {
+            override fun toString(): String {
+                return "StrangerList.GetStrangerList.Response(result=$result)"
+            }
+        }
 
         operator fun invoke(
             client: QQAndroidClient,

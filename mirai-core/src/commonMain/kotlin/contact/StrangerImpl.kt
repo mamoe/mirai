@@ -24,10 +24,10 @@ import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import network.protocol.packet.list.StrangerList
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
