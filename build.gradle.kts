@@ -56,7 +56,10 @@ configure<kotlinx.validation.ApiValidationExtension> {
 
 
     ignoredPackages.add("net.mamoe.mirai.internal")
+    ignoredPackages.add("net.mamoe.mirai.console.internal")
     nonPublicMarkers.add("net.mamoe.mirai.MiraiInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleExperimentalApi")
     nonPublicMarkers.add("net.mamoe.mirai.MiraiExperimentalApi")
 }
 
@@ -116,9 +119,11 @@ allprojects {
         }
     }
 }
+
 subprojects {
     afterEvaluate {
         if (project.name == "mirai-core-api") configureDokka()
+        if (project.name == "mirai-console") configureDokka()
     }
 }
 
@@ -148,7 +153,9 @@ fun Project.configureDokka() {
             for (suppressedPackage in arrayOf(
                 """net.mamoe.mirai.internal""",
                 """net.mamoe.mirai.internal.message""",
-                """net.mamoe.mirai.internal.network"""
+                """net.mamoe.mirai.internal.network""",
+                """net.mamoe.mirai.console.internal""",
+                """net.mamoe.mirai.console.compiler.common"""
             )) {
                 perPackageOption {
                     matchingRegex.set(suppressedPackage.replace(".", "\\."))
@@ -274,6 +281,8 @@ val experimentalAnnotations = arrayOf(
     "kotlin.experimental.ExperimentalTypeInference",
     "kotlin.ExperimentalUnsignedTypes",
     "kotlin.time.ExperimentalTime",
+    "kotlin.io.path.ExperimentalPathApi",
+    "io.ktor.util.KtorExperimentalAPI",
 
     "kotlinx.serialization.ExperimentalSerializationApi",
 
