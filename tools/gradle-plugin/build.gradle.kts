@@ -11,7 +11,6 @@
 
 plugins {
     kotlin("jvm")
-    kotlin("kapt")
     id("java-gradle-plugin")
     id("com.gradle.plugin-publish")
     id("java")
