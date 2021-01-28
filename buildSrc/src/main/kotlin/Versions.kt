@@ -13,6 +13,9 @@ import org.gradle.api.attributes.Attribute
 
 object Versions {
     const val project = "2.2.0-dev-4"
+    const val core = project
+    const val console = project
+    const val consoleTerminal = project
 
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
@@ -37,6 +40,12 @@ object Versions {
 
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
+
+    const val yamlkt = "0.7.5"
+    const val intellijGradlePlugin = "0.4.16"
+    const val kotlinIntellijPlugin = "203-1.4.21-release-IJ5981.133" // keep to newest as kotlinCompiler
+    const val intellij = "2020.3" // don't update easily unless you want your disk space -= 500MB
+
 }
 
 @Suppress("unused")
@@ -70,3 +79,24 @@ const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
 
 val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)
+
+
+const val `kotlin-compiler` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}"
+
+const val `kotlin-stdlib` = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlinStdlib}"
+const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlinStdlib}"
+const val `kotlin-reflect` = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinStdlib}"
+const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStdlib}"
+const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
+
+
+const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
+const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
+const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
+
+const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
+
+const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
+
+
+const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"

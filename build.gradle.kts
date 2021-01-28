@@ -41,17 +41,19 @@ plugins {
     id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.jfrog.bintray") // version Versions.bintray
+    id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
 // https://github.com/kotlin/binary-compatibility-validator
 apply(plugin = "binary-compatibility-validator")
 
 configure<kotlinx.validation.ApiValidationExtension> {
-    ignoredProjects.add("mirai-core")
-    ignoredProjects.add("mirai-core-api")
-    ignoredProjects.add("mirai-core-utils")
-    ignoredProjects.add("mirai-core-all")
-    ignoredProjects.add("mirai")
+    allprojects.forEach { subproject ->
+        ignoredProjects.add(subproject.name)
+    }
+    ignoredProjects.remove("binary-compatibility-validator")
+    // Enable validator for module `binary-compatibility-validator` only.
+
 
     ignoredPackages.add("net.mamoe.mirai.internal")
     nonPublicMarkers.add("net.mamoe.mirai.MiraiInternalApi")
@@ -101,8 +103,10 @@ allprojects {
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
 
-        blockingBridge {
-            unitCoercion = net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
+        runCatching {
+            blockingBridge {
+                unitCoercion = net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
+            }
         }
 
         //  useIr()
@@ -278,7 +282,10 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.LowLevelApi",
     "net.mamoe.mirai.utils.UnstableExternalImage",
 
-    "net.mamoe.mirai.message.data.ExperimentalMessageKey"
+    "net.mamoe.mirai.message.data.ExperimentalMessageKey",
+    "net.mamoe.mirai.console.ConsoleFrontEndImplementation",
+    "net.mamoe.mirai.console.util.ConsoleInternalApi",
+    "net.mamoe.mirai.console.util.ConsoleExperimentalApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

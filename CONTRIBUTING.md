@@ -7,6 +7,13 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 ## 主仓库 `mirai-core`
 
 ### 构建
+
+mirai git 仓库含有 submodule, 请在 clone 时使用 `--recursive` 参数, 或在 clone 后使用如下命令更新 submodule:
+```shell script
+git submodule init
+git submodule update
+```
+
 - 要构建项目, 请运行 `gradlew assemble`
 - 要运行测试, 请运行 `gradlew test`
 - 要构建项目并运行测试, 请运行 `gradlew build`
@@ -16,7 +23,6 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 
 - `1.x`: 1.x 版本的开发 (已停止)
 - `dev`: 2.0 版本的开发
-- `master`: 最新稳定版
 - `-release` 后缀: 基于[版本规范](docs/Evolution.md#版本规范), 用于从 `dev` 中筛选 bugfix 并发布一个版本的 patch 的版本. 如 `2.0-release` 会包含 `2.0.x` 版本的更新.
 
 **请基于 `dev` 分支进行修改**
