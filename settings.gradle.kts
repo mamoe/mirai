@@ -28,42 +28,56 @@ include(":mirai-core-api")
 include(":mirai-core")
 include(":mirai-core-all")
 
-//include(":mirai-console")
-
 include(":binary-compatibility-validator")
 
 
-val disableOldFrontEnds = true
+fun includeConsoleProjects() {
+    val disableOldFrontEnds = true
 
-fun includeConsoleProject(projectPath: String, path: String? = null) {
-    include(projectPath)
-    if (path != null) project(projectPath).projectDir = file("mirai-console/$path")
-}
+    fun includeConsoleProject(projectPath: String, path: String? = null) {
+        include(projectPath)
+        if (path != null) project(projectPath).projectDir = file("mirai-console/$path")
+    }
 
-includeConsoleProject(":mirai-console", "backend/mirai-console")
-includeConsoleProject(":mirai-console.codegen", "backend/codegen")
-includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
-includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
-includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
-includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
-
-@Suppress("ConstantConditionIf")
-if (!disableOldFrontEnds) {
+    includeConsoleProject(":mirai-console", "backend/mirai-console")
+    includeConsoleProject(":mirai-console.codegen", "backend/codegen")
     includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+    includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
+    includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
+    includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
 
-    val jdkVersion = kotlin.runCatching {
-        System.getProperty("java.version").let { v ->
-            v.toIntOrNull() ?: v.removePrefix("1.").substringBefore("-").toIntOrNull()
+    @Suppress("ConstantConditionIf")
+    if (!disableOldFrontEnds) {
+        includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+
+        val jdkVersion = kotlin.runCatching {
+            System.getProperty("java.version").let { v ->
+                v.toIntOrNull() ?: v.removePrefix("1.").substringBefore("-").toIntOrNull()
+            }
+        }.getOrNull() ?: -1
+
+        println("JDK version: $jdkVersion")
+
+        if (jdkVersion >= 9) {
+            includeConsoleProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
+        } else {
+            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
         }
-    }.getOrNull() ?: -1
-
-    println("JDK version: $jdkVersion")
-
-    if (jdkVersion >= 9) {
-        includeConsoleProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
-    } else {
-        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
     }
 }
 
-enableFeaturePreview("GRADLE_METADATA")
+fun isMiraiConsoleCloned(): Boolean {
+    return file("mirai-console/build.gradle.kts").exists()
+}
+
+if (isMiraiConsoleCloned()) {
+    includeConsoleProjects()
+} else {
+    logger.warn(
+        """
+            [mirai] mirai-console submodule is not configured. 
+            Please execute `git submodule init` and `git submodule update --remote` to include mirai-console build if you want.
+            If you develop only on mirai-core, it's not compulsory to include mirai-console.
+        """.trimIndent()
+    )
+}
