@@ -39,6 +39,7 @@ fun includeConsoleProjects() {
         if (path != null) project(projectPath).projectDir = file("mirai-console/$path")
     }
 
+    includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-annotations")
     includeConsoleProject(":mirai-console", "backend/mirai-console")
     includeConsoleProject(":mirai-console.codegen", "backend/codegen")
     includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")

@@ -42,6 +42,9 @@ object Versions {
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
 
+
+    // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
+
     const val yamlkt = "0.7.5"
     const val intellijGradlePlugin = "0.4.16"
     const val kotlinIntellijPlugin = "203-1.4.21-release-IJ5981.133" // keep to newest as kotlinCompiler
