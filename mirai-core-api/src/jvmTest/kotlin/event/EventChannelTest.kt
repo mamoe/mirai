@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,15 +16,25 @@ import net.mamoe.mirai.event.events.MessageEvent
 import org.junit.jupiter.api.Test
 
 internal class EventChannelTest {
+    suspend fun suspendCall() {
+
+    }
+
     @Suppress("UNUSED_VARIABLE")
     @Test
     fun testVariance() {
         var global: EventChannel<Event> = GlobalEventChannel
         var a: EventChannel<MessageEvent> = global.filterIsInstance<MessageEvent>()
+
+        val filterLambda: (ev: MessageEvent) -> Boolean = { true }
+
+        // Kotlin can't resolve to the non-suspend one
         a.filter {
             // it: Event
+            suspendCall() // would be allowed in Kotlin
             it.isIntercepted
         }
+
         val messageEventChannel = a.filterIsInstance<MessageEvent>()
         // group.asChannel<GroupMessageEvent>()
 

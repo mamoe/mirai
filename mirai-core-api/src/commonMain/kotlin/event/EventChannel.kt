@@ -149,6 +149,48 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     }
 
     /**
+     * [EventChannel.filter] 的 Java 版本.
+     *
+     * 添加一个过滤器. 过滤器将在收到任何事件之后, 传递给通过 [EventChannel.subscribe] 注册的监听器之前调用.
+     *
+     * 若 [filter] 返回 `true`, 该事件将会被传给监听器. 否则将会被忽略, **监听器继续监听**.
+     *
+     * ## 线性顺序
+     * 多个 [filter] 的处理是线性且有顺序的. 若一个 [filter] 已经返回了 `false` (代表忽略这个事件), 则会立即忽略, 而不会传递给后续过滤器.
+     *
+     * 示例:
+     * ```
+     * GlobalEventChannel // GlobalEventChannel 会收到全局所有事件, 事件类型是 Event
+     *     .filterIsInstance(BotEvent.class) // 过滤, 只接受 BotEvent
+     *     .filter(event ->
+     *         // 此时的 event 一定是 BotEvent
+     *         event.bot.id == 123456 // 再过滤 event 的 bot.id
+     *     )
+     *     .subscribeAlways(event -> {
+     *         // 现在 event 是 BotEvent, 且 bot.id == 123456
+     *     })
+     * ```
+     *
+     * ## 过滤器阻塞
+     * [filter] 允许阻塞线程. **过滤器的阻塞将被认为是事件监听器的阻塞**.
+     *
+     * 过滤器阻塞是否会影响事件处理,
+     * 取决于 [subscribe] 时的 [ConcurrencyKind] 和 [EventPriority].
+     *
+     * ## 过滤器异常处理
+     * 若 [filter] 抛出异常, 将被包装为 [ExceptionInEventChannelFilterException] 并重新抛出.
+     *
+     * @see filterIsInstance 过滤指定类型的事件
+     *
+     * @since 2.2
+     */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    public fun filter(filter: (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
+        return filter { runInterruptible { filter(it) } }
+    }
+
+    /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */

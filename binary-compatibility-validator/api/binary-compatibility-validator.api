@@ -1516,6 +1516,7 @@ public class net/mamoe/mirai/event/EventChannel {
 	public final fun context ([Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun exceptionHandler (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun exceptionHandler (Lkotlinx/coroutines/CoroutineExceptionHandler;)Lnet/mamoe/mirai/event/EventChannel;
+	public final fun filter (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/event/EventChannel;
 	public final synthetic fun filter (Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Ljava/lang/Class;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/event/EventChannel;
