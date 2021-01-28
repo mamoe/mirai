@@ -92,3 +92,18 @@ public interface Stranger : User, CoroutineScope {
      */
     public override fun nudge(): StrangerNudge = StrangerNudge(this)
 }
+
+
+/**
+ * 得到此陌生人作为好友的对象.
+ *
+ * @throws IllegalStateException 当此成员不是好友时抛出
+ * @since 2.2
+ */
+public fun Stranger.asFriend(): Friend = this.bot.getFriend(this.id) ?: error("$this is not a friend")
+
+/**
+ * 得到此陌生人作为好友的对象, 当此成员不是好友时返回 `null`
+ * @since 2.2
+ */
+public fun Stranger.asFriendOrNull(): Friend? = this.bot.getFriend(this.id)

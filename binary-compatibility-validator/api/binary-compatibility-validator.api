@@ -579,6 +579,11 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Image;
 }
 
+public final class net/mamoe/mirai/contact/StrangerKt {
+	public static final fun asFriend (Lnet/mamoe/mirai/contact/Stranger;)Lnet/mamoe/mirai/contact/Friend;
+	public static final fun asFriendOrNull (Lnet/mamoe/mirai/contact/Stranger;)Lnet/mamoe/mirai/contact/Friend;
+}
+
 public abstract interface class net/mamoe/mirai/contact/TempUser : net/mamoe/mirai/contact/User {
 	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
