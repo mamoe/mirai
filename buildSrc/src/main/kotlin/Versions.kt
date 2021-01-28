@@ -7,12 +7,13 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("ObjectPropertyName", "ObjectPropertyName", "unused")
+@file:Suppress("ObjectPropertyName", "ObjectPropertyName", "unused", "MemberVisibilityCanBePrivate")
 
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.2.0-dev-4"
+    const val project = "2.2.0-dev-5"
+
     const val core = project
     const val console = project
     const val consoleTerminal = project
