@@ -205,8 +205,6 @@ fun Project.configureMppShadow() {
             from(it.output)
         }
 
-        println(project.configurations.joinToString())
-
         from(project.configurations.getByName("jvmRuntimeClasspath"))
 
         this.exclude { file ->
