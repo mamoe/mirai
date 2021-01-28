@@ -83,7 +83,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 // 只需要在第一次发送的时候验证长度
                 // 后续重试直接跳过
                 if (contains(ForceAsLongMessage)) {
-                    sendLongImpl()
+                    return sendLongImpl()
                 }
 
                 if (!contains(IgnoreLengthCheck)) {
