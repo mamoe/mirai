@@ -13,6 +13,7 @@ import org.gradle.api.attributes.Attribute
 
 object Versions {
     const val project = "2.2.0-dev-5"
+
     const val core = project
     const val console = project
     const val consoleTerminal = project
