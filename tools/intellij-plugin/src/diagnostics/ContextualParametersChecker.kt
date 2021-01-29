@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.console.intellij.diagnostics
@@ -19,17 +19,19 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RE
 import net.mamoe.mirai.console.compiler.common.resolve.CONSOLE_COMMAND_OWNER_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
-import net.mamoe.mirai.console.intellij.resolve.findChild
-import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
+import net.mamoe.mirai.console.intellij.resolve.bodyCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
 import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
 import net.mamoe.mirai.console.intellij.util.RequirementHelper
 import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
-import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.psi.ValueArgument
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
@@ -39,6 +41,40 @@ import kotlin.reflect.KFunction2
  * Checks parameters with [ResolveContextKind]
  */
 class ContextualParametersChecker : DeclarationChecker {
+    override fun check(
+        declaration: KtDeclaration,
+        descriptor: DeclarationDescriptor,
+        context: DeclarationCheckerContext,
+    ) {
+        val calls = declaration.bodyCalls(context.bindingContext) ?: return
+
+        for ((call, _) in calls) {
+            for ((parameter, argument) in call.valueParametersWithArguments()) {
+                checkArgument(parameter, argument, context)
+            }
+        }
+    }
+
+    private fun checkArgument(
+        parameter: ValueParameterDescriptor,
+        argument: ValueArgument,
+        context: DeclarationCheckerContext,
+    ) {
+        val elementCheckers = parameter.resolveContextKinds?.mapNotNull(checkersMap::get) ?: return
+
+        val resolvedConstants = argument.resolveStringConstantValues()?.toList().orEmpty()
+
+        for (elementChecker in elementCheckers) {
+            if (resolvedConstants.isEmpty()) {
+                elementChecker(context, argument.asElement(), argument, null)?.let { context.report(it) }
+            } else {
+                for (resolvedConstant in resolvedConstants) {
+                    elementChecker(context, argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
+                }
+            }
+        }
+    }
+
     companion object {
         private val ID_REGEX: Regex = Regex("""([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\.([a-zA-Z][a-zA-Z0-9]*(?:-[a-zA-Z0-9]+)*)""")
         private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
@@ -150,6 +186,7 @@ class ContextualParametersChecker : DeclarationChecker {
         operator fun invoke(context: DeclarationCheckerContext, declaration: KtElement, valueArgument: ValueArgument, value: String?): Diagnostic?
     }
 
+    @Suppress("unused")
     private val checkersMap: EnumMap<ResolveContextKind, ElementChecker> =
         EnumMap<ResolveContextKind, ElementChecker>(ResolveContextKind::class.java).apply {
 
@@ -183,47 +220,4 @@ class ContextualParametersChecker : DeclarationChecker {
             put(ResolveContextKind.RESTRICTED_CONSOLE_COMMAND_OWNER, ::checkConsoleCommandOwner)
         }
 
-    override fun check(
-        declaration: KtDeclaration,
-        descriptor: DeclarationDescriptor,
-        context: DeclarationCheckerContext,
-    ) {
-        val calls: Sequence<ResolvedCall<*>> = when (declaration) {
-            is KtClassOrObject -> {
-                declaration.findChild<KtSuperTypeList>()?.resolveAllCalls(context.bindingContext)
-                // ignore class body, which will be [check]ed
-            }
-
-//            is KtNamedFunction -> {
-//
-//            }
-            else -> declaration.resolveAllCalls(context.bindingContext)
-
-        } ?: return
-
-        calls
-            .flatMap { call ->
-                call.valueParametersWithArguments().asSequence()
-            }
-            .mapNotNull { (p, a) ->
-                p.resolveContextKinds
-                    ?.map(checkersMap::get)
-                    ?.mapNotNull {
-                        if (it == null) null else it to a
-                    }
-            }
-            .flatMap { it.asSequence() }
-            .mapNotNull { (kind, argument) ->
-                Triple(kind, argument, argument.resolveStringConstantValues())
-            }
-            .forEach { (fn, argument, resolvedConstantsSequence) ->
-                val resolvedConstants = resolvedConstantsSequence?.toList().orEmpty()
-                if (resolvedConstants.isEmpty()) {
-                    fn(context, argument.asElement(), argument, null)?.let { context.report(it) }
-                } else for (resolvedConstant in resolvedConstants) {
-                    fn(context, argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
-                }
-            }
-        return
-    }
 }

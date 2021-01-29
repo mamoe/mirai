@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.console.intellij.resolve
@@ -14,10 +14,7 @@ import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentsWithSelf
 import net.mamoe.mirai.console.compiler.common.castOrNull
-import net.mamoe.mirai.console.compiler.common.resolve.COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME
-import net.mamoe.mirai.console.compiler.common.resolve.SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME
-import net.mamoe.mirai.console.compiler.common.resolve.allChildrenWithSelf
-import net.mamoe.mirai.console.compiler.common.resolve.findParent
+import net.mamoe.mirai.console.compiler.common.resolve.*
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
@@ -30,6 +27,7 @@ import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
+import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
@@ -59,8 +57,10 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
     get() = sequence {
         yieldAll(superTypeListEntries)
         for (list in superTypeListEntries.asSequence()) {
-            yieldAll((list.typeAsUserType?.referenceExpression?.resolve()?.parentsWithSelf?.filterIsInstance<KtClass>()
-                ?.firstOrNull())?.allSuperTypes.orEmpty())
+            yieldAll(
+                (list.typeAsUserType?.referenceExpression?.resolve()?.parentsWithSelf?.filterIsInstance<KtClass>()
+                    ?.firstOrNull())?.allSuperTypes.orEmpty()
+            )
         }
     }
 
@@ -130,19 +130,48 @@ fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
 fun KtElement.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
-    return allChildrenWithSelf
+    return allChildrenWithSelfSequence
         .filterIsInstance<KtElement>()
         .mapNotNull { it.getResolvedCall(bindingContext) }
 }
 
-fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Sequence<Pair<ResolvedCall<out CallableDescriptor>, KtCallExpression>> {
-    return allChildrenWithSelf
-        .filterIsInstance<KtCallExpression>()
-        .mapNotNull {
-            val callee = it.calleeExpression ?: return@mapNotNull null
+data class ResolvedCallWithExpr<C : CallableDescriptor, E : KtExpression>(
+    val call: ResolvedCall<C>,
+    val expr: E
+)
+
+/**
+ * 只解决一层
+ */
+fun KtDeclaration.bodyCalls(bindingContext: BindingContext): Sequence<ResolvedCallWithExpr<out CallableDescriptor, KtExpression>>? {
+    return when (val declaration = this) {
+        is KtClassOrObject -> {
+            declaration.superTypeListEntries.asSequence().flatMap {
+                it.resolveAllCallsWithElement(bindingContext, true)
+            }
+        }
+        is KtDeclarationWithBody -> {
+            declaration.bodyExpression?.resolveAllCallsWithElement(bindingContext, false) ?: return null
+        }
+        is KtCallExpression -> {
+            val call = declaration.getResolvedCall(bindingContext) ?: return null
+            sequenceOf(ResolvedCallWithExpr(call, declaration))
+        }
+        else -> return null
+    }
+}
+
+fun KtElement.resolveAllCallsWithElement(
+    bindingContext: BindingContext,
+    recursive: Boolean = true
+): Sequence<ResolvedCallWithExpr<out CallableDescriptor, KtExpression>> {
+    return (if (recursive) allChildrenWithSelfSequence else childrenWithSelf.asSequence())
+        .filterIsInstance<KtExpression>()
+        .mapNotNull { expr ->
+            val callee = expr.getCalleeExpressionIfAny() ?: return@mapNotNull null
             val resolved = callee.getResolvedCall(bindingContext) ?: return@mapNotNull null
 
-            resolved to it
+            ResolvedCallWithExpr(resolved, expr)
         }
 }
 

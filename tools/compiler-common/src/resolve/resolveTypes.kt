@@ -68,11 +68,12 @@ fun ResolveContext.Kind.Companion.valueOfOrNull(string: String) = ResolveContext
 val Annotated.resolveContextKinds: List<ResolveContextKind>?
     get() {
         val ann = this.findAnnotation(RESOLVE_CONTEXT_FQ_NAME) ?: return null
-        val kinds =
-            ann.allValueArguments.firstValue().castOrNull<ArrayValue>()?.value?.mapNotNull { it.castOrNull<EnumValue>()?.value }
-                ?: return null // undetermined kind
-
-        return kinds.map { (_, enumEntryName) ->
-            ResolveContextKind.valueOf(enumEntryName.asString())
-        }
+        return ann.allValueArguments
+            .firstValue()
+            .castOrNull<ArrayValue>()?.value
+            ?.mapNotNull { value ->
+                val (_, enumEntryName) = value.castOrNull<EnumValue>()?.value ?: return@mapNotNull null
+                ResolveContextKind.valueOf(enumEntryName.asString())
+            }
+            ?: return null // undetermined kind
     }

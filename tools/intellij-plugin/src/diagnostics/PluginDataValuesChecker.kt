@@ -1,11 +1,13 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
@@ -13,84 +15,111 @@ import net.mamoe.mirai.console.compiler.common.SERIALIZABLE_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.*
-import net.mamoe.mirai.console.intellij.resolve.resolveAllCallsWithElement
+import net.mamoe.mirai.console.intellij.resolve.bodyCalls
+import net.mamoe.mirai.console.intellij.resolve.hasSuperType
+import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.idea.debugger.sequence.psi.receiverType
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.js.descriptorUtils.getJetTypeFqName
-import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
+import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
-import org.jetbrains.kotlin.resolve.descriptorUtil.getAllSuperClassifiers
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
 import org.jetbrains.kotlinx.serialization.compiler.resolve.*
 
-
 class PluginDataValuesChecker : DeclarationChecker {
+    /**
+     * [KtObjectDeclaration], [KtParameter], [KtPrimaryConstructor], [KtClass], [KtNamedFunction], [KtProperty]
+     */
     override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
         val bindingContext = context.bindingContext
-        declaration.resolveAllCallsWithElement(bindingContext)
-            .filter { (call) -> call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) }
-            .filter { (call) ->
-                call.resultingDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true
-            }.flatMap { (call, element) ->
-                call.typeArguments.entries.associateWith { element }.asSequence()
-            }.filter { (e, _) ->
-                val (p, t) = e
-                (p.isReified || p.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true)
-                    && t is SimpleType
-            }.forEach { (e, callExpr) ->
-                val (_, type) = e
-                checkCallExpression(type, callExpr, context)
-            }
 
-        declaration.resolveAllCallsWithElement(bindingContext)
-            .filter { (call) -> call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) }
-            .forEach { (_, callExpr) ->
-                checkReadOnly(callExpr, context)
-            }
+        //println(declaration::class.qualifiedName + "\t:" + declaration.text.take(10))
+
+        if (declaration is KtProperty) {
+            if (checkReadOnly(declaration, context)) return // it reports an error on property so no need to check further
+        }
+
+        val calls = declaration.bodyCalls(bindingContext) ?: return
+
+        for ((call, expr) in calls) {
+            check(call, expr, context)
+        }
     }
 
-    companion object {
-        private fun checkReadOnly(callExpr: KtCallExpression, context: DeclarationCheckerContext) {
-            // first parent is KtPropertyDelegate, next is KtProperty
-            val property = callExpr.parent.parent.castOrNull<KtProperty>() ?: return
-            if (property.isVar &&
-                callExpr.receiverType()?.toClassDescriptor?.getAllSuperClassifiers()?.any { it.fqNameOrNull() == READ_ONLY_PLUGIN_DATA_FQ_NAME } == true
+    /**
+     * Check `PluginData.value` calls
+     */
+    fun check(call: ResolvedCall<out CallableDescriptor>, expr: KtExpression, context: DeclarationCheckerContext) {
+        if (!call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME)) return
+
+        if (expr is KtCallExpression)
+            checkConstructableAndSerializable(call, expr, context)
+    }
+
+    private fun KtProperty.isInsideOrExtensionOfReadOnlyPluginData(): Boolean {
+        return containingClassOrObject?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // inside
+            || receiverTypeReference?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // extension
+    }
+
+    private fun checkReadOnly(property: KtProperty, context: DeclarationCheckerContext): Boolean {
+        // first parent is KtPropertyDelegate, next is KtProperty
+
+        if (property.isVar // var
+            && property.delegateExpression?.getResolvedCall(context)?.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) == true // by value()
+            && property.isInsideOrExtensionOfReadOnlyPluginData() // extensionReceiver is ReadOnlyPluginData or null
+        ) {
+            context.report(MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.on(property.valOrVarKeyword))
+            return true
+        }
+
+        return false
+    }
+
+    private fun checkConstructableAndSerializable(call: ResolvedCall<out CallableDescriptor>, expr: KtCallExpression, context: DeclarationCheckerContext) {
+        if (call.resultingDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) != true) return
+
+        for ((typeParameterDescriptor, kotlinType) in call.typeArguments.entries) {
+            if ((typeParameterDescriptor.isReified || typeParameterDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true)
+                && kotlinType is SimpleType
             ) {
-                context.report(MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.on(property.valOrVarKeyword))
+
+                checkConstructableAndSerializable(kotlinType, expr, context)
             }
         }
+    }
 
-        private fun checkCallExpression(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
-            val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return
+    private fun checkConstructableAndSerializable(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
+        val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return
 
-            if (canBeSerializedInternally(classDescriptor)) return
+        if (canBeSerializedInternally(classDescriptor)) return
 
-            val inspectionTarget = kotlin.run {
-                val fqName = type.fqName ?: return@run null
-                callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
-            } ?: return
+        val inspectionTarget = kotlin.run {
+            val fqName = type.fqName ?: return@run null
+            callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
+        } ?: return
 
-            if (!classDescriptor.hasNoArgConstructor())
-                return context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
+        if (!classDescriptor.hasNoArgConstructor())
+            return context.report(
+                MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
                     inspectionTarget,
                     callExpr,
-                    type.fqName?.asString().toString())
+                    type.fqName?.asString().toString()
                 )
+            )
 
-            if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
-                return context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
+        if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
+            return context.report(
+                MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
                     inspectionTarget,
                     classDescriptor
-                ))
-        }
+                )
+            )
     }
 }
 
