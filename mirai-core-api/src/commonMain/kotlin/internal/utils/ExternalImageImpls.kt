@@ -33,7 +33,7 @@ internal class ExternalResourceImplByFileWithMd5(
 ) : ExternalResource {
     override val size: Long = file.length()
     override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
+        formatName ?: inputStream().detectFileTypeAndClose() ?: ExternalResource.DEFAULT_FORMAT_NAME
     }
 
     override fun inputStream(): InputStream {
@@ -60,7 +60,7 @@ internal class ExternalResourceImplByFile(
     override val size: Long = file.length()
     override val md5: ByteArray by lazy { inputStream().md5() }
     override val formatName: String by lazy {
-        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
+        formatName ?: inputStream().detectFileTypeAndClose() ?: ExternalResource.DEFAULT_FORMAT_NAME
     }
 
     override fun inputStream(): InputStream {
@@ -85,7 +85,8 @@ internal class ExternalResourceImplByByteArray(
     override val size: Long = data.size.toLong()
     override val md5: ByteArray by lazy { data.md5() }
     override val formatName: String by lazy {
-        formatName ?: getFileType(data.copyOf(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)).orEmpty()
+        formatName ?: getFileType(data.copyOf(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE))
+        ?: ExternalResource.DEFAULT_FORMAT_NAME
     }
     override val closed: CompletableDeferred<Unit> = CompletableDeferred()
 
