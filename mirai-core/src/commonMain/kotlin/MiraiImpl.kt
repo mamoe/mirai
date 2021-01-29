@@ -918,7 +918,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile {
         bot.asQQAndroidBot().network.apply {
             return SummaryCard.ReqSummaryCard(bot.client, targetId)
-                .sendAndExpect<SummaryCard.ReqSummaryCard.RespSummaryCard>()
+                .sendAndExpect()
         }
     }
 
