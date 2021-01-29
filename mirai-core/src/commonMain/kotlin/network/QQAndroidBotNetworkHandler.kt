@@ -481,7 +481,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
                     if (resp.serverList.isNotEmpty()) {
                         bot.serverList.clear()
-                        resp.serverList.forEach {
+                        resp.serverList.shuffled().forEach {
                             bot.serverList.add(it.host to it.port)
                         }
                     }
