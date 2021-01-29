@@ -42,16 +42,16 @@ internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
  */
 internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0, 255).toByte() }
 
-internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
-    "42.81.169.46" to 8080,
-    "42.81.172.81" to 80,
-    "114.221.148.59" to 14000,
-    "42.81.172.147" to 443,
-    "125.94.60.146" to 80,
-    "114.221.144.215" to 80,
-    "42.81.172.22" to 80,
-    "msfwifi.3g.qq.com" to 8080,
-).shuffled().toSet()
+// [114.221.148.179:14000, 113.96.13.125:8080, 14.22.3.51:8080, 42.81.172.207:443, 114.221.144.89:80, 125.94.60.148:14000, 42.81.192.226:443, 114.221.148.233:8080, msfwifi.3g.qq.com:8080, 42.81.172.22:80]
+
+internal val DefaultServerList: MutableSet<Pair<String, Int>> =
+    "114.221.148.179:14000, 113.96.13.125:8080, 14.22.3.51:8080, 42.81.172.207:443, 114.221.144.89:80, 125.94.60.148:14000, 42.81.192.226:443, 114.221.148.233:8080, msfwifi.3g.qq.com:8080, 42.81.172.22:80"
+        .split(", ")
+        .map {
+            val host = it.substringBefore(':')
+            val port = it.substringAfter(':').toInt()
+            host to port
+        }.shuffled().toMutableSet()
 
 /*
  APP ID:
