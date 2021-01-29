@@ -118,7 +118,7 @@ public class FriendMessageEvent constructor(
 }
 
 /**
- * 机器人收到的好友消息的事件
+ * 机器人收到的其他客户端消息的事件
  *
  * @see MessageEvent
  */
@@ -137,6 +137,10 @@ public class OtherClientMessageEvent constructor(
     public override val bot: Bot get() = super.bot
     public override val subject: OtherClient get() = client
     public override val senderName: String get() = sender.nick
+
+    /**
+     * 为简化处理, 其他客户端消息的 [MessageSource] 被作为 [OnlineMessageSource.Incoming.FromFriend].
+     */
     public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
     public override fun toString(): String = "OtherClientMessageEvent(client=${client.platform}, message=$message)"
