@@ -106,7 +106,10 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeToBase64())
             name = sender.nameCard
         } else { // normal member chat
-            sender = group[msgHead.fromUin] as NormalMemberImpl
+            sender = group[msgHead.fromUin] as NormalMemberImpl? ?: kotlin.run {
+                bot.network.logger.warning { "Failed to find member ${msgHead.fromUin} in group ${group.id}" }
+                return null
+            }
             name = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.nameCardOrNick
         }
 
