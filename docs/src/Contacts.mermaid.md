@@ -31,6 +31,7 @@ class Contact {
 class User {
     +nick: String
     +remark: String
+    +queryProfile() UserProfile
 }
 
 class Group {
@@ -57,6 +58,10 @@ class Member {
     +group: Group
 }
 
+class OtherClient {
+    +info
+}
+
 ContactOrBot<|--Contact
 ContactOrBot<|--UserOrBot
 
@@ -65,6 +70,7 @@ UserOrBot<|--User
 
 Contact<|--User
 Contact<|--Group
+Contact<|--OtherClient
 
 User<|--Member
 User<|--Friend
