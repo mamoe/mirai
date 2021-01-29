@@ -135,3 +135,19 @@ internal suspend inline fun <R> withTimeoutOrCoroutineScope(
         withTimeout(timeoutMillis, block)
     }
 }
+
+@JvmSynthetic
+@PublishedApi
+@Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+internal suspend inline fun <R> withTimeoutOrCoroutineScope(
+    timeoutMillis: Long,
+    noinline block: suspend CoroutineScope.() -> R
+): R {
+    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0 " }
+
+    return if (timeoutMillis == -1L) {
+        coroutineScope(block)
+    } else {
+        withTimeout(timeoutMillis, block)
+    }
+}

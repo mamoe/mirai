@@ -1815,7 +1815,10 @@ public final class net/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilt
 public final class net/mamoe/mirai/event/NextEventKt {
 	public static final synthetic fun nextBotEventImpl (Lnet/mamoe/mirai/Bot;Lkotlin/reflect/KClass;Lkotlinx/coroutines/CoroutineScope;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final synthetic fun nextEventImpl (Lkotlin/reflect/KClass;Lkotlinx/coroutines/CoroutineScope;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun parentJob (Lnet/mamoe/mirai/event/EventChannel;Lkotlinx/coroutines/Job;)Lnet/mamoe/mirai/event/EventChannel;
 	public static final synthetic fun withTimeoutOrCoroutineScope (JLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final synthetic fun withTimeoutOrCoroutineScope (JLkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun withTimeoutOrCoroutineScope$default (JLkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/event/SelectKt {
