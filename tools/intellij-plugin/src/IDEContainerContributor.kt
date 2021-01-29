@@ -9,19 +9,25 @@
 
 package net.mamoe.mirai.console.intellij
 
+import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.intellij.diagnostics.CommandDeclarationChecker
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
 import net.mamoe.mirai.console.intellij.diagnostics.PluginDataValuesChecker
 import net.mamoe.mirai.console.intellij.util.DEBUG_ENABLED
 import net.mamoe.mirai.console.intellij.util.runIgnoringErrors
+import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
+import org.jetbrains.kotlin.idea.core.unwrapModuleSourceInfo
+import org.jetbrains.kotlin.idea.facet.KotlinFacet
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
+import java.io.File
 
 class IDEContainerContributor : StorageComponentContainerContributor {
     override fun registerModuleComponents(
@@ -29,9 +35,11 @@ class IDEContainerContributor : StorageComponentContainerContributor {
         platform: org.jetbrains.kotlin.platform.TargetPlatform,
         moduleDescriptor: ModuleDescriptor,
     ) {
-        container.useInstance(ContextualParametersChecker().wrapIgnoringExceptionIfNotDebug())
-        container.useInstance(PluginDataValuesChecker().wrapIgnoringExceptionIfNotDebug())
-        container.useInstance(CommandDeclarationChecker().wrapIgnoringExceptionIfNotDebug())
+        if (moduleDescriptor.hasMiraiConsoleDependency()) {
+            container.useInstance(ContextualParametersChecker().wrapIgnoringExceptionIfNotDebug())
+            container.useInstance(PluginDataValuesChecker().wrapIgnoringExceptionIfNotDebug())
+            container.useInstance(CommandDeclarationChecker().wrapIgnoringExceptionIfNotDebug())
+        }
     }
 
     private fun DeclarationChecker.wrapIgnoringExceptionIfNotDebug(): DeclarationChecker {
@@ -50,3 +58,23 @@ class IDEContainerContributor : StorageComponentContainerContributor {
 
     }
 }
+
+fun ModuleDescriptor.hasMiraiConsoleDependency(): Boolean {
+    // /.m2/repository/net/mamoe/kotlin-jvm-blocking-bridge-compiler-embeddable/1.4.0/kotlin-jvm-blocking-bridge-compiler-embeddable-1.4.0.jar
+    val pluginJpsJarName = "mirai-console"
+    val module =
+        getCapability(ModuleInfo.Capability)?.unwrapModuleSourceInfo()?.module
+            ?: return false
+    val facet = KotlinFacet.get(module) ?: return false
+    val pluginClasspath =
+        facet.configuration.settings.compilerArguments?.castOrNull<K2JVMCompilerArguments>()?.classpathAsList0 ?: return false
+
+    if (pluginClasspath.none { path -> path.name.contains(pluginJpsJarName) }) return false
+    return true
+}
+
+private var K2JVMCompilerArguments.classpathAsList0: List<File>
+    get() = classpath.orEmpty().split(File.pathSeparator).map(::File)
+    set(value) {
+        classpath = value.joinToString(separator = File.pathSeparator, transform = { it.path })
+    }
