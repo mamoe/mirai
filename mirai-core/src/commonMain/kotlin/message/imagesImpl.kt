@@ -36,7 +36,12 @@ internal class OnlineGroupImageImpl(
 
     override val imageId: String = generateImageId(
         delegate.picMd5,
-        delegate.filePath.substringAfterLast('.')
+        delegate.filePath.substringAfterLast('.').toLowerCase().let { ext ->
+            if (ext == "null") {
+                // official clients might send `null`
+                getImageType(delegate.imageType)
+            } else ext
+        }
     ).takeIf {
         IMAGE_ID_REGEX.matches(it)
     } ?: generateImageId(delegate.picMd5)
