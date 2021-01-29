@@ -9,12 +9,15 @@
 
 package net.mamoe.mirai.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.contact.User
 
 /**
  * 用户详细资料
+ *
+ * @see User.queryProfile
+ * @suppress 使用这个接口是稳定的，但继承不稳定。将来可能会有新的属性添加。
+ * @since 2.1
  */
-@MiraiExperimentalApi
 public interface UserProfile {
     public val nickname: String
     public val email: String

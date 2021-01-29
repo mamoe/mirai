@@ -21,33 +21,31 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.readJceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
-import net.mamoe.mirai.internal.utils.soutv
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.internal.network.protocol.data.jce.ReqSummaryCard as JceReqSummaryCard
 import net.mamoe.mirai.internal.network.protocol.data.jce.RespSummaryCard as JceRespSummaryCard
 
+internal data class UserProfileImpl(
+    override val nickname: String,
+    override val email: String,
+    override val age: Int,
+    override val qLevel: Int,
+    override val sex: UserProfile.Sex,
+    override val sign: String,
+) : Packet, UserProfile {
+    override fun toString(): String {
+        return "UserProfile(nickname=$nickname, email=$email, age=$age, qLevel=$qLevel, sex=$sex, sign=$sign)"
+    }
+}
+
 internal object SummaryCard {
-    internal object ReqSummaryCard : OutgoingPacketFactory<ReqSummaryCard.RespSummaryCard>(
+    internal object ReqSummaryCard : OutgoingPacketFactory<UserProfileImpl>(
         "SummaryCard.ReqSummaryCard"
     ) {
-        internal class RespSummaryCard(
-            override val nickname: String,
-            override val email: String,
-            override val age: Int,
-            override val qLevel: Int,
-            override val sex: UserProfile.Sex,
-            override val sign: String,
-        ) : Packet, UserProfile {
-            override fun toString(): String {
-                return "SummaryCard.RespSummaryCard(nickname=$nickname, email=$email, age=$age, qLevel=$qLevel, sex=$sex, sign=$sign)"
-            }
-        }
-
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
@@ -83,7 +81,7 @@ internal object SummaryCard {
             )
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RespSummaryCard {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): UserProfileImpl {
             val fullMap = readJceStruct(
                 RequestPacket.serializer()
             ).sBuffer.read {
@@ -97,7 +95,7 @@ internal object SummaryCard {
                 discardExact(1)
                 Tars.UTF_8.load(JceRespSummaryCard.serializer(), this)
             }
-            return RespSummaryCard(
+            return UserProfileImpl(
                 nickname = response.nick ?: "",
                 email = response.email ?: "",
                 age = response.age?.let { it.toInt() and 0xFF } ?: -1,
