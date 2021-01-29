@@ -68,7 +68,26 @@ fun Project.configureMppPublishing() {
                 when (val type = publication.name) {
                     "kotlinMultiplatform" -> {
                         publication.artifactId = project.name
+
                         // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
+
+                        publications.getByName("kotlinMultiplatform").let { it as MavenPublication }.run {
+                            // remove `jar` to avoid resolving conflicts
+                            this.artifacts.removeIf {
+                                it.classifier == null && it.extension == "jar"
+                                // mirai-core\build\libs\mirai-core-2.0.0.jar, classifier=null, ext=jar
+                            }
+
+                            // remove `-all.jar` to avoid misuse
+                            this.artifacts.removeIf {
+                                it.classifier == "all" && it.extension == "jar"
+                                // mirai-core\build\libs\mirai-core-2.0.0.jar, classifier=null, ext=jar
+                            }
+
+                            logPublishing("Existing artifacts in kotlinMultiplatform: " +
+                                    this.artifacts.joinToString("\n", prefix = "\n") { it.smartToString() }
+                            )
+                        }
                     }
                     "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
                         publication.artifactId = "${project.name}-metadata"
