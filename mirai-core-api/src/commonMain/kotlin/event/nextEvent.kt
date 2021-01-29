@@ -73,16 +73,28 @@ internal suspend inline fun <E : Event> nextEventImpl(
     priority: EventPriority,
     crossinline filter: (E) -> Boolean
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
-        if (!filter(this)) return@subscribe ListeningStatus.LISTENING
+    val listener = coroutineScope.globalEventChannel()
+        .parentJob(coroutineScope.coroutineContext[Job])
+        .subscribe(eventClass, priority = priority) {
+            if (!filter(this)) return@subscribe ListeningStatus.LISTENING
 
-        try {
-            cont.resume(this)
-        } catch (e: Exception) {
+            try {
+                cont.resume(this)
+            } catch (e: Exception) {
+            }
+            return@subscribe ListeningStatus.STOPPED
         }
-        return@subscribe ListeningStatus.STOPPED
+
+    cont.invokeOnCancellation {
+        runCatching { listener.cancel("nextEvent outer scope cancelled", it) }
     }
 }
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NOTHING_TO_INLINE")
+@kotlin.internal.HidesMembers
+@PublishedApi
+internal inline fun <BaseEvent : Event> EventChannel<BaseEvent>.parentJob(job: Job?): EventChannel<BaseEvent> =
+    if (job != null) parentJob(job) else this
 
 @JvmSynthetic
 @PublishedApi
@@ -92,12 +104,18 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
     coroutineScope: CoroutineScope,
     priority: EventPriority
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
-        try {
-            if (this.bot == bot) cont.resume(this)
-        } catch (e: Exception) {
+    val listener = coroutineScope.globalEventChannel()
+        .parentJob(coroutineScope.coroutineContext[Job])
+        .subscribe(eventClass, priority = priority) {
+            try {
+                if (this.bot == bot) cont.resume(this)
+            } catch (e: Exception) {
+            }
+            return@subscribe ListeningStatus.STOPPED
         }
-        return@subscribe ListeningStatus.STOPPED
+
+    cont.invokeOnCancellation {
+        runCatching { listener.cancel("nextEvent outer scope cancelled", it) }
     }
 }
 
@@ -105,12 +123,14 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
 @PublishedApi
 internal suspend inline fun <R> withTimeoutOrCoroutineScope(
     timeoutMillis: Long,
+    useCoroutineScope: CoroutineScope? = null,
     noinline block: suspend CoroutineScope.() -> R
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0 " }
 
     return if (timeoutMillis == -1L) {
-        coroutineScope(block)
+        if (useCoroutineScope == null) coroutineScope(block)
+        else block(useCoroutineScope)
     } else {
         withTimeout(timeoutMillis, block)
     }
