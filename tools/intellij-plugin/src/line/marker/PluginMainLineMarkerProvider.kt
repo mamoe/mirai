@@ -36,7 +36,7 @@ class PluginMainLineMarkerProvider : LineMarkerProvider {
 
         callElement,
         callElement.textRange,
-        Icons.CommandDeclaration,
+        Icons.PluginMainDeclaration,
         tooltipProvider,
         null, GutterIconRenderer.Alignment.RIGHT
     ) {
