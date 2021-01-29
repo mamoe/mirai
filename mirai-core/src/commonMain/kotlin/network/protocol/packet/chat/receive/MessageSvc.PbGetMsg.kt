@@ -91,7 +91,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         )
     }
 
-    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?) : Response(
+    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?, val bot: QQAndroidBot) : Response(
         MsgSvc.SyncFlag.STOP, delegate,
         syncCookie
     ), Event,
@@ -116,7 +116,9 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             "MessageSvcPbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
     }
 
-    object EmptyResponse : GetMsgSuccess(emptyList(), null)
+    class EmptyResponse(
+        bot: QQAndroidBot
+    ) : GetMsgSuccess(emptyList(), null, bot)
 
     @OptIn(FlowPreview::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -132,7 +134,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(bot.client, syncCookie = null).sendWithoutExpect()
                 }
             }
-            return EmptyResponse
+            return EmptyResponse(bot)
         }
         when (resp.msgRspType) {
             0 -> {
@@ -155,7 +157,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         bot.client.syncingController.msgCtrlBuf = resp.msgCtrlBuf
 
         if (resp.uinPairMsgs.isEmpty()) {
-            return EmptyResponse
+            return EmptyResponse(bot)
         }
 
         val messages = resp.uinPairMsgs.asFlow()
@@ -182,7 +184,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
         val list: List<Packet> = messages.toList()
         if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
-            return GetMsgSuccess(list, resp.syncCookie)
+            return GetMsgSuccess(list, resp.syncCookie, bot)
         }
         return Response(resp.syncFlag, list, resp.syncCookie)
     }

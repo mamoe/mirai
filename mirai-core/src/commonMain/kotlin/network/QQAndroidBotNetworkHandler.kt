@@ -538,7 +538,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private suspend fun syncMessageSvc() {
         logger.info { "Syncing friend message history..." }
         withTimeoutOrNull(30000) {
-            launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { } }
+            launch(CoroutineName("Syncing friend message history")) { nextEvent<MessageSvcPbGetMsg.GetMsgSuccess> { it.bot == this@QQAndroidBotNetworkHandler.bot } }
             MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect<Packet>()
 
         } ?: error("timeout syncing friend message history.")
@@ -791,9 +791,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry in 0..10) { "retry must in 0..10" }
 
-        check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
-        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
-        check(channel.isOpen) { "network channel is closed" }
+        if (!bot.isActive) {
+            throw CancellationException("bot is dead therefore can't send ${this.commandName}")
+        }
+        if (!this@QQAndroidBotNetworkHandler.isActive) {
+            throw CancellationException("network is dead therefore can't send any packet")
+        }
+        if (!channel.isOpen) {
+            throw CancellationException("network channel is closed")
+        }
 
         val data = this.delegate.withUse { readBytes() }
 
