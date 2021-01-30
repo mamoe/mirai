@@ -31,7 +31,8 @@ fun Project.configureMppPublishing() {
         tasks.findByName("compileCommonMainKotlinMetadata")?.enabled = false
         tasks.findByName("compileKotlinMetadata")?.enabled = false
 
-        tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21 
+        // TODO: 2021/1/30 如果添加 JVM 到 root module, 这个 task 会失败因 root module artifacts 有变化
+        //tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21
     }
 
     tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
@@ -71,23 +72,8 @@ fun Project.configureMppPublishing() {
 
                         // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
 
-                        publications.getByName("kotlinMultiplatform").let { it as MavenPublication }.run {
-                            // remove `jar` to avoid resolving conflicts
-                            this.artifacts.removeIf {
-                                it.classifier == null && it.extension == "jar"
-                                // mirai-core\build\libs\mirai-core-2.0.0.jar, classifier=null, ext=jar
-                            }
-
-                            // remove `-all.jar` to avoid misuse
-                            this.artifacts.removeIf {
-                                it.classifier == "all" && it.extension == "jar"
-                                // mirai-core\build\libs\mirai-core-2.0.0.jar, classifier=null, ext=jar
-                            }
-
-                            logPublishing("Existing artifacts in kotlinMultiplatform: " +
-                                    this.artifacts.joinToString("\n", prefix = "\n") { it.smartToString() }
-                            )
-                        }
+                        // TODO: 2021/1/30 现在添加 JVM 到 root module 会导致 Gradle 依赖无法解决
+                        // https://github.com/mamoe/mirai/issues/932
                     }
                     "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
                         publication.artifactId = "${project.name}-metadata"
@@ -137,6 +123,7 @@ val publishPlatformArtifactsInRootModule: Project.(MavenPublication) -> Unit = {
         }
     }
 
+    // TODO: 2021/1/30 root module 问题可能要在这里解决
     tasks.matching { it.name == "generatePomFileForKotlinMultiplatformPublication" }.configureEach {
         dependsOn(tasks["generatePomFileFor${platformPublication.name.capitalize()}Publication"])
     }
