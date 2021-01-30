@@ -12,6 +12,7 @@ import org.gradle.api.XmlProvider
 import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.tasks.Jar
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
