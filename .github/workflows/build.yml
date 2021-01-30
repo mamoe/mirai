@@ -19,13 +19,13 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean
+        run: ./gradlew clean --info --stacktrace
 
       - name: Build mirai-core series
-        run: ./gradlew assemble
+        run: ./gradlew assemble --info --stacktrace
 
       - name: mirai-core Tests
-        run: ./gradlew check
+        run: ./gradlew check --info --stacktrace
 
   build-all:
     runs-on: ubuntu-latest
@@ -34,9 +34,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@master
-        with:
-          remote: true
+        run: git submodule update --init --recursive --remote
 
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
@@ -47,10 +45,10 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean
+        run: ./gradlew clean --info --stacktrace
 
       - name: Build all
-        run: ./gradlew assemble
+        run: ./gradlew assemble --info --stacktrace
 
       - name: All Tests
-        run: ./gradlew check
+        run: ./gradlew check --info --stacktrace
