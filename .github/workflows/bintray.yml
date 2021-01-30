@@ -94,6 +94,13 @@ jobs:
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
+      - name: Gradle :mirai-console-compiler-annotations:bintrayUpload
+        run: >
+          ./gradlew
+          :mirai-console-compiler-annotations:bintrayUpload --info
+          -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+          -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+
       - name: Gradle :mirai-console-intellij:bintrayUpload
         run: >
           ./gradlew

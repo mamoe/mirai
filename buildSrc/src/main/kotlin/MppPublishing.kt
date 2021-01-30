@@ -32,7 +32,7 @@ fun Project.configureMppPublishing() {
         tasks.findByName("compileKotlinMetadata")?.enabled = false
 
         // TODO: 2021/1/30 如果添加 JVM 到 root module, 这个 task 会失败因 root module artifacts 有变化
-        //tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21
+        tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21
     }
 
     tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
@@ -70,7 +70,7 @@ fun Project.configureMppPublishing() {
                     "kotlinMultiplatform" -> {
                         publication.artifactId = project.name
 
-                        // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
+                        publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
 
                         // TODO: 2021/1/30 现在添加 JVM 到 root module 会导致 Gradle 依赖无法解决
                         // https://github.com/mamoe/mirai/issues/932
