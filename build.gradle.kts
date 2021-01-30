@@ -65,6 +65,15 @@ configure<kotlinx.validation.ApiValidationExtension> {
 
 project.ext.set("isAndroidSDKAvailable", false)
 
+tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
+    group = "mirai"
+    dependsOn(
+        project(":mirai-core-api").tasks.getByName("publishToMavenLocal"),
+        project(":mirai-core-utils").tasks.getByName("publishToMavenLocal"),
+        project(":mirai-core").tasks.getByName("publishToMavenLocal")
+    )
+}
+
 // until
 // https://youtrack.jetbrains.com/issue/KT-37152,
 // are fixed.

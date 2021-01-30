@@ -57,14 +57,10 @@ kotlin {
     }*/
 
     sourceSets.apply {
-        all {
-            dependencies {
-                api(project(":mirai-core-api"))
-            }
-        }
 
         commonMain {
             dependencies {
+                api(project(":mirai-core-api"))
                 implementation(project(":mirai-core-utils"))
                 api1(`kotlinx-serialization-core`)
                 api1(`kotlinx-serialization-json`)
@@ -73,7 +69,7 @@ kotlin {
                 api1(`kotlinx-atomicfu`)
                 api1(`kotlinx-coroutines-core`)
 
-                api1(`kotlinx-io`)
+                api1(`kotlinx-io-jvm`)
                 implementation1(`kotlinx-coroutines-io`)
             }
         }
@@ -103,7 +99,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
-                api1(`kotlinx-io-jvm`)
                 // api(kotlinx("coroutines-debug", Versions.coroutines))
             }
         }
