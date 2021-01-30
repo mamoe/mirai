@@ -32,4 +32,4 @@ dependencies {
     testRuntimeOnly(`kotlin-compiler`)
 }
 
-configurePublishing("mirai-console-compiler-resolve")
+configurePublishing("mirai-console-compiler-common")
