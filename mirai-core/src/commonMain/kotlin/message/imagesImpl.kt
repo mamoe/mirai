@@ -138,7 +138,7 @@ internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
         bigUrl = bigUrl,
         origUrl = origUrl,
         //_400Height = 235,
-        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+        //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
         oldData = this.oldVerSendFile
     )
@@ -182,7 +182,7 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         picMd5 = this.md5,
         flag = ByteArray(4),
         //_400Height = 235,
-        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+        //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
         oldData = oldData
     )
