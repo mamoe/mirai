@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OfflineFriendImage
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.getImageType
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -26,6 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
@@ -70,14 +72,29 @@ internal abstract class AbstractUser(
         }
 
         return when (resp) {
-            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
-                imageId = generateImageIdFromResourceId(
-                    resourceId = resp.resourceId,
-                    format = getImageType(resp.imageInfo.fileType).takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
-                        ?: resource.formatName
-                ) ?: resp.resourceId
-            ).also {
-                ImageUploadEvent.Succeed(this, resource, it).broadcast()
+            is LongConn.OffPicUp.Response.FileExists -> {
+                val imageType = getImageType(resp.imageInfo.fileType)
+                    .takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
+                    ?: resource.formatName
+
+                OfflineFriendImage(
+                    imageId = generateImageIdFromResourceId(
+                        resourceId = resp.resourceId,
+                        format = imageType
+                    ) ?: kotlin.run {
+                        if (resp.imageInfo.fileMd5.size == 16) {
+                            generateImageId(resp.imageInfo.fileMd5, imageType)
+                        } else {
+                            throw contextualBugReportException(
+                                "Failed to compute friend image image from resourceId: ${resp.resourceId}",
+                                resp._miraiContentToString(),
+                                additional = "并附加此时正在上传的文件"
+                            )
+                        }
+                    }
+                ).also {
+                    ImageUploadEvent.Succeed(this, resource, it).broadcast()
+                }
             }
 
             is LongConn.OffPicUp.Response.RequireUpload -> {
