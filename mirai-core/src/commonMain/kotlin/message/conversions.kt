@@ -655,7 +655,7 @@ internal fun contextualBugReportException(
     e: Throwable? = null,
     additional: String = ""
 ): IllegalStateException {
-    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. $additional 调试信息: $forDebug", e)
+    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new   $additional 调试信息: $forDebug", e)
 }
 
 @OptIn(ExperimentalContracts::class)
