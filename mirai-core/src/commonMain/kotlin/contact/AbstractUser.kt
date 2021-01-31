@@ -11,9 +11,6 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
@@ -26,7 +23,9 @@ import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.tryServers
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
@@ -70,12 +69,6 @@ internal abstract class AbstractUser(
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }
 
-        val kind = when (this) {
-            is Stranger -> "stranger"
-            is Friend -> "friend"
-            is Member -> "temp"
-            else -> "unknown"
-        }
         return when (resp) {
             is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
                 imageId = generateImageIdFromResourceId(
@@ -90,14 +83,54 @@ internal abstract class AbstractUser(
             is LongConn.OffPicUp.Response.RequireUpload -> {
 
                 kotlin.runCatching {
+                    // try once upload by private bdh
                     Highway.uploadResourceBdh(
                         bot = bot,
                         resource = resource,
                         kind = PRIVATE_IMAGE,
                         commandId = 1,
-                        initialTicket = resp.uKey
+                        initialTicket = resp.uKey,
+                        tryOnce = true
                     )
                 }.recoverCatchingSuppressed {
+                    // try upload as group image
+                    val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
+                        bot.client,
+                        uin = bot.id,
+                        groupCode = id,
+                        md5 = resource.md5,
+                        size = resource.size.toInt()
+                    ).sendAndExpect(bot)
+
+                    when (response) {
+                        is ImgStore.GroupPicUp.Response.Failed -> {
+                            error("upload private image as group image failed with reason ${response.message}")
+                        }
+                        is ImgStore.GroupPicUp.Response.FileExists -> {
+                            // success
+                        }
+                        is ImgStore.GroupPicUp.Response.RequireUpload -> {
+                            // val servers = response.uploadIpList.zip(response.uploadPortList)
+                            Highway.uploadResourceBdh(
+                                bot = bot,
+                                resource = resource,
+                                kind = PRIVATE_IMAGE,
+                                commandId = 2,
+                                initialTicket = response.uKey
+                            )
+                        }
+                    }
+                }.recoverCatchingSuppressed {
+                    // try upload by private bdh on other servers
+                    Highway.uploadResourceBdh(
+                        bot = bot,
+                        resource = resource,
+                        kind = PRIVATE_IMAGE,
+                        commandId = 1,
+                        initialTicket = resp.uKey,
+                    )
+                }.recoverCatchingSuppressed {
+                    // try upload by http on provided servers
                     tryServers(
                         bot = bot,
                         servers = resp.serverIp.zip(resp.serverPort),
@@ -115,6 +148,7 @@ internal abstract class AbstractUser(
                         )
                     }
                 }.recoverCatchingSuppressed {
+                    // try upload by http on fallback server
                     Mirai.Http.postImage(
                         serverIp = "htdata2.qq.com",
                         htcmd = "0x6ff0070",

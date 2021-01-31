@@ -51,10 +51,17 @@ internal object Highway {
         extendInfo: ByteArray = EMPTY_BYTE_ARRAY,
         encrypt: Boolean = false,
         initialTicket: ByteArray? = null,
+        tryOnce: Boolean = false,
     ): BdhUploadResponse {
         val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
 
-        return tryServers(bot, bdhSession.ssoAddresses, resource.size, kind, ChannelKind.HIGHWAY) { ip, port ->
+        return tryServers(
+            bot = bot,
+            servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random()) else bdhSession.ssoAddresses,
+            resourceSize = resource.size,
+            resourceKind = kind,
+            channelKind = ChannelKind.HIGHWAY
+        ) { ip, port ->
             val md5 = resource.md5
             require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
 
