@@ -41,12 +41,12 @@ internal class ImgStore {
             size: Long,
             picWidth: Int = 0, // not orthodox
             picHeight: Int = 0, // not orthodox
-            picType: Int = 1000,
+            picType: Int = 2001,
             fileId: Long = 0,
             filename: String = getRandomString(16) + ".gif", // make server happier
             srcTerm: Int = 5,
             platformType: Int = 9,
-            buType: Int = 1,
+            buType: Int = 2,
             appPicType: Int = 1006,
             originalPic: Int = 0
         ): OutgoingPacket = buildOutgoingUniPacket(client) {

@@ -206,6 +206,13 @@ internal class TryUpImgReq(
         @ProtoNumber(6) @JvmField val fileName: String = "",
         @ProtoNumber(7) @JvmField val srcTerm: Int = 0,
         @ProtoNumber(8) @JvmField val platformType: Int = 0,
+        /**
+         * if uinType = 1 then 1 else2
+         *
+        UIN_QQ = new UINTYPE(0, 0, "UIN_QQ");
+        UIN_EMAIL = new UINTYPE(1, 1, "UIN_EMAIL");
+        UIN_MOBILE = new UINTYPE(2, 2, "UIN_MOBILE");
+         */
         @ProtoNumber(9) @JvmField val buType: Int = 0,
         @ProtoNumber(10) @JvmField val picWidth: Int = 0,
         @ProtoNumber(11) @JvmField val picHeight: Int = 0,
