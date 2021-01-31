@@ -156,6 +156,7 @@ internal class GroupImpl(
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = resource.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
+                        .also { it.fileId = response.fileId.toInt() }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
@@ -169,6 +170,7 @@ internal class GroupImpl(
                     )
 
                     return OfflineGroupImage(imageId = resource.calculateResourceId())
+                        .also { it.fileId = response.fileId.toInt() }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
