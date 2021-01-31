@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
@@ -70,8 +71,24 @@ internal class OnlineFriendImageImpl(
 OnlineFriendImage() {
     object Serializer : Image.FallbackSerializer("OnlineFriendImage")
 
-    override val imageId: String =
-        generateImageIdFromResourceId(delegate.resId, getImageType(delegate.imgType)) ?: delegate.resId
+    override val imageId: String = kotlin.run {
+        val imageType = getImageType(delegate.imgType)
+        generateImageIdFromResourceId(delegate.resId, imageType)
+            ?: kotlin.run {
+                if (delegate.picMd5.size == 16) generateImageId(delegate.picMd5, imageType)
+                else {
+                    MiraiLogger.TopLevel.warning(
+                        contextualBugReportException(
+                            "Failed to compute friend imageId: resId=${delegate.resId}",
+                            delegate._miraiContentToString(),
+                            additional = "并描述此时 Bot 是否正在从好友或群接受消息, 尽量附加该图片原文件"
+                        )
+                    )
+                    delegate.resId
+                }
+            }
+    }
+
     override val originUrl: String
         get() = if (delegate.origUrl.isNotBlank()) {
             "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
