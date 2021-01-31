@@ -17,6 +17,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ClientKind
+import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOnlineEvent
@@ -36,7 +37,6 @@ import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.localIpAddress
 import net.mamoe.mirai.utils.toReadPacket
 
 @Suppress("EnumEntryName", "unused")
@@ -113,10 +113,22 @@ internal class StatSvc {
             return Response
         }
 
-        operator fun invoke(
+        fun online(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ): OutgoingPacket = buildLoginOutgoingPacket(
+        ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason)
+
+        fun offline(
+            client: QQAndroidClient,
+            regPushReason: RegPushReason = RegPushReason.appRegister
+        ) = impl(client, 0, OnlineStatus.OFFLINE, regPushReason)
+
+        private fun impl(
+            client: QQAndroidClient,
+            bid: Long,
+            status: OnlineStatus,
+            regPushReason: RegPushReason = RegPushReason.appRegister
+        ) = buildLoginOutgoingPacket(
             client,
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
@@ -137,14 +149,14 @@ internal class StatSvc {
                             SvcReqRegister.serializer(),
                             SvcReqRegister(
                                 cConnType = 0,
-                                lBid = 1 or 2 or 4,
+                                lBid = bid,
                                 lUin = client.uin,
-                                iStatus = client.onlineStatus.id,
+                                iStatus = status.id,
                                 bKikPC = 0, // 是否把 PC 踢下线
                                 bKikWeak = 0,
                                 timeStamp = 0,
                                 // timeStamp = currentTimeSeconds // millis or seconds??
-                                iLargeSeq = 1551, // ?
+                                iLargeSeq = 0, // ?
                                 bOpenPush = 1,
                                 iLocaleID = 2052,
                                 bRegType =
@@ -161,8 +173,7 @@ internal class StatSvc {
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
                                 uOldSSOIp = 0,
-                                uNewSSOIp = localIpAddress().runCatching { ipToLong() }
-                                    .getOrElse { "192.168.1.123".ipToLong() },
+                                uNewSSOIp = 0,
                                 strVendorName = "MIUI",
                                 strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
@@ -177,7 +188,7 @@ internal class StatSvc {
                                         configList = listOf(
                                             Oidb0x769.ConfigSeq(
                                                 type = 46,
-                                                version = 0
+                                                version = 1610538309
                                             ),
                                             Oidb0x769.ConfigSeq(
                                                 type = 283,
@@ -193,6 +204,7 @@ internal class StatSvc {
                 )
             }
         }
+
 
         private fun String.ipToLong(): Long {
             return split('.').foldIndexed(0L) { index: Int, acc: Long, s: String ->

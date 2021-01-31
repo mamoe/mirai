@@ -303,7 +303,16 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     private suspend fun registerClientOnline() {
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+//        object : OutgoingPacketFactory<Packet?>("push.proxyUnRegister") {
+//            override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
+//                return null
+//            }
+//        }.buildOutgoingUniPacket(bot.client) {}.sendWithoutExpect()
+        kotlin.runCatching {
+            StatSvc.Register.offline(bot.client).sendAndExpect()
+        }.getOrElse { logger.warning(it) }
+
+        StatSvc.Register.online(bot.client).sendAndExpect()
     }
 
     private suspend fun updateOtherClientsList() {
