@@ -116,7 +116,7 @@ internal abstract class AbstractUser(
                         uin = bot.id,
                         groupCode = id,
                         md5 = resource.md5,
-                        size = resource.size.toInt()
+                        size = resource.size
                     ).sendAndExpect(bot)
 
                     when (response) {

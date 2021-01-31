@@ -19,7 +19,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.utils.toLongUnsigned
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -39,7 +38,7 @@ internal class ImgStore {
             uin: Long,
             groupCode: Long,
             md5: ByteArray,
-            size: Int,
+            size: Long,
             picWidth: Int = 0, // not orthodox
             picHeight: Int = 0, // not orthodox
             picType: Int = 1000,
@@ -61,7 +60,7 @@ internal class ImgStore {
                             groupCode = groupCode,
                             srcUin = uin,
                             fileMd5 = md5,
-                            fileSize = size.toLongUnsigned(),
+                            fileSize = size,
                             fileId = fileId,
                             fileName = filename,
                             picWidth = picWidth,

@@ -680,7 +680,7 @@ internal class ImMsgBody : ProtoBuf {
     @Serializable
     internal class NotOnlineImage(
         @ProtoNumber(1) @JvmField val filePath: String = "",
-        @ProtoNumber(2) @JvmField val fileLen: Int = 0,
+        @ProtoNumber(2) @JvmField val fileLen: Long = 0L, // originally int
         @ProtoNumber(3) @JvmField val downloadPath: String = "",
         @ProtoNumber(4) @JvmField val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val imgType: Int = 0,
