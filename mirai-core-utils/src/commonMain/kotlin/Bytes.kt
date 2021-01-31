@@ -27,11 +27,25 @@ public fun generateImageId(md5: ByteArray, format: String = "mirai"): String {
 
 @JvmOverloads
 public fun generateImageIdFromResourceId(resourceId: String, format: String = "mirai"): String? {
-    //  friend image id:  /1040400290-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
-    //  friend image id:  /1040400290-3666252994-EFF4427C E3D2 7DB6 B1D9 A8AB72E7A29C
+    //  friend image id:  /f8f1ab55-bf8e-4236-b55e-955848d7069f
+    //  friend image id:  /                      f8f1ab55-bf8e-4236-b55e-955848d7069f
+
+    //  friend image id:  /0000000000-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
+    //  friend image id:  /0000000000-3666252994-EFF4427C E3D2 7DB6 B1D9 A8AB72E7A29C
     //   group image id:                        {EF42A82D-8DB6-5D0F-4F11-68961D8DA5CB}.png
 
-    val md5String = resourceId.substringAfterLast("-").substringAfter("/").takeIf { it.length == 32 } ?: return null
+    if (resourceId.isNotEmpty()) {
+        if (resourceId[0] == '{') {
+            // {EF42A82D-8DB6-5D0F-4F11-68961D8DA5CB
+            if (resourceId.substringBefore('}', "").length == 37) {
+                return resourceId
+            }
+        }
+    }
+
+    val md5String = resourceId.substringAfterLast("-").substringAfter("/").takeIf { it.length == 32 }
+        ?: resourceId.replace("-", "").substringAfter('/').takeIf { it.length == 32 }
+        ?: return null
     return "{${generateUUID(md5String)}}.$format"
 }
 
