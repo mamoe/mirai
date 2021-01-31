@@ -98,7 +98,7 @@ Thanks to [JetBrains](https://www.jetbrains.com/?from=mirai) for allocating free
 
 ## License
 
-    Copyright (C) 2019-2020 Mamoe Technologies and mirai contributors
+    Copyright (C) 2019-2021 Mamoe Technologies and mirai contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
