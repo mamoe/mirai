@@ -14,7 +14,9 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
@@ -36,6 +38,43 @@ internal open class OutgoingPacket constructor(
 ) {
     val name: String = name ?: commandName
 }
+
+internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+    network: QQAndroidBotNetworkHandler,
+    timeoutMillis: Long = 5000,
+    retry: Int = 2
+): E = network.run {
+    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
+    network: QQAndroidBotNetworkHandler,
+    timeoutMillis: Long = 5000,
+    retry: Int = 2
+): E = network.run {
+    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
+}
+
+internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+    bot: QQAndroidBot,
+    timeoutMillis: Long = 5000,
+    retry: Int = 2
+): E = bot.network.run {
+    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
+    bot: QQAndroidBot,
+    timeoutMillis: Long = 5000,
+    retry: Int = 2
+): E = bot.network.run {
+    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
+}
+
 
 internal val KEY_16_ZEROS = ByteArray(16)
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
