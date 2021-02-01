@@ -16,10 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
-import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.*
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -29,6 +26,7 @@ import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
@@ -223,17 +221,34 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                     fun BotConfiguration.configBot() {
                         mainLogger.info { "Auto-login ${account.account}" }
 
-                        account.configuration[AutoLoginConfig.Account.ConfigurationKey.protocol]
-                            ?.let { protocol ->
-                                this.protocol = runCatching {
-                                    BotConfiguration.MiraiProtocol.valueOf(protocol.toString())
-                                }.getOrElse {
-                                    throw IllegalArgumentException(
-                                        "Bad auto-login config value for `protocol` for account $id",
-                                        it
-                                    )
-                                }
+                        account.configuration[ConfigurationKey.protocol]?.let { protocol ->
+                            this.protocol = runCatching {
+                                BotConfiguration.MiraiProtocol.valueOf(protocol.toString())
+                            }.getOrElse {
+                                throw IllegalArgumentException(
+                                    "Bad auto-login config value for `protocol` for account $id",
+                                    it
+                                )
                             }
+                        }
+
+                        workingDir = MiraiConsole.rootDir
+                            .resolve("bots")
+                            .resolve(id.toString())
+
+                        if (!workingDir.exists()
+                            && workingDir.mkdirs()
+                            && account.configuration[ConfigurationKey.device] == null // no custom device
+                        ) {
+                            // copy root/deviceInfo.json to bots/id/deviceInfo.json
+                            val deviceInfoInRoot = MiraiConsole.rootDir.resolve("deviceInfo.json")
+                            deviceInfoInRoot.copyTo(workingDir.resolve("deviceInfo.json"))
+                            fileBasedDeviceInfo("deviceInfo.json")
+                        }
+
+                        account.configuration[ConfigurationKey.device]?.let { device ->
+                            fileBasedDeviceInfo(device.toString())
+                        }
                     }
 
                     val bot = when (account.password.kind) {

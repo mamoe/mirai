@@ -31,10 +31,13 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         @Comment("账号, 现只支持 QQ 数字账号")
         val account: String,
         val password: Password,
-        @Comment("""
+        @Comment(
+            """
             账号配置. 可用配置列表 (注意大小写):
             "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH"
-        """)
+            "device": "deviceInfo.json" 
+        """
+        )
         val configuration: Map<ConfigurationKey, @Serializable(with = YamlDynamicSerializer::class) Any> = mapOf(),
     ) {
         @Serializable
@@ -49,6 +52,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         @Serializable
         public enum class ConfigurationKey {
             protocol,
+            device,
 
             ;
 
@@ -76,7 +80,16 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         }
     }
 
-    public val accounts: MutableList<Account> by value(mutableListOf(
-        Account("123456", Account.Password(Account.PasswordKind.PLAIN, "pwd"), mapOf(Account.ConfigurationKey.protocol to "ANDROID_PHONE"))
-    ))
+    public val accounts: MutableList<Account> by value(
+        mutableListOf(
+            Account(
+                account = "123456",
+                password = Account.Password(Account.PasswordKind.PLAIN, "pwd"),
+                configuration = mapOf(
+                    Account.ConfigurationKey.protocol to "ANDROID_PHONE",
+                    Account.ConfigurationKey.device to "deviceInfo.json"
+                )
+            )
+        )
+    )
 }

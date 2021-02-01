@@ -22,7 +22,8 @@ fun main() {
 
 internal fun configureUserDir() {
     val projectDir = runCatching {
-        File(".").resolve("frontend").resolve("mirai-console-terminal")
+        File(".").resolve("frontend").resolve("mirai-console-terminal").takeIf { it.isDirectory }
+            ?: File(".").resolve("mirai-console/frontend").resolve("mirai-console-terminal")
     }.getOrElse { return }
     if (projectDir.isDirectory) {
         val run = projectDir.resolve("run")
