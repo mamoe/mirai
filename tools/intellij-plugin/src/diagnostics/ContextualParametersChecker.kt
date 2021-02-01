@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
+import net.mamoe.mirai.console.compiler.common.CheckerConstants
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_ID
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAME
@@ -76,8 +77,8 @@ class ContextualParametersChecker : DeclarationChecker {
     }
 
     companion object {
-        private val ID_REGEX: Regex = Regex("""([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\.([a-zA-Z][a-zA-Z0-9]*(?:-[a-zA-Z0-9]+)*)""")
-        private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
+        private val ID_REGEX: Regex = CheckerConstants.PLUGIN_ID_REGEX
+        private val FORBIDDEN_ID_NAMES: Array<String> = CheckerConstants.PLUGIN_FORBIDDEN_NAMES
 
         private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名"""
 

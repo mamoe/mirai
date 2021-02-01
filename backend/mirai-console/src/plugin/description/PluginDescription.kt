@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.plugin.description
 
+import net.mamoe.mirai.console.compiler.common.CheckerConstants
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.Plugin
@@ -114,16 +115,20 @@ public interface PluginDescription {
          * - Group 1: 域名
          * - Group 2: 名称
          *
+         * ```regex
+         * ([a-zA-Z]\w*(?:\.[a-zA-Z]\w*)*)\.([a-zA-Z]\w*(?:-\w+)*)
+         * ```
+         *
          * @see PluginDescription.id
          */
-        public val ID_REGEX: Regex = Regex("""([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\.([a-zA-Z][a-zA-Z0-9]*(?:-[a-zA-Z0-9]+)*)""")
+        public val ID_REGEX: Regex = CheckerConstants.PLUGIN_ID_REGEX
 
         /**
          * 在 [PluginDescription.id] 和 [PluginDescription.name] 中禁止用的完全匹配名称列表.
          *
          * @see PluginDescription.id
          */
-        public val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
+        public val FORBIDDEN_ID_NAMES: Array<String> = CheckerConstants.PLUGIN_FORBIDDEN_NAMES
 
         /**
          * 依次检查 [PluginDescription] 的 [PluginDescription.id], [PluginDescription.name], [PluginDescription.dependencies] 的合法性
