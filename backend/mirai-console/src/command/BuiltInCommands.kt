@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.console.command
@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.command
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
@@ -47,6 +47,7 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.sendAnsiMessage
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.secondsToMillis
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryUsage
@@ -154,10 +155,23 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "login", "登录",
         description = "登录一个账号",
     ), BuiltInCommandInternal {
+        private suspend fun Bot.doLogin() = kotlin.runCatching {
+            login(); this
+        }.onFailure { close() }.getOrThrow()
+
         @Handler
-        public suspend fun CommandSender.handle(@Name("qq") id: Long, password: String) {
+        @JvmOverloads
+        public suspend fun CommandSender.handle(
+            @Name("qq") id: Long,
+            password: String,
+            protocol: BotConfiguration.MiraiProtocol? = null,
+        ) {
             kotlin.runCatching {
-                MiraiConsole.addBot(id, password).alsoLogin()
+                MiraiConsole.addBot(id, password) {
+                    if (protocol != null) {
+                        this.protocol = protocol
+                    }
+                }.doLogin()
             }.fold(
                 onSuccess = { sendMessage("${it.nick} ($id) Login successful") },
                 onFailure = { throwable ->
@@ -361,8 +375,9 @@ public object BuiltInCommands {
         internal interface MemoryUsageGet {
             val heapMemoryUsage: MUsage
             val nonHeapMemoryUsage: MUsage
-            val objectPendingFinalizationCount:Int
+            val objectPendingFinalizationCount: Int
         }
+
         internal val memoryUsageGet: MemoryUsageGet = kotlin.runCatching {
             ByMemoryMXBean
         }.getOrElse { ByRuntime }
