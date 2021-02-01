@@ -16,11 +16,11 @@ import com.intellij.openapi.project.rootManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.writeChild
+import org.jetbrains.kotlin.idea.core.isAndroidModule
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
 import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
 import org.jetbrains.kotlin.idea.util.module
-import org.jetbrains.kotlin.psi.KtClassOrObject
 
 
 class ConfigurePluginMainServiceFix(
@@ -36,8 +36,17 @@ class ConfigurePluginMainServiceFix(
         val sourceRoots = file.module?.rootManager?.sourceRoots ?: return
 
         val sourceRoot = sourceRoots.find { it.name.endsWith("resources") }
+            ?: sourceRoots.find { it.name.endsWith("res") }
             ?: sourceRoots.find { it.name.contains("resources") }
-            ?: sourceRoots.last()
+            ?: sourceRoots.find { it.name.contains("res") }
+            ?: sourceRoots.last().run {
+                project.executeWriteCommand(name, groupId = null) {
+                    parent.createChildDirectory(
+                        this@ConfigurePluginMainServiceFix,
+                        if (file.module?.isAndroidModule() == true) "res" else "resources"
+                    )
+                }
+            }
 
         project.executeWriteCommand(name) {
             sourceRoot.writeChild("META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", elementFqName.toByteArray())
