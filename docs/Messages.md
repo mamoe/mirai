@@ -4,16 +4,16 @@
 - [消息系统](#消息系统)
 - [消息类型](#消息类型)
 - [消息元素](#消息元素)
-  - [转义规则](#转义规则)
-  - [消息链的 mirai 码](#消息链的-mirai-码)
-  - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
-  - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
 - [消息链](#消息链)
   - [发送消息](#发送消息)
   - [构造消息链](#构造消息链)
   - [元素唯一性](#元素唯一性)
   - [获取消息链中的消息元素](#获取消息链中的消息元素)
 - [Mirai 码](#mirai-码)
+  - [转义规则](#转义规则)
+  - [消息链的 mirai 码](#消息链的-mirai-码)
+  - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
+  - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
 
 ## 消息系统
 
@@ -28,15 +28,30 @@
 
 ## 消息类型
 
-*单个消息元素（`SingleMessage`）*分为 *消息内容（`MessageContent`）* 和 *消息元数据（`MessageMetadata`）*。
+Mirai 支持富文本消息。
+
+*单个消息元素（`SingleMessage`）* 分为 *内容（`MessageContent`）* 和 *元数据（`MessageMetadata`）*。
 
 实践中，消息内容和消息元数据会混合存在于消息链中。
+
+### 内容
+
+*内容（`MessageContent`）* 即为 *纯文本*、*提及某人*、*图片*、*语音* 和 *音乐分享* 等**有内容**的数据，一条消息中必须包含内容才能发送。  
+
+### 元数据
+
+*元数据（`MessageMetadata`）* 包含 *来源*、*引用回复* 和 *秀图标识* 等。
+
+- *消息来源*（`MessageSource`）存在于每条消息中，包含唯一识别信息，用于撤回和引用回复的定位。  
+- *引用回复*（`QuoteReply`）若存在，则会在客户端中解析为本条消息引用了另一条消息。  
+- *秀图标识*（`ShowImageFlag`）若存在，则表明这条消息中的图片是以秀图发送（QQ 的一个功能）。
+
+元数据与内容的区分就在于，一条消息没有元数据也能显示，但一条消息不能没有内容。**元数据是消息的属性**。
+
 
 > 回到 [目录](#目录)
 
 ## 消息元素
-
-Mirai 支持富文本消息。
 
 消息拥有三种转换到字符串的表示方式。
 
@@ -104,7 +119,15 @@ Mirai 支持富文本消息。
  suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 ```
 
-要发送简单的单元素消息，使用：
+要发送字符串消息，使用：（第一部分是 Kotlin，随后是 Java，下同）
+```kotlin
+contact.sendMessage("Hello!")
+```
+```java
+contact.sendMessage("Hello!");
+```
+
+发送字符串实际上是在发送纯文本消息。上面的代码相当于：
 ```kotlin
 contact.sendMessage(PlainText("Hello!"))
 ```
@@ -114,10 +137,10 @@ contact.sendMessage(new PlainText("Hello!"));
 
 要发送多元素消息，可将消息使用 `plus` 操作连接：
 ```kotlin
-contact.sendMessage(PlainText("你要的图片是") + Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")) // 一个纯文本加一个图片
+contact.sendMessage(PlainText("你要的图片是") + Image("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png")) // 一个纯文本加一个图片
 ```
 ```java
-contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("/f8f1ab55-bf8e-4236-b55e-955848d7069f"))); // 一个纯文本加一个图片
+contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))); // 一个纯文本加一个图片
 ```
 
 ### 构造消息链
@@ -165,13 +188,18 @@ val chain = buildMessageChain {
 
 方法都位于 `net.mamoe.mirai.message.data.MessageUtils`。
 
+使用 `newChain`：
+```java
+MessageChain chain = MessageUtils.newChain(new PlainText("Hello"), Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"));
+```
+
 使用 `MessageChainBuilder`:
 ```java
 MessageChain chain = new MessageChainBuilder()
     .append(new PlainText("string"))
     .append("string") // 会被构造成 PlainText 再添加, 相当于上一行
     .append(AtAll.INSTANCE)
-    .append(Image.fromId("/f8f1ab55-bf8e-4236-b55e-955848d7069f"))
+    .append(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))
     .build();
 ```
 

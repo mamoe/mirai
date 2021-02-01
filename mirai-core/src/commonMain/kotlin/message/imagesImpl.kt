@@ -178,6 +178,7 @@ internal fun ImMsgBody.CustomFace.toNotOnlineImage(): ImMsgBody.NotOnlineImage {
 @Suppress("DEPRECATION")
 internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
+        fileId = this.fileId ?: 0,
         filePath = this.imageId,
         picMd5 = this.md5,
         flag = ByteArray(4),
@@ -185,7 +186,9 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
         oldData = oldData,
-      //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
+//        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
+//        useful = 1,
+        //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
     )
 }
 
@@ -258,6 +261,9 @@ internal interface OfflineImage : Image
 internal data class OfflineGroupImage(
     override val imageId: String
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    @Transient
+    internal var fileId: Int? = null
+
     object Serializer : Image.FallbackSerializer("OfflineGroupImage")
 
     override fun getUrl(bot: Bot): String {

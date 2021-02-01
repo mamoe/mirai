@@ -25,11 +25,11 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.currentTimeSeconds
-import java.lang.UnsupportedOperationException
 
 /**
  * 通用处理器
@@ -105,7 +105,7 @@ internal abstract class SendMessageHandler<C : Contact> {
      */
     suspend fun sendMessagePacket(
         originalMessage: Message,
-        transformedMessage: Message,
+        transformedMessage: MessageChain,
         finalMessage: MessageChain,
         step: SendMessageStep,
     ): MessageReceipt<C> {
@@ -125,10 +125,10 @@ internal abstract class SendMessageHandler<C : Contact> {
                         if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                             return when (step) {
                                 SendMessageStep.FIRST -> {
-                                    sendMessage(originalMessage, transformedMessage, SendMessageStep.LONG_MESSAGE)
+                                    sendMessageImpl(originalMessage, transformedMessage, SendMessageStep.LONG_MESSAGE)
                                 }
                                 SendMessageStep.LONG_MESSAGE -> {
-                                    sendMessage(originalMessage, transformedMessage, SendMessageStep.FRAGMENTED)
+                                    sendMessageImpl(originalMessage, transformedMessage, SendMessageStep.FRAGMENTED)
 
                                 }
                                 else -> {
@@ -219,6 +219,8 @@ internal abstract class SendMessageHandler<C : Contact> {
         )
     }
 
+    open suspend fun preConversionTransformedMessage(message: Message): Message = message
+    open suspend fun conversionMessageChain(chain: MessageChain): MessageChain = chain
 
     open suspend fun postTransformActions(chain: MessageChain) {
 
@@ -255,15 +257,33 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
 }
 
 /**
- * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed (sendMessagePacket)
+ * Send a message, and covert messages
+ *
+ * Don't recall this function.
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
     originalMessage: Message,
     transformedMessage: Message,
     step: SendMessageStep,
+): MessageReceipt<C> = sendMessageImpl(
+    originalMessage,
+    conversionMessageChain(
+        transformSpecialMessages(
+            preConversionTransformedMessage(transformedMessage)
+        )
+    ),
+    step
+)
+
+/**
+ * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed (sendMessagePacket)
+ */
+internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
+    originalMessage: Message,
+    transformedMessage: MessageChain,
+    step: SendMessageStep,
 ): MessageReceipt<C> { // Result cannot be in interface.
-    val chain = transformSpecialMessages(transformedMessage)
-        .convertToLongMessageIfNeeded(step)
+    val chain = transformedMessage.convertToLongMessageIfNeeded(step)
 
     chain.findIsInstance<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
@@ -314,11 +334,19 @@ internal class GroupSendMessageHandler(
     override val senderName: String
         get() = contact.botAsMember.nameCardOrNick
 
-    override suspend fun postTransformActions(chain: MessageChain) {
-        chain.asSequence().filterIsInstance<FriendImage>().forEach { image ->
-            contact.updateFriendImageForGroupMessage(image)
+    override suspend fun conversionMessageChain(chain: MessageChain): MessageChain = chain.map { element ->
+        when (element) {
+            is OfflineGroupImage -> {
+                contact.fixImageFileId(element)
+                element
+            }
+            is FriendImage -> {
+                contact.updateFriendImageForGroupMessage(element)
+            }
+            else -> element
         }
-    }
+    }.toMessageChain()
+
 
     override suspend fun constructSourceFromMusicShareResponse(
         finalMessage: MessageChain,
@@ -341,18 +369,55 @@ internal class GroupSendMessageHandler(
     }
 
     companion object {
+        private suspend fun GroupImpl.fixImageFileId(image: OfflineGroupImage) {
+            if (image.fileId == null) {
+                val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    groupCode = this.id,
+                    md5 = image.md5,
+                    size = 1,
+                ).sendAndExpect(bot)
+
+                when (response) {
+                    is ImgStore.GroupPicUp.Response.Failed -> {
+                        image.fileId = 0 // Failed
+                    }
+                    is ImgStore.GroupPicUp.Response.FileExists -> {
+                        image.fileId = response.fileId.toInt()
+                    }
+                    is ImgStore.GroupPicUp.Response.RequireUpload -> {
+                        image.fileId = response.fileId.toInt()
+                    }
+                }
+            }
+        }
+
         /**
          * Ensures server holds the cache
          */
-        private suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage) {
+        private suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage): OfflineGroupImage {
             bot.network.run {
-                ImgStore.GroupPicUp(
+                val response = ImgStore.GroupPicUp(
                     bot.client,
                     uin = bot.id,
                     groupCode = id,
                     md5 = image.md5,
                     size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
                 ).sendAndExpect<ImgStore.GroupPicUp.Response>()
+                return OfflineGroupImage(image.imageId).also { img ->
+                    when (response) {
+                        is ImgStore.GroupPicUp.Response.FileExists -> {
+                            img.fileId = response.fileId.toInt()
+                        }
+                        is ImgStore.GroupPicUp.Response.RequireUpload -> {
+                            img.fileId = response.fileId.toInt()
+                        }
+                        is ImgStore.GroupPicUp.Response.Failed -> {
+                            img.fileId = 0
+                        }
+                    }
+                }
             }
         }
     }

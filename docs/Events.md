@@ -64,7 +64,7 @@ Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEven
 listener.complete(); // 停止监听 
 ```
 
-异常默认会被相关 Bot 日志记录。可以在 `subscribeAlways` 添加如下内容来处理异常。
+异常默认会被相关 Bot 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
 ```
 // Kotlin
 .exceptionHandler { e -> e.printStackTrace() }
@@ -73,12 +73,14 @@ listener.complete(); // 停止监听
 .exceptionHandler(e -> e.printStackTrace())
 ```
 
-**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个，请使用 `bot.eventChannel`。**
+**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个 bot，请使用 `bot.eventChannel`。**
 
-> 现在你可以继续阅读，或跳到下一章 [Messages](Messages.md)
+> 现在你可以继续阅读详细了解事件，或：
 >
-> 回到 [目录](#目录)  
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> - 跳到下一章 [Messages](Messages.md)
+> - [查看事件列表](../mirai-core-api/src/commonMain/kotlin/event/events/README.md#事件)
+> - 回到 [目录](#目录)  
+> - [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
 
 ## 事件通道
 

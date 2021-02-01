@@ -66,7 +66,7 @@
 **为了避免遇到各种问题，请仔细阅读。**
 
 1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
-2. **配置项目依赖**
+2. **配置项目依赖** （二选一）
    - 要把 mirai-core 嵌入一个应用使用，请阅读 [配置项目依赖](ConfiguringProjects.md)。
    - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
 3. 阅读 API 文档（见下文）
