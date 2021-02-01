@@ -65,6 +65,13 @@ internal abstract class SendMessageHandler<C : Contact> {
             groupCard = senderName // Cinnamon
         ) else null
 
+    // For ForwardMessage display
+    val ForwardMessage.INode.groupInfo: MsgComm.GroupInfo
+        get() = MsgComm.GroupInfo(
+            groupCode = if (isToGroup) targetGroupCode!! else 0,
+            groupCard = senderName
+        )
+
     val isToGroup: Boolean get() = contact is Group
 
     suspend fun MessageChain.convertToLongMessageIfNeeded(
