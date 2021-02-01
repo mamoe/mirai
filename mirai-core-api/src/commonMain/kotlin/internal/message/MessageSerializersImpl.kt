@@ -47,7 +47,6 @@ public open class MessageSourceSerializerImpl(serialName: String) :
             takeElementsFrom(SerialData.serializer().descriptor)
         },
         serialize = {
-            // TODO: 2021-01-09 解决因为 originMessage 中 MessageSource 与 this 相同造成的死循环
             SerialData(kind, botId, ids, internalIds, time, fromId, targetId, originalMessage)
         },
         deserialize = {
