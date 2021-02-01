@@ -153,6 +153,7 @@ internal object KnownPacketFactories {
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,
         MultiMsg.ApplyUp,
+        MultiMsg.ApplyDown,
         NewContact.SystemMsgNewFriend,
         NewContact.SystemMsgNewGroup,
         ProfileService.GroupMngReq,

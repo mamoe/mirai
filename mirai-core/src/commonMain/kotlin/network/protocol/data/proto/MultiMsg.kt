@@ -23,7 +23,7 @@ internal class MultiMsg : ProtoBuf {
 
     @Serializable
     internal class MultiMsgApplyDownReq(
-        @ProtoNumber(1) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField val msgResid: String = "",
         @ProtoNumber(2) @JvmField val msgType: Int = 0,
         @ProtoNumber(3) @JvmField val srcUin: Long = 0L
     ) : ProtoBuf

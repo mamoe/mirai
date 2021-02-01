@@ -151,4 +151,41 @@ internal class MultiMsg {
             }
         }
     }
+
+    object ApplyDown: OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
+        sealed class Response : Packet {
+
+            object MessageTooLarge : Response()
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            buType: Int,
+            resId: String,
+            msgType: Int,
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MultiMsg.ReqBody.serializer(),
+                MultiMsg.ReqBody(
+                    buType = buType, // 1: long, 2: 合并转发
+                    buildVer = "8.2.0.1296",
+                    multimsgApplydownReq = listOf(
+                        MultiMsg.MultiMsgApplyDownReq(
+                            msgResid =  resId,
+                            msgType = msgType,
+                        )
+                    ),
+                    netType = 3, // wifi=3, wap=5
+                    platformType = 9,
+                    subcmd = 2,
+                    termType = 5,
+                    reqChannelType = 2
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            return Response.MessageTooLarge
+        }
+    }
 }
