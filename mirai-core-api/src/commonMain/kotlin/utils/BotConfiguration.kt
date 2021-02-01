@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -22,7 +23,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 
 /**
- * [Bot] 配置.
+ * [Bot] 配置. 用于 [BotFactory.newBot]
  *
  * Kotlin 使用方法:
  * ```
@@ -385,6 +386,15 @@ public open class BotConfiguration { // open for Java
     @Target(AnnotationTarget.FUNCTION)
     @DslMarker
     public annotation class ConfigurationDsl
+}
+
+/**
+ * 构建一个 [BotConfiguration].
+ *
+ * @see BotConfiguration
+ */
+public inline fun BotConfiguration(block: BotConfiguration.() -> Unit): BotConfiguration {
+    return BotConfiguration().apply(block)
 }
 
 internal val deviceInfoStub: (Bot) -> DeviceInfo = {
