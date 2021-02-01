@@ -129,7 +129,7 @@ public interface MiraiConsole : CoroutineScope {
          *
          * 调用 [Bot.login] 可登录.
          *
-         * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         * @see Bot.instances 获取现有 [Bot] 实例列表
          * @see BotConfigurationAlterer ExtensionPoint
          */
         @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
@@ -146,6 +146,7 @@ public interface MiraiConsole : CoroutineScope {
                     MiraiLogger.create("Bot.${it.id}")
                 }
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
+                autoReconnectOnForceOffline()
 
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()
