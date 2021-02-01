@@ -9,6 +9,10 @@
 
 @file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS", "MemberVisibilityCanBePrivate")
 
+@file:JvmMultifileClass
+@file:JvmName("Utils")
+
+
 package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
@@ -392,15 +396,15 @@ public open class BotConfiguration { // open for Java
  * 构建一个 [BotConfiguration].
  *
  * @see BotConfiguration
+ * @since 2.3
  */
+@JvmSynthetic
 public inline fun BotConfiguration(block: BotConfiguration.() -> Unit): BotConfiguration {
     return BotConfiguration().apply(block)
 }
 
 internal val deviceInfoStub: (Bot) -> DeviceInfo = {
-    @Suppress("DEPRECATION")
     MiraiLogger.TopLevel.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
-    @Suppress("DEPRECATION")
     MiraiLogger.TopLevel.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
     DeviceInfo.random()
 }

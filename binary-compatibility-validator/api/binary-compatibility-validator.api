@@ -5862,6 +5862,7 @@ public final class net/mamoe/mirai/utils/SwingSolver : net/mamoe/mirai/utils/Log
 }
 
 public final class net/mamoe/mirai/utils/Utils {
+	public static final synthetic fun BotConfiguration (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/utils/BotConfiguration;
 	public static final fun debug (Lnet/mamoe/mirai/utils/MiraiLogger;Lkotlin/jvm/functions/Function0;)V
 	public static final fun debug (Lnet/mamoe/mirai/utils/MiraiLogger;Lkotlin/jvm/functions/Function0;Ljava/lang/Throwable;)V
 	public static final fun error (Lnet/mamoe/mirai/utils/MiraiLogger;Lkotlin/jvm/functions/Function0;)V
