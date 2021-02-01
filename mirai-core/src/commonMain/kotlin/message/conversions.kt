@@ -558,11 +558,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
-                            // TODO: 2020/4/29 解析长消息
-                            list.add(SimpleServiceMessage(35, content)) // resId
+                            list.add(LongMessageInternal(content, resId))
                         } else {
-                            // TODO: 2020/4/29 解析合并转发
-                            list.add(SimpleServiceMessage(35, content))
+                            list.add(ForwardMessageInternal(content))
                         }
                     }
 
@@ -655,7 +653,10 @@ internal fun contextualBugReportException(
     e: Throwable? = null,
     additional: String = ""
 ): IllegalStateException {
-    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new   $additional 调试信息: $forDebug", e)
+    return IllegalStateException(
+        "在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new   $additional 调试信息: $forDebug",
+        e
+    )
 }
 
 @OptIn(ExperimentalContracts::class)
