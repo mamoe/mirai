@@ -34,7 +34,8 @@ object Versions {
 
     const val blockingBridge = "1.7.4"
 
-    const val androidGradlePlugin = "3.5.3"
+    const val androidGradlePlugin = "4.1.1"
+    const val android = "4.1.1.4"
 
     const val bintray = "1.8.5"
     const val shadow = "6.1.0"
@@ -104,3 +105,5 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
 const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"
+
+const val `android-runtime` = "com.google.android:android:${Versions.android}"

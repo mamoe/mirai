@@ -14,6 +14,8 @@ plugins {
 repositories {
     mavenLocal()
     jcenter()
+    google()
+    mavenCentral()
 }
 
 kotlin {
@@ -46,6 +48,9 @@ dependencies {
 
     api("com.jfrog.bintray.gradle", "gradle-bintray-plugin", version("bintray"))
     api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
+    api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
+    api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
+    api("com.android.tools.build", "gradle", version("androidGradlePlugin"))
 
     api(gradleApi())
 }

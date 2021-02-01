@@ -28,9 +28,13 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-        apply(from = rootProject.file("gradle/android.gradle"))
-        android("android") {
-            publishAllLibraryVariants()
+//        apply(from = rootProject.file("gradle/android.gradle"))
+//        android("android") {
+//            publishAllLibraryVariants()
+//        }
+        jvm("android") {
+            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+            //   publishAllLibraryVariants()
         }
     } else {
         printAndroidNotInstalled()
@@ -47,7 +51,7 @@ kotlin {
 //    }
 
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 implementation(project(":mirai-core-utils"))
                 api(kotlin("serialization"))
@@ -75,16 +79,20 @@ kotlin {
         }
 
         if (isAndroidSDKAvailable) {
-            androidMain {
+            val androidMain by getting {
+                dependsOn(commonMain)
                 dependencies {
+                    compileOnly(`android-runtime`)
                     api1(`ktor-client-android`)
                 }
             }
         }
 
-        val jvmMain by getting
+        val jvmMain by getting {
 
-        jvmTest {
+        }
+
+        val jvmTest by getting {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
