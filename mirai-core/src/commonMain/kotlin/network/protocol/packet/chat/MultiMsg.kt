@@ -62,7 +62,7 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
                     msgId = 1
                 ),
                 msgType = 82, // troop
-                groupInfo = handler.groupInfo,
+                groupInfo = handler.run { chain.groupInfo },
                 isSrcMsg = false
             ),
             msgBody = ImMsgBody.MsgBody(
