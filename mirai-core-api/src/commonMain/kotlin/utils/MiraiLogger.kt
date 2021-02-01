@@ -222,8 +222,8 @@ public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
 
 /**
  * 当前平台的默认的日志记录器.
- * 在 _JVM 控制台_ 端的实现为 [println]
- * 在 _Android_ 端的实现为 `android.util.Log`
+ * - 在 _JVM 控制台_ 端的实现为 [println]
+ * - 在 _Android_ 端的实现为 `android.util.Log`
  *
  *
  * 单条日志格式 (正则) 为:
@@ -244,14 +244,9 @@ public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
  * @see MiraiLogger.create
  */
 @MiraiInternalApi
-public expect open class PlatformLogger constructor(
+public expect open class PlatformLogger @JvmOverloads constructor(
     identity: String? = "Mirai",
-    output: (String) -> Unit, // TODO: 2020/11/30 review logs, currently it's just for compile
-) : MiraiLoggerPlatformBase {
-    @JvmOverloads
-    public constructor(identity: String? = "Mirai")
-}
-
+) : MiraiLoggerPlatformBase
 
 /**
  * 不做任何事情的 logger, keep silent.

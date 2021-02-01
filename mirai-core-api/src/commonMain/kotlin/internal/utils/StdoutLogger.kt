@@ -1,19 +1,19 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2020 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate")
+package net.mamoe.mirai.internal.utils
 
-package net.mamoe.mirai.utils
-
+import net.mamoe.mirai.utils.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 /**
  * JVM 控制台日志实现
@@ -40,17 +40,16 @@ import java.util.*
  * @see SingleFileLogger 使用单一文件记录日志
  * @see DirectoryLogger 在一个目录中按日期存放文件记录日志, 自动清理过期日志
  */
-@MiraiInternalApi
-public actual open class PlatformLogger constructor(  // same as StdoutLogger but doesn't matter
-    public override val identity: String? = "Mirai",
+internal open class StdoutLogger constructor(
+    override val identity: String? = "Mirai",
     /**
      * 日志输出. 不会自动添加换行
      */
-    public open val output: (String) -> Unit,
-    public val isColored: Boolean = true
+    open val output: (String) -> Unit,
+    val isColored: Boolean = true
 ) : MiraiLoggerPlatformBase() {
-    public actual constructor(identity: String?) : this(identity, ::println)
-    public constructor(identity: String?, output: (String) -> Unit) : this(identity, output, true)
+    constructor(identity: String?) : this(identity, ::println)
+    constructor(identity: String?, output: (String) -> Unit) : this(identity, output, true)
 
     /**
      * 输出一条日志. [message] 末尾可能不带换行符.

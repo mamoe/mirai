@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.utils
 
+import net.mamoe.mirai.internal.utils.StdoutLogger
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,8 +25,7 @@ private val currentDate get() = SimpleDateFormat("yyyy-MM-dd").format(Date())
 public class SingleFileLogger @JvmOverloads constructor(
     identity: String,
     file: File = File("$identity-$currentDate.log")
-) :
-    PlatformLogger(identity, { file.appendText(it + "\n") }) {
+) : MiraiLogger by StdoutLogger(identity, { file.appendText(it + "\n") }) {
 
     init {
         file.createNewFile()
