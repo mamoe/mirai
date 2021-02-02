@@ -4366,23 +4366,6 @@ public final class net/mamoe/mirai/message/data/LightApp$Key : net/mamoe/mirai/m
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/LongMessageOrigin : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
-	public static final field Key Lnet/mamoe/mirai/message/data/LongMessageOrigin$Key;
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/LongMessageOrigin;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/LongMessageOrigin;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/LongMessageOrigin;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getKey ()Lnet/mamoe/mirai/message/data/LongMessageOrigin$Key;
-	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
-	public final fun getResourceId ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/message/data/LongMessageOrigin$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
-}
-
 public abstract interface class net/mamoe/mirai/message/data/MarketFace : net/mamoe/mirai/message/data/HummerMessage {
 	public static final field Key Lnet/mamoe/mirai/message/data/MarketFace$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
@@ -5088,6 +5071,23 @@ public abstract interface class net/mamoe/mirai/message/data/RichMessage : net/m
 public final class net/mamoe/mirai/message/data/RichMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public final fun share (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ServiceMessage;
 	public static synthetic fun share$default (Lnet/mamoe/mirai/message/data/RichMessage$Key;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ServiceMessage;
+}
+
+public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
+	public static final field Key Lnet/mamoe/mirai/message/data/RichMessageOrigin$Key;
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/RichMessageOrigin;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/RichMessageOrigin;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/RichMessageOrigin;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/RichMessageOrigin$Key;
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/RichMessageOrigin$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 }
 
 public abstract interface class net/mamoe/mirai/message/data/ServiceMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/RichMessage {
