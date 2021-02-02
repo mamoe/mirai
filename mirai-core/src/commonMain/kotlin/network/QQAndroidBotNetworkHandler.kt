@@ -476,7 +476,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
             logger.info { "Awaiting ConfigPushSvc.PushReq." }
-            when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
+            when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
                 null -> {
                     kotlin.runCatching { bot.client.bdhSession.completeExceptionally(TimeoutCancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
                     logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
