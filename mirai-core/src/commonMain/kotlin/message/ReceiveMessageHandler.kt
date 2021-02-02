@@ -118,12 +118,10 @@ private object ReceiveMessageTransformer {
         builder: MessageChainBuilder
     ) {
         // (this._miraiContentToString().soutv())
-        val generalFlags = elements.find { it.generalFlags != null }?.generalFlags
-
         for (element in elements) {
             transformElement(element, groupIdOrZero, messageSourceKind, botId, builder)
             when {
-                element.richMsg != null -> decodeRichMessage(generalFlags, element.richMsg, builder)
+                element.richMsg != null -> decodeRichMessage(element.richMsg, builder)
             }
         }
     }
@@ -359,7 +357,6 @@ private object ReceiveMessageTransformer {
     }
 
     private fun decodeRichMessage(
-        generalFlags: ImMsgBody.GeneralFlags?,
         richMsg: ImMsgBody.RichMsg,
         builder: MessageChainBuilder
     ) {
@@ -388,13 +385,21 @@ private object ReceiveMessageTransformer {
              * [LongMessageInternal], [ForwardMessage]
              */
             35 -> {
-                val resId = generalFlags?.longTextResid
-
-                if (resId != null) {
-                    builder.add(LongMessageInternal(content, resId))
-                } else {
-                    builder.add(ForwardMessageInternal(content))
+                fun findStringProperty(name: String): String {
+                    return content.substringAfter("$name=\"", "").substringBefore("\"", "")
                 }
+
+                val resId = findStringProperty("m_resid")
+
+                val msg = when(findStringProperty("multiMsgFlag").toIntOrNull()) {
+                    1 -> LongMessageInternal(content, resId)
+                    0 -> ForwardMessageInternal(content, resId)
+                    else -> {
+                       SimpleServiceMessage(35, content)
+                    }
+                }
+
+                builder.add(msg)
             }
 
             // 104 新群员入群的消息

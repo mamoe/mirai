@@ -966,7 +966,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
         bot.asQQAndroidBot()
-        when (val resp = MultiMsg.ApplyDown(bot.client, 1, resourceId, 1).sendAndExpect(bot)) {
+        when (val resp = MultiMsg.ApplyDown(bot.client, 2, resourceId, 1).sendAndExpect(bot)) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
                 val http = Mirai.Http
                 val origin = resp.origin

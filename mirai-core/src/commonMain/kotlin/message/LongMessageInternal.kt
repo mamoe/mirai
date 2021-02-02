@@ -32,7 +32,7 @@ internal data class LongMessageInternal internal constructor(override val conten
 }
 
 // internal runtime value, not serializable
-internal data class ForwardMessageInternal(override val content: String) : AbstractServiceMessage(), RefinableMessage {
+internal data class ForwardMessageInternal(override val content: String, val resId: String) : AbstractServiceMessage(), RefinableMessage {
     override val serviceId: Int get() = 35
 
     override suspend fun refine(contact: Contact, context: MessageChain): Message {
