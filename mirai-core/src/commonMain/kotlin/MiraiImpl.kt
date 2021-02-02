@@ -971,15 +971,16 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 val http = Mirai.Http
                 val origin = resp.origin
 
-                val data = if (origin.msgExternInfo?.channelType == 2) {
+                val data: ByteArray = if (origin.msgExternInfo?.channelType == 2) {
                     tryDownload(
                         bot = bot,
                         host = "https://ssl.htdata.qq.com",
-                        port = 0,
+                        port = 443,
+                        times = 3,
                         resourceKind = ResourceKind.LONG_MESSAGE,
                         channelKind = ChannelKind.HTTP
-                    ) { host, port ->
-                        http.get<ByteArray>("$host:$port${origin.thumbDownPara}")
+                    ) { host, _ ->
+                        http.get("$host${origin.thumbDownPara}")
                     }
                 } else tryServersDownload(
                     bot = bot,

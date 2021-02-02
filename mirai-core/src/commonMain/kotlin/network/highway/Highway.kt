@@ -159,21 +159,23 @@ internal suspend inline fun <reified R> tryServersDownload(
     5000,
     onFail = { throw IllegalStateException("cannot download $resourceKind, failed on all servers.", it) }
 ) { ip, port ->
-    tryUploadImplEach(bot, channelKind, resourceKind, ip, port, implOnEachServer)
+    tryDownloadImplEach(bot, channelKind, resourceKind, ip, port, implOnEachServer)
 }
 
 internal suspend inline fun <reified R> tryDownload(
     bot: QQAndroidBot,
     host: String,
     port: Int,
+    times: Int = 1,
     resourceKind: ResourceKind,
     channelKind: ChannelKind,
     crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
-) = runCatching {
-    tryUploadImplEach(bot, channelKind, resourceKind, host, port, implOnEachServer)
-}.getOrElse { throw IllegalStateException("cannot upload $resourceKind, failed on all servers.", it) }
+) = retryCatching(times) {
+    tryDownloadImplEach(bot, channelKind, resourceKind, host, port, implOnEachServer)
+}.getOrElse { throw IllegalStateException("Cannot download $resourceKind", it) }
 
-private suspend inline fun <reified R> tryUploadImplEach(
+
+private suspend inline fun <reified R> tryDownloadImplEach(
     bot: QQAndroidBot,
     channelKind: ChannelKind,
     resourceKind: ResourceKind,
@@ -182,7 +184,7 @@ private suspend inline fun <reified R> tryUploadImplEach(
     crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
 ): R {
     bot.network.logger.verbose {
-        "[${channelKind}] Downloading $resourceKind to ${host}:$port"
+        "[${channelKind}] Downloading $resourceKind from ${host}:$port"
     }
 
     var resp: R? = null
@@ -190,7 +192,7 @@ private suspend inline fun <reified R> tryUploadImplEach(
         resp = implOnEachServer(host, port)
     }.onFailure {
         bot.network.logger.verbose {
-            "[${channelKind}] Downloading $resourceKind to ${host}:$port failed: $it"
+            "[${channelKind}] Downloading $resourceKind from ${host}:$port failed: $it"
         }
         throw it
     }
