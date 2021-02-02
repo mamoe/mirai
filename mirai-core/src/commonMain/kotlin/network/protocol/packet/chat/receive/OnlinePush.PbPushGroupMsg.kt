@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -33,7 +34,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.MessageSourceKind.GROUP
 import net.mamoe.mirai.utils.*
 
 /**
@@ -119,7 +120,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         if (isFromSelfAccount) {
             return GroupMessageSyncEvent(
-                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP,),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
                 time = msgHead.msgTime,
                 group = group,
                 sender = sender,
@@ -132,7 +133,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             return GroupMessageEvent(
                 senderName = name,
                 sender = sender,
-                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
                 permission = findMemberPermission(extraInfo?.flags ?: 0, sender, bot),
                 time = msgHead.msgTime
             )

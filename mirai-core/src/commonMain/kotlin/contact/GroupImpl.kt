@@ -192,7 +192,7 @@ internal class GroupImpl(
             }.recoverCatchingSuppressed {
                 when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()) {
                     is PttStore.GroupPttUp.Response.RequireUpload -> {
-                        tryServers(
+                        tryServersUpload(
                             bot,
                             resp.uploadIpList.zip(resp.uploadPortList),
                             resource.size,

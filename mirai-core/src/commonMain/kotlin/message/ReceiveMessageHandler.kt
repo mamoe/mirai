@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.message
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
@@ -410,4 +411,21 @@ private object ReceiveMessageTransformer {
         format,
         kotlinx.io.core.String(downPara)
     )
+}
+
+/**
+ * 解析 [ForwardMessageInternal], [LongMessageInternal]
+ */
+internal suspend fun MessageChain.refine(contact: Contact): MessageChain {
+    if (none { it is RefinableMessage }) return this
+    val builder = MessageChainBuilder(this.size)
+    for (singleMessage in this) {
+        if (singleMessage is RefinableMessage) {
+            val v = singleMessage.refine(contact, this)
+            if (v != null) builder.add(v)
+        } else {
+            builder.add(singleMessage)
+        }
+    }
+    return builder.build()
 }

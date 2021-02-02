@@ -30,6 +30,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
+import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
@@ -49,6 +50,8 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.MessageSourceKind.STRANGER
+import net.mamoe.mirai.message.data.MessageSourceKind.TEMP
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.*
@@ -389,29 +392,22 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                 friend.checkIsFriendImpl()
                 friend.lastMessageSequence.loop {
                     //我也不知道为什么要这样写，但它就是能跑
-                    return if (friend.lastMessageSequence.value != msgHead.msgSeq && friend.lastMessageSequence.compareAndSet(
-                            it,
-                            msgHead.msgSeq
-                        ) && contentHead?.autoReply != 1
+                    return if (friend.lastMessageSequence.value != msgHead.msgSeq
+                        && friend.lastMessageSequence.compareAndSet(it, msgHead.msgSeq)
+                        && contentHead?.autoReply != 1
                     ) {
                         val msgs = friend.friendPkgMsgParsingCache.tryMerge(this)
                         if (msgs.isNotEmpty()) {
                             if (fromSync) {
                                 FriendMessageSyncEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(
-                                        bot = bot, groupIdOrZero = 0,
-                                        messageSourceKind = MessageSourceKind.FRIEND
-                                    ),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
                                     msgHead.msgTime
                                 )
                             } else {
                                 FriendMessageEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(
-                                        bot = bot, groupIdOrZero = 0,
-                                        MessageSourceKind.FRIEND
-                                    ),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
                                     msgHead.msgTime
                                 )
                             }
@@ -430,13 +426,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         if (fromSync) {
                             StrangerMessageSyncEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, groupIdOrZero = 0, MessageSourceKind.STRANGER),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
                                 msgHead.msgTime
                             )
                         } else {
                             StrangerMessageEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, groupIdOrZero = 0, MessageSourceKind.STRANGER),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
                                 msgHead.msgTime
                             )
                         }
@@ -510,13 +506,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         return if (fromSync) {
                             GroupTempMessageSyncEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
                                 msgHead.msgTime
                             )
                         } else {
                             GroupTempMessageEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
                                 msgHead.msgTime
                             )
                         }

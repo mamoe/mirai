@@ -38,6 +38,8 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 internal object Highway {
+
+
     @Suppress("ArrayInDataClass")
     data class BdhUploadResponse(
         var extendInfo: ByteArray? = null,
@@ -55,7 +57,7 @@ internal object Highway {
     ): BdhUploadResponse {
         val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
 
-        return tryServers(
+        return tryServersUpload(
             bot = bot,
             servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random()) else bdhSession.ssoAddresses,
             resourceSize = resource.size,
@@ -113,7 +115,7 @@ internal enum class ChannelKind(
     override fun toString(): String = display
 }
 
-internal suspend inline fun <reified R> tryServers(
+internal suspend inline fun <reified R> tryServersUpload(
     bot: QQAndroidBot,
     servers: Collection<Pair<Int, Int>>,
     resourceSize: Long,
@@ -145,6 +147,59 @@ internal suspend inline fun <reified R> tryServers(
     }
 
     resp as R
+}
+
+internal suspend inline fun <reified R> tryServersDownload(
+    bot: QQAndroidBot,
+    servers: Collection<Pair<Int, Int>>,
+    resourceKind: ResourceKind,
+    channelKind: ChannelKind,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+) = servers.retryWithServers(
+    5000,
+    onFail = { throw IllegalStateException("cannot download $resourceKind, failed on all servers.", it) }
+) { ip, port ->
+    tryUploadImplEach(bot, channelKind, resourceKind, ip, port, implOnEachServer)
+}
+
+internal suspend inline fun <reified R> tryDownload(
+    bot: QQAndroidBot,
+    host: String,
+    port: Int,
+    resourceKind: ResourceKind,
+    channelKind: ChannelKind,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+) = runCatching {
+    tryUploadImplEach(bot, channelKind, resourceKind, host, port, implOnEachServer)
+}.getOrElse { throw IllegalStateException("cannot upload $resourceKind, failed on all servers.", it) }
+
+private suspend inline fun <reified R> tryUploadImplEach(
+    bot: QQAndroidBot,
+    channelKind: ChannelKind,
+    resourceKind: ResourceKind,
+    host: String,
+    port: Int,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+): R {
+    bot.network.logger.verbose {
+        "[${channelKind}] Downloading $resourceKind to ${host}:$port"
+    }
+
+    var resp: R? = null
+    runCatching {
+        resp = implOnEachServer(host, port)
+    }.onFailure {
+        bot.network.logger.verbose {
+            "[${channelKind}] Downloading $resourceKind to ${host}:$port failed: $it"
+        }
+        throw it
+    }
+
+    bot.network.logger.verbose {
+        "[${channelKind}] Downloading $resourceKind: succeed"
+    }
+
+    return resp as R
 }
 
 internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendSequentially(

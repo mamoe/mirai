@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -152,8 +153,13 @@ internal class MultiMsg {
         }
     }
 
-    object ApplyDown: OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
+    object ApplyDown : OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
         sealed class Response : Packet {
+            class RequireDownload(
+                val origin: MultiMsg.MultiMsgApplyDownRsp
+            ) : Response() {
+                override fun toString(): String = "MultiMsg.ApplyDown.Response"
+            }
 
             object MessageTooLarge : Response()
         }
@@ -171,7 +177,7 @@ internal class MultiMsg {
                     buildVer = "8.2.0.1296",
                     multimsgApplydownReq = listOf(
                         MultiMsg.MultiMsgApplyDownReq(
-                            msgResid =  resId,
+                            msgResid = resId,
                             msgType = msgType,
                         )
                     ),
@@ -185,7 +191,18 @@ internal class MultiMsg {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response.MessageTooLarge
+            val body = readProtoBuf(MultiMsg.RspBody.serializer())
+            val response = body.multimsgApplydownRsp.first()
+            return when (response.result) {
+                0 -> Response.RequireDownload(response)
+                193 -> Response.MessageTooLarge
+                //1 -> Response.OK(resId = response.msgResid)
+                else -> throw contextualBugReportException(
+                    "MultiMsg.ApplyDown",
+                    response._miraiContentToString(),
+                    additional = "Decode failure result=${response.result}"
+                )
+            }
         }
     }
 }

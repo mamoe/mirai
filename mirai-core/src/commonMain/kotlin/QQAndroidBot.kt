@@ -57,6 +57,7 @@ internal class QQAndroidBot constructor(
     configuration: BotConfiguration
 ) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
     var client: QQAndroidClient = initClient()
+    private set
 
     fun initClient(): QQAndroidClient {
         client = QQAndroidClient(
