@@ -21,6 +21,7 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
@@ -52,8 +53,15 @@ internal object Highway {
         encrypt: Boolean = false,
         initialTicket: ByteArray? = null,
         tryOnce: Boolean = false,
+        noBdhAwait: Boolean = false,
+        fallbackSession: (Throwable) -> BdhSession = { throw IllegalStateException("Failed to get bdh session", it) }
     ): BdhUploadResponse {
-        val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
+        val bdhSession = kotlin.runCatching {
+            val deferred = bot.client.bdhSession
+            // no need to care about timeout. proceed by bot init
+            @OptIn(ExperimentalCoroutinesApi::class)
+            if (noBdhAwait) deferred.getCompleted() else deferred.await()
+        }.getOrElse(fallbackSession)
 
         return tryServers(
             bot = bot,
