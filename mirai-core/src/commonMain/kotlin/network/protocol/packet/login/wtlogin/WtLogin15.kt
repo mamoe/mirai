@@ -13,7 +13,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
-import java.security.SecureRandom
 import java.util.*
 import kotlin.math.abs
 
@@ -132,8 +131,10 @@ internal object WtLogin15 : WtLoginExt {
 
 internal fun get_mpasswd(): String {
     var var5: String
+    val random = Random()
     run label41@{
-        val var6: ByteArray = SecureRandom.getSeed(16)
+        val var6 = ByteArray(16)
+        random.nextBytes(var6)
         var var0 = 0
         var var4 = ""
         while (true) {
