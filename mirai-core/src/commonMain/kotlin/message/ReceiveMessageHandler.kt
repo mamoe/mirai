@@ -391,11 +391,18 @@ private object ReceiveMessageTransformer {
 
                 val resId = findStringProperty("m_resid")
 
-                val msg = when(findStringProperty("multiMsgFlag").toIntOrNull()) {
+                val msg = if (resId.isEmpty()) {
+                    SimpleServiceMessage(35, content)
+                } else when (findStringProperty("multiMsgFlag").toIntOrNull()) {
                     1 -> LongMessageInternal(content, resId)
                     0 -> ForwardMessageInternal(content, resId)
                     else -> {
-                       SimpleServiceMessage(35, content)
+                        // from PC QQ
+                        if (findStringProperty("action") == "viewMultiMsg") {
+                            ForwardMessageInternal(content, resId)
+                        } else {
+                            SimpleServiceMessage(35, content)
+                        }
                     }
                 }
 

@@ -180,6 +180,15 @@ public interface IMirai : LowLevelApiAccessor {
     ): MessageChain
 
     /**
+     * @since 2.3
+     */
+    @JvmBlockingBridge
+    public suspend fun downloadForwardMessage(
+        bot: Bot,
+        resourceId: String,
+    ): List<ForwardMessage.Node>
+
+    /**
      * 通过好友验证
      *
      * @param event 好友验证的事件对象

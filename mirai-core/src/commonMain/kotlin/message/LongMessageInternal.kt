@@ -32,18 +32,57 @@ internal data class LongMessageInternal internal constructor(override val conten
 }
 
 // internal runtime value, not serializable
-internal data class ForwardMessageInternal(override val content: String, val resId: String) : AbstractServiceMessage(), RefinableMessage {
+@Suppress("RegExpRedundantEscape", "UnnecessaryVariable")
+internal data class ForwardMessageInternal(override val content: String, val resId: String) : AbstractServiceMessage(),
+    RefinableMessage {
     override val serviceId: Int get() = 35
 
     override suspend fun refine(contact: Contact, context: MessageChain): Message {
-        // val bot = contact.bot.asQQAndroidBot()
-        // TODO: 2021/2/2 Support forward message refinement
-        // https://github.com/mamoe/mirai/issues/623
-        return this
+        val bot = contact.bot.asQQAndroidBot()
+
+        val msgXml = content.substringAfter("<msg", "")
+        val xmlHead = msgXml.substringBefore("<item")
+        val xmlFoot: String
+        val xmlContent = msgXml.substringAfter("<item").let {
+            xmlFoot = it.substringAfter("</item", "")
+            it.substringBefore("</item")
+        }
+        val brief = xmlHead.findField("brief")
+
+        val summary = SUMMARY_REGEX.find(xmlContent)?.let { it.groupValues[1] } ?: ""
+
+        val titles = TITLE_REGEX.findAll(xmlContent)
+            .map { it.groupValues[2].trim() }.toMutableList()
+
+        val title = titles.removeFirstOrNull() ?: ""
+
+        val preview = titles
+        val source = xmlFoot.findField("name")
+
+        return RichMessageOrigin(resId) + ForwardMessage(
+            preview = preview,
+            title = title,
+            brief = brief,
+            source = source,
+            summary = summary.trim(),
+            nodeList = Mirai.downloadForwardMessage(bot, resId)
+        )
     }
 
     companion object Key :
-        AbstractPolymorphicMessageKey<ServiceMessage, ForwardMessageInternal>(ServiceMessage, { it.safeCast() })
+        AbstractPolymorphicMessageKey<ServiceMessage, ForwardMessageInternal>(ServiceMessage, { it.safeCast() }) {
+
+        val SUMMARY_REGEX = """\<summary.*\>(.*?)\<\/summary\>""".toRegex()
+
+        @Suppress("SpellCheckingInspection")
+        val TITLE_REGEX = """\<title([A-Za-z\s#\"0-9\=]*)\>([\u0000-\uFFFF]*?)\<\/title\>""".toRegex()
+
+
+        fun String.findField(type: String): String {
+            return substringAfter("$type=\"", "")
+                .substringBefore("\"", "")
+        }
+    }
 }
 
 internal interface RefinableMessage : SingleMessage {

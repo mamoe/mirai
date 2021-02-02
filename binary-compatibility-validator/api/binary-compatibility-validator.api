@@ -91,6 +91,8 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun createImage (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public synthetic fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
 	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)V
+	public fun downloadForwardMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)Ljava/util/List;
+	public abstract fun downloadForwardMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun downloadLongMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun downloadLongMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getBotFactory ()Lnet/mamoe/mirai/BotFactory;

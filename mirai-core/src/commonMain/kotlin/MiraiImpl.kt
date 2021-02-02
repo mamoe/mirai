@@ -965,6 +965,28 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     )
 
     override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
+        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.LONG_MESSAGE).msg
+            .toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+    }
+
+    override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
+        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).msg.map { msg ->
+            ForwardMessage.Node(
+                senderId = msg.msgHead.fromUin,
+                time = msg.msgHead.msgTime,
+                senderName = msg.msgHead.groupInfo?.groupCard
+                    ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
+                    ?: msg.msgHead.fromUin.toString(),
+                messageChain = listOf(msg).toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+            )
+        }
+    }
+
+    private suspend fun downloadMultiMsgTransmit(
+        bot: Bot,
+        resourceId: String,
+        resourceKind: ResourceKind,
+    ): MsgTransmit.PbMultiMsgTransmit {
         bot.asQQAndroidBot()
         when (val resp = MultiMsg.ApplyDown(bot.client, 2, resourceId, 1).sendAndExpect(bot)) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
@@ -977,7 +999,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         host = "https://ssl.htdata.qq.com",
                         port = 443,
                         times = 3,
-                        resourceKind = ResourceKind.LONG_MESSAGE,
+                        resourceKind = resourceKind,
                         channelKind = ChannelKind.HTTP
                     ) { host, _ ->
                         http.get("$host${origin.thumbDownPara}")
@@ -985,7 +1007,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 } else tryServersDownload(
                     bot = bot,
                     servers = origin.uint32DownIp.zip(origin.uint32DownPort),
-                    resourceKind = ResourceKind.LONG_MESSAGE,
+                    resourceKind = resourceKind,
                     channelKind = ChannelKind.HTTP
                 ) { ip, port ->
                     http.get("http://$ip:$port${origin.thumbDownPara}")
@@ -1011,9 +1033,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 }
 
                 val content = down.msgContent.ungzip()
-                val transmit = content.loadAs(MsgTransmit.PbMultiMsgTransmit.serializer())
-
-                return transmit.msg.toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+                return content.loadAs(MsgTransmit.PbMultiMsgTransmit.serializer())
             }
             MultiMsg.ApplyDown.Response.MessageTooLarge -> {
                 error("Message is too large and cannot download")
