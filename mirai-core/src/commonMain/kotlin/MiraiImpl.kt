@@ -16,6 +16,8 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
@@ -24,15 +26,18 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.highway.Highway
-import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.internal.utils.crypto.TEA
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
@@ -959,4 +964,59 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         kind, ids, botId, time, fromId, targetId, originalMessage, internalIds
     )
 
+    override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
+        bot.asQQAndroidBot()
+        when (val resp = MultiMsg.ApplyDown(bot.client, 1, resourceId, 1).sendAndExpect(bot)) {
+            is MultiMsg.ApplyDown.Response.RequireDownload -> {
+                val http = Mirai.Http
+                val origin = resp.origin
+
+                val data = if (origin.msgExternInfo?.channelType == 2) {
+                    tryDownload(
+                        bot = bot,
+                        host = "https://ssl.htdata.qq.com",
+                        port = 0,
+                        resourceKind = ResourceKind.LONG_MESSAGE,
+                        channelKind = ChannelKind.HTTP
+                    ) { host, port ->
+                        http.get<ByteArray>("$host${origin.thumbDownPara}:$port")
+                    }
+                } else tryServersDownload(
+                    bot = bot,
+                    servers = origin.uint32DownIp.zip(origin.uint32DownPort),
+                    resourceKind = ResourceKind.LONG_MESSAGE,
+                    channelKind = ChannelKind.HTTP
+                ) { ip, port ->
+                    http.get("http://$ip${origin.thumbDownPara}:$port")
+                }
+
+                val body = data.read {
+                    check(readByte() == 40.toByte()) {
+                        "bad data while MultiMsg.ApplyDown: ${data.toUHexString()}"
+                    }
+                    val headLength = readInt()
+                    val bodyLength = readInt()
+                    discardExact(headLength)
+                    readBytes(bodyLength)
+                }
+
+                val decrypted = TEA.decrypt(body, origin.msgKey)
+                val longResp =
+                    decrypted.loadAs(LongMsg.RspBody.serializer())
+
+                val down = longResp.msgDownRsp.single()
+                check(down.result == 0) {
+                    "Message download failed, result=${down.result}, resId=${down.msgResid}, msgContent=${down.msgContent.toUHexString()}"
+                }
+
+                val content = down.msgContent.ungzip()
+                val transmit = content.loadAs(MsgTransmit.PbMultiMsgTransmit.serializer())
+
+                return transmit.msg.toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+            }
+            MultiMsg.ApplyDown.Response.MessageTooLarge -> {
+                error("Message is too large and cannot download")
+            }
+        }
+    }
 }

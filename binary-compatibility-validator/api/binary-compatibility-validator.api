@@ -91,6 +91,8 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun createImage (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public synthetic fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lkotlin/Unit;
 	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)V
+	public fun downloadLongMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public abstract fun downloadLongMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getBotFactory ()Lnet/mamoe/mirai/BotFactory;
 	public abstract fun getFileCacheStrategy ()Lnet/mamoe/mirai/utils/FileCacheStrategy;
 	public fun getGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLjava/lang/String;)Lnet/mamoe/mirai/data/GroupAnnouncement;
@@ -4362,6 +4364,23 @@ public final class net/mamoe/mirai/message/data/LightApp$$serializer : kotlinx/s
 
 public final class net/mamoe/mirai/message/data/LightApp$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/LongMessageOrigin : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
+	public static final field Key Lnet/mamoe/mirai/message/data/LongMessageOrigin$Key;
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/LongMessageOrigin;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/LongMessageOrigin;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/LongMessageOrigin;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getKey ()Lnet/mamoe/mirai/message/data/LongMessageOrigin$Key;
+	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/LongMessageOrigin$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 }
 
 public abstract interface class net/mamoe/mirai/message/data/MarketFace : net/mamoe/mirai/message/data/HummerMessage {
