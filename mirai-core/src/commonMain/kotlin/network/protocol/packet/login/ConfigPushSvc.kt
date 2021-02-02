@@ -57,6 +57,9 @@ internal class ConfigPushSvc {
                 // @TarsId(3) val serverList2: List<ServerInfo>,
                 // @TarsId(8) val serverList3: List<ServerInfo>,
             ) : JceStruct, PushReqResponse() {
+                override fun toString(): String {
+                    return "ConfigPushSvc.PushReq.PushReqResponse.ChangeServer"
+                }
 
                 @Serializable
                 data class ServerInfo(
