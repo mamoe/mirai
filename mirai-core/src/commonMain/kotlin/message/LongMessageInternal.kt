@@ -24,7 +24,7 @@ internal data class LongMessageInternal internal constructor(override val conten
         val bot = contact.bot.asQQAndroidBot()
         val long = Mirai.downloadLongMessage(bot, resId)
 
-        return LongMessageOrigin(resId) + long
+        return RichMessageOrigin(resId) + long
     }
 
     companion object Key :

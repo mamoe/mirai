@@ -25,12 +25,12 @@ import net.mamoe.mirai.utils.safeCast
  * @since 2.3
  */
 @MiraiExperimentalApi
-public data class LongMessageOrigin(
+public data class RichMessageOrigin(
     val resourceId: String
 ) : MessageMetadata, ConstrainSingle {
     override val key: Key get() = Key
 
     override fun toString(): String = ""
 
-    public companion object Key : AbstractMessageKey<LongMessageOrigin>({ it.safeCast() })
+    public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() })
 }
