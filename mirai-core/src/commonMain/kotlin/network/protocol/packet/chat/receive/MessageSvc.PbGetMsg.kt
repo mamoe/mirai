@@ -30,7 +30,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.toMessageChain
+import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -295,7 +295,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
 
             // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
             // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
-            }
+        }
 
         34 -> { // 与 33 重复
             return null
@@ -399,8 +399,8 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                             if (fromSync) {
                                 FriendMessageSyncEvent(
                                     friend,
-                                    msgs.toMessageChain(
-                                        bot = bot, botId = bot.id, groupIdOrZero = 0, onlineSource = true,
+                                    msgs.toMessageChainOnline(
+                                        bot = bot, groupIdOrZero = 0,
                                         messageSourceKind = MessageSourceKind.FRIEND
                                     ),
                                     msgHead.msgTime
@@ -408,9 +408,9 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                             } else {
                                 FriendMessageEvent(
                                     friend,
-                                    msgs.toMessageChain(
-                                        bot = bot, botId = bot.id, groupIdOrZero = 0, onlineSource = true,
-                                        messageSourceKind = MessageSourceKind.FRIEND
+                                    msgs.toMessageChainOnline(
+                                        bot = bot, groupIdOrZero = 0,
+                                        MessageSourceKind.FRIEND
                                     ),
                                     msgHead.msgTime
                                 )
@@ -430,13 +430,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         if (fromSync) {
                             StrangerMessageSyncEvent(
                                 stranger,
-                                toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                                listOf(this).toMessageChainOnline(bot, groupIdOrZero = 0, MessageSourceKind.STRANGER),
                                 msgHead.msgTime
                             )
                         } else {
                             StrangerMessageEvent(
                                 stranger,
-                                toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                                listOf(this).toMessageChainOnline(bot, groupIdOrZero = 0, MessageSourceKind.STRANGER),
                                 msgHead.msgTime
                             )
                         }
@@ -507,26 +507,16 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             member.lastMessageSequence.loop { instant ->
                 if (msgHead.msgSeq > instant) {
                     if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
-                        if (fromSync) {
-                            return GroupTempMessageSyncEvent(
+                        return if (fromSync) {
+                            GroupTempMessageSyncEvent(
                                 member,
-                                toMessageChain(
-                                    bot,
-                                    groupIdOrZero = 0,
-                                    onlineSource = true,
-                                    MessageSourceKind.TEMP
-                                ),
+                                listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
                                 msgHead.msgTime
                             )
                         } else {
-                            return GroupTempMessageEvent(
+                            GroupTempMessageEvent(
                                 member,
-                                toMessageChain(
-                                    bot,
-                                    groupIdOrZero = 0,
-                                    onlineSource = true,
-                                    MessageSourceKind.TEMP
-                                ),
+                                listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
                                 msgHead.msgTime
                             )
                         }

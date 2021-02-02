@@ -46,9 +46,10 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
-internal fun Group.checkIsGroupImpl() {
+internal fun Group.checkIsGroupImpl(): GroupImpl {
     contract { returns() implies (this@checkIsGroupImpl is GroupImpl) }
     GroupImpl.checkIsInstance(this)
+    return this
 }
 
 @Suppress("PropertyName")
