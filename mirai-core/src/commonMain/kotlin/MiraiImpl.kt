@@ -979,7 +979,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         resourceKind = ResourceKind.LONG_MESSAGE,
                         channelKind = ChannelKind.HTTP
                     ) { host, port ->
-                        http.get<ByteArray>("$host${origin.thumbDownPara}:$port")
+                        http.get<ByteArray>("$host:$port${origin.thumbDownPara}")
                     }
                 } else tryServersDownload(
                     bot = bot,
@@ -987,7 +987,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     resourceKind = ResourceKind.LONG_MESSAGE,
                     channelKind = ChannelKind.HTTP
                 ) { ip, port ->
-                    http.get("http://$ip${origin.thumbDownPara}:$port")
+                    http.get("http://$ip:$port${origin.thumbDownPara}")
                 }
 
                 val body = data.read {
