@@ -145,7 +145,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
                     if (filterResult) this@intercepted.invoke(ev)
                     else ListeningStatus.LISTENING
                 }
-                return parent.run { thisIntercepted.intercepted() }
+                return parent.intercept(thisIntercepted)
             }
         }
     }
@@ -222,11 +222,17 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      *
      * 此操作不会修改 [`this.coroutineContext`][defaultCoroutineContext], 只会创建一个新的 [EventChannel].
      */
-    public fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> =
-        EventChannel(
+    public fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> {
+        val origin = this
+        return object : EventChannel<BaseEvent>(
             baseEventClass,
             coroutineContexts.fold(this.defaultCoroutineContext) { acc, element -> acc + element }
-        )
+        ) {
+            override fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
+                return origin.intercept(this)
+            }
+        }
+    }
 
     /**
      * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [this.coroutineContext][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
@@ -574,7 +580,11 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         return this
     }
 
-    internal fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
+    private fun <E: Event> intercept(listener: (suspend (E) -> ListeningStatus)): suspend (E) -> ListeningStatus {
+        return listener.intercepted()
+    }
+
+    private fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
         with(GlobalEventListeners[listener.priority]) {
             @Suppress("UNCHECKED_CAST")
             val node = ListenerRegistry(listener as Listener<Event>, eventClass)
