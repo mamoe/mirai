@@ -9,16 +9,61 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.event.events.FriendEvent
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import org.junit.jupiter.api.Test
+import java.lang.IllegalStateException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 internal class EventChannelTest {
     suspend fun suspendCall() {
 
     }
+
+    data class TE(
+        val x: Int
+    ) : AbstractEvent()
+
+    @Test
+    fun testFilter() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .filterIsInstance<TE>()
+                    .filter {
+                        true
+                    }
+                    .filter {
+                        it.x == 2
+                    }
+                    .filter {
+                        true
+                    }
+                    .subscribeOnce<TE> {
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    println("Broadcast 1")
+                    TE(1).broadcast()
+                    println("Broadcast 2")
+                    TE(2).broadcast()
+                    println("Broadcast done")
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
 
     @Suppress("UNUSED_VARIABLE")
     @Test

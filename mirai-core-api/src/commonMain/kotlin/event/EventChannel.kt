@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.event.ListenerRegistry
 import net.mamoe.mirai.internal.event.registerEventHandler
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.cast
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -129,11 +130,12 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      */
     @JvmSynthetic
     public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
+        val parent = this
         return object : EventChannel<BaseEvent>(baseEventClass, defaultCoroutineContext) {
             private inline val innerThis get() = this
 
             override fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
-                return { ev ->
+                val thisIntercepted: suspend (E) -> ListeningStatus = { ev ->
                     val filterResult = try {
                         @Suppress("UNCHECKED_CAST")
                         baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
@@ -141,9 +143,10 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
                         if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
                         throw ExceptionInEventChannelFilterException(ev, innerThis, cause = e)
                     }
-                    if (filterResult) this.invoke(ev)
+                    if (filterResult) this@intercepted.invoke(ev)
                     else ListeningStatus.LISTENING
                 }
+                return parent.run { thisIntercepted.intercepted() }
             }
         }
     }
@@ -203,16 +206,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see filter 获取更多信息
      */
     public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<E> {
-        return object : EventChannel<E>(kClass, defaultCoroutineContext) {
-            private inline val innerThis get() = this
-
-            override fun <E1 : Event> (suspend (E1) -> ListeningStatus).intercepted(): suspend (E1) -> ListeningStatus {
-                return { ev ->
-                    if (kClass.isInstance(ev)) this.invoke(ev)
-                    else ListeningStatus.LISTENING
-                }
-            }
-        }
+        return filter { kClass.isInstance(it) }.cast()
     }
 
     /**
