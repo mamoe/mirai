@@ -19,7 +19,6 @@
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
 [GraiaProject/Application]: https://github.com/GraiaProject/Application
-[NoneBot]: https://github.com/nonebot/nonebot2
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
 [StageGuard/mirai-rhinojs-sdk]: https://github.com/StageGuard/mirai-rhinojs-sdk
@@ -43,7 +42,6 @@
 | `C++`              | JNI                       | [Nambers/MiraiCP]                           |
 | `Kotlin Scripting` | JVM                       | [iTXTech/mirai-kts]                         |
 | `Python`           | *Mirai Http*              | [Graia Framework][GraiaProject/Application] |
-| `Python`           | *OneBot Http*             | [NoneBot]                                   |
 | `C++`              | *Mirai Http*              | [cyanray/mirai-cpp]                         |
 | `C++`              | *Mirai Http*              | [Chlorie/miraipp]                           |
 | `C#`               | *Mirai Http*              | [Executor-Cheng/mirai-CSharp]               |
