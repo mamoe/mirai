@@ -40,7 +40,6 @@
 |:-------------------|:-----------------------------|:--------------------------------------------|
 | ***Mirai Http***   | Mirai 标准                    | [mamoe/mirai-api-http]                      |
 | *OneBot Http*      | [OneBot] 标准                 | [yyuueexxiinngg/onebot-kotlin]              |
-| `C++`              | JNI                          | [Nambers/MiraiCP]                           |
 | `Kotlin Scripting` | JVM                          | [iTXTech/mirai-kts]                         |
 | `Python`           | *Mirai Http*                 | [Graia Framework][GraiaProject/Application] |
 | `Python`           | *Mirai Http* / *OneBot Http* | [NoneBot]                                   |
