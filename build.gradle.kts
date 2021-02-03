@@ -136,6 +136,14 @@ subprojects {
     }
 }
 
+tasks.register("cleanExceptIntellij") {
+    group = "build"
+    allprojects.forEach {
+        if (it.name != "mirai-console-intellij")
+            dependsOn(it.tasks.findByName("clean"))
+    }
+}
+
 fun Project.useIr() {
     kotlinCompilations?.forEach { kotlinCompilation ->
         kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
