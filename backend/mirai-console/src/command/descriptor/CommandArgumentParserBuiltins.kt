@@ -347,8 +347,15 @@ public object PermissionIdValueArgumentParser : InternalCommandValueArgumentPars
 public object PermitteeIdValueArgumentParser : InternalCommandValueArgumentParserExtensions<PermitteeId>() {
     override fun parse(raw: String, sender: CommandSender): PermitteeId {
         return if (raw == "~") sender.permitteeId
-        else kotlin.runCatching { AbstractPermitteeId.parseFromString(raw) }.getOrElse {
-            illegalArgument("无法解析 $raw 为被许可人 ID.")
+        else {
+            kotlin.runCatching { AbstractPermitteeId.parseFromString(raw) }.getOrElse {
+                val long = raw.toLongOrNull()
+                if (long != null) {
+                    return AbstractPermitteeId.ExactUser(long)// for convenience
+                }
+
+                illegalArgument("无法解析 $raw 为被许可人 ID.")
+            }
         }
     }
 
