@@ -329,14 +329,16 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             return
         }
 
-        if (this.network.areYouOk()) {
-            GlobalScope.launch {
-                runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
-                    ?.let { logger.error(it) }
+        if (::_network.isInitialized) {
+            if (this.network.areYouOk()) {
+                GlobalScope.launch {
+                    runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
+                        ?.let { logger.error(it) }
+                }
             }
-        }
 
-        this.network.close(cause)
+            this.network.close(cause)
+        }
 
         if (supervisorJob.isActive) {
             if (cause == null) {
