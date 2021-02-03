@@ -238,7 +238,10 @@ internal fun MessageChain.toRichTextElems(
             is InternalFlagOnlyMessage, is ShowImageFlag -> {
                 // ignore
             }
-            else -> error("unsupported message type: ${currentMessage::class.simpleName}")
+            else -> {
+                // unrecognized types are ignored
+                // error("unsupported message type: ${currentMessage::class.simpleName}")
+            }
         }
     }
     this.forEach(::transformOneMessage)
