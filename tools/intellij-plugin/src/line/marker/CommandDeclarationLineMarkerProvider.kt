@@ -13,6 +13,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiMethod
 import net.mamoe.mirai.console.intellij.Icons
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
 import net.mamoe.mirai.console.intellij.resolve.isSimpleCommandHandlerOrCompositeCommandSubCommand
@@ -21,11 +22,24 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class CommandDeclarationLineMarkerProvider : LineMarkerProvider {
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        if (element !is KtNamedFunction) return null
-        if (!element.isSimpleCommandHandlerOrCompositeCommandSubCommand()) return null
-        runIgnoringErrors { // not showing icons is better than throwing exception every time doing inspection
-            return Info(getElementForLineMark(element.funKeyword ?: element.identifyingElement ?: element))
+        when (element) {
+            is KtNamedFunction -> {
+                if (!element.isSimpleCommandHandlerOrCompositeCommandSubCommand()) return null
+
+                runIgnoringErrors { // not showing icons is better than throwing exception every time doing inspection
+                    return Info(getElementForLineMark(element.funKeyword ?: element.identifyingElement ?: element))
+                }
+            }
+            is PsiMethod -> {
+                if (!element.isSimpleCommandHandlerOrCompositeCommandSubCommand()) return null
+
+                runIgnoringErrors { // not showing icons is better than throwing exception every time doing inspection
+                    return Info(getElementForLineMark(element.identifyingElement ?: element))
+                }
+            }
+            else -> return null
         }
+
     }
 
     @Suppress("DEPRECATION")

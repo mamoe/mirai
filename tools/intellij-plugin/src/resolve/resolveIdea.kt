@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.intellij.resolve
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.util.parentsWithSelf
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.*
@@ -43,13 +44,20 @@ import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
  * For CompositeCommand.SubCommand
  */
 fun KtNamedFunction.isCompositeCommandSubCommand(): Boolean = this.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME)
+fun PsiModifierListOwner.isCompositeCommandSubCommand(): Boolean = this.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME)
+
+internal fun PsiModifierListOwner.hasAnnotation(fqName: FqName): Boolean = this.hasAnnotation(fqName.asString())
 
 /**
  * SimpleCommand.Handler
  */
 fun KtNamedFunction.isSimpleCommandHandler(): Boolean = this.hasAnnotation(SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME)
+fun PsiModifierListOwner.isSimpleCommandHandler(): Boolean = this.hasAnnotation(SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME)
 
 fun KtNamedFunction.isSimpleCommandHandlerOrCompositeCommandSubCommand(): Boolean =
+    this.isSimpleCommandHandler() || this.isCompositeCommandSubCommand()
+
+fun PsiModifierListOwner.isSimpleCommandHandlerOrCompositeCommandSubCommand(): Boolean =
     this.isSimpleCommandHandler() || this.isCompositeCommandSubCommand()
 
 
