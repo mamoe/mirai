@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.internal.command.fuzzySearchMember
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
+import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 
@@ -337,6 +338,7 @@ public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentPa
 public object PermissionIdValueArgumentParser : InternalCommandValueArgumentParserExtensions<PermissionId>() {
     override fun parse(raw: String, sender: CommandSender): PermissionId {
         return kotlin.runCatching { PermissionId.parseFromString(raw) }.getOrElse {
+            if (raw == "*") return RootPermission.id // for convenience
             illegalArgument("无法解析 $raw 为权限 ID.")
         }
     }
