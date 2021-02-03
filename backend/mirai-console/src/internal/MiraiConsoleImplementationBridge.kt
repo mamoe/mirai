@@ -231,21 +231,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                                 )
                             }
                         }
-
-                        workingDir = MiraiConsole.rootDir
-                            .resolve("bots")
-                            .resolve(id.toString())
-
-                        if (!workingDir.exists()
-                            && workingDir.mkdirs()
-                            && account.configuration[ConfigurationKey.device] == null // no custom device
-                        ) {
-                            // copy root/deviceInfo.json to bots/id/deviceInfo.json
-                            val deviceInfoInRoot = MiraiConsole.rootDir.resolve("deviceInfo.json")
-                            deviceInfoInRoot.copyTo(workingDir.resolve("deviceInfo.json"))
-                            fileBasedDeviceInfo("deviceInfo.json")
-                        }
-
                         account.configuration[ConfigurationKey.device]?.let { device ->
                             fileBasedDeviceInfo(device.toString())
                         }

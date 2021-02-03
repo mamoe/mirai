@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "unused")
@@ -32,6 +32,7 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.verbose
 import java.io.File
 import java.nio.file.Path
 import java.time.Instant
@@ -139,8 +140,24 @@ public interface MiraiConsole : CoroutineScope {
         @Suppress("UNREACHABLE_CODE")
         private fun addBotImpl(id: Long, password: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
             var config = BotConfiguration().apply {
-                workingDir = rootDir
-                fileBasedDeviceInfo()
+
+                workingDir = MiraiConsole.rootDir
+                    .resolve("bots")
+                    .resolve(id.toString())
+                    .also { it.mkdirs() }
+
+                mainLogger.verbose { "Bot $id working in $workingDir" }
+
+                // copy root/device.json to bots/id/deviceInfo.json
+                val deviceInfoInRoot = MiraiConsole.rootDir.resolve("device.json")
+                val deviceInfoTarget = workingDir.resolve("deviceInfo.json")
+                if (deviceInfoInRoot.isFile && !deviceInfoTarget.isFile) {
+                    mainLogger.verbose { "Coping $deviceInfoInRoot to $deviceInfoTarget" }
+                    deviceInfoInRoot.copyTo(deviceInfoTarget)
+                }
+
+                fileBasedDeviceInfo("deviceInfo.json")
+
                 redirectNetworkLogToDirectory()
                 this.botLoggerSupplier = {
                     MiraiLogger.create("Bot.${it.id}")
