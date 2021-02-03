@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.3.0"
+    const val project = "2.3.1"
 
     const val core = project
     const val console = project
