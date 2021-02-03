@@ -66,6 +66,27 @@ public class RichMessageOrigin(
 
     override fun contentToString(): String = ""
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RichMessageOrigin
+
+        if (origin != other.origin) return false
+        if (resourceId != other.resourceId) return false
+        if (kind != other.kind) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = origin.hashCode()
+        result = 31 * result + (resourceId?.hashCode() ?: 0)
+        result = 31 * result + kind.hashCode()
+        return result
+    }
+
+
     public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "RichMessageOrigin"
     }

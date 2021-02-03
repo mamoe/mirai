@@ -5089,11 +5089,13 @@ public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mi
 	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;)V
 	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/RichMessageOrigin$Key;
 	public final fun getKind ()Lnet/mamoe/mirai/message/data/RichMessageKind;
 	public final fun getOrigin ()Lnet/mamoe/mirai/message/data/RichMessage;
 	public final fun getResourceId ()Ljava/lang/String;
+	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 	public static final fun write$Self (Lnet/mamoe/mirai/message/data/RichMessageOrigin;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
