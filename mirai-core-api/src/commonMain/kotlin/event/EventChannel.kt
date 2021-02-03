@@ -32,7 +32,6 @@ import net.mamoe.mirai.utils.cast
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.suspendCoroutine
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
@@ -506,10 +505,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
-            val context = currentCoroutineContext()
-            suspendCoroutine<Unit> { cont ->
-                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
-            }
+            runInterruptible(Dispatchers.IO) { handler.accept(event) }
             ListeningStatus.LISTENING
         }
     )
@@ -536,10 +532,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
-            val context = currentCoroutineContext()
-            suspendCoroutine { cont ->
-                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.apply(event) }) }
-            }
+            runInterruptible(Dispatchers.IO) { handler.apply(event) }
         }
     )
 
@@ -564,10 +557,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
-            val context = currentCoroutineContext()
-            suspendCoroutine<Unit> { cont ->
-                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
-            }
+            runInterruptible(Dispatchers.IO) { handler.accept(event) }
             ListeningStatus.STOPPED
         }
     )
