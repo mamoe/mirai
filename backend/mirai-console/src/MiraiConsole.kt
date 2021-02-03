@@ -148,15 +148,26 @@ public interface MiraiConsole : CoroutineScope {
 
                 mainLogger.verbose { "Bot $id working in $workingDir" }
 
-                // copy root/device.json to bots/id/deviceInfo.json
-                val deviceInfoInRoot = MiraiConsole.rootDir.resolve("device.json")
-                val deviceInfoTarget = workingDir.resolve("deviceInfo.json")
-                if (deviceInfoInRoot.isFile && !deviceInfoTarget.isFile) {
-                    mainLogger.verbose { "Coping $deviceInfoInRoot to $deviceInfoTarget" }
-                    deviceInfoInRoot.copyTo(deviceInfoTarget)
+                val deviceInRoot = MiraiConsole.rootDir.resolve("device.json")
+                val deviceInWorkingDir = workingDir.resolve("device.json")
+
+                val deviceInfoInWorkingDir = workingDir.resolve("deviceInfo.json")
+                if (!deviceInWorkingDir.exists()) {
+                    when {
+                        deviceInfoInWorkingDir.exists() -> {
+                            // rename bots/id/deviceInfo.json to bots/id/device.json
+                            mainLogger.verbose { "Renaming $deviceInfoInWorkingDir to $deviceInWorkingDir" }
+                            deviceInfoInWorkingDir.renameTo(deviceInWorkingDir)
+                        }
+                        deviceInRoot.exists() -> {
+                            // copy root/device.json to bots/id/device.json
+                            mainLogger.verbose { "Coping $deviceInRoot to $deviceInWorkingDir" }
+                            deviceInRoot.copyTo(deviceInWorkingDir)
+                        }
+                    }
                 }
 
-                fileBasedDeviceInfo("deviceInfo.json")
+                fileBasedDeviceInfo("device.json")
 
                 redirectNetworkLogToDirectory()
                 this.botLoggerSupplier = {
