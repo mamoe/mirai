@@ -57,6 +57,7 @@ internal class QQAndroidBot constructor(
     configuration: BotConfiguration
 ) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
     var client: QQAndroidClient = initClient()
+    private set
 
     fun initClient(): QQAndroidClient {
         client = QQAndroidClient(
@@ -201,5 +202,5 @@ internal fun RichMessage.Key.forwardMessage(
             <source name="${source.take(50)}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ")
-    return ForwardMessageInternal(template)
+    return ForwardMessageInternal(template, resId)
 }

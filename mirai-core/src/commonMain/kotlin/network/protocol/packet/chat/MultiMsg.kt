@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -148,6 +149,59 @@ internal class MultiMsg {
                         println(response._miraiContentToString())
                     }.let { "Protocol error: MultiMsg.ApplyUp failed with result ${response.result}" })
                 }
+            }
+        }
+    }
+
+    object ApplyDown : OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
+        sealed class Response : Packet {
+            class RequireDownload(
+                val origin: MultiMsg.MultiMsgApplyDownRsp
+            ) : Response() {
+                override fun toString(): String = "MultiMsg.ApplyDown.Response"
+            }
+
+            object MessageTooLarge : Response()
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            buType: Int,
+            resId: String,
+            msgType: Int,
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MultiMsg.ReqBody.serializer(),
+                MultiMsg.ReqBody(
+                    buType = buType, // 1: long, 2: 合并转发
+                    buildVer = "8.2.0.1296",
+                    multimsgApplydownReq = listOf(
+                        MultiMsg.MultiMsgApplyDownReq(
+                            msgResid = resId,
+                            msgType = msgType,
+                        )
+                    ),
+                    netType = 3, // wifi=3, wap=5
+                    platformType = 9,
+                    subcmd = 2,
+                    termType = 5,
+                    reqChannelType = 2
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val body = readProtoBuf(MultiMsg.RspBody.serializer())
+            val response = body.multimsgApplydownRsp.first()
+            return when (response.result) {
+                0 -> Response.RequireDownload(response)
+                193 -> Response.MessageTooLarge
+                //1 -> Response.OK(resId = response.msgResid)
+                else -> throw contextualBugReportException(
+                    "MultiMsg.ApplyDown",
+                    response._miraiContentToString(),
+                    additional = "Decode failure result=${response.result}"
+                )
             }
         }
     }

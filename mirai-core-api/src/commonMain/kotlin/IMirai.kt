@@ -170,6 +170,23 @@ public interface IMirai : LowLevelApiAccessor {
         originalMessage: MessageChain
     ): OfflineMessageSource
 
+    /**
+     * @since 2.3
+     */
+    @JvmBlockingBridge
+    public suspend fun downloadLongMessage(
+        bot: Bot,
+        resourceId: String,
+    ): MessageChain
+
+    /**
+     * @since 2.3
+     */
+    @JvmBlockingBridge
+    public suspend fun downloadForwardMessage(
+        bot: Bot,
+        resourceId: String,
+    ): List<ForwardMessage.Node>
 
     /**
      * 通过好友验证

@@ -23,7 +23,7 @@ import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
-import net.mamoe.mirai.internal.network.highway.tryServers
+import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
@@ -157,7 +157,7 @@ internal abstract class AbstractUser(
                     )
                 }.recoverCatchingSuppressed {
                     // try upload by http on provided servers
-                    tryServers(
+                    tryServersUpload(
                         bot = bot,
                         servers = resp.serverIp.zip(resp.serverPort),
                         resourceSize = resource.size,

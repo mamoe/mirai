@@ -20,6 +20,13 @@ public inline fun <reified T> Any?.safeCast(): T? = this as? T
 
 public inline fun <reified T> Any?.castOrNull(): T? = this as? T
 
+public inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
+    for (it in this) {
+        if (it is R) return it
+    }
+    return null
+}
+
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
