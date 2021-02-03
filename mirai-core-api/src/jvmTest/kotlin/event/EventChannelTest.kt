@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -22,8 +24,6 @@ import net.mamoe.mirai.internal.event.GlobalEventListeners
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.platform.commons.annotation.Testable
-import java.lang.IllegalStateException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -47,7 +47,7 @@ internal class EventChannelTest {
     }
 
     @AfterEach
-    fun s(){
+    fun s() {
         GlobalEventListeners.clear()
         runBlocking { semaphore.release() }
     }
@@ -81,6 +81,31 @@ internal class EventChannelTest {
             }
 
             assertEquals(2, received)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testAsChannel() {
+        runBlocking {
+            val channel = GlobalEventChannel
+                .filterIsInstance<TE>()
+                .filter { true }
+                .filter { it.x == 2 }
+                .filter { true }
+                .asChannel(Channel.BUFFERED)
+
+            println("Broadcast 1")
+            TE(1).broadcast()
+            println("Broadcast 2")
+            TE(2).broadcast()
+            println("Broadcast done")
+            channel.close()
+
+            val list = channel.receiveAsFlow().toList()
+
+            assertEquals(1, list.size)
+            assertEquals(TE(2), list.single())
         }
     }
 
