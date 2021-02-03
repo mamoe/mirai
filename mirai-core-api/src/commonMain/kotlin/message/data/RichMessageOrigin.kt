@@ -37,7 +37,7 @@ import net.mamoe.mirai.utils.safeCast
  * @since 2.3
  */
 @Serializable
-@SerialName("RichMessageOrigin")
+@SerialName(RichMessageOrigin.SERIAL_NAME)
 @MiraiExperimentalApi("RichMessageOrigin 不稳定")
 public class RichMessageOrigin(
     /**
@@ -66,7 +66,9 @@ public class RichMessageOrigin(
 
     override fun contentToString(): String = ""
 
-    public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() })
+    public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() }) {
+        public const val SERIAL_NAME: String = "RichMessageOrigin"
+    }
 }
 
 /**

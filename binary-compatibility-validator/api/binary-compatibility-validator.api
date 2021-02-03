@@ -5085,6 +5085,7 @@ public final class net/mamoe/mirai/message/data/RichMessageKind : java/lang/Enum
 
 public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
 	public static final field Key Lnet/mamoe/mirai/message/data/RichMessageOrigin$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;)V
 	public fun contentToString ()Ljava/lang/String;
