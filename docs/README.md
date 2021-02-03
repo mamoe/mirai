@@ -32,6 +32,7 @@
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
 [yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
 [Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
+[drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
 
 [Rhino]: https://github.com/mozilla/rhino
 [OneBot]: https://github.com/howmanybots/onebot
@@ -50,6 +51,7 @@
 | `JavaScript`       | [Rhino] / JVM                | [iTXTech/mirai-js]                          |
 | `JavaScript`       | Node.js / *Mirai Http*       | [RedBeanN/node-mirai]                       |
 | `JavaScript`       | TypeScript / *Mirai Http*    | [YunYouJun/mirai-ts]                        |
+| `JavaScript`       | Node.js / *Mirai Http*    | [drinkal/Mirai-js]                        |
 | `.Net/C#`          | *Mirai Http*                 | [Hyperai][theGravityLab/ProjHyperai]        |
 | `Go`               | *Mirai Http*                 | [Logiase/gomirai]                           |
 | `易语言`            | *Mirai Http*                 | [only52607/e-mirai]                         |
