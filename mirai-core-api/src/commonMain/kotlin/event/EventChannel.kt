@@ -266,9 +266,10 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see CoroutineScope.globalEventChannel `GlobalEventChannel.parentScope()` 的扩展
      */
     public fun parentScope(coroutineScope: CoroutineScope): EventChannel<BaseEvent> {
-        return context(coroutineScope.coroutineContext).apply {
+        return context(coroutineScope.coroutineContext).run {
             val job = coroutineScope.coroutineContext[Job]
             if (job != null) parentJob(job)
+            else this
         }
     }
 
@@ -580,7 +581,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         return this
     }
 
-    private fun <E: Event> intercept(listener: (suspend (E) -> ListeningStatus)): suspend (E) -> ListeningStatus {
+    private fun <E : Event> intercept(listener: (suspend (E) -> ListeningStatus)): suspend (E) -> ListeningStatus {
         return listener.intercepted()
     }
 
