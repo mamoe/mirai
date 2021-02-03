@@ -245,7 +245,7 @@ public interface MessageChain :
      */
     public object Serializer : KSerializer<MessageChain> {
         @Suppress("DEPRECATION_ERROR")
-        private val delegate = ListSerializer(PolymorphicSerializer(SingleMessage::class))
+        private val delegate = ListSerializer(SingleMessage.Serializer)
         override val descriptor: SerialDescriptor = delegate.descriptor
         override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).toMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)

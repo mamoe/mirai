@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -22,6 +23,7 @@ import net.mamoe.mirai.utils.safeCast
  * @since 2.1
  */
 @Serializable
+@SerialName(MusicShare.SERIAL_NAME)
 public data class MusicShare(
     /**
      * 音乐应用类型
@@ -93,7 +95,13 @@ public data class MusicShare(
      */
     public companion object Key :
         AbstractPolymorphicMessageKey<@MiraiExperimentalApi MessageContent, MusicShare>
-            (MessageContent, { it.safeCast() })
+            (MessageContent, { it.safeCast() }) {
+
+        /**
+         * @since 2.3
+         */
+        public const val SERIAL_NAME: String = "MusicShare"
+    }
 }
 
 /**
