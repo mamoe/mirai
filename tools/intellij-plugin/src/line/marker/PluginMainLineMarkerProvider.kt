@@ -18,14 +18,13 @@ import net.mamoe.mirai.console.intellij.Icons
 import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
 import net.mamoe.mirai.console.intellij.util.runIgnoringErrors
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
 
 class PluginMainLineMarkerProvider : LineMarkerProvider {
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        if (element !is KtObjectDeclaration) return null
         runIgnoringErrors { // not showing icons is better than throwing exception every time doing inspection
             if (element.allSuperNames.any { it == PLUGIN_FQ_NAME }) return Info(getElementForLineMark(element))
         }
+
         return null
     }
 
