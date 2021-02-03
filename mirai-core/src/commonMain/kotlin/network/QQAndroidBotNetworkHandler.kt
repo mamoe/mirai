@@ -25,10 +25,7 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.deviceName
 import net.mamoe.mirai.contact.platform
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.events.BotOfflineEvent
-import net.mamoe.mirai.event.events.BotOnlineEvent
-import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.createOtherClient
@@ -667,10 +664,20 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         if (packet is Event) {
-            if (packet is BroadcastControllable) {
-                if (packet.shouldBroadcast) packet.broadcast()
-            } else {
-                packet.broadcast()
+            if ((packet as? BroadcastControllable)?.shouldBroadcast != false) {
+                if (packet is BotEvent) {
+                    withContext(bot.coroutineContext[CoroutineExceptionHandler] ?: CoroutineExceptionHandler { _, t ->
+                        bot.logger.warning(
+                            """
+                            Event processing: An exception occurred but no CoroutineExceptionHandler found in coroutineContext of bot
+                        """.trimIndent(), t
+                        )
+                    }) {
+                        packet.broadcast()
+                    }
+                } else {
+                    packet.broadcast()
+                }
             }
 
             if (packet is CancellableEvent && packet.isCancelled) return
