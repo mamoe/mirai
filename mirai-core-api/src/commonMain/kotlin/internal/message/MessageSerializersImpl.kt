@@ -22,9 +22,10 @@ import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.MessageChainImpl
 import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.reflect.KClass
+import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.isSubclassOf
 
 
 internal fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
@@ -70,38 +71,45 @@ public open class MessageSourceSerializerImpl(serialName: String) :
 
 private val builtInSerializersModule by lazy {
     SerializersModule {
-        // non-Message classes
-        contextual(RawForwardMessage::class, RawForwardMessage.serializer())
-        contextual(ForwardMessage.Node::class, ForwardMessage.Node.serializer())
-        contextual(VipFace.Kind::class, VipFace.Kind.serializer())
+        // NOTE: contextual serializers disabled because of https://github.com/mamoe/mirai/issues/951
 
+//        // non-Message classes
+//        contextual(RawForwardMessage::class, RawForwardMessage.serializer())
+//        contextual(ForwardMessage.Node::class, ForwardMessage.Node.serializer())
+//        contextual(VipFace.Kind::class, VipFace.Kind.serializer())
+//
+//
+//        // In case Proguard or something else obfuscated the Kotlin metadata, providing the serializers explicitly will help.
+//        contextual(At::class, At.serializer())
+//        contextual(AtAll::class, AtAll.serializer())
+//        contextual(CustomMessage::class, CustomMessage.serializer())
+//        contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
+//        contextual(Face::class, Face.serializer())
+//        contextual(Image::class, Image.Serializer)
+//        contextual(PlainText::class, PlainText.serializer())
+//        contextual(QuoteReply::class, QuoteReply.serializer())
+//
+//        contextual(ForwardMessage::class, ForwardMessage.serializer())
+//
+//
+//        contextual(LightApp::class, LightApp.serializer())
+//        contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
+//        contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
+//
+//        contextual(PttMessage::class, PttMessage.serializer())
+//        contextual(Voice::class, Voice.serializer())
+//        contextual(PokeMessage::class, PokeMessage.serializer())
+//        contextual(VipFace::class, VipFace.serializer())
+//        contextual(FlashImage::class, FlashImage.serializer())
+//
+//        contextual(MusicShare::class, MusicShare.serializer())
+//
+//        contextual(MessageSource::class, MessageSource.serializer())
 
-        // In case Proguard or something else obfuscated the Kotlin metadata, providing the serializers explicitly will help.
-        contextual(At::class, At.serializer())
-        contextual(AtAll::class, AtAll.serializer())
-        contextual(CustomMessage::class, CustomMessage.serializer())
-        contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
-        contextual(Face::class, Face.serializer())
-        contextual(Image::class, Image.Serializer)
-        contextual(PlainText::class, PlainText.serializer())
-        contextual(QuoteReply::class, QuoteReply.serializer())
+//        contextual(SingleMessage::class, SingleMessage.Serializer)
+        contextual(MessageChain::class, MessageChain.Serializer)
+        contextual(MessageChainImpl::class, MessageChainImpl.serializer())
 
-        contextual(ForwardMessage::class, ForwardMessage.serializer())
-
-
-        contextual(LightApp::class, LightApp.serializer())
-        contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-        contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
-
-        contextual(PttMessage::class, PttMessage.serializer())
-        contextual(Voice::class, Voice.serializer())
-        contextual(PokeMessage::class, PokeMessage.serializer())
-        contextual(VipFace::class, VipFace.serializer())
-        contextual(FlashImage::class, FlashImage.serializer())
-
-        contextual(MusicShare::class, MusicShare.serializer())
-
-        contextual(MessageSource::class, MessageSource.serializer())
 
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())
@@ -132,11 +140,6 @@ private val builtInSerializersModule by lazy {
             subclass(MusicShare::class, MusicShare.serializer())
         }
 
-        contextual(SingleMessage::class, SingleMessage.Serializer)
-        contextual(MessageChain::class, MessageChain.Serializer)
-        contextual(MessageChainImpl::class, MessageChainImpl.serializer())
-
-//        polymorphicDefault(MessageChain::class) { MessageChainImpl.serializer() }
 
         //  polymorphic(SingleMessage::class) {
         //      subclass(MessageSource::class, MessageSource.serializer())
@@ -151,6 +154,23 @@ private val builtInSerializersModule by lazy {
         polymorphic(SingleMessage::class) {
             messageContentSubclasses()
             messageMetadataSubclasses()
+        }
+
+        polymorphic(MessageContent::class) {
+            messageContentSubclasses()
+        }
+
+        polymorphic(MessageMetadata::class) {
+            messageMetadataSubclasses()
+        }
+
+        polymorphic(RichMessage::class) {
+            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
+            subclass(LightApp::class, LightApp.serializer())
+        }
+
+        polymorphic(ServiceMessage::class) {
+            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
         }
 
         //contextual(SingleMessage::class, SingleMessage.Serializer)
@@ -180,11 +200,16 @@ internal object MessageSerializersImpl : MessageSerializers {
     override val serializersModule: SerializersModule get() = serializersModuleField ?: builtInSerializersModule
 
     @Synchronized
-    override fun <M : SingleMessage> registerSerializer(baseClass: KClass<M>, serializer: KSerializer<M>) {
+    override fun <M : SingleMessage> registerSerializer(type: KClass<M>, serializer: KSerializer<M>) {
         serializersModuleField = serializersModule.overwriteWith(SerializersModule {
-            contextual(baseClass, serializer)
-            polymorphic(SingleMessage::class) {
-                subclass(baseClass, serializer)
+            // contextual(type, serializer)
+            for (superclass in type.allSuperclasses) {
+                if (superclass.isFinal) continue
+                if (!superclass.isSubclassOf(SingleMessage::class)) continue
+                @Suppress("UNCHECKED_CAST")
+                polymorphic(superclass as KClass<Any>) {
+                    subclass(type, serializer)
+                }
             }
         })
     }
