@@ -36,11 +36,13 @@
 
 [Rhino]: https://github.com/mozilla/rhino
 [OneBot]: https://github.com/howmanybots/onebot
+[Nambers/MiraiCP]: https://github.com/Nambers/MiraiCP
 
 | 技术                | 实现                          | 维护者及项目地址                               |
 |:-------------------|:-----------------------------|:--------------------------------------------|
 | ***Mirai Http***   | Mirai 标准                    | [mamoe/mirai-api-http]                      |
 | *OneBot Http*      | [OneBot] 标准                 | [yyuueexxiinngg/onebot-kotlin]              |
+| `C++`              | JNI                           | [Nambers/MiraiCP]
 | `Kotlin Scripting` | JVM                          | [iTXTech/mirai-kts]                         |
 | `Python`           | *Mirai Http*                 | [Graia Framework][GraiaProject/Application] |
 | `Python`           | *Mirai Http* / *OneBot Http* | [NoneBot]                                   |
