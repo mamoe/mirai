@@ -51,7 +51,6 @@
 | `JavaScript`       | [Rhino] / JVM                | [iTXTech/mirai-js]                          |
 | `JavaScript`       | Node.js / *Mirai Http*       | [RedBeanN/node-mirai]                       |
 | `JavaScript`       | TypeScript / *Mirai Http*    | [YunYouJun/mirai-ts]                        |
-| `JavaScript`       | [Rhino] / JVM                | [StageGuard/mirai-rhinojs-sdk]              |
 | `.Net/C#`          | *Mirai Http*                 | [Hyperai][theGravityLab/ProjHyperai]        |
 | `Go`               | *Mirai Http*                 | [Logiase/gomirai]                           |
 | `易语言`            | *Mirai Http*                 | [only52607/e-mirai]                         |
