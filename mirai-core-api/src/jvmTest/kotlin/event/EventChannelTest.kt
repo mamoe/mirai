@@ -9,13 +9,20 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
 import net.mamoe.mirai.event.events.FriendEvent
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.internal.event.GlobalEventListeners
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.platform.commons.annotation.Testable
 import java.lang.IllegalStateException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -31,6 +38,19 @@ internal class EventChannelTest {
     data class TE(
         val x: Int
     ) : AbstractEvent()
+
+    val semaphore = Semaphore(1)
+
+    @BeforeEach
+    fun x() {
+        runBlocking { semaphore.acquire() }
+    }
+
+    @AfterEach
+    fun s(){
+        GlobalEventListeners.clear()
+        runBlocking { semaphore.release() }
+    }
 
     @Test
     fun testFilter() {
@@ -64,6 +84,58 @@ internal class EventChannelTest {
         }
     }
 
+    @Test
+    fun testExceptionInFilter() {
+        runBlocking {
+            assertFailsWith<ExceptionInEventChannelFilterException> {
+                suspendCoroutine<Int> { cont ->
+                    GlobalEventChannel
+                        .exceptionHandler {
+                            cont.resumeWithException(it)
+                        }
+                        .filter {
+                            error("test error")
+                        }
+                        .subscribeOnce<TE> {
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        println("Broadcast 1")
+                        TE(1).broadcast()
+                        println("Broadcast done")
+                    }
+                }
+            }.run {
+                assertEquals("test error", cause.message)
+            }
+        }
+    }
+
+    @Test
+    fun testExceptionInSubscribe() {
+        runBlocking {
+            assertFailsWith<IllegalStateException> {
+                suspendCoroutine<Int> { cont ->
+                    GlobalEventChannel
+                        .exceptionHandler {
+                            cont.resumeWithException(it)
+                        }
+                        .subscribeOnce<TE> {
+                            error("test error")
+                        }
+
+                    launch {
+                        println("Broadcast 1")
+                        TE(1).broadcast()
+                        println("Broadcast done")
+                    }
+                }
+            }.run {
+                assertEquals("test error", message)
+            }
+        }
+    }
 
     @Suppress("UNUSED_VARIABLE")
     @Test
