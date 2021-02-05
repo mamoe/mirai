@@ -48,11 +48,18 @@ open class GpgSigner(private val workdir: File) {
             val gpg = rootProject.projectDir.resolve("build-gpg-sign")
             gpg.mkdirs()
             val keyFile = gpg.resolve("keys.gpg")
+            val keyFilePub = gpg.resolve("keys.gpg.pub")
             if (keyFile.isFile) {
                 val homedir = gpg.resolve("homedir")
                 signer = GpgSigner(homedir.absolutePath)
                 if (!homedir.resolve("pubring.kbx").isFile) {
                     signer.importKey(keyFile)
+                    if (keyFilePub.isFile) {
+                        signer.importKey(keyFilePub)
+                    } else {
+                        rootProject.logger.warn("Missing public key storage")
+                        rootProject.logger.warn("GPG Sign 2nd verity may failed.")
+                    }
                 }
             } else {
                 rootProject.logger.warn("GPG Key not found.")
@@ -94,7 +101,8 @@ open class GpgSigner(private val workdir: File) {
         }
         println("[GPG SIGN] Signing $file")
         File("${file.path}.asc").delete()
-        processGpg("-a", "--batch", "--no-tty", "--sign", file.toString())
+        processGpg("-a", "--batch", "--no-tty", "--detach-sig", "--sign", file.toString())
+        processGpg("--verify", "$file.asc", file.toString())
     }
 
 }
