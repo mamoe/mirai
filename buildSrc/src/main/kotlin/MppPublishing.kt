@@ -21,7 +21,7 @@ fun logPublishing(message: String) {
 }
 
 fun Project.configureMppPublishing() {
-    configureBintray()
+    configureRemoteRepos()
 
     // mirai does some magic on MPP targets
     afterEvaluate {
@@ -64,9 +64,10 @@ fun Project.configureMppPublishing() {
             logPublishing("Publications: ${publications.joinToString { it.name }}")
 
             publications.filterIsInstance<MavenPublication>().forEach { publication ->
-                if (publication.name != "kotlinMultiplatform") {
-                    publication.artifact(stubJavadoc)
-                }
+                // Maven Central always require javadoc.jar
+                publication.artifact(stubJavadoc)
+
+                publication.setupPom(project)
 
                 logPublishing(publication.name)
                 when (val type = publication.name) {

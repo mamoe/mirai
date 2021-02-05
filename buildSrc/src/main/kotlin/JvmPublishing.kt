@@ -31,7 +31,7 @@ import org.gradle.kotlin.dsl.registering
  */
 
 
-fun Project.configureBintray() {
+fun Project.configureRemoteRepos() {
     tasks.register("ensureBintrayAvailable") {
         doLast {
             if (!project.isBintrayAvailable()) {
@@ -63,7 +63,7 @@ inline fun Project.configurePublishing(
     bintrayPkgName: String = artifactId,
     vcs: String = "https://github.com/mamoe/mirai"
 ) {
-    configureBintray()
+    configureRemoteRepos()
     apply<ShadowPlugin>()
 
     if (!project.isBintrayAvailable()) {
@@ -104,13 +104,10 @@ inline fun Project.configurePublishing(
                 setArtifactId(artifactId)
                 version = project.version.toString()
 
-                pom.withXml {
-                    val root = asNode()
-                    root.appendNode("description", description)
-                    root.appendNode("name", project.name)
-                    root.appendNode("url", vcs)
-                    root.children().last()
-                }
+                setupPom(
+                    project = project,
+                    vcs = vcs
+                )
 
                 artifact(sourcesJar.get())
             }
