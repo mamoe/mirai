@@ -19,17 +19,28 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.safeCast
 
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-@Serializable(SingleMessage.Serializer::class)
+// @Serializable(SingleMessage.Serializer::class)
 public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+
+    /**
+     * @suppress deprecated since 2.4.0
+     */
+    @Deprecated(
+        "Please create PolymorphicSerializer(SingleMessage::class) on your own.",
+        ReplaceWith(
+            "PolymorphicSerializer(SingleMessage::class)",
+            "kotlinx.serialization.PolymorphicSerializer",
+            "net.mamoe.mirai.message.data.SingleMessage",
+        ),
+        level = DeprecationLevel.WARNING
+    )
     public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
-
 
 
 /**
