@@ -21,9 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import kotlinx.serialization.*
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.utils.safeCast
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -31,13 +29,15 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * [消息][Message] 分为
  * - [SingleMessage]:
- *   - [MessageMetadata] 消息元数据, 即消息的属性. 包括: [消息来源][MessageSource], [引用回复][QuoteReply].
+ *   - [MessageMetadata] 消息元数据, 即消息的属性. 包括: [消息来源][MessageSource], [引用回复][QuoteReply] 等.
  *   - [MessageContent] 含内容的消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
  * - [MessageChain]: 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
  *
  * ## 获得 [Message]
  *
  * 请先根据实际需求确定需要的类型.
+ *
+ * 特别地, 要以字符串方式处理消息, 可使用 [contentToString] 或 [content] 得到内容字符串.
  *
  *
  * - [PlainText]: 纯文本
@@ -56,7 +56,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * ## 使用 [Message]
  *
  * ### 在 Kotlin 使用 [Message]:
- * 这与使用 [String] 的使用非常类似.
+ * 与使用 [String] 的使用类似.
  *
  * - 比较 [SingleMessage] 与 [String]:
  *  `if(message.content == "你好") friend.sendMessage(event)`
@@ -69,11 +69,12 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
  *
+ * ### 在 Java 使用 [Message]:
+ *
  *
  * ### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
- * - 在 [MessageEvent] 中使用 [MessageEvent.reply] 等捷径
  *
  * @see PlainText 纯文本
  * @see Image 图片
@@ -89,6 +90,8 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * @see buildMessageChain 构造一个 [MessageChain]
  *
  * @see Contact.sendMessage 发送消息
+ *
+ * @suppress **注意:** [Message] 类型大多有隐藏的协议实现, 不能被第三方应用继承,
  */
 public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
 
@@ -238,71 +241,6 @@ public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.
 @JvmSynthetic
 public suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.toMessageChain()
-
-
-/**
- * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
- */
-@Serializable(SingleMessage.Serializer::class)
-public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
-    public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
-}
-
-/**
- * 消息元数据, 即不含内容的元素.
- *
- * 这种类型的 [Message] 只表示一条消息的属性. 其子类为 [MessageSource], [QuoteReply] 和 [CustomMessageMetadata]
- *
- * 所有子类的 [contentToString] 都应该返回空字符串.
- *
- * 要获取详细信息, 查看 [MessageChain].
- *
- * @see MessageSource 消息源
- * @see QuoteReply 引用回复
- * @see CustomMessageMetadata 自定义元数据
- *
- * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
- */
-public interface MessageMetadata : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
-    /**
-     * 返回空字符串
-     */
-    override fun contentToString(): String = ""
-}
-
-/**
- * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
- *
- * 实现此接口的元素将会在连接时自动处理替换.
- *
- * 要获取有关键的信息, 查看 [MessageKey].
- * 要获取有关约束的处理方式, 查看 [AbstractPolymorphicMessageKey].
- */
-public interface ConstrainSingle : SingleMessage {
-    /**
-     * 用于判断是否为同一种元素的 [MessageKey]. 使用多态类型 [MessageKey] 最上层的 [MessageKey].
-     * @see MessageKey 查看更多信息
-     */
-    public val key: MessageKey<*>
-}
-
-/**
- * 带内容的消息.
- *
- * @see PlainText 纯文本
- * @see At At 一个群成员.
- * @see AtAll At 全体成员
- * @see HummerMessage 一些特殊消息: [戳一戳][PokeMessage], [闪照][FlashImage]
- * @see Image 图片
- * @see RichMessage 富文本
- * @see ServiceMessage 服务消息, 如 JSON/XML
- * @see Face 原生表情
- * @see ForwardMessage 合并转发
- * @see Voice 语音
- */
-public interface MessageContent : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
-    public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
-}
 
 
 /**

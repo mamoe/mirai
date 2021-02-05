@@ -12,9 +12,18 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.utils.safeCast
 
 /**
- * [MessageChain] 中包含秀图时的标记
+ * [MessageChain] 中包含秀图时的标记.
  *
  * 秀图已被 QQ 弃用, 仅作识别处理
+ *
+ *
+ * ```
+ * MessageEvent event
+ *
+ * if (event.message.contains(ShowImageFlag)) {
+ *     // event.message 包含的图片是作为 '秀图' 发送
+ * }
+ * ```
  *
  * @since 2.2
  */
