@@ -1,0 +1,4 @@
+ExternalResource resource;
+Contact contact;
+
+resource.uploadAsImage(contact)

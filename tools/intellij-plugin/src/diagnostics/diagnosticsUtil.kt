@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
+import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.READ_ONLY_PLUGIN_DATA_FQ_NAME
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
@@ -18,6 +19,7 @@ import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.kotlin.psi.KtTypeReference
 import org.jetbrains.kotlin.psi.KtUserType
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
@@ -37,7 +39,7 @@ fun DeclarationCheckerContext.report(diagnostic: Diagnostic) {
 
 val DeclarationCheckerContext.bindingContext get() = this.trace.bindingContext
 
-fun KtElement?.getResolvedCall(
+fun KtElement.getResolvedCall(
     context: DeclarationCheckerContext,
 ): ResolvedCall<out CallableDescriptor>? {
     return this.getResolvedCall(context.bindingContext)
@@ -49,4 +51,12 @@ fun KtTypeReference.isReferencing(fqName: FqName): Boolean {
 
 val KtTypeReference.referencedUserType: KtUserType? get() = this.typeElement.castOrNull()
 
-fun KtTypeReference.resolveReferencedType() = referencedUserType?.referenceExpression?.mainReference?.resolve()
+fun KtTypeReference.resolveReferencedType(): PsiElement? {
+    val resolved = referencedUserType?.referenceExpression?.mainReference?.resolve()
+    if (resolved is KtTypeParameter) {
+        val bound = resolved.extendsBound ?: return resolved
+        if (bound.name == resolved.name) return null // <C: C> bad type, avoid infinite run
+        return bound.resolveReferencedType()
+    }
+    return resolved
+}

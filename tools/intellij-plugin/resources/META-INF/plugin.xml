@@ -44,18 +44,34 @@
                          groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
                          implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
 
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="ResourceNotClosed"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="resource.not.closed.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.mirai.core.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.ResourceNotClosedInspection"/>
+
+        <localInspection groupPath="Mirai console" language="JAVA" shortName="ResourceNotClosedJava"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="resource.not.closed.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.mirai.core.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.ResourceNotClosedInspection"/>
+
         <localInspection groupPath="Mirai console" language="kotlin" shortName="UsingStringPlusMessage"
                          bundle="messages.InspectionGadgetsBundle"
                          key="using.string.plus.message.display.name" groupBundle="messages.InspectionsBundle"
                          groupKey="group.names.message.issues" enabledByDefault="true" level="WARNING"
                          implementationClass="net.mamoe.mirai.console.intellij.diagnostics.UsingStringPlusMessageInspection"/>
 
-        <!--
         <intentionAction>
-            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.AbuseYellowIntention</className>
-            <category>Mirai</category>
+            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.WrapWithResourceUseCallIntention</className>
+            <category>Mirai console</category>
         </intentionAction>
-        -->
+
+        <intentionAction>
+            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.WrapWithResourceUseCallJavaIntention</className>
+            <category>Mirai console</category>
+        </intentionAction>
+
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

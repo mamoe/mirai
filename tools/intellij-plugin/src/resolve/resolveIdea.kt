@@ -9,23 +9,24 @@
 
 package net.mamoe.mirai.console.intellij.resolve
 
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiDeclarationStatement
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiModifierListOwner
+import com.intellij.openapi.project.Project
+import com.intellij.psi.*
 import com.intellij.psi.util.parentsWithSelf
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.*
-import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
-import org.jetbrains.kotlin.descriptors.VariableDescriptor
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.idea.caches.resolve.analyze
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
+import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
@@ -36,6 +37,7 @@ import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.TypeProjection
 import org.jetbrains.kotlin.types.typeUtil.supertypes
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
@@ -203,13 +205,22 @@ val PsiElement.allChildrenFlat: Sequence<PsiElement>
 
 inline fun <reified E> PsiElement.findChild(): E? = this.children.find { it is E } as E?
 
-fun KtElement?.getResolvedCall(
-    context: BindingContext,
+fun KtValueArgument.type() = getArgumentExpression()?.referenceExpression()?.type()
+fun KtExpression.resultingDescriptor() = resolveToCall(BodyResolveMode.PARTIAL)?.resultingDescriptor
+fun KtExpression.type() = resultingDescriptor()?.returnType
+fun KtReferenceExpression.typeFqName() = type()?.fqName
+fun KtExpression.typeFqName() = referenceExpression()?.typeFqName()
+
+fun KtElement.getResolvedCall(
+    context: BindingContext = analyze(BodyResolveMode.PARTIAL),
 ): ResolvedCall<out CallableDescriptor>? {
-    return this?.getCall(context)?.getResolvedCall(context)
+    return this.getCall(context)?.getResolvedCall(context)
 }
 
 val ResolvedCall<out CallableDescriptor>.valueParameters: List<ValueParameterDescriptor> get() = this.resultingDescriptor.valueParameters
+
+val Project.psiElementFactory: PsiElementFactory?
+    get() = PsiElementFactory.getInstance(this)
 
 fun ConstantValue<*>.selfOrChildrenConstantStrings(): Sequence<String> {
     return when (this) {
@@ -219,6 +230,17 @@ fun ConstantValue<*>.selfOrChildrenConstantStrings(): Sequence<String> {
         }
         else -> emptySequence()
     }
+}
+
+fun ClassDescriptor.findMemberFunction(name: Name, vararg typeProjection: TypeProjection): SimpleFunctionDescriptor? {
+    return getMemberScope(typeProjection.toList()).getContributedFunctions(name, NoLookupLocation.FROM_IDE).firstOrNull()
+}
+
+fun DeclarationDescriptor.companionObjectDescriptor(): ClassDescriptor? {
+    if (this !is ClassDescriptor) {
+        return null
+    }
+    return this.companionObjectDescriptor
 }
 
 fun KtExpression.resolveStringConstantValues(): Sequence<String> {
