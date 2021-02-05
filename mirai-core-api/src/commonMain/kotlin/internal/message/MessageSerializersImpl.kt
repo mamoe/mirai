@@ -110,6 +110,8 @@ private val builtInSerializersModule by lazy {
         contextual(MessageChain::class, MessageChain.Serializer)
         contextual(MessageChainImpl::class, MessageChainImpl.serializer())
 
+        contextual(ShowImageFlag::class, ShowImageFlag.Serializer)
+
 
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())

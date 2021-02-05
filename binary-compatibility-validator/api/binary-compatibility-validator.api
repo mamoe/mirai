@@ -5126,6 +5126,7 @@ public final class net/mamoe/mirai/message/data/ServiceMessage$Key : net/mamoe/m
 
 public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/message/data/AbstractMessageKey, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/ShowImageFlag;
+	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/ShowImageFlag;
 	public fun toString ()Ljava/lang/String;
