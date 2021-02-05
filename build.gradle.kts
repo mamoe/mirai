@@ -64,6 +64,7 @@ configure<kotlinx.validation.ApiValidationExtension> {
 }
 
 project.ext.set("isAndroidSDKAvailable", false)
+GpgSigner.setup(project)
 
 tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
     group = "mirai"

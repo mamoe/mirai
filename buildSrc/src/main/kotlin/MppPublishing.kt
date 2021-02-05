@@ -42,10 +42,13 @@ fun Project.configureMppPublishing() {
                 .forEach { publication ->
                     val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
                     if (moduleFile.exists()) {
-                        publication.artifact(object :
+                        val artifact = (object :
                             org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
                             override fun getDefaultExtension() = "module"
                         })
+                        publication.artifact(artifact)
+                        GpgSigner.signer.doSign(moduleFile)
+                        publication.artifact(GPGSignMavenArtifact(artifact))
                     }
                 }
         }
@@ -86,6 +89,7 @@ fun Project.configureMppPublishing() {
                     }
                 }
             }
+            configGpgSign(this@configureMppPublishing)
         }
     }
 }
@@ -129,6 +133,6 @@ val publishPlatformArtifactsInRootModule: Project.(MavenPublication) -> Unit = {
     }
 }
 
-private fun MavenArtifact.smartToString(): String {
+public fun MavenArtifact.smartToString(): String {
     return "${file.path}, classifier=${classifier}, ext=${extension}"
 }

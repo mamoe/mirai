@@ -115,5 +115,6 @@ inline fun Project.configurePublishing(
                 artifact(sourcesJar.get())
             }
         }
+        configGpgSign(this@configurePublishing)
     }
 }
