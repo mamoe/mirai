@@ -102,7 +102,7 @@ Mirai 支持富文本消息。
 |      [`MarketFace`]      | 商城表情              | `[表情对应的中文名]`       |          2.0          |
 |    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
-|      [`MusicShare`]      | (自 2.1) 音乐分享     | `[分享]曲名`              |          2.1          |
+|      [`MusicShare`]      | 音乐分享              | `[分享]曲名`              |          2.1          |
 
 
 
