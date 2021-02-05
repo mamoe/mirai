@@ -114,6 +114,7 @@ private val builtInSerializersModule by lazy {
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())
             subclass(QuoteReply::class, QuoteReply.serializer())
+            subclass(ShowImageFlag::class, ShowImageFlag.Serializer)
         }
 
         fun PolymorphicModuleBuilder<MessageContent>.messageContentSubclasses() {

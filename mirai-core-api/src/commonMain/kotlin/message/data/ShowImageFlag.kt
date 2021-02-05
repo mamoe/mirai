@@ -9,6 +9,14 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -27,8 +35,31 @@ import net.mamoe.mirai.utils.safeCast
  *
  * @since 2.2
  */
+@SerialName(ShowImageFlag.SERIAL_NAME)
 public object ShowImageFlag : MessageMetadata, ConstrainSingle, AbstractMessageKey<ShowImageFlag>({ it.safeCast() }) {
     override val key: ShowImageFlag get() = this
 
     override fun toString(): String = "ShowImageFlag"
+
+    /**
+     * @since 2.4
+     */
+    public const val SERIAL_NAME: String = "ShowImageFlag"
+
+    /**
+     * @since 2.4
+     */
+    internal object Serializer : KSerializer<ShowImageFlag> {
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor(SERIAL_NAME)
+
+        override fun deserialize(decoder: Decoder): ShowImageFlag {
+            decoder.decodeStructure(descriptor) {}
+            return ShowImageFlag
+        }
+
+
+        override fun serialize(encoder: Encoder, value: ShowImageFlag) {
+            encoder.encodeStructure(descriptor) {}
+        }
+    }
 }

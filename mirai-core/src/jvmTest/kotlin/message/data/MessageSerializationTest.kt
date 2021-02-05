@@ -9,10 +9,13 @@
 
 package net.mamoe.mirai.internal.message.data
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.message.MarketFaceImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -22,6 +25,7 @@ import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class MessageSerializationTest {
     @Suppress("DEPRECATION_ERROR")
@@ -104,7 +108,8 @@ internal class MessageSerializationTest {
         image.flash(),
         image.toForwardMessage(1L, "test"),
         MusicShare(MusicKind.NeteaseCloudMusic, "123", "123", "123", "123", "123", "123"),
-        RichMessageOrigin(SimpleServiceMessage(1, "content"), "resource id", RichMessageKind.LONG)
+        RichMessageOrigin(SimpleServiceMessage(1, "content"), "resource id", RichMessageKind.LONG),
+        ShowImageFlag
     )
 
     companion object {
@@ -130,6 +135,23 @@ internal class MessageSerializationTest {
         assertEquals("SimpleServiceMessage", element["type"]?.cast<JsonPrimitive>()?.content)
         assertEquals("content", element["content"]?.cast<JsonPrimitive>()?.content)
         assertEquals(1, element["serviceId"]?.cast<JsonPrimitive>()?.content?.toInt())
+    }
+
+    @Test
+    fun `test ShowImageFlag serialization`() {
+        @Serializable
+        data class Wrapper(
+            val message: @Polymorphic SingleMessage
+        )
+
+        val string = format.encodeToString(Wrapper.serializer(), Wrapper(ShowImageFlag))
+        println(string)
+        var element = format.parseToJsonElement(string)
+        element as JsonObject
+        element = element["message"] as JsonObject
+        assertEquals("ShowImageFlag", element["type"]?.cast<JsonPrimitive>()?.content)
+        assertTrue { element.size == 1 }
+        assertEquals(ShowImageFlag, format.decodeFromString(Wrapper.serializer(), string).message)
     }
 
     @Test
