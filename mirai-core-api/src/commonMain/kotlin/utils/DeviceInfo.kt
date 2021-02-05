@@ -43,6 +43,10 @@ public class DeviceInfo(
     public val androidId: ByteArray get() = display
     public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
+    init {
+        require(imsiMd5.size == 16) { "Bad `imsiMd5.size`. Required 16, given ${imsiMd5.size}." }
+    }
+
     @Transient
     @MiraiInternalApi
     public val guid: ByteArray = generateGuid(androidId, macAddress)
