@@ -57,14 +57,14 @@ open class GpgSigner(private val workdir: File) {
                     if (keyFilePub.isFile) {
                         signer.importKey(keyFilePub)
                     } else {
-                        rootProject.logger.warn("Missing public key storage")
-                        rootProject.logger.warn("GPG Sign 2nd verity may failed.")
+                        println("[GPG SIGN] Missing public key storage")
+                        println("[GPG SIGN] GPG Sign 2nd verity may failed.")
                     }
                 }
             } else {
-                rootProject.logger.warn("GPG Key not found.")
-                rootProject.logger.warn("GPG Signer will not setup")
-                rootProject.logger.warn("Key file location: $keyFile")
+                println("[GPG SIGN] GPG Key not found.")
+                println("[GPG SIGN] GPG Signer will not setup")
+                println("[GPG SIGN] Key file location: $keyFile")
             }
         }
     }

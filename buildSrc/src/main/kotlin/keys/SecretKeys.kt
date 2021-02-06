@@ -10,6 +10,7 @@
 package keys
 
 import org.gradle.api.Project
+import java.io.BufferedReader
 
 open class SecretKeys(
     val type: String,
@@ -66,7 +67,15 @@ open class SecretKeys(
                     ?: secretKeys.resolve("$type.key.txt")
                 if (secretKeyFile.isFile) {
                     secretKeyFile.bufferedReader().use {
-                        return SecretKeys(type, it.readLine().trim(), it.readLine().trim())
+                        fun BufferedReader.readLineNonEmpty(): String {
+                            while (true) {
+                                val nextLine = readLine() ?: return ""
+                                if (nextLine.isNotBlank()) {
+                                    return nextLine.trim()
+                                }
+                            }
+                        }
+                        return SecretKeys(type, it.readLineNonEmpty(), it.readLineNonEmpty())
                     }
                 }
             }

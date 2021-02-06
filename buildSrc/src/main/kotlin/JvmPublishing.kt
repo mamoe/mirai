@@ -30,6 +30,18 @@ fun Project.configureRemoteRepos() {
             }
         }
     }
+    tasks.register("ensureMavenCentralAvailable") {
+        doLast {
+            if (GpgSigner.signer == GpgSigner.NoopSigner) {
+                error("GPG Signer isn't available.")
+            }
+            val keys = SecretKeys.getCache(project)
+            if (!keys.loadKey("sonatype").isValid) {
+                error("Maven Central isn't available.")
+            }
+        }
+    }
+
     publishing {
         // sonatype
         val keys = SecretKeys.getCache(project)
