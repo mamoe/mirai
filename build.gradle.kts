@@ -139,9 +139,9 @@ subprojects {
 
 tasks.register("cleanExceptIntellij") {
     group = "build"
-    allprojects.forEach {
-        if (it.name != "mirai-console-intellij")
-            dependsOn(it.tasks.findByName("clean"))
+    allprojects.forEach { proj ->
+        if (proj.name != "mirai-console-intellij")
+            proj.tasks.findByName("clean")?.let { dependsOn(it) }
     }
 }
 
