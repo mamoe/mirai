@@ -74,5 +74,3 @@ dependencies {
     compileOnly(`kotlin-compiler`)
     compileOnly(files("libs/ide-common.jar"))
 }
-
-configurePublishing("mirai-console-intellij")
