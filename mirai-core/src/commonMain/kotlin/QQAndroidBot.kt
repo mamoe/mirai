@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.useNextServers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -101,6 +102,12 @@ internal class QQAndroidBot constructor(
     override suspend fun relogin(cause: Throwable?) {
         client.useNextServers { host, port ->
             network.closeEverythingAndRelogin(host, port, cause, 0)
+        }
+    }
+
+    override suspend fun sendLogout() {
+        network.run {
+            StatSvc.Register.offline(client).    sendWithoutExpect()
         }
     }
 

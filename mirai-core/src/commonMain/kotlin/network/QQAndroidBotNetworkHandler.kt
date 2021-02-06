@@ -782,8 +782,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
-        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
-        check(channel.isOpen) { "network channel is closed" }
+        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send ${this.commandName}" }
+        check(channel.isOpen) { "network channel is closed therefore can't send ${this.commandName}" }
 
         logger.verbose { "Send: ${this.commandName}" }
 
