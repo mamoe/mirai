@@ -63,6 +63,9 @@ Mirai 支持富文本消息。
 
 各类型消息元素及其 `contentToString()` 如下表格所示。
 
+[`MessageContent`]: ../mirai-core-api/src/commonMain/kotlin/message/data/SingleMessage.kt
+[`MessageMetadata`]: ../mirai-core-api/src/commonMain/kotlin/message/data/SingleMessage.kt
+
 [`PlainText`]: ../mirai-core-api/src/commonMain/kotlin/message/data/PlainText.kt
 [`At`]: ../mirai-core-api/src/commonMain/kotlin/message/data/At.kt
 [`AtAll`]: ../mirai-core-api/src/commonMain/kotlin/message/data/AtAll.kt
@@ -80,34 +83,48 @@ Mirai 支持富文本消息。
 [`SimpleServiceMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/RichMessage.kt
 [`Voice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
 [`ForwardMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ForwardMessage.kt
+[`ShowImageFlag`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ShowImageFlag.kt
+[`RichMessageOrigin`]: ../mirai-core-api/src/commonMain/kotlin/message/data/RichMessageOrigin.kt
 
-|          消息类型          | 属性                                        | 解释                 | `contentToString()`     |
-|:------------------------:|:--------------------------------------------|:--------------------|:------------------------|
-|      [`PlainText`]       | `content: String`                           | 纯文本               | `$content`              |
-|        [`Image`]         | `imageId: String`                           | 自定义图片            | `[图片]`                 |
-|          [`At`]          | `target: Int`                               | 提及某人              | `@$target`              |
-|        [`AtAll`]         |                                             | 提及全体成员           | `@全体成员`              |
-|         [`Face`]         | `id: Int`                                   | 原生表情              | `[表情对应的中文名]`       |
-|      [`FlashImage`]      | `image: Image`                              | 闪照                 | `[闪照]`                 |
-|     [`PokeMessage`]      | `name: String`, `pokeType: Int` , `id: Int` | 戳一戳消息（消息非动作） | `[戳一戳]`               |
-|       [`VipFace`]        | `kind: VipFace.Kind`, `count: Int`          | VIP 表情             | `[${kind.name}]x$count` |
-|       [`LightApp`]       | `content: String`                           | 小程序               | `$content`              |
-|        [`Voice`]         | `content: String`                           | 语音                 | `$content`              |
-|      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`       |
-|    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                |
-|      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*               |
-|    [`ForwardMessage`]    | ...                                         | 合并转发              | `[转发消息]`             |
-| [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`              |
-|      [`MusicShare`]      | ...                                          | (自 2.1) 音乐分享     | `[分享]曲名`              |
+
+|  [`MessageContent`] 类型  | 解释                 | `contentToString()`     |      最低支持的版本      |
+|:------------------------:|:--------------------|:------------------------|:---------------------:|
+|      [`PlainText`]       | 纯文本               | `$content`              |          2.0          |
+|        [`Image`]         | 自定义图片            | `[图片]`                 |          2.0          |
+|          [`At`]          | 提及某人              | `@$target`              |          2.0          |
+|        [`AtAll`]         | 提及全体成员           | `@全体成员`              |          2.0          |
+|         [`Face`]         | 原生表情              | `[表情对应的中文名]`       |          2.0          |
+|      [`FlashImage`]      | 闪照                 | `[闪照]`                 |          2.0          |
+|     [`PokeMessage`]      | 戳一戳消息（消息非动作） | `[戳一戳]`               |          2.0          |
+|       [`VipFace`]        | VIP 表情             | `[${kind.name}]x$count` |          2.0          |
+|       [`LightApp`]       | 小程序               | `$content`              |          2.0          |
+|        [`Voice`]         | 语音                 | `$content`              |          2.0          |
+|      [`MarketFace`]      | 商城表情              | `[表情对应的中文名]`       |          2.0          |
+|    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
+| [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
+|      [`MusicShare`]      | 音乐分享              | `[分享]曲名`              |          2.1          |
+
+
+
+
+| [`MessageMetadata`] 类型 | 解释         | 最低支持的版本 |
+|:-----------------------:|:------------|:------------:|
+|    [`MessageSource`]    | 消息来源元数据 |     2.0     |
+|     [`QuoteReply`]      | 引用回复      |     2.0     |
+|    [`ShowImageFlag`]    | 秀图标识      |     2.2     |
+|  [`RichMessageOrigin`]  | 富文本消息源   |     2.3     |
+
 
 **请打开相关消息类型的源码查看用法。**
+
+> *(1)*: [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收
 
 > 回到 [目录](#目录)
 
 ## 消息链
 
 [`MessageChain`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageChain.kt
-[`SingleMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt
+[`SingleMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/SingleMessage.kt
 [`CodableMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/code/CodableMessage.kt
 
 前文已经介绍消息链，这里简略介绍消息链的使用。详细的使用请查看源码内注释。
@@ -203,10 +220,18 @@ MessageChain chain = new MessageChainBuilder()
     .build();
 ```
 
+
+### 作为字符串处理消息
+
+通常要把消息作为字符串处理，在 Kotlin 使用 `message.content` 或在 Java 使用 `message.contentToString()`。
+
+获取到的字符串表示只包含各 [`MessageContent`] 以官方风格显示的消息内容。如 `"你本次测试的成绩是[图片]"`、`[语音]`、`[微笑]`
+
+
 ### 元素唯一性
 
 [`MessageKey`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageKey.kt
-[`ConstrainSingle`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt#L273-L287
+[`ConstrainSingle`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ConstrainSingle.kt
 [`HummerMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/HummerMessage.kt
 
 部分元素只能单一存在于消息链中。这样的元素实现接口 [`ConstrainSingle`]。

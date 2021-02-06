@@ -11,6 +11,7 @@ package net.mamoe.mirai.message
 
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
@@ -26,14 +27,13 @@ import kotlin.reflect.KClass
 /**
  * 消息序列化器.
  *
- * [MessageSerializers] 存放 [SerializersModule], 用于协助 [SingleMessage.Serializer] 的多态序列化.
+ * [MessageSerializers] 存放 [SerializersModule], 用于协助 [SingleMessage] [PolymorphicSerializer] 的多态序列化.
  *
  * 要序列化一个 [MessageChain], 请使用内建的 [MessageChain.serializeToJsonString]
  *
  * @see serializersModule
  *
  *
- * @see SingleMessage.Serializer
  * @see MessageChain.Serializer
  *
  * @see MessageSerializers.INSTANCE
