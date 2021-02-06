@@ -112,9 +112,10 @@ jobs:
           ./gradlew
           :mirai-console-compiler-annotations:publish --info
 
-      - name: Publish Gradle plugin
-        run: >
-          ./gradlew
-          :mirai-console-gradle:publishPlugins --info --stacktrace
-          -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
-          -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
+#      TEMP DISABLE
+#      - name: Publish Gradle plugin
+#        run: >
+#          ./gradlew
+#          :mirai-console-gradle:publishPlugins --info --stacktrace
+#          -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
+#          -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
