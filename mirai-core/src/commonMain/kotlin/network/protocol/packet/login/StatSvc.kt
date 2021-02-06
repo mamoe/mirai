@@ -268,7 +268,7 @@ internal class StatSvc {
 
                         val info = Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
                             ?: kotlin.run {
-                                delay(1000) // sometimes server sync slow
+                                delay(2000) // sometimes server sync slow
                                 Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
                             } ?: throw contextualBugReportException(
                                 "SvcReqMSFLoginNotify (OtherClient online)",
