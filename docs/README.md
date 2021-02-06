@@ -64,6 +64,7 @@
 特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：
 
 - `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
+- `Lua, JS, Groovy`: [JScriptEngine](https://github.com/Blackjack200/JScriptEngine)
 
 ## JVM 平台 Mirai 开发
 
