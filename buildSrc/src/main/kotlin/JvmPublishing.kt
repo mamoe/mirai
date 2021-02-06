@@ -13,6 +13,7 @@
 )
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import keys.SecretKeys
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
@@ -20,16 +21,6 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registering
-
-/*
- * Copyright 2020 Mamoe Technologies and contributors.
- *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
- *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
- */
-
 
 fun Project.configureRemoteRepos() {
     tasks.register("ensureBintrayAvailable") {
@@ -39,10 +30,27 @@ fun Project.configureRemoteRepos() {
             }
         }
     }
+    publishing {
+        // sonatype
+        val keys = SecretKeys.getCache(project)
+        repositories {
+            val sonatype = keys.loadKey("sonatype")
+            if (sonatype.isValid) {
+                maven {
+                    // Maven Central
+                    setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
 
-    if (isBintrayAvailable()) {
-        publishing {
-            repositories {
+                    credentials {
+                        username = sonatype.user
+                        password = sonatype.password
+                    }
+                }
+            } else {
+                println("SonaType is not available")
+            }
+
+
+            if (isBintrayAvailable()) {
                 maven {
                     setUrl("https://api.bintray.com/maven/him188moe/mirai/mirai-core/;publish=1;override=1")
 
@@ -51,7 +59,10 @@ fun Project.configureRemoteRepos() {
                         password = Bintray.getKey(project)
                     }
                 }
+            } else {
+                println("bintray isn't available.")
             }
+
         }
     }
 }
@@ -66,33 +77,34 @@ inline fun Project.configurePublishing(
     configureRemoteRepos()
     apply<ShadowPlugin>()
 
-    if (!project.isBintrayAvailable()) {
-        println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
-        return
-    }
+    if (project.isBintrayAvailable()) {
+        bintray {
+            user = Bintray.getUser(project)
+            key = Bintray.getKey(project)
 
-    bintray {
-        user = Bintray.getUser(project)
-        key = Bintray.getKey(project)
+            setPublications("mavenJava")
+            setConfigurations("archives")
 
-        setPublications("mavenJava")
-        setConfigurations("archives")
+            publish = true
+            override = true
 
-        publish = true
-        override = true
-
-        pkg.apply {
-            repo = bintrayRepo
-            name = bintrayPkgName
-            setLicenses("AGPLv3")
-            publicDownloadNumbers = true
-            vcsUrl = vcs
+            pkg.apply {
+                repo = bintrayRepo
+                name = bintrayPkgName
+                setLicenses("AGPLv3")
+                publicDownloadNumbers = true
+                vcsUrl = vcs
+            }
         }
     }
 
     val sourcesJar by tasks.registering(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+    val stubJavadoc = tasks.register("javadocJar", Jar::class) {
+        @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+        archiveClassifier.set("javadoc")
     }
 
     publishing {
@@ -110,6 +122,7 @@ inline fun Project.configurePublishing(
                 )
 
                 artifact(sourcesJar.get())
+                artifact(stubJavadoc.get())
             }
         }
         configGpgSign(this@configurePublishing)
