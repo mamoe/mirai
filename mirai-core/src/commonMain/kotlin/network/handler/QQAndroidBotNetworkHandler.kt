@@ -265,12 +265,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
-
         startHeartbeatJobOrKill()
-
-        bot.otherClientsLock.withLock {
-            updateOtherClientsList()
-        }
 
         launch {
             while (isActive) {
@@ -292,17 +287,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         WtLogin15(bot.client).sendAndExpect()
     }
 
-    private suspend fun registerClientOnline() {
+    private suspend fun registerClientOnline(): StatSvc.Register.Response {
 //        object : OutgoingPacketFactory<Packet?>("push.proxyUnRegister") {
 //            override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
 //                return null
 //            }
 //        }.buildOutgoingUniPacket(bot.client) {}.sendWithoutExpect()
-        kotlin.runCatching {
-            StatSvc.Register.offline(bot.client).sendAndExpect()
-        }.getOrElse { logger.warning(it) }
+     //  kotlin.runCatching {
+     //      StatSvc.Register.offline(bot.client).sendAndExpect()
+     //  }.getOrElse { logger.warning(it) }
 
-        StatSvc.Register.online(bot.client).sendAndExpect()
+        return StatSvc.Register.online(bot.client).sendAndExpect()
     }
 
     private suspend fun updateOtherClientsList() {
@@ -332,23 +327,34 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         check(bot.isActive) { "bot is dead therefore network can't init." }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init." }
 
-            contactUpdater.closeAllContacts(CancellationException("re-init"))
+        contactUpdater.closeAllContacts(CancellationException("re-init"))
 
         if (!pendingEnabled) {
             pendingIncomingPackets = ConcurrentLinkedQueue()
             _pendingEnabled.value = true
         }
 
-            contactUpdater.loadAll()
+        val registerResp = registerClientOnline()
 
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq"), block= ConfigPushSyncer())
 
-        syncMessageSvc()
+        launch {
+            syncMessageSvc()
+        }
+
+        launch {
+            bot.otherClientsLock.withLock {
+                updateOtherClientsList()
+            }
+        }
+
+        contactUpdater.loadAll(registerResp.origin)
 
         bot.firstLoginSucceed = true
         postInitActions()
     }
 
+    @Suppress("FunctionName")
     private fun BotNetworkHandler.ConfigPushSyncer(): suspend CoroutineScope.() -> Unit = launch@{
         logger.info { "Awaiting ConfigPushSvc.PushReq." }
         when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {

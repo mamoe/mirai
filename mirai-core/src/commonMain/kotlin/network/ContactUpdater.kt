@@ -17,13 +17,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
+import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
+import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
@@ -31,11 +35,8 @@ import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
 
-internal interface ContactCache {
-}
-
 internal interface ContactUpdater {
-    suspend fun loadAll()
+    suspend fun loadAll(registerResp: SvcRespRegister)
 
     fun closeAllContacts(e: CancellationException)
 }
@@ -44,9 +45,9 @@ internal class ContactUpdaterImpl(
     val bot: QQAndroidBot,
 ) : ContactUpdater {
     @Synchronized
-    override suspend fun loadAll() {
+    override suspend fun loadAll(registerResp: SvcRespRegister) {
         coroutineScope {
-            launch { reloadFriendList() }
+            launch { reloadFriendList(registerResp) }
             launch { reloadGroupList() }
             launch { reloadStrangerList() }
         }
@@ -78,48 +79,80 @@ internal class ContactUpdaterImpl(
     /**
      * Don't use concurrently
      */
-    private suspend fun reloadFriendList() = bot.network.run {
+    private suspend fun reloadFriendList(registerResp: SvcRespRegister) = bot.network.run {
         if (initFriendOk) {
             return
         }
 
-        logger.info { "Start loading friend list..." }
-        var currentFriendCount = 0
-        var totalFriendCount: Short
-        while (true) {
-            val data = FriendList.GetFriendGroupList(
-                bot.client, currentFriendCount, 150, 0, 0
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+        val friendListCache = bot.friendListCache
 
-            totalFriendCount = data.totalFriendCount
-            data.friendList.forEach {
-                // atomic
-                bot.friends.delegate.add(
-                    FriendImpl(bot, bot.coroutineContext, it.toMiraiFriendInfo())
-                ).also { currentFriendCount++ }
+        fun updateCacheSeq(list: List<FriendInfoImpl>) {
+            bot.friendListCache?.apply {
+                friendListSeq = registerResp.iLargeSeq
+                timeStamp = registerResp.timeStamp
+                this.list = list
+                bot.saveFriendCache()
             }
-            logger.verbose { "Loading friend list: ${currentFriendCount}/${totalFriendCount}" }
-            if (currentFriendCount >= totalFriendCount) {
-                break
-            }
-            // delay(200)
         }
-        logger.info { "Successfully loaded friend list: $currentFriendCount in total" }
+
+        suspend fun refreshFriendList(): List<FriendInfoImpl> {
+            logger.info { "Start loading friend list..." }
+            val friendInfos = mutableListOf<FriendInfoImpl>()
+
+            var count = 0
+            var total: Short
+            while (true) {
+                val data = FriendList.GetFriendGroupList(
+                    bot.client, count, 150, 0, 0
+                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+
+                total = data.totalFriendCount
+
+                for (jceInfo in data.friendList) {
+                    friendInfos.add(jceInfo.toMiraiFriendInfo())
+                }
+
+                count += data.friendList.size
+                logger.verbose { "Loading friend list: ${count}/${total}" }
+                if (count >= total) break
+            }
+            logger.info { "Successfully loaded friend list: $count in total" }
+            return friendInfos
+        }
+
+        val list = if (friendListCache?.isValid(registerResp) == true) {
+            val list = friendListCache.list
+            bot.network.logger.info { "Loaded ${list.size} friends from local cache." }
+            list
+        } else {
+            refreshFriendList().also {
+                updateCacheSeq(it)
+            }
+        }
+
+        for (friendInfoImpl in list) {
+            addFriendToBot(friendInfoImpl)
+        }
+
+
         initFriendOk = true
     }
 
-    private suspend fun StTroopNum.reloadGroup() {
+    private fun addFriendToBot(it: FriendInfo) =
+        bot.friends.delegate.add(FriendImpl(bot, bot.coroutineContext, it))
+
+    private suspend fun addGroupToBot(stTroopNum: StTroopNum) {
         bot.groups.delegate.add(
             GroupImpl(
                 bot = bot,
                 coroutineContext = bot.coroutineContext,
-                id = groupCode,
-                groupInfo = GroupInfoImpl(this),
+                id = stTroopNum.groupCode,
+                groupInfo = GroupInfoImpl(stTroopNum),
                 members = Mirai.getRawGroupMemberList(
                     bot,
-                    groupUin,
-                    groupCode,
-                    dwGroupOwnerUin
+                    stTroopNum.groupUin,
+                    stTroopNum.groupCode,
+                    stTroopNum.dwGroupOwnerUin
                 )
             )
         )
@@ -165,7 +198,7 @@ internal class ContactUpdaterImpl(
             troopListData.groups.forEach { group ->
                 launch {
                     semaphore.withPermit {
-                        retryCatching(5) { group.reloadGroup() }.getOrThrow()
+                        retryCatching(5) { addGroupToBot(group) }.getOrThrow()
                     }
                 }
             }

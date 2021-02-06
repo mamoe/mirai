@@ -90,6 +90,8 @@ public interface FriendEvent : BotEvent, UserEvent {
     override val user: Friend get() = friend
 }
 
+internal interface FriendInfoChangeEvent : BotEvent // for cache
+
 /**
  * 有关陌生人的事件
  */

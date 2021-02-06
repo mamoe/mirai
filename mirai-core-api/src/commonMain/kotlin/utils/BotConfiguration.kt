@@ -310,6 +310,43 @@ public open class BotConfiguration { // open for Java
         botLoggerSupplier = { _ -> SilentLogger }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Cache
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 非 `null` 时启用好友列表缓存, 加快初始化速度. 在启用后将会在下载好友列表后保存到文件, 并在修改时自动保存.
+     * @since 2.4
+     * @see enableFriendListCache
+     */
+    public var friendListCache: FriendListCache? = FriendListCache()
+
+    /**
+     * 好友列表缓存设置.
+     * @since 2.4
+     * @see friendListCache
+     */
+    public class FriendListCache @JvmOverloads constructor(
+        /**
+         * 缓存文件位置, 相对于 [workingDir] 的路径.
+         */
+        public val cacheFile: File = File("cache/friendList.json"),
+        /**
+         * 在有好友列表修改是
+         */
+        public val saveIntervalMillis: Long = 60_000,
+    )
+
+    /**
+     * 启用好友列表缓存.
+     * @since 2.4
+     * @see BotConfiguration.enableFriendListCache
+     */
+    public fun enableFriendListCache() {
+        friendListCache = FriendListCache()
+    }
+
+
     /**
      * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext].
      *
