@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet

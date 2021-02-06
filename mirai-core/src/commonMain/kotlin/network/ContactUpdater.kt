@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network
 
+import contact.StrangerImpl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -17,15 +18,22 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.FriendImpl
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
+import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
-import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
+
+internal interface ContactCache {
+
+}
 
 internal interface ContactUpdater {
     suspend fun loadAll()

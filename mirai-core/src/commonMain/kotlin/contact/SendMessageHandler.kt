@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import contact.StrangerImpl
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl

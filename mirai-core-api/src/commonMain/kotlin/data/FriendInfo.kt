@@ -17,9 +17,16 @@ public interface FriendInfo : UserInfo {
 
     public override val nick: String
 
-    public override val remark: String
+    public override var remark: String
 }
 
+
+@Deprecated(
+    "Moved to net.mamoe.mirai.internal.contact.FriendInfoImpl. Kept for binary compatibility.",
+    ReplaceWith("FriendInfoImpl", "net.mamoe.mirai.internal.contact.FriendInfoImpl"),
+    level = DeprecationLevel.HIDDEN
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowLevelApi
 public open class FriendInfoImpl(
     override val uin: Long,
