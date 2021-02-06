@@ -80,14 +80,6 @@ internal class QQAndroidBot constructor(
 
     override lateinit var nick: String
 
-    internal var selfInfo: JceFriendInfo? = null
-        get() = field ?: error("selfInfo is not yet initialized")
-        set(it) {
-            checkNotNull(it)
-            field = it
-            nick = it.nick
-        }
-
     override val asFriend: Friend by lazy {
         @OptIn(LowLevelApi::class)
         Mirai.newFriend(this, FriendInfoImpl(uin, nick, ""))

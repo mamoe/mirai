@@ -32,7 +32,6 @@ import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
 
 internal interface ContactCache {
-
 }
 
 internal interface ContactUpdater {
@@ -91,13 +90,6 @@ internal class ContactUpdaterImpl(
             val data = FriendList.GetFriendGroupList(
                 bot.client, currentFriendCount, 150, 0, 0
             ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-
-            // self info
-            data.selfInfo?.run {
-                bot.selfInfo = this
-//                            bot.remark = remark ?: ""
-//                            bot.sex = sex
-            }
 
             totalFriendCount = data.totalFriendCount
             data.friendList.forEach {
