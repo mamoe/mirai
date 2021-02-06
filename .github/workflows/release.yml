@@ -31,9 +31,6 @@ jobs:
       - name: chmod -R 777 *
         run: chmod -R 777 *
 
-      - name: Init gradle project
-        run: ./gradlew clean --info
-
       - name: Keys setup
         shell: bash
         run: |
@@ -52,6 +49,9 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+      - name: Init gradle project
+        run: ./gradlew clean --info
 
       - name: Check keys
         run: >
