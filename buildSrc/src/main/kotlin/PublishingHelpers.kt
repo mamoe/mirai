@@ -90,7 +90,19 @@ fun MavenPublication.setupPom(
             developerConnection.set("scm:${vcs.replace("https:", "git:")}.git")
         }
 
+        licenses {
+            license {
+                name.set("GNU AGPLv3")
+                url.set("https://github.com/mamoe/mirai/blob/master/LICENSE")
+            }
+        }
+
         developers {
+            developer {
+                id.set("mamoe")
+                name.set("Mamoe Technologies")
+                email.set("support@mamoe.net")
+            }
         }
 
     }
