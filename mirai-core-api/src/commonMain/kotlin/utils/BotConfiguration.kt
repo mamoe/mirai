@@ -455,17 +455,24 @@ public open class BotConfiguration { // open for Java
 
     public fun copy(): BotConfiguration {
         return BotConfiguration().also { new ->
-            new.botLoggerSupplier = botLoggerSupplier
-            new.networkLoggerSupplier = networkLoggerSupplier
-            new.deviceInfo = deviceInfo
+            // To structural order
+            new.workingDir = workingDir
+            new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
             new.firstReconnectDelayMillis = firstReconnectDelayMillis
             new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
+            new.autoReconnectOnForceOffline = autoReconnectOnForceOffline
             new.loginSolver = loginSolver
             new.protocol = protocol
+            new.highwayUploadCoroutineCount = highwayUploadCoroutineCount
+            new.deviceInfo = deviceInfo
+            new.botLoggerSupplier = botLoggerSupplier
+            new.networkLoggerSupplier = networkLoggerSupplier
+            new.friendListCache = friendListCache
+            new.groupMemberListCache = groupMemberListCache
         }
     }
 
