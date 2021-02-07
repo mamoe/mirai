@@ -78,17 +78,22 @@ internal class QQAndroidBot constructor(
     override val friends: ContactList<Friend> = ContactList()
 
     val friendListCache: FriendListCache? by lazy {
-        configuration.friendListCache?.cacheFile?.run {
-            val ret = loadAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
+        configuration.friendListCache?.cacheFile?.let { cacheFile ->
+            val ret = configuration.workingDir.resolve(cacheFile).loadAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             bot.eventChannel.parentScope(this@QQAndroidBot)
                 .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
                     friendListSaver?.notice()
                 }
-
             ret
         }
+    }
+
+    val groupMemberListCaches: GroupMemberListCaches? by lazy {
+        if (configuration.groupMemberListCache!= null) {
+            GroupMemberListCaches(this)
+        } else null
     }
 
     private val friendListSaver by lazy {
@@ -99,11 +104,10 @@ internal class QQAndroidBot constructor(
             }
         }
     }
-
     fun saveFriendCache() {
         val friendListCache = friendListCache
         if (friendListCache != null) {
-            configuration.friendListCache?.cacheFile?.run {
+            configuration.friendListCache?.cacheFile?.let { configuration.workingDir.resolve(it) }?.run {
                 createFileIfNotExists()
                 writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
                 bot.network.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }

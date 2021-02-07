@@ -348,6 +348,39 @@ public open class BotConfiguration { // open for Java
 
 
     /**
+     * 非 `null` 时启用群成员列表缓存, 加快初始化速度. 在启用后将会在下载群成员列表后保存到文件, 并在修改时自动保存.
+     * @since 2.4
+     * @see enableGroupMemberListCache
+     */
+    public var groupMemberListCache: GroupMemberListCache? = GroupMemberListCache()
+
+    /**
+     * 群成员列表缓存设置.
+     * @since 2.4
+     * @see groupMemberListCache
+     */
+    public class GroupMemberListCache @JvmOverloads constructor(
+        /**
+         * 缓存文件位置, 相对于 [workingDir] 的路径.
+         */
+        public val cacheDir: File = File("cache"),
+        /**
+         * 在有好友列表修改是
+         */
+        public val saveIntervalMillis: Long = 60_000,
+    )
+
+    /**
+     * 启用群成员列表缓存.
+     * @since 2.4
+     * @see BotConfiguration.enableGroupMemberListCache
+     */
+    public fun enableGroupMemberListCache() {
+        friendListCache = FriendListCache()
+    }
+
+
+    /**
      * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext].
      *
      * Bot 将会使用一个 [SupervisorJob] 覆盖 [coroutineContext] 当前协程的 [Job], 并使用当前协程的 [Job] 作为父 [Job]

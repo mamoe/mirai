@@ -18,11 +18,13 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
@@ -141,19 +143,38 @@ internal class ContactUpdaterImpl(
     private fun addFriendToBot(it: FriendInfo) =
         bot.friends.delegate.add(FriendImpl(bot, bot.coroutineContext, it))
 
-    private suspend fun addGroupToBot(stTroopNum: StTroopNum) {
+    private suspend fun addGroupToBot(stTroopNum: StTroopNum) = stTroopNum.run {
+        suspend fun refreshGroupMemberList(): Sequence<MemberInfo> {
+            return Mirai.getRawGroupMemberList(
+                bot,
+                groupUin,
+                groupCode,
+                dwGroupOwnerUin
+            )
+        }
+
+        val cache = bot.groupMemberListCaches?.get(groupCode)
+        val members = if (cache != null) {
+            if (cache.isValid(stTroopNum)) {
+                cache.list.asSequence().also {
+                    bot.network.logger.info { "Loaded ${cache.list.size} members from local cache for group ${groupName} (${groupCode})" }
+                }
+            } else refreshGroupMemberList().also { sequence ->
+                cache.troopMemberNumSeq = dwMemberNumSeq ?: 0
+                cache.list = sequence.mapTo(ArrayList()) { it as MemberInfoImpl }
+                bot.groupMemberListCaches!!.reportChanged(groupCode)
+            }
+        } else {
+            refreshGroupMemberList()
+        }
+
         bot.groups.delegate.add(
             GroupImpl(
                 bot = bot,
                 coroutineContext = bot.coroutineContext,
-                id = stTroopNum.groupCode,
+                id = groupCode,
                 groupInfo = GroupInfoImpl(stTroopNum),
-                members = Mirai.getRawGroupMemberList(
-                    bot,
-                    stTroopNum.groupUin,
-                    stTroopNum.groupCode,
-                    stTroopNum.dwGroupOwnerUin
-                )
+                members = members
             )
         )
     }
@@ -184,9 +205,7 @@ internal class ContactUpdaterImpl(
         if (initGroupOk) {
             return
         }
-        logger.info { "Start syncing group config..." }
         TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>()
-        logger.info { "Successfully synced group config." }
 
         logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
@@ -203,7 +222,9 @@ internal class ContactUpdaterImpl(
                 }
             }
         }
+
         logger.info { "Successfully loaded group list: ${troopListData.groups.size} in total." }
+        bot.groupMemberListCaches?.saveGroupCaches()
         initGroupOk = true
     }
 
