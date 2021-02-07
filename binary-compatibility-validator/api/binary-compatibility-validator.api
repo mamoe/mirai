@@ -5393,8 +5393,9 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public fun <init> ()V
 	public final fun autoReconnectOnForceOffline ()V
 	public final fun copy ()Lnet/mamoe/mirai/utils/BotConfiguration;
-	public final fun enableFriendListCache ()V
-	public final fun enableGroupMemberListCache ()V
+	public final fun disableContactCaches ()V
+	public final fun disableFriendListCache ()V
+	public final fun disableGroupMemberListCache ()V
 	public final fun fileBasedDeviceInfo ()V
 	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V

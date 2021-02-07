@@ -385,7 +385,7 @@ public open class BotConfiguration { // open for Java
     /**
      * 非 `null` 时启用好友列表缓存, 加快初始化速度. 在启用后将会在下载好友列表后保存到文件, 并在修改时自动保存.
      * @since 2.4
-     * @see enableFriendListCache
+     * @see disableFriendListCache
      */
     public var friendListCache: FriendListCache? = FriendListCache()
 
@@ -397,8 +397,10 @@ public open class BotConfiguration { // open for Java
     public class FriendListCache @JvmOverloads constructor(
         /**
          * 缓存文件位置, 相对于 [workingDir] 的路径.
+         *
+         * 注意: 保存的文件仅供内部使用, 将来可能会变化.
          */
-        public val cacheFile: File = File("cache/friendList.json"),
+        public val cacheFile: File = File("cache/friends.json"),
         /**
          * 在有好友列表修改时自动保存间隔
          */
@@ -406,20 +408,20 @@ public open class BotConfiguration { // open for Java
     )
 
     /**
-     * 启用好友列表缓存.
+     * 禁用好友列表缓存.
      * @since 2.4
-     * @see BotConfiguration.enableFriendListCache
      */
     @ConfigurationDsl
-    public fun enableFriendListCache() {
-        friendListCache = FriendListCache()
+    public fun disableFriendListCache() {
+        friendListCache = null
     }
+
 
 
     /**
      * 非 `null` 时启用群成员列表缓存, 加快初始化速度. 在启用后将会在下载群成员列表后保存到文件, 并在修改时自动保存.
      * @since 2.4
-     * @see enableGroupMemberListCache
+     * @see disableGroupMemberListCache
      */
     public var groupMemberListCache: GroupMemberListCache? = GroupMemberListCache()
 
@@ -430,9 +432,11 @@ public open class BotConfiguration { // open for Java
      */
     public class GroupMemberListCache @JvmOverloads constructor(
         /**
-         * 缓存文件位置, 相对于 [workingDir] 的路径.
+         * 缓存目录位置, 相对于 [workingDir] 的路径.
+         *
+         * 注意: 保存的文件仅供内部使用, 将来可能会变化.
          */
-        public val cacheDir: File = File("cache"),
+        public val cacheDir: File = File("cache/groups"),
         /**
          * 在有成员列表修改时自动保存间隔
          */
@@ -440,13 +444,22 @@ public open class BotConfiguration { // open for Java
     )
 
     /**
-     * 启用群成员列表缓存.
+     * 禁用群成员列表缓存.
      * @since 2.4
-     * @see BotConfiguration.enableGroupMemberListCache
      */
     @ConfigurationDsl
-    public fun enableGroupMemberListCache() {
-        friendListCache = FriendListCache()
+    public fun disableGroupMemberListCache() {
+        groupMemberListCache = null
+    }
+
+    /**
+     * 禁用好友列表, 群成员列表, 陌生人列表的缓存.
+     * @since 2.4
+     */
+    @ConfigurationDsl
+    public fun disableContactCaches() {
+        disableFriendListCache()
+        disableGroupMemberListCache()
     }
 
     ///////////////////////////////////////////////////////////////////////////
