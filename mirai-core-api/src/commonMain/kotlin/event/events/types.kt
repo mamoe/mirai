@@ -16,6 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 有关一个 [Bot] 的事件
@@ -90,6 +91,8 @@ public interface FriendEvent : BotEvent, UserEvent {
     override val user: Friend get() = friend
 }
 
+internal interface FriendInfoChangeEvent : BotEvent // for cache
+
 /**
  * 有关陌生人的事件
  */
@@ -107,6 +110,19 @@ public interface GroupMemberEvent : GroupEvent, UserEvent {
     override val group: Group get() = member.group
     override val user: Member get() = member
 }
+
+/**
+ * 用于更新缓存, 请勿使用.
+ */
+@MiraiInternalApi
+internal interface BaseGroupMemberInfoChangeEvent : BotEvent {
+    val groupId: Long
+} // for cache
+
+@MiraiInternalApi
+internal interface GroupMemberInfoChangeEvent : BotEvent, GroupEvent, BaseGroupMemberInfoChangeEvent {
+    override val groupId: Long get() = group.id
+} // for cache
 
 public interface OtherClientEvent : BotEvent, Packet {
     public val client: OtherClient

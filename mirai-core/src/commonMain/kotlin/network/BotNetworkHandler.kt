@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.WeakRefProperty
@@ -46,7 +47,7 @@ internal abstract class BotNetworkHandler : CoroutineScope {
      * 所属 [Bot]. 为弱引用
      */
     @WeakRefProperty
-    abstract val bot: Bot
+    abstract val bot: QQAndroidBot
 
     /**
      * 监管 child [Job]s

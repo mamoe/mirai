@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal
 
+import contact.StrangerImpl
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
@@ -19,12 +20,15 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo

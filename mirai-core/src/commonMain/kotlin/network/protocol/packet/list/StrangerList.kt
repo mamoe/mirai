@@ -30,7 +30,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 internal class StrangerList {
     object GetStrangerList : OutgoingPacketFactory<GetStrangerList.Response>("OidbSvc.0x5d2_0") {
 
-        class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>) : Packet {
+        class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>, val origin: Oidb0x5d2.RspGetList?) : Packet {
             override fun toString(): String {
                 return "StrangerList.GetStrangerList.Response(result=$result)"
             }
@@ -61,10 +61,10 @@ internal class StrangerList {
                 if (pkg.result == 0) {
                     pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).rspGetList!!.let {
                         bot.client.strangerSeq = it.seq
-                        return Response(pkg.result, it.list)
+                        return Response(pkg.result, it.list, it)
                     }
                 }
-                return Response(pkg.result, emptyList())
+                return Response(pkg.result, emptyList(), null)
             }
         }
 

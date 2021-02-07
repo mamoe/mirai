@@ -21,12 +21,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.network.MultiPacketBySequence
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -708,7 +709,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             return this.msgFrdRmk.asSequence().mapNotNull {
                 val friend = bot.getFriend(it.fuin) ?: return@mapNotNull null
                 val old: String
-                friend.checkIsFriendImpl().friendInfo.checkIsInfoImpl()
+                friend.checkIsFriendImpl().friendInfo
                     .also { info -> old = info.remark }
                     .remark = it.rmkName
                 // TODO: 2020/4/10 ADD REMARK QUERY
