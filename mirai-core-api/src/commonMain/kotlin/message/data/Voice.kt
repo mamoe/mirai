@@ -77,5 +77,5 @@ public class Voice @MiraiInternalApi constructor(
 
     public override fun toString(): String = _stringValue!!
 
-    public override fun contentToString(): String = "[语音]"
+    public override fun contentToString(): String = "[语音消息]"
 }

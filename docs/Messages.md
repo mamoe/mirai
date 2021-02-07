@@ -98,7 +98,7 @@ Mirai 支持富文本消息。
 |     [`PokeMessage`]      | 戳一戳消息（消息非动作） | `[戳一戳]`               |          2.0          |
 |       [`VipFace`]        | VIP 表情             | `[${kind.name}]x$count` |          2.0          |
 |       [`LightApp`]       | 小程序               | `$content`              |          2.0          |
-|        [`Voice`]         | 语音                 | `$content`              |          2.0          |
+|        [`Voice`]         | 语音                 | `[语音消息]`              |          2.0          |
 |      [`MarketFace`]      | 商城表情              | `[表情对应的中文名]`       |          2.0          |
 |    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
