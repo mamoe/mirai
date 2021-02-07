@@ -332,7 +332,7 @@ public open class BotConfiguration { // open for Java
          */
         public val cacheFile: File = File("cache/friendList.json"),
         /**
-         * 在有好友列表修改是
+         * 在有好友列表修改时自动保存间隔
          */
         public val saveIntervalMillis: Long = 60_000,
     )
@@ -365,7 +365,7 @@ public open class BotConfiguration { // open for Java
          */
         public val cacheDir: File = File("cache"),
         /**
-         * 在有好友列表修改是
+         * 在有成员列表修改时自动保存间隔
          */
         public val saveIntervalMillis: Long = 60_000,
     )
