@@ -7,17 +7,14 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package net.mamoe.mirai.internal.network
+package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
@@ -29,15 +26,11 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.createOtherClient
-import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalStateException
-import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
-import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
-import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -272,12 +265,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
-
         startHeartbeatJobOrKill()
-
-        bot.otherClientsLock.withLock {
-            updateOtherClientsList()
-        }
 
         launch {
             while (isActive) {
@@ -299,17 +287,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         WtLogin15(bot.client).sendAndExpect()
     }
 
-    private suspend fun registerClientOnline() {
+    private suspend fun registerClientOnline(): StatSvc.Register.Response {
 //        object : OutgoingPacketFactory<Packet?>("push.proxyUnRegister") {
 //            override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
 //                return null
 //            }
 //        }.buildOutgoingUniPacket(bot.client) {}.sendWithoutExpect()
-        kotlin.runCatching {
-            StatSvc.Register.offline(bot.client).sendAndExpect()
-        }.getOrElse { logger.warning(it) }
+     //  kotlin.runCatching {
+     //      StatSvc.Register.offline(bot.client).sendAndExpect()
+     //  }.getOrElse { logger.warning(it) }
 
-        StatSvc.Register.online(bot.client).sendAndExpect()
+        return StatSvc.Register.online(bot.client).sendAndExpect()
     }
 
     private suspend fun updateOtherClientsList() {
@@ -333,175 +321,65 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     internal var pendingIncomingPackets: ConcurrentLinkedQueue<KnownPacketFactories.IncomingPacket<*>>? =
         ConcurrentLinkedQueue()
 
-    private var initFriendOk = false
-    private var initGroupOk = false
-    private var initStrangerOk = false
-
-    /**
-     * Don't use concurrently
-     */
-    suspend fun reloadFriendList() {
-        if (initFriendOk) {
-            return
-        }
-
-        logger.info { "Start loading friend list..." }
-        var currentFriendCount = 0
-        var totalFriendCount: Short
-        while (true) {
-            val data = FriendList.GetFriendGroupList(
-                bot.client, currentFriendCount, 150, 0, 0
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-
-            // self info
-            data.selfInfo?.run {
-                bot.selfInfo = this
-//                            bot.remark = remark ?: ""
-//                            bot.sex = sex
-            }
-
-            totalFriendCount = data.totalFriendCount
-            data.friendList.forEach {
-                // atomic
-                bot.friends.delegate.add(
-                    FriendImpl(bot, bot.coroutineContext, it.toMiraiFriendInfo())
-                ).also { currentFriendCount++ }
-            }
-            logger.verbose { "Loading friend list: ${currentFriendCount}/${totalFriendCount}" }
-            if (currentFriendCount >= totalFriendCount) {
-                break
-            }
-            // delay(200)
-        }
-        logger.info { "Successfully loaded friend list: $currentFriendCount in total" }
-        initFriendOk = true
-    }
-
-    suspend fun StTroopNum.reloadGroup() {
-        bot.groups.delegate.add(
-            GroupImpl(
-                bot = bot,
-                coroutineContext = bot.coroutineContext,
-                id = groupCode,
-                groupInfo = GroupInfoImpl(this),
-                members = Mirai.getRawGroupMemberList(
-                    bot,
-                    groupUin,
-                    groupCode,
-                    dwGroupOwnerUin
-                )
-            )
-        )
-    }
-
-    suspend fun reloadStrangerList() {
-        if (initStrangerOk) {
-            return
-        }
-        var currentCount = 0
-        logger.info { "Start loading stranger list..." }
-        val response = StrangerList.GetStrangerList(bot.client)
-            .sendAndExpect<StrangerList.GetStrangerList.Response>(timeoutMillis = 5000, retry = 2)
-
-        if (response.result == 0) {
-            response.strangerList.forEach {
-                // atomic
-                bot.strangers.delegate.add(
-                    StrangerImpl(bot, bot.coroutineContext, StrangerInfoImpl(it.uin, it.nick.decodeToString()))
-                ).also { currentCount++ }
-            }
-        }
-        logger.info { "Successfully loaded stranger list: $currentCount in total" }
-        initStrangerOk = true
-
-    }
-
-    suspend fun reloadGroupList() {
-        if (initGroupOk) {
-            return
-        }
-        logger.info { "Start syncing group config..." }
-        TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>()
-        logger.info { "Successfully synced group config." }
-
-        logger.info { "Start loading group list..." }
-        val troopListData = FriendList.GetTroopListSimplify(bot.client)
-            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 5)
-
-        val semaphore = Semaphore(30)
-
-        coroutineScope {
-            troopListData.groups.forEach { group ->
-                launch {
-                    semaphore.withPermit {
-                        retryCatching(5) { group.reloadGroup() }.getOrThrow()
-                    }
-                }
-            }
-        }
-        logger.info { "Successfully loaded group list: ${troopListData.groups.size} in total." }
-        initGroupOk = true
-    }
-
+    private val contactUpdater: ContactUpdater by lazy { ContactUpdaterImpl(bot) }
 
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init." }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init." }
 
-        CancellationException("re-init").let { reInitCancellationException ->
-            if (!initFriendOk) {
-                bot.friends.delegate.removeAll { it.cancel(reInitCancellationException); true }
-            }
-            if (!initGroupOk) {
-                bot.groups.delegate.removeAll { it.cancel(reInitCancellationException); true }
-            }
-            if (!initStrangerOk) {
-                bot.strangers.delegate.removeAll { it.cancel(reInitCancellationException); true }
-            }
-        }
+        contactUpdater.closeAllContacts(CancellationException("re-init"))
 
         if (!pendingEnabled) {
             pendingIncomingPackets = ConcurrentLinkedQueue()
             _pendingEnabled.value = true
         }
 
-        coroutineScope {
-            launch { reloadFriendList() }
-            launch { reloadGroupList() }
-            launch { reloadStrangerList() }
+        val registerResp = registerClientOnline()
+
+        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq"), block= ConfigPushSyncer())
+
+        launch {
+            syncMessageSvc()
         }
 
-        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
-            logger.info { "Awaiting ConfigPushSvc.PushReq." }
-            when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
-                null -> {
-                    kotlin.runCatching { bot.client.bdhSession.completeExceptionally(TimeoutCancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
-                    logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
-                }
-                is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
-                    logger.info { "ConfigPushSvc.PushReq: Success." }
-                }
-                is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                    bot.logger.info { "Server requires reconnect." }
-                    bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
-
-                    if (resp.serverList.isNotEmpty()) {
-                        bot.serverList.clear()
-                        resp.serverList.shuffled().forEach {
-                            bot.serverList.add(it.host to it.port)
-                        }
-                    }
-
-                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
-                    return@launch
-                }
+        launch {
+            bot.otherClientsLock.withLock {
+                updateOtherClientsList()
             }
         }
 
-        syncMessageSvc()
+        contactUpdater.loadAll(registerResp.origin)
 
         bot.firstLoginSucceed = true
         postInitActions()
+    }
+
+    @Suppress("FunctionName")
+    private fun BotNetworkHandler.ConfigPushSyncer(): suspend CoroutineScope.() -> Unit = launch@{
+        logger.info { "Awaiting ConfigPushSvc.PushReq." }
+        when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
+            null -> {
+                kotlin.runCatching { bot.client.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
+                logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+            }
+            is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
+                logger.info { "ConfigPushSvc.PushReq: Success." }
+            }
+            is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
+                bot.logger.info { "Server requires reconnect." }
+                bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
+
+                if (resp.serverList.isNotEmpty()) {
+                    bot.serverList.clear()
+                    resp.serverList.shuffled().forEach {
+                        bot.serverList.add(it.host to it.port)
+                    }
+                }
+
+                bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
+                return@launch
+            }
+        }
     }
 
     override suspend fun postInitActions() {

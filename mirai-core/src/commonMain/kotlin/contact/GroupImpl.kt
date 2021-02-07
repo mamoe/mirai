@@ -20,9 +20,10 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.BdhSession
-import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE

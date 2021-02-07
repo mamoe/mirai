@@ -16,6 +16,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.charsets.*
 import kotlinx.io.core.*
+import java.io.File
 import kotlin.text.Charsets
 
 
@@ -124,3 +125,10 @@ public inline fun Input.readString(length: UShort, charset: Charset = Charsets.U
 
 public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
+
+public fun File.createFileIfNotExists() {
+    if (!this.exists()) {
+        this.parentFile.mkdirs()
+        this.createNewFile()
+    }
+}

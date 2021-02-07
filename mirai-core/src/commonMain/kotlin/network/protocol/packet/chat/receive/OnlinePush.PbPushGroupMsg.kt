@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet

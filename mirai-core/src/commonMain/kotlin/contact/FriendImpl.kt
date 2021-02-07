@@ -23,10 +23,10 @@ import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.message.MessageReceipt
@@ -41,15 +41,6 @@ internal fun net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo.toMir
         nick,
         remark
     )
-
-@OptIn(ExperimentalContracts::class)
-internal inline fun FriendInfo.checkIsInfoImpl(): FriendInfoImpl {
-    contract {
-        returns() implies (this@checkIsInfoImpl is FriendInfoImpl)
-    }
-    check(this is FriendInfoImpl) { "A FriendInfo instance is not instance of checkIsInfoImpl. Your instance: ${this::class.qualifiedName}" }
-    return this
-}
 
 @OptIn(ExperimentalContracts::class)
 internal inline fun Friend.checkIsFriendImpl(): FriendImpl {

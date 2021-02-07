@@ -32,7 +32,7 @@ public data class FriendRemarkChangeEvent internal constructor(
     public override val friend: Friend,
     public val oldRemark: String,
     public val newRemark: String
-) : FriendEvent, Packet, AbstractEvent()
+) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 成功添加了一个新好友的事件
@@ -42,14 +42,14 @@ public data class FriendAddEvent @MiraiInternalApi constructor(
      * 新好友. 已经添加到 [Bot.friends]
      */
     public override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent()
+) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 好友已被删除或主动删除的事件.
  */
 public data class FriendDeleteEvent internal constructor(
     public override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent()
+) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 一个账号请求添加机器人为好友的事件
@@ -77,7 +77,7 @@ public data class NewFriendRequestEvent internal constructor(
      * 群名片或好友昵称
      */
     public val fromNick: String
-) : BotEvent, Packet, AbstractEvent() {
+) : BotEvent, Packet, AbstractEvent(), FriendInfoChangeEvent {
     @JvmField
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
@@ -109,7 +109,7 @@ public data class FriendNickChangedEvent internal constructor(
     public override val friend: Friend,
     public val from: String,
     public val to: String
-) : FriendEvent, Packet, AbstractEvent()
+) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
