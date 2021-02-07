@@ -6,7 +6,7 @@ name: Bintray Publish
 # events but only for the master branch
 on:
   release:
-    types: [ created, prereleased ]
+    types: [ created ]
   push:
     tags:
       - '*-dev*'
@@ -108,12 +108,12 @@ jobs:
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
-      - name: Gradle :mirai-console-intellij:bintrayUpload
-        run: >
-          ./gradlew
-          :mirai-console-intellij:bintrayUpload --info
-          -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-          -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+#      - name: Gradle :mirai-console-intellij:bintrayUpload
+#        run: >
+#          ./gradlew
+#          :mirai-console-intellij:bintrayUpload --info
+#          -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+#          -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Publish Gradle plugin
         run: >
