@@ -22,7 +22,9 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registering
 
-fun Project.configureRemoteRepos() {
+fun Project.configureRemoteRepos(
+    bintrayPkgName: String = "mirai-core"
+) {
     tasks.register("ensureBintrayAvailable") {
         doLast {
             if (!project.isBintrayAvailable()) {
@@ -64,7 +66,7 @@ fun Project.configureRemoteRepos() {
 
             if (isBintrayAvailable()) {
                 maven {
-                    setUrl("https://api.bintray.com/maven/him188moe/mirai/mirai-core/;publish=1;override=1")
+                    setUrl("https://api.bintray.com/maven/him188moe/mirai/$bintrayPkgName/;publish=1;override=1")
 
                     credentials {
                         username = Bintray.getUser(project)
@@ -86,7 +88,9 @@ inline fun Project.configurePublishing(
     bintrayPkgName: String = artifactId,
     vcs: String = "https://github.com/mamoe/mirai"
 ) {
-    configureRemoteRepos()
+    configureRemoteRepos(
+        bintrayPkgName = bintrayPkgName
+    )
     apply<ShadowPlugin>()
 
     if (project.isBintrayAvailable()) {
