@@ -1915,7 +1915,7 @@ public final class net/mamoe/mirai/event/events/BotEventsKt {
 	public static final synthetic fun isSuccess (Lnet/mamoe/mirai/event/events/MessagePostSendEvent;)Z
 }
 
-public final class net/mamoe/mirai/event/events/BotGroupPermissionChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/BotGroupPermissionChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/MemberPermission;Lnet/mamoe/mirai/contact/MemberPermission;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Group;
 	public final fun component2 ()Lnet/mamoe/mirai/contact/MemberPermission;
@@ -1930,7 +1930,7 @@ public final class net/mamoe/mirai/event/events/BotGroupPermissionChangeEvent : 
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BaseGroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/Bot;JJJLjava/lang/String;Ljava/lang/String;)V
 	public final synthetic fun accept ()Lkotlin/Unit;
 	public final fun accept ()V
@@ -1946,7 +1946,7 @@ public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent 
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getEventId ()J
-	public final fun getGroupId ()J
+	public fun getGroupId ()J
 	public final fun getGroupName ()Ljava/lang/String;
 	public final fun getInvitor ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun getInvitorId ()J
@@ -1958,7 +1958,7 @@ public final class net/mamoe/mirai/event/events/BotInvitedJoinGroupRequestEvent 
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class net/mamoe/mirai/event/events/BotJoinGroupEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/internal/network/Packet {
+public abstract class net/mamoe/mirai/event/events/BotJoinGroupEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 }
 
@@ -1996,7 +1996,7 @@ public final class net/mamoe/mirai/event/events/BotJoinGroupEvent$Retrieve : net
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class net/mamoe/mirai/event/events/BotLeaveEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
+public abstract class net/mamoe/mirai/event/events/BotLeaveEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 }
@@ -2026,7 +2026,7 @@ public final class net/mamoe/mirai/event/events/BotLeaveEvent$Kick : net/mamoe/m
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/BotMuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/BotMuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (ILnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()I
 	public final fun component2 ()Lnet/mamoe/mirai/contact/NormalMember;
@@ -2181,7 +2181,7 @@ public final class net/mamoe/mirai/event/events/BotReloginEvent : net/mamoe/mira
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/BotUnmuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/BotUnmuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun copy (Lnet/mamoe/mirai/contact/NormalMember;)Lnet/mamoe/mirai/event/events/BotUnmuteEvent;
@@ -2200,7 +2200,7 @@ public final class net/mamoe/mirai/event/events/EventCancelledException : java/l
 	public fun <init> (Ljava/lang/Throwable;)V
 }
 
-public final class net/mamoe/mirai/event/events/FriendAddEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/FriendAddEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/Friend;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun copy (Lnet/mamoe/mirai/contact/Friend;)Lnet/mamoe/mirai/event/events/FriendAddEvent;
@@ -2221,7 +2221,7 @@ public final class net/mamoe/mirai/event/events/FriendAvatarChangedEvent : net/m
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/FriendDeleteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/FriendDeleteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun copy (Lnet/mamoe/mirai/contact/Friend;)Lnet/mamoe/mirai/event/events/FriendDeleteEvent;
 	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/FriendDeleteEvent;Lnet/mamoe/mirai/contact/Friend;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/FriendDeleteEvent;
@@ -2316,7 +2316,7 @@ public final class net/mamoe/mirai/event/events/FriendMessageSyncEvent : net/mam
 	public fun getTime ()I
 }
 
-public final class net/mamoe/mirai/event/events/FriendNickChangedEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/FriendNickChangedEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
@@ -2330,7 +2330,7 @@ public final class net/mamoe/mirai/event/events/FriendNickChangedEvent : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
@@ -2344,7 +2344,7 @@ public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/ma
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/GroupAllowAnonymousChatEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupAllowAnonymousChatEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (ZZLnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
@@ -2364,7 +2364,7 @@ public final class net/mamoe/mirai/event/events/GroupAllowAnonymousChatEvent : n
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/GroupAllowConfessTalkEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupAllowConfessTalkEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (ZZLnet/mamoe/mirai/contact/Group;Z)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
@@ -2383,7 +2383,7 @@ public final class net/mamoe/mirai/event/events/GroupAllowConfessTalkEvent : net
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/GroupAllowMemberInviteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupAllowMemberInviteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (ZZLnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
@@ -2407,7 +2407,7 @@ public abstract interface class net/mamoe/mirai/event/events/GroupAwareMessageEv
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 }
 
-public final class net/mamoe/mirai/event/events/GroupEntranceAnnouncementChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupEntranceAnnouncementChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
@@ -2505,7 +2505,7 @@ public final class net/mamoe/mirai/event/events/GroupMessageSyncEvent : net/mamo
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/GroupMuteAllEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupMuteAllEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (ZZLnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
@@ -2525,7 +2525,7 @@ public final class net/mamoe/mirai/event/events/GroupMuteAllEvent : net/mamoe/mi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/GroupNameChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/GroupNameChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/event/events/GroupSettingChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
@@ -2678,7 +2678,7 @@ public final class net/mamoe/mirai/event/events/ImageUploadEvent$Succeed : net/m
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberCardChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/MemberCardChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
@@ -2727,7 +2727,7 @@ public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose : ne
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class net/mamoe/mirai/event/events/MemberJoinEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+public abstract class net/mamoe/mirai/event/events/MemberJoinEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
@@ -2771,7 +2771,7 @@ public final class net/mamoe/mirai/event/events/MemberJoinEvent$Retrieve : net/m
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BaseGroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
 	public static final field Companion Lnet/mamoe/mirai/event/events/MemberJoinRequestEvent$Companion;
 	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Lnet/mamoe/mirai/Bot;JLjava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/Long;)V
@@ -2797,7 +2797,7 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public final fun getFromId ()J
 	public final fun getFromNick ()Ljava/lang/String;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
-	public final fun getGroupId ()J
+	public fun getGroupId ()J
 	public final fun getGroupName ()Ljava/lang/String;
 	public final fun getInvitor ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getInvitorId ()Ljava/lang/Long;
@@ -2820,7 +2820,7 @@ public final class net/mamoe/mirai/event/events/MemberJoinRequestEvent : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class net/mamoe/mirai/event/events/MemberLeaveEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent {
+public abstract class net/mamoe/mirai/event/events/MemberLeaveEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent {
 }
 
 public final class net/mamoe/mirai/event/events/MemberLeaveEvent$Kick : net/mamoe/mirai/event/events/MemberLeaveEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
@@ -2850,7 +2850,7 @@ public final class net/mamoe/mirai/event/events/MemberLeaveEvent$Quit : net/mamo
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberMuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/MemberMuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/Member;ILnet/mamoe/mirai/contact/Member;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Member;
 	public final fun component2 ()I
@@ -2865,7 +2865,7 @@ public final class net/mamoe/mirai/event/events/MemberMuteEvent : net/mamoe/mira
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberPermissionChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/MemberPermissionChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/contact/MemberPermission;Lnet/mamoe/mirai/contact/MemberPermission;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun component2 ()Lnet/mamoe/mirai/contact/MemberPermission;
@@ -2881,7 +2881,7 @@ public final class net/mamoe/mirai/event/events/MemberPermissionChangeEvent : ne
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberSpecialTitleChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupOperableEvent {
+public final class net/mamoe/mirai/event/events/MemberSpecialTitleChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/contact/NormalMember;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
@@ -2900,7 +2900,7 @@ public final class net/mamoe/mirai/event/events/MemberSpecialTitleChangeEvent : 
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/MemberUnmuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/MemberUnmuteEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun <init> (Lnet/mamoe/mirai/contact/Member;Lnet/mamoe/mirai/contact/Member;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Member;
 	public final fun component2 ()Lnet/mamoe/mirai/contact/Member;
@@ -2999,7 +2999,7 @@ public final class net/mamoe/mirai/event/events/MessageRecallEvent$GroupRecall :
 public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : net/mamoe/mirai/event/events/MessageEvent {
 }
 
-public final class net/mamoe/mirai/event/events/NewFriendRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/NewFriendRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public final synthetic fun accept ()Lkotlin/Unit;
 	public final fun accept ()V
 	public final fun accept (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -5393,6 +5393,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public fun <init> ()V
 	public final fun autoReconnectOnForceOffline ()V
 	public final fun copy ()Lnet/mamoe/mirai/utils/BotConfiguration;
+	public final fun enableFriendListCache ()V
+	public final fun enableGroupMemberListCache ()V
 	public final fun fileBasedDeviceInfo ()V
 	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
@@ -5401,6 +5403,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
 	public final fun getFirstReconnectDelayMillis ()J
+	public final fun getFriendListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$FriendListCache;
+	public final fun getGroupMemberListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache;
 	public final fun getHeartbeatPeriodMillis ()J
 	public final fun getHeartbeatTimeoutMillis ()J
 	public final fun getHighwayUploadCoroutineCount ()I
@@ -5439,6 +5443,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
+	public final fun setFriendListCache (Lnet/mamoe/mirai/utils/BotConfiguration$FriendListCache;)V
+	public final fun setGroupMemberListCache (Lnet/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache;)V
 	public final fun setHeartbeatPeriodMillis (J)V
 	public final fun setHeartbeatTimeoutMillis (J)V
 	public final fun setHighwayUploadCoroutineCount (I)V
@@ -5457,6 +5463,24 @@ public final class net/mamoe/mirai/utils/BotConfiguration$Companion {
 }
 
 public abstract interface annotation class net/mamoe/mirai/utils/BotConfiguration$ConfigurationDsl : java/lang/annotation/Annotation {
+}
+
+public final class net/mamoe/mirai/utils/BotConfiguration$FriendListCache {
+	public fun <init> ()V
+	public fun <init> (Ljava/io/File;)V
+	public fun <init> (Ljava/io/File;J)V
+	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCacheFile ()Ljava/io/File;
+	public final fun getSaveIntervalMillis ()J
+}
+
+public final class net/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache {
+	public fun <init> ()V
+	public fun <init> (Ljava/io/File;)V
+	public fun <init> (Ljava/io/File;J)V
+	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCacheDir ()Ljava/io/File;
+	public final fun getSaveIntervalMillis ()J
 }
 
 public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/lang/Enum {
