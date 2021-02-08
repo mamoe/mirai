@@ -31,6 +31,7 @@ import net.mamoe.mirai.message.data.toPlainText
  *
  * @see FriendMessageEvent
  */
+@JvmBlockingBridge
 public interface Friend : User, CoroutineScope {
     /**
      * QQ 号码
@@ -62,7 +63,6 @@ public interface Friend : User, CoroutineScope {
      *
      * @return 消息回执. 可 [引用][MessageReceipt.quote] 或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
 
     /**
@@ -70,14 +70,12 @@ public interface Friend : User, CoroutineScope {
      *
      * @see FriendDeleteEvent 好友删除事件
      */
-    @JvmBlockingBridge
     public suspend fun delete()
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Friend> =
         this.sendMessage(message.toPlainText())
 

@@ -36,6 +36,7 @@ public annotation class LowLevelApi
  * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
 @LowLevelApi
+@JvmBlockingBridge
 public interface LowLevelApiAccessor {
     /**
      * 主动刷新 keys, 如 SKey, PSKey 等.
@@ -70,7 +71,6 @@ public interface LowLevelApiAccessor {
      * @see recallMessage
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun recallGroupMessageRaw(
         bot: Bot,
         groupCode: Long,
@@ -83,7 +83,6 @@ public interface LowLevelApiAccessor {
      * @see recallMessage
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun recallFriendMessageRaw(
         bot: Bot,
         targetId: Long,
@@ -97,7 +96,6 @@ public interface LowLevelApiAccessor {
      * @see recallMessage
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun recallGroupTempMessageRaw(
         bot: Bot,
         groupUin: Long,
@@ -111,7 +109,6 @@ public interface LowLevelApiAccessor {
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun getRawGroupList(bot: Bot): Sequence<Long>
 
     /**
@@ -123,7 +120,6 @@ public interface LowLevelApiAccessor {
      * @see IMirai.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun getRawGroupMemberList(
         bot: Bot,
         groupUin: Long,
@@ -137,7 +133,6 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     @MiraiExperimentalApi
-    @JvmBlockingBridge
     public suspend fun getRawGroupAnnouncements(
         bot: Bot,
         groupId: Long,
@@ -151,7 +146,6 @@ public interface LowLevelApiAccessor {
      * @return 公告的fid
      */
     @LowLevelApi
-    @JvmBlockingBridge
     @MiraiExperimentalApi
     public suspend fun sendGroupAnnouncement(
         bot: Bot,
@@ -165,7 +159,6 @@ public interface LowLevelApiAccessor {
      * @param fid [GroupAnnouncement.fid]
      */
     @LowLevelApi
-    @JvmBlockingBridge
     @MiraiExperimentalApi
     public suspend fun deleteGroupAnnouncement(
         bot: Bot,
@@ -178,7 +171,6 @@ public interface LowLevelApiAccessor {
      * @param fid [GroupAnnouncement.fid]
      */
     @LowLevelApi
-    @JvmBlockingBridge
     @MiraiExperimentalApi
     public suspend fun getGroupAnnouncement(
         bot: Bot,
@@ -193,7 +185,6 @@ public interface LowLevelApiAccessor {
      * page从0开始传入可以得到发言列表
      */
     @LowLevelApi
-    @JvmBlockingBridge
     @MiraiExperimentalApi
     public suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int = -1): GroupActiveData
 
@@ -203,7 +194,6 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     @MiraiExperimentalApi
-    @JvmBlockingBridge
     public suspend fun getRawGroupHonorListData(
         bot: Bot,
         groupId: Long,
@@ -214,7 +204,6 @@ public interface LowLevelApiAccessor {
     /**
      * 处理一个账号请求添加机器人为好友的事件
      */
-    @JvmBlockingBridge
     @LowLevelApi
     public suspend fun solveNewFriendRequestEvent(
         bot: Bot,
@@ -229,7 +218,6 @@ public interface LowLevelApiAccessor {
      * 处理被邀请加入一个群请求事件
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -242,7 +230,6 @@ public interface LowLevelApiAccessor {
      * 处理账号请求加入群事件
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun solveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -258,7 +245,6 @@ public interface LowLevelApiAccessor {
      * 查询语音的下载连接
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun getGroupVoiceDownloadUrl(
         bot: Bot,
         md5: ByteArray,
@@ -272,7 +258,6 @@ public interface LowLevelApiAccessor {
      * @param anonymousId [AnonymousMember.anonymousId]
      */
     @LowLevelApi
-    @JvmBlockingBridge
     public suspend fun muteAnonymousMember(
         bot: Bot,
         anonymousId: String,

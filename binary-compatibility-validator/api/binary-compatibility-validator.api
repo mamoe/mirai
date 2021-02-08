@@ -162,6 +162,8 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun recallGroupMessageRaw (Lnet/mamoe/mirai/Bot;J[I[ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[II)Z
 	public abstract fun recallGroupTempMessageRaw (Lnet/mamoe/mirai/Bot;JJ[I[IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun refreshKeys (Lnet/mamoe/mirai/Bot;)Lkotlin/Unit;
+	public fun refreshKeys (Lnet/mamoe/mirai/Bot;)V
 	public abstract fun refreshKeys (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
 	public abstract fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -414,7 +416,9 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
+	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

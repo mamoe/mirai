@@ -27,6 +27,7 @@ import java.io.InputStream
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
+@JvmBlockingBridge
 public interface Contact : ContactOrBot, CoroutineScope {
     /**
      * 这个联系对象所属 [Bot].
@@ -57,14 +58,12 @@ public interface Contact : ContactOrBot, CoroutineScope {
      *
      * @return 消息回执. 可 [引用][MessageReceipt.quote] 或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmBlockingBridge
     public suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<Contact> = this.sendMessage(message.toPlainText())
 
     /**
@@ -84,9 +83,9 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
-    @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): Image
 
+    @JvmBlockingBridge
     public companion object {
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
@@ -98,7 +97,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          * @see FileCacheStrategy
          */
         @JvmStatic
-        @JvmBlockingBridge
         @JvmOverloads
         public suspend fun <C : Contact> C.sendImage(
             imageStream: InputStream,
@@ -112,7 +110,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          * @see FileCacheStrategy
          */
         @JvmStatic
-        @JvmBlockingBridge
         @JvmOverloads
         public suspend fun <C : Contact> C.sendImage(
             file: File,
@@ -124,7 +121,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          *
          * @see Contact.sendMessage 最终调用, 发送消息.
          */
-        @JvmBlockingBridge
         @JvmStatic
         public suspend fun <C : Contact> C.sendImage(resource: ExternalResource): MessageReceipt<C> =
             resource.sendAsImageTo(this)
@@ -139,7 +135,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
-        @JvmBlockingBridge
         @JvmOverloads
         public suspend fun Contact.uploadImage(
             imageStream: InputStream,
@@ -152,7 +147,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
-        @JvmBlockingBridge
         @JvmOverloads
         public suspend fun Contact.uploadImage(
             file: File,
@@ -165,7 +159,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
          */
         @Throws(OverFileSizeMaxException::class)
         @JvmStatic
-        @JvmBlockingBridge
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXTENSION_SHADOWED_BY_MEMBER")
         @kotlin.internal.LowPriorityInOverloadResolution // for better Java API
         public suspend fun Contact.uploadImage(resource: ExternalResource): Image = this.uploadImage(resource)

@@ -39,6 +39,7 @@ import net.mamoe.mirai.message.data.toPlainText
  *
  * @see StrangerMessageEvent
  */
+@JvmBlockingBridge
 public interface Stranger : User, CoroutineScope {
     /**
      * QQ 号码
@@ -66,7 +67,6 @@ public interface Stranger : User, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Stranger>
 
     /**
@@ -74,14 +74,12 @@ public interface Stranger : User, CoroutineScope {
      *
      * @see StrangerRelationChangeEvent.Deleted 陌生人删除事件
      */
-    @JvmBlockingBridge
     public suspend fun delete()
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Stranger> =
         this.sendMessage(message.toPlainText())
 
