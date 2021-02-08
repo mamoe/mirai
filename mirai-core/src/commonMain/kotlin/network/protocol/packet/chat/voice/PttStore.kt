@@ -29,9 +29,10 @@ import net.mamoe.mirai.utils.toUHexString
 internal val ExternalResource.voiceCodec: Int
     get() {
         return when (formatName) {
-            "amr" -> 0  // amr
+            // 实际上 amr 是 0, 但用 1 也可以发. 为了避免 silk 错被以 amr 发送导致降音质就都用 1
+            "amr" -> 1  // amr
             "silk" -> 1  // silk V3
-            else -> 0     // use amr by default
+            else -> 1     // use amr by default
         }
     }
 

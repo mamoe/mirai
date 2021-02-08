@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef

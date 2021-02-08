@@ -322,6 +322,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         }
     }
 
+    protected abstract suspend fun sendLogout()
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) {
@@ -331,6 +332,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
         if (::_network.isInitialized) {
             if (this.network.areYouOk()) {
+
+                // send log out
+                kotlin.runCatching { runBlocking { sendLogout() } } // just ignore errors
+
                 GlobalScope.launch {
                     runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
                         ?.let { logger.error(it) }

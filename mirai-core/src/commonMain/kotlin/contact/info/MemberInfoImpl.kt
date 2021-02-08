@@ -7,15 +7,17 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.contact
+package net.mamoe.mirai.internal.contact.info
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.utils.currentTimeSeconds
 
-internal class MemberInfoImpl(
+@Serializable
+internal data class MemberInfoImpl(
     override val uin: Long,
     override var nick: String,
     override var permission: MemberPermission,
@@ -27,7 +29,7 @@ internal class MemberInfoImpl(
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
     override var lastSpeakTimestamp: Int = 0,
     override val isOfficialBot: Boolean = false
-) : MemberInfo, UserInfoImpl(uin, nick, remark) {
+) : MemberInfo {
     constructor(
         client: QQAndroidClient,
         jceInfo: StTroopMemberInfo,

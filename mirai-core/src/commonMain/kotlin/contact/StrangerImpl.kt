@@ -15,17 +15,19 @@
     "INVISIBLE_REFERENCE"
 )
 
-package net.mamoe.mirai.internal.contact
+package contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.event.events.StrangerMessagePostSendEvent
 import net.mamoe.mirai.event.events.StrangerMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.AbstractUser
+import net.mamoe.mirai.internal.contact.StrangerSendMessageHandler
+import net.mamoe.mirai.internal.contact.sendMessageImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.message.MessageReceipt
@@ -35,20 +37,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
-
-internal class StrangerInfoImpl(
-    override val uin: Long, override val nick: String, override val fromGroup: Long = 0,
-    override val remark: String = ""
-) : StrangerInfo
-
-@OptIn(ExperimentalContracts::class)
-internal inline fun StrangerInfo.checkIsInfoImpl(): FriendInfoImpl {
-    contract {
-        returns() implies (this@checkIsInfoImpl is StrangerInfoImpl)
-    }
-    check(this is FriendInfoImpl) { "A StrangerInfo instance is not instance of StrangerInfoImpl. Your instance: ${this::class.qualifiedName}" }
-    return this
-}
 
 @OptIn(ExperimentalContracts::class)
 internal inline fun Stranger.checkIsImpl(): StrangerImpl {

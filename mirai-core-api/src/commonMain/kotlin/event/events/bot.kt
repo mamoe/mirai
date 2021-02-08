@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 /**
  * [Bot] 登录完成, 好友列表, 群组列表初始化完成
  */
-public data class BotOnlineEvent internal constructor(
+public data class BotOnlineEvent @MiraiInternalApi public constructor(
     public override val bot: Bot
 ) : BotActiveEvent, AbstractEvent()
 
@@ -55,7 +55,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 被挤下线. 默认不会自动重连. 可将 [reconnect] 改为 `true` 以重连.
      */
-    public data class Force internal constructor(
+    public data class Force @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public val title: String,
         public val message: String,
@@ -67,7 +67,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 被服务器断开
      */
     @MiraiInternalApi("This is very experimental and might be changed")
-    public data class MsfOffline internal constructor(
+    public data class MsfOffline @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
@@ -77,7 +77,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 因网络问题而掉线
      */
-    public data class Dropped internal constructor(
+    public data class Dropped @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
@@ -88,7 +88,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 因 returnCode = -10008 等原因掉线
      */
     @MiraiInternalApi("This is very experimental and might be changed")
-    public data class PacketFactoryErrorCode internal constructor(
+    public data class PacketFactoryErrorCode @MiraiInternalApi public constructor(
         val returnCode: Int,
         public override val bot: Bot,
         public override val cause: Throwable
@@ -100,7 +100,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 服务器主动要求更换另一个服务器
      */
     @MiraiInternalApi
-    public data class RequireReconnect internal constructor(
+    public data class RequireReconnect @MiraiInternalApi public constructor(
         public override val bot: Bot
     ) : BotOfflineEvent(), Packet, BotPassiveEvent {
         override var reconnect: Boolean = true
@@ -115,7 +115,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 /**
  * [Bot] 主动或被动重新登录. 在此事件广播前就已经登录完毕.
  */
-public data class BotReloginEvent internal constructor(
+public data class BotReloginEvent @MiraiInternalApi public constructor(
     public override val bot: Bot,
     public val cause: Throwable?
 ) : BotEvent, BotActiveEvent, AbstractEvent()

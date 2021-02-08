@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.network.FriendListCache
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.getRandomByteArray
@@ -94,29 +95,30 @@ internal class StatSvc {
 
     internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
-        internal object Response : Packet {
+        internal class Response(
+            val origin: SvcRespRegister
+        ) : Packet {
             override fun toString(): String = "Response(StatSvc.register)"
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val packet = readUniPacket(SvcRespRegister.serializer())
-            if (packet.updateFlag.toInt() == 1) {
-                //TODO 加载好友列表
-            }
-            if (packet.largeSeqUpdate.toInt() == 1) {
-                //TODO 刷新好友列表
-            }
             packet.iHelloInterval.let {
                 bot.configuration.heartbeatPeriodMillis = it.times(1000).toLong()
             }
 
-            return Response
+            return Response(packet)
         }
 
         fun online(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason)
+        ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
+            client.bot.friendListCache?.let { friendListCache: FriendListCache ->
+                iLargeSeq = friendListCache.friendListSeq
+              //  timeStamp = friendListCache.timeStamp
+            }
+        }
 
         fun offline(
             client: QQAndroidClient,
@@ -127,7 +129,8 @@ internal class StatSvc {
             client: QQAndroidClient,
             bid: Long,
             status: OnlineStatus,
-            regPushReason: RegPushReason = RegPushReason.appRegister
+            regPushReason: RegPushReason = RegPushReason.appRegister,
+            applyAction: SvcReqRegister.() -> Unit = {}
         ) = buildLoginOutgoingPacket(
             client,
             bodyType = 1,
@@ -198,7 +201,7 @@ internal class StatSvc {
                                     )
                                 ),
                                 bSetMute = 0
-                            )
+                            ).apply(applyAction)
                         )
                     )
                 )
@@ -268,7 +271,7 @@ internal class StatSvc {
 
                         val info = Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
                             ?: kotlin.run {
-                                delay(1000) // sometimes server sync slow
+                                delay(2000) // sometimes server sync slow
                                 Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
                             } ?: throw contextualBugReportException(
                                 "SvcReqMSFLoginNotify (OtherClient online)",

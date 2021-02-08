@@ -40,9 +40,6 @@ import kotlin.coroutines.CoroutineContext
 
 internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
 
-internal open class UserInfoImpl(override val uin: Long, override val nick: String, override val remark: String = "") :
-    UserInfo
-
 internal abstract class AbstractUser(
     bot: Bot,
     coroutineContext: CoroutineContext,

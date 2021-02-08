@@ -6,7 +6,7 @@ name: Release Publish
 # events but only for the master branch
 on:
   release:
-    types: [ created, prereleased ]
+    types: [ created ]
   push:
     tags:
       - '*-dev*'

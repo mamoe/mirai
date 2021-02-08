@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import contact.checkIsImpl
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -29,6 +30,8 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
@@ -42,7 +45,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.*
