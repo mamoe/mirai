@@ -87,6 +87,9 @@ internal data class ForwardMessageInternal(override val content: String, val res
 
 internal interface RefinableMessage : SingleMessage {
 
+    /**
+     * This message [RefinableMessage] will be replaced by return value of [refine]
+     */
     suspend fun refine(
         contact: Contact,
         context: MessageChain,

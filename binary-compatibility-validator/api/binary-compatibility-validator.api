@@ -5050,6 +5050,7 @@ public final class net/mamoe/mirai/message/data/RichMessage$Key : net/mamoe/mira
 public final class net/mamoe/mirai/message/data/RichMessageKind : java/lang/Enum {
 	public static final field FORWARD Lnet/mamoe/mirai/message/data/RichMessageKind;
 	public static final field LONG Lnet/mamoe/mirai/message/data/RichMessageKind;
+	public static final field MUSIC_SHARE Lnet/mamoe/mirai/message/data/RichMessageKind;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/RichMessageKind;
 	public static fun values ()[Lnet/mamoe/mirai/message/data/RichMessageKind;
 }
