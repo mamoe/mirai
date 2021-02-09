@@ -32,7 +32,7 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean --info
+        run: ./gradlew clean --scan
 
       - name: Check keys
         run: >
@@ -46,31 +46,31 @@ jobs:
       - name: fillBuildConstants
         run: >
           ./gradlew
-          fillBuildConstants --info --stacktrace
+          fillBuildConstants --scan
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Assemble
-        run: ./gradlew assemble --info --stacktrace
+        run: ./gradlew assemble --scan
 
       - name: Check
-        run: ./gradlew check --info --stacktrace
+        run: ./gradlew check --scan
 
       - name: Gradle :mirai-core-utils:publish
         run: >
-          ./gradlew :mirai-core-utils:publish --info --stacktrace
+          ./gradlew :mirai-core-utils:publish --scan
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core-api:publish
         run: >
-          ./gradlew :mirai-core-api:publish --info --stacktrace
+          ./gradlew :mirai-core-api:publish --scan
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core:publish
         run: >
-          ./gradlew :mirai-core:publish --info --stacktrace
+          ./gradlew :mirai-core:publish --scan
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
@@ -118,6 +118,6 @@ jobs:
       - name: Publish Gradle plugin
         run: >
           ./gradlew
-          :mirai-console-gradle:publishPlugins --info --stacktrace
+          :mirai-console-gradle:publishPlugins --scan
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
           -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}

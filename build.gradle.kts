@@ -144,6 +144,11 @@ tasks.register("cleanExceptIntellij") {
     }
 }
 
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
+}
+
 fun Project.useIr() {
     kotlinCompilations?.forEach { kotlinCompilation ->
         kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
