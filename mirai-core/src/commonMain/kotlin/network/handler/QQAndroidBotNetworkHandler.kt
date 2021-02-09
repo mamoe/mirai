@@ -361,7 +361,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             null -> {
                 val hasSession = bot.bdhSyncer.hasSession
                 kotlin.runCatching { bot.bdhSyncer.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
-                if (hasSession) {
+                if (!hasSession) {
                     logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
                 } else {
                     logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
