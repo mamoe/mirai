@@ -84,7 +84,7 @@ internal class GroupMemberListCaches(
     }
 
     private val cacheDir by lazy {
-        bot.configuration.groupMemberListCache!!.cacheDir.let { bot.configuration.workingDir.resolve(it) }
+        bot.configuration.groupMemberListCache!!.cacheDir.let { bot.configuration.cacheDirSupplier().resolve(it) }
     }
 
     private fun resolveCacheFile(groupCode: Long): File {

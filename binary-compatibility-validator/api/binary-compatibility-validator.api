@@ -5365,6 +5365,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun getAutoReconnectOnForceOffline ()Z
 	public final fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
+	public final fun getCacheDirSupplier ()Lkotlin/jvm/functions/Function0;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
 	public final fun getFirstReconnectDelayMillis ()J
@@ -5406,6 +5407,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun setAutoReconnectOnForceOffline (Z)V
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
+	public final fun setCacheDirSupplier (Lkotlin/jvm/functions/Function0;)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
 	public final fun setFriendListCache (Lnet/mamoe/mirai/utils/BotConfiguration$FriendListCache;)V
