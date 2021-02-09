@@ -371,19 +371,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 logger.info { "ConfigPushSvc.PushReq: Success." }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                bot.logger.info { "Server requires reconnect." }
-                bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
-
-                if (resp.serverList.isNotEmpty()) {
-                    bot.serverList.clear()
-                    resp.serverList.shuffled().forEach {
-                        bot.serverList.add(it.host to it.port)
-                    }
-                }
-                bot.bdhSyncer.saveToCache()
-                bot.bdhSyncer.saveServerListToCache()
-
-                bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
+                logger.info { "ConfigPushSvc.PushReq: Require reconnect" }
+                // handled in ConfigPushSvc
                 return@launch
             }
         }
