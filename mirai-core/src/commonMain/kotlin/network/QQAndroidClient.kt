@@ -19,6 +19,7 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.String
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -281,11 +282,6 @@ internal open class QQAndroidClient(
 
     lateinit var t104: ByteArray
 
-    /**
-     * from ConfigPush.PushReq
-     */
-    @JvmField
-    val bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
 }
 
 internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
@@ -298,6 +294,7 @@ internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraDat
     }
 }
 
+@Serializable
 internal class BdhSession(
     val sigSession: ByteArray,
     val sessionKey: ByteArray,

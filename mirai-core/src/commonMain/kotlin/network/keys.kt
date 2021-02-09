@@ -200,7 +200,10 @@ internal open class KeyWithCreationTime(
 
 internal suspend inline fun QQAndroidClient.useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
     if (bot.serverList.isEmpty()) {
-        bot.serverList.addAll(DefaultServerList)
+        bot.bdhSyncer.loadServerListFromCache()
+        if (bot.serverList.isEmpty()) {
+            bot.serverList.addAll(DefaultServerList)
+        }
     }
     retryCatchingExceptions(bot.serverList.size, except = LoginFailedException::class) l@{
         val pair = bot.serverList[0]

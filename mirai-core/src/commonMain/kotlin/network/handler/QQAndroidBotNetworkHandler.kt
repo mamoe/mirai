@@ -359,8 +359,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Awaiting ConfigPushSvc.PushReq." }
         when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
             null -> {
-                kotlin.runCatching { bot.client.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
-                logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+                val hasSession = bot.bdhSyncer.hasSession
+                kotlin.runCatching { bot.bdhSyncer.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
+                if (hasSession) {
+                    logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+                } else {
+                    logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
+                }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
                 logger.info { "ConfigPushSvc.PushReq: Success." }
@@ -375,6 +380,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         bot.serverList.add(it.host to it.port)
                     }
                 }
+                bot.bdhSyncer.saveToCache()
+                bot.bdhSyncer.saveServerListToCache()
 
                 bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
                 return@launch

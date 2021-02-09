@@ -59,7 +59,7 @@ internal object Highway {
         fallbackSession: (Throwable) -> BdhSession = { throw IllegalStateException("Failed to get bdh session", it) }
     ): BdhUploadResponse {
         val bdhSession = kotlin.runCatching {
-            val deferred = bot.client.bdhSession
+            val deferred = bot.bdhSyncer.bdhSession
             // no need to care about timeout. proceed by bot init
             @OptIn(ExperimentalCoroutinesApi::class)
             if (noBdhAwait) deferred.getCompleted() else deferred.await()

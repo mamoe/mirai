@@ -110,7 +110,7 @@ internal class ConfigPushSvc {
 
                 val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
                 if (bigDataChannel?.vBigdataPbBuf == null) {
-                    client.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    bot.bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
                     return
                 }
 
@@ -134,11 +134,11 @@ internal class ConfigPushSvc {
                     session
                 }.fold(
                     onSuccess = {
-                        client.bdhSession.complete(it)
+                        bdhSyncer.overrideSession(it)
                     },
                     onFailure = { cause ->
                         val e = IllegalStateException("Failed to decode BdhSession", cause)
-                        client.bdhSession.completeExceptionally(e)
+                        bdhSyncer.bdhSession.completeExceptionally(e)
                         logger.error(e)
                     }
                 )
