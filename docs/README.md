@@ -18,6 +18,7 @@
 **示例插件**：
 - [mirai-console-example-plugin (Kotlin DSL)](https://github.com/Him188/mirai-console-example-plugin)
 - [mirai-console-example-plugin (Groovy DSL)](https://github.com/Karlatemp/mirai-console-example-plugin)
+- [MAPluginTemplate (Groovy DSL)](https://github.com/project-mirai/MAPluginTemplate) Jvm和Android双平台通用模板
 
 ### 后端插件开发进阶
 
