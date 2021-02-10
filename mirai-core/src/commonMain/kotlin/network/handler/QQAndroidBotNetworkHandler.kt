@@ -293,9 +293,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 //                return null
 //            }
 //        }.buildOutgoingUniPacket(bot.client) {}.sendWithoutExpect()
-     //  kotlin.runCatching {
-     //      StatSvc.Register.offline(bot.client).sendAndExpect()
-     //  }.getOrElse { logger.warning(it) }
+        //  kotlin.runCatching {
+        //      StatSvc.Register.offline(bot.client).sendAndExpect()
+        //  }.getOrElse { logger.warning(it) }
 
         return StatSvc.Register.online(bot.client).sendAndExpect()
     }
@@ -336,7 +336,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         val registerResp = registerClientOnline()
 
-        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq"), block= ConfigPushSyncer())
+        this@QQAndroidBotNetworkHandler.launch(
+            CoroutineName("Awaiting ConfigPushSvc.PushReq"),
+            block = ConfigPushSyncer()
+        )
 
         launch {
             syncMessageSvc()
@@ -354,7 +357,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         postInitActions()
     }
 
-    @Suppress("FunctionName")
+    @Suppress("FunctionName", "UNUSED_VARIABLE")
     private fun BotNetworkHandler.ConfigPushSyncer(): suspend CoroutineScope.() -> Unit = launch@{
         logger.info { "Awaiting ConfigPushSvc.PushReq." }
         when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
@@ -362,7 +365,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 val hasSession = bot.bdhSyncer.hasSession
                 kotlin.runCatching { bot.bdhSyncer.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
                 if (!hasSession) {
-                    logger.warning { "Missing ConfigPushSvc.PushReq. File uploading may be affected." }
+                    logger.warning { "Missing ConfigPushSvc.PushReq. Switching server..." }
+                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
                 } else {
                     logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
                 }
