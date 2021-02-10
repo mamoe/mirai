@@ -36,7 +36,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.toUHexString
-import java.lang.IllegalStateException
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 
@@ -171,9 +170,11 @@ internal class ConfigPushSvc {
             when (packet) {
                 is PushReqResponse.Success -> {
                     handleSuccess(packet)
+                    if (!client::wLoginSigInfo.isInitialized) return null // concurrently doing reconnection
                     return buildResponseUniPacket(
                         client,
-                        sequenceId = sequenceId
+                        sequenceId = sequenceId,
+                        key = client.wLoginSigInfo.d2Key
                     ) {
                         writeJceStruct(
                             RequestPacket.serializer(),
