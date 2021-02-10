@@ -9,10 +9,14 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BdhSession
@@ -30,6 +34,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
+import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.toUHexString
 import java.lang.IllegalStateException
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushReq as PushReqJceStruct
@@ -110,7 +115,7 @@ internal class ConfigPushSvc {
 
                 val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
                 if (bigDataChannel?.vBigdataPbBuf == null) {
-                    client.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    bot.bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
                     return
                 }
 
@@ -134,14 +139,33 @@ internal class ConfigPushSvc {
                     session
                 }.fold(
                     onSuccess = {
-                        client.bdhSession.complete(it)
+                        bdhSyncer.overrideSession(it)
                     },
                     onFailure = { cause ->
                         val e = IllegalStateException("Failed to decode BdhSession", cause)
-                        client.bdhSession.completeExceptionally(e)
+                        bdhSyncer.bdhSession.completeExceptionally(e)
                         logger.error(e)
                     }
                 )
+            }
+
+            fun handleRequireReconnect(resp: PushReqResponse.ChangeServer) {
+                bot.logger.info { "Server requires reconnect." }
+                bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
+
+                if (resp.serverList.isNotEmpty()) {
+                    bot.serverList.clear()
+                    resp.serverList.shuffled().forEach {
+                        bot.serverList.add(it.host to it.port)
+                    }
+                }
+                bot.bdhSyncer.saveToCache()
+                bot.bdhSyncer.saveServerListToCache()
+
+                bot.launch {
+                    delay(1000)
+                    BotOfflineEvent.RequireReconnect(bot).broadcast()
+                }
             }
 
             when (packet) {
@@ -171,6 +195,10 @@ internal class ConfigPushSvc {
                         )
                         // writePacket(this.build().debugPrintThis())
                     }
+                }
+                is PushReqResponse.ChangeServer -> {
+                    handleRequireReconnect(packet)
+                    return null
                 }
                 else -> {
                     // handled in QQABot

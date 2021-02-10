@@ -108,8 +108,14 @@ public enum class RichMessageKind {
 
     /**
      * 合并转发
+     * @see ForwardMessage
      */
     FORWARD,
 
-    // TODO: 2021/2/3 MusicShare  RichMessageKind
+    /**
+     * 音乐分享
+     * @see MusicShare
+     * @since 2.4
+     */
+    MUSIC_SHARE,
 }

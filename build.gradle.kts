@@ -140,9 +140,19 @@ subprojects {
 tasks.register("cleanExceptIntellij") {
     group = "build"
     allprojects.forEach { proj ->
-        if (proj.name != "mirai-console-intellij")
+        if (proj.name != "mirai-console-intellij") {
+
+            // Type mismatch
+            // proj.tasks.findByName("clean")?.let(::dependsOn)
+
             proj.tasks.findByName("clean")?.let { dependsOn(it) }
+        }
     }
+}
+
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
 }
 
 fun Project.useIr() {

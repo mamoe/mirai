@@ -51,7 +51,7 @@ jobs:
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
 
       - name: Init gradle project
-        run: ./gradlew clean --info
+        run: ./gradlew clean --scan
 
       - name: Check keys
         run: >
@@ -68,25 +68,25 @@ jobs:
       - name: fillBuildConstants
         run: >
           ./gradlew
-          fillBuildConstants --info --stacktrace
+          fillBuildConstants --scan
 
       - name: Assemble
-        run: ./gradlew assemble --info --stacktrace
+        run: ./gradlew assemble --scan
 
       - name: Check
-        run: ./gradlew check --info --stacktrace
+        run: ./gradlew check --scan
 
       - name: Gradle :mirai-core-utils:publish
         run: >
-          ./gradlew :mirai-core-utils:publish --info --stacktrace
+          ./gradlew :mirai-core-utils:publish --scan
 
       - name: Gradle :mirai-core-api:publish
         run: >
-          ./gradlew :mirai-core-api:publish --info --stacktrace
+          ./gradlew :mirai-core-api:publish --scan
 
       - name: Gradle :mirai-core:publish
         run: >
-          ./gradlew :mirai-core:publish --info --stacktrace
+          ./gradlew :mirai-core:publish --scan
 
       - name: Gradle :mirai-core-all:publish
         run: >
@@ -115,7 +115,7 @@ jobs:
       - name: Publish Gradle plugin
         run: >
           ./gradlew
-          :mirai-console-gradle:publishPlugins --info --stacktrace
+          :mirai-console-gradle:publishPlugins --scan
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
           -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
 

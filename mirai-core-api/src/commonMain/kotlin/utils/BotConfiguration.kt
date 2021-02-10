@@ -57,6 +57,11 @@ public open class BotConfiguration { // open for Java
     public var workingDir: File = File(".")
 
     /**
+     * 缓存数据目录
+     */
+    public var cacheDirSupplier: (() -> File) = { workingDir.resolve("cache") }
+
+    /**
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
     @MiraiExperimentalApi
@@ -396,11 +401,11 @@ public open class BotConfiguration { // open for Java
      */
     public class FriendListCache @JvmOverloads constructor(
         /**
-         * 缓存文件位置, 相对于 [workingDir] 的路径.
+         * 缓存文件位置, 相对于 [cacheDirSupplier] 的路径.
          *
          * 注意: 保存的文件仅供内部使用, 将来可能会变化.
          */
-        public val cacheFile: File = File("cache/friends.json"),
+        public val cacheFile: File = File("friends.json"),
         /**
          * 在有好友列表修改时自动保存间隔
          */
@@ -432,11 +437,11 @@ public open class BotConfiguration { // open for Java
      */
     public class GroupMemberListCache @JvmOverloads constructor(
         /**
-         * 缓存目录位置, 相对于 [workingDir] 的路径.
+         * 缓存目录位置, 相对于 [cacheDirSupplier] 的路径.
          *
          * 注意: 保存的文件仅供内部使用, 将来可能会变化.
          */
-        public val cacheDir: File = File("cache/groups"),
+        public val cacheDir: File = File("groups"),
         /**
          * 在有成员列表修改时自动保存间隔
          */
@@ -470,6 +475,7 @@ public open class BotConfiguration { // open for Java
         return BotConfiguration().also { new ->
             // To structural order
             new.workingDir = workingDir
+            new.cacheDirSupplier = cacheDirSupplier
             new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis

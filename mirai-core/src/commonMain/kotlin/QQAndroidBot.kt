@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
@@ -57,6 +58,8 @@ internal class QQAndroidBot constructor(
     private val account: BotAccount,
     configuration: BotConfiguration
 ) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
+    val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
+
     var client: QQAndroidClient = initClient()
         private set
 
@@ -79,7 +82,7 @@ internal class QQAndroidBot constructor(
 
     val friendListCache: FriendListCache? by lazy {
         configuration.friendListCache?.cacheFile?.let { cacheFile ->
-            val ret = configuration.workingDir.resolve(cacheFile).loadAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
+            val ret = configuration.cacheDirSupplier().resolve(cacheFile).loadAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             bot.eventChannel.parentScope(this@QQAndroidBot)
@@ -130,6 +133,7 @@ internal class QQAndroidBot constructor(
     @ThisApiMustBeUsedInWithConnectionLockBlock
     @Throws(LoginFailedException::class) // only
     override suspend fun relogin(cause: Throwable?) {
+        bdhSyncer.loadFromCache()
         client.useNextServers { host, port ->
             network.closeEverythingAndRelogin(host, port, cause, 0)
         }

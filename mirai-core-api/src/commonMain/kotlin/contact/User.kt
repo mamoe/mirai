@@ -36,6 +36,7 @@ import net.mamoe.mirai.message.data.toPlainText
  *
  * 对于同一个 [Bot] 任何一个人的 [User] 实例都是单一的.
  */
+@JvmBlockingBridge
 public interface User : Contact, UserOrBot, CoroutineScope {
     /**
      * QQ 号码
@@ -72,14 +73,12 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      *
      * @return 消息回执. 可 [引用][MessageReceipt.quote] 或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<User>
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<User> =
         this.sendMessage(message.toPlainText())
 
@@ -95,7 +94,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      *
      * @since 2.1
      */
-    @JvmBlockingBridge
     public suspend fun queryProfile(): UserProfile = Mirai.queryProfile(bot, this.id)
 }
 

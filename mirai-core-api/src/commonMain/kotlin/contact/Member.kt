@@ -34,6 +34,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * - [Member.asFriend] 转换为 [Friend]
  * - [Member.asStranger] 转换为 [Stranger]
  */
+@JvmBlockingBridge
 public interface Member : User {
     /**
      * 所在的群.
@@ -79,7 +80,6 @@ public interface Member : User {
      *
      * @see Member.mute 支持 Kotlin [kotlin.time.Duration] 的扩展
      */
-    @JvmBlockingBridge
     public suspend fun mute(durationSeconds: Int)
 
     /**

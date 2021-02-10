@@ -68,7 +68,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     }
 
     // region network
-    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
+    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf()
 
     val network: N get() = _network
 
@@ -149,7 +149,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                 bot.asQQAndroidBot().client.run {
                     if (serverList.isEmpty()) {
-                        serverList.addAll(DefaultServerList)
+                        bot.asQQAndroidBot().bdhSyncer.loadServerListFromCache()
+                        if (serverList.isEmpty()) {
+                            serverList.addAll(DefaultServerList)
+                        } else Unit
                     } else serverList.removeAt(0)
                 }
 

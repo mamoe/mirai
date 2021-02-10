@@ -12,42 +12,48 @@ package net.mamoe.mirai.internal.message
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import net.mamoe.mirai.message.data.LightApp
-import net.mamoe.mirai.message.data.MusicKind
-import net.mamoe.mirai.message.data.MusicShare
-import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.safeCast
 
-private val json = Json {
-    ignoreUnknownKeys = true
-}
+internal data class LightAppInternal(
+    override val content: String
+) : RichMessage, RefinableMessage {
+    companion object Key :
+        AbstractPolymorphicMessageKey<RichMessage, LightAppInternal>(RichMessage, { it.safeCast() })
 
-internal fun LightApp.tryDeserialize(): LightAppStruct? {
-    return kotlin.runCatching {
-        json.decodeFromString(LightAppStruct.serializer(), this.content)
-    }.getOrNull()
-}
-
-/**
- * 识别 app 内容, 如果有必要
- */
-internal fun LightApp.refine(): SingleMessage {
-    val struct = tryDeserialize() ?: return this
-    struct.run {
-        if (meta.music != null) {
-            MusicKind.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
-                meta.music.run {
-                    return MusicShare(
-                        kind = musicType, title = title, summary = desc,
-                        jumpUrl = jumpUrl, pictureUrl = preview, musicUrl = musicUrl, brief = prompt
-                    )
+    override suspend fun refine(contact: Contact, context: MessageChain): Message {
+        val struct = tryDeserialize() ?: return LightApp(content)
+        struct.run {
+            if (meta.music != null) {
+                MusicKind.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
+                    meta.music.run {
+                        return RichMessageOrigin(
+                            LightApp(content),
+                            null,
+                            RichMessageKind.MUSIC_SHARE
+                        ) + MusicShare(
+                            kind = musicType, title = title, summary = desc,
+                            jumpUrl = jumpUrl, pictureUrl = preview, musicUrl = musicUrl, brief = prompt
+                        )
+                    }
                 }
             }
         }
 
-
+        return LightApp(content)
     }
+}
 
-    return this
+private val json = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+}
+
+internal fun LightAppInternal.tryDeserialize(): LightAppStruct? {
+    return kotlin.runCatching {
+        json.decodeFromString(LightAppStruct.serializer(), this.content)
+    }.getOrNull()
 }
 
 /*

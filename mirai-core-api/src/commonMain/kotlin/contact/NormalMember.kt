@@ -27,6 +27,7 @@ import kotlin.time.ExperimentalTime
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
  */
+@JvmBlockingBridge
 public interface NormalMember : Member {
     /**
      * 群名片. 可能为空.
@@ -88,7 +89,6 @@ public interface NormalMember : Member {
      *
      * @throws PermissionDeniedException 无权限修改时抛出
      */
-    @JvmBlockingBridge
     public suspend fun unmute()
 
     /**
@@ -100,7 +100,6 @@ public interface NormalMember : Member {
      * @throws PermissionDeniedException 无权限修改时
      *
      */
-    @JvmBlockingBridge
     public suspend fun kick(message: String)
 
     /**
@@ -122,14 +121,12 @@ public interface NormalMember : Member {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember>
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<NormalMember> =
         this.sendMessage(message.toPlainText())
 

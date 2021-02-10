@@ -278,7 +278,7 @@ private object ReceiveMessageTransformer {
             }
         }
 
-        list.add(LightApp(content).refine())
+        list.add(LightAppInternal(content))
     }
 
     private fun decodeCustomElem(

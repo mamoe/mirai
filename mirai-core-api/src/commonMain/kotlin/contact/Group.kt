@@ -25,6 +25,7 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
 /**
  * 群.
  */
+@JvmBlockingBridge
 public interface Group : Contact, CoroutineScope {
     /**
      * 群名称.
@@ -123,7 +124,6 @@ public interface Group : Contact, CoroutineScope {
      * @throws IllegalStateException 当机器人为群主时
      * @return 退出成功时 true; 已经退出时 false
      */
-    @JvmBlockingBridge
     public suspend fun quit(): Boolean
 
     /**
@@ -141,14 +141,12 @@ public interface Group : Contact, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
-    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
         this.sendMessage(message.toPlainText())
 
@@ -163,7 +161,6 @@ public interface Group : Contact, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
-    @JvmBlockingBridge
     public suspend fun uploadVoice(resource: ExternalResource): Voice
 
 
@@ -175,7 +172,6 @@ public interface Group : Contact, CoroutineScope {
      *
      * @since 2.2
      */
-    @JvmBlockingBridge
     public suspend fun setEssenceMessage(source: MessageSource): Boolean
 
     public companion object {
