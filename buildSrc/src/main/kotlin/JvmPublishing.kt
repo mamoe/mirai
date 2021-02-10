@@ -51,6 +51,7 @@ fun Project.configureRemoteRepos(
             val sonatype = keys.loadKey("sonatype")
             if (sonatype.isValid) {
                 maven {
+                    name = "MavenCentral"
                     // Maven Central
                     setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
 
@@ -66,6 +67,7 @@ fun Project.configureRemoteRepos(
 
             if (isBintrayAvailable()) {
                 maven {
+                    name = "Bintray"
                     setUrl("https://api.bintray.com/maven/him188moe/mirai/$bintrayPkgName/;publish=1;override=1")
 
                     credentials {
