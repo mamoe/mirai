@@ -1,3 +1,7 @@
 <component name="CopyrightManager">
-  <settings default="Mamoe/mirai" />
+  <settings default="Mamoe/mirai">
+    <module2copyright>
+      <element module="Production" copyright="Mamoe/mirai" />
+    </module2copyright>
+  </settings>
 </component>
