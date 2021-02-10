@@ -29,6 +29,7 @@ include(":mirai-core")
 include(":mirai-core-all")
 
 include(":binary-compatibility-validator")
+include(":ci-release-helper")
 
 
 fun includeConsoleProjects() {

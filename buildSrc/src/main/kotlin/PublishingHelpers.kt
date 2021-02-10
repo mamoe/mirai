@@ -15,6 +15,7 @@
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.PublicationContainer
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.ExistingDomainObjectDelegate
 import org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithTypeAndAction
@@ -77,3 +78,40 @@ val Project.publications: PublicationContainer
         }
         return ret
     }
+
+fun MavenPublication.setupPom(
+    project: Project,
+    vcs: String = "https://github.com/mamoe/mirai"
+) {
+    pom {
+        scm {
+            url.set(vcs)
+            connection.set("scm:$vcs.git")
+            developerConnection.set("scm:${vcs.replace("https:", "git:")}.git")
+        }
+
+        licenses {
+            license {
+                name.set("GNU AGPLv3")
+                url.set("https://github.com/mamoe/mirai/blob/master/LICENSE")
+            }
+        }
+
+        developers {
+            developer {
+                id.set("mamoe")
+                name.set("Mamoe Technologies")
+                email.set("support@mamoe.net")
+            }
+        }
+
+    }
+
+    pom.withXml {
+        val root = asNode()
+        root.appendNode("description", project.description)
+        root.appendNode("name", project.name)
+        root.appendNode("url", vcs)
+    }
+}
+
