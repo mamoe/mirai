@@ -7,13 +7,17 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MiraiUtils")
+
+
 package net.mamoe.mirai.utils
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.StringFormat
 import java.io.File
 
-public fun <T> File.loadAs(
+public fun <T> File.loadNotBlankAs(
     serializer: DeserializationStrategy<T>,
     stringFormat: StringFormat,
 ): T? {

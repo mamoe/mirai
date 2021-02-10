@@ -5365,12 +5365,11 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun getAutoReconnectOnForceOffline ()Z
 	public final fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
-	public final fun getCacheDirSupplier ()Lkotlin/jvm/functions/Function0;
+	public final fun getCacheDir ()Ljava/io/File;
+	public final fun getContactListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
 	public final fun getFirstReconnectDelayMillis ()J
-	public final fun getFriendListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$FriendListCache;
-	public final fun getGroupMemberListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache;
 	public final fun getHeartbeatPeriodMillis ()J
 	public final fun getHeartbeatTimeoutMillis ()J
 	public final fun getHighwayUploadCoroutineCount ()I
@@ -5407,11 +5406,10 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun setAutoReconnectOnForceOffline (Z)V
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
-	public final fun setCacheDirSupplier (Lkotlin/jvm/functions/Function0;)V
+	public final fun setCacheDir (Ljava/io/File;)V
+	public final fun setContactListCache (Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
-	public final fun setFriendListCache (Lnet/mamoe/mirai/utils/BotConfiguration$FriendListCache;)V
-	public final fun setGroupMemberListCache (Lnet/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache;)V
 	public final fun setHeartbeatPeriodMillis (J)V
 	public final fun setHeartbeatTimeoutMillis (J)V
 	public final fun setHighwayUploadCoroutineCount (I)V
@@ -5432,22 +5430,14 @@ public final class net/mamoe/mirai/utils/BotConfiguration$Companion {
 public abstract interface annotation class net/mamoe/mirai/utils/BotConfiguration$ConfigurationDsl : java/lang/annotation/Annotation {
 }
 
-public final class net/mamoe/mirai/utils/BotConfiguration$FriendListCache {
+public final class net/mamoe/mirai/utils/BotConfiguration$ContactListCache {
 	public fun <init> ()V
-	public fun <init> (Ljava/io/File;)V
-	public fun <init> (Ljava/io/File;J)V
-	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getCacheFile ()Ljava/io/File;
+	public final fun getFriendListCacheEnabled ()Z
+	public final fun getGroupMemberListCacheEnabled ()Z
 	public final fun getSaveIntervalMillis ()J
-}
-
-public final class net/mamoe/mirai/utils/BotConfiguration$GroupMemberListCache {
-	public fun <init> ()V
-	public fun <init> (Ljava/io/File;)V
-	public fun <init> (Ljava/io/File;J)V
-	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getCacheDir ()Ljava/io/File;
-	public final fun getSaveIntervalMillis ()J
+	public final fun setFriendListCacheEnabled (Z)V
+	public final fun setGroupMemberListCacheEnabled (Z)V
+	public final fun setSaveIntervalMillis (J)V
 }
 
 public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/lang/Enum {

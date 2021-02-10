@@ -12,16 +12,23 @@ package net.mamoe.mirai.internal.network.handler
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.PairSerializer
-import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.JsonForCache
+import net.mamoe.mirai.internal.network.ProtoBufForCache
+import net.mamoe.mirai.internal.utils.actualCacheDir
 import java.io.File
 
-private val ServerListSerializer: KSerializer<List<Pair<String, Int>>> =
-    ListSerializer(PairSerializer(String.serializer(), Int.serializer()))
+@Serializable
+private data class ServerHostAndPort(
+    val host: String,
+    val port: Int,
+)
+
+private val ServerListSerializer: KSerializer<List<ServerHostAndPort>> =
+    ListSerializer(ServerHostAndPort.serializer())
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class BdhSessionSyncer(
@@ -42,9 +49,9 @@ internal class BdhSessionSyncer(
     }
 
     private val sessionCacheFile: File
-        get() = bot.configuration.cacheDirSupplier().resolve("session.json")
+        get() = bot.configuration.actualCacheDir().resolve("session.bin")
     private val serverListCacheFile: File
-        get() = bot.configuration.cacheDirSupplier().resolve("serverlist.json")
+        get() = bot.configuration.actualCacheDir().resolve("servers.json")
 
     fun loadServerListFromCache() {
         val serverListCacheFile = this.serverListCacheFile
@@ -53,7 +60,7 @@ internal class BdhSessionSyncer(
             kotlin.runCatching {
                 val list = JsonForCache.decodeFromString(ServerListSerializer, serverListCacheFile.readText())
                 bot.serverList.clear()
-                bot.serverList.addAll(list)
+                bot.serverList.addAll(list.map { it.host to it.port })
             }.onFailure {
                 bot.network.logger.warning("Error in loading server list from cache", it)
             }
@@ -68,10 +75,11 @@ internal class BdhSessionSyncer(
             bot.network.logger.verbose("Loading BdhSession from cache file")
             kotlin.runCatching {
                 overrideSession(
-                    JsonForCache.decodeFromString(BdhSession.serializer(), sessionCacheFile.readText()),
+                    ProtoBufForCache.decodeFromByteArray(BdhSession.serializer(), sessionCacheFile.readBytes()),
                     doSave = false
                 )
             }.onFailure {
+                kotlin.runCatching { sessionCacheFile.delete() }
                 bot.network.logger.warning("Error in loading BdhSession from cache", it)
             }
         } else {
@@ -88,7 +96,7 @@ internal class BdhSessionSyncer(
             serverListCacheFile.writeText(
                 JsonForCache.encodeToString(
                     ServerListSerializer,
-                    bot.serverList
+                    bot.serverList.map { ServerHostAndPort(it.first, it.second) }
                 )
             )
         }.onFailure {
@@ -102,8 +110,8 @@ internal class BdhSessionSyncer(
         if (bdhSession.isCompleted) {
             bot.network.logger.verbose("Saving bdh session to cache")
             kotlin.runCatching {
-                sessionCacheFile.writeText(
-                    JsonForCache.encodeToString(
+                sessionCacheFile.writeBytes(
+                    ProtoBufForCache.encodeToByteArray(
                         BdhSession.serializer(),
                         bdhSession.getCompleted()
                     )

@@ -32,6 +32,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespTy
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.ScheduledJob
+import net.mamoe.mirai.internal.utils.friendCacheFile
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -81,8 +82,9 @@ internal class QQAndroidBot constructor(
     override val friends: ContactList<Friend> = ContactList()
 
     val friendListCache: FriendListCache? by lazy {
-        configuration.friendListCache?.cacheFile?.let { cacheFile ->
-            val ret = configuration.cacheDirSupplier().resolve(cacheFile).loadAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+            val file = configuration.friendCacheFile()
+            val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             bot.eventChannel.parentScope(this@QQAndroidBot)
@@ -90,31 +92,29 @@ internal class QQAndroidBot constructor(
                     friendListSaver?.notice()
                 }
             ret
-        }
     }
 
     val groupMemberListCaches: GroupMemberListCaches? by lazy {
-        if (configuration.groupMemberListCache!= null) {
+        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
+            return@lazy null
+        }
             GroupMemberListCaches(this)
-        } else null
     }
 
     private val friendListSaver by lazy {
-        configuration.friendListCache?.let { friendListCache: BotConfiguration.FriendListCache ->
-
-            ScheduledJob(coroutineContext, friendListCache.saveIntervalMillis.milliseconds) {
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+            ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
                 runBIO { saveFriendCache() }
             }
-        }
     }
+
     fun saveFriendCache() {
-        val friendListCache = friendListCache
-        if (friendListCache != null) {
-            configuration.friendListCache?.cacheFile?.let { configuration.workingDir.resolve(it) }?.run {
-                createFileIfNotExists()
-                writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
-                bot.network.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
-            }
+        val friendListCache = friendListCache ?: return
+
+        configuration.friendCacheFile().run {
+            createFileIfNotExists()
+            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
+            bot.network.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
         }
     }
 

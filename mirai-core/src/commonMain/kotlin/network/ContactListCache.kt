@@ -11,11 +11,13 @@ package net.mamoe.mirai.internal.network
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.utils.ScheduledJob
+import net.mamoe.mirai.internal.utils.groupCacheDir
 import net.mamoe.mirai.utils.createFileIfNotExists
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.runBIO
@@ -28,6 +30,11 @@ internal val JsonForCache = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
     isLenient = true
+    prettyPrint = true
+}
+
+internal val ProtoBufForCache = ProtoBuf {
+    encodeDefaults = true
 }
 
 @Serializable
@@ -64,7 +71,7 @@ internal class GroupMemberListCaches(
 
     private val changedGroups: MutableCollection<Long> = ConcurrentLinkedQueue()
     private val groupListSaver by lazy {
-        ScheduledJob(bot.coroutineContext, bot.configuration.groupMemberListCache!!.saveIntervalMillis.milliseconds) {
+        ScheduledJob(bot.coroutineContext, bot.configuration.contactListCache.saveIntervalMillis.milliseconds) {
             runBIO { saveGroupCaches() }
         }
     }
@@ -83,9 +90,7 @@ internal class GroupMemberListCaches(
         return ret
     }
 
-    private val cacheDir by lazy {
-        bot.configuration.groupMemberListCache!!.cacheDir.let { bot.configuration.cacheDirSupplier().resolve(it) }
-    }
+    private val cacheDir by lazy { bot.configuration.groupCacheDir() }
 
     private fun resolveCacheFile(groupCode: Long): File {
         cacheDir.mkdirs()

@@ -57,11 +57,6 @@ public open class BotConfiguration { // open for Java
     public var workingDir: File = File(".")
 
     /**
-     * 缓存数据目录
-     */
-    public var cacheDirSupplier: (() -> File) = { workingDir.resolve("cache") }
-
-    /**
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
     @MiraiExperimentalApi
@@ -388,29 +383,37 @@ public open class BotConfiguration { // open for Java
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * 非 `null` 时启用好友列表缓存, 加快初始化速度. 在启用后将会在下载好友列表后保存到文件, 并在修改时自动保存.
+     * 缓存数据目录, 相对于 [workingDir]
      * @since 2.4
-     * @see disableFriendListCache
      */
-    public var friendListCache: FriendListCache? = FriendListCache()
+    public var cacheDir: File = File("cache")
 
     /**
-     * 好友列表缓存设置.
+     * 联系人信息缓存配置. 将会保存在 [cacheDir] 中 `contacts` 目录
      * @since 2.4
-     * @see friendListCache
      */
-    public class FriendListCache @JvmOverloads constructor(
+    public var contactListCache: ContactListCache = ContactListCache()
+
+    /**
+     * 联系人信息缓存配置
+     * @since 2.4
+     */
+    public class ContactListCache {
         /**
-         * 缓存文件位置, 相对于 [cacheDirSupplier] 的路径.
-         *
-         * 注意: 保存的文件仅供内部使用, 将来可能会变化.
+         * 在有修改时自动保存间隔. 默认 60 秒. 在每次登录完成后有修改时都会立即保存一次.
          */
-        public val cacheFile: File = File("friends.json"),
+        public var saveIntervalMillis: Long = 60_000
+
         /**
-         * 在有好友列表修改时自动保存间隔
+         * 开启好友列表缓存
          */
-        public val saveIntervalMillis: Long = 60_000,
-    )
+        public var friendListCacheEnabled: Boolean = true
+
+        /**
+         * 开启好友列表缓存
+         */
+        public var groupMemberListCacheEnabled: Boolean = true
+    }
 
     /**
      * 禁用好友列表缓存.
@@ -418,35 +421,8 @@ public open class BotConfiguration { // open for Java
      */
     @ConfigurationDsl
     public fun disableFriendListCache() {
-        friendListCache = null
+        contactListCache.friendListCacheEnabled = false
     }
-
-
-
-    /**
-     * 非 `null` 时启用群成员列表缓存, 加快初始化速度. 在启用后将会在下载群成员列表后保存到文件, 并在修改时自动保存.
-     * @since 2.4
-     * @see disableGroupMemberListCache
-     */
-    public var groupMemberListCache: GroupMemberListCache? = GroupMemberListCache()
-
-    /**
-     * 群成员列表缓存设置.
-     * @since 2.4
-     * @see groupMemberListCache
-     */
-    public class GroupMemberListCache @JvmOverloads constructor(
-        /**
-         * 缓存目录位置, 相对于 [cacheDirSupplier] 的路径.
-         *
-         * 注意: 保存的文件仅供内部使用, 将来可能会变化.
-         */
-        public val cacheDir: File = File("groups"),
-        /**
-         * 在有成员列表修改时自动保存间隔
-         */
-        public val saveIntervalMillis: Long = 60_000,
-    )
 
     /**
      * 禁用群成员列表缓存.
@@ -454,17 +430,17 @@ public open class BotConfiguration { // open for Java
      */
     @ConfigurationDsl
     public fun disableGroupMemberListCache() {
-        groupMemberListCache = null
+        contactListCache.groupMemberListCacheEnabled = false
     }
 
     /**
-     * 禁用好友列表, 群成员列表, 陌生人列表的缓存.
+     * 禁用好友列表和群成员列表的缓存.
      * @since 2.4
      */
     @ConfigurationDsl
     public fun disableContactCaches() {
-        disableFriendListCache()
-        disableGroupMemberListCache()
+        contactListCache.friendListCacheEnabled = false
+        contactListCache.groupMemberListCacheEnabled = false
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -475,7 +451,6 @@ public open class BotConfiguration { // open for Java
         return BotConfiguration().also { new ->
             // To structural order
             new.workingDir = workingDir
-            new.cacheDirSupplier = cacheDirSupplier
             new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
@@ -490,8 +465,8 @@ public open class BotConfiguration { // open for Java
             new.deviceInfo = deviceInfo
             new.botLoggerSupplier = botLoggerSupplier
             new.networkLoggerSupplier = networkLoggerSupplier
-            new.friendListCache = friendListCache
-            new.groupMemberListCache = groupMemberListCache
+            new.cacheDir = cacheDir
+            new.contactListCache = contactListCache
         }
     }
 

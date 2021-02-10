@@ -132,3 +132,9 @@ public fun File.createFileIfNotExists() {
         this.createNewFile()
     }
 }
+
+public fun File.resolveCreateFile(relative: String): File = this.resolve(relative).apply { createFileIfNotExists() }
+public fun File.resolveCreateFile(relative: File): File = this.resolve(relative).apply { createFileIfNotExists() }
+
+public fun File.resolveMkdir(relative: String): File = this.resolve(relative).apply { mkdirs() }
+public fun File.resolveMkdir(relative: File): File = this.resolve(relative).apply { mkdirs() }
