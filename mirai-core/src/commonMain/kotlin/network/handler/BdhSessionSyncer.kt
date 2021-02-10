@@ -35,7 +35,8 @@ internal class BdhSessionSyncer(
     private val bot: QQAndroidBot
 ) {
     var bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
-    val hasSession: Boolean get() = bdhSession.isCompleted
+    val hasSession: Boolean
+        get() = kotlin.runCatching { bdhSession.getCompleted() }.isSuccess
 
     fun overrideSession(
         session: BdhSession,
