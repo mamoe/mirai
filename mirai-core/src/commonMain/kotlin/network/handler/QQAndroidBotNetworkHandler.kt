@@ -368,7 +368,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     logger.warning { "Missing ConfigPushSvc.PushReq. Switching server..." }
                     bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
                 } else {
-                    logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
+                    logger.warning { "Missing ConfigPushSvc.PushReq. Using the latest response. File uploading may be affected." }
                 }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
