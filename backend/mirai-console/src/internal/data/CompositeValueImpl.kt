@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused")
@@ -109,13 +109,14 @@ internal abstract class CompositeListValueImpl<T>(
 
 // workaround to a type inference bug
 internal fun <K, V> PluginData.createCompositeMapValueImpl(
+    mapInitializer: (() -> MutableMap<Value<K>, Value<V>>?)? = null,
     kToValue: (K) -> Value<K>,
     vToValue: (V) -> Value<V>,
     valueToK: (Value<K>) -> K = Value<K>::value,
     valueToV: (Value<V>) -> V = Value<V>::value,
     applyToShadowedMap: ((MutableMap<K, V>) -> (MutableMap<K, V>))? = null
 ): CompositeMapValueImpl<K, V> {
-    return object : CompositeMapValueImpl<K, V>(kToValue, vToValue, valueToK, valueToV, applyToShadowedMap) {
+    return object : CompositeMapValueImpl<K, V>(mapInitializer, kToValue, vToValue, valueToK, valueToV, applyToShadowedMap) {
         override fun onChanged() = this@createCompositeMapValueImpl.onValueChanged(this)
     }
 }
@@ -123,6 +124,7 @@ internal fun <K, V> PluginData.createCompositeMapValueImpl(
 // TODO: 2020/6/24 在一个 Value 被删除后停止追踪其更新.
 
 internal abstract class CompositeMapValueImpl<K, V>(
+    mapInitializer: (() -> MutableMap<Value<K>, Value<V>>?)? = null,
     @JvmField internal val kToValue: (K) -> Value<K>, // should override onChanged
     @JvmField internal val vToValue: (V) -> Value<V>, // should override onChanged
     @JvmField internal val valueToK: (Value<K>) -> K = Value<K>::value,
@@ -130,7 +132,7 @@ internal abstract class CompositeMapValueImpl<K, V>(
     applyToShadowedMap: ((MutableMap<K, V>) -> (MutableMap<K, V>))? = null
 ) : CompositeMapValue<K, V>, AbstractValueImpl<Map<K, V>>() {
     @JvmField
-    internal val internalList: MutableMap<Value<K>, Value<V>> = mutableMapOf()
+    internal val internalList: MutableMap<Value<K>, Value<V>> = mapInitializer?.invoke() ?: mutableMapOf()
 
     private var _value: MutableMap<K, V> =
         internalList.shadowMap(valueToK, kToValue, valueToV, vToValue).let {
