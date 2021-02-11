@@ -47,10 +47,22 @@ tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class
     }
 }
 
+fun File.resolveMkdir(relative: String): File {
+    return this.resolve(relative).apply { mkdirs() }
+}
+
+tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask> {
+    // redirect config and cache files so as not to be cleared by task 'clean'
+    val ideaSandbox = project.file("run/idea-sandbox")
+    configDirectory(ideaSandbox.resolveMkdir("config"))
+    systemDirectory(ideaSandbox.resolveMkdir("system"))
+}
+
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild("201.*")
     untilBuild("215.*")
-    pluginDescription("""
+    pluginDescription(
+        """
         Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Console</a>
         
         <h3>Features</h3>
@@ -59,10 +71,13 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
             <li>Inspections for illegal calls.</li>
             <li>Intentions for resolving serialization problems.</li>
         </ul>
-    """.trimIndent())
-    changeNotes("""
+    """.trimIndent()
+    )
+    changeNotes(
+        """
         See <a href="https://github.com/mamoe/mirai-console/releases">https://github.com/mamoe/mirai-console/releases</a>
-    """.trimIndent())
+    """.trimIndent()
+    )
 }
 
 dependencies {
