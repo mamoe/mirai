@@ -4350,6 +4350,8 @@ public abstract interface class net/mamoe/mirai/message/data/MarketFace : net/ma
 	public static final field Key Lnet/mamoe/mirai/message/data/MarketFace$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public fun contentToString ()Ljava/lang/String;
+	public static fun dice ()Lnet/mamoe/mirai/message/data/MarketFace;
+	public static fun dice (I)Lnet/mamoe/mirai/message/data/MarketFace;
 	public abstract fun getId ()I
 	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public abstract fun getName ()Ljava/lang/String;
@@ -4359,6 +4361,7 @@ public final class net/mamoe/mirai/message/data/MarketFace$Key : net/mamoe/mirai
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public final fun dice ()Lnet/mamoe/mirai/message/data/MarketFace;
 	public final fun dice (I)Lnet/mamoe/mirai/message/data/MarketFace;
+	public static synthetic fun dice$default (Lnet/mamoe/mirai/message/data/MarketFace$Key;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MarketFace;
 }
 
 public abstract interface class net/mamoe/mirai/message/data/MarketFaceTemplate {

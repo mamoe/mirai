@@ -38,20 +38,14 @@ public interface MarketFace : HummerMessage {
         public const val SERIAL_NAME: String = "MarketFace"
 
         /**
-         * 生成点数随机的骰子表情.
-         */
-        @JvmName("dice")
-        public fun dice(): MarketFace {
-            return dice(Random.nextInt(1, 7))
-        }
-
-        /**
          * 生成指定点数的骰子表情.
          *
-         * [value] 需要生成的骰子点数
+         * [value] 需要生成的骰子点数，默认为随机点数
          */
         @JvmName("dice")
-        public fun dice(value: Int): MarketFace {
+        @JvmStatic
+        @JvmOverloads
+        public fun dice(value: Int = Random.nextInt(1, 7)): MarketFace {
             require(value in 1..6) {
                 "Dice value must in 1 to 6"
             }
