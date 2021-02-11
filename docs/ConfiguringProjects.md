@@ -13,16 +13,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 ## 选择版本
 
-有关各类版本的区别，参考 [版本规范](Appendix.md#版本规范)
-
-[Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?
-[Bintray Download]: https://bintray.com/him188moe/mirai/mirai-console/
-
-| 版本类型 |             版本号              |
-|:------:|:------------------------------:|
-|  稳定   |             2.3.2              |
-|  预览   |               -                |
-|  开发   | [![Version]][Bintray Download] |
+`mirai-console` 与 `mirai-core` 同步版本发布。版本号见 [mirai](https://github.com/mamoe/mirai/blob/dev/docs/ConfiguringProjects.md#%E9%80%89%E6%8B%A9%E7%89%88%E6%9C%AC)。
 
 ## 配置项目
 
