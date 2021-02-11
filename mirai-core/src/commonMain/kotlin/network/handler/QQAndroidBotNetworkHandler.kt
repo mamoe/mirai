@@ -372,10 +372,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
-                logger.info { "ConfigPushSvc.PushReq: ConfigPush Received." }
+                logger.info { "ConfigPushSvc.PushReq: Config updated." }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                logger.info { "ConfigPushSvc.PushReq: Server updated" }
+                logger.info { "ConfigPushSvc.PushReq: Server updated." }
                 // handled in ConfigPushSvc
                 return@launch
             }
