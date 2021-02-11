@@ -193,7 +193,7 @@ internal class ConfigPushSvc {
                             PushResp(
                                 type = packet.struct.type,
                                 seq = packet.struct.seq,
-                                jcebuf = if (packet.struct.type == 3) packet.struct.jcebuf else byteArrayOf(0x00)
+                                jcebuf = if (packet.struct.type == 3) packet.struct.jcebuf else null
                             )
                         )
                     )
