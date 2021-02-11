@@ -38,11 +38,20 @@ public interface MarketFace : HummerMessage {
         public const val SERIAL_NAME: String = "MarketFace"
 
         /**
-         * 生成骰子表情.
-         *
-         * [value] 需要生成的数字，默认为随机生成
+         * 生成点数随机的骰子表情.
          */
-        public fun dice(value: Int = Random.nextInt(1, 7)): MarketFace {
+        @JvmName("dice")
+        public fun dice(): MarketFace {
+            return dice(Random.nextInt(1, 7))
+        }
+
+        /**
+         * 生成指定点数的骰子表情.
+         *
+         * [value] 需要生成的骰子点数
+         */
+        @JvmName("dice")
+        public fun dice(value: Int): MarketFace {
             require(value in 1..6) {
                 "Dice value must in 1 to 6"
             }
@@ -61,7 +70,12 @@ public interface MarketFaceTemplate
  *
  * 生成请参见 [MarketFace.Key.dice]
  */
-public class Dice internal constructor(public val value: Int) : MarketFace, MarketFaceTemplate {
+public class Dice internal constructor(
+    /**
+     * 骰子点数
+     */
+    public val value: Int
+) : MarketFace, MarketFaceTemplate {
     override val id: Int get() = 11464
     override fun toString(): String = "[mirai:marketface:$id,$name]"
 

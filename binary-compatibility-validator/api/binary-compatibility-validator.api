@@ -3475,6 +3475,13 @@ public final class net/mamoe/mirai/message/data/CustomMessageMetadata$Companion 
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/data/MarketFace, net/mamoe/mirai/message/data/MarketFaceTemplate {
+	public fun getId ()I
+	public fun getName ()Ljava/lang/String;
+	public final fun getValue ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/EmptyMessageChain;
 	public synthetic fun add (ILjava/lang/Object;)V
@@ -4350,6 +4357,11 @@ public abstract interface class net/mamoe/mirai/message/data/MarketFace : net/ma
 
 public final class net/mamoe/mirai/message/data/MarketFace$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public static final field SERIAL_NAME Ljava/lang/String;
+	public final fun dice ()Lnet/mamoe/mirai/message/data/MarketFace;
+	public final fun dice (I)Lnet/mamoe/mirai/message/data/MarketFace;
+}
+
+public abstract interface class net/mamoe/mirai/message/data/MarketFaceTemplate {
 }
 
 public abstract interface class net/mamoe/mirai/message/data/Message {
