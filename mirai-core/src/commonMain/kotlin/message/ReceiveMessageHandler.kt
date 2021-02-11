@@ -13,6 +13,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
@@ -427,14 +428,36 @@ private object ReceiveMessageTransformer {
 
 /**
  * 解析 [ForwardMessageInternal], [LongMessageInternal]
+ * 并处理换行符问题
  */
 internal suspend fun MessageChain.refine(contact: Contact): MessageChain {
-    if (none { it is RefinableMessage }) return this
+    val convertLineSeparator = contact.bot.asQQAndroidBot().configuration.convertLineSeparator
+
+    if (none {
+            it is RefinableMessage
+                    || (it is PlainText && convertLineSeparator && it.content.contains('\r'))
+        }
+    ) return this
+
+
     val builder = MessageChainBuilder(this.size)
     for (singleMessage in this) {
         if (singleMessage is RefinableMessage) {
             val v = singleMessage.refine(contact, this)
             if (v != null) builder.add(v)
+        } else if (singleMessage is PlainText && convertLineSeparator) {
+            val content = singleMessage.content
+            if (content.contains('\r')) {
+                builder.add(
+                    PlainText(
+                        content
+                            .replace("\r\n", "\n")
+                            .replace('\r', '\n')
+                    )
+                )
+            } else {
+                builder.add(singleMessage)
+            }
         } else {
             builder.add(singleMessage)
         }

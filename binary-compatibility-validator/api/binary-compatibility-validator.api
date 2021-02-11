@@ -5382,6 +5382,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getReconnectionRetryTimes ()I
 	public final fun getWorkingDir ()Ljava/io/File;
 	public final synthetic fun inheritCoroutineContext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isConvertLineSeparator ()Z
 	public final fun loadDeviceInfoJson (Ljava/lang/String;)V
 	public final fun noBotLog ()V
 	public final fun noNetworkLog ()V
@@ -5408,6 +5409,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
 	public final fun setCacheDir (Ljava/io/File;)V
 	public final fun setContactListCache (Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;)V
+	public final fun setConvertLineSeparator (Z)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
 	public final fun setHeartbeatPeriodMillis (J)V

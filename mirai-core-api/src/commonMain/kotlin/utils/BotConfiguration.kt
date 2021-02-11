@@ -467,8 +467,20 @@ public open class BotConfiguration { // open for Java
             new.networkLoggerSupplier = networkLoggerSupplier
             new.cacheDir = cacheDir
             new.contactListCache = contactListCache
+            new.convertLineSeparator = convertLineSeparator
         }
     }
+
+    /**
+     * 是否处理接受到的特殊换行符, 默认为 `true`
+     *
+     * - 若为 `true`, 会将收到的 `CRLF(\r\n)` 和 `CR(\r)` 替换为 `LF(\n)`
+     * - 若为 `false`, 则不做处理
+     *
+     * @since 2.4
+     */
+    @get:JvmName("isConvertLineSeparator")
+    public var convertLineSeparator: Boolean = true
 
     /** 标注一个配置 DSL 函数 */
     @Target(AnnotationTarget.FUNCTION)
