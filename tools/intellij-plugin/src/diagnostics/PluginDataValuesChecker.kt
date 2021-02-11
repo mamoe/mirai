@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
+import org.jetbrains.kotlin.idea.project.builtIns
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.js.descriptorUtils.getJetTypeFqName
 import org.jetbrains.kotlin.psi.*
@@ -28,9 +29,9 @@ import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
+import org.jetbrains.kotlin.resolve.descriptorUtil.isSubclassOf
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
-import org.jetbrains.kotlinx.serialization.compiler.resolve.*
 
 class PluginDataValuesChecker : DeclarationChecker {
     /**
@@ -42,7 +43,7 @@ class PluginDataValuesChecker : DeclarationChecker {
         //println(declaration::class.qualifiedName + "\t:" + declaration.text.take(10))
 
         if (declaration is KtProperty) {
-            if (checkReadOnly(declaration, context)) return // it reports an error on property so no need to check further
+            checkReadOnly(declaration, context)
         }
 
         val calls = declaration.bodyCalls(bindingContext) ?: return
@@ -67,7 +68,7 @@ class PluginDataValuesChecker : DeclarationChecker {
             || receiverTypeReference?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // extension
     }
 
-    private fun checkReadOnly(property: KtProperty, context: DeclarationCheckerContext): Boolean {
+    private fun checkReadOnly(property: KtProperty, context: DeclarationCheckerContext) {
         // first parent is KtPropertyDelegate, next is KtProperty
 
         if (property.isVar // var
@@ -75,10 +76,7 @@ class PluginDataValuesChecker : DeclarationChecker {
             && property.isInsideOrExtensionOfReadOnlyPluginData() // extensionReceiver is ReadOnlyPluginData or null
         ) {
             context.report(MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.on(property.valOrVarKeyword))
-            return true
         }
-
-        return false
     }
 
     private fun checkConstructableAndSerializable(call: ResolvedCall<out CallableDescriptor>, expr: KtCallExpression, context: DeclarationCheckerContext) {
@@ -90,19 +88,48 @@ class PluginDataValuesChecker : DeclarationChecker {
             ) {
 
                 checkConstructableAndSerializable(kotlinType, expr, context)
+                checkFixType(kotlinType, expr, context)
             }
         }
     }
 
+    private fun checkFixType(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
+        val inspectionTarget = retrieveInspectionTarget(type, callExpr) ?: return
+        val classDescriptor = type.classDescriptor() ?: return
+        val jetTypeFqn = type.getJetTypeFqName(false)
+
+        val builtIns = callExpr.builtIns
+        val factory = when {
+            jetTypeFqn == "java.util.concurrent.ConcurrentHashMap" -> MiraiConsoleErrors.USING_DERIVED_CONCURRENT_MAP_TYPE
+
+            classDescriptor.isSubclassOf(builtIns.list) && jetTypeFqn != "kotlin.collections.List" -> {
+                if (classDescriptor.isSubclassOf(builtIns.mutableList)) {
+                    if (jetTypeFqn != "kotlin.collections.MutableList" && jetTypeFqn != "java.util.List") {
+                        MiraiConsoleErrors.USING_DERIVED_MUTABLE_LIST_TYPE
+                    } else null
+                } else MiraiConsoleErrors.USING_DERIVED_LIST_TYPE
+            }
+
+            classDescriptor.isSubclassOf(builtIns.map) && jetTypeFqn != "kotlin.collections.Map" -> {
+                if (classDescriptor.isSubclassOf(builtIns.mutableMap)) {
+                    if (jetTypeFqn != "kotlin.collections.MutableMap" && jetTypeFqn != "java.util.Map") {
+                        MiraiConsoleErrors.USING_DERIVED_MUTABLE_MAP_TYPE
+                    } else null
+                } else MiraiConsoleErrors.USING_DERIVED_MAP_TYPE
+            }
+
+            else -> return
+        } ?: return
+
+        context.report(factory.on(inspectionTarget, callExpr, jetTypeFqn.substringAfterLast('.')))
+    }
+
     private fun checkConstructableAndSerializable(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
-        val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return
+        val classDescriptor = type.classDescriptor() ?: return
 
         if (canBeSerializedInternally(classDescriptor)) return
 
-        val inspectionTarget = kotlin.run {
-            val fqName = type.fqName ?: return@run null
-            callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
-        } ?: return
+        val inspectionTarget = retrieveInspectionTarget(type, callExpr) ?: return
 
         if (!classDescriptor.hasNoArgConstructor())
             return context.report(
@@ -121,10 +148,18 @@ class PluginDataValuesChecker : DeclarationChecker {
                 )
             )
     }
+
+    private fun KotlinType.classDescriptor() = constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
+
+    private fun retrieveInspectionTarget(type: KotlinType, callExpr: KtCallExpression): KtTypeProjection? {
+        val fqName = type.fqName ?: return null
+        return callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
+    }
 }
 
 private fun canBeSerializedInternally(descriptor: ClassDescriptor): Boolean {
     @Suppress("UNUSED_VARIABLE") val name = when (descriptor.defaultType.getJetTypeFqName(false)) {
+        // kotlinx.serialization
         "kotlin.Unit" -> "UnitSerializer"
         "Z", "kotlin.Boolean" -> "BooleanSerializer"
         "B", "kotlin.Byte" -> "ByteSerializer"
@@ -168,6 +203,11 @@ private fun canBeSerializedInternally(descriptor: ClassDescriptor): Boolean {
         "java.util.Map", "java.util.LinkedHashMap" -> "LinkedHashMapSerializer"
         "java.util.HashMap" -> "HashMapSerializer"
         "java.util.Map.Entry" -> "MapEntrySerializer"
+
+        // mirai
+        "java.util.concurrent.ConcurrentMap",
+        "java.util.concurrent.ConcurrentHashMap",
+        -> "ConcurrentMap" // dummy name
         else -> return false
     }
     return true

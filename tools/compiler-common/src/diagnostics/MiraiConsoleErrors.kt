@@ -38,6 +38,21 @@ object MiraiConsoleErrors {
     val NOT_CONSTRUCTABLE_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
 
     @JvmField
+    val USING_DERIVED_MUTABLE_MAP_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
+
+    @JvmField
+    val USING_DERIVED_MAP_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
+
+    @JvmField
+    val USING_DERIVED_LIST_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
+
+    @JvmField
+    val USING_DERIVED_MUTABLE_LIST_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
+
+    @JvmField
+    val USING_DERIVED_CONCURRENT_MAP_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
+
+    @JvmField
     val UNSERIALIZABLE_TYPE = create<PsiElement, ClassDescriptor>(ERROR)
 
     @JvmField

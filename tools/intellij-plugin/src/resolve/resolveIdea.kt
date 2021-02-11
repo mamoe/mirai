@@ -167,6 +167,11 @@ fun KtDeclaration.bodyCalls(bindingContext: BindingContext): Sequence<ResolvedCa
             val call = declaration.getResolvedCall(bindingContext) ?: return null
             sequenceOf(ResolvedCallWithExpr(call, declaration))
         }
+        is KtProperty -> {
+            val expr = declaration.delegateExpression ?: return null
+            val call = expr.getResolvedCall(bindingContext) ?: return null
+            sequenceOf(ResolvedCallWithExpr(call, expr))
+        }
         else -> return null
     }
 }

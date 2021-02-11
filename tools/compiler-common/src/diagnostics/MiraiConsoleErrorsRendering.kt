@@ -22,6 +22,11 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.NO
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.UNSERIALIZABLE_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.USING_DERIVED_CONCURRENT_MAP_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.USING_DERIVED_LIST_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.USING_DERIVED_MAP_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.USING_DERIVED_MUTABLE_LIST_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.USING_DERIVED_MUTABLE_MAP_TYPE
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.rendering.Renderers
@@ -112,6 +117,41 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
         put(
             READ_ONLY_VALUE_CANNOT_BE_VAR,
             "在 ReadOnlyPluginData 中不可定义 'var' by value",
+        )
+
+        put(
+            USING_DERIVED_MAP_TYPE,
+            "使用 'Map' 的派生类型 '{1}'.",
+            Renderers.EMPTY,
+            Renderers.STRING,
+        )
+
+        put(
+            USING_DERIVED_MUTABLE_MAP_TYPE,
+            "使用 'MutableMap' 的派生类型 '{1}'.",
+            Renderers.EMPTY,
+            Renderers.STRING,
+        )
+
+        put(
+            USING_DERIVED_LIST_TYPE,
+            "使用 'List' 的派生类型 '{1}'.",
+            Renderers.EMPTY,
+            Renderers.STRING,
+        )
+
+        put(
+            USING_DERIVED_MUTABLE_LIST_TYPE,
+            "使用 'MutableList' 的派生类型 '{1}'.",
+            Renderers.EMPTY,
+            Renderers.STRING,
+        )
+
+        put(
+            USING_DERIVED_CONCURRENT_MAP_TYPE,
+            "使用 'ConcurrentMap' 的派生类型 '{1}'.",
+            Renderers.EMPTY,
+            Renderers.STRING,
         )
 
 //        put(

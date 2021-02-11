@@ -11,9 +11,7 @@ package net.mamoe.mirai.console.intellij
 
 import com.intellij.codeInsight.intention.IntentionAction
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
-import net.mamoe.mirai.console.intellij.diagnostics.fix.AddSerializerFix
-import net.mamoe.mirai.console.intellij.diagnostics.fix.ConvertToValFix
-import net.mamoe.mirai.console.intellij.diagnostics.fix.ProvideDefaultValueFix
+import net.mamoe.mirai.console.intellij.diagnostics.fix.*
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.idea.quickfix.KotlinIntentionActionsFactory
 import org.jetbrains.kotlin.idea.quickfix.QuickFixContributor
@@ -33,5 +31,11 @@ class QuickFixRegistrar : QuickFixContributor {
         MiraiConsoleErrors.UNSERIALIZABLE_TYPE.registerFactory(AddSerializerFix)
         MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.registerFactory(ProvideDefaultValueFix)
         MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.registerFactory(ConvertToValFix)
+
+        MiraiConsoleErrors.USING_DERIVED_MAP_TYPE.registerFactory(ConvertToMapFix)
+        MiraiConsoleErrors.USING_DERIVED_MUTABLE_MAP_TYPE.registerFactory(ConvertToMutableMapFix)
+        MiraiConsoleErrors.USING_DERIVED_CONCURRENT_MAP_TYPE.registerFactory(ConvertToConcurrentMapFix)
+        MiraiConsoleErrors.USING_DERIVED_LIST_TYPE.registerFactory(ConvertToListFix)
+        MiraiConsoleErrors.USING_DERIVED_MUTABLE_LIST_TYPE.registerFactory(ConvertToMutableListFix)
     }
 }
