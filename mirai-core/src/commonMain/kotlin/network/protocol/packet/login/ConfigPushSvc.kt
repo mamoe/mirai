@@ -137,20 +137,18 @@ internal class ConfigPushSvc {
                         forDebug = resp.struct.jcebuf.toUHexString(),
                     )
                 }
-                if (client.networkType == NetworkType.WIFI) {
+                val pushServerList = if (client.networkType == NetworkType.WIFI) {
                     serverListPush.wifiSSOServerList
                 } else {
                     serverListPush.mobileSSOServerList
-                }.let { pushServerList ->
-                    {
-                        bot.logger.info { "Server list: ${pushServerList.joinToString()}." }
+                }
 
-                        if (pushServerList.isNotEmpty()) {
-                            bot.serverList.clear()
-                            pushServerList.shuffled().forEach {
-                                bot.serverList.add(it.host to it.port)
-                            }
-                        }
+                bot.logger.info { "Server list: ${pushServerList.joinToString()}." }
+
+                if (pushServerList.isNotEmpty()) {
+                    bot.serverList.clear()
+                    pushServerList.shuffled().forEach {
+                        bot.serverList.add(it.host to it.port)
                     }
                 }
                 bot.bdhSyncer.saveToCache()
