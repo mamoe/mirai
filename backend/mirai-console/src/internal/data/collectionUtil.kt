@@ -1,25 +1,38 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("DuplicatedCode")
 
 package net.mamoe.mirai.console.internal.data
 
+import java.util.concurrent.ConcurrentMap
+import java.util.function.BiConsumer
+import java.util.function.BiFunction
+import java.util.function.Function
+
 // TODO: 2020/6/24 优化性能: 引入一个 comparator 之类来替代将 Int 包装为 Value<Int> 后进行 containsKey 比较的方法
 
+// java.util.function was used in mirai-core
+// direct improve apis of java.util.function
 
+
+@Suppress(
+    "MANY_IMPL_MEMBER_NOT_IMPLEMENTED", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED",
+    "UNCHECKED_CAST", "USELESS_CAST", "ACCIDENTAL_OVERRIDE", "TYPE_MISMATCH",
+    "NOTHING_TO_OVERRIDE", "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS",
+) // for improve java.util.function apis
 internal open class ShadowMap<K, V, KR, VR>(
-    private val originMapComputer: () -> MutableMap<K, V>,
-    private val kTransform: (K) -> KR,
-    private val kTransformBack: (KR) -> K,
-    private val vTransform: (V) -> VR,
-    private val vTransformBack: (VR) -> V
+    @JvmField protected val originMapComputer: () -> MutableMap<K, V>,
+    @JvmField protected val kTransform: (K) -> KR,
+    @JvmField protected val kTransformBack: (KR) -> K,
+    @JvmField protected val vTransform: (V) -> VR,
+    @JvmField protected val vTransformBack: (VR) -> V
 ) : MutableMap<KR, VR> {
     override val size: Int get() = originMapComputer().size
     override fun containsKey(key: KR): Boolean = originMapComputer().containsKey(key.let(kTransformBack))
@@ -76,6 +89,10 @@ internal open class ShadowMap<K, V, KR, VR>(
     }
 
     override fun remove(key: KR): VR? = originMapComputer().remove(key.let(kTransformBack))?.let(vTransform)
+    override fun remove(key: KR, value: VR): Boolean =
+        originMapComputer().remove(key.let(kTransformBack), value?.let(vTransformBack))
+
+
     override fun toString(): String = originMapComputer().toString()
     override fun hashCode(): Int = originMapComputer().hashCode()
     override fun equals(other: Any?): Boolean {
@@ -92,14 +109,77 @@ internal open class ShadowMap<K, V, KR, VR>(
 
         return true
     }
+
+    override fun putIfAbsent(key: KR, value: VR): VR? =
+        originMapComputer().putIfAbsent(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
+
+    override fun replace(key: KR, oldValue: VR, newValue: VR): Boolean =
+        originMapComputer().replace(key.let(kTransformBack), oldValue.let(vTransformBack), newValue.let(vTransformBack))
+
+    override fun replace(key: KR, value: VR): VR? =
+        originMapComputer().replace(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
+
+    override fun compute(key: KR, remappingFunction: BiFunction<in KR, in VR?, out VR?>): VR? =
+        originMapComputer().compute(key.let(kTransformBack)) { k1, v1 ->
+            remappingFunction.apply(k1.let(kTransform), v1?.let(vTransform))?.let(vTransformBack)
+        }?.let(vTransform)
+
+    override fun computeIfAbsent(key: KR, mappingFunction: Function<in KR, out VR>): VR =
+        originMapComputer().computeIfAbsent(key.let(kTransformBack)) { k ->
+            mappingFunction.apply(k.let(kTransform)).let(vTransformBack)
+        }.let(vTransform)
+
+    override fun computeIfPresent(key: KR, remappingFunction: BiFunction<in KR, in VR, out VR?>): VR? =
+        originMapComputer().computeIfPresent(key.let(kTransformBack)) { k, v ->
+            remappingFunction.apply(k.let(kTransform), v.let(vTransform))?.let(vTransformBack)
+        }?.let(vTransform)
+
+    override fun merge(key: KR, value: VR, remappingFunction: BiFunction<in VR, in VR, out VR?>): VR? =
+        originMapComputer().merge(key.let(kTransformBack), value.let(vTransformBack)) { k, v ->
+            remappingFunction.apply(k.let(vTransform), v.let(vTransform))?.let(vTransformBack)
+        }?.let(vTransform)
+
+    override fun forEach(action: BiConsumer<in KR, in VR>) {
+        @Suppress("JavaMapForEach")
+        originMapComputer().forEach { t, u ->
+            action.accept(t.let(kTransform), u.let(vTransform))
+        }
+    }
+
+    override fun replaceAll(function: BiFunction<in KR, in VR, out VR>) {
+        originMapComputer().replaceAll { t, u ->
+            function.apply(t.let(kTransform), u.let(vTransform))?.let(vTransformBack)
+        }
+    }
 }
+
+
+@Suppress(
+    "MANY_IMPL_MEMBER_NOT_IMPLEMENTED", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED",
+    "UNCHECKED_CAST", "USELESS_CAST", "ACCIDENTAL_OVERRIDE", "TYPE_MISMATCH",
+    "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS"
+)
+internal open class ConcurrentShadowMap<K, V, KR, VR>(
+    originMapComputer: () -> MutableMap<K, V>,
+    kTransform: (K) -> KR,
+    kTransformBack: (KR) -> K,
+    vTransform: (V) -> VR,
+    vTransformBack: (VR) -> V
+) : ShadowMap<K, V, KR, VR>(
+    originMapComputer, kTransform, kTransformBack, vTransform, vTransformBack
+), ConcurrentMap<KR, VR>
 
 internal fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
     kTransform: (K) -> KR,
     kTransformBack: (KR) -> K,
     vTransform: (V) -> VR,
     vTransformBack: (VR) -> V
-): MutableMap<KR, VR> = ShadowMap({ this }, kTransform, kTransformBack, vTransform, vTransformBack)
+): MutableMap<KR, VR> = if (this is ConcurrentMap<K, V>) {
+    ConcurrentShadowMap({ this }, kTransform, kTransformBack, vTransform, vTransformBack)
+} else {
+    ShadowMap({ this }, kTransform, kTransformBack, vTransform, vTransformBack)
+}
+
 
 internal inline fun <E, R> MutableCollection<E>.shadowMap(
     crossinline transform: (E) -> R,
@@ -319,9 +399,16 @@ internal inline fun <T> dynamicMutableSet(crossinline supplier: () -> MutableSet
     }
 }
 */
-@Suppress("UNCHECKED_CAST", "USELESS_CAST") // type inference bug
-internal inline fun <K, V> MutableMap<K, V>.observable(crossinline onChanged: () -> Unit): MutableMap<K, V> {
-    return object : MutableMap<K, V>, Map<K, V> by (this as Map<K, V>) {
+
+@Suppress(
+    "UNCHECKED_CAST", "USELESS_CAST",
+    "ACCIDENTAL_OVERRIDE", "TYPE_MISMATCH", "NOTHING_TO_OVERRIDE",
+    "MANY_IMPL_MEMBER_NOT_IMPLEMENTED", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED",
+    "UNCHECKED_CAST", "USELESS_CAST", "ACCIDENTAL_OVERRIDE",
+    "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS"
+) // type inference bug
+internal fun <K, V> MutableMap<K, V>.observable(onChanged: () -> Unit): MutableMap<K, V> {
+    open class ObservableMap : MutableMap<K, V> by (this as MutableMap<K, V>) {
         override val keys: MutableSet<K>
             get() = this@observable.keys.observable(onChanged)
         override val values: MutableCollection<V>
@@ -335,7 +422,46 @@ internal inline fun <K, V> MutableMap<K, V>.observable(crossinline onChanged: ()
         override fun remove(key: K): V? = this@observable.remove(key).also { onChanged() }
         override fun toString(): String = this@observable.toString()
         override fun hashCode(): Int = this@observable.hashCode()
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false
+            if (other === this) return true
+            return this@observable == other
+        }
+
+        override fun remove(key: K, value: V): Boolean = this@observable.remove(key, value).also { onChanged() }
+
+        override fun putIfAbsent(key: K, value: V): V? =
+            this@observable.putIfAbsent(key, value).also { onChanged() }
+
+        override fun replace(key: K, oldValue: V, newValue: V): Boolean =
+            this@observable.replace(key, oldValue, newValue).also { onChanged() }
+
+        override fun replace(key: K, value: V): V? =
+            this@observable.replace(key, value).also { onChanged() }
+        override fun computeIfAbsent(key: K, mappingFunction: Function<in K, out V>): V =
+            this@observable.computeIfAbsent(key, mappingFunction).also { onChanged() }
+
+        override fun replaceAll(function: BiFunction<in K, in V, out V>) =
+            this@observable.replaceAll(function).also { onChanged() }
+
+        override fun compute(key: K, remappingFunction: BiFunction<in K, in V?, out V?>): V? =
+            this@observable.compute(key, remappingFunction).also { onChanged() }
+
+        override fun computeIfPresent(key: K, remappingFunction: BiFunction<in K, in V, out V?>): V? =
+            this@observable.computeIfPresent(key, remappingFunction).also { onChanged() }
+
+        override fun merge(key: K, value: V, remappingFunction: BiFunction<in V, in V, out V?>): V? =
+            this@observable.merge(key, value, remappingFunction).also { onChanged() }
     }
+
+    @Suppress(
+        "MANY_IMPL_MEMBER_NOT_IMPLEMENTED", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED",
+        "UNCHECKED_CAST", "USELESS_CAST", "ACCIDENTAL_OVERRIDE", "TYPE_MISMATCH",
+        "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS"
+    )
+    return if (this is ConcurrentMap<*, *>) {
+        object : ConcurrentMap<K, V>, MutableMap<K, V>, ObservableMap() {}
+    } else ObservableMap()
 }
 
 internal inline fun <T> MutableList<T>.observable(crossinline onChanged: () -> Unit): MutableList<T> {

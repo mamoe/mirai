@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -16,9 +16,12 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
 
 private val primitiveCollectionsImplemented by lazy {
     false
@@ -43,7 +46,9 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
         MutableMap::class,
         Map::class,
         LinkedHashMap::class,
-        HashMap::class
+        HashMap::class,
+        ConcurrentMap::class,
+        ConcurrentHashMap::class,
         -> {
             val keyClass = type.arguments[0].type?.classifier
             require(keyClass is KClass<*>)
@@ -57,6 +62,13 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
                 TODO()
             } else {
                 return createCompositeMapValueImpl<Any?, Any?>(
+                    mapInitializer = {
+                        if (classifier.cast<KClass<*>>().isSubclassOf(ConcurrentMap::class)) {
+                            ConcurrentHashMap()
+                        } else {
+                            null
+                        }
+                    },
                     kToValue = { k -> valueFromKType(type.arguments[0].type!!, k) },
                     vToValue = { v -> valueFromKType(type.arguments[1].type!!, v) }
                 ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
@@ -131,6 +143,10 @@ internal fun KClass<*>.createInstanceSmart(): Any {
         LinkedHashSet::class,
         HashSet::class
         -> LinkedHashSet<Any?>()
+
+        ConcurrentHashMap::class,
+        ConcurrentMap::class,
+        -> ConcurrentHashMap<Any?,Any?>()
 
         else -> createInstanceOrNull()
             ?: error("Cannot create instance or find a initial value for ${this.qualifiedNameOrTip}")
