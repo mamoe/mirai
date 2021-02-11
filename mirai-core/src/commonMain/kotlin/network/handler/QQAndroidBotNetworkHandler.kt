@@ -371,11 +371,11 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
                 }
             }
-            is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
-                logger.info { "ConfigPushSvc.PushReq: Success." }
+            is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
+                logger.info { "ConfigPushSvc.PushReq: ConfigPush Received." }
             }
             is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                logger.info { "ConfigPushSvc.PushReq: Require reconnect" }
+                logger.info { "ConfigPushSvc.PushReq: Server updated" }
                 // handled in ConfigPushSvc
                 return@launch
             }
