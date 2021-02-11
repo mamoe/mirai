@@ -16,7 +16,7 @@ import kotlin.random.Random
 /**
  * 商城表情
  *
- * 目前仅支持直接发送随机骰子表情，其余表情可保存接收到的来自官方客户端的商城表情然后转发.
+ * 目前仅支持直接发送骰子表情，其余表情可保存接收到的来自官方客户端的商城表情然后转发.
  */
 public interface MarketFace : HummerMessage {
     /**
@@ -38,7 +38,7 @@ public interface MarketFace : HummerMessage {
         public const val SERIAL_NAME: String = "MarketFace"
 
         /**
-         * 生成随机骰子表情.
+         * 生成骰子表情.
          *
          * [value] 需要生成的数字，默认为随机生成
          */
@@ -57,7 +57,7 @@ public interface MarketFace : HummerMessage {
 public interface MarketFaceTemplate
 
 /**
- * 随机骰子表情
+ * 骰子表情
  *
  * 生成请参见 [MarketFace.Key.dice]
  */
