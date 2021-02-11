@@ -5356,10 +5356,10 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V
 	public final fun autoReconnectOnForceOffline ()V
+	public final synthetic fun contactListCache (Lkotlin/jvm/functions/Function1;)V
 	public final fun copy ()Lnet/mamoe/mirai/utils/BotConfiguration;
-	public final fun disableContactCaches ()V
-	public final fun disableFriendListCache ()V
-	public final fun disableGroupMemberListCache ()V
+	public final fun disableContactCache ()V
+	public final fun enableContactCache ()V
 	public final fun fileBasedDeviceInfo ()V
 	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
 	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
@@ -5436,9 +5436,11 @@ public final class net/mamoe/mirai/utils/BotConfiguration$ContactListCache {
 	public fun <init> ()V
 	public final fun getFriendListCacheEnabled ()Z
 	public final fun getGroupMemberListCacheEnabled ()Z
+	public final synthetic fun getSaveInterval-UwyO8pc ()D
 	public final fun getSaveIntervalMillis ()J
 	public final fun setFriendListCacheEnabled (Z)V
 	public final fun setGroupMemberListCacheEnabled (Z)V
+	public final synthetic fun setSaveInterval-LRDsOJo (D)V
 	public final fun setSaveIntervalMillis (J)V
 }
 
