@@ -65,5 +65,5 @@ public class Dice internal constructor(public val value: Int) : MarketFace, Mark
     override val id: Int get() = 11464
     override fun toString(): String = "[mirai:marketface:$id,$name]"
 
-    override val name: String get() = "[随机骰子:$value]"
+    override val name: String get() = "[骰子:$value]"
 }

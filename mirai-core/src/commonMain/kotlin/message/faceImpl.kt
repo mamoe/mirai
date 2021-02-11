@@ -58,7 +58,7 @@ internal data class MarketFaceImpl internal constructor(
                 //数据来源于 https://github.com/mamoe/mirai/issues/1012
                 MarketFaceImpl(
                     ImMsgBody.MarketFace(
-                        faceName = byteArrayOf(91, -23, -102, -113, -26, -100, -70, -23, -86, -80, -27, -83, -112, 93),
+                        faceName = byteArrayOf(91, -23, -86, -80, -27, -83, -112, 93),
                         itemType = 6,
                         faceInfo = 1,
                         faceId = byteArrayOf(
@@ -104,7 +104,42 @@ internal data class MarketFaceImpl internal constructor(
                             61,
                             (47 + template.value).toByte()
                         ),
-                        pbReserve = byteArrayOf(10, 6, 8, -56, 1, 16, -56, 1, 64, 1)
+                        pbReserve = byteArrayOf(
+                            10,
+                            6,
+                            8,
+                            -56,
+                            1,
+                            16,
+                            -56,
+                            1,
+                            64,
+                            1,
+                            88,
+                            0,
+                            98,
+                            9,
+                            35,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            106,
+                            9,
+                            35,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48,
+                            48
+                        )
                     )
                 )
             }
