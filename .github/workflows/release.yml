@@ -54,16 +54,7 @@ jobs:
         run: ./gradlew clean --scan
 
       - name: Check keys
-        run: >
-          ./gradlew
-          :mirai-core-utils:ensureBintrayAvailable
-          :mirai-core-api:ensureBintrayAvailable
-          :mirai-core:ensureBintrayAvailable
-          :mirai-console:ensureBintrayAvailable
-          :mirai-core-utils:ensureMavenCentralAvailable
-          :mirai-core-api:ensureMavenCentralAvailable
-          :mirai-core:ensureMavenCentralAvailable
-          :mirai-console:ensureMavenCentralAvailable
+        run: ./gradlew ensureBintrayAvailable ensureMavenCentralAvailable
 
       - name: fillBuildConstants
         run: >
