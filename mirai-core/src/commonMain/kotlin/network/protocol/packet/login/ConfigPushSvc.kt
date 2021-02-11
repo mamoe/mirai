@@ -58,9 +58,9 @@ internal class ConfigPushSvc {
                 }
             }
 
-            class ChangeServer(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class ServerListPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
                 override fun toString(): String {
-                    return "ConfigPushSvc.PushReq.PushReqResponse.ChangeServer"
+                    return "ConfigPushSvc.PushReq.PushReqResponse.ServerListPush"
                 }
             }
 
@@ -76,7 +76,7 @@ internal class ConfigPushSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse {
             val pushReq = readUniPacket(PushReqJceStruct.serializer(), "PushReq")
             return when (pushReq.type) {
-                1 -> PushReqResponse.ChangeServer(pushReq)
+                1 -> PushReqResponse.ServerListPush(pushReq)
                 2 -> PushReqResponse.ConfigPush(pushReq)
                 3 -> PushReqResponse.LogAction(pushReq)
                 else -> PushReqResponse.Unknown(pushReq)
@@ -127,7 +127,7 @@ internal class ConfigPushSvc {
                 )
             }
 
-            fun handleServerListPush(resp: PushReqResponse.ChangeServer) {
+            fun handleServerListPush(resp: PushReqResponse.ServerListPush) {
                 bot.logger.info { "Server send a new server list." }
                 val serverListPush = kotlin.runCatching {
                     resp.struct.jcebuf.loadAs(ServerListPush.serializer())
@@ -166,7 +166,7 @@ internal class ConfigPushSvc {
                 is PushReqResponse.ConfigPush -> {
                     handleConfigPush(packet)
                 }
-                is PushReqResponse.ChangeServer -> {
+                is PushReqResponse.ServerListPush -> {
                     handleServerListPush(packet)
                 }
                 is PushReqResponse.LogAction, is PushReqResponse.Unknown -> {
