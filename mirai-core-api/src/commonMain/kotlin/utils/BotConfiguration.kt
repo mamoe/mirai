@@ -410,7 +410,7 @@ public open class BotConfiguration { // open for Java
         public var friendListCacheEnabled: Boolean = true
 
         /**
-         * 开启好友列表缓存
+         * 开启群成员列表缓存
          */
         public var groupMemberListCacheEnabled: Boolean = true
     }
