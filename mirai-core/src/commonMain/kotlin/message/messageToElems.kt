@@ -195,12 +195,16 @@ internal fun MessageChain.toRichTextElems(
                 }
             }
             is MarketFace -> {
-                if (currentMessage is MarketFaceImpl) {
-                    elements.add(ImMsgBody.Elem(marketFace = currentMessage.delegate))
+                var marketFace: MarketFace = currentMessage
+                if (currentMessage is MarketFaceTemplate) {
+                    marketFace = MarketFaceImpl.transform(currentMessage) ?: return
+                }
+                if (marketFace is MarketFaceImpl) {
+                    elements.add(ImMsgBody.Elem(marketFace = marketFace.delegate))
                 }
                 //兼容信息
-                transformOneMessage(PlainText(currentMessage.name))
-                if (currentMessage is MarketFaceImpl) {
+                transformOneMessage(PlainText(marketFace.name))
+                if (marketFace is MarketFaceImpl) {
                     elements.add(
                         ImMsgBody.Elem(
                             extraInfo = ImMsgBody.ExtraInfo(flags = 8, groupMask = 1)
