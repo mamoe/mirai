@@ -128,7 +128,7 @@ internal class ConfigPushSvc {
             }
 
             fun handleServerListPush(resp: PushReqResponse.ServerListPush) {
-                bot.logger.info { "Server send a new server list." }
+                bot.network.logger.info { "Server list updated." }
                 val serverListPush = kotlin.runCatching {
                     resp.struct.jcebuf.loadAs(ServerListPush.serializer())
                 }.getOrElse {
