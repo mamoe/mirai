@@ -121,35 +121,35 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
 
         put(
             USING_DERIVED_MAP_TYPE,
-            "使用 'Map' 的派生类型 '{1}'.",
+            "使用 'Map' 的派生类型 {1}.",
             Renderers.EMPTY,
             Renderers.STRING,
         )
 
         put(
             USING_DERIVED_MUTABLE_MAP_TYPE,
-            "使用 'MutableMap' 的派生类型 '{1}'.",
+            "使用 'MutableMap' 的派生类型 {1}.",
             Renderers.EMPTY,
             Renderers.STRING,
         )
 
         put(
             USING_DERIVED_LIST_TYPE,
-            "使用 'List' 的派生类型 '{1}'.",
+            "使用 'List' 的派生类型 {1}.",
             Renderers.EMPTY,
             Renderers.STRING,
         )
 
         put(
             USING_DERIVED_MUTABLE_LIST_TYPE,
-            "使用 'MutableList' 的派生类型 '{1}'.",
+            "使用 'MutableList' 的派生类型 {1}.",
             Renderers.EMPTY,
             Renderers.STRING,
         )
 
         put(
             USING_DERIVED_CONCURRENT_MAP_TYPE,
-            "使用 'ConcurrentMap' 的派生类型 '{1}'.",
+            "使用 'ConcurrentMap' 的派生类型 {1}.",
             Renderers.EMPTY,
             Renderers.STRING,
         )
