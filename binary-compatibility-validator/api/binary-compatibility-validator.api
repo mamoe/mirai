@@ -3475,6 +3475,26 @@ public final class net/mamoe/mirai/message/data/CustomMessageMetadata$Companion 
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/data/MarketFace {
+	public static final field Key Lnet/mamoe/mirai/message/data/Dice$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lnet/mamoe/mirai/message/data/Dice;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/Dice;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Dice;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getId ()I
+	public fun getName ()Ljava/lang/String;
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public static final fun random ()Lnet/mamoe/mirai/message/data/Dice;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/Dice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun random ()Lnet/mamoe/mirai/message/data/Dice;
+}
+
 public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/EmptyMessageChain;
 	public synthetic fun add (ILjava/lang/Object;)V
