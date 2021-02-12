@@ -3479,6 +3479,7 @@ public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/d
 	public static final field Key Lnet/mamoe/mirai/message/data/Dice$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public final fun component1 ()I
 	public final fun copy (I)Lnet/mamoe/mirai/message/data/Dice;
 	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/Dice;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Dice;
@@ -3489,10 +3490,23 @@ public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/d
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/message/data/Dice;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Dice;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/data/Dice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Dice$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Dice;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/Dice;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/Dice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public final fun random ()Lnet/mamoe/mirai/message/data/Dice;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain {

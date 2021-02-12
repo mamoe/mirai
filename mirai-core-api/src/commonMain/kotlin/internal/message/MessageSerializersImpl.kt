@@ -141,6 +141,8 @@ private val builtInSerializersModule by lazy {
             subclass(FlashImage::class, FlashImage.serializer())
 
             subclass(MusicShare::class, MusicShare.serializer())
+
+            subclass(Dice::class, Dice.serializer())
         }
 
 

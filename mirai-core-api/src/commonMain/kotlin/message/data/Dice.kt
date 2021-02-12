@@ -13,6 +13,8 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
 import org.jetbrains.annotations.Range
@@ -24,6 +26,8 @@ import kotlin.random.nextInt
  *
  * @since 2.5
  */
+@Serializable
+@SerialName(Dice.SERIAL_NAME)
 public data class Dice(
     /**
      * 骰子的点数. 范围为 1..6
