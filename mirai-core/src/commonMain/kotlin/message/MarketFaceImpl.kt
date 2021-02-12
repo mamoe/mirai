@@ -13,9 +13,12 @@ package net.mamoe.mirai.internal.message
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.MarketFace
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 
 @SerialName(MarketFace.SERIAL_NAME)
 @Serializable
@@ -31,8 +34,25 @@ internal data class MarketFaceImpl internal constructor(
     override fun toString() = "[mirai:marketface:$id,$name]"
 }
 
+/**
+ * For refinement
+ */
+internal class MarketFaceInternal(
+    @JvmField private val delegate: ImMsgBody.MarketFace,
+) : MarketFace, RefinableMessage {
+    override val name: String get() = delegate.faceName.decodeToString()
+    override val id: Int get() = delegate.tabId
+
+    override suspend fun refine(contact: Contact, context: MessageChain): Message {
+        delegate.toDiceOrNull()?.let { return it } // TODO: 2021/2/12 add dice origin, maybe rename RichMessageOrigin
+        return MarketFaceImpl(delegate)
+    }
+
+    override fun toString(): String = "[mirai:marketface:$id,$name]"
+}
+
 // From https://github.com/mamoe/mirai/issues/1012
-private fun Dice.toJceStruct(): ImMsgBody.MarketFace {
+internal fun Dice.toJceStruct(): ImMsgBody.MarketFace {
     return ImMsgBody.MarketFace(
         faceName = byteArrayOf(91, -23, -86, -80, -27, -83, -112, 93),
         itemType = 6,
