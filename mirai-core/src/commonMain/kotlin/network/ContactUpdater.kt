@@ -125,6 +125,12 @@ internal class ContactUpdaterImpl(
         val list = if (friendListCache?.isValid(registerResp) == true) {
             val list = friendListCache.list
             bot.network.logger.info { "Loaded ${list.size} friends from local cache." }
+
+            // For sync bot nick
+            FriendList.GetFriendGroupList(
+                bot.client, 0, 1, 0, 0
+            ).sendAndExpect<Packet>()
+
             list
         } else {
             refreshFriendList().also {
