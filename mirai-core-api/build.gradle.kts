@@ -57,6 +57,7 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 implementation(`kotlinx-serialization-protobuf`)
                 api(`kotlinx-coroutines-core`)
+                implementation(`jetbrains-annotations`)
                 // api(`kotlinx-coroutines-jdk8`)
 
                 api(`ktor-client-okhttp`)
