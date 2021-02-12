@@ -3475,11 +3475,12 @@ public final class net/mamoe/mirai/message/data/CustomMessageMetadata$Companion 
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/data/MarketFace {
+public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/MarketFace {
 	public static final field Key Lnet/mamoe/mirai/message/data/Dice$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public fun <init> (I)V
 	public synthetic fun <init> (IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public final fun component1 ()I
 	public final fun copy (I)Lnet/mamoe/mirai/message/data/Dice;
 	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/Dice;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Dice;

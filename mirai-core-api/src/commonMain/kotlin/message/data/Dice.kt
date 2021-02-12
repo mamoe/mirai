@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.safeCast
 import org.jetbrains.annotations.Range
@@ -33,7 +34,7 @@ public data class Dice(
      * 骰子的点数. 范围为 1..6
      */
     public val value: @Range(from = 1, to = 6) Int
-) : MarketFace {
+) : MarketFace, CodableMessage {
     init {
         require(value in 1..6) { "Dice.value must be in 1 and 6 inclusive." }
     }
@@ -45,6 +46,13 @@ public data class Dice(
     @MiraiExperimentalApi
     override val id: Int
         get() = 11464
+
+    @MiraiExperimentalApi
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:dice:")
+        builder.append(value)
+        builder.append(']')
+    }
 
     override fun toString(): String = "[mirai:dice:$value]"
 

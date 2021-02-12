@@ -124,7 +124,10 @@ private object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     },
     "app" to MiraiCodeParser(Regex("""(.*)""")) { (content) ->
         LightApp(content.decodeMiraiCode())
-    }
+    },
+    "dice" to MiraiCodeParser(Regex("""([1-6])""")) { (value) ->
+        Dice(value.toInt())
+    },
 )
 
 private class MiraiCodeParser(
