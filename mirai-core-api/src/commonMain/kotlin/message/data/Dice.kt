@@ -49,9 +49,7 @@ public data class Dice(
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:dice:")
-        builder.append(value)
-        builder.append(']')
+        builder.append("[mirai:dice:").append(value).append(']')
     }
 
     override fun toString(): String = "[mirai:dice:$value]"
