@@ -368,14 +368,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     logger.warning { "Missing ConfigPushSvc.PushReq. Switching server..." }
                     bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
                 } else {
-                    logger.warning { "Missing ConfigPushSvc.PushReq. Using latest response. File uploading may be affected." }
+                    logger.warning { "Missing ConfigPushSvc.PushReq. Using the latest response. File uploading may be affected." }
                 }
             }
-            is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
-                logger.info { "ConfigPushSvc.PushReq: Success." }
+            is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
+                logger.info { "ConfigPushSvc.PushReq: Config updated." }
             }
-            is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                logger.info { "ConfigPushSvc.PushReq: Require reconnect" }
+            is ConfigPushSvc.PushReq.PushReqResponse.ServerListPush -> {
+                logger.info { "ConfigPushSvc.PushReq: Server updated." }
                 // handled in ConfigPushSvc
                 return@launch
             }

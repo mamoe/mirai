@@ -43,5 +43,8 @@ class TestMiraiCode {
             +SimpleServiceMessage(1, "[HiHi!!!\\]")
             +PlainText(" XE")
         }, "[mirai:service:1,\\[HiHi!!!\\\\\\]] XE".deserializeMiraiCode())
+        assertEquals(buildMessageChain {
+            +Dice(1)
+        }, "[mirai:dice:1]".deserializeMiraiCode())
     }
 }

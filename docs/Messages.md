@@ -76,6 +76,7 @@ Mirai 支持富文本消息。
 [`FlashImage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/FlashImage.kt
 [`MarketFace`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MarketFace.kt
 [`MusicShare`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MusicShare.kt
+[`Dice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Dice.kt
 
 [`MessageSource`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageSource.kt
 [`QuoteReply`]: ../mirai-core-api/src/commonMain/kotlin/message/data/QuoteReply.kt
@@ -102,7 +103,8 @@ Mirai 支持富文本消息。
 |      [`MarketFace`]      | 商城表情              | `[表情对应的中文名]`       |          2.0          |
 |    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
-|      [`MusicShare`]      | 音乐分享              | `[分享]曲名`              |          2.1          |
+|      [`MusicShare`]      | 音乐分享              | `[分享]曲名`             |          2.1          |
+|         [`Dice`]         | 骰子                 | `[骰子:$value]`          |          2.5          |
 
 
 
@@ -357,6 +359,7 @@ at.serializeToMiraiCode() // 结果为 `[mirai:at:123]`
 |       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
 |       [`LightApp`]       | `[mirai:app:$content]`                           |
 | [`SimpleServiceMessage`] | `[mirai:service:$serviceId,$content]`            |
+|         [`Dice`]         | `[mirai:dice:$value]`                            |
 
 ### 由 mirai 码字符串取得 `MessageChain` 实例
 

@@ -148,6 +148,55 @@ internal class PushReq(
 ) : JceStruct, Packet
 
 @Serializable
+internal data class ServerListPush(
+    @TarsId(1) val mobileSSOServerList: List<ServerInfo>,
+    @TarsId(3) val wifiSSOServerList: List<ServerInfo>,
+    @TarsId(4) val reconnectNeeded: Int = 0,
+    //@JvmField @TarsId(5)  val skipped:Byte? = 0,
+    //@JvmField @TarsId(6)  val skipped:Byte? = 0,
+    //@JvmField @TarsId(7)  val skipped:Int? = 1,
+    @TarsId(8) val mobileHttpServerList: List<ServerInfo>,
+    @TarsId(9) val wifiHttpServerList: List<ServerInfo>,
+    @TarsId(10) val quicServerList: List<ServerInfo>,
+    @TarsId(11) val ssoServerListIpv6: List<ServerInfo>,
+    @TarsId(12) val httpServerListIpv6: List<ServerInfo>,
+    @TarsId(13) val quicServerListIpv6: List<ServerInfo>,
+    /**
+     * wifi下&1==1则启用
+     * 移动数据(mobile)下&2==2则启用
+     */
+    @TarsId(14) val ipv6ConfigVal: Byte? = 0,
+    //@JvmField @TarsId(15) val netTestDelay:Int? = 0,
+    @TarsId(16) val configDesc: String? = ""
+) : JceStruct {
+
+    @Serializable
+    data class ServerInfo(
+        @TarsId(1) val host: String,
+        @TarsId(2) val port: Int,
+        //@JvmField @TarsId(3) val skipped: Byte = 0,
+        //@JvmField @TarsId(4) val skipped: Byte = 0,
+        /**
+         * 2,3->http
+         * 0,1->socket
+         */
+        //@JvmField @TarsId(5) val protocolType: Byte? = 0,
+        //@JvmField @TarsId(6) val skipped: Int? = 8,
+        //@JvmField @TarsId(7) val skipped: Byte? = 0,
+        @TarsId(8) val location: String = "",
+        /**
+         * cm->China mobile 中国移动
+         * uni->China unicom 中国联通
+         * others->其他
+         */
+        @TarsId(9) val ispName: String = ""
+    ) : JceStruct {
+        override fun toString(): String {
+            return "$host:$port"
+        }
+    }
+}
+@Serializable
 internal class PushResp(
     @TarsId(1) @JvmField val type: Int,
     @TarsId(2) @JvmField val seq: Long,
