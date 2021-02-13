@@ -10,14 +10,10 @@
 package net.mamoe.mirai.internal.message
 
 import kotlinx.io.core.toByteArray
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.Face
-import net.mamoe.mirai.message.data.MarketFace
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toByteArray
 
@@ -42,18 +38,4 @@ internal fun Face.toCommData(): ImMsgBody.CommonElem {
         businessType = 1
     )
 
-}
-
-@SerialName(MarketFace.SERIAL_NAME)
-@Serializable
-internal data class MarketFaceImpl internal constructor(
-    internal val delegate: ImMsgBody.MarketFace,
-) : MarketFace {
-
-    override val name: String get() = delegate.faceName.decodeToString()
-
-    @Transient
-    override val id: Int = delegate.tabId
-
-    override fun toString() = "[mirai:marketface:$id,$name]"
 }

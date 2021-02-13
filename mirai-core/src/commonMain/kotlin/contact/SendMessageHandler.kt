@@ -240,7 +240,9 @@ internal abstract class SendMessageHandler<C : Contact> {
  * - ... any others for future
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessages(message: Message): MessageChain {
-    return message.takeSingleContent<ForwardMessage>()?.let { forward ->
+    suspend fun processForwardMessage(
+        forward: ForwardMessage
+    ): ForwardMessageInternal {
         if (!(message is MessageChain && message.contains(IgnoreLengthCheck))) {
             check(forward.nodeList.size <= 200) {
                 throw MessageTooLargeException(
@@ -256,12 +258,20 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
             message = forward.nodeList,
             isLong = false,
         )
-        RichMessage.forwardMessage(
+        return RichMessage.forwardMessage(
             resId = resId,
             timeSeconds = currentTimeSeconds(),
             forwardMessage = forward,
         )
-    }?.toMessageChain() ?: message.toMessageChain()
+    }
+
+    fun processDice(dice: Dice): MarketFaceImpl {
+        return MarketFaceImpl(dice.toJceStruct())
+    }
+
+    return message.takeSingleContent<ForwardMessage>()?.let { processForwardMessage(it) }?.toMessageChain()
+        ?: message.takeSingleContent<Dice>()?.let { processDice(it) }?.toMessageChain()
+        ?: message.toMessageChain()
 }
 
 /**

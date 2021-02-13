@@ -140,7 +140,7 @@ private object ReceiveMessageTransformer {
             element.customFace != null -> decodeCustomFace(element.customFace, builder)
             element.face != null -> builder.add(Face(element.face.index))
             element.text != null -> decodeText(element.text, builder)
-            element.marketFace != null -> builder.add(MarketFaceImpl(element.marketFace))
+            element.marketFace != null -> builder.add(MarketFaceInternal(element.marketFace))
             element.lightApp != null -> decodeLightApp(element.lightApp, builder)
             element.customElem != null -> decodeCustomElem(element.customElem, builder)
             element.commonElem != null -> decodeCommonElem(element.commonElem, builder)
