@@ -277,8 +277,8 @@ public open class BotConfiguration { // open for Java
      *
      * - 默认打印到标准输出, 通过 [MiraiLogger.create]
      * - 忽略所有日志: [noBotLog]
-     * - 重定向到一个目录: `networkLoggerSupplier = { DirectoryLogger("Net ${it.id}") }`
-     * - 重定向到一个文件: `networkLoggerSupplier = { SingleFileLogger("Net ${it.id}") }`
+     * - 重定向到一个目录: `botLoggerSupplier = { DirectoryLogger("Bot ${it.id}") }`
+     * - 重定向到一个文件: `botLoggerSupplier = { SingleFileLogger("Bot ${it.id}") }`
      *
      * @see MiraiLogger
      */
