@@ -103,4 +103,4 @@ const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
-const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"
+const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
