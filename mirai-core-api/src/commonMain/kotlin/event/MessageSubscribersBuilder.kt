@@ -475,6 +475,7 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.subject.sendMessage(message)
+            null,
             is Unit -> Unit
             else -> m.subject.sendMessage(message.toString())
         }
@@ -485,6 +486,7 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.subject.sendMessage(m.message.quote() + message)
+            null,
             is Unit -> Unit
             else -> m.subject.sendMessage(m.message.quote() + message.toString())
         }
