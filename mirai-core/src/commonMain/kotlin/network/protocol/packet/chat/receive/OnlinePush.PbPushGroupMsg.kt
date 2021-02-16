@@ -156,7 +156,11 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
     ) = when {
         flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
         flags and 8 != 0 -> MemberPermission.OWNER
-        flags == 0 || flags == 1 -> MemberPermission.MEMBER
+        (when (flags) {
+            1, 0, 64,
+            -> true
+            else -> false
+        }) -> MemberPermission.MEMBER
         else -> {
             bot.logger.warning { "判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${flags._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题." }
             sender.permission
