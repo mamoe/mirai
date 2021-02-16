@@ -121,7 +121,7 @@ public abstract class CompositeCommand(
     @Retention(RUNTIME)
     @Target(FUNCTION)
     protected annotation class SubCommand(
-        @ResolveContext(COMMAND_NAME) vararg val value: String,
+        @ResolveContext(COMMAND_NAME) vararg val value: String = [],
     )
 
     /** 指令描述 */
