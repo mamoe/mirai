@@ -31,7 +31,6 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
-import java.lang.IllegalStateException
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -193,38 +192,60 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /// Hooks & Backend Access
     /**
      * 后端 在 [phase] 阶段执行前会调用此方法, 如果此方法抛出了一个错误会直接中断 console 初始化
+     *
+     * @since 2.5.0-dev-2
      */
     public fun prePhase(phase: String) {}
 
     /**
      * 后端 在 [phase] 阶段执行后会调用此方法, 如果此方法抛出了一个错误会直接中断 console 初始化
+     *
+     * @since 2.5.0-dev-2
      */
     public fun postPhase(phase: String) {}
 
-    /** 后端在 [start] 前会调用此方法 */
+    /**
+     * 后端在 [start] 前会调用此方法
+     *
+     * @since 2.5.0-dev-2
+     */
     public fun preStart() {}
 
-    /** 后端在 [start] 后会调用此方法 */
+    /**
+     * 后端在 [start] 后会调用此方法
+     *
+     * @since 2.5.0-dev-2
+     */
     public fun postStart() {}
 
     /**
-     * 用于提供前端访问后端内部实现
+     * 前端访问后端内部实现的桥
+     *
+     * @see backendAccess
+     * @since 2.5.0-dev-2
      */
     @ConsoleFrontEndImplementation
     public interface BackendAccess {
         // GlobalComponentStorage
         public val globalComponentStorage: ComponentStorage
+
         // PluginManagerImpl.resolvedPlugins
         public val resolvedPlugins: MutableList<Plugin>
     }
 
-    public val backendAccess: BackendAccess get() {
-        if (instanceInitialized) {
-            if (this === instance)
-                return backendAccessInstance
+    /**
+     * @see BackendAccess
+     * @since 2.5.0-dev-2
+     * @throws IllegalStateException 当前端实例不是 `this` 时抛出
+     */
+    public val backendAccess: BackendAccess
+        get() {
+            if (instanceInitialized) {
+                if (this === instance)
+                    return backendAccessInstance
+            }
+            throw IllegalStateException("Permission denied")
         }
-        throw IllegalStateException("Permission denied")
-    }
 
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
