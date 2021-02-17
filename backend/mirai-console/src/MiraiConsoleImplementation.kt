@@ -31,6 +31,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
+import java.lang.IllegalStateException
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -217,7 +218,13 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         public val resolvedPlugins: MutableList<Plugin>
     }
 
-    public val backendAccess: BackendAccess get() = backendAccessInstance
+    public val backendAccess: BackendAccess get() {
+        if (instanceInitialized) {
+            if (this === instance)
+                return backendAccessInstance
+        }
+        throw IllegalStateException("Permission denied")
+    }
 
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
@@ -226,6 +233,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         }
 
         internal lateinit var instance: MiraiConsoleImplementation
+        internal val instanceInitialized: Boolean get() = ::instance.isInitialized
         private val initLock = ReentrantLock()
 
         /**
