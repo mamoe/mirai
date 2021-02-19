@@ -165,6 +165,8 @@ internal open class QQAndroidClient(
 
     class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
+        var latestMsgNewGroupTime: Long = currentTimeSeconds()
+        var latestMsgNewFriendTime: Long = currentTimeSeconds()
 
         @Volatile
         var syncCookie: ByteArray? = null

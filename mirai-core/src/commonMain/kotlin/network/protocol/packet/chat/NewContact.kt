@@ -19,6 +19,7 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
@@ -27,11 +28,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<NewFriendRequestEvent?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<Packet?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -55,18 +57,29 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendRequestEvent? {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = friendmsgs.firstOrNull()// 会有重复且无法过滤, 不要用 map
-                return struct?.msg?.run {
-                    NewFriendRequestEvent(
-                        bot,
-                        struct.msgSeq,
-                        msgAdditional,
-                        struct.reqUin,
-                        groupCode,
-                        reqUinNick
-                    )
+                return friendmsgs.filter {
+                    it.msgTime > bot.client.syncingController.latestMsgNewFriendTime
+                }.mapNotNull { struct ->
+                    struct.msg?.run {
+                        NewFriendRequestEvent(
+                            bot,
+                            struct.msgSeq,
+                            msgAdditional,
+                            struct.reqUin,
+                            groupCode,
+                            reqUinNick
+                        )
+                    }
+                }.let { packets ->
+                    when {
+                        packets.isEmpty() -> null
+                        packets.size == 1 -> packets[0]
+                        else -> MultiPacketByIterable(packets)
+                    }
+                }.also {
+                    bot.client.syncingController.latestMsgNewFriendTime = currentTimeSeconds()
                 }
             }
         }
@@ -143,18 +156,8 @@ internal class NewContact {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = groupmsgs.firstOrNull() ?: return null // 会有重复且无法过滤, 不要用 map
-
-                if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
-                        QQAndroidClient.MessageSvcSyncData.SystemMsgNewGroupSyncId(struct.msgSeq, struct.msgTime)
-                    )
-                ) { // duplicate
-                    return null
-                }
-
-                struct.msg?.run {
-                    //this.soutv("SystemMsg")
+            fun handleStruct(struct: Structmsg.StructMsg): Packet? {
+                return struct.msg?.run {
                     when (subType) {
                         1 -> { // 处理被邀请入群 或 处理成员入群申请
                             when (groupMsgType) {
@@ -231,6 +234,31 @@ internal class NewContact {
                         )
                     }
                 }
+            }
+
+            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
+                groupmsgs.filter {
+                    it.msgTime > bot.client.syncingController.latestMsgNewGroupTime
+                }.mapNotNull { struct ->
+                    if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
+                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewGroupSyncId(
+                                struct.msgSeq,
+                                struct.msgTime
+                            )
+                        )
+                    ) { // duplicate
+                        return@mapNotNull null
+                    }
+                    handleStruct(struct)
+                }.let { packets ->
+                    when {
+                        packets.isEmpty() -> null
+                        packets.size == 1 -> packets[0]
+                        else -> MultiPacketByIterable(packets)
+                    }
+                }
+            }.also {
+                bot.client.syncingController.latestMsgNewGroupTime = currentTimeSeconds()
             }
         }
 
