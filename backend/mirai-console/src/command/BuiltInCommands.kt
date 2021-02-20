@@ -37,6 +37,7 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
+import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.plugin.name
@@ -98,6 +99,7 @@ public object BuiltInCommands {
         public suspend fun CommandSender.handle() {
             sendMessage(
                 allRegisteredCommands
+                    .filter { hasPermission(it.permission) }
                     .joinToString("\n\n") { command ->
                         val lines = command.usage.lines()
                         if (lines.isEmpty()) "/${command.primaryName} ${command.description}"
