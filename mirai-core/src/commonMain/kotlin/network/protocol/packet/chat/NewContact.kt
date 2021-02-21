@@ -28,7 +28,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.utils.currentTimeSeconds
+import kotlin.math.max
 
 internal class NewContact {
 
@@ -60,8 +60,17 @@ internal class NewContact {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 return friendmsgs.filter {
-                    it.msgTime > bot.client.syncingController.latestMsgNewFriendTime
+                    it.msgTime >= bot.client.syncingController.latestMsgNewFriendTime
                 }.mapNotNull { struct ->
+                    if (!bot.client.syncingController.systemMsgNewFriendCacheList.addCache(
+                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
+                                struct.msgSeq,
+                                struct.msgTime
+                            )
+                        )
+                    ) { // duplicate
+                        return@mapNotNull null
+                    }
                     struct.msg?.run {
                         NewFriendRequestEvent(
                             bot,
@@ -79,7 +88,9 @@ internal class NewContact {
                         else -> MultiPacketByIterable(packets)
                     }
                 }.also {
-                    bot.client.syncingController.latestMsgNewFriendTime = currentTimeSeconds()
+                    bot.client.syncingController.run {
+                        latestMsgNewFriendTime = max(latestMsgNewFriendTime, friendmsgs.maxOfOrNull { it.msgTime } ?: 0)
+                    }
                 }
             }
         }
@@ -238,10 +249,10 @@ internal class NewContact {
 
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 groupmsgs.filter {
-                    it.msgTime > bot.client.syncingController.latestMsgNewGroupTime
+                    it.msgTime >= bot.client.syncingController.latestMsgNewGroupTime
                 }.mapNotNull { struct ->
                     if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
-                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewGroupSyncId(
+                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
                                 struct.msgSeq,
                                 struct.msgTime
                             )
@@ -256,9 +267,11 @@ internal class NewContact {
                         packets.size == 1 -> packets[0]
                         else -> MultiPacketByIterable(packets)
                     }
+                }.also {
+                    bot.client.syncingController.run {
+                        latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
+                    }
                 }
-            }.also {
-                bot.client.syncingController.latestMsgNewGroupTime = currentTimeSeconds()
             }
         }
 
