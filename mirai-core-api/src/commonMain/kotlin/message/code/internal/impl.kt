@@ -122,6 +122,13 @@ private object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     "dice" to MiraiCodeParser(Regex("""([1-6])""")) { (value) ->
         Dice(value.toInt())
     },
+    "musicshare" to MiraiCodeParser.DynamicParser(7) { args ->
+        val (kind, title, summary, jumpUrl, pictureUrl) = args
+        val musicUrl = args[5]
+        val brief = args[6]
+
+        MusicShare(MusicKind.valueOf(kind), title, summary, jumpUrl, pictureUrl, musicUrl, brief)
+    },
 )
 
 

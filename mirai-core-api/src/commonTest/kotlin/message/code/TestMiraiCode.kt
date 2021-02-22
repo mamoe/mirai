@@ -76,5 +76,16 @@ class TestMiraiCode {
         assertEquals(buildMessageChain {
             +Dice(1)
         }, "[mirai:dice:1]".deserializeMiraiCode())
+
+        val musicShare = MusicShare(
+            kind = MusicKind.NeteaseCloudMusic,
+            title = "ファッション",
+            summary = "rinahamu/Yunomi",
+            jumpUrl = "http://music.163.com/song/1338728297/?userid=324076307",
+            pictureUrl = "http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg",
+            musicUrl = "http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307",
+            brief = "",
+        )
+        assertEquals(musicShare.toMessageChain(), musicShare.serializeToMiraiCode().deserializeMiraiCode())
     }
 }
