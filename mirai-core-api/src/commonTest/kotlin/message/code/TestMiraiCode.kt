@@ -10,11 +10,41 @@
 package net.mamoe.mirai.message.code
 
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
+import net.mamoe.mirai.message.code.internal.MiraiCodeParser
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class TestMiraiCode {
+    @Test
+    fun testDynamicMiraiCodeParser() {
+        fun runTest(args: Int, code: String, parse: (args: Array<String>) -> Unit) {
+            val response = MiraiCodeParser.DynamicParser(args) { args0 -> parse(args0); AtAll }.parse(null, code)
+            assertNotNull(response, "Parser not invoked")
+        }
+        runTest(3, "test,\\,test,\\,\\,test") { (arg1, arg2, arg3) ->
+            assertEquals("test", arg1)
+            assertEquals(",test", arg2)
+            assertEquals(",,test", arg3)
+        }
+        runTest(2, ",") {}
+    }
+
+    @Test
+    fun testMultiLine() {
+        assertEquals(
+            PlainText("123456").toMessageChain(),
+            """1\
+            |2\
+            |3\
+            |4\
+            |5\
+            |6\
+            |""".trimMargin().deserializeMiraiCode(),
+        )
+    }
+
     @Test
     fun testCodes() {
         assertEquals(AtAll.toMessageChain(), "[mirai:atall]".deserializeMiraiCode())
