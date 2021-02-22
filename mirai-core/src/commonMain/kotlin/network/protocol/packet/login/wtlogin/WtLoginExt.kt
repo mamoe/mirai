@@ -40,14 +40,14 @@ internal inline fun WtLoginExt.analysisTlv0x531(
 
 internal interface WtLoginExt { // so as not to register to global extension
 
-    fun onErrorMessage(tlvMap: TlvMap): WtLogin.Login.LoginPacketResponse.Error? {
+    fun onErrorMessage(type: Int, tlvMap: TlvMap): WtLogin.Login.LoginPacketResponse.Error? {
         return tlvMap[0x149]?.read {
             discardExact(2) //type
             val title: String = readUShortLVString()
             val content: String = readUShortLVString()
             val otherInfo: String = readUShortLVString()
 
-            WtLogin.Login.LoginPacketResponse.Error(title, content, otherInfo)
+            WtLogin.Login.LoginPacketResponse.Error(type, title, content, otherInfo)
         } ?: tlvMap[0x146]?.read {
             discardExact(2) // ver
             discardExact(2)  // code
@@ -56,7 +56,7 @@ internal interface WtLoginExt { // so as not to register to global extension
             val message = readUShortLVString()
             val errorInfo = readUShortLVString()
 
-            WtLogin.Login.LoginPacketResponse.Error(title, message, errorInfo)
+            WtLogin.Login.LoginPacketResponse.Error(type, title, message, errorInfo)
         }
     }
 
