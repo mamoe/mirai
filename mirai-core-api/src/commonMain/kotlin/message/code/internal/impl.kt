@@ -207,7 +207,7 @@ internal fun StringBuilder.appendStringAsMiraiCode(value: String): StringBuilder
     }
 }
 
-private val DECODE_MIRAI_CODE_REGEX = """\\(.|\n)""".toRegex()
+private val DECODE_MIRAI_CODE_REGEX = """\\.""".toRegex()
 private val DECODE_MIRAI_CODE_TRANSLATOR: (MatchResult) -> String = {
     when (it.value[1]) {
         'n' -> "\n"

@@ -32,20 +32,6 @@ class TestMiraiCode {
     }
 
     @Test
-    fun testMultiLine() {
-        assertEquals(
-            PlainText("123456").toMessageChain(),
-            """1\
-            |2\
-            |3\
-            |4\
-            |5\
-            |6\
-            |""".trimMargin().deserializeMiraiCode(),
-        )
-    }
-
-    @Test
     fun testCodes() {
         assertEquals(AtAll.toMessageChain(), "[mirai:atall]".deserializeMiraiCode())
         assertEquals(PlainText("[Hello").toMessageChain(), "\\[Hello".deserializeMiraiCode())
