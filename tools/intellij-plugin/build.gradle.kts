@@ -37,6 +37,8 @@ intellij {
     )
 }
 
+project.extra.set("javaTarget", JavaVersion.VERSION_11) // see build.gradle.kts:213 in root project
+
 tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class) {
     val pluginKey = project.findProperty("jetbrains.hub.key")?.toString()
     if (pluginKey != null) {
