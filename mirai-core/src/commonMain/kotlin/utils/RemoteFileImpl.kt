@@ -23,15 +23,15 @@ import java.io.RandomAccessFile
 import java.util.stream.Stream
 import kotlin.coroutines.CoroutineContext
 
-internal class RemoteFileImpl(folder: String, override val name: String, private val contact: Group) : RemoteFile {
-    val folder: String = folder.replace('\\', '/')
+internal class RemoteFileImpl(parent: String, override val name: String, private val contact: Group) : RemoteFile {
+    val folder: String = parent.replace('\\', '/')
 
     override val path: String
         get() = if (folder.endsWith('/')) "$folder$name" else "$folder/$name"
 
     override suspend fun parent(): RemoteFile {
         return RemoteFileImpl(
-            folder = folder.substringBeforeLast('/', ""),
+            parent = folder.substringBeforeLast('/', ""),
             name = folder.substringAfterLast('/'),
             contact = contact
         )

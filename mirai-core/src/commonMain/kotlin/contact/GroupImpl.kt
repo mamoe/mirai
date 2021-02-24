@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
+import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -71,6 +72,8 @@ internal class GroupImpl(
 
     override lateinit var owner: NormalMember
     override lateinit var botAsMember: NormalMember
+
+    override val filesRoot: RemoteFile by lazy { RemoteFileImpl("", "/", this) }
 
     override val members: ContactList<NormalMember> = ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) {
         if (it.uin == bot.id) {
