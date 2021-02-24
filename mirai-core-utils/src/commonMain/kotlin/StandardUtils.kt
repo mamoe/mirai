@@ -157,3 +157,10 @@ public inline fun <R> runCatchingExceptions(block: () -> R): Result<R> {
         Result.failure(e)
     }
 }
+
+public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
+    val li: MutableListIterator<E> = this.listIterator()
+    while (li.hasNext()) {
+        li.set(operator(li.next()))
+    }
+}
