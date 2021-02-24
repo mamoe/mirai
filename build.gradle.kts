@@ -209,8 +209,9 @@ fun Project.configureJvmTarget() {
     }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        val javaTarget by project.extra(JavaVersion.VERSION_1_8)
+        sourceCompatibility = javaTarget
+        targetCompatibility = javaTarget
     }
 }
 
