@@ -238,10 +238,11 @@ internal class TroopManagement {
                     OidbSso.OIDBSSOPkg.serializer(),
                     OidbSso.OIDBSSOPkg(
                         command = 2202,
+                        serviceType = 0,
                         bodybuffer = Oidb0x89a.ReqBody(
                             groupCode = groupCode,
                             stGroupInfo = Oidb0x89a.Groupinfo().apply(info)
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
+                        ).toByteArray(Oidb0x89a.ReqBody.serializer()),
                     )
                 )
             }
