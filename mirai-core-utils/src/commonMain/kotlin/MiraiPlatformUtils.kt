@@ -80,6 +80,14 @@ public fun ByteArray.md5(offset: Int = 0, length: Int = size - offset): ByteArra
     return MessageDigest.getInstance("MD5").apply { update(this@md5, offset, length) }.digest()
 }
 
+public fun String.sha1(): ByteArray = toByteArray().sha1()
+
+@JvmOverloads
+public fun ByteArray.sha1(offset: Int = 0, length: Int = size - offset): ByteArray {
+    checkOffsetAndLength(offset, length)
+    return MessageDigest.getInstance("SHA-1").apply { update(this@sha1, offset, length) }.digest()
+}
+
 @JvmOverloads
 public fun ByteArray.ungzip(offset: Int = 0, length: Int = size - offset): ByteArray {
     return GZIPInputStream(inputStream(offset, length)).use { it.readBytes() }

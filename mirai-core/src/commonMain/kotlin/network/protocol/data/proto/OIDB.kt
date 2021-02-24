@@ -958,7 +958,7 @@ internal class OidbSso : ProtoBuf {
     @Serializable
     internal class OIDBSSOPkg(
         @ProtoNumber(1) @JvmField val command: Int = 0,
-        @ProtoNumber(2) @JvmField val serviceType: Int = 0,
+        @ProtoNumber(2) @JvmField val serviceType: Int,
         @ProtoNumber(3) @JvmField val result: Int = 0,
         @ProtoNumber(4) @JvmField val bodybuffer: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val errorMsg: String = "",

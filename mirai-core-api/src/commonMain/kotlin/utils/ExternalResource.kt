@@ -62,6 +62,14 @@ public interface ExternalResource : Closeable {
     public val md5: ByteArray
 
     /**
+     * 文件内容 SHA1. 16 bytes
+     * @since 2.5
+     */
+    public val sha1: ByteArray
+        get() =
+            throw UnsupportedOperationException("ExternalResource.sha1 is not implemented by ${this::class.simpleName}")
+
+    /**
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
