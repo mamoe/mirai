@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -49,8 +49,11 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
     public open val output: (String) -> Unit,
     public val isColored: Boolean = true
 ) : MiraiLoggerPlatformBase() {
+
+    // PlatformLogger("") resolves to this one.
     public actual constructor(identity: String?) : this(identity, ::println)
-    public constructor(identity: String?, output: (String) -> Unit) : this(identity, output, true)
+
+    public constructor(identity: String?, output: (String) -> Unit = ::println) : this(identity, output, true)
 
     /**
      * 输出一条日志. [message] 末尾可能不带换行符.
@@ -102,6 +105,7 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
         if (e != null) debug((message ?: e.toString()) + "\n${e.stackTraceToString()}")
         else debug(message.toString())
     }
+
     protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
 
     private val currentTimeFormatted get() = timeFormat.format(Date())

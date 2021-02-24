@@ -5902,7 +5902,7 @@ public final class net/mamoe/mirai/utils/SimpleLogger$LogPriority : java/lang/En
 	public static fun values ()[Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;
 }
 
-public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/utils/PlatformLogger {
+public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/utils/PlatformLogger, net/mamoe/mirai/utils/MiraiLogger {
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
