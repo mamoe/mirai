@@ -10,7 +10,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
@@ -35,7 +34,7 @@ buildscript {
 plugins {
     kotlin("jvm") // version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
-    id("org.jetbrains.dokka") version Versions.dokka
+//    id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.jfrog.bintray") // version Versions.bintray
     id("com.gradle.plugin-publish") version "0.12.0" apply false
@@ -60,6 +59,8 @@ configure<kotlinx.validation.ApiValidationExtension> {
     nonPublicMarkers.add("net.mamoe.mirai.MiraiExperimentalApi")
 }
 
+GpgSigner.setup(project)
+
 tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
     group = "mirai"
     dependsOn(
@@ -81,7 +82,6 @@ allprojects {
         maven(url = "https://kotlin.bintray.com/kotlinx")
         google()
         mavenCentral()
-        maven(url = "https://dl.bintray.com/karlatemp/misc")
     }
 
     afterEvaluate {
@@ -113,37 +113,61 @@ subprojects {
     }
 }
 
-fun Project.configureDokka() {
-    apply(plugin = "org.jetbrains.dokka")
-    tasks {
-        val dokkaHtml by getting(DokkaTask::class) {
-            outputDirectory.set(buildDir.resolve("dokka"))
-        }
-        val dokkaGfm by getting(DokkaTask::class) {
-            outputDirectory.set(buildDir.resolve("dokka-gfm"))
-        }
-    }
-    tasks.withType<DokkaTask>().configureEach {
-        dokkaSourceSets.configureEach {
-            perPackageOption {
-                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
-                skipDeprecated.set(true)
-            }
+tasks.register("cleanExceptIntellij") {
+    group = "build"
+    allprojects.forEach { proj ->
+        if (proj.name != "mirai-console-intellij") {
 
-            for (suppressedPackage in arrayOf(
-                """net.mamoe.mirai.internal""",
-                """net.mamoe.mirai.internal.message""",
-                """net.mamoe.mirai.internal.network""",
-                """net.mamoe.mirai.console.internal""",
-                """net.mamoe.mirai.console.compiler.common"""
-            )) {
-                perPackageOption {
-                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
-                    suppress.set(true)
-                }
-            }
+            // Type mismatch
+            // proj.tasks.findByName("clean")?.let(::dependsOn)
+
+            proj.tasks.findByName("clean")?.let { dependsOn(it) }
         }
     }
+}
+
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
+}
+
+fun Project.useIr() {
+    kotlinCompilations?.forEach { kotlinCompilation ->
+        kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
+    }
+}
+
+fun Project.configureDokka() {
+//    apply(plugin = "org.jetbrains.dokka")
+//    tasks {
+//        val dokkaHtml by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+//            outputDirectory.set(buildDir.resolve("dokka"))
+//        }
+//        val dokkaGfm by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+//            outputDirectory.set(buildDir.resolve("dokka-gfm"))
+//        }
+//    }
+//    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+//        dokkaSourceSets.configureEach {
+//            perPackageOption {
+//                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
+//                skipDeprecated.set(true)
+//            }
+//
+//            for (suppressedPackage in arrayOf(
+//                """net.mamoe.mirai.internal""",
+//                """net.mamoe.mirai.internal.message""",
+//                """net.mamoe.mirai.internal.network""",
+//                """net.mamoe.mirai.console.internal""",
+//                """net.mamoe.mirai.console.compiler.common"""
+//            )) {
+//                perPackageOption {
+//                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
+//                    suppress.set(true)
+//                }
+//            }
+//        }
+//    }
 }
 
 fun Project.configureMppShadow() {

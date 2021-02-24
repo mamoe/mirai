@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 internal class MsgRevokeUserDef : ProtoBuf {
     @Serializable
     internal class MsgInfoUserDef(
-        @ProtoNumber(1) @JvmField val longMessageFlag: Int = 0,
+        @ProtoNumber(1) @JvmField val longMessageFlag: Int,
         @ProtoNumber(2) @JvmField val longMsgInfo: List<MsgInfoDef> = emptyList(),
         @ProtoNumber(3) @JvmField val fileUuid: List<String> = listOf()
     ) : ProtoBuf {

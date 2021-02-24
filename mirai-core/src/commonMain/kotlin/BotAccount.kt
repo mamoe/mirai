@@ -33,7 +33,9 @@ internal data class BotAccount(
         id,
         passwordPlainText.md5(),
         phoneNumber
-    )
+    ) {
+        require(passwordPlainText.length <= 16) { "Password length must be at most 16." }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

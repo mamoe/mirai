@@ -38,8 +38,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbGroupMsgWithDrawReq(
-        @ProtoNumber(1) @JvmField val subCmd: Int = 0,
-        @ProtoNumber(2) @JvmField val groupType: Int = 0,
+        @ProtoNumber(1) @JvmField val subCmd: Int,
+        @ProtoNumber(2) @JvmField val groupType: Int,
         @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(4) @JvmField val msgList: List<MessageInfo> = emptyList(),
         @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY

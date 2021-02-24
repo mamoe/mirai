@@ -18,12 +18,14 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.getImageType
+import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
-import net.mamoe.mirai.internal.network.highway.tryServers
+import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
@@ -37,9 +39,6 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 
 internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
-
-internal open class UserInfoImpl(override val uin: Long, override val nick: String, override val remark: String = "") :
-    UserInfo
 
 internal abstract class AbstractUser(
     bot: Bot,
@@ -133,7 +132,14 @@ internal abstract class AbstractUser(
                                 resource = resource,
                                 kind = PRIVATE_IMAGE,
                                 commandId = 2,
-                                initialTicket = response.uKey
+                                initialTicket = response.uKey,
+                                fallbackSession = {
+                                    BdhSession(
+                                        EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY,
+                                        ssoAddresses = response.uploadIpList.zip(response.uploadPortList)
+                                            .toMutableSet(),
+                                    )
+                                }
                             )
                         }
                     }
@@ -148,7 +154,7 @@ internal abstract class AbstractUser(
                     )
                 }.recoverCatchingSuppressed {
                     // try upload by http on provided servers
-                    tryServers(
+                    tryServersUpload(
                         bot = bot,
                         servers = resp.serverIp.zip(resp.serverPort),
                         resourceSize = resource.size,

@@ -76,6 +76,12 @@ internal class ListenerRegistry(
 internal object GlobalEventListeners {
     private val ALL_LEVEL_REGISTRIES: Map<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>
 
+    fun clear() {
+        ALL_LEVEL_REGISTRIES.forEach { (_, u) ->
+            u.clear()
+        }
+    }
+
     init {
         val map =
             EnumMap<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>(EventPriority::class.java)

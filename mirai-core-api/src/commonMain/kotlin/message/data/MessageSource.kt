@@ -201,7 +201,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun MessageChain.recall(): Unit = this.source.recall()
+        public suspend fun MessageChain.recall(): Unit = this.source.recall()
 
         /**
          * 在一段时间后撤回这条消息.

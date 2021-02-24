@@ -9,7 +9,9 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR")
+@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
+    "MemberVisibilityCanBePrivate"
+)
 
 package net.mamoe.mirai.event.events
 
@@ -28,8 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
-public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
-    public abstract val group: Group
+public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent {
+    public abstract override val group: Group
 
     /**
      * 机器人主动退出一个群.
@@ -64,7 +66,7 @@ public data class BotGroupPermissionChangeEvent @MiraiInternalApi constructor(
     public override val group: Group,
     public val origin: MemberPermission,
     public val new: MemberPermission
-) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
+) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
  * Bot 被禁言
@@ -75,7 +77,7 @@ public data class BotMuteEvent @MiraiInternalApi constructor(
      * 操作人.
      */
     public val operator: NormalMember
-) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
+) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent(), GroupMemberInfoChangeEvent {
     public override val group: Group
         get() = operator.group
 }
@@ -88,7 +90,7 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
      * 操作人.
      */
     public val operator: NormalMember
-) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
+) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent(), GroupMemberInfoChangeEvent {
     public override val group: Group
         get() = operator.group
 }
@@ -96,7 +98,7 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
 /**
  * Bot 成功加入了一个新群
  */
-public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent() {
+public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent {
     public abstract override val group: Group
 
     /**
@@ -164,7 +166,7 @@ public data class GroupNameChangeEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: NormalMember?
-) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
@@ -177,7 +179,7 @@ public data class GroupEntranceAnnouncementChangeEvent @MiraiInternalApi constru
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: NormalMember?
-) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 
 /**
@@ -191,7 +193,7 @@ public data class GroupMuteAllEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: NormalMember?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 
 /**
@@ -205,7 +207,7 @@ public data class GroupAllowAnonymousChatEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: NormalMember?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 
 /**
@@ -216,7 +218,7 @@ public data class GroupAllowConfessTalkEvent @MiraiInternalApi constructor(
     public override val new: Boolean,
     public override val group: Group,
     public val isByBot: Boolean // 无法获取操作人
-) : GroupSettingChangeEvent<Boolean>, Packet, AbstractEvent()
+) : GroupSettingChangeEvent<Boolean>, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
@@ -229,7 +231,7 @@ public data class GroupAllowMemberInviteEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: NormalMember?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 
 // endregion
@@ -245,7 +247,7 @@ public data class GroupAllowMemberInviteEvent @MiraiInternalApi constructor(
 public sealed class MemberJoinEvent(
     public override val member: NormalMember
 ) : GroupMemberEvent, BotPassiveEvent, Packet,
-    AbstractEvent() {
+    AbstractEvent(), GroupMemberInfoChangeEvent {
     /**
      * 被邀请加入群
      */
@@ -282,7 +284,7 @@ public sealed class MemberJoinEvent(
 /**
  * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
-public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
+public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent(), GroupMemberInfoChangeEvent {
     /**
      * 成员被踢出群. 成员不可能是机器人自己.
      */
@@ -320,13 +322,13 @@ public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
      * 邀请入群的账号的 id
      */
     public val invitorId: Long,
-    public val groupId: Long,
+    public override val groupId: Long,
     public val groupName: String,
     /**
      * 邀请人昵称
      */
     public val invitorNick: String
-) : BotEvent, Packet, AbstractEvent() {
+) : BotEvent, Packet, AbstractEvent(), BaseGroupMemberInfoChangeEvent {
     /**
      * 邀请人. 若在事件发生后邀请人已经被删除好友, [invitor] 为 `null`.
      */
@@ -360,7 +362,7 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      * 申请入群的账号的 id
      */
     val fromId: Long,
-    val groupId: Long,
+    override val groupId: Long,
     val groupName: String,
     /**
      * 申请人昵称
@@ -370,7 +372,7 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      * 邀请人 id（如果是邀请入群）
      */
     val invitorId: Long? = null
-) : BotEvent, Packet, AbstractEvent() {
+) : BotEvent, Packet, AbstractEvent(), BaseGroupMemberInfoChangeEvent {
     /**
      * 相关群. 若在事件发生后机器人退出这个群, [group] 为 `null`.
      */
@@ -471,7 +473,7 @@ public data class MemberCardChangeEvent @MiraiInternalApi constructor(
     public val new: String,
 
     public override val member: NormalMember
-) : GroupMemberEvent, Packet, AbstractEvent()
+) : GroupMemberEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
  * 成员群头衔改动. 一定为群主操作
@@ -495,7 +497,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
      * 为 null 时则是机器人操作.
      */
     public override val operator: NormalMember?
-) : GroupMemberEvent, GroupOperableEvent, AbstractEvent()
+) : GroupMemberEvent, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 // endregion
 
@@ -509,7 +511,7 @@ public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
     public override val member: NormalMember,
     public val origin: MemberPermission,
     public val new: MemberPermission
-) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
+) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 // endregion
 
@@ -528,7 +530,7 @@ public data class MemberMuteEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 则为机器人操作
      */
     public override val operator: Member?
-) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
@@ -541,7 +543,7 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
      * 操作人. 为 null 则为机器人操作
      */
     public override val operator: Member?
-) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
+) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 // endregion
 

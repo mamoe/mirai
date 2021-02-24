@@ -98,6 +98,9 @@ public interface RichMessage : MessageContent, ConstrainSingle {
 @Serializable
 @SerialName(LightApp.SERIAL_NAME)
 public data class LightApp(override val content: String) : RichMessage, CodableMessage {
+    // implementation notes: LightApp is always decoded as LightAppInternal
+    // which are transformed as RefinableMessage to LightApp
+
     public companion object Key : AbstractMessageKey<LightApp>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "LightApp"
     }

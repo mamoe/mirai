@@ -41,6 +41,7 @@ public val Mirai: IMirai by lazy { findMiraiInstance() }
  *
  * @see Mirai 获取实例
  */
+@JvmBlockingBridge
 public interface IMirai : LowLevelApiAccessor {
     /**
      * 请优先使用 [BotFactory.INSTANCE]
@@ -121,13 +122,11 @@ public interface IMirai : LowLevelApiAccessor {
      * @see IMirai.recallMessage (扩展函数) 接受参数 [MessageChain]
      * @see MessageSource.recall 撤回消息扩展
      */
-    @JvmBlockingBridge
     public suspend fun recallMessage(bot: Bot, source: MessageSource)
 
     /**
      * 发送戳一戳消息
      */
-    @JvmBlockingBridge
     public suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean
 
     /**
@@ -143,7 +142,6 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @see Image.queryUrl [Image] 的扩展函数
      */
-    @JvmBlockingBridge
     public suspend fun queryImageUrl(bot: Bot, image: Image): String
 
     /**
@@ -151,7 +149,6 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @since 2.1
      */
-    @JvmBlockingBridge
     public suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile
 
     /**
@@ -170,13 +167,27 @@ public interface IMirai : LowLevelApiAccessor {
         originalMessage: MessageChain
     ): OfflineMessageSource
 
+    /**
+     * @since 2.3
+     */
+    public suspend fun downloadLongMessage(
+        bot: Bot,
+        resourceId: String,
+    ): MessageChain
+
+    /**
+     * @since 2.3
+     */
+    public suspend fun downloadForwardMessage(
+        bot: Bot,
+        resourceId: String,
+    ): List<ForwardMessage.Node>
 
     /**
      * 通过好友验证
      *
      * @param event 好友验证的事件对象
      */
-    @JvmBlockingBridge
     public suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
     /**
@@ -185,7 +196,6 @@ public interface IMirai : LowLevelApiAccessor {
      * @param event 好友验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @JvmBlockingBridge
     public suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
 
     /**
@@ -193,7 +203,6 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @param event 加群验证的事件对象
      */
-    @JvmBlockingBridge
     public suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
     /**
@@ -202,7 +211,6 @@ public interface IMirai : LowLevelApiAccessor {
      * @param event 加群验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @JvmBlockingBridge
     public suspend fun rejectMemberJoinRequest(
         event: MemberJoinRequestEvent,
         blackList: Boolean = false,
@@ -213,7 +221,6 @@ public interface IMirai : LowLevelApiAccessor {
      * 获取在线的 [OtherClient] 列表
      * @param mayIncludeSelf 服务器返回的列表可能包含 [Bot] 自己. [mayIncludeSelf] 为 `false` 会排除自己
      */
-    @JvmBlockingBridge
     public suspend fun getOnlineOtherClientsList(
         bot: Bot,
         mayIncludeSelf: Boolean = false
@@ -225,7 +232,6 @@ public interface IMirai : LowLevelApiAccessor {
      * @param event 加群验证的事件对象
      * @param blackList 忽略后是否拉入黑名单
      */
-    @JvmBlockingBridge
     public suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
     /**
@@ -233,7 +239,6 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @param event 邀请入群的事件对象
      */
-    @JvmBlockingBridge
     public suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     /**
@@ -241,7 +246,6 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * @param event 邀请入群的事件对象
      */
-    @JvmBlockingBridge
     public suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 }
 

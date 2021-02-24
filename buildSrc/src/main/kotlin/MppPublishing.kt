@@ -21,7 +21,7 @@ fun logPublishing(message: String) {
 }
 
 fun Project.configureMppPublishing() {
-    configureBintray()
+    configureRemoteRepos()
 
     // mirai does some magic on MPP targets
     afterEvaluate {
@@ -42,10 +42,13 @@ fun Project.configureMppPublishing() {
                 .forEach { publication ->
                     val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
                     if (moduleFile.exists()) {
-                        publication.artifact(object :
+                        val artifact = (object :
                             org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
                             override fun getDefaultExtension() = "module"
                         })
+                        publication.artifact(artifact)
+                        GpgSigner.signer.doSign(moduleFile)
+                        publication.artifact(GPGSignMavenArtifact(artifact))
                     }
                 }
         }
@@ -61,9 +64,10 @@ fun Project.configureMppPublishing() {
             logPublishing("Publications: ${publications.joinToString { it.name }}")
 
             publications.filterIsInstance<MavenPublication>().forEach { publication ->
-                if (publication.name != "kotlinMultiplatform") {
-                    publication.artifact(stubJavadoc)
-                }
+                // Maven Central always require javadoc.jar
+                publication.artifact(stubJavadoc)
+
+                publication.setupPom(project)
 
                 logPublishing(publication.name)
                 when (val type = publication.name) {
@@ -86,6 +90,7 @@ fun Project.configureMppPublishing() {
                     }
                 }
             }
+            configGpgSign(this@configureMppPublishing)
         }
     }
 }
@@ -129,6 +134,6 @@ val publishPlatformArtifactsInRootModule: Project.(MavenPublication) -> Unit = {
     }
 }
 
-private fun MavenArtifact.smartToString(): String {
+public fun MavenArtifact.smartToString(): String {
     return "${file.path}, classifier=${classifier}, ext=${extension}"
 }

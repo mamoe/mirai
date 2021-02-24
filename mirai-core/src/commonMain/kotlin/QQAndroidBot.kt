@@ -19,23 +19,26 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.internal.contact.OtherClientImpl
-import net.mamoe.mirai.internal.contact.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
-import net.mamoe.mirai.internal.network.useNextServers
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.utils.ScheduledJob
+import net.mamoe.mirai.internal.utils.friendCacheFile
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo as JceFriendInfo
+import kotlin.time.milliseconds
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -56,7 +59,10 @@ internal class QQAndroidBot constructor(
     private val account: BotAccount,
     configuration: BotConfiguration
 ) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
+    val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
+
     var client: QQAndroidClient = initClient()
+        private set
 
     fun initClient(): QQAndroidClient {
         client = QQAndroidClient(
@@ -75,15 +81,44 @@ internal class QQAndroidBot constructor(
 
     override val friends: ContactList<Friend> = ContactList()
 
-    override lateinit var nick: String
+    val friendListCache: FriendListCache? by lazy {
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+            val file = configuration.friendCacheFile()
+            val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
 
-    internal var selfInfo: JceFriendInfo? = null
-        get() = field ?: error("selfInfo is not yet initialized")
-        set(it) {
-            checkNotNull(it)
-            field = it
-            nick = it.nick
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+            bot.eventChannel.parentScope(this@QQAndroidBot)
+                .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
+                    friendListSaver?.notice()
+                }
+            ret
+    }
+
+    val groupMemberListCaches: GroupMemberListCaches? by lazy {
+        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
+            return@lazy null
         }
+            GroupMemberListCaches(this)
+    }
+
+    private val friendListSaver by lazy {
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+            ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
+                runBIO { saveFriendCache() }
+            }
+    }
+
+    fun saveFriendCache() {
+        val friendListCache = friendListCache ?: return
+
+        configuration.friendCacheFile().run {
+            createFileIfNotExists()
+            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
+            bot.network.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
+        }
+    }
+
+    override lateinit var nick: String
 
     override val asFriend: Friend by lazy {
         @OptIn(LowLevelApi::class)
@@ -98,8 +133,15 @@ internal class QQAndroidBot constructor(
     @ThisApiMustBeUsedInWithConnectionLockBlock
     @Throws(LoginFailedException::class) // only
     override suspend fun relogin(cause: Throwable?) {
+        bdhSyncer.loadFromCache()
         client.useNextServers { host, port ->
             network.closeEverythingAndRelogin(host, port, cause, 0)
+        }
+    }
+
+    override suspend fun sendLogout() {
+        network.run {
+            StatSvc.Register.offline(client).sendWithoutExpect()
         }
     }
 
@@ -201,5 +243,5 @@ internal fun RichMessage.Key.forwardMessage(
             <source name="${source.take(50)}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ")
-    return ForwardMessageInternal(template)
+    return ForwardMessageInternal(template, resId)
 }

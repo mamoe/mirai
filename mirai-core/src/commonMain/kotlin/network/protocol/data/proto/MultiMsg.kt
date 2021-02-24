@@ -23,7 +23,7 @@ internal class MultiMsg : ProtoBuf {
 
     @Serializable
     internal class MultiMsgApplyDownReq(
-        @ProtoNumber(1) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField val msgResid: String = "",
         @ProtoNumber(2) @JvmField val msgType: Int = 0,
         @ProtoNumber(3) @JvmField val srcUin: Long = 0L
     ) : ProtoBuf
@@ -31,11 +31,11 @@ internal class MultiMsg : ProtoBuf {
     @Serializable
     internal class MultiMsgApplyDownRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
-        @ProtoNumber(2) @JvmField val thumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val thumbDownPara: String = "",
         @ProtoNumber(3) @JvmField val msgKey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val uint32DownIp: List<Int> = emptyList(),
         @ProtoNumber(5) @JvmField val uint32DownPort: List<Int> = emptyList(),
-        @ProtoNumber(6) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(6) @JvmField val msgResid: String = "",
         @ProtoNumber(7) @JvmField val msgExternInfo: ExternMsg? = null,
         @ProtoNumber(8) @JvmField val bytesDownIpV6: List<ByteArray> = emptyList(),
         @ProtoNumber(9) @JvmField val uint32DownV6Port: List<Int> = emptyList()

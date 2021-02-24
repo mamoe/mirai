@@ -11,7 +11,10 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
@@ -22,6 +25,7 @@ import net.mamoe.mirai.utils.safeCast
  * @since 2.1
  */
 @Serializable
+@SerialName(MusicShare.SERIAL_NAME)
 public data class MusicShare(
     /**
      * 音乐应用类型
@@ -51,7 +55,7 @@ public data class MusicShare(
      * 在消息列表显示
      */
     public val brief: String,
-) : MessageContent, ConstrainSingle {
+) : MessageContent, ConstrainSingle, CodableMessage {
 
     public constructor(
         /**
@@ -86,6 +90,19 @@ public data class MusicShare(
     override fun contentToString(): String =
         brief.takeIf { it.isNotBlank() } ?: "[分享]$title" // empty content is not accepted by `sendMessage`
 
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:musicshare:")
+            .append(kind.name)
+            .append(',').appendStringAsMiraiCode(title)
+            .append(',').appendStringAsMiraiCode(summary)
+            .append(',').appendStringAsMiraiCode(jumpUrl)
+            .append(',').appendStringAsMiraiCode(pictureUrl)
+            .append(',').appendStringAsMiraiCode(musicUrl)
+            .append(',').appendStringAsMiraiCode(brief)
+            .append(']')
+    }
+
+
     // MusicShare(type=NeteaseCloudMusic, title='ファッション', summary='rinahamu/Yunomi', brief='', url='http://music.163.com/song/1338728297/?userid=324076307', pictureUrl='http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg', musicUrl='http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307')
 
     /**
@@ -93,7 +110,13 @@ public data class MusicShare(
      */
     public companion object Key :
         AbstractPolymorphicMessageKey<@MiraiExperimentalApi MessageContent, MusicShare>
-            (MessageContent, { it.safeCast() })
+            (MessageContent, { it.safeCast() }) {
+
+        /**
+         * @since 2.3
+         */
+        public const val SERIAL_NAME: String = "MusicShare"
+    }
 }
 
 /**

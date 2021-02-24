@@ -25,13 +25,7 @@ internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildM
             add(PlainText(origin.decodeMiraiCode()))
             return@forEachMiraiCode
         }
-        parser.argsRegex.matchEntire(args)
-            ?.destructured
-            ?.let {
-                parser.runCatching {
-                    contact.mapper(it)
-                }.getOrNull()
-            }
+        parser.parse(contact, args)
             ?.let(::add)
             ?: add(PlainText(origin.decodeMiraiCode()))
     }
@@ -124,13 +118,80 @@ private object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     },
     "app" to MiraiCodeParser(Regex("""(.*)""")) { (content) ->
         LightApp(content.decodeMiraiCode())
-    }
+    },
+    "dice" to MiraiCodeParser(Regex("""([1-6])""")) { (value) ->
+        Dice(value.toInt())
+    },
+    "musicshare" to MiraiCodeParser.DynamicParser(7) { args ->
+        val (kind, title, summary, jumpUrl, pictureUrl) = args
+        val musicUrl = args[5]
+        val brief = args[6]
+
+        MusicShare(MusicKind.valueOf(kind), title, summary, jumpUrl, pictureUrl, musicUrl, brief)
+    },
 )
 
-private class MiraiCodeParser(
-    val argsRegex: Regex,
-    val mapper: Contact?.(MatchResult.Destructured) -> Message?
-)
+
+// Visitable for test
+internal sealed class MiraiCodeParser {
+    abstract fun parse(contact: Contact?, args: String): Message?
+    class RegexParser(
+        private val argsRegex: Regex,
+        private val mapper: Contact?.(MatchResult.Destructured) -> Message?
+    ) : MiraiCodeParser() {
+        override fun parse(contact: Contact?, args: String): Message? =
+            argsRegex.matchEntire(args)
+                ?.destructured
+                ?.let {
+                    runCatching {
+                        contact.mapper(it)
+                    }.getOrNull()
+                }
+    }
+
+    class DynamicParser(
+        private val minArgs: Int,
+        private val maxArgs: Int = minArgs,
+        private val parser: (Contact?.(args: Array<String>) -> Message?),
+    ) : MiraiCodeParser() {
+        override fun parse(contact: Contact?, args: String): Message? {
+            val ranges = mutableListOf<IntRange>()
+            if (args.isNotEmpty()) {
+                var begin = 0
+                var pos = 0
+                val len = args.length
+                while (pos < len) {
+                    when (args[pos]) {
+                        '\\' -> pos += 2
+                        ',' -> {
+                            ranges.add(begin..pos)
+                            pos++
+                            begin = pos
+                        }
+                        else -> pos++
+                    }
+                }
+                ranges.add(begin..len)
+            }
+            if (ranges.size < minArgs) return null
+            if (ranges.size > maxArgs) return null
+            @Suppress("RemoveExplicitTypeArguments")
+            val args0 = Array<String>(ranges.size) { index ->
+                val range = ranges[index]
+                args.substring(range.first, range.last).decodeMiraiCode()
+            }
+            runCatching {
+                return parser(contact, args0)
+            }
+            return null
+        }
+    }
+}
+
+private fun MiraiCodeParser(
+    argsRegex: Regex,
+    mapper: Contact?.(MatchResult.Destructured) -> Message?
+): MiraiCodeParser = MiraiCodeParser.RegexParser(argsRegex, mapper)
 
 internal fun StringBuilder.appendStringAsMiraiCode(value: String): StringBuilder = apply {
     value.forEach { char ->

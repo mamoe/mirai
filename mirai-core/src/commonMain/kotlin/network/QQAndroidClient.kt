@@ -14,11 +14,11 @@ package net.mamoe.mirai.internal.network
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.String
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -45,7 +45,7 @@ internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Ra
 // [114.221.148.179:14000, 113.96.13.125:8080, 14.22.3.51:8080, 42.81.172.207:443, 114.221.144.89:80, 125.94.60.148:14000, 42.81.192.226:443, 114.221.148.233:8080, msfwifi.3g.qq.com:8080, 42.81.172.22:80]
 
 internal val DefaultServerList: MutableSet<Pair<String, Int>> =
-    "114.221.148.179:14000, 113.96.13.125:8080, 14.22.3.51:8080, 42.81.172.207:443, 114.221.144.89:80, 125.94.60.148:14000, 42.81.192.226:443, 114.221.148.233:8080, msfwifi.3g.qq.com:8080, 42.81.172.22:80"
+    "msfwifi.3g.qq.com:8080, 14.215.138.110:8080, 113.96.12.224:8080, 157.255.13.77:14000, 120.232.18.27:443, 183.3.235.162:14000, 163.177.89.195:443, 183.232.94.44:80, 203.205.255.224:8080, 203.205.255.221:8080"
         .split(", ")
         .map {
             val host = it.substringBefore(':')
@@ -165,6 +165,8 @@ internal open class QQAndroidClient(
 
     class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
+        var latestMsgNewGroupTime: Long = currentTimeSeconds()
+        var latestMsgNewFriendTime: Long = currentTimeSeconds()
 
         @Volatile
         var syncCookie: ByteArray? = null
@@ -180,12 +182,13 @@ internal open class QQAndroidClient(
 
         val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
 
-        internal data class SystemMsgNewGroupSyncId(
+        internal data class SystemMsgNewSyncId(
             val sequence: Long,
             val time: Long
         )
 
-        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewGroupSyncId>(10)
+        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
+        val systemMsgNewFriendCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
 
 
         internal data class PbPushTransMsgSyncId(
@@ -281,11 +284,6 @@ internal open class QQAndroidClient(
 
     lateinit var t104: ByteArray
 
-    /**
-     * from ConfigPush.PushReq
-     */
-    @JvmField
-    val bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
 }
 
 internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
@@ -298,6 +296,7 @@ internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraDat
     }
 }
 
+@Serializable
 internal class BdhSession(
     val sigSession: ByteArray,
     val sessionKey: ByteArray,

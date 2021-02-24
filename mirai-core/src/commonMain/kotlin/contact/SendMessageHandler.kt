@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import contact.StrangerImpl
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
@@ -64,6 +65,13 @@ internal abstract class SendMessageHandler<C : Contact> {
             groupCode = targetGroupCode!!,
             groupCard = senderName // Cinnamon
         ) else null
+
+    // For ForwardMessage display
+    val ForwardMessage.INode.groupInfo: MsgComm.GroupInfo
+        get() = MsgComm.GroupInfo(
+            groupCode = if (isToGroup) targetGroupCode!! else 0,
+            groupCard = senderName
+        )
 
     val isToGroup: Boolean get() = contact is Group
 
@@ -232,7 +240,9 @@ internal abstract class SendMessageHandler<C : Contact> {
  * - ... any others for future
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessages(message: Message): MessageChain {
-    return message.takeSingleContent<ForwardMessage>()?.let { forward ->
+    suspend fun processForwardMessage(
+        forward: ForwardMessage
+    ): ForwardMessageInternal {
         if (!(message is MessageChain && message.contains(IgnoreLengthCheck))) {
             check(forward.nodeList.size <= 200) {
                 throw MessageTooLargeException(
@@ -248,12 +258,20 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
             message = forward.nodeList,
             isLong = false,
         )
-        RichMessage.forwardMessage(
+        return RichMessage.forwardMessage(
             resId = resId,
             timeSeconds = currentTimeSeconds(),
             forwardMessage = forward,
         )
-    }?.toMessageChain() ?: message.toMessageChain()
+    }
+
+    fun processDice(dice: Dice): MarketFaceImpl {
+        return MarketFaceImpl(dice.toJceStruct())
+    }
+
+    return message.takeSingleContent<ForwardMessage>()?.let { processForwardMessage(it) }?.toMessageChain()
+        ?: message.takeSingleContent<Dice>()?.let { processDice(it) }?.toMessageChain()
+        ?: message.toMessageChain()
 }
 
 /**

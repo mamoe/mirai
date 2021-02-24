@@ -28,6 +28,7 @@ import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.closeAndJoin
@@ -68,7 +69,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     }
 
     // region network
-    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
+    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf()
 
     val network: N get() = _network
 
@@ -149,7 +150,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                 bot.asQQAndroidBot().client.run {
                     if (serverList.isEmpty()) {
-                        serverList.addAll(DefaultServerList)
+                        bot.asQQAndroidBot().bdhSyncer.loadServerListFromCache()
+                        if (serverList.isEmpty()) {
+                            serverList.addAll(DefaultServerList)
+                        } else Unit
                     } else serverList.removeAt(0)
                 }
 
@@ -285,6 +289,17 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                 reinitializeNetworkHandler(null)
             }
+
+            // https://github.com/mamoe/mirai/issues/1019
+            kotlin.runCatching {
+                bot.nick
+            }.onFailure {
+                bot.asQQAndroidBot().nick = MiraiImpl.queryProfile(bot, bot.id).nickname
+                if (bot.nick.isBlank()) {
+                    logger.warning { "Unable to fetch nickname of bot." }
+                }
+            }
+
             logger.info { "Login successful" }
         }
     }
@@ -322,6 +337,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         }
     }
 
+    protected abstract suspend fun sendLogout()
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) {
@@ -329,14 +345,20 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             return
         }
 
-        if (this.network.areYouOk()) {
-            GlobalScope.launch {
-                runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
-                    ?.let { logger.error(it) }
-            }
-        }
+        if (::_network.isInitialized) {
+            if (this.network.areYouOk()) {
 
-        this.network.close(cause)
+                // send log out
+                kotlin.runCatching { runBlocking { sendLogout() } } // just ignore errors
+
+                GlobalScope.launch {
+                    runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
+                        ?.let { logger.error(it) }
+                }
+            }
+
+            this.network.close(cause)
+        }
 
         if (supervisorJob.isActive) {
             if (cause == null) {

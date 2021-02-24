@@ -39,6 +39,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @see MessageReceipt.sourceIds 源 ids
  * @see MessageReceipt.sourceTime 源时间
  */
+@JvmBlockingBridge
 public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
     /**
      * 指代发送出去的消息.
@@ -59,7 +60,6 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
      *
      * @see IMirai.recallMessage
      */
-    @JvmBlockingBridge
     public suspend inline fun recall() {
         return Mirai.recallMessage(target.bot, source)
     }
@@ -82,7 +82,6 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
      * 引用这条消息并回复.
      * @see MessageSource.quote 引用一条消息
      */
-    @JvmBlockingBridge
     public suspend inline fun quoteReply(message: Message): MessageReceipt<C> {
         @Suppress("UNCHECKED_CAST")
         return target.sendMessage(this.quote() + message) as MessageReceipt<C>
@@ -92,7 +91,6 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
      * 引用这条消息并回复.
      * @see MessageSource.quote 引用一条消息
      */
-    @JvmBlockingBridge
     public suspend inline fun quoteReply(message: String): MessageReceipt<C> {
         return this.quoteReply(PlainText(message))
     }

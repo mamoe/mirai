@@ -21,6 +21,7 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
@@ -38,6 +39,8 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 internal object Highway {
+
+
     @Suppress("ArrayInDataClass")
     data class BdhUploadResponse(
         var extendInfo: ByteArray? = null,
@@ -52,10 +55,17 @@ internal object Highway {
         encrypt: Boolean = false,
         initialTicket: ByteArray? = null,
         tryOnce: Boolean = false,
+        noBdhAwait: Boolean = false,
+        fallbackSession: (Throwable) -> BdhSession = { throw IllegalStateException("Failed to get bdh session", it) }
     ): BdhUploadResponse {
-        val bdhSession = bot.client.bdhSession.await() // no need to care about timeout. proceed by bot init
+        val bdhSession = kotlin.runCatching {
+            val deferred = bot.bdhSyncer.bdhSession
+            // no need to care about timeout. proceed by bot init
+            @OptIn(ExperimentalCoroutinesApi::class)
+            if (noBdhAwait) deferred.getCompleted() else deferred.await()
+        }.getOrElse(fallbackSession)
 
-        return tryServers(
+        return tryServersUpload(
             bot = bot,
             servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random()) else bdhSession.ssoAddresses,
             resourceSize = resource.size,
@@ -113,7 +123,7 @@ internal enum class ChannelKind(
     override fun toString(): String = display
 }
 
-internal suspend inline fun <reified R> tryServers(
+internal suspend inline fun <reified R> tryServersUpload(
     bot: QQAndroidBot,
     servers: Collection<Pair<Int, Int>>,
     resourceSize: Long,
@@ -145,6 +155,61 @@ internal suspend inline fun <reified R> tryServers(
     }
 
     resp as R
+}
+
+internal suspend inline fun <reified R> tryServersDownload(
+    bot: QQAndroidBot,
+    servers: Collection<Pair<Int, Int>>,
+    resourceKind: ResourceKind,
+    channelKind: ChannelKind,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+) = servers.retryWithServers(
+    5000,
+    onFail = { throw IllegalStateException("cannot download $resourceKind, failed on all servers.", it) }
+) { ip, port ->
+    tryDownloadImplEach(bot, channelKind, resourceKind, ip, port, implOnEachServer)
+}
+
+internal suspend inline fun <reified R> tryDownload(
+    bot: QQAndroidBot,
+    host: String,
+    port: Int,
+    times: Int = 1,
+    resourceKind: ResourceKind,
+    channelKind: ChannelKind,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+) = retryCatching(times) {
+    tryDownloadImplEach(bot, channelKind, resourceKind, host, port, implOnEachServer)
+}.getOrElse { throw IllegalStateException("Cannot download $resourceKind", it) }
+
+
+private suspend inline fun <reified R> tryDownloadImplEach(
+    bot: QQAndroidBot,
+    channelKind: ChannelKind,
+    resourceKind: ResourceKind,
+    host: String,
+    port: Int,
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+): R {
+    bot.network.logger.verbose {
+        "[${channelKind}] Downloading $resourceKind from ${host}:$port"
+    }
+
+    var resp: R? = null
+    runCatching {
+        resp = implOnEachServer(host, port)
+    }.onFailure {
+        bot.network.logger.verbose {
+            "[${channelKind}] Downloading $resourceKind from ${host}:$port failed: $it"
+        }
+        throw it
+    }
+
+    bot.network.logger.verbose {
+        "[${channelKind}] Downloading $resourceKind: succeed"
+    }
+
+    return resp as R
 }
 
 internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendSequentially(

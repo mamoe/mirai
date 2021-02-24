@@ -43,6 +43,7 @@ public suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
+@JvmBlockingBridge
 public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * Bot 配置
@@ -161,7 +162,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * @throws LoginFailedException 正常登录失败时抛出
      * @see alsoLogin `.apply { login() }` 捷径
      */
-    @JvmBlockingBridge
     public suspend fun login()
 
     /**
@@ -232,7 +232,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * 挂起协程直到 [Bot] 协程被关闭 ([Bot.close]).
      * 即使 [Bot] 离线, 也会等待直到协程关闭.
      */
-    @JvmBlockingBridge
     public suspend fun join(): Unit = supervisorJob.join()
 
 
@@ -243,7 +242,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      *
      * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
      */
-    @JvmBlockingBridge
     public suspend fun closeAndJoin(cause: Throwable? = null) {
         close(cause)
         join()

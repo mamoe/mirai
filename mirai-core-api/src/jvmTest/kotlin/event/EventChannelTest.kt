@@ -9,15 +9,157 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
 import net.mamoe.mirai.event.events.FriendEvent
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.internal.event.GlobalEventListeners
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 internal class EventChannelTest {
     suspend fun suspendCall() {
 
+    }
+
+    data class TE(
+        val x: Int
+    ) : AbstractEvent()
+
+    val semaphore = Semaphore(1)
+
+    @BeforeEach
+    fun x() {
+        runBlocking { semaphore.acquire() }
+    }
+
+    @AfterEach
+    fun s() {
+        GlobalEventListeners.clear()
+        runBlocking { semaphore.release() }
+    }
+
+    @Test
+    fun testFilter() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .filterIsInstance<TE>()
+                    .filter {
+                        true
+                    }
+                    .filter {
+                        it.x == 2
+                    }
+                    .filter {
+                        true
+                    }
+                    .subscribeOnce<TE> {
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    println("Broadcast 1")
+                    TE(1).broadcast()
+                    println("Broadcast 2")
+                    TE(2).broadcast()
+                    println("Broadcast done")
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testAsChannel() {
+        runBlocking {
+            val channel = GlobalEventChannel
+                .filterIsInstance<TE>()
+                .filter { true }
+                .filter { it.x == 2 }
+                .filter { true }
+                .asChannel(Channel.BUFFERED)
+
+            println("Broadcast 1")
+            TE(1).broadcast()
+            println("Broadcast 2")
+            TE(2).broadcast()
+            println("Broadcast done")
+            channel.close()
+
+            val list = channel.receiveAsFlow().toList()
+
+            assertEquals(1, list.size)
+            assertEquals(TE(2), list.single())
+        }
+    }
+
+    @Test
+    fun testExceptionInFilter() {
+        runBlocking {
+            assertFailsWith<ExceptionInEventChannelFilterException> {
+                suspendCoroutine<Int> { cont ->
+                    GlobalEventChannel
+                        .exceptionHandler {
+                            cont.resumeWithException(it)
+                        }
+                        .filter {
+                            error("test error")
+                        }
+                        .subscribeOnce<TE> {
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        println("Broadcast 1")
+                        TE(1).broadcast()
+                        println("Broadcast done")
+                    }
+                }
+            }.run {
+                assertEquals("test error", cause.message)
+            }
+        }
+    }
+
+    @Test
+    fun testExceptionInSubscribe() {
+        runBlocking {
+            assertFailsWith<IllegalStateException> {
+                suspendCoroutine<Int> { cont ->
+                    GlobalEventChannel
+                        .exceptionHandler {
+                            cont.resumeWithException(it)
+                        }
+                        .subscribeOnce<TE> {
+                            error("test error")
+                        }
+
+                    launch {
+                        println("Broadcast 1")
+                        TE(1).broadcast()
+                        println("Broadcast done")
+                    }
+                }
+            }.run {
+                assertEquals("test error", message)
+            }
+        }
     }
 
     @Suppress("UNUSED_VARIABLE")

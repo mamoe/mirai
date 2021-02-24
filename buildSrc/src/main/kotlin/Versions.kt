@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.2.2"
+    const val project = "2.5.0-dev-2"
 
     const val core = project
     const val console = project
@@ -32,7 +32,7 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "1.7.4"
+    const val blockingBridge = "1.10.0"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
@@ -104,6 +104,6 @@ const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
-const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"
+const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
 const val `android-runtime` = "com.google.android:android:${Versions.android}"

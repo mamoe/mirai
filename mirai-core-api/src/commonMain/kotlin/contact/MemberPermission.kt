@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import kotlin.internal.InlineOnly
 

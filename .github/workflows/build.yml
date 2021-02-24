@@ -19,13 +19,13 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean --info --stacktrace
+        run: ./gradlew clean --scan
 
       - name: Build mirai-core series
-        run: ./gradlew assemble --info --stacktrace
+        run: ./gradlew assemble --scan
 
       - name: mirai-core Tests
-        run: ./gradlew check --info --stacktrace
+        run: ./gradlew check --scan
 
   build-all:
     runs-on: ubuntu-latest
@@ -45,10 +45,10 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean --info --stacktrace
+        run: ./gradlew clean --scan
 
       - name: Build all
-        run: ./gradlew assemble --info --stacktrace
+        run: ./gradlew assemble --scan
 
       - name: All Tests
-        run: ./gradlew check --info --stacktrace
+        run: ./gradlew check --scan

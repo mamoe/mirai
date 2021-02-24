@@ -106,40 +106,24 @@ internal class OfflineMessageSourceImplData(
 }
 
 internal fun OfflineMessageSourceImplData(
-    bot: Bot?,
+    bot: Bot,
     delegate: List<MsgComm.Msg>,
-    botId: Long,
+    kind: MessageSourceKind
 ): OfflineMessageSourceImplData {
     val head = delegate.first().msgHead
-    val kind = when {
-        head.groupInfo != null -> {
-            MessageSourceKind.GROUP
-        }
-        head.c2cTmpMsgHead != null -> {
-            MessageSourceKind.TEMP
-        }
-        bot?.getStranger(head.fromUin) != null -> {
-            MessageSourceKind.STRANGER
-        }
-        else -> {
-            MessageSourceKind.FRIEND
-        }
-    }
     return OfflineMessageSourceImplData(
         kind = kind,
         time = head.msgTime,
         fromId = head.fromUin,
         targetId = head.groupInfo?.groupCode ?: head.toUin,
-        originalMessage = delegate.toMessageChain(
-            null,
-            botId,
+        originalMessage = delegate.toMessageChainNoSource(
+            bot.id,
             groupIdOrZero = head.groupInfo?.groupCode ?: 0,
-            onlineSource = null,
             messageSourceKind = kind
         ),
         ids = delegate.mapToIntArray { it.msgHead.msgSeq },
         internalIds = delegate.mapToIntArray { it.msgHead.msgUid.toInt() },
-        botId = botId
+        botId = bot.id
     ).apply {
         originElems = delegate.flatMap { it.msgBody.richText.elems }
     }
@@ -177,7 +161,7 @@ internal fun OfflineMessageSourceImplData(
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessageLazy = lazy { delegate.toMessageChain(botId, messageSourceKind, groupIdOrZero) },
+        originalMessageLazy = lazy { delegate.toMessageChainNoSource(botId, messageSourceKind, groupIdOrZero) },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero

@@ -9,10 +9,13 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BdhSession
@@ -20,18 +23,18 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushResp
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.internal.network.protocol.data.jce.ServerListPush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Subcmd0x501
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
-import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
+import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.toUHexString
-import java.lang.IllegalStateException
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 
@@ -42,63 +45,46 @@ internal class ConfigPushSvc {
     ) {
         override val canBeCached: Boolean get() = false
 
-        sealed class PushReqResponse : Packet, Event, AbstractEvent(), Packet.NoEventLog {
-            class Success(
-                val struct: PushReqJceStruct
-            ) : PushReqResponse() {
+        sealed class PushReqResponse(val struct: PushReqJceStruct) : Packet, Event, AbstractEvent(), Packet.NoEventLog {
+            class Unknown(struct: PushReqJceStruct) : PushReqResponse(struct) {
                 override fun toString(): String {
-                    return "ConfigPushSvc.PushReq.PushReqResponse.Success"
+                    return "ConfigPushSvc.PushReq.PushReqResponse.Unknown"
                 }
             }
 
-            @Serializable
-            data class ChangeServer(
-                @TarsId(1) val serverList: List<ServerInfo>,
-                // @TarsId(3) val serverList2: List<ServerInfo>,
-                // @TarsId(8) val serverList3: List<ServerInfo>,
-            ) : JceStruct, PushReqResponse() {
-
-                @Serializable
-                data class ServerInfo(
-                    /*
-                    skipping String1
-                    skipping Short
-                    skipping Byte
-                    skipping Zero
-                    skipping Zero
-                    skipping Byte
-                    skipping Byte
-                    skipping String1
-                    skipping String1
-                     */
-                    @TarsId(1) val host: String,
-                    @TarsId(2) val port: Int,
-                    @TarsId(8) val location: String
-                ) : JceStruct {
-                    override fun toString(): String {
-                        return "$host:$port"
-                    }
+            class LogAction(struct: PushReqJceStruct) : PushReqResponse(struct) {
+                override fun toString(): String {
+                    return "ConfigPushSvc.PushReq.PushReqResponse.LogAction"
                 }
             }
+
+            class ServerListPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+                override fun toString(): String {
+                    return "ConfigPushSvc.PushReq.PushReqResponse.ServerListPush"
+                }
+            }
+
+            class ConfigPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+                override fun toString(): String {
+                    return "ConfigPushSvc.PushReq.PushReqResponse.ConfigPush"
+                }
+            }
+
+
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse {
             val pushReq = readUniPacket(PushReqJceStruct.serializer(), "PushReq")
             return when (pushReq.type) {
-                1 -> kotlin.runCatching {
-                    pushReq.jcebuf.loadAs(PushReqResponse.ChangeServer.serializer())
-                }.getOrElse {
-                    throw contextualBugReportException(
-                        "ConfigPush.ReqPush type=1",
-                        forDebug = pushReq.jcebuf.toUHexString(),
-                    )
-                }
-                else -> PushReqResponse.Success(pushReq)
+                1 -> PushReqResponse.ServerListPush(pushReq)
+                2 -> PushReqResponse.ConfigPush(pushReq)
+                3 -> PushReqResponse.LogAction(pushReq)
+                else -> PushReqResponse.Unknown(pushReq)
             }
         }
 
         override suspend fun QQAndroidBot.handle(packet: PushReqResponse, sequenceId: Int): OutgoingPacket? {
-            fun handleSuccess(packet: PushReqResponse.Success) {
+            fun handleConfigPush(packet: PushReqResponse.ConfigPush) {
                 val pushReq = packet.struct
 
                 // FS server
@@ -107,7 +93,7 @@ internal class ConfigPushSvc {
 
                 val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
                 if (bigDataChannel?.vBigdataPbBuf == null) {
-                    client.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    bot.bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
                     return
                 }
 
@@ -131,48 +117,88 @@ internal class ConfigPushSvc {
                     session
                 }.fold(
                     onSuccess = {
-                        client.bdhSession.complete(it)
+                        bdhSyncer.overrideSession(it)
                     },
                     onFailure = { cause ->
                         val e = IllegalStateException("Failed to decode BdhSession", cause)
-                        client.bdhSession.completeExceptionally(e)
+                        bdhSyncer.bdhSession.completeExceptionally(e)
                         logger.error(e)
                     }
                 )
             }
 
-            when (packet) {
-                is PushReqResponse.Success -> {
-                    handleSuccess(packet)
-                    return buildResponseUniPacket(
-                        client,
-                        sequenceId = sequenceId
-                    ) {
-                        writeJceStruct(
-                            RequestPacket.serializer(),
-                            RequestPacket(
-                                requestId = 0,
-                                version = 3,
-                                servantName = "QQService.ConfigPushSvc.MainServant",
-                                funcName = "PushResp",
-                                sBuffer = jceRequestSBuffer(
-                                    "PushResp",
-                                    PushResp.serializer(),
-                                    PushResp(
-                                        type = packet.struct.type,
-                                        seq = packet.struct.seq,
-                                        jcebuf = if (packet.struct.type == 3) packet.struct.jcebuf else null
-                                    )
-                                )
-                            )
-                        )
-                        // writePacket(this.build().debugPrintThis())
+            fun handleServerListPush(resp: PushReqResponse.ServerListPush) {
+                bot.network.logger.info { "Server list updated." }
+                val serverListPush = kotlin.runCatching {
+                    resp.struct.jcebuf.loadAs(ServerListPush.serializer())
+                }.getOrElse {
+                    throw contextualBugReportException(
+                        "ConfigPush.ReqPush type=1",
+                        forDebug = resp.struct.jcebuf.toUHexString(),
+                    )
+                }
+                val pushServerList = if (client.networkType == NetworkType.WIFI) {
+                    serverListPush.wifiSSOServerList
+                } else {
+                    serverListPush.mobileSSOServerList
+                }
+
+                bot.logger.info { "Server list: ${pushServerList.joinToString()}." }
+
+                if (pushServerList.isNotEmpty()) {
+                    bot.serverList.clear()
+                    pushServerList.shuffled().forEach {
+                        bot.serverList.add(it.host to it.port)
                     }
                 }
-                else -> {
-                    // handled in QQABot
-                    return null
+                bot.bdhSyncer.saveToCache()
+                bot.bdhSyncer.saveServerListToCache()
+                if (serverListPush.reconnectNeeded == 1) {
+                    bot.logger.info { "Server request to change server." }
+                    bot.launch {
+                        delay(1000)
+                        BotOfflineEvent.RequireReconnect(bot).broadcast()
+                    }
                 }
+            }
+
+            when (packet) {
+                is PushReqResponse.ConfigPush -> {
+                    handleConfigPush(packet)
+                }
+                is PushReqResponse.ServerListPush -> {
+                    handleServerListPush(packet)
+                }
+                is PushReqResponse.LogAction, is PushReqResponse.Unknown -> {
+                    //ignore
+                }
+            }
+            //Always send resp
+            if (!client.wLoginSigInfoInitialized) return null // concurrently doing reconnection
+            return buildResponseUniPacket(
+                client,
+                sequenceId = sequenceId,
+                key = client.wLoginSigInfo.d2Key
+            ) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        requestId = client.nextRequestPacketRequestId(),
+                        version = 3,
+                        servantName = "QQService.ConfigPushSvc.MainServant",
+                        funcName = "PushResp",
+                        sBuffer = jceRequestSBuffer(
+                            "PushResp",
+                            PushResp.serializer(),
+                            PushResp(
+                                type = packet.struct.type,
+                                seq = packet.struct.seq,
+                                jcebuf = if (packet.struct.type == 3) packet.struct.jcebuf else null
+                            )
+                        )
+                    )
+                )
+                // writePacket(this.build().debugPrintThis())
             }
         }
     }

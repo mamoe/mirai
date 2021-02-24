@@ -7,6 +7,10 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MiraiUtils")
+
+
 package net.mamoe.mirai.utils
 
 

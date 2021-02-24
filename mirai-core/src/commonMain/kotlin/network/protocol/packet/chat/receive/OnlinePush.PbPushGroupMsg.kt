@@ -23,7 +23,9 @@ import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.message.toMessageChain
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.message.refine
+import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -33,7 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.MessageSourceKind.GROUP
 import net.mamoe.mirai.utils.*
 
 /**
@@ -119,12 +121,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         if (isFromSelfAccount) {
             return GroupMessageSyncEvent(
-                message = msgs.toMessageChain(
-                    bot,
-                    groupIdOrZero = group.id,
-                    onlineSource = true,
-                    MessageSourceKind.GROUP
-                ),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
                 time = msgHead.msgTime,
                 group = group,
                 sender = sender,
@@ -137,12 +134,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             return GroupMessageEvent(
                 senderName = name,
                 sender = sender,
-                message = msgs.toMessageChain(
-                    bot,
-                    groupIdOrZero = group.id,
-                    onlineSource = true,
-                    MessageSourceKind.GROUP
-                ),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
                 permission = findMemberPermission(extraInfo?.flags ?: 0, sender, bot),
                 time = msgHead.msgTime
             )
@@ -164,7 +156,11 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
     ) = when {
         flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
         flags and 8 != 0 -> MemberPermission.OWNER
-        flags == 0 || flags == 1 -> MemberPermission.MEMBER
+        (when (flags) {
+            1, 0, 64,
+            -> true
+            else -> false
+        }) -> MemberPermission.MEMBER
         else -> {
             bot.logger.warning { "判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${flags._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题." }
             sender.permission

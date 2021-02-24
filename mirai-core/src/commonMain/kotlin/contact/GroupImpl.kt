@@ -20,12 +20,15 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.internal.network.BdhSession
+import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
@@ -46,9 +49,10 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
-internal fun Group.checkIsGroupImpl() {
+internal fun Group.checkIsGroupImpl(): GroupImpl {
     contract { returns() implies (this@checkIsGroupImpl is GroupImpl) }
     GroupImpl.checkIsInstance(this)
+    return this
 }
 
 @Suppress("PropertyName")
@@ -166,7 +170,14 @@ internal class GroupImpl(
                         resource = resource,
                         kind = GROUP_IMAGE,
                         commandId = 2,
-                        initialTicket = response.uKey
+                        initialTicket = response.uKey,
+                        noBdhAwait = true,
+                        fallbackSession = {
+                            BdhSession(
+                                EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY,
+                                ssoAddresses = response.uploadIpList.zip(response.uploadPortList).toMutableSet(),
+                            )
+                        },
                     )
 
                     return OfflineGroupImage(imageId = resource.calculateResourceId())
@@ -191,7 +202,7 @@ internal class GroupImpl(
             }.recoverCatchingSuppressed {
                 when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()) {
                     is PttStore.GroupPttUp.Response.RequireUpload -> {
-                        tryServers(
+                        tryServersUpload(
                             bot,
                             resp.uploadIpList.zip(resp.uploadPortList),
                             resource.size,
