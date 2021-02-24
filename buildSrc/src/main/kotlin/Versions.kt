@@ -18,16 +18,16 @@ object Versions {
     const val console = project
     const val consoleTerminal = project
 
-    const val kotlinCompiler = "1.4.21"
-    const val kotlinStdlib = "1.4.21"
+    const val kotlinCompiler = "1.4.30"
+    const val kotlinStdlib = "1.4.30"
     const val dokka = "1.4.20"
 
-    const val coroutines = "1.4.1"
-    const val atomicFU = "0.14.4"
-    const val serialization = "1.0.1"
-    const val ktor = "1.5.0"
+    const val coroutines = "1.4.2"
+    const val atomicFU = "0.15.1"
+    const val serialization = "1.1.0-RC"
+    const val ktor = "1.5.1"
 
-    const val binaryValidator = "0.3.0"
+    const val binaryValidator = "0.4.0"
 
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
@@ -47,8 +47,8 @@ object Versions {
 
     const val yamlkt = "0.7.5"
     const val intellijGradlePlugin = "0.4.16"
-    const val kotlinIntellijPlugin = "203-1.4.21-release-IJ5981.133" // keep to newest as kotlinCompiler
-    const val intellij = "2020.3" // don't update easily unless you want your disk space -= 500MB
+    const val kotlinIntellijPlugin = "203-1.4.30-release-IJ7148.5" // keep to newest as kotlinCompiler
+    const val intellij = "2020.3.2" // don't update easily unless you want your disk space -= 500MB
 
 }
 

@@ -387,6 +387,107 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
         }
     }
 
+
+    @JvmName("timeout-ncvN2qU")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun timeout00(timeoutMillis: Long): MessageSelectionTimeoutChecker {
+        return timeout(timeoutMillis)
+    }
+
+    @Suppress("unused")
+    @JvmName("invoke-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun MessageSelectionTimeoutChecker.invoke00(block: suspend () -> R) {
+        return invoke(block)
+    }
+
+    @Suppress("unused")
+    @JvmName("invoke-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public fun MessageSelectionTimeoutChecker.invoke000(block: suspend () -> R): Void? {
+        invoke(block)
+        return null
+    }
+
+    @JvmName("reply-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply00(block: suspend () -> Any?) {
+        return reply(block)
+    }
+
+    @JvmName("reply-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply000(block: suspend () -> Any?): Void? {
+        reply(block)
+        return null
+    }
+
+    @JvmName("reply-sCZ5gAI")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply00(message: String) {
+        return reply(message)
+    }
+
+    @JvmName("reply-sCZ5gAI")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply000(message: String): Void? {
+        reply(message)
+        return null
+    }
+
+    @JvmName("reply-AVDwu3U")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply00(message: Message) {
+        return reply(message)
+    }
+
+    @JvmName("reply-AVDwu3U")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.reply000(message: Message): Void? {
+        reply(message)
+        return null
+    }
+
+
+    @JvmName("quoteReply-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply00(block: suspend () -> Any?) {
+        return reply(block)
+    }
+
+    @JvmName("quoteReply-RNyhSv4")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(block: suspend () -> Any?): Void? {
+        reply(block)
+        return null
+    }
+
+    @JvmName("quoteReply-sCZ5gAI")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply00(message: String) {
+        return reply(message)
+    }
+
+    @JvmName("quoteReply-sCZ5gAI")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: String): Void? {
+        reply(message)
+        return null
+    }
+
+    @JvmName("quoteReply-AVDwu3U")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply00(message: Message) {
+        return reply(message)
+    }
+
+    @JvmName("quoteReply-AVDwu3U")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: Message): Void? {
+        reply(message)
+        return null
+    }
+
     protected abstract fun obtainCurrentCoroutineScope(): CoroutineScope
     protected abstract fun obtainCurrentDeferred(): CompletableDeferred<R>?
 }
