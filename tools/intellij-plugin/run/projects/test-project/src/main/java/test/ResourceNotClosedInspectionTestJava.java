@@ -11,7 +11,19 @@ import java.io.IOException;
 import static org.example.myplugin.ResourceNotClosedInspectionTestKt.magic;
 
 public class ResourceNotClosedInspectionTestJava {
+
+    public static Object funA() {
+        return new Object();
+    }
+
+    public static void funB(Object obj) {
+        System.out.println(obj);
+    }
+
     public static void main(String[] args) {
+        // https://github.com/mamoe/mirai-console/issues/294
+        funB(funA());
+
         File file = magic();
         Contact contact = magic();
 

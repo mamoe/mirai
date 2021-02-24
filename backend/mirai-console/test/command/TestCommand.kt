@@ -69,9 +69,11 @@ object TestEnumArgCommand : CompositeCommand(owner, "testenum") {
     enum class TestEnum {
         V1, V2, V3
     }
+
     enum class TestCase {
         A, a
     }
+
     enum class TestCamelCase {
         A, B, A_B
     }
@@ -292,6 +294,36 @@ internal class TestCommand {
             assertEquals(1, withTesting {
                 assertSuccess(TestCompositeCommand.execute(sender, "mute 1"))
             })
+        }
+    }
+
+    @Test
+    fun `test first param command sender`() = runBlocking<Unit> {
+        object : CompositeCommand(owner, "cmd") {
+            @SubCommand
+            fun handle(sender: CommandSender, arg: String) {
+                Testing.ok(arg)
+            }
+        }.withRegistration {
+            assertEquals("test", withTesting { assertSuccess(execute(sender, "handle test")) })
+        }
+
+        object : SimpleCommand(owner, "cmd") {
+            @Handler
+            fun handle(sender: CommandSender, arg: String) {
+                Testing.ok(arg)
+            }
+        }.withRegistration {
+            assertEquals("hello", withTesting { assertSuccess(execute(sender, "hello")) })
+        }
+
+        object : SimpleCommand(owner, "cmd") {
+            @Handler
+            fun handle(arg: String, sender: CommandSender) {
+                Testing.ok(arg)
+            }
+        }.withRegistration {
+            assertFailure(execute(sender, "hello"))
         }
     }
 

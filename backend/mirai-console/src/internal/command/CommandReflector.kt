@@ -203,10 +203,12 @@ internal class CommandReflector(
         )
 
         fun CommandParameter<*>.toErasedParameterInfo(index: Int): ErasedParameterInfo {
-            return ErasedParameterInfo(index,
+            return ErasedParameterInfo(
+                index,
                 this.name,
                 this.type.withNullability(false),
-                if (this is AbstractCommandValueParameter.StringConstant) this.expectingValue else null)
+                if (this is AbstractCommandValueParameter.StringConstant) this.expectingValue else null
+            )
         }
 
         val candidates = signatures.map { variant ->
@@ -244,11 +246,21 @@ internal class CommandReflector(
                     name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
                         .orEmpty()
 
+                val valueParameters = function.valueParameters.toMutableList()
+                var receiverParameter = function.extensionReceiverParameter
+                if (receiverParameter == null && valueParameters.isNotEmpty()) {
+                    val valueFirstParameter = valueParameters[0]
+                    if (valueFirstParameter.type.classifierAsKClassOrNull()?.isSubclassOf(CommandSender::class) == true) {
+                        receiverParameter = valueFirstParameter
+                        valueParameters.removeAt(0)
+                    }
+                }
+
                 val functionValueParameters =
-                    function.valueParameters.associateBy { it.toUserDefinedCommandParameter() }
+                    valueParameters.associateBy { it.toUserDefinedCommandParameter() }
 
                 CommandSignatureFromKFunctionImpl(
-                    receiverParameter = function.extensionReceiverParameter?.toCommandReceiverParameter(),
+                    receiverParameter = receiverParameter?.toCommandReceiverParameter(),
                     valueParameters = functionNameAsValueParameter + functionValueParameters.keys,
                     originFunction = function
                 ) { call ->
@@ -272,7 +284,6 @@ internal class CommandReflector(
                         args[instanceParameter] = command
                     }
 
-                    val receiverParameter = function.extensionReceiverParameter
                     if (receiverParameter != null) {
                         check(receiverParameter.type.classifierAsKClass().isInstance(call.caller)) {
                             "Bad command call resolved. " +

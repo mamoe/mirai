@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.internal.util
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
-import java.io.InputStream
 import java.lang.reflect.Modifier
 import java.util.*
 import kotlin.reflect.KClass
@@ -30,9 +29,13 @@ internal object PluginServiceHelper {
 
     fun <T : Any> ClassLoader.findServices(vararg serviceTypes: KClass<out T>): ServiceList<T> =
         serviceTypes.flatMap { serviceType ->
-            getResourceAsStream("META-INF/services/" + serviceType.qualifiedName!!)
-                ?.use(InputStream::readBytes)
-                ?.let(::String)?.lines()?.filter(String::isNotBlank).orEmpty()
+            getResourceAsStream("META-INF/services/" + serviceType.qualifiedName!!)?.let { stream ->
+                stream.bufferedReader().useLines { lines ->
+                    lines.filter(String::isNotBlank)
+                        .filter { it[0] != '#' }
+                        .toList()
+                }
+            }.orEmpty()
         }.let { ServiceList(this, it) }
 
     fun <T : Any> ServiceList<T>.loadAllServices(): List<T> {

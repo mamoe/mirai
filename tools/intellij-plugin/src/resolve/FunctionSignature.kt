@@ -96,16 +96,21 @@ fun KtFunction.hasSignature(functionSignature: FunctionSignature): Boolean {
     return true
 }
 
-fun KtLightMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
+
+fun PsiMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
     if (functionSignature.name != null) {
         if (this.name != functionSignature.name) return false
     }
     val parameters = parameterList.parameters.toMutableList()
     if (functionSignature.dispatchReceiver != null) {
-        val kotlinContainingClassFqn =
+        val containingClass = this.containingClass ?: return false
+
+        val kotlinContainingClassFqn = if (this is KtLightMethod) {
             if (this.modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
                 this.containingClass.kotlinOrigin?.companionObjects?.firstOrNull()?.fqName
-            } else this.containingClass.getKotlinFqName()
+            } else containingClass.getKotlinFqName()
+        } else containingClass.getKotlinFqName()
+
         if (kotlinContainingClassFqn != functionSignature.dispatchReceiver) return false
     }
     if (functionSignature.extensionReceiver != null) {
@@ -121,12 +126,6 @@ fun KtLightMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
     return true
 }
 
-fun PsiMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
-    if (this is KtLightMethod) {
-        return this.hasSignature(functionSignature)
-    }
-    return true
-}
 
 fun KtExpression.isCalling(functionSignature: FunctionSignature): Boolean {
     val descriptor = resolveToCall(BodyResolveMode.PARTIAL)?.resultingDescriptor ?: return false

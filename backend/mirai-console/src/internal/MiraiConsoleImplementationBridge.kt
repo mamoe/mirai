@@ -16,7 +16,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.*
+import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -104,8 +107,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
+        instance.preStart()
 
-        phase `setup logger controller`@{
+        phase("setup logger controller") {
             if (loggerController === LoggerControllerImpl) {
                 // Reload LoggerConfig.
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
@@ -113,7 +117,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
         }
 
-        phase `greeting`@{
+        phase("greeting") {
             val buildDateFormatted =
                 buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
@@ -122,7 +126,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.info { frontEndDescription.render() }
         }
 
-        phase `check coroutineContext`@{
+        phase("check coroutineContext") {
             if (coroutineContext[Job] == null) {
                 throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
             }
@@ -139,13 +143,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         // start
 
-        phase `load configurations`@{
+        phase("load configurations") {
             mainLogger.verbose { "Loading configurations..." }
             ConsoleDataScope.addAndReloadConfig(CommandConfig)
             ConsoleDataScope.reloadAll()
         }
 
-        phase `initialize all plugins`@{
+        phase("initialize all plugins") {
             PluginManager // init
 
             mainLogger.verbose { "Loading JVM plugins..." }
@@ -158,13 +162,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
         }
 
-        phase `load all plugins`@{
+        phase("load all plugins") {
             PluginManagerImpl.loadPlugins(PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
 
             mainLogger.verbose { "${PluginManager.plugins.size} plugin(s) loaded." }
         }
 
-        phase `load SingletonExtensionSelector`@{
+        phase("load SingletonExtensionSelector") {
             SingletonExtensionSelector.init()
             val instance = SingletonExtensionSelector.instance
             if (instance is BuiltInSingletonExtensionSelector) {
@@ -173,7 +177,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
 
-        phase `load PermissionService`@{
+        phase("load PermissionService") {
             mainLogger.verbose { "Loading PermissionService..." }
 
             PermissionService.INSTANCE.let { ps ->
@@ -188,7 +192,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             runIgnoreException<UnsupportedOperationException> { ConsoleCommandSender.permit(RootPermission) }
         }
 
-        phase `prepare commands`@{
+        phase("prepare commands") {
             mainLogger.verbose { "Loading built-in commands..." }
             BuiltInCommands.registerAll()
             mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
@@ -196,7 +200,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             // CommandManagerImpl.commandListener // start
         }
 
-        phase `enable plugins`@{
+        phase("enable plugins") {
             mainLogger.verbose { "Enabling plugins..." }
 
             PluginManagerImpl.enableAllLoadedPlugins()
@@ -208,7 +212,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
         }
 
-        phase `auto-login bots`@{
+        phase("auto-login bots") {
             runBlocking {
                 val accounts = AutoLoginConfig.accounts.toList()
                 for (account in accounts) {
@@ -259,9 +263,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
         }
 
-        GlobalComponentStorage.run {
-            PostStartupExtension.useExtensions { it() } // exceptions thrown will be caught by caller of `doStart`.
+        phase("finally post") {
+            GlobalComponentStorage.run {
+                PostStartupExtension.useExtensions { it() } // exceptions thrown will be caught by caller of `doStart`.
+            }
         }
+
+        instance.postStart()
 
         mainLogger.info { "mirai-console started successfully." }
     }
@@ -275,10 +283,20 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
      * 表示一个初始化阶段, 无实际作用.
      */
     @ILoveOmaeKumikoForever
-    private inline fun phase(block: () -> Unit) {
+    private inline fun phase(phase: String, block: () -> Unit) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
+        prePhase(phase)
         block()
+        postPhase(phase)
+    }
+
+    override fun prePhase(phase: String) {
+        instance.prePhase(phase)
+    }
+
+    override fun postPhase(phase: String) {
+        instance.postPhase(phase)
     }
 }

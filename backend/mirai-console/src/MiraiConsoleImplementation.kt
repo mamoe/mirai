@@ -17,9 +17,13 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.logging.LoggerController
+import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -185,8 +189,72 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val loggerController: LoggerController get() = LoggerControllerImpl
 
 
+    /// Hooks & Backend Access
+    /**
+     * 后端 在 [phase] 阶段执行前会调用此方法, 如果此方法抛出了一个错误会直接中断 console 初始化
+     *
+     * @since 2.5.0-dev-2
+     */
+    public fun prePhase(phase: String) {}
+
+    /**
+     * 后端 在 [phase] 阶段执行后会调用此方法, 如果此方法抛出了一个错误会直接中断 console 初始化
+     *
+     * @since 2.5.0-dev-2
+     */
+    public fun postPhase(phase: String) {}
+
+    /**
+     * 后端在 [start] 前会调用此方法
+     *
+     * @since 2.5.0-dev-2
+     */
+    public fun preStart() {}
+
+    /**
+     * 后端在 [start] 后会调用此方法
+     *
+     * @since 2.5.0-dev-2
+     */
+    public fun postStart() {}
+
+    /**
+     * 前端访问后端内部实现的桥
+     *
+     * @see backendAccess
+     * @since 2.5.0-dev-2
+     */
+    @ConsoleFrontEndImplementation
+    public interface BackendAccess {
+        // GlobalComponentStorage
+        public val globalComponentStorage: ComponentStorage
+
+        // PluginManagerImpl.resolvedPlugins
+        public val resolvedPlugins: MutableList<Plugin>
+    }
+
+    /**
+     * @see BackendAccess
+     * @since 2.5.0-dev-2
+     * @throws IllegalStateException 当前端实例不是 `this` 时抛出
+     */
+    public val backendAccess: BackendAccess
+        get() {
+            if (instanceInitialized) {
+                if (this === instance)
+                    return backendAccessInstance
+            }
+            throw IllegalStateException("Permission denied")
+        }
+
     public companion object {
+        private val backendAccessInstance = object : BackendAccess {
+            override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
+            override val resolvedPlugins: MutableList<Plugin> get() = PluginManagerImpl.resolvedPlugins
+        }
+
         internal lateinit var instance: MiraiConsoleImplementation
+        internal val instanceInitialized: Boolean get() = ::instance.isInitialized
         private val initLock = ReentrantLock()
 
         /**
