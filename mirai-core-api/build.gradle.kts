@@ -101,6 +101,18 @@ kotlin {
     }
 }
 
+tasks.register("checkAndroidApiLevel") {
+    doFirst {
+        androidutil.AndroidApiLevelCheck.check(
+            buildDir.resolve("classes/kotlin/android/main"),
+            project.property("mirai.android.target.api.level")!!.toString().toInt(),
+            project
+        )
+    }
+    group = "verification"
+    this.mustRunAfter("androidMainClasses")
+}
+tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {
