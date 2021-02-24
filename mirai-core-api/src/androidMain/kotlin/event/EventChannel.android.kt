@@ -15,9 +15,6 @@
     "ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS"
 )
 
-@file:JvmMultifileClass
-@file:JvmName("EventChannelKt")
-
 
 package net.mamoe.mirai.event
 
