@@ -292,13 +292,12 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
             // https://github.com/mamoe/mirai/issues/1019
             kotlin.runCatching {
-                nick
+                bot.nick
             }.onFailure {
-                throw contextualBugReportException(
-                    context = "Bot login",
-                    forDebug = it.toString(),
-                    e = it,
-                )
+                bot.asQQAndroidBot().nick = MiraiImpl.queryProfile(bot, bot.id).nickname
+                if (bot.nick.isBlank()) {
+                    logger.warning { "Unable to fetch nickname of bot." }
+                }
             }
 
             logger.info { "Login successful" }

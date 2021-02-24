@@ -68,6 +68,25 @@ workingDir = File("C:/mirai")
 setWorkingDir(File("C:/mirai"))
 ```
 
+#### 修改缓存目录
+
+缓存目录会相对于 `workingDir` 解析。如 `File("cache")` 将会解析为 `workingDir` 内的 `cache` 目录。而 `File("C:/cache")` 将会解析为绝对的 `C:/cache` 目录。
+
+默认为 `File("cache")`
+
+要修改缓存目录（自 mirai 2.4.0）：
+```
+// Kotlin
+cacheDir = File("cache") // 最终为 workingDir 目录中的 cache 目录
+cacheDir = File("C:/cache") // 最终为 C:/cache
+
+// Java
+setCacheDir(File("cache")) // 最终为 workingDir 目录中的 cache 目录
+setCacheDir(File("C:/cache")) // 最终为 C:/cache
+```
+
+目前缓存目录会存储列表缓存、登录服务器、资源会话秘钥等。这些数据的存储方式有可能变化，请不要修改缓存目录中的文件。
+
 #### 设备信息
 Bot 默认使用全随机的设备信息。**在更换账号地点时候使用随机设备信息可能会导致无法登录**，当然，**成功登录时使用的设备信息也可以保存后在新的设备使用**。
 
@@ -102,7 +121,6 @@ protocol = BotConfiguration.MiraiProtocol.ANDROID_PAD
 // Java
 setProtocol(MiraiProtocol.ANDROID_PAD)
 ```
-
 #### 重定向日志
 Bot 有两个日志类别，`Bot` 或 `Net`。`Bot` 为通常日志，如收到事件。`Net` 为网络日志，包含收到和发出的每一个包和网络层解析时遇到的错误。
 
@@ -149,6 +167,34 @@ setLoginSolver(new YourLoginSolver())
 
 > 要获取更多有关 `LoginSolver` 的信息，查看 [LoginSolver.kt](../mirai-core-api/src/commonMain/kotlin/utils/LoginSolver.kt#L32)
 
+#### 启用列表缓存
+Mirai 在启动时会拉取全部好友列表和群成员列表。当账号拥有过多群时登录可能缓慢，开启列表缓存会大幅加速登录过程。
+
+Mirai 自动根据事件更新列表，并在每次登录时与服务器校验缓存有效性，**但有时候可能发生意外情况导致列表没有同步。如果出现找不到群员或好友等不同步情况，请关闭缓存并[提交 Bug](https://github.com/mamoe/mirai/issues/new?assignees=&labels=question&template=bug.md)**
+
+要开启列表缓存（自 mirai 2.4.0）：
+```
+// 开启所有列表缓存
+enableContactCache()
+```
+
+也可以只开启部分缓存：
+```
+// Kotlin
+contactListCache {
+    friendListCacheEnabled = true // 开启好友列表缓存
+    groupMemberListCacheEnabled = true // 开启群成员列表缓存
+    
+    saveIntervalMillis = 60_000 // 可选设置有更新时的保存时间间隔, 默认 60 秒
+}
+
+// Java
+contactListCache.setFriendListCacheEnabled(true) // 开启好友列表缓存
+contactListCache.setGroupMemberListCacheEnabled(true) // 开启群成员列表缓存
+contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保存时间间隔, 默认 60 秒
+```
+
+
 ### 获取当前所有 `Bot` 实例
 
 在登录后 `Bot` 实例会被自动记录。可在 `Bot.instances` 获取到当前**在线**的所有 `Bot` 列表。
@@ -168,11 +214,14 @@ setLoginSolver(new YourLoginSolver())
 
 ### 常见登录失败原因
 
+[#993]: https://github.com/mamoe/mirai/discussions/993
+
 | 错误信息       | 可能的原因        | 可能的解决方案          |
 |:--------------|:---------------|:----------------------|
-| 当前版本过低    | 密码错误         | 检查密码                |
-| 当前上网环境异常 | 设备锁           | 开启或关闭设备锁后重试登录 |
+| 当前版本过低    | 密码错误         | 检查密码或修改密码到 16 位以内                |
+| 当前上网环境异常 | 设备锁           | 开启或关闭设备锁 (登录保护) |
 | 禁止登录       | 需要处理滑块验证码 | [project-mirai/mirai-login-solver-selenium] |
+| 密码错误       | 密码错误或过长 | 手机协议最大支持 16 位密码 ([#993]). 在官方 PC 客户端登录后修改密码 |
 
 若以上方案无法解决问题，请尝试 [切换登录协议](#切换登录协议) 和 **[处理滑动验证码](#处理滑动验证码)**。
 

@@ -104,7 +104,6 @@ allprojects {
         maven(url = "https://kotlin.bintray.com/kotlinx")
         google()
         mavenCentral()
-        maven(url = "https://dl.bintray.com/karlatemp/misc")
     }
 
     afterEvaluate {

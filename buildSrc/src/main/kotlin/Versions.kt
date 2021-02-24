@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.5.0-dev-1"
+    const val project = "2.5.0-dev-2"
 
     const val core = project
     const val console = project
@@ -103,4 +103,4 @@ const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
-const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"
+const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"

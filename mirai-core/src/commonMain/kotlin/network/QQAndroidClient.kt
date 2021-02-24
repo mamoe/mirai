@@ -165,6 +165,8 @@ internal open class QQAndroidClient(
 
     class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
+        var latestMsgNewGroupTime: Long = currentTimeSeconds()
+        var latestMsgNewFriendTime: Long = currentTimeSeconds()
 
         @Volatile
         var syncCookie: ByteArray? = null
@@ -180,12 +182,13 @@ internal open class QQAndroidClient(
 
         val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
 
-        internal data class SystemMsgNewGroupSyncId(
+        internal data class SystemMsgNewSyncId(
             val sequence: Long,
             val time: Long
         )
 
-        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewGroupSyncId>(10)
+        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
+        val systemMsgNewFriendCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
 
 
         internal data class PbPushTransMsgSyncId(

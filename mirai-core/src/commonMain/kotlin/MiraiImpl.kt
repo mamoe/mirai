@@ -20,7 +20,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
-import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -794,6 +793,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 accept = accept,
                 blackList = blackList
             ).sendWithoutExpect()
+
+            if (!accept) return@apply
+
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
         }
