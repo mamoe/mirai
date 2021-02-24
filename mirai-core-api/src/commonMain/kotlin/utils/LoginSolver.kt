@@ -18,8 +18,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
-import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
@@ -38,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
  * @see Default
  * @see BotConfiguration.loginSolver
  */
-public abstract class LoginSolver {
+public expect abstract class LoginSolver() {
     /**
      * 处理图片验证码.
      *
@@ -54,7 +52,6 @@ public abstract class LoginSolver {
      * 否则会跳过滑动验证码并告诉服务器此客户端不支持, 有可能导致登录失败
      */
     public open val isSliderCaptchaSupported: Boolean
-        get() = isSliderCaptchaSupportKind ?: true
 
     /**
      * 处理滑动验证码.
@@ -83,29 +80,19 @@ public abstract class LoginSolver {
          * 当前平台默认的 [LoginSolver]。
          *
          * 检测策略:
-         * 1. 检测 `android.util.Log`, 如果存在, 返回 `null`.
+         * 1. 若是 `mirai-core-api-android` 或 `android.util.Log` 存在, 返回 `null`.
          * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 [StandardCharImageLoginSolver]
-         * 3. 检测 JVM 桌面环境, 若支持, 返回 [SwingSolver]
+         * 3. 检测 JVM 桌面环境, 若支持, 返回 `SwingSolver`
          * 4. 返回 [StandardCharImageLoginSolver]
          *
-         * @return [SwingSolver] 或 [StandardCharImageLoginSolver] 或 `null`
+         * @return `SwingSolver` 或 [StandardCharImageLoginSolver] 或 `null`
          */
         @JvmField
-        public val Default: LoginSolver? = when (WindowHelperJvm.platformKind) {
-            WindowHelperJvm.PlatformKind.ANDROID -> null
-            WindowHelperJvm.PlatformKind.SWING -> {
-                when (isSliderCaptchaSupportKind) {
-                    null, false -> SwingSolver
-                    true -> SeleniumLoginSolver ?: SwingSolver
-                }
-            }
-            WindowHelperJvm.PlatformKind.CLI -> StandardCharImageLoginSolver()
-        }
+        public val Default: LoginSolver?
 
         @Suppress("unused")
         @Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun getDefault(): LoginSolver = Default
-            ?: error("LoginSolver is not provided by default on your platform. Please specify by BotConfiguration.loginSolver")
+        public fun getDefault(): LoginSolver
     }
 
 }
