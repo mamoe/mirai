@@ -124,4 +124,5 @@ configureMppPublishing()
 
 afterEvaluate {
     project(":binary-compatibility-validator").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
+    project(":binary-compatibility-validator-android").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
 }

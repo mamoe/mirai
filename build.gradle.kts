@@ -48,7 +48,8 @@ configure<kotlinx.validation.ApiValidationExtension> {
         ignoredProjects.add(subproject.name)
     }
     ignoredProjects.remove("binary-compatibility-validator")
-    // Enable validator for module `binary-compatibility-validator` only.
+    ignoredProjects.remove("binary-compatibility-validator-android")
+    // Enable validator for module `binary-compatibility-validator` and `-android` only.
 
 
     ignoredPackages.add("net.mamoe.mirai.internal")

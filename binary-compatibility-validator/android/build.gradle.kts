@@ -21,7 +21,7 @@ description = "Mirai API binary compatibility validator"
 
 tasks.withType(kotlinx.validation.KotlinApiBuildTask::class) {
     inputClassesDirs =
-        files(inputClassesDirs.files, project(":mirai-core-api").buildDir.resolve("classes/kotlin/jvm/main"))
+        files(inputClassesDirs.files, project(":mirai-core-api").buildDir.resolve("classes/kotlin/android/main"))
 }
 
 // tasks["apiDump"].dependsOn(project(":mirai-core-api").tasks["build"])

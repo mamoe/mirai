@@ -29,6 +29,8 @@ include(":mirai-core")
 include(":mirai-core-all")
 
 include(":binary-compatibility-validator")
+include(":binary-compatibility-validator-android")
+project(":binary-compatibility-validator-android").projectDir = file("binary-compatibility-validator/android")
 include(":ci-release-helper")
 
 
