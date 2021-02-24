@@ -24,8 +24,10 @@ import java.util.*
 private object ProjectAndroidSdkAvailability {
     val map: MutableMap<String, Boolean> = mutableMapOf()
 
+    @Suppress("UNUSED_PARAMETER", "UNREACHABLE_CODE")
     @Synchronized
     operator fun get(project: Project): Boolean {
+        return true
         if (map[project.path] != null) return map[project.path]!!
 
         val projectAvailable = project.runCatching {
