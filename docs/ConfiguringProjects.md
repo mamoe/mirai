@@ -58,10 +58,6 @@ plugins {
 添加依赖：
 `build.gradle.kts`：
 ```kotlin
-repositories {
-  jcenter()
-}
-
 dependencies {
   compileOnly("net.mamoe:mirai-core:$CORE_VERSION") // mirai-core 的 API
   compileOnly("net.mamoe:mirai-console:$CONSOLE_VERSION") // 后端
@@ -70,8 +66,7 @@ dependencies {
 }
 ```
 
-之后还需要配置 Kotlin `jvm-default` 编译参数，Kotlin 和 Java 的编译目标等。  
-在打包插件时必须将依赖一并打包进插件 JAR，且排除 `mirai-core`，`mirai-console` 和它们的间接依赖，否则插件不会被加载。
+注意，在打包插件时必须将依赖一并打包进插件 JAR，且排除 `mirai-core`，`mirai-console` 和[它们的间接依赖](https://mvnrepository.com/artifact/net.mamoe/mirai-core-jvm/2.4.0)，否则可能导致兼容性问题。
 
 > 现在你已经配置好了项目，返回 [开发文档索引](README.md#mirai-console)
 
