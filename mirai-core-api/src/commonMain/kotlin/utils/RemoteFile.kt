@@ -28,7 +28,7 @@ public interface RemoteFile {
 
     public val path: String
 
-    public suspend fun parent(): RemoteFile
+    public fun parent(): RemoteFile?
 
     public suspend fun isFile(): Boolean
 
@@ -45,7 +45,11 @@ public interface RemoteFile {
 
     public suspend fun resolve(relativePath: String): RemoteFile
 
-    public suspend fun resolveSibling(other: String): RemoteFile = parent().resolve(other)
+    public suspend fun resolve(relative: RemoteFile): RemoteFile = resolve(relative.path)
+
+    public suspend fun resolveSibling(other: String): RemoteFile
+
+    public suspend fun resolveSibling(relative: RemoteFile): RemoteFile = resolve(relative.path)
 
     public suspend fun delete(recursively: Boolean): Boolean
 

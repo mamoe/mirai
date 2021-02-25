@@ -13,32 +13,72 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.FileDownloadSession
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.RemoteFile
+import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.util.stream.Stream
 import kotlin.coroutines.CoroutineContext
 
-internal class RemoteFileImpl(parent: String, override val name: String, private val contact: Group) : RemoteFile {
-    val folder: String = parent.replace('\\', '/')
+private val fs = FileSystem
 
-    override val path: String
-        get() = if (folder.endsWith('/')) "$folder$name" else "$folder/$name"
+// internal for tests
+internal object FileSystem {
+    fun checkLegitimacy(path: String) {
+        val char = path.firstOrNull { it in """:*?"<>|""" }
+        if (char != null) {
+            throw IllegalArgumentException("""Chars ':*?"<>|' are not allowed in path. RemoteFile path contains illegal char: '$char'. path='$path'""")
+        }
+    }
 
-    override suspend fun parent(): RemoteFile {
-        return RemoteFileImpl(
-            parent = folder.substringBeforeLast('/', ""),
-            name = folder.substringAfterLast('/'),
-            contact = contact
-        )
+    fun normalize(path: String): String {
+        checkLegitimacy(path)
+        return path.trimStart().replace('\\', '/').removeSuffix("/") // tolerant leading white spaces
+    }
+
+    // TODO: 2021/2/25 add tests for FS
+    // net.mamoe.mirai.internal.utils.internal.utils.FileSystemTest
+
+    fun normalize(parent: String, name: String): String {
+        var nParent = normalize(parent)
+        if (!nParent.startsWith('/')) nParent = "/$nParent"
+
+        var nName = normalize(name)
+        nName = nName.removeSurrounding("/")
+
+        val slash = nName.indexOf('/')
+        if (slash != -1) {
+            nParent += '/' + nName.substring(0, slash)
+            nName = nName.substring(slash + 1)
+        }
+
+        return "$nParent/$nName"
+    }
+}
+
+internal class RemoteFileImpl(
+    contact: Group,
+    override val path: String,
+) : RemoteFile {
+    private val contactRef by contact.weakRef()
+    private val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
+
+    constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
+
+    override val name: String
+        get() = path.substringAfterLast('/')
+
+    override fun parent(): RemoteFile? {
+        val s = path.substringBeforeLast('/', "")
+        if (s.isEmpty()) return null
+        return RemoteFileImpl(contact, s)
     }
 
     override suspend fun isFile(): Boolean {
-        TODO("Not yet implemented")
+        val parent = parent() ?: return false // path must == '/'
+
+        // TODO: 2021/2/25
+        return false
     }
 
     override suspend fun length(): Long {
@@ -60,6 +100,10 @@ internal class RemoteFileImpl(parent: String, override val name: String, private
     }
 
     override suspend fun resolve(relativePath: String): RemoteFile {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun resolveSibling(other: String): RemoteFile {
         TODO("Not yet implemented")
     }
 
