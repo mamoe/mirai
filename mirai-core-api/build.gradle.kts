@@ -14,7 +14,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    id("kotlinx-atomicfu")
+    //id("kotlinx-atomicfu")
     id("signing")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
 
