@@ -270,17 +270,11 @@ fun Project.configureKotlinTestSettings() {
         }
         isKotlinMpp -> {
             kotlinSourceSets?.forEach { sourceSet ->
-                if (sourceSet.name == "common") {
+                if (sourceSet.name.endsWith("test", ignoreCase = true)) {
                     sourceSet.dependencies {
-                        implementation(kotlin("test"))
-                        implementation(kotlin("test-annotations-common"))
-                    }
-                } else {
-                    sourceSet.dependencies {
-                        implementation(kotlin("test-junit5"))
-
-                        implementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                        implementation("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                        api(kotlin("test-junit5"))
+                        api("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
                     }
                 }
             }
