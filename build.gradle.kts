@@ -199,16 +199,47 @@ fun Project.configureMppShadow() {
             }
 
             /*
-            this.manifest {
-                this.attributes(
-                    "Manifest-Version" to 1,
-                    "Implementation-Vendor" to "Mamoe Technologies",
-                    "Implementation-Title" to this.name.toString(),
-                    "Implementation-Version" to this.version.toString()
-                )
-            }*/
+        this.manifest {
+            this.attributes(
+                "Manifest-Version" to 1,
+                "Implementation-Vendor" to "Mamoe Technologies",
+                "Implementation-Title" to this.name.toString(),
+                "Implementation-Version" to this.version.toString()
+            )
+        }*/
         }
-
     }
 
+    fun Project.configureEncoding() {
+        tasks.withType(JavaCompile::class.java) {
+            options.encoding = "UTF8"
+        }
+    }
+
+    fun Project.configureKotlinTestSettings() {
+        tasks.withType(Test::class) {
+            useJUnitPlatform()
+        }
+        when {
+            isKotlinJvmProject -> {
+                dependencies {
+                    testImplementation(kotlin("test-junit5"))
+
+                    testApi("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                }
+            }
+            isKotlinMpp -> {
+                kotlinSourceSets?.forEach { sourceSet ->
+                    if (sourceSet.name.endsWith("test", ignoreCase = true)) {
+                        sourceSet.dependencies {
+                            api(kotlin("test-junit5"))
+                            api("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                            runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

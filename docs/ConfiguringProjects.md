@@ -11,8 +11,8 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             2.3.2              |
-|  预览   |             2.4-RC              |
+|  稳定   |             2.4.0              |
+|  预览   |               -                |
 |  开发   | [![Version]][Bintray Download] |
 
 ### 配置项目
@@ -35,12 +35,8 @@ plugins {
     kotlin("jvm") version "1.4.21" // 请确保添加 Kotlin，至少使用 1.4.0 版本
 }
 
-repositories {
-    jcenter()
-}
-
 dependencies {
-    api("net.mamoe", "mirai-core", "2.3.2") // 替换为你需要的版本号
+    api("net.mamoe", "mirai-core", "2.4.0")
 }
 ```
 
@@ -56,15 +52,11 @@ dependencies {
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.21' // 请确保添加 Kotlin，至少使用 1.4.0 版本
-}
-
-repositories {
-    jcenter()
+    id 'org.jetbrains.kotlin.jvm' version '1.4.21' // 确保添加 Kotlin
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '2.3.2') // 替换为你需要的版本号
+    api('net.mamoe', 'mirai-core', '2.4.0')
 }
 ```
 
@@ -77,7 +69,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.3.2" // 替换为你需要的版本号
+    val miraiVersion = "2.4.0"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -86,33 +78,20 @@ dependencies {
 
 ## B. 使用 Maven
 
-在 `pom.xml` 中：
-
-### 1. 添加 jcenter 仓库
-```xml
-<repositories>
-    <repository>
-        <id>jcenter</id>
-        <url>https://jcenter.bintray.com/</url>
-    </repository>
-</repositories>
-```
-
-### 2. 添加 mirai 依赖
+在 `pom.xml` 中添加 mirai 依赖：
 
 ```xml
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.3.2</version> <!-- 替换版本为你需要的版本 -->
+        <version>2.4.0</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
 ```
 
 > 注意在 Maven，artifactId 要使用带 `-jvm` 后缀的
 
-### 3. 添加 Kotlin 依赖
 
 通常 mirai 可以直接使用。但 mirai 使用的 Kotlin 1.4 可能与你的项目使用的其他库依赖的 Kotlin 版本冲突，Maven 有时候无法正确处理这种冲突。此时请手动添加 Kotlin 标准库依赖。
 
