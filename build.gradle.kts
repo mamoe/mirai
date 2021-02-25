@@ -10,7 +10,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -38,7 +37,7 @@ buildscript {
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
-    id("org.jetbrains.dokka") version Versions.dokka
+//    id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.jfrog.bintray") // version Versions.bintray
     id("com.gradle.plugin-publish") version "0.12.0" apply false
@@ -105,7 +104,6 @@ allprojects {
         maven(url = "https://kotlin.bintray.com/kotlinx")
         google()
         mavenCentral()
-        maven(url = "https://dl.bintray.com/karlatemp/misc")
     }
 
     afterEvaluate {
@@ -162,36 +160,36 @@ fun Project.useIr() {
 }
 
 fun Project.configureDokka() {
-    apply(plugin = "org.jetbrains.dokka")
-    tasks {
-        val dokkaHtml by getting(DokkaTask::class) {
-            outputDirectory.set(buildDir.resolve("dokka"))
-        }
-        val dokkaGfm by getting(DokkaTask::class) {
-            outputDirectory.set(buildDir.resolve("dokka-gfm"))
-        }
-    }
-    tasks.withType<DokkaTask>().configureEach {
-        dokkaSourceSets.configureEach {
-            perPackageOption {
-                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
-                skipDeprecated.set(true)
-            }
-
-            for (suppressedPackage in arrayOf(
-                """net.mamoe.mirai.internal""",
-                """net.mamoe.mirai.internal.message""",
-                """net.mamoe.mirai.internal.network""",
-                """net.mamoe.mirai.console.internal""",
-                """net.mamoe.mirai.console.compiler.common"""
-            )) {
-                perPackageOption {
-                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
-                    suppress.set(true)
-                }
-            }
-        }
-    }
+//    apply(plugin = "org.jetbrains.dokka")
+//    tasks {
+//        val dokkaHtml by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+//            outputDirectory.set(buildDir.resolve("dokka"))
+//        }
+//        val dokkaGfm by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+//            outputDirectory.set(buildDir.resolve("dokka-gfm"))
+//        }
+//    }
+//    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+//        dokkaSourceSets.configureEach {
+//            perPackageOption {
+//                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
+//                skipDeprecated.set(true)
+//            }
+//
+//            for (suppressedPackage in arrayOf(
+//                """net.mamoe.mirai.internal""",
+//                """net.mamoe.mirai.internal.message""",
+//                """net.mamoe.mirai.internal.network""",
+//                """net.mamoe.mirai.console.internal""",
+//                """net.mamoe.mirai.console.compiler.common"""
+//            )) {
+//                perPackageOption {
+//                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
+//                    suppress.set(true)
+//                }
+//            }
+//        }
+//    }
 }
 
 @Suppress("NOTHING_TO_INLINE") // or error
@@ -273,17 +271,11 @@ fun Project.configureKotlinTestSettings() {
         }
         isKotlinMpp -> {
             kotlinSourceSets?.forEach { sourceSet ->
-                if (sourceSet.name == "common") {
+                if (sourceSet.name.endsWith("test", ignoreCase = true)) {
                     sourceSet.dependencies {
-                        implementation(kotlin("test"))
-                        implementation(kotlin("test-annotations-common"))
-                    }
-                } else {
-                    sourceSet.dependencies {
-                        implementation(kotlin("test-junit5"))
-
-                        implementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                        implementation("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                        api(kotlin("test-junit5"))
+                        api("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
                     }
                 }
             }

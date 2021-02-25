@@ -156,6 +156,33 @@ private object ReceiveMessageTransformer {
         }
     }
 
+    fun MessageChainBuilder.compressContinuousPlainText() {
+        var index = 0
+        val builder = StringBuilder()
+        while (index + 1 < size) {
+            val elm0 = get(index)
+            val elm1 = get(index + 1)
+            if (elm0 is PlainText && elm1 is PlainText) {
+                builder.setLength(0)
+                var end = -1
+                for (i in index until size) {
+                    val elm = get(i)
+                    if (elm is PlainText) {
+                        end = i
+                        builder.append(elm.content)
+                    } else break
+                }
+                set(index, PlainText(builder.toString()))
+                // do delete
+                val index1 = index + 1
+                repeat(end - index) {
+                    removeAt(index1)
+                }
+            }
+            index++
+        }
+    }
+
     fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
         var previousLast: SingleMessage? = null
         var last: SingleMessage? = null
@@ -215,15 +242,14 @@ private object ReceiveMessageTransformer {
                     }
                 }
 
-                if (element is PlainText) { // 处理分片消息
-                    append(element.content)
-                } else {
-                    add(element)
-                }
+                append(element)
 
                 previousLast = last
                 last = element
             }
+
+            // 处理分片信息
+            compressContinuousPlainText()
         }
     }
 

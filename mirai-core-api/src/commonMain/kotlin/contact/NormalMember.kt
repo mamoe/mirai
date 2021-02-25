@@ -167,3 +167,10 @@ public suspend inline fun NormalMember.mute(duration: Duration) {
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
     this.mute(duration.inSeconds.toInt())
 }
+
+@Suppress("unused")
+@JvmName("mute-fcu0wV4")
+@Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+public suspend inline fun NormalMember.mute00(duration: Duration) {
+    return mute(duration)
+}
