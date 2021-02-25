@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package androidutil
 
 import groovy.util.Node
@@ -288,7 +290,7 @@ object AndroidApiLevelCheck {
             }
 
         if (analyzer.reported) {
-            error("Verity failed")
+            error("Verify failed")
         }
     }
 }
