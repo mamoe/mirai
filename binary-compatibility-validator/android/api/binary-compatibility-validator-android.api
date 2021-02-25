@@ -482,7 +482,8 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 public final class net/mamoe/mirai/contact/NormalMemberKt {
 	public static final fun getNameCardOrNick (Lnet/mamoe/mirai/contact/User;)Ljava/lang/String;
 	public static final fun isMuted (Lnet/mamoe/mirai/contact/NormalMember;)Z
-	public static final fun mute-fcu0wV4 (Lnet/mamoe/mirai/contact/NormalMember;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun mute-8Mi8wO0 (Lnet/mamoe/mirai/contact/NormalMember;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final synthetic fun mute-fcu0wV4 (Lnet/mamoe/mirai/contact/NormalMember;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/OtherClient : net/mamoe/mirai/contact/Contact {
@@ -1501,27 +1502,35 @@ public class net/mamoe/mirai/event/EventChannel {
 	public final fun registerListenerHost (Lnet/mamoe/mirai/event/ListenerHost;)V
 	public final fun registerListenerHost (Lnet/mamoe/mirai/event/ListenerHost;Lkotlin/coroutines/CoroutineContext;)V
 	public static synthetic fun registerListenerHost$default (Lnet/mamoe/mirai/event/EventChannel;Lnet/mamoe/mirai/event/ListenerHost;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)V
-	public final fun subscribe (Ljava/lang/Class;Ljava/util/function/Function;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Ljava/util/function/Function;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Ljava/util/function/Function;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Function;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventChannel$EventHandler;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandler;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribe (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventChannel$EventHandler;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribe (Ljava/lang/Class;Lnet/mamoe/mirai/event/EventChannel$EventHandler;)Lnet/mamoe/mirai/event/Listener;
 	public final synthetic fun subscribe (Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/event/Listener;
-	public static synthetic fun subscribe$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Function;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
+	public static synthetic fun subscribe$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandler;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public static synthetic fun subscribe$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeAlways (Ljava/lang/Class;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeAlways (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeAlways (Ljava/lang/Class;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
 	public final synthetic fun subscribeAlways (Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/event/Listener;
-	public static synthetic fun subscribeAlways$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Consumer;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
+	public static synthetic fun subscribeAlways$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public static synthetic fun subscribeAlways$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeOnce (Ljava/lang/Class;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
-	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
+	public final fun subscribeOnce (Ljava/lang/Class;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;)Lnet/mamoe/mirai/event/Listener;
 	public final fun subscribeOnce (Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/event/Listener;
-	public static synthetic fun subscribeOnce$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Consumer;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
+	public static synthetic fun subscribeOnce$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lnet/mamoe/mirai/event/EventChannel$EventHandlerVoid;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public static synthetic fun subscribeOnce$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
+}
+
+public abstract interface class net/mamoe/mirai/event/EventChannel$EventHandler {
+	public abstract fun onEvent (Lnet/mamoe/mirai/event/Event;)Lnet/mamoe/mirai/event/ListeningStatus;
+}
+
+public abstract interface class net/mamoe/mirai/event/EventChannel$EventHandlerVoid {
+	public abstract fun onEvent (Lnet/mamoe/mirai/event/Event;)V
 }
 
 public final class net/mamoe/mirai/event/EventChannelKt {
@@ -1630,12 +1639,12 @@ public abstract class net/mamoe/mirai/event/MessageSelectBuilder : net/mamoe/mir
 	public synthetic fun quoteReply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lkotlin/jvm/functions/Function3;)Ljava/lang/Void;
 	public synthetic fun quoteReply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Object;
 	public synthetic fun quoteReply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
-	public synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
-	public synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
-	public synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
-	public synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	public synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
-	public synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)V
+	public synthetic fun quoteReply-8NSq9Eo (JLjava/lang/String;)Ljava/lang/Void;
+	public synthetic fun quoteReply-8NSq9Eo (JLjava/lang/String;)V
+	public synthetic fun quoteReply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+	public synthetic fun quoteReply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
+	public synthetic fun quoteReply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
+	public synthetic fun quoteReply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 	public synthetic fun reply (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
 	public synthetic fun reply (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Void;
 	public synthetic fun reply (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Ljava/lang/Object;
@@ -1648,12 +1657,12 @@ public abstract class net/mamoe/mirai/event/MessageSelectBuilder : net/mamoe/mir
 	public synthetic fun reply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lkotlin/jvm/functions/Function3;)Ljava/lang/Void;
 	public synthetic fun reply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Object;
 	public synthetic fun reply (Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
-	public synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
-	public synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
-	public synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
-	public synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	public synthetic fun reply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
-	public synthetic fun reply-sCZ5gAI (JLjava/lang/String;)V
+	public synthetic fun reply-8NSq9Eo (JLjava/lang/String;)Ljava/lang/Void;
+	public synthetic fun reply-8NSq9Eo (JLjava/lang/String;)V
+	public synthetic fun reply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+	public synthetic fun reply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
+	public synthetic fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
+	public synthetic fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 }
 
 public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe/mirai/event/MessageSubscribersBuilder {
@@ -1663,17 +1672,32 @@ public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe
 	public abstract fun default (Lkotlin/jvm/functions/Function3;)V
 	public final fun defaultQuoteReply (Lkotlin/jvm/functions/Function1;)V
 	public final fun defaultReply (Lkotlin/jvm/functions/Function1;)V
-	public final fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
+	public final fun invoke-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
+	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
 	protected abstract fun obtainCurrentCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
 	protected abstract fun obtainCurrentDeferred ()Lkotlinx/coroutines/CompletableDeferred;
-	public fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
-	public fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	public fun quoteReply-sCZ5gAI (JLjava/lang/String;)V
-	public fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
-	public fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	public fun reply-sCZ5gAI (JLjava/lang/String;)V
+	public fun quoteReply-8NSq9Eo (JLjava/lang/String;)V
+	public fun quoteReply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
+	public fun quoteReply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
+	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
+	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
+	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
+	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
+	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)V
+	public fun reply-8NSq9Eo (JLjava/lang/String;)V
+	public fun reply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
+	public fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
+	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
+	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
+	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
+	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
+	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)V
 	public final fun timeout (JLkotlin/jvm/functions/Function1;)V
-	public final fun timeout-ncvN2qU (J)J
+	public final fun timeout-1WcQj8o (J)J
+	public final synthetic fun timeout-ncvN2qU (J)J
 	public final fun timeoutException (JLkotlin/jvm/functions/Function0;)V
 	public static synthetic fun timeoutException$default (Lnet/mamoe/mirai/event/MessageSelectBuilderUnit;JLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
@@ -5898,26 +5922,6 @@ public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/util
 	public fun warning (Ljava/lang/String;)V
 	public fun warning (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning (Ljava/lang/Throwable;)V
-}
-
-public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver : net/mamoe/mirai/utils/LoginSolver {
-	public static final field Companion Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver$Companion;
-	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lkotlin/jvm/functions/Function1;Lnet/mamoe/mirai/utils/MiraiLogger;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lnet/mamoe/mirai/utils/MiraiLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
-	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
-	public fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver$Companion {
-	public final fun createBlocking (Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
-	public final fun createBlocking (Lkotlin/jvm/functions/Function0;Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
 }
 
 public final class net/mamoe/mirai/utils/Utils {
