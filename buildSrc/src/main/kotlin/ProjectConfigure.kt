@@ -1,3 +1,12 @@
+/*
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
+ *
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import org.gradle.api.JavaVersion
@@ -7,7 +16,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
@@ -18,23 +27,36 @@ fun Project.useIr() {
     }
 }
 
-@Suppress("NOTHING_TO_INLINE") // or error
 fun Project.configureJvmTarget() {
-    tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.jvmTarget = "1.8"
-    }
+    val defaultVer = JavaVersion.VERSION_1_8
 
-    kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
-        target.compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
-            kotlinOptions.languageVersion = "1.4"
-        }
-        target.testRuns["test"].executionTask.configure { useJUnitPlatform() }
+    tasks.withType(KotlinJvmCompile::class.java) {
+        kotlinOptions.languageVersion = "1.4"
+        kotlinOptions.jvmTarget = defaultVer.toString()
+        kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
     }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = defaultVer
+        targetCompatibility = defaultVer
+    }
+
+    kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
+        when (target.attributes.getAttribute(KotlinPlatformType.attribute)) { // mirai does magic, don't use target.platformType
+            KotlinPlatformType.androidJvm -> {
+                target.compilations.all {
+                    /*
+                     * Kotlin JVM compiler generates Long.hashCode witch is available since API 26 when targeting JVM 1.8 while IR prefer member function hashCode always.
+                     */
+                    // kotlinOptions.useIR = true
+
+                    // IR cannot compile mirai. We'll wait for Kotlin 1.5 for stable IR release.
+                }
+            }
+            else -> {
+            }
+        }
+        target.testRuns["test"].executionTask.configure { useJUnitPlatform() }
     }
 }
 
@@ -74,17 +96,6 @@ fun Project.configureKotlinTestSettings() {
                 }
             }
         }
-    }
-}
-
-fun Project.configureKotlinCompilerSettings() {
-    val kotlinCompilations = kotlinCompilations ?: return
-    for (kotlinCompilation in kotlinCompilations) with(kotlinCompilation) {
-        if (isKotlinJvmProject) {
-            @Suppress("UNCHECKED_CAST")
-            this as KotlinCompilation<KotlinJvmOptions>
-        }
-        kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
     }
 }
 

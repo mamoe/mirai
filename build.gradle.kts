@@ -90,7 +90,6 @@ allprojects {
         configureMppShadow()
         configureEncoding()
         configureKotlinTestSettings()
-        configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
 
         runCatching {
