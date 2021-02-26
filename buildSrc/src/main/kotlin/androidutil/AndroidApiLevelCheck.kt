@@ -210,20 +210,7 @@ object AndroidApiLevelCheck {
 
     @Suppress("UNCHECKED_CAST")
     fun check(classes: File, level: Int, project: Project) {
-        val apiVersionsFile = project.rootProject.buildDir.resolve("android-api-versions.xml")
-        if (!apiVersionsFile.isFile) {
-            apiVersionsFile.parentFile.mkdirs()
-            println("Downloading AndroidSDK/api-versions.xml")
-            val apiVersionsFileTmp = project.rootProject.buildDir.resolve("android-api-versions.xml.tmp")
-            URL("https://github.com/aosp-mirror/platform_development/raw/master/sdk/api-versions.xml")
-                .openStream().use { upstream ->
-                    apiVersionsFileTmp.outputStream().use { upstream.copyTo(it) }
-                }
-            if (!apiVersionsFileTmp.renameTo(apiVersionsFile)) {
-                apiVersionsFileTmp.copyTo(apiVersionsFile, overwrite = true)
-                apiVersionsFileTmp.delete()
-            }
-        }
+        val apiVersionsFile = project.rootProject.projectDir.resolve("buildSrc/src/main/resources/androidutil/api-versions.xml")
         val classesInfos = mutableMapOf<String, ClassInfo>()
         XmlParser().parse(apiVersionsFile).children().forEach { classNode ->
             classNode as Node
