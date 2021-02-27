@@ -131,7 +131,7 @@ public fun Input.copyTo(out: OutputStream, bufferSize: Int = DEFAULT_BUFFER_SIZE
     return bytesCopied
 }
 
-public inline fun <I : AutoCloseable, O : AutoCloseable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
+public inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }

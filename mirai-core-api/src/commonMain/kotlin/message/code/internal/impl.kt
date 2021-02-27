@@ -91,7 +91,8 @@ private fun String.forEachMiraiCode(block: (origin: String, name: String?, args:
     }
 }
 
-private object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
+@Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
+private object MiraiCodeParsers: AbstractMap<String, MiraiCodeParser>(), Map<String, MiraiCodeParser> by mapOf(
     "at" to MiraiCodeParser(Regex("""(\d*)""")) { (target) ->
         At(target.toLong())
     },

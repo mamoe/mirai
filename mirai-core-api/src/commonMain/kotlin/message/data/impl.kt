@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.replaceAllKotlin
 import kotlin.native.concurrent.SharedImmutable
 
 // region image
@@ -128,7 +129,7 @@ internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): Lis
         if (singleMessage is ConstrainSingle) {
             val key = singleMessage.key.topmostKey
             val firstOccurrence = list.first { it != null && key.isInstance(it) } // may be singleMessage itself
-            list.replaceAll {
+            list.replaceAllKotlin {
                 when {
                     it == null -> null
                     it === firstOccurrence -> singleMessage

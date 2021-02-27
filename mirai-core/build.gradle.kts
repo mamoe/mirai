@@ -18,12 +18,9 @@ plugins {
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray")
-    java
 }
 
 description = "Mirai Protocol implementation for QQ Android"
-
-val isAndroidSDKAvailable: Boolean by project
 
 afterEvaluate {
     tasks.getByName("compileKotlinCommon").enabled = false
@@ -37,9 +34,13 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-        apply(from = rootProject.file("gradle/android.gradle"))
-        android("android") {
-            publishAllLibraryVariants()
+//        apply(from = rootProject.file("gradle/android.gradle"))
+//        android("android") {
+//            publishAllLibraryVariants()
+//        }
+        jvm("android") {
+            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+            //   publishAllLibraryVariants()
         }
     } else {
         printAndroidNotInstalled()
@@ -58,7 +59,7 @@ kotlin {
 
     sourceSets.apply {
 
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 api(project(":mirai-core-api"))
                 implementation(project(":mirai-core-utils"))
@@ -81,12 +82,13 @@ kotlin {
         }
 
         if (isAndroidSDKAvailable) {
-            androidMain {
+            val androidMain by getting {
+                dependsOn(commonMain)
                 dependencies {
+                    compileOnly(`android-runtime`)
                 }
             }
-
-            androidTest {
+            val androidTest by getting {
                 dependencies {
                     implementation(kotlin("test", Versions.kotlinCompiler))
                     implementation(kotlin("test-junit", Versions.kotlinCompiler))
@@ -96,21 +98,34 @@ kotlin {
             }
         }
 
-        jvmMain {
+        val jvmMain by getting {
             dependencies {
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
                 // api(kotlinx("coroutines-debug", Versions.coroutines))
             }
         }
 
-        jvmTest {
+        val jvmTest by getting {
             dependencies {
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
-              //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
+                //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }
     }
 }
+
+tasks.register("checkAndroidApiLevel") {
+    doFirst {
+        androidutil.AndroidApiLevelCheck.check(
+            buildDir.resolve("classes/kotlin/android/main"),
+            project.property("mirai.android.target.api.level")!!.toString().toInt(),
+            project
+        )
+    }
+    group = "verification"
+    this.mustRunAfter("androidMainClasses")
+}
+tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {
