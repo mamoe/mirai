@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
@@ -32,7 +31,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.MessageSourceKind.GROUP
@@ -135,7 +133,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 senderName = name,
                 sender = sender,
                 message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
-                permission = findMemberPermission(extraInfo?.flags ?: 0, sender, bot),
+                permission = sender.permission,
                 time = msgHead.msgTime
             )
         }
@@ -146,24 +144,6 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         if (sender is NormalMemberImpl && name != currentNameCard) {
             sender._nameCard = name
             MemberCardChangeEvent(currentNameCard, name, sender).broadcast()
-        }
-    }
-
-    private fun findMemberPermission(
-        flags: Int,
-        sender: Member,
-        bot: QQAndroidBot,
-    ) = when {
-        flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
-        flags and 8 != 0 -> MemberPermission.OWNER
-        (when (flags) {
-            1, 0, 64,
-            -> true
-            else -> false
-        }) -> MemberPermission.MEMBER
-        else -> {
-            bot.logger.warning { "判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${flags._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题." }
-            sender.permission
         }
     }
 
