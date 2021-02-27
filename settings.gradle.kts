@@ -80,7 +80,7 @@ if (isMiraiConsoleCloned()) {
     logger.warn(
         """
             [mirai] mirai-console submodule is not configured. 
-            Please execute `git submodule init` and `git submodule update --remote` to include mirai-console build if you want.
+            Please execute `git submodule init` and `git submodule update` to include mirai-console build if you want.
             If you develop only on mirai-core, it's not compulsory to include mirai-console.
         """.trimIndent()
     )
