@@ -188,7 +188,7 @@ internal class FriendList {
             )
         }
 
-        fun invokeForSingleFriend(
+        fun forSingleFriend(
             client: QQAndroidClient,
             uin: Long
         ): OutgoingPacket {

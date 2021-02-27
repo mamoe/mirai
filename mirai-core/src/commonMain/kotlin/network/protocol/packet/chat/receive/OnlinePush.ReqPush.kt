@@ -603,11 +603,10 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
                         bot.network.launch {
                             val response: FriendList.GetFriendGroupList.Response =
-                                FriendList.GetFriendGroupList.invokeForSingleFriend(
+                                FriendList.GetFriendGroupList.forSingleFriend(
                                     bot.client,
                                     msg.msgFriendMsgSync.fuin
-                                )
-                                    .sendAndExpect(bot)
+                                ).sendAndExpect(bot)
                             response.friendList.firstOrNull()?.let {
                                 val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
                                 bot.friends.delegate.add(friend)
