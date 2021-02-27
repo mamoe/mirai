@@ -42,6 +42,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
@@ -72,8 +74,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): ReqPushDecoded {
         val reqPushMsg = readUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
-        // bot.network.logger.debug { reqPushMsg._miraiContentToString() }
-
+        //bot.network.logger.debug { reqPushMsg._miraiContentToString() }
         val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
             when (msgInfo.shMsgType.toInt()) {
                 732 -> {
@@ -595,26 +596,37 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     },
     0x44L to lambda528 { bot ->
         val msg = vProtobuf.loadAs(Submsgtype0x44.MsgBody.serializer())
-        when {
-            msg.msgCleanCountMsg != null -> {
 
-            }
-            msg.msgFriendMsgSync != null -> {
-
-            }
-            msg.msgGroupMsgSync != null -> {
-                when (msg.msgGroupMsgSync.processflag) {
-                    1, 2 -> bot.network.launch {
-                        bot.groupListModifyLock.withLock {
-                            bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
-                                BotJoinGroupEvent.Active(it).broadcast()
+        if (msg.msgFriendMsgSync != null) {
+            when (msg.msgFriendMsgSync.processtype) {
+                3, 9, 10 -> {
+                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
+                        bot.network.launch {
+                            val response: FriendList.GetFriendGroupList.Response =
+                                FriendList.GetFriendGroupList.invokeForSingleFriend(
+                                    bot.client,
+                                    msg.msgFriendMsgSync.fuin
+                                )
+                                    .sendAndExpect(bot)
+                            response.friendList.firstOrNull()?.let {
+                                val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
+                                bot.friends.delegate.add(friend)
+                                FriendAddEvent(friend).broadcast()
                             }
                         }
                     }
                 }
             }
-            else -> {
-                bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
+        }
+        if (msg.msgGroupMsgSync != null) {
+            when (msg.msgGroupMsgSync.msgType) {
+                1, 2 -> bot.network.launch {
+                    bot.groupListModifyLock.withLock {
+                        bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
+                            BotJoinGroupEvent.Active(it).broadcast()
+                        }
+                    }
+                }
             }
         }
         return@lambda528 emptySequence()
