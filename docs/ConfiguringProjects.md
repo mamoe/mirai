@@ -10,6 +10,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 - `mirai-console-terminal`: 终端前端，适用于 JVM。
 - [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): Android 应用前端。
+- [`mirai-compose`](https://github.com/sonder-joker/mirai-compose): 跨平台桌面图形前端。
 
 ## 选择版本
 
