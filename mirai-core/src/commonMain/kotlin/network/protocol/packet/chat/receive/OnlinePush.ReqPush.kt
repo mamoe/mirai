@@ -55,17 +55,19 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     "OnlinePush.RespPush"
 ) {
     // to reduce nesting depth
-    private fun List<MsgInfo>.deco(
+    private suspend fun List<MsgInfo>.deco(
         client: QQAndroidClient,
-        mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
+        mapper: suspend ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
     ): Sequence<Packet> {
-        return asSequence().filter { msg ->
-            client.syncingController.onlinePushReqPushCacheList.addCache(
+        return mapNotNull { msg ->
+            val successful = client.syncingController.onlinePushReqPushCacheList.addCache(
                 QQAndroidClient.MessageSvcSyncData.OnlinePushReqPushSyncId(
                     uid = msg.lMsgUid ?: 0, sequence = msg.shMsgSeq, time = msg.uMsgTime
                 )
             )
-        }.flatMap { it.vMsg.read { mapper(it) } }
+            if (!successful) return@mapNotNull null
+            msg.vMsg.read { mapper(msg) }
+        }.asSequence().flatten()
     }
 
 
@@ -489,22 +491,22 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
 internal val ignoredLambda528: Lambda528 = lambda528 { _, _ -> emptySequence() }
 
 internal interface Lambda528 {
-    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
+    suspend operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
 }
 
 @kotlin.internal.LowPriorityInOverloadResolution
-internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
+internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+        override suspend fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot)
         }
 
     }
 }
 
-internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
+internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+        override suspend fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot, msgInfo)
         }
 
@@ -600,25 +602,24 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         if (msg.msgFriendMsgSync != null) {
             when (msg.msgFriendMsgSync.processtype) {
                 3, 9, 10 -> {
-                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null)
-                        runBlocking(bot.network.coroutineContext) {
-                            val response: FriendList.GetFriendGroupList.Response =
-                                FriendList.GetFriendGroupList.forSingleFriend(
-                                    bot.client,
-                                    msg.msgFriendMsgSync.fuin
-                                ).sendAndExpect(bot)
-                            response.friendList.firstOrNull()?.let {
-                                val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
-                                bot.friends.delegate.add(friend)
-                                packetList.add(FriendAddEvent(friend))
-                            }
+                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
+                        val response: FriendList.GetFriendGroupList.Response =
+                            FriendList.GetFriendGroupList.forSingleFriend(
+                                bot.client,
+                                msg.msgFriendMsgSync.fuin
+                            ).sendAndExpect(bot)
+                        response.friendList.firstOrNull()?.let {
+                            val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
+                            bot.friends.delegate.add(friend)
+                            packetList.add(FriendAddEvent(friend))
+                        }
                     }
                 }
             }
         }
         if (msg.msgGroupMsgSync != null) {
             when (msg.msgGroupMsgSync.msgType) {
-                1, 2 -> runBlocking(bot.network.coroutineContext) {
+                1, 2 -> {
                     bot.groupListModifyLock.withLock {
                         bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
                             packetList.add(BotJoinGroupEvent.Active(it))
