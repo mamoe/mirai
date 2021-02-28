@@ -14,7 +14,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
@@ -601,7 +601,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             when (msg.msgFriendMsgSync.processtype) {
                 3, 9, 10 -> {
                     if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
-                        bot.network.launch {
+                        runBlocking(bot.network.coroutineContext) {
                             val response: FriendList.GetFriendGroupList.Response =
                                 FriendList.GetFriendGroupList.forSingleFriend(
                                     bot.client,
@@ -619,7 +619,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         }
         if (msg.msgGroupMsgSync != null) {
             when (msg.msgGroupMsgSync.msgType) {
-                1, 2 -> bot.network.launch {
+                1, 2 -> runBlocking(bot.network.coroutineContext) {
                     bot.groupListModifyLock.withLock {
                         bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
                             BotJoinGroupEvent.Active(it).broadcast()
