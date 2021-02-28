@@ -22,7 +22,6 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupHonorType
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -597,10 +596,11 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0x44L to lambda528 { bot ->
         val msg = vProtobuf.loadAs(Submsgtype0x44.MsgBody.serializer())
 
+        val packetList = mutableListOf<Packet>()
         if (msg.msgFriendMsgSync != null) {
             when (msg.msgFriendMsgSync.processtype) {
                 3, 9, 10 -> {
-                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
+                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null)
                         runBlocking(bot.network.coroutineContext) {
                             val response: FriendList.GetFriendGroupList.Response =
                                 FriendList.GetFriendGroupList.forSingleFriend(
@@ -610,9 +610,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                             response.friendList.firstOrNull()?.let {
                                 val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
                                 bot.friends.delegate.add(friend)
-                                FriendAddEvent(friend).broadcast()
+                                packetList.add(FriendAddEvent(friend))
                             }
-                        }
                     }
                 }
             }
@@ -622,13 +621,13 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 1, 2 -> runBlocking(bot.network.coroutineContext) {
                     bot.groupListModifyLock.withLock {
                         bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
-                            BotJoinGroupEvent.Active(it).broadcast()
+                            packetList.add(BotJoinGroupEvent.Active(it))
                         }
                     }
                 }
             }
         }
-        return@lambda528 emptySequence()
+        return@lambda528 packetList.asSequence()
     },
     // bot 在其他客户端被踢或主动退出而同步情况
     0xD4L to lambda528 { _ ->
