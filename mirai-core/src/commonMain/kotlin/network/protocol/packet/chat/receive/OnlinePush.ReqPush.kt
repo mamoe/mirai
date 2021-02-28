@@ -14,7 +14,6 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
@@ -55,9 +54,9 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     "OnlinePush.RespPush"
 ) {
     // to reduce nesting depth
-    private fun List<MsgInfo>.deco(
+    private suspend fun List<MsgInfo>.deco(
         client: QQAndroidClient,
-        mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
+        mapper: suspend ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
     ): Sequence<Packet> {
         return asSequence().filter { msg ->
             client.syncingController.onlinePushReqPushCacheList.addCache(
@@ -107,6 +106,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
                             return@deco emptySequence()
                         }
                 }
+
                 else -> {
                     bot.network.logger.debug { "unknown sh type ${msgInfo.shMsgType.toInt()}" }
                     bot.network.logger.debug { "data=${readBytes().toUHexString()}" }
@@ -489,22 +489,22 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
 internal val ignoredLambda528: Lambda528 = lambda528 { _, _ -> emptySequence() }
 
 internal interface Lambda528 {
-    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
+    operator suspend fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
 }
 
 @kotlin.internal.LowPriorityInOverloadResolution
-internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
+internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+        override suspend fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot)
         }
 
     }
 }
 
-internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
+internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+        override suspend fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot, msgInfo)
         }
 
@@ -601,7 +601,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             when (msg.msgFriendMsgSync.processtype) {
                 3, 9, 10 -> {
                     if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null)
-                        runBlocking(bot.network.coroutineContext) {
                             val response: FriendList.GetFriendGroupList.Response =
                                 FriendList.GetFriendGroupList.forSingleFriend(
                                     bot.client,
@@ -612,19 +611,17 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                 bot.friends.delegate.add(friend)
                                 packetList.add(FriendAddEvent(friend))
                             }
-                    }
                 }
             }
         }
         if (msg.msgGroupMsgSync != null) {
             when (msg.msgGroupMsgSync.msgType) {
-                1, 2 -> runBlocking(bot.network.coroutineContext) {
+                1, 2 ->
                     bot.groupListModifyLock.withLock {
                         bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
                             packetList.add(BotJoinGroupEvent.Active(it))
                         }
                     }
-                }
             }
         }
         return@lambda528 packetList.asSequence()
