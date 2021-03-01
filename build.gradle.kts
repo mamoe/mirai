@@ -15,13 +15,11 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 buildscript {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         mavenCentral()
-        jcenter()
         google()
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
-        maven(url = "https://kotlin.bintray.com/kotlinx")
+        jcenter()
     }
 
     dependencies {
