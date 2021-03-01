@@ -78,6 +78,14 @@ internal inline fun <T : ProtoBuf, R> ByteReadPacket.readOidbRespCommon(
 }
 
 internal object FileManagement {
+    val factories = arrayOf(
+        GetFileList,
+        GetFileInfo,
+        RequestDownload,
+        RequestUpload,
+        Delete
+    )
+
     object GetFileList : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d8.GetFileListRspBody>>("OidbSvc.0x6d8_1") {
         operator fun invoke(
             client: QQAndroidClient,
@@ -105,6 +113,33 @@ internal object FileManagement {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d8.GetFileListRspBody> {
             return readOidbRespCommon(Oidb0x6d8.RspBody.serializer()) { it.fileListInfoRsp!! }
+        }
+    }
+
+    object GetFileInfo : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d8.GetFileInfoRspBody>>("OidbSvc.0x6d8_0") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            fileId: String,
+            busId: Int,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                1752,
+                0,
+                Oidb0x6d8.ReqBody.serializer(),
+                Oidb0x6d8.ReqBody(
+                    fileInfoReq = Oidb0x6d8.GetFileInfoReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        fileId = fileId,
+                        busId = busId
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d8.GetFileInfoRspBody> {
+            return readOidbRespCommon(Oidb0x6d8.RspBody.serializer()) { it.fileInfoRsp!! }
         }
     }
 
@@ -142,6 +177,63 @@ internal object FileManagement {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.UploadFileRspBody> {
             return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.uploadFileRsp!! }
+        }
+    }
+
+    object RequestDownload :
+        OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.DownloadFileRspBody>>("OidbSvc.0x6d6_2") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1750,
+                serviceType = 2,
+                Oidb0x6d6.ReqBody.serializer(),
+                Oidb0x6d6.ReqBody(
+                    downloadFileReq = Oidb0x6d6.DownloadFileReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        busId = busId,
+                        fileId = fileId,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.DownloadFileRspBody> {
+            return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.downloadFileRsp!! }
+        }
+    }
+
+    object Delete : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.DeleteFileRspBody>>("OidbSvc.0x6d6_3") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+            parentFolderId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1750,
+                serviceType = 3,
+                Oidb0x6d6.ReqBody.serializer(),
+                Oidb0x6d6.ReqBody(
+                    deleteFileReq = Oidb0x6d6.DeleteFileReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        busId = busId,
+                        fileId = fileId,
+                        parentFolderId = parentFolderId,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.DeleteFileRspBody> {
+            return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.deleteFileRsp!! }
         }
     }
 }

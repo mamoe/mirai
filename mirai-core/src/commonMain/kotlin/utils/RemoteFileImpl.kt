@@ -9,20 +9,19 @@
 
 package net.mamoe.mirai.internal.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.checkBotPermission
+import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.*
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.RandomAccessFile
-import kotlin.coroutines.CoroutineContext
+import java.util.*
 
 private val fs = FileSystem
 
@@ -63,18 +62,27 @@ internal object FileSystem {
 }
 
 internal class RemoteFileInfo(
+    val uuid: String, // fileId or folderId
     val isFile: Boolean,
-    val path: String, // fileId
+    val path: String,
     val name: String,
+    val parentFolderId: String,
     val size: Long,
     val busId: Int, // for file only
     val creatorId: Long, //ownerUin, createUin
     val createTime: Long, // uploadTime, createTime
     val modifyTime: Long,
-    val sha: ByteArray, // for file only
-    val md5: ByteArray, // for file only
     val downloadTimes: Int,
-)
+    val sha: ByteArray, // for file only
+    val sha3: ByteArray,
+    val md5: ByteArray, // for file only
+) {
+    companion object {
+        val root = RemoteFileInfo(
+            "", false, "/", "/", "", 0, 0, 0, 0, 0, 0, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY
+        )
+    }
+}
 
 internal class RemoteFileImpl(
     contact: Group,
@@ -93,13 +101,56 @@ internal class RemoteFileImpl(
 
     override val parent: RemoteFile?
         get() {
-            val s = path.substringBeforeLast('/', "")
-            if (s.isEmpty()) return null
-            return RemoteFileImpl(contact, s)
+            if (path == "/") return null
+            val s = path.substringBeforeLast('/')
+            return RemoteFileImpl(contact, if (s.isEmpty()) "/" else s)
         }
 
     private suspend fun getFileFolderInfo(): RemoteFileInfo? {
-        TODO()
+        val parent = parent ?: return RemoteFileInfo.root
+        parent as RemoteFileImpl
+        val info = parent.getFilesFlow()
+            .filter { it.folderInfo?.folderName == this.name || it.fileInfo?.fileName == this.name }.firstOrNull()
+            ?: return null
+        return when {
+            info.folderInfo != null -> info.folderInfo.run {
+                RemoteFileInfo(
+                    uuid = folderId,
+                    isFile = false,
+                    path = path,
+                    name = folderName,
+                    parentFolderId = parentFolderId,
+                    size = 0,
+                    busId = 0,
+                    creatorId = createUin,
+                    createTime = createTime.toLongUnsigned(),
+                    modifyTime = modifyTime.toLongUnsigned(),
+                    downloadTimes = 0,
+                    sha = EMPTY_BYTE_ARRAY,
+                    sha3 = EMPTY_BYTE_ARRAY,
+                    md5 = EMPTY_BYTE_ARRAY,
+                )
+            }
+            info.fileInfo != null -> info.fileInfo.run {
+                RemoteFileInfo(
+                    uuid = fileId,
+                    isFile = true,
+                    path = path,
+                    name = fileName,
+                    parentFolderId = parentFolderId,
+                    size = fileSize,
+                    busId = busId,
+                    creatorId = uploaderUin,
+                    createTime = uploadTime.toLongUnsigned(),
+                    modifyTime = modifyTime.toLongUnsigned(),
+                    downloadTimes = downloadTimes,
+                    sha = sha,
+                    sha3 = sha3,
+                    md5 = md5,
+                )
+            }
+            else -> null
+        }
     }
 
     private fun RemoteFileInfo?.checkExists(thisPath: String): RemoteFileInfo {
@@ -111,7 +162,7 @@ internal class RemoteFileImpl(
     override suspend fun length(): Long = this.getFileFolderInfo().checkExists(this.path).size
     override suspend fun exists(): Boolean = this.getFileFolderInfo() != null
 
-    override suspend fun listFiles(): Flow<RemoteFile> {
+    private suspend fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
         return flow {
             var index = 0
             while (true) {
@@ -120,49 +171,118 @@ internal class RemoteFileImpl(
                     groupCode = contact.id,
                     folderId = path,
                     startIndex = index
-                ).sendAndExpect(bot).toResult("get group file").getOrThrow()
+                ).sendAndExpect(bot).toResult("RemoteFile.listFiles").getOrThrow()
                 index += list.itemList.size
 
                 if (list.int32RetCode != 0) return@flow
                 if (list.itemList.isEmpty()) return@flow
 
-                for (item in list.itemList) {
-                    when {
-                        item.fileInfo != null -> {
-                            emit(resolve(item.fileInfo.fileName))
-                        }
-                        item.folderInfo != null -> {
-                            emit(resolve(item.folderInfo.folderName))
-                        }
-                        else -> {
-                        }
-                    }
-                }
+                emitAll(list.itemList.asFlow())
             }
+        }
+    }
+
+    private fun Oidb0x6d8.GetFileListRspBody.Item.resolveToFile(): RemoteFile? {
+        val item = this
+        return when {
+            item.fileInfo != null -> {
+                resolve(item.fileInfo.fileName)
+            }
+            item.folderInfo != null -> {
+                resolve(item.folderInfo.folderName)
+            }
+            else -> null
+        }
+    }
+
+    override suspend fun listFiles(): Flow<RemoteFile> {
+        return getFilesFlow().mapNotNull { item ->
+            item.resolveToFile()
         }
     }
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(JavaFriendlyAPI::class)
-    override suspend fun listFilesIterator(): Iterator<RemoteFile> {
-        TODO("Not yet implemented")
+    override suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile> {
+        if (!lazy) return listFiles().toList().iterator()
+
+        return object : Iterator<RemoteFile> {
+            private val queue = ArrayDeque<Oidb0x6d8.GetFileListRspBody.Item>(1)
+
+            @Volatile
+            private var index = 0
+            private var ended = false
+
+            private suspend fun updateItems() {
+                val list = FileManagement.GetFileList(
+                    client,
+                    groupCode = contact.id,
+                    folderId = path,
+                    startIndex = index
+                ).sendAndExpect(bot).toResult("RemoteFile.listFiles").getOrThrow()
+                if (list.int32RetCode != 0 || list.itemList.isEmpty()) {
+                    ended = true
+                    return
+                }
+                index += list.itemList.size
+                for (item in list.itemList) {
+                    if (item.fileInfo != null || item.folderInfo != null) queue.add(item)
+                }
+            }
+
+            override fun hasNext(): Boolean {
+                if (queue.isEmpty() && !ended) runBlocking { updateItems() }
+                return queue.isNotEmpty()
+            }
+
+            override fun next(): RemoteFile {
+                return queue.removeFirst().resolveToFile()!!
+            }
+        }
     }
 
-    override fun resolve(relativePath: String): RemoteFile {
-        return RemoteFileImpl(contact, this.path, relativePath)
+    override fun resolve(relative: String): RemoteFile {
+        return RemoteFileImpl(contact, this.path, relative)
     }
 
-    override fun resolveSibling(other: String): RemoteFile {
+    override fun resolveSibling(relative: String): RemoteFile {
         val parent = this.parent
         if (parent == null) {
-            if (fs.normalize(other) != "/") error("Remote path '/' does not have sibling paths.")
+            if (fs.normalize(relative) != "/") error("Remote path '/' does not have sibling paths.")
             return RemoteFileImpl(contact, "/")
         }
-        return RemoteFileImpl(contact, parent.path, other)
+        return RemoteFileImpl(contact, parent.path, relative)
     }
 
     override suspend fun delete(recursively: Boolean): Boolean {
-        TODO("Not yet implemented")
+        if (isFile()) {
+            val info = getFileFolderInfo().checkExists(path)
+            contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
+            return FileManagement.Delete(
+                client,
+                groupCode = contact.id,
+                busId = info.busId,
+                fileId = info.uuid,
+                parentFolderId = info.parentFolderId,
+            ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
+        } else {
+            if (recursively) {
+                this.listFiles().collect { child ->
+                    child.delete(recursively = true)
+                }
+                return this.delete(false)
+            } else {
+                // TODO: 2021/3/1 check delete folder, tentative implementation
+                val info = getFileFolderInfo().checkExists(path)
+                return FileManagement.Delete(
+                    client,
+                    groupCode = contact.id,
+                    busId = info.busId,
+                    fileId = info.uuid,
+                    parentFolderId = info.parentFolderId,
+                ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
+            }
+        }
     }
 
     override suspend fun moveTo(target: RemoteFile): Boolean {
@@ -178,31 +298,55 @@ internal class RemoteFileImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun open(): FileDownloadSessionImpl {
-        TODO("Not yet implemented")
+//    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
+//    }
+
+    override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo {
+        val info = getFileFolderInfo().checkExists(path)
+        if (!info.isFile) error("Remote path $path does not refer to a file.")
+        val resp = FileManagement.RequestDownload(
+            client,
+            groupCode = contact.id,
+            busId = info.busId,
+            fileId = info.uuid
+        ).sendAndExpect(bot).toResult("RemoteFile.getDownloadInfo").getOrThrow()
+        check(resp.int32RetCode == 0) {
+            "Failed RemoteFile.getDownloadInfo, code=${resp.int32RetCode}, msg=${resp.retMsg}"
+        }
+
+        return RemoteFile.DownloadInfo(
+            filename = name,
+            path = path,
+            url = "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
+                    info.uuid.toByteArray().toUHexString(""),
+//            cookie = resp.cookieVal,
+            sha = info.sha,
+            sha3 = info.sha3,
+            md5 = info.md5
+        )
     }
 
     override fun toString(): String = path
 }
 
-internal class FileDownloadSessionImpl : FileDownloadSession, CoroutineScope {
-    override val onProgression: SharedFlow<Long>
-        get() = TODO("Not yet implemented")
-
-    override suspend fun downloadTo(out: OutputStream) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun downloadTo(file: RandomAccessFile) {
-        TODO("Not yet implemented")
-    }
-
-    override fun inputStream(): InputStream {
-        TODO("Not yet implemented")
-    }
-
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
-
-
-}
+//internal class FileUploadSessionImpl : FileUploadSession, CoroutineScope {
+//    override val onProgression: SharedFlow<Long>
+//        get() = TODO("Not yet implemented")
+//
+//    override suspend fun downloadTo(out: OutputStream) {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override suspend fun downloadTo(file: RandomAccessFile) {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun inputStream(): InputStream {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override val coroutineContext: CoroutineContext
+//        get() = TODO("Not yet implemented")
+//
+//
+//}

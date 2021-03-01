@@ -58,7 +58,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(7) val sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(8) val sha3: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(9) val md5: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(10) val cookieVal: ByteArray = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(10) val cookieVal: String = "",
         @JvmField @ProtoNumber(11) val saveFileName: String = "",
         @JvmField @ProtoNumber(12) val previewPort: Int = 0,
         @JvmField @ProtoNumber(13) val downloadDnsHttps: String = "",
