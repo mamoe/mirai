@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.5.0-dev-2"
+    const val project = "2.5-M1"
 
     const val core = project
     const val console = project
@@ -34,13 +34,15 @@ object Versions {
 
     const val blockingBridge = "1.10.0"
 
-    const val androidGradlePlugin = "3.5.3"
+    const val androidGradlePlugin = "4.1.1"
+    const val android = "4.1.1.4"
 
     const val bintray = "1.8.5"
     const val shadow = "6.1.0"
 
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
+    const val asm = "9.1"
 
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
@@ -104,3 +106,5 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
 const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
+
+const val `android-runtime` = "com.google.android:android:${Versions.android}"

@@ -152,8 +152,7 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
 public inline fun ByteArray.encodeToString(offset: Int = 0, charset: Charset = Charsets.UTF_8): String =
     kotlinx.io.core.String(this, charset = charset, offset = offset, length = this.size - offset)
 
-public inline fun ByteArray.encodeToBase64(): String =
-    Base64.getEncoder().encodeToString(this)
+public expect fun ByteArray.encodeToBase64(): String
 
 public inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset): ByteReadPacket =
     ByteReadPacket(this, offset = offset, length = length)

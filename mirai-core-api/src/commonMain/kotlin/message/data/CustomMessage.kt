@@ -119,7 +119,7 @@ public sealed class CustomMessage : SingleMessage {
         private val factories: ConcurrentLinkedQueue<Factory<*>> = ConcurrentLinkedQueue()
 
         internal fun register(factory: Factory<out CustomMessage>) {
-            factories.removeIf { it::class == factory::class }
+            factories.removeAll { it::class == factory::class }
             val exist = factories.firstOrNull { it.typeName == factory.typeName }
             if (exist != null) {
                 error("CustomMessage.Factory typeName ${factory.typeName} is already registered by ${exist::class.qualifiedName}")

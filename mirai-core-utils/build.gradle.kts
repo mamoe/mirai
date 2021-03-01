@@ -15,7 +15,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    id("kotlinx-atomicfu")
+    //id("kotlinx-atomicfu")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray")
@@ -23,29 +23,20 @@ plugins {
 
 description = "mirai-core utilities"
 
-val isAndroidSDKAvailable: Boolean by project
-
 kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-        apply(from = rootProject.file("gradle/android.gradle"))
-        android("android") {
-            publishAllLibraryVariants()
+//        apply(from = rootProject.file("gradle/android.gradle"))
+//        android("android") {
+//            publishAllLibraryVariants()
+//        }
+        jvm("android") {
+            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+            //   publishAllLibraryVariants()
         }
     } else {
-        println(
-            """Android SDK 可能未安装.
-                $name 的 Android 目标编译将不会进行. 
-                这不会影响 Android 以外的平台的编译.
-            """.trimIndent()
-        )
-        println(
-            """Android SDK might not be installed.
-                Android target of $name will not be compiled. 
-                It does no influence on the compilation of other platforms.
-            """.trimIndent()
-        )
+        printAndroidNotInstalled()
     }
 
     jvm("common") {
@@ -79,8 +70,10 @@ kotlin {
         }
 
         if (isAndroidSDKAvailable) {
-            androidMain {
+            val androidMain by getting {
+                //
                 dependencies {
+                    compileOnly(`android-runtime`)
                     api1(`ktor-client-android`)
                 }
             }
@@ -95,6 +88,19 @@ kotlin {
         }
     }
 }
+
+tasks.register("checkAndroidApiLevel") {
+    doFirst {
+        androidutil.AndroidApiLevelCheck.check(
+            buildDir.resolve("classes/kotlin/android/main"),
+            project.property("mirai.android.target.api.level")!!.toString().toInt(),
+            project
+        )
+    }
+    group = "verification"
+    this.mustRunAfter("androidMainClasses")
+}
+tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {

@@ -12,7 +12,6 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("java")
     `maven-publish`
     id("com.jfrog.bintray")
     id("net.mamoe.kotlin-jvm-blocking-bridge")

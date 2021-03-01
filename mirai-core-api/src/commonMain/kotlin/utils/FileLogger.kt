@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,26 +13,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val currentDay get() = Calendar.getInstance()[Calendar.DAY_OF_MONTH]
-private val currentDate get() = SimpleDateFormat("yyyy-MM-dd").format(Date())
-
-/**
- * 将日志写入('append')到特定文件.
- *
- * @see PlatformLogger 查看格式信息
- */
-public class SingleFileLogger @JvmOverloads constructor(
-    identity: String,
-    file: File = File("$identity-$currentDate.log")
-) :
-    PlatformLogger(identity, { file.appendText(it + "\n") }) {
-
-    init {
-        file.createNewFile()
-        require(file.isFile) { "Log file must be a file: $file" }
-        require(file.canWrite()) { "Log file must be write: $file" }
-    }
-}
+internal fun getCurrentDay() = Calendar.getInstance()[Calendar.DAY_OF_MONTH]
+internal fun getCurrentDate() = SimpleDateFormat("yyyy-MM-dd").format(Date())
 
 private val STUB: (priority: SimpleLogger.LogPriority, message: String?, e: Throwable?) -> Unit =
     { _: SimpleLogger.LogPriority, _: String?, _: Throwable? -> error("stub") }
@@ -61,15 +43,15 @@ public class DirectoryLogger @JvmOverloads constructor(
         }
     }
 
-    private var day = currentDay
+    private var day = getCurrentDay()
 
-    private var delegate: SingleFileLogger = SingleFileLogger(identity, File(directory, "$currentDate.log"))
+    private var delegate: SingleFileLogger = SingleFileLogger(identity, File(directory, "${getCurrentDate()}.log"))
         get() {
-            val currentDay = currentDay
+            val currentDay = getCurrentDay()
             if (day != currentDay) {
                 day = currentDay
                 checkOutdated()
-                field = SingleFileLogger(identity!!, File(directory, "$currentDate.log"))
+                field = SingleFileLogger(identity!!, File(directory, "${getCurrentDate()}.log"))
             }
             return field
         }

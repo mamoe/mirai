@@ -131,9 +131,9 @@ internal fun Method.registerEventHandler(
     } else {
         // java methods
 
-        val paramType = this.parameters[0].type
-        check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
-            "Illegal method parameter. Required one exact Event subclass. found ${this.parameters.contentToString()}"
+        val paramType = this.parameterTypes[0]
+        check(this.parameterTypes.size == 1 && Event::class.java.isAssignableFrom(paramType)) {
+            "Illegal method parameter. Required one exact Event subclass. found ${this.parameterTypes.contentToString()}"
         }
         suspend fun callMethod(event: Event): Any? {
             fun Method.invokeWithErrorReport(self: Any?, vararg args: Any?): Any? = try {

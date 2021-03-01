@@ -328,6 +328,34 @@ mirai 码内的属性字符串会被转义。
 | *换行符 \n* |    `\n`    |
 | *换行符 \r* |    `\r`    |
 
+### 组成约定
+
+一个有效的 mirai 码 (如 `[mirai:atall]` (无参数), `[mirai:at:123]` (有参数)) 可分为以下几个组成部分
+
+- `[mirai:` 固定开头
+- 消息类型， 如 `at`
+- 消息参数
+  - `:` 固定分隔符
+  - 参数内容 **(需要进行转义)**
+- `]` 固定结尾
+
+#### 为何需要进行转义
+
+为了 mirai 码的正确解析, 不转义无法正确解析原本意义
+
+假如有以下参数
+
+```
+{"msg": [1, 2, 3]}
+```
+
+如果不进行转义直接进行 mirai 码拼接 (如: `[mirai:msg:{"msg": [1, 2, 3]}]`), 那么 mirai 码会被错误解析
+
+> 解析结果如下:
+> 
+> - mirai 码 `[mirai:msg:{"msg": [1, 2, 3]`
+> - 纯文本 `}]`
+
 ### 消息链的 mirai 码
 
 消息链 [`MessageChain`] 是多个 [`SingleMessage`] 的集合。[`MessageChain`] 也实现 [`CodableMessage`]。在转换为 mirai 码时所有 [`CodableMessage`] 直接相连：
@@ -368,6 +396,15 @@ val chain = "[mirai:atall]".deserializeMiraiCode()
 ```
 ```java
 MessageChain chain = MiraiCode.deserializeFromMiraiCode("[mirai:atall]");
+```
+
+### 转义字符串
+
+```kotlin
+PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
+```
+```java
+new PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 ```
 
 
