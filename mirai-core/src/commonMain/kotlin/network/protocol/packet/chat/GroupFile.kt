@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
@@ -30,11 +32,26 @@ internal sealed class CommonOidbResponse<T> : Packet {
         val result: Int,
         val msg: String,
         val e: Throwable?,
-    ) : CommonOidbResponse<T>()
+    ) : CommonOidbResponse<T>() {
+        inline fun createException(actionName: String): IllegalStateException {
+            return IllegalStateException("Failed $actionName, result=$result, msg=$msg", e)
+        }
+    }
 
     class Success<T>(
         val resp: T
     ) : CommonOidbResponse<T>()
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <T> CommonOidbResponse<T>.toResult(actionName: String): Result<T> {
+    return if (this is CommonOidbResponse.Failure) {
+        Result.failure(this.createException(actionName))
+    } else {
+        this as CommonOidbResponse.Success<T>
+        Result.success(this.resp)
+    }
 }
 
 /**

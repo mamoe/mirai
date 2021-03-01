@@ -76,7 +76,7 @@ internal class GroupFileCommon : ProtoBuf {
 
     @Serializable
     internal class FolderInfo(
-        @JvmField @ProtoNumber(1) val folderId: String = "",
+        @JvmField @ProtoNumber(1) val folderId: String = "", // uuid
         @JvmField @ProtoNumber(2) val parentFolderId: String = "",
         @JvmField @ProtoNumber(3) val folderName: String = "",
         @JvmField @ProtoNumber(4) val createTime: Int = 0,

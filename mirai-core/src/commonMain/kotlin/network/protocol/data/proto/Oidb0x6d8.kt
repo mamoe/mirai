@@ -99,7 +99,7 @@ internal class Oidb0x6d8 : ProtoBuf {
     ) : ProtoBuf {
         @Serializable
         internal class Item(
-            @JvmField @ProtoNumber(1) val type: Int = 0,
+            @JvmField @ProtoNumber(1) val type: Int = 0, // folder=2,
             @JvmField @ProtoNumber(2) val folderInfo: GroupFileCommon.FolderInfo? = null,
             @JvmField @ProtoNumber(3) val fileInfo: GroupFileCommon.FileInfo? = null
         ) : ProtoBuf

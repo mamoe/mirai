@@ -161,6 +161,8 @@ internal object KnownPacketFactories {
         StrangerList.DelStranger,
         SummaryCard.ReqSummaryCard,
         MusicSharePacket,
+        FileManagement.RequestUpload,
+        FileManagement.GetFileList,
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

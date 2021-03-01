@@ -16,7 +16,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
-import java.util.stream.Stream
 
 /**
  * @since 2.5
@@ -28,7 +27,7 @@ public interface RemoteFile {
 
     public val path: String
 
-    public fun parent(): RemoteFile?
+    public val parent: RemoteFile?
 
     public suspend fun isFile(): Boolean
 
@@ -41,15 +40,15 @@ public interface RemoteFile {
     public suspend fun listFiles(): Flow<RemoteFile>
 
     @JavaFriendlyAPI
-    public suspend fun listFilesStream(): Stream<RemoteFile>
+    public suspend fun listFilesIterator(): Iterator<RemoteFile>
 
-    public suspend fun resolve(relativePath: String): RemoteFile
+    public fun resolve(relativePath: String): RemoteFile
 
-    public suspend fun resolve(relative: RemoteFile): RemoteFile = resolve(relative.path)
+    public fun resolve(relative: RemoteFile): RemoteFile = resolve(relative.path)
 
-    public suspend fun resolveSibling(other: String): RemoteFile
+    public fun resolveSibling(other: String): RemoteFile
 
-    public suspend fun resolveSibling(relative: RemoteFile): RemoteFile = resolve(relative.path)
+    public fun resolveSibling(relative: RemoteFile): RemoteFile = resolve(relative.path)
 
     public suspend fun delete(recursively: Boolean): Boolean
 
@@ -61,6 +60,8 @@ public interface RemoteFile {
     public suspend fun write(resource: ExternalResource)
 
     public suspend fun open(): FileDownloadSession
+
+    public override fun toString(): String
 }
 
 /**

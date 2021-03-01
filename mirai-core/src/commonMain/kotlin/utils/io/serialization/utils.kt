@@ -216,7 +216,7 @@ internal inline fun <T : ProtoBuf> ByteReadPacket.readOidbSsoPkg(
 ): OidbBodyOrFailure<T> {
     val oidb = readBytes(length).loadAs(OidbSso.OIDBSSOPkg.serializer())
     return if (oidb.result == 0) {
-        OidbBodyOrFailure.success(readBytes(length).loadOidb(serializer))
+        OidbBodyOrFailure.success(oidb.bodybuffer.loadAs(serializer))
     } else {
         OidbBodyOrFailure.failure(oidb)
     }

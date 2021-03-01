@@ -12,12 +12,16 @@ package net.mamoe.mirai.internal.utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flow
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
+import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
-import java.util.stream.Stream
 import kotlin.coroutines.CoroutineContext
 
 private val fs = FileSystem
@@ -33,18 +37,20 @@ internal object FileSystem {
 
     fun normalize(path: String): String {
         checkLegitimacy(path)
-        return path.trimStart().replace('\\', '/').removeSuffix("/") // tolerant leading white spaces
+        return path.replace('\\', '/')
     }
 
     // TODO: 2021/2/25 add tests for FS
     // net.mamoe.mirai.internal.utils.internal.utils.FileSystemTest
 
     fun normalize(parent: String, name: String): String {
-        var nParent = normalize(parent)
-        if (!nParent.startsWith('/')) nParent = "/$nParent"
-
         var nName = normalize(name)
-        nName = nName.removeSurrounding("/")
+        if (nName.startsWith('/')) return nName // absolute path then ignore parent
+        nName = nName.removeSuffix("/")
+
+        var nParent = normalize(parent)
+        if (nParent == "/") return "/$nName"
+        if (!nParent.startsWith('/')) nParent = "/$nParent"
 
         val slash = nName.indexOf('/')
         if (slash != -1) {
@@ -56,9 +62,23 @@ internal object FileSystem {
     }
 }
 
+internal class RemoteFileInfo(
+    val isFile: Boolean,
+    val path: String, // fileId
+    val name: String,
+    val size: Long,
+    val busId: Int, // for file only
+    val creatorId: Long, //ownerUin, createUin
+    val createTime: Long, // uploadTime, createTime
+    val modifyTime: Long,
+    val sha: ByteArray, // for file only
+    val md5: ByteArray, // for file only
+    val downloadTimes: Int,
+)
+
 internal class RemoteFileImpl(
     contact: Group,
-    override val path: String,
+    override val path: String, // absolute
 ) : RemoteFile {
     private val contactRef by contact.weakRef()
     private val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
@@ -68,43 +88,77 @@ internal class RemoteFileImpl(
     override val name: String
         get() = path.substringAfterLast('/')
 
-    override fun parent(): RemoteFile? {
-        val s = path.substringBeforeLast('/', "")
-        if (s.isEmpty()) return null
-        return RemoteFileImpl(contact, s)
+    private val bot get() = contact.bot.asQQAndroidBot()
+    private val client get() = bot.client
+
+    override val parent: RemoteFile?
+        get() {
+            val s = path.substringBeforeLast('/', "")
+            if (s.isEmpty()) return null
+            return RemoteFileImpl(contact, s)
+        }
+
+    private suspend fun getFileFolderInfo(): RemoteFileInfo? {
+        TODO()
     }
 
-    override suspend fun isFile(): Boolean {
-        val parent = parent() ?: return false // path must == '/'
-
-        // TODO: 2021/2/25
-        return false
+    private fun RemoteFileInfo?.checkExists(thisPath: String): RemoteFileInfo {
+        if (this == null) throw IllegalStateException("Remote path '$thisPath' does not exist.")
+        return this
     }
 
-    override suspend fun length(): Long {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun exists(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun isFile(): Boolean = this.getFileFolderInfo().checkExists(this.path).isFile
+    override suspend fun length(): Long = this.getFileFolderInfo().checkExists(this.path).size
+    override suspend fun exists(): Boolean = this.getFileFolderInfo() != null
 
     override suspend fun listFiles(): Flow<RemoteFile> {
-        TODO("Not yet implemented")
+        return flow {
+            var index = 0
+            while (true) {
+                val list = FileManagement.GetFileList(
+                    client,
+                    groupCode = contact.id,
+                    folderId = path,
+                    startIndex = index
+                ).sendAndExpect(bot).toResult("get group file").getOrThrow()
+                index += list.itemList.size
+
+                if (list.int32RetCode != 0) return@flow
+                if (list.itemList.isEmpty()) return@flow
+
+                for (item in list.itemList) {
+                    when {
+                        item.fileInfo != null -> {
+                            emit(resolve(item.fileInfo.fileName))
+                        }
+                        item.folderInfo != null -> {
+                            emit(resolve(item.folderInfo.folderName))
+                        }
+                        else -> {
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    @OptIn(net.mamoe.mirai.utils.JavaFriendlyAPI::class)
-    override suspend fun listFilesStream(): Stream<RemoteFile> {
+    @OptIn(JavaFriendlyAPI::class)
+    override suspend fun listFilesIterator(): Iterator<RemoteFile> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun resolve(relativePath: String): RemoteFile {
-        TODO("Not yet implemented")
+    override fun resolve(relativePath: String): RemoteFile {
+        return RemoteFileImpl(contact, this.path, relativePath)
     }
 
-    override suspend fun resolveSibling(other: String): RemoteFile {
-        TODO("Not yet implemented")
+    override fun resolveSibling(other: String): RemoteFile {
+        val parent = this.parent
+        if (parent == null) {
+            if (fs.normalize(other) != "/") error("Remote path '/' does not have sibling paths.")
+            return RemoteFileImpl(contact, "/")
+        }
+        return RemoteFileImpl(contact, parent.path, other)
     }
 
     override suspend fun delete(recursively: Boolean): Boolean {
@@ -127,6 +181,8 @@ internal class RemoteFileImpl(
     override suspend fun open(): FileDownloadSessionImpl {
         TODO("Not yet implemented")
     }
+
+    override fun toString(): String = path
 }
 
 internal class FileDownloadSessionImpl : FileDownloadSession, CoroutineScope {

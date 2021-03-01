@@ -73,7 +73,7 @@ internal class GroupImpl(
     override lateinit var owner: NormalMember
     override lateinit var botAsMember: NormalMember
 
-    override val filesRoot: RemoteFile by lazy { RemoteFileImpl("", "/", this) }
+    override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
 
     override val members: ContactList<NormalMember> = ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) {
         if (it.uin == bot.id) {
