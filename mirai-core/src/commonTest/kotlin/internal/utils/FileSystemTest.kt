@@ -22,7 +22,6 @@ internal class FileSystemTest {
         fs.checkLegitimacy("a")
         assertFailsWith<IllegalArgumentException> { fs.checkLegitimacy("a:") }
         assertFailsWith<IllegalArgumentException> { fs.checkLegitimacy("?a") }
-        assertFailsWith<IllegalArgumentException> { fs.checkLegitimacy("\\") }
     }
 
     @Test
