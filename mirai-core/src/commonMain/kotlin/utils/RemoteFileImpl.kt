@@ -316,8 +316,10 @@ internal class RemoteFileImpl(
         if (resp.boolFileExist) {
             if (override) {
                 delete(false)
-            } else return false
-            // TODO: 2021/3/1 feeds
+            } else {
+                FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
+                return true
+            }
         }
 
         val ext = GroupFileUploadExt(
@@ -369,34 +371,9 @@ internal class RemoteFileImpl(
             commandId = 71,
             extendInfo = ext,
             dataFlag = 0
-//            createConnection = { ip, port ->
-//                SynchronousHighwayProtocolChannel { packet ->
-//                    val http = Mirai.Http
-//                    http.post("http://$ip:$port/cgi-bin/httpconn?htcmd=0x6FF0087&uin=${bot.id}") {
-//                        userAgent("QQClient")
-//                        val bytes = packet.readBytes()
-//                        body = object : OutgoingContent.WriteChannelContent() {
-//                            override val contentLength: Long get() = bytes.size.toLongUnsigned()
-//                            override val contentType: ContentType get() = ContentType.Any
-//                            override suspend fun writeTo(channel: ByteWriteChannel) {
-//                                channel.writeFully(bytes)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-            // resultChecker = { it.errorCode == 0 || it.errorCode == 70 },
         )
 
-//        tryServersUpload(
-//            bot = bot,
-//            servers = resp.uploadIpLanV4.associateWith { 80 }.toList(),
-//            resourceSize = resource.size,
-//            resourceKind = ResourceKind.GROUP_VOICE,
-//            channelKind = ChannelKind.HTTP
-//        ) { ip, port ->
-//            Mirai.Http
-//        }
+        FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
         return true
     }
 

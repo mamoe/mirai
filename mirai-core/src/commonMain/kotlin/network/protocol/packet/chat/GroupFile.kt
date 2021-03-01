@@ -16,8 +16,10 @@ import kotlinx.serialization.DeserializationStrategy
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.data.proto.GroupFileCommon
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d6
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8
+import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d9
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
@@ -26,6 +28,8 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeOidb
 import net.mamoe.mirai.utils.ExternalResource
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 internal sealed class CommonOidbResponse<T> : Packet {
     data class Failure<T>(
@@ -92,7 +96,8 @@ internal object FileManagement {
         GetFileInfo,
         RequestDownload,
         RequestUpload,
-        Delete
+        Delete,
+        Feed
     )
 
     object GetFileList : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d8.GetFileListRspBody>>("OidbSvc.0x6d8_1") {
@@ -243,6 +248,40 @@ internal object FileManagement {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.DeleteFileRspBody> {
             return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.deleteFileRsp!! }
+        }
+    }
+
+    object Feed : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d9.FeedsRspBody>>("OidbSvc.0x6d9_4") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1753,
+                serviceType = 4,
+                Oidb0x6d9.ReqBody.serializer(),
+                Oidb0x6d9.ReqBody(
+                    feedsInfoReq = Oidb0x6d9.FeedsReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        feedsInfoList = listOf(
+                            GroupFileCommon.FeedsInfo(
+                                busId = busId,
+                                fileId = fileId,
+                                feedFlag = 1,
+                                msgRandom = Random.nextInt().absoluteValue,
+                            )
+
+                        )
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d9.FeedsRspBody> {
+            return readOidbRespCommon(Oidb0x6d9.RspBody.serializer()) { it.feedsInfoRsp!! }
         }
     }
 }

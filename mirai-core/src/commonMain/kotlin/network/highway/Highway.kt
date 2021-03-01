@@ -269,6 +269,26 @@ internal interface HighwayProtocolChannel {
     suspend fun read(): ByteReadPacket
 }
 
+
+// backup
+
+//            createConnection = { ip, port ->
+//                SynchronousHighwayProtocolChannel { packet ->
+//                    val http = Mirai.Http
+//                    http.post("http://$ip:$port/cgi-bin/httpconn?htcmd=0x6FF0087&uin=${bot.id}") {
+//                        userAgent("QQClient")
+//                        val bytes = packet.readBytes()
+//                        body = object : OutgoingContent.WriteChannelContent() {
+//                            override val contentLength: Long get() = bytes.size.toLongUnsigned()
+//                            override val contentType: ContentType get() = ContentType.Any
+//                            override suspend fun writeTo(channel: ByteWriteChannel) {
+//                                channel.writeFully(bytes)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
 internal class SynchronousHighwayProtocolChannel(
     val action: suspend (ByteReadPacket) -> ByteArray
 ) : HighwayProtocolChannel {
@@ -330,6 +350,8 @@ private suspend fun HighwayProtocolChannel.sendReceiveHighway(
         discardExact(4)
         val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
         check(resultChecker(proto)) { "highway transfer failed, error ${proto.errorCode}" }
+        // error 70: 某属性有误
+        // error 79: 没有 body (可能)
         return proto
     }
 }
