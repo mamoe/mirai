@@ -118,7 +118,7 @@ public interface RemoteFile {
     /**
      * 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]
      */
-    public suspend fun write(resource: ExternalResource)
+    public suspend fun write(resource: ExternalResource, override: Boolean = false): Boolean
 
 //    /**
 //     * 打开一个异步文件上传会话, 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]
@@ -152,15 +152,12 @@ public interface RemoteFile {
         public val url: String,
         //  public val cookie: String,
         public val sha: ByteArray,
-        public val sha3: ByteArray,
+//        public val sha3: ByteArray,
         public val md5: ByteArray,
     ) {
         override fun toString(): String {
-            return "DownloadInfo(filename='$filename', path='$path', url='$url', sha=${sha.toUHexString("")}, sha3=${
-                sha3.toUHexString(
-                    ""
-                )
-            }, md5=${md5.toUHexString("")})"
+            return "DownloadInfo(filename='$filename', path='$path', url='$url', sha=${sha.toUHexString("")}, " +
+                    "md5=${md5.toUHexString("")})"
         }
     }
 }

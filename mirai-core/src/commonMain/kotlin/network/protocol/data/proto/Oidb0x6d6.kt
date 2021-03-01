@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.internal.network.protocol.packet.chat.CheckableStruct
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
 internal class Oidb0x6d6 : ProtoBuf {
@@ -30,10 +31,10 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class DeleteFileRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = ""
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class DownloadFileReqBody(
@@ -49,8 +50,8 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class DownloadFileRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val downloadIp: String = "",
         @JvmField @ProtoNumber(5) val downloadDns: ByteArray = EMPTY_BYTE_ARRAY,
@@ -63,7 +64,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(12) val previewPort: Int = 0,
         @JvmField @ProtoNumber(13) val downloadDnsHttps: String = "",
         @JvmField @ProtoNumber(14) val previewPortHttps: Int = 0
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class MoveFileReqBody(
@@ -77,11 +78,11 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class MoveFileRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val parentFolderId: String = ""
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class RenameFileReqBody(
@@ -95,10 +96,10 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class RenameFileRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = ""
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class ReqBody(
@@ -121,13 +122,13 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class ResendRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val uploadIp: String = "",
         @JvmField @ProtoNumber(5) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(6) val checkKey: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class RspBody(
@@ -157,8 +158,8 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class UploadFileRspBody(
-        @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = "",
+        @ProtoNumber(1) override val int32RetCode: Int = 0,
+        @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val uploadIp: String = "",
         @JvmField @ProtoNumber(5) val serverDns: String = "",
@@ -170,6 +171,6 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(12) val uploadIpLanV4: List<String> = emptyList(),
         @JvmField @ProtoNumber(13) val uploadIpLanV6: List<String> = emptyList(),
         @JvmField @ProtoNumber(14) val uploadPort: Int = 0
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableStruct
 }
         

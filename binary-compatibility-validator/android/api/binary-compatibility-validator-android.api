@@ -366,6 +366,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
+	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 	public abstract fun getId ()J
 	public abstract fun getMembers ()Lnet/mamoe/mirai/contact/ContactList;
 	public abstract fun getName ()Ljava/lang/String;
@@ -5611,6 +5612,7 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public abstract fun getClosed ()Lkotlinx/coroutines/Deferred;
 	public abstract fun getFormatName ()Ljava/lang/String;
 	public abstract fun getMd5 ()[B
+	public fun getSha1 ()[B
 	public abstract fun getSize ()J
 	public abstract fun inputStream ()Ljava/io/InputStream;
 	public static fun sendAsImage (Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -5836,6 +5838,50 @@ public class net/mamoe/mirai/utils/PlatformLogger : net/mamoe/mirai/utils/MiraiL
 	public fun verbose0 (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning0 (Ljava/lang/String;)V
 	public fun warning0 (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public abstract interface class net/mamoe/mirai/utils/RemoteFile {
+	public fun copyTo (Lnet/mamoe/mirai/utils/RemoteFile;)Z
+	public abstract fun copyTo (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun delete (Z)Z
+	public abstract fun delete (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun exists ()Z
+	public abstract fun exists (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getDownloadInfo ()Lnet/mamoe/mirai/utils/RemoteFile$DownloadInfo;
+	public abstract fun getDownloadInfo (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getParent ()Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun getPath ()Ljava/lang/String;
+	public fun isDirectory ()Z
+	public fun isDirectory (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun isFile ()Z
+	public abstract fun isFile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun length ()J
+	public abstract fun length (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun listFiles ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun listFiles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun listFilesIterator (Z)Ljava/util/Iterator;
+	public abstract fun listFilesIterator (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;)Z
+	public abstract fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun resolve (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public fun resolve (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun resolveSibling (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public fun resolveSibling (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun toString ()Ljava/lang/String;
+	public fun write (Lnet/mamoe/mirai/utils/ExternalResource;Z)Z
+	public abstract fun write (Lnet/mamoe/mirai/utils/ExternalResource;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun write$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/utils/RemoteFile$DownloadInfo {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[B[B)V
+	public final fun getFilename ()Ljava/lang/String;
+	public final fun getMd5 ()[B
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getSha ()[B
+	public final fun getUrl ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/utils/SilentLogger : net/mamoe/mirai/utils/PlatformLogger {

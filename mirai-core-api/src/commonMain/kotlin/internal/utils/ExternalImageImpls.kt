@@ -10,10 +10,7 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.CompletableDeferred
-import net.mamoe.mirai.utils.COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.getFileType
-import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import java.io.RandomAccessFile
 
@@ -31,6 +28,7 @@ internal class ExternalResourceImplByFileWithMd5(
     override val md5: ByteArray,
     formatName: String?
 ) : ExternalResource {
+    override val sha1: ByteArray by lazy { inputStream().sha1() }
     override val size: Long = file.length()
     override val formatName: String by lazy {
         formatName ?: inputStream().detectFileTypeAndClose() ?: ExternalResource.DEFAULT_FORMAT_NAME
@@ -59,6 +57,7 @@ internal class ExternalResourceImplByFile(
 ) : ExternalResource {
     override val size: Long = file.length()
     override val md5: ByteArray by lazy { inputStream().md5() }
+    override val sha1: ByteArray by lazy { inputStream().sha1() }
     override val formatName: String by lazy {
         formatName ?: inputStream().detectFileTypeAndClose() ?: ExternalResource.DEFAULT_FORMAT_NAME
     }
@@ -84,6 +83,7 @@ internal class ExternalResourceImplByByteArray(
 ) : ExternalResource {
     override val size: Long = data.size.toLong()
     override val md5: ByteArray by lazy { data.md5() }
+    override val sha1: ByteArray by lazy { data.sha1() }
     override val formatName: String by lazy {
         formatName ?: getFileType(data.copyOf(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE))
         ?: ExternalResource.DEFAULT_FORMAT_NAME

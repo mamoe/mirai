@@ -9,6 +9,10 @@
 
 package net.mamoe.mirai.internal.utils
 
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
@@ -16,10 +20,14 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8
+import net.mamoe.mirai.internal.contact.groupCode
+import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
 import java.util.*
 
@@ -153,8 +161,8 @@ internal class RemoteFileImpl(
         }
     }
 
-    private fun RemoteFileInfo?.checkExists(thisPath: String): RemoteFileInfo {
-        if (this == null) throw IllegalStateException("Remote path '$thisPath' does not exist.")
+    private fun RemoteFileInfo?.checkExists(thisPath: String, kind: String = "Remote path"): RemoteFileInfo {
+        if (this == null) throw IllegalStateException("$kind '$thisPath' does not exist.")
         return this
     }
 
@@ -255,8 +263,8 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun delete(recursively: Boolean): Boolean {
+        val info = getFileFolderInfo() ?: return false
         if (isFile()) {
-            val info = getFileFolderInfo().checkExists(path)
             contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
             return FileManagement.Delete(
                 client,
@@ -294,8 +302,102 @@ internal class RemoteFileImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun write(resource: ExternalResource) {
-        TODO("Not yet implemented")
+    override suspend fun write(resource: ExternalResource, override: Boolean): Boolean {
+        val parent = parent ?: error("Cannot write to root directory.")
+        parent as RemoteFileImpl
+        val parentInfo = parent.getFileFolderInfo().checkExists(path, "Parent path(folder)")
+        val resp = FileManagement.RequestUpload(
+            client,
+            groupCode = contact.id,
+            folderId = parentInfo.uuid,
+            resource = resource,
+            filename = this.name
+        ).sendAndExpect(bot).toResult("RemoteFile.write").getOrThrow()
+        if (resp.boolFileExist) {
+            if (override) {
+                delete(false)
+            } else return false
+            // TODO: 2021/3/1 feeds
+        }
+
+        val ext = GroupFileUploadExt(
+            u1 = 100,
+            u2 = 1,
+            entry = GroupFileUploadEntry(
+                business = ExcitingBusiInfo(
+                    busId = resp.busId,
+                    senderUin = bot.id,
+                    receiverUin = contact.groupCode, // TODO: 2021/3/1 code or uin?
+                    groupCode = contact.groupCode,
+                ),
+                fileEntry = ExcitingFileEntry(
+                    fileSize = resource.size,
+                    md5 = resource.md5,
+                    sha1 = resource.sha1,
+                    fileId = resp.fileId.toByteArray(),
+                    uploadKey = resp.checkKey,
+                ),
+                clientInfo = ExcitingClientInfo(
+                    clientType = 2,
+                    appId = client.protocol.id.toString(),
+                    terminalType = 2,
+                    clientVer = "9e9c09dc",
+                    unknown = 4,
+                ),
+                fileNameInfo = ExcitingFileNameInfo(this.name),
+                host = ExcitingHostConfig(
+                    hosts = listOf(
+                        ExcitingHostInfo(
+                            url = ExcitingUrlInfo(
+                                unknown = 1,
+                                host = resp.uploadIpLanV4.firstOrNull()
+                                    ?: resp.uploadIpLanV6.firstOrNull()
+                                    ?: resp.uploadIp,
+                            ),
+                            port = resp.uploadPort,
+                        ),
+                    ),
+                ),
+            ),
+            u3 = 0,
+        ).toByteArray(GroupFileUploadExt.serializer())
+
+        Highway.uploadResourceBdh(
+            bot = bot,
+            resource = resource,
+            kind = ResourceKind.GROUP_FILE,
+            commandId = 71,
+            extendInfo = ext,
+            dataFlag = 0
+//            createConnection = { ip, port ->
+//                SynchronousHighwayProtocolChannel { packet ->
+//                    val http = Mirai.Http
+//                    http.post("http://$ip:$port/cgi-bin/httpconn?htcmd=0x6FF0087&uin=${bot.id}") {
+//                        userAgent("QQClient")
+//                        val bytes = packet.readBytes()
+//                        body = object : OutgoingContent.WriteChannelContent() {
+//                            override val contentLength: Long get() = bytes.size.toLongUnsigned()
+//                            override val contentType: ContentType get() = ContentType.Any
+//                            override suspend fun writeTo(channel: ByteWriteChannel) {
+//                                channel.writeFully(bytes)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+            // resultChecker = { it.errorCode == 0 || it.errorCode == 70 },
+        )
+
+//        tryServersUpload(
+//            bot = bot,
+//            servers = resp.uploadIpLanV4.associateWith { 80 }.toList(),
+//            resourceSize = resource.size,
+//            resourceKind = ResourceKind.GROUP_VOICE,
+//            channelKind = ChannelKind.HTTP
+//        ) { ip, port ->
+//            Mirai.Http
+//        }
+        return true
     }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
@@ -321,32 +423,10 @@ internal class RemoteFileImpl(
                     info.uuid.toByteArray().toUHexString(""),
 //            cookie = resp.cookieVal,
             sha = info.sha,
-            sha3 = info.sha3,
+//            sha3 = info.sha3,
             md5 = info.md5
         )
     }
 
     override fun toString(): String = path
 }
-
-//internal class FileUploadSessionImpl : FileUploadSession, CoroutineScope {
-//    override val onProgression: SharedFlow<Long>
-//        get() = TODO("Not yet implemented")
-//
-//    override suspend fun downloadTo(out: OutputStream) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override suspend fun downloadTo(file: RandomAccessFile) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun inputStream(): InputStream {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override val coroutineContext: CoroutineContext
-//        get() = TODO("Not yet implemented")
-//
-//
-//}

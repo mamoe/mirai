@@ -10,10 +10,11 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.withTimeoutOrNull
+import net.mamoe.mirai.utils.cast
 import kotlin.math.roundToInt
 
 
-internal suspend inline fun <R> Collection<Pair<Int, Int>>.retryWithServers(
+internal suspend inline fun <R, reified IP> Collection<Pair<IP, Int>>.retryWithServers(
     timeoutMillis: Long,
     onFail: (exception: Throwable?) -> Nothing,
     crossinline block: suspend (ip: String, port: Int) -> R
@@ -24,7 +25,11 @@ internal suspend inline fun <R> Collection<Pair<Int, Int>>.retryWithServers(
     for (pair in this) {
         return kotlin.runCatching {
             withTimeoutOrNull(timeoutMillis) {
-                block(pair.first.toIpV4AddressString(), pair.second)
+                if (IP::class == Int::class) {
+                    block(pair.first.cast<Int>().toIpV4AddressString(), pair.second)
+                } else {
+                    block(pair.first.toString(), pair.second)
+                }
             }
         }.recover {
             if (exception != null) {

@@ -47,7 +47,11 @@ public fun ByteArray.unzip(offset: Int = 0, length: Int = size - offset): ByteAr
 }
 
 public fun InputStream.md5(): ByteArray {
-    val digest = MessageDigest.getInstance("md5")
+    return digest("md5")
+}
+
+public fun InputStream.digest(algorithm: String): ByteArray {
+    val digest = MessageDigest.getInstance(algorithm)
     digest.reset()
     use { input ->
         object : OutputStream() {
@@ -63,6 +67,10 @@ public fun InputStream.md5(): ByteArray {
         }
     }
     return digest.digest()
+}
+
+public fun InputStream.sha1(): ByteArray {
+    return digest("SHA-1")
 }
 
 /**
