@@ -27,7 +27,7 @@ import net.mamoe.mirai.utils.safeCast
 @MiraiExperimentalApi
 public interface FileMessage : MessageContent, ConstrainSingle {
     public val name: String
-    public val uuid: String
+    public val id: String
     public val size: Long
 
     override fun contentToString(): String = "[文件]$name" // orthodox
@@ -38,7 +38,7 @@ public interface FileMessage : MessageContent, ConstrainSingle {
     @MiraiExperimentalApi
     @JvmBlockingBridge
     public suspend fun toRemoteFile(group: Group): RemoteFile? {
-        return group.filesRoot.resolveByUuid(uuid)
+        return group.filesRoot.resolveById(id)
     }
 
     override val key: Key get() = Key

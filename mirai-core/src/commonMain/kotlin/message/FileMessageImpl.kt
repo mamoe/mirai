@@ -13,16 +13,22 @@ package net.mamoe.mirai.internal.message
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.FileMessage
+import kotlin.contracts.contract
+
+internal fun FileMessage.checkIsImpl(): FileMessageImpl {
+    contract { returns() implies (this@checkIsImpl is FileMessageImpl) }
+    return this as? FileMessageImpl ?: error("FileMessage must not be implemented manually.")
+}
 
 @Serializable
 @SerialName(FileMessage.SERIAL_NAME)
 internal class FileMessageImpl(
     override val name: String,
-    override val uuid: String,
+    override val id: String,
     override val size: Long,
     val busId: Int // internal
 ) : FileMessage {
-    override fun toString(): String = "[mirai:file:$name,$uuid]"
+    override fun toString(): String = "[mirai:file:$name,$id]"
 
     @Suppress("DuplicatedCode")
     override fun equals(other: Any?): Boolean {
@@ -32,7 +38,7 @@ internal class FileMessageImpl(
         other as FileMessageImpl
 
         if (name != other.name) return false
-        if (uuid != other.uuid) return false
+        if (id != other.id) return false
         if (size != other.size) return false
 
         return true
@@ -40,7 +46,7 @@ internal class FileMessageImpl(
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + uuid.hashCode()
+        result = 31 * result + id.hashCode()
         result = 31 * result + size.hashCode()
         result = 31 * result + busId.hashCode()
         return result

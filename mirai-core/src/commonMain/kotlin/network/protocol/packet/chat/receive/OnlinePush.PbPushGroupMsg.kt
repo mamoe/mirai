@@ -67,7 +67,9 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             val messageRandom = pbPushMsg.msg.msgBody.richText.attr?.random ?: return null
 
             if (bot.client.syncingController.pendingGroupMessageReceiptCacheList.contains { it.messageRandom == messageRandom }
-                || msgHead.fromAppid == 3116) {
+                || msgHead.fromAppid == 3116 || msgHead.fromAppid == 2021) {
+                // 3116=group music share
+                // 2021=group file
                 // message sent by bot
                 return SendGroupMessageReceipt(
                     messageRandom,

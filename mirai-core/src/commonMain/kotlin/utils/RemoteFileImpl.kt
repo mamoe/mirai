@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
+import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
@@ -28,6 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.*
 import java.util.*
 
@@ -69,7 +71,7 @@ internal object FileSystem {
 }
 
 internal class RemoteFileInfo(
-    val uuid: String, // fileId or folderId
+    val id: String, // fileId or folderId
     val isFile: Boolean,
     val path: String,
     val name: String,
@@ -99,7 +101,7 @@ internal class RemoteFileImpl(
 
     constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
 
-    override var uuid: String? = null
+    override var id: String? = null
 
     override val name: String
         get() = path.substringAfterLast('/')
@@ -123,7 +125,7 @@ internal class RemoteFileImpl(
         return when {
             info.folderInfo != null -> info.folderInfo.run {
                 RemoteFileInfo(
-                    uuid = folderId,
+                    id = folderId,
                     isFile = false,
                     path = path,
                     name = folderName,
@@ -140,7 +142,7 @@ internal class RemoteFileImpl(
             }
             info.fileInfo != null -> info.fileInfo.run {
                 RemoteFileInfo(
-                    uuid = fileId,
+                    id = fileId,
                     isFile = true,
                     path = path,
                     name = fileName,
@@ -171,7 +173,7 @@ internal class RemoteFileImpl(
         return getFileFolderInfo()?.run {
             RemoteFile.FileInfo(
                 name = name,
-                uuid = uuid,
+                id = id,
                 path = path,
                 length = size,
                 downloadTimes = downloadTimes,
@@ -215,7 +217,7 @@ internal class RemoteFileImpl(
             }
             else -> null
         }?.also {
-            it.uuid = item.uuid
+            it.id = item.uuid
         }
     }
 
@@ -267,9 +269,9 @@ internal class RemoteFileImpl(
 
     override fun resolve(relative: String) = RemoteFileImpl(contact, this.path, relative)
     override fun resolve(relative: RemoteFile) =
-        resolve(relative.path).also { it.uuid = relative.uuid }
+        resolve(relative.path).also { it.id = relative.id }
 
-    override suspend fun resolveByUuid(uuid: String, deep: Boolean): RemoteFile? {
+    override suspend fun resolveById(uuid: String, deep: Boolean): RemoteFile? {
         return getFilesFlow().filter { it.uuid == uuid }.firstOrNull()?.resolveToFile()
     }
 
@@ -283,7 +285,7 @@ internal class RemoteFileImpl(
     }
 
     override fun resolveSibling(relative: RemoteFile) =
-        resolveSibling(relative.path).also { it.uuid = relative.uuid }
+        resolveSibling(relative.path).also { it.id = relative.id }
 
     override suspend fun delete(recursively: Boolean): Boolean {
         val info = getFileFolderInfo() ?: return false
@@ -294,7 +296,7 @@ internal class RemoteFileImpl(
                     client,
                     groupCode = contact.id,
                     busId = info.busId,
-                    fileId = info.uuid,
+                    fileId = info.id,
                     parentFolderId = info.parentFolderId,
                 ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
             }
@@ -310,7 +312,7 @@ internal class RemoteFileImpl(
                     client,
                     groupCode = contact.id,
                     busId = info.busId,
-                    fileId = info.uuid,
+                    fileId = info.id,
                     parentFolderId = info.parentFolderId,
                 ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
             }
@@ -333,7 +335,7 @@ internal class RemoteFileImpl(
         val resp = FileManagement.RequestUpload(
             client,
             groupCode = contact.id,
-            folderId = parentInfo.uuid,
+            folderId = parentInfo.id,
             resource = resource,
             filename = this.name
         ).sendAndExpect(bot).toResult("RemoteFile.write").getOrThrow()
@@ -411,7 +413,7 @@ internal class RemoteFileImpl(
             client,
             groupCode = contact.id,
             busId = info.busId,
-            fileId = info.uuid
+            fileId = info.id
         ).sendAndExpect(bot).toResult("RemoteFile.getDownloadInfo").getOrThrow()
         check(resp.int32RetCode == 0) {
             "Failed RemoteFile.getDownloadInfo, code=${resp.int32RetCode}, msg=${resp.retMsg}"
@@ -421,7 +423,7 @@ internal class RemoteFileImpl(
             filename = name,
             path = path,
             url = "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
-                    info.uuid.toByteArray().toUHexString(""),
+                    info.id.toByteArray().toUHexString(""),
 //            cookie = resp.cookieVal,
             sha1 = info.sha,
 //            sha3 = info.sha3,
@@ -430,4 +432,10 @@ internal class RemoteFileImpl(
     }
 
     override fun toString(): String = path
+
+    override suspend fun toMessage(): FileMessage? {
+        val info = getFileFolderInfo() ?: return null
+        if (!info.isFile) return null
+        return FileMessageImpl(name, info.id, info.size, info.busId)
+    }
 }

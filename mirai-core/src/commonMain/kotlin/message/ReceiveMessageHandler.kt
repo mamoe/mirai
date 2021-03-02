@@ -377,8 +377,7 @@ private object ReceiveMessageTransformer {
                         list.add(
                             FileMessageImpl(
                                 name = file.fileName,
-                                uuid = file.filePath.substringAfter('/'), // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
-                                // TODO: 2021/3/2 should we do `file.filePath.substringAfter('/')`?
+                                id = file.filePath, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
                                 size = file.fileSize,
                                 busId = file.busId
                             )

@@ -265,6 +265,7 @@ internal object FileManagement {
             groupCode: Long,
             busId: Int,
             fileId: String,
+            random: Int = Random.nextInt().absoluteValue,
         ) = buildOutgoingUniPacket(client) {
             writeOidb(
                 command = 1753,
@@ -279,9 +280,8 @@ internal object FileManagement {
                                 busId = busId,
                                 fileId = fileId,
                                 feedFlag = 1,
-                                msgRandom = Random.nextInt().absoluteValue,
+                                msgRandom = random,
                             )
-
                         )
                     )
                 )

@@ -14,6 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.data.FileMessage
 import java.io.File
 
 /**
@@ -28,9 +29,9 @@ public interface RemoteFile {
     public val name: String
 
     /**
-     * 文件的 UUID. 群文件允许重名, UUID 非空时用来区分重名.
+     * 文件的 ID. 群文件允许重名, ID 非空时用来区分重名.
      */
-    public val uuid: String?
+    public val id: String?
 
     /**
      * 标准的绝对路径, 起始字符为 '/'.
@@ -65,7 +66,7 @@ public interface RemoteFile {
         /**
          * 唯一识别标识.
          */
-        public val uuid: String,
+        public val id: String,
         /**
          * 标准绝对路径.
          */
@@ -94,10 +95,10 @@ public interface RemoteFile {
         public val md5: ByteArray,
     ) {
         /**
-         * 根据 [FileInfo.uuid] 或 [FileInfo.path] 获取到对应的 [RemoteFile].
+         * 根据 [FileInfo.id] 或 [FileInfo.path] 获取到对应的 [RemoteFile].
          */
         public suspend fun resolveToFile(group: Group): RemoteFile =
-            group.filesRoot.resolveByUuid(uuid) ?: group.filesRoot.resolve(path)
+            group.filesRoot.resolveById(id) ?: group.filesRoot.resolve(path)
     }
 
     /**
@@ -111,12 +112,12 @@ public interface RemoteFile {
     public suspend fun exists(): Boolean
 
     /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.uuid] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
      */
     public suspend fun listFiles(): Flow<RemoteFile>?
 
     /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.uuid] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
      * @param lazy 为 `true` 时惰性获取, 为 `false` 时立即获取全部文件列表.
      */
     @JavaFriendlyAPI
@@ -131,7 +132,7 @@ public interface RemoteFile {
     public fun resolve(relative: String): RemoteFile
 
     /**
-     * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录. 返回的 [RemoteFile.uuid] 将会与 `relative.uuid` 相同.
+     * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录. 返回的 [RemoteFile.id] 将会与 `relative.id` 相同.
      *
      * @param relative 当 [RemoteFile.path] 初始字符为 '/' 时将作为绝对路径解析
      * @see File.resolve stdlib 内的类似函数
@@ -139,16 +140,16 @@ public interface RemoteFile {
     public fun resolve(relative: RemoteFile): RemoteFile
 
     /**
-     * 获取该目录下的 UUID 为 [uuid] 的文件, 当 [deep] 为 `true` 时还会进入子目录继续寻找这样的文件. 在不存在时返回 `null`.
+     * 获取该目录下的 ID 为 [id] 的文件, 当 [deep] 为 `true` 时还会进入子目录继续寻找这样的文件. 在不存在时返回 `null`.
      * @see resolve
      */
-    public suspend fun resolveByUuid(uuid: String, deep: Boolean = true): RemoteFile?
+    public suspend fun resolveById(id: String, deep: Boolean = true): RemoteFile?
 
     /**
-     * 获取该目录或子目录下的 UUID 为 [uuid] 的文件, 在不存在时返回 `null`
+     * 获取该目录或子目录下的 ID 为 [id] 的文件, 在不存在时返回 `null`
      * @see resolve
      */
-    public suspend fun resolveByUuid(uuid: String): RemoteFile? = resolveByUuid(uuid, deep = true)
+    public suspend fun resolveById(id: String): RemoteFile? = resolveById(id, deep = true)
 
     /**
      * 获取父目录的子文件. 如 `RemoteFile("/foo/bar").resolveSibling("gav")` 为 `RemoteFile("/foo/gav")`.
@@ -161,7 +162,7 @@ public interface RemoteFile {
 
     /**
      * 获取父目录的子文件. 如 `RemoteFile("/foo/bar").resolveSibling("gav")` 为 `RemoteFile("/foo/gav")`.
-     * 不会检查 [RemoteFile] 是否表示一个目录. 返回的 [RemoteFile.uuid] 将会与 `relative.uuid` 相同.
+     * 不会检查 [RemoteFile] 是否表示一个目录. 返回的 [RemoteFile.id] 将会与 `relative.id` 相同.
      *
      * @param relative 当 [RemoteFile.path] 初始字符为 '/' 时将作为绝对路径解析
      * @see File.resolveSibling stdlib 内的类似函数
@@ -204,6 +205,11 @@ public interface RemoteFile {
      * @return [path]
      */
     public override fun toString(): String
+
+    /**
+     * 得到相应文件消息, 可以发送. 当 [RemoteFile] 表示一个目录或文件不存在时返回 `null`.
+     */
+    public suspend fun toMessage(): FileMessage?
 
     public class DownloadInfo @MiraiInternalApi constructor(
         /**
