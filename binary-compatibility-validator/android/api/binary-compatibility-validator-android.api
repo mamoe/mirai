@@ -4039,6 +4039,23 @@ public final class net/mamoe/mirai/message/data/Face$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/FileMessage$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun contentToString ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/FileMessage$Key;
+	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getSize ()J
+	public abstract fun getUuid ()Ljava/lang/String;
+	public fun toRemoteFile (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public fun toRemoteFile (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/message/data/FileMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public static final field SERIAL_NAME Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/message/data/FlashImage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/HummerMessage, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/FlashImage$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
@@ -5849,9 +5866,12 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun exists (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getDownloadInfo ()Lnet/mamoe/mirai/utils/RemoteFile$DownloadInfo;
 	public abstract fun getDownloadInfo (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getInfo ()Lnet/mamoe/mirai/utils/RemoteFile$FileInfo;
+	public abstract fun getInfo (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getParent ()Lnet/mamoe/mirai/utils/RemoteFile;
 	public abstract fun getPath ()Ljava/lang/String;
+	public abstract fun getUuid ()Ljava/lang/String;
 	public fun isDirectory ()Z
 	public fun isDirectory (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isFile ()Z
@@ -5865,9 +5885,14 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;)Z
 	public abstract fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun resolve (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
-	public fun resolve (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun resolve (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public fun resolveByUuid (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public fun resolveByUuid (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveByUuid (Ljava/lang/String;Z)Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun resolveByUuid (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun resolveByUuid$default (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun resolveSibling (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
-	public fun resolveSibling (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun resolveSibling (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public abstract fun toString ()Ljava/lang/String;
 	public fun write (Lnet/mamoe/mirai/utils/ExternalResource;Z)Z
 	public abstract fun write (Lnet/mamoe/mirai/utils/ExternalResource;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -5879,9 +5904,24 @@ public final class net/mamoe/mirai/utils/RemoteFile$DownloadInfo {
 	public final fun getFilename ()Ljava/lang/String;
 	public final fun getMd5 ()[B
 	public final fun getPath ()Ljava/lang/String;
-	public final fun getSha ()[B
+	public final fun getSha1 ()[B
 	public final fun getUrl ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/utils/RemoteFile$FileInfo {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JIJJJ[B[B)V
+	public final fun getDownloadTimes ()I
+	public final fun getLastModifyTime ()J
+	public final fun getLength ()J
+	public final fun getMd5 ()[B
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getSha1 ()[B
+	public final fun getUploadTime ()J
+	public final fun getUploaderId ()J
+	public final fun getUuid ()Ljava/lang/String;
+	public final fun resolveToFile (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/SilentLogger : net/mamoe/mirai/utils/PlatformLogger {

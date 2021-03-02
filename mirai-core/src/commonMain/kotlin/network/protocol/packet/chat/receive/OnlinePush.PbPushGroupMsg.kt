@@ -103,7 +103,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         val name: String
 
         if (anonymous != null) { // anonymous member
-            sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeToBase64())
+            sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeBase64())
             name = sender.nameCard
         } else { // normal member chat
             sender = group[msgHead.fromUin] as NormalMemberImpl? ?: kotlin.run {

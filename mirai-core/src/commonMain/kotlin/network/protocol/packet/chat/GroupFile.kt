@@ -40,11 +40,19 @@ internal sealed class CommonOidbResponse<T> : Packet {
         inline fun createException(actionName: String): IllegalStateException {
             return IllegalStateException("Failed $actionName, result=$result, msg=$msg", e)
         }
+
+        override fun toString(): String {
+            return "CommonOidbResponse.Failure(result=$result, msg=$msg, e=$e)"
+        }
     }
 
     class Success<T>(
         val resp: T
-    ) : CommonOidbResponse<T>()
+    ) : CommonOidbResponse<T>() {
+        override fun toString(): String {
+            return "CommonOidbResponse.Success"
+        }
+    }
 }
 
 internal interface CheckableStruct {

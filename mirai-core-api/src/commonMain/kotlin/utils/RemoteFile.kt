@@ -90,10 +90,7 @@ public interface RemoteFile {
          * 上次修改时间.
          */
         public val lastModifyTime: Long,
-        /**
-         * SHA-1
-         */
-        public val sha: ByteArray,
+        public val sha1: ByteArray,
         public val md5: ByteArray,
     ) {
         /**
@@ -222,14 +219,11 @@ public interface RemoteFile {
          * HTTP or HTTPS URL
          */
         public val url: String,
-        /**
-         * SHA-1
-         */
-        public val sha: ByteArray,
+        public val sha1: ByteArray,
         public val md5: ByteArray,
     ) {
         override fun toString(): String {
-            return "DownloadInfo(filename='$filename', path='$path', url='$url', sha=${sha.toUHexString("")}, " +
+            return "DownloadInfo(filename='$filename', path='$path', url='$url', sha1=${sha1.toUHexString("")}, " +
                     "md5=${md5.toUHexString("")})"
         }
     }

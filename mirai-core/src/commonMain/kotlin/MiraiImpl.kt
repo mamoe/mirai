@@ -65,6 +65,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             MessageSerializers.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
 
             MessageSerializers.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
+            MessageSerializers.registerSerializer(FileMessageImpl::class, FileMessageImpl.serializer())
 
             // MessageSource
 

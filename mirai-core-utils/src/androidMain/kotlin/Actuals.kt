@@ -15,6 +15,10 @@ package net.mamoe.mirai.utils
 import android.util.Base64
 
 
-public actual fun ByteArray.encodeToBase64(): String {
+public actual fun ByteArray.encodeBase64(): String {
     return Base64.encodeToString(this, Base64.DEFAULT)
+}
+
+public actual fun String.decodeBase64(): ByteArray {
+    return Base64.decode(this, Base64.DEFAULT)
 }

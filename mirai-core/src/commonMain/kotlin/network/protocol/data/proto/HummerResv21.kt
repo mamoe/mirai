@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
-@Serializable
 internal class HummerResv21 : ProtoBuf {
     @Serializable
     internal class FileImgInfo(
@@ -29,7 +28,7 @@ internal class HummerResv21 : ProtoBuf {
         @JvmField @ProtoNumber(1) val fileType: Int = 0,
         @JvmField @ProtoNumber(2) val senderUin: Long = 0L,
         @JvmField @ProtoNumber(3) val receiverUin: Long = 0L,
-        @JvmField @ProtoNumber(4) val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(4) val fileUuid: String = "",
         @JvmField @ProtoNumber(5) val fileName: String = "",
         @JvmField @ProtoNumber(6) val fileSize: Long = 0L,
         @JvmField @ProtoNumber(7) val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,

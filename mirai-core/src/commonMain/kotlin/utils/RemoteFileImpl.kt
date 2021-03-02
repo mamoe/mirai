@@ -178,13 +178,13 @@ internal class RemoteFileImpl(
                 uploaderId = creatorId,
                 uploadTime = createTime,
                 lastModifyTime = modifyTime,
-                sha = sha,
+                sha1 = sha,
                 md5 = md5,
             )
         }
     }
 
-    private suspend fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
+    private fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
         return flow {
             var index = 0
             while (true) {
@@ -423,7 +423,7 @@ internal class RemoteFileImpl(
             url = "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
                     info.uuid.toByteArray().toUHexString(""),
 //            cookie = resp.cookieVal,
-            sha = info.sha,
+            sha1 = info.sha,
 //            sha3 = info.sha3,
             md5 = info.md5
         )

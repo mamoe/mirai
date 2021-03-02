@@ -28,7 +28,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.utils.encodeToBase64
+import net.mamoe.mirai.utils.encodeBase64
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
@@ -174,7 +174,7 @@ internal class OnlineMessageSourceFromGroupImpl(
             ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
 
         anonymousInfo.run {
-            group.newAnonymous(anonGroupMsg!!.anonNick.encodeToString(), anonGroupMsg.anonId.encodeToBase64())
+            group.newAnonymous(anonGroupMsg!!.anonNick.encodeToString(), anonGroupMsg.anonId.encodeBase64())
         }
     }
 
