@@ -49,12 +49,13 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
     sequenceId: Int,
     random: Int,
     handler: SendMessageHandler<*>,
+    isLong: Boolean,
 ): MessageValidationData {
     val msgList = map { chain ->
         MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
                 fromUin = chain.senderId,
-                toUin = handler.targetUserUin ?: 0,
+                toUin = if (isLong) { handler.targetUserUin ?: 0 } else 0,
                 msgSeq = sequenceId,
                 msgTime = chain.time,
                 msgUid = 0x01000000000000000L or random.toLongUnsigned(),
