@@ -47,7 +47,6 @@ internal object FileSystem {
         return path.replace('\\', '/')
     }
 
-    // TODO: 2021/2/25 add tests for FS
     // net.mamoe.mirai.internal.utils.internal.utils.FileSystemTest
 
     fun normalize(parent: String, name: String): String {
@@ -82,12 +81,11 @@ internal class RemoteFileInfo(
     val modifyTime: Long,
     val downloadTimes: Int,
     val sha: ByteArray, // for file only
-    val sha3: ByteArray,
     val md5: ByteArray, // for file only
 ) {
     companion object {
         val root = RemoteFileInfo(
-            "", false, "/", "/", "", 0, 0, 0, 0, 0, 0, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY
+            "", false, "/", "/", "", 0, 0, 0, 0, 0, 0, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY
         )
     }
 }
@@ -100,6 +98,8 @@ internal class RemoteFileImpl(
     private val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
 
     constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
+
+    override var uuid: String? = null
 
     override val name: String
         get() = path.substringAfterLast('/')
@@ -135,7 +135,6 @@ internal class RemoteFileImpl(
                     modifyTime = modifyTime.toLongUnsigned(),
                     downloadTimes = 0,
                     sha = EMPTY_BYTE_ARRAY,
-                    sha3 = EMPTY_BYTE_ARRAY,
                     md5 = EMPTY_BYTE_ARRAY,
                 )
             }
@@ -153,7 +152,6 @@ internal class RemoteFileImpl(
                     modifyTime = modifyTime.toLongUnsigned(),
                     downloadTimes = downloadTimes,
                     sha = sha,
-                    sha3 = sha3,
                     md5 = md5,
                 )
             }
@@ -169,6 +167,22 @@ internal class RemoteFileImpl(
     override suspend fun isFile(): Boolean = this.getFileFolderInfo().checkExists(this.path).isFile
     override suspend fun length(): Long = this.getFileFolderInfo().checkExists(this.path).size
     override suspend fun exists(): Boolean = this.getFileFolderInfo() != null
+    override suspend fun getInfo(): RemoteFile.FileInfo? {
+        return getFileFolderInfo()?.run {
+            RemoteFile.FileInfo(
+                name = name,
+                uuid = uuid,
+                path = path,
+                length = size,
+                downloadTimes = downloadTimes,
+                uploaderId = creatorId,
+                uploadTime = createTime,
+                lastModifyTime = modifyTime,
+                sha = sha,
+                md5 = md5,
+            )
+        }
+    }
 
     private suspend fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
         return flow {
@@ -200,6 +214,8 @@ internal class RemoteFileImpl(
                 resolve(item.folderInfo.folderName)
             }
             else -> null
+        }?.also {
+            it.uuid = item.uuid
         }
     }
 
@@ -249,11 +265,15 @@ internal class RemoteFileImpl(
         }
     }
 
-    override fun resolve(relative: String): RemoteFile {
-        return RemoteFileImpl(contact, this.path, relative)
+    override fun resolve(relative: String) = RemoteFileImpl(contact, this.path, relative)
+    override fun resolve(relative: RemoteFile) =
+        resolve(relative.path).also { it.uuid = relative.uuid }
+
+    override suspend fun resolveByUuid(uuid: String, deep: Boolean): RemoteFile? {
+        return getFilesFlow().filter { it.uuid == uuid }.firstOrNull()?.resolveToFile()
     }
 
-    override fun resolveSibling(relative: String): RemoteFile {
+    override fun resolveSibling(relative: String): RemoteFileImpl {
         val parent = this.parent
         if (parent == null) {
             if (fs.normalize(relative) != "/") error("Remote path '/' does not have sibling paths.")
@@ -262,27 +282,31 @@ internal class RemoteFileImpl(
         return RemoteFileImpl(contact, parent.path, relative)
     }
 
+    override fun resolveSibling(relative: RemoteFile) =
+        resolveSibling(relative.path).also { it.uuid = relative.uuid }
+
     override suspend fun delete(recursively: Boolean): Boolean {
         val info = getFileFolderInfo() ?: return false
-        if (isFile()) {
-            contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
-            return FileManagement.Delete(
-                client,
-                groupCode = contact.id,
-                busId = info.busId,
-                fileId = info.uuid,
-                parentFolderId = info.parentFolderId,
-            ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
-        } else {
-            if (recursively) {
+        return when {
+            isFile() -> {
+                contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
+                FileManagement.Delete(
+                    client,
+                    groupCode = contact.id,
+                    busId = info.busId,
+                    fileId = info.uuid,
+                    parentFolderId = info.parentFolderId,
+                ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
+            }
+            recursively -> {
                 this.listFiles().collect { child ->
                     child.delete(recursively = true)
                 }
-                return this.delete(false)
-            } else {
+                this.delete(false)
+            }
+            else -> {
                 // TODO: 2021/3/1 check delete folder, tentative implementation
-                val info = getFileFolderInfo().checkExists(path)
-                return FileManagement.Delete(
+                FileManagement.Delete(
                     client,
                     groupCode = contact.id,
                     busId = info.busId,
