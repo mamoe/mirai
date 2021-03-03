@@ -272,7 +272,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 bot.client.wLoginSigInfo.sKey.run {
                     val delay = (expireTime - creationTime).seconds - 5.minutes
                     logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
-                    delay(delay.toLongMilliseconds()) // avoid delay(Duration) to keep binary compatibility
+                    delay(delay)
                 }
                 runCatching {
                     refreshKeys()
