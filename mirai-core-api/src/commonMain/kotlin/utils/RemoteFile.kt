@@ -217,6 +217,10 @@ public interface RemoteFile {
          */
         public val filename: String,
         /**
+         * @see RemoteFile.id
+         */
+        public val id: String,
+        /**
          * 标准绝对路径
          * @see RemoteFile.path
          */

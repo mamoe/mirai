@@ -103,7 +103,7 @@ internal class Oidb0x6d8 : ProtoBuf {
             @JvmField @ProtoNumber(2) val folderInfo: GroupFileCommon.FolderInfo? = null,
             @JvmField @ProtoNumber(3) val fileInfo: GroupFileCommon.FileInfo? = null
         ) : ProtoBuf {
-            val uuid get() = fileInfo?.fileId ?: folderInfo?.folderId
+            val id get() = fileInfo?.fileId ?: folderInfo?.folderId
         }
     }
 

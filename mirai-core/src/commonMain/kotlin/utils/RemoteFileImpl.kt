@@ -217,7 +217,7 @@ internal class RemoteFileImpl(
             }
             else -> null
         }?.also {
-            it.id = item.uuid
+            it.id = item.id
         }
     }
 
@@ -271,8 +271,8 @@ internal class RemoteFileImpl(
     override fun resolve(relative: RemoteFile) =
         resolve(relative.path).also { it.id = relative.id }
 
-    override suspend fun resolveById(uuid: String, deep: Boolean): RemoteFile? {
-        return getFilesFlow().filter { it.uuid == uuid }.firstOrNull()?.resolveToFile()
+    override suspend fun resolveById(id: String, deep: Boolean): RemoteFile? {
+        return getFilesFlow().filter { it.id == id }.firstOrNull()?.resolveToFile()
     }
 
     override fun resolveSibling(relative: String): RemoteFileImpl {
@@ -421,12 +421,13 @@ internal class RemoteFileImpl(
 
         return RemoteFile.DownloadInfo(
             filename = name,
+            id = info.id,
             path = path,
+//            cookie = resp.cookieVal,
             url = "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
                     info.id.toByteArray().toUHexString(""),
-//            cookie = resp.cookieVal,
-            sha1 = info.sha,
 //            sha3 = info.sha3,
+            sha1 = info.sha,
             md5 = info.md5
         )
     }
