@@ -28,7 +28,6 @@ import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.closeAndJoin
@@ -37,8 +36,9 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.roundToInt
+import kotlin.system.measureTimeMillis
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     final override val configuration: BotConfiguration,
@@ -159,10 +159,14 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                 bot.launch {
                     val success: Boolean
-                    val time = measureTime { success = Reconnect().reconnect(event) }
+                    val time = measureTimeMillis { success = Reconnect().reconnect(event) }
 
                     if (success) {
-                        logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
+                        if (time >= 1000) {
+                            logger.info { "Reconnected successfully in ${(time * 100.0).roundToInt() / 100.0 / 1000}s" } // 2 s.f.
+                        } else {
+                            logger.info { "Reconnected successfully in ${time}ms" }
+                        }
                     }
                 }
             }

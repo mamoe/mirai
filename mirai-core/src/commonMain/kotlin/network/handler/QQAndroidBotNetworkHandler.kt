@@ -46,8 +46,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.minutes
-import kotlin.time.seconds
+import kotlin.math.roundToInt
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
@@ -270,9 +269,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         launch {
             while (isActive) {
                 bot.client.wLoginSigInfo.sKey.run {
-                    val delay = (expireTime - creationTime).seconds - 5.minutes
-                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
-                    delay(delay.toLongMilliseconds()) // avoid delay(Duration) to keep binary compatibility
+                    val seconds = (expireTime - creationTime) - 5 * 60
+                    logger.info { "Scheduled key refresh in about ${(seconds / 3600.0).roundToInt()} hours." }
+                    delay(seconds * 1000)
                 }
                 runCatching {
                     refreshKeys()

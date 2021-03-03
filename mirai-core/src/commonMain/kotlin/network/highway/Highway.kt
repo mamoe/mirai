@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.roundToInt
-import kotlin.time.measureTime
+import kotlin.system.measureTimeMillis
 
 internal object Highway {
 
@@ -139,7 +139,7 @@ internal suspend inline fun <reified R> tryServersUpload(
     }
 
     var resp: R? = null
-    val time = measureTime {
+    val time = measureTimeMillis {
         runCatching {
             resp = implOnEachServer(ip, port)
         }.onFailure {
@@ -151,7 +151,7 @@ internal suspend inline fun <reified R> tryServersUpload(
     }
 
     bot.network.logger.verbose {
-        "[${channelKind}] Uploading $resourceKind: succeed at ${(resourceSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+        "[${channelKind}] Uploading $resourceKind: succeed at ${(resourceSize.toDouble() / 1024 / (time / 1000.0)).roundToInt()} KiB/s"
     }
 
     resp as R
