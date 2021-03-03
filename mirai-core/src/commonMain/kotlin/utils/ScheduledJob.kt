@@ -33,7 +33,7 @@ internal class ScheduledJob(
     private val channel = Channel<Unit>(Channel.CONFLATED)
 
     fun notice() {
-        if (interval == Duration.ZERO) {
+        if (interval.toLongMilliseconds() != 0L) { // Avoid Duration.ZERO for binary compatibility
             launch { task() }
         } else channel.offer(Unit)
     }
@@ -47,7 +47,7 @@ internal class ScheduledJob(
     }
 
     init {
-        if (interval != Duration.ZERO) {
+        if (interval.toLongMilliseconds() != 0L) { // Avoid Duration.ZERO for binary compatibility
             launch {
                 channel.receiveAsFlow()
                     .runCatching {
