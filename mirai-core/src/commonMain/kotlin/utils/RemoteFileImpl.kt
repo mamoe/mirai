@@ -298,7 +298,7 @@ internal class RemoteFileImpl(
                     busId = info.busId,
                     fileId = info.id,
                     parentFolderId = info.parentFolderId,
-                ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
+                ).sendAndExpect(bot).toResult("RemoteFile.delete", checkResp = false).getOrThrow().int32RetCode == 0
             }
             recursively -> {
                 this.listFiles().collect { child ->

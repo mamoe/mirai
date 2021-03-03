@@ -62,11 +62,12 @@ internal interface CheckableStruct {
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
-internal inline fun <T> CommonOidbResponse<T>.toResult(actionName: String): Result<T> {
+internal inline fun <T> CommonOidbResponse<T>.toResult(actionName: String, checkResp: Boolean = true): Result<T> {
     return if (this is CommonOidbResponse.Failure) {
         Result.failure(this.createException(actionName))
     } else {
         this as CommonOidbResponse.Success<T>
+        if (!checkResp) return Result.success(this.resp)
         val result = this.resp
         if (result is CheckableStruct) {
             if (result.int32RetCode != 0) return Result.failure(IllegalStateException("Failed $actionName, result=${result.int32RetCode}, msg=${result.retMsg}"))

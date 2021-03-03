@@ -31,6 +31,9 @@ internal class Oidb0x6d6 : ProtoBuf {
 
     @Serializable
     internal class DeleteFileRspBody(
+        /**
+         * -103: file not exist
+         */
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = ""
