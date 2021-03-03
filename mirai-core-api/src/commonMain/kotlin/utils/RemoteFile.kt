@@ -12,6 +12,7 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.FileMessage
@@ -112,16 +113,16 @@ public interface RemoteFile {
     public suspend fun exists(): Boolean
 
     /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 [emptyFlow].
      */
-    public suspend fun listFiles(): Flow<RemoteFile>?
+    public suspend fun listFiles(): Flow<RemoteFile>
 
     /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 `null`.
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回空迭代器.
      * @param lazy 为 `true` 时惰性获取, 为 `false` 时立即获取全部文件列表.
      */
     @JavaFriendlyAPI
-    public suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile>?
+    public suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile>
 
     /**
      * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录.
@@ -170,20 +171,30 @@ public interface RemoteFile {
     public fun resolveSibling(relative: RemoteFile): RemoteFile
 
     /**
-     * 删除这个文件或目录, 需要管理员权限. 当 [recursively] 为 `true` 时会递归删除目录下所有子文件和目录, 否则将不会删除非空目录.
+     * 删除这个文件或目录, 需要管理员权限. 若目录非空, 则会删除目录中的所有文件.
      */
-    public suspend fun delete(recursively: Boolean): Boolean
+    public suspend fun delete(): Boolean
 
     /**
-     * 将这个目录或文件移动到另一个位置, 需要管理员权限.
+     * 重命名这个文件或目录, 将会更改 [RemoteFile.name] 属性值.
+     * 操作非 Bot 自己上传的文件时需要管理员权限.
+     */
+    public suspend fun renameTo(name: String): Boolean
+
+    /**
+     * 将这个目录或文件移动到另一个位置. 操作非 Bot 自己上传的文件时需要管理员权限.
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
 
     /**
-     * 下载这个文件, 并将文件上传到另一个位置.
+     * 将这个目录或文件移动到另一个位置. 操作非 Bot 自己上传的文件时需要管理员权限.
      */
-    @MiraiExperimentalApi
-    public suspend fun copyTo(target: RemoteFile): Boolean
+    public suspend fun moveTo(path: String): Boolean
+
+    /**
+     * 创建目录.
+     */
+    public suspend fun mkdir(): Boolean
 
     /**
      * 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException].

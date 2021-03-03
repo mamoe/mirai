@@ -16,10 +16,7 @@ import kotlinx.serialization.DeserializationStrategy
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.protocol.data.proto.GroupFileCommon
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d6
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d9
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
@@ -105,8 +102,15 @@ internal object FileManagement {
         GetFileInfo,
         RequestDownload,
         RequestUpload,
-        Delete,
-        Feed
+        DeleteFile,
+        MoveFile,
+        RenameFile,
+        TransferFile,
+        Feed,
+        RenameFolder,
+//        MoveFolder,
+        DeleteFolder,
+        CreateFolder,
     )
 
     object GetFileList : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d8.GetFileListRspBody>>("OidbSvc.0x6d8_1") {
@@ -231,7 +235,99 @@ internal object FileManagement {
         }
     }
 
-    object Delete : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.DeleteFileRspBody>>("OidbSvc.0x6d6_3") {
+    object MoveFile : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.MoveFileRspBody>>("OidbSvc.0x6d6_5") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+            parentFolderId: String,
+            destFolderId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1750,
+                serviceType = 5,
+                Oidb0x6d6.ReqBody.serializer(),
+                Oidb0x6d6.ReqBody(
+                    moveFileReq = Oidb0x6d6.MoveFileReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        busId = busId,
+                        fileId = fileId,
+                        parentFolderId = parentFolderId,
+                        destFolderId = destFolderId
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.MoveFileRspBody> {
+            return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.moveFileRsp!! }
+        }
+    }
+
+
+    // 转发
+    object TransferFile : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d9.TransFileRspBody>>("OidbSvc.0x6d9_0") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1753,
+                serviceType = 0,
+                Oidb0x6d9.ReqBody.serializer(),
+                Oidb0x6d9.ReqBody(
+                    transFileReq = Oidb0x6d9.TransFileReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        busId = busId,
+                        fileId = fileId,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d9.TransFileRspBody> {
+            return readOidbRespCommon(Oidb0x6d9.RspBody.serializer()) { it.transFileRsp!! }
+        }
+    }
+
+
+    object RenameFile : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.RenameFileRspBody>>("OidbSvc.0x6d6_4") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            busId: Int,
+            fileId: String,
+            parentFolderId: String,
+            newName: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1750,
+                serviceType = 4,
+                Oidb0x6d6.ReqBody.serializer(),
+                Oidb0x6d6.ReqBody(
+                    renameFileReq = Oidb0x6d6.RenameFileReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        busId = busId,
+                        fileId = fileId,
+                        parentFolderId = parentFolderId,
+                        newFileName = newName,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d6.RenameFileRspBody> {
+            return readOidbRespCommon(Oidb0x6d6.RspBody.serializer()) { it.renameFileRsp!! }
+        }
+    }
+
+    object DeleteFile : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d6.DeleteFileRspBody>>("OidbSvc.0x6d6_3") {
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long,
@@ -291,6 +387,116 @@ internal object FileManagement {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d9.FeedsRspBody> {
             return readOidbRespCommon(Oidb0x6d9.RspBody.serializer()) { it.feedsInfoRsp!! }
+        }
+    }
+
+
+    object RenameFolder : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d7.RenameFolderRspBody>>("OidbSvc.0x6d7_2") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            folderId: String,
+            newName: String
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1751,
+                serviceType = 2,
+                Oidb0x6d7.ReqBody.serializer(),
+                Oidb0x6d7.ReqBody(
+                    renameFolderReq = Oidb0x6d7.RenameFolderReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        folderId = folderId,
+                        newFolderName = newName,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d7.RenameFolderRspBody> {
+            return readOidbRespCommon(Oidb0x6d7.RspBody.serializer()) { it.renameFolderRsp!! }
+        }
+    }
+
+    // qq doesn't support
+//    object MoveFolder : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d7.MoveFolderRspBody>>("OidbSvc.0x6d7_3") {
+//        operator fun invoke(
+//            client: QQAndroidClient,
+//            groupCode: Long,
+//            folderId: String,
+//            parentFolderId: String,
+//            newParentFolderId: String,
+//        ) = buildOutgoingUniPacket(client) {
+//            writeOidb(
+//                command = 1751,
+//                serviceType = 3,
+//                Oidb0x6d7.ReqBody.serializer(),
+//                Oidb0x6d7.ReqBody(
+//                    moveFolderReq = Oidb0x6d7.MoveFolderReqBody(
+//                        groupCode = groupCode,
+//                        appId = 3,
+//                        folderId = folderId,
+//                        parentFolderId = parentFolderId,
+//                        destFolderId = newParentFolderId,
+//                    )
+//                )
+//            )
+//        }
+//
+//        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d7.MoveFolderRspBody> {
+//            return readOidbRespCommon(Oidb0x6d7.RspBody.serializer()) { it.moveFolderRsp!! }
+//        }
+//    }
+
+    object DeleteFolder : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d7.DeleteFolderRspBody>>("OidbSvc.0x6d7_1") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            folderId: String,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1751,
+                serviceType = 1,
+                Oidb0x6d7.ReqBody.serializer(),
+                Oidb0x6d7.ReqBody(
+                    deleteFolderReq = Oidb0x6d7.DeleteFolderReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        folderId = folderId,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d7.DeleteFolderRspBody> {
+            return readOidbRespCommon(Oidb0x6d7.RspBody.serializer()) { it.deleteFolderRsp!! }
+        }
+    }
+
+    object CreateFolder : OutgoingPacketFactory<CommonOidbResponse<Oidb0x6d7.CreateFolderRspBody>>("OidbSvc.0x6d7_0") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            parentFolderId: String,
+            name: String
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                command = 1751,
+                serviceType = 0,
+                Oidb0x6d7.ReqBody.serializer(),
+                Oidb0x6d7.ReqBody(
+                    createFolderReq = Oidb0x6d7.CreateFolderReqBody(
+                        groupCode = groupCode,
+                        appId = 3,
+                        parentFolderId = parentFolderId,
+                        folderName = name,
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x6d7.CreateFolderRspBody> {
+            return readOidbRespCommon(Oidb0x6d7.RspBody.serializer()) { it.createFolderRsp!! }
         }
     }
 }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
+import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
@@ -32,6 +33,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.*
 import java.util.*
+import kotlin.contracts.contract
 
 private val fs = FileSystem
 
@@ -92,6 +94,11 @@ internal class RemoteFileInfo(
     }
 }
 
+internal fun RemoteFile.checkIsImpl(): RemoteFileImpl {
+    contract { returns() implies (this@checkIsImpl is RemoteFileImpl) }
+    return this as? RemoteFileImpl ?: error("RemoteFile must not be implemented manually.")
+}
+
 internal class RemoteFileImpl(
     contact: Group,
     override val path: String, // absolute
@@ -109,7 +116,7 @@ internal class RemoteFileImpl(
     private val bot get() = contact.bot.asQQAndroidBot()
     private val client get() = bot.client
 
-    override val parent: RemoteFile?
+    override val parent: RemoteFileImpl?
         get() {
             if (path == "/") return null
             val s = path.substringBeforeLast('/')
@@ -118,7 +125,6 @@ internal class RemoteFileImpl(
 
     private suspend fun getFileFolderInfo(): RemoteFileInfo? {
         val parent = parent ?: return RemoteFileInfo.root
-        parent as RemoteFileImpl
         val info = parent.getFilesFlow()
             .filter { it.folderInfo?.folderName == this.name || it.fileInfo?.fileName == this.name }.firstOrNull()
             ?: return null
@@ -268,8 +274,11 @@ internal class RemoteFileImpl(
     }
 
     override fun resolve(relative: String) = RemoteFileImpl(contact, this.path, relative)
-    override fun resolve(relative: RemoteFile) =
-        resolve(relative.path).also { it.id = relative.id }
+    override fun resolve(relative: RemoteFile): RemoteFileImpl {
+        if (relative.checkIsImpl().contact !== this.contact) error("`relative` must be obtained from the same Group as `this`.")
+
+        return resolve(relative.path).also { it.id = relative.id }
+    }
 
     override suspend fun resolveById(id: String, deep: Boolean): RemoteFile? {
         return getFilesFlow().filter { it.id == id }.firstOrNull()?.resolveToFile()
@@ -284,15 +293,18 @@ internal class RemoteFileImpl(
         return RemoteFileImpl(contact, parent.path, relative)
     }
 
-    override fun resolveSibling(relative: RemoteFile) =
-        resolveSibling(relative.path).also { it.id = relative.id }
+    override fun resolveSibling(relative: RemoteFile): RemoteFileImpl {
+        if (relative.checkIsImpl().contact !== this.contact) error("`relative` must be obtained from the same Group as `this`.")
 
-    override suspend fun delete(recursively: Boolean): Boolean {
+        return resolveSibling(relative.path).also { it.id = relative.id }
+    }
+
+    override suspend fun delete(): Boolean {
         val info = getFileFolderInfo() ?: return false
         return when {
-            isFile() -> {
+            info.isFile -> {
                 contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
-                FileManagement.Delete(
+                FileManagement.DeleteFile(
                     client,
                     groupCode = contact.id,
                     busId = info.busId,
@@ -300,37 +312,81 @@ internal class RemoteFileImpl(
                     parentFolderId = info.parentFolderId,
                 ).sendAndExpect(bot).toResult("RemoteFile.delete", checkResp = false).getOrThrow().int32RetCode == 0
             }
-            recursively -> {
-                this.listFiles().collect { child ->
-                    child.delete(recursively = true)
-                }
-                this.delete(false)
-            }
+//            recursively -> {
+//                this.listFiles().collect { child ->
+//                    child.delete()
+//                }
+//                this.delete()
+//            }
             else -> {
-                // TODO: 2021/3/1 check delete folder, tentative implementation
-                FileManagement.Delete(
-                    client,
-                    groupCode = contact.id,
-                    busId = info.busId,
-                    fileId = info.id,
-                    parentFolderId = info.parentFolderId,
+                // natively 'recursive'
+                FileManagement.DeleteFolder(
+                    client, contact.id, info.id
                 ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
             }
         }
     }
 
-    override suspend fun moveTo(target: RemoteFile): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun renameTo(name: String): Boolean {
+        if (path == "/" && name != "/") return false
+
+        val normalized = fs.normalize(name)
+        if (normalized.contains('/')) throw IllegalArgumentException("'/' is not allowed in file or directory names. Given: '$name'.")
+
+        val info = getFileFolderInfo() ?: return false
+        return if (info.isFile) {
+            FileManagement.RenameFile(client, contact.id, info.busId, info.id, info.parentFolderId, normalized)
+        } else {
+            FileManagement.RenameFolder(client, contact.id, info.id, normalized)
+        }.sendAndExpect(bot).toResult("RemoteFile.renameTo", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
-    @MiraiExperimentalApi
-    override suspend fun copyTo(target: RemoteFile): Boolean {
-        TODO("Not yet implemented")
+    /**
+     * null means not exist
+     */
+    suspend fun getIdSmart(): String? {
+        if (path == "/") return "/"
+        return this.id ?: this.getFileFolderInfo()?.id
+    }
+
+    override suspend fun moveTo(target: RemoteFile): Boolean {
+        if (target.checkIsImpl().contact != this.contact) error("Cross-group file operation is not yet supported.")
+        if (target.path == this.path) return true
+        if (target.parent?.path == this.path) return false
+        val info = getFileFolderInfo() ?: return false
+        return if (info.isFile) {
+            val newParentId = target.parent?.checkIsImpl()?.getIdSmart() ?: return false
+            FileManagement.MoveFile(client, contact.id, info.busId, info.id, info.parentFolderId, newParentId)
+                .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
+        } else {
+            if (!contact.botPermission.isOperator()) return false
+
+            target.mkdir()
+            val targetFolderId = target.getIdSmart() ?: return false
+            this.listFiles().mapNotNull { it.checkIsImpl().getFileFolderInfo() }.collect {
+                FileManagement.MoveFile(client, contact.id, it.busId, it.id, it.parentFolderId, targetFolderId)
+                    .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow()
+
+                // TODO: 2021/3/3 batch packets
+            }
+            this.delete() // it is now empty
+//            FileManagement.MoveFolder(client, contact.id, info.id, info.parentFolderId, newParent)
+        }
+    }
+
+
+    override suspend fun moveTo(path: String): Boolean = moveTo(resolve(path))
+    override suspend fun mkdir(): Boolean {
+        if (path == "/") return false
+
+        val parentFolderId: String = parent?.getIdSmart() ?: return false
+
+        return FileManagement.CreateFolder(client, contact.id, parentFolderId, this.name)
+            .sendAndExpect(bot).toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
     override suspend fun write(resource: ExternalResource, override: Boolean): Boolean {
         val parent = parent ?: error("Cannot write to root directory.")
-        parent as RemoteFileImpl
         val parentInfo = parent.getFileFolderInfo().checkExists(path, "Parent path(folder)")
         val resp = FileManagement.RequestUpload(
             client,
@@ -341,7 +397,7 @@ internal class RemoteFileImpl(
         ).sendAndExpect(bot).toResult("RemoteFile.write").getOrThrow()
         if (resp.boolFileExist) {
             if (override) {
-                delete(false)
+                delete()
             } else {
                 FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
                 return true
