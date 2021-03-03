@@ -718,7 +718,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         val data = message.calculateValidationData(
             sequenceId = sequenceId,
             random = Random.nextInt().absoluteValue,
-            sendMessageHandler
+            sendMessageHandler,
+            isLong,
         )
 
         val response = network.run {
