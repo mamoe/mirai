@@ -14,6 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -224,7 +225,7 @@ public interface RemoteFile {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 上传文件到 [RemoteFile] 表示的路径. 当 [RemoteFile] 表示一个目录时返回 `false`.
+     * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
      *
      * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
      *
@@ -287,11 +288,39 @@ public interface RemoteFile {
         }
     }
 
+    @JvmBlockingBridge
     public companion object {
         /**
          * 根目录路径
          * @see RemoteFile.path
          */
         public const val ROOT_PATH: String = "/"
+
+        /**
+         * 上传文件并获取文件消息.
+         * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
+         * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        public suspend fun FileSupported.uploadFile(path: String, resource: ExternalResource): FileMessage {
+            val file = this.filesRoot.resolve(path)
+            if (!file.upload(resource)) error("Failed to upload file")
+            return file.toMessage() ?: error("Failed to create FileMessage.")
+        }
+
+        /**
+         * 上传文件并获取文件消息.
+         * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        public suspend fun FileSupported.uploadFileAndSend(path: String, resource: ExternalResource): FileMessage {
+            val file = this.filesRoot.resolve(path)
+            if (!file.upload(resource)) {
+                error("Failed to upload file")
+            }
+            return file.toMessage() ?: error("Failed to create FileMessage.")
+        }
     }
 }

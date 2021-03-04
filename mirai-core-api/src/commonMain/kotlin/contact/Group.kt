@@ -21,13 +21,12 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.RemoteFile
 
 /**
  * 群.
  */
 @JvmBlockingBridge
-public interface Group : Contact, CoroutineScope {
+public interface Group : Contact, CoroutineScope, FileSupported {
     /**
      * 群名称.
      *
@@ -84,14 +83,6 @@ public interface Group : Contact, CoroutineScope {
     public override val avatarUrl: String
         get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
-    /**
-     * 群文件根目录.
-     * 可通过 [RemoteFile.listFiles] 获取目录下文件列表.
-     *
-     * @since 2.5
-     */
-    @MiraiExperimentalApi
-    public val filesRoot: RemoteFile
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
