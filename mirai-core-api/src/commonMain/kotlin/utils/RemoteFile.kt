@@ -16,9 +16,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.File
 
 /**
+ * 表示一个远程文件或目录.
+ *
  * @since 2.5
  */
 @MiraiExperimentalApi
@@ -35,7 +38,9 @@ public interface RemoteFile {
     public val id: String?
 
     /**
-     * 标准的绝对路径, 起始字符为 '/'.
+     * 标准的绝对路径, 起始字符为 '/'. 如 `/foo/bar.txt`.
+     *
+     * 根目录路径为 [ROOT_PATH]
      */
     public val path: String
 
@@ -103,7 +108,7 @@ public interface RemoteFile {
     }
 
     /**
-     * 获取这个文件或目录此时的信息. 当文件或目录不存在时返回 `null`.
+     * 获取这个文件或目录**此时**的详细信息. 当文件或目录不存在时返回 `null`.
      */
     public suspend fun getInfo(): FileInfo?
 
@@ -113,16 +118,13 @@ public interface RemoteFile {
     public suspend fun exists(): Boolean
 
     /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 [emptyFlow].
+     * @return [path]
      */
-    public suspend fun listFiles(): Flow<RemoteFile>
+    public override fun toString(): String
 
-    /**
-     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回空迭代器.
-     * @param lazy 为 `true` 时惰性获取, 为 `false` 时立即获取全部文件列表.
-     */
-    @JavaFriendlyAPI
-    public suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile>
+    ///////////////////////////////////////////////////////////////////////////
+    // resolve
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录.
@@ -170,6 +172,10 @@ public interface RemoteFile {
      */
     public fun resolveSibling(relative: RemoteFile): RemoteFile
 
+    ///////////////////////////////////////////////////////////////////////////
+    // operations
+    ///////////////////////////////////////////////////////////////////////////
+
     /**
      * 删除这个文件或目录. 若目录非空, 则会删除目录中的所有文件. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      */
@@ -197,34 +203,62 @@ public interface RemoteFile {
     public suspend fun mkdir(): Boolean
 
     /**
-     * 向这个文件上传数据. 当 [RemoteFile] 表示一个目录时返回 `false`. 上传后不会关闭 [resource].
-     *
-     * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
-     * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
-     * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 [emptyFlow].
      */
-    public suspend fun upload(resource: ExternalResource): Boolean
-
-//    /**
-//     * 打开一个异步文件上传会话, 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]
-//     * @see write 相当于带回调的异步 [write]
-//     */
-//    public suspend fun writeSession(resource: ExternalResource): FileUploadSession
+    public suspend fun listFiles(): Flow<RemoteFile>
 
     /**
-     * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回空迭代器.
+     * @param lazy 为 `true` 时惰性获取, 为 `false` 时立即获取全部文件列表.
      */
-    public suspend fun getDownloadInfo(): DownloadInfo?
-
-    /**
-     * @return [path]
-     */
-    public override fun toString(): String
+    @JavaFriendlyAPI
+    public suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile>
 
     /**
      * 得到相应文件消息, 可以发送. 当 [RemoteFile] 表示一个目录或文件不存在时返回 `null`.
      */
     public suspend fun toMessage(): FileMessage?
+
+    ///////////////////////////////////////////////////////////////////////////
+    // upload & download
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 上传文件到 [RemoteFile] 表示的路径. 当 [RemoteFile] 表示一个目录时返回 `false`.
+     *
+     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
+     *
+     * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
+     * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
+     * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
+     *
+     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     */
+    public suspend fun upload(resource: ExternalResource): Boolean
+
+    /**
+     * 上传文件.
+     * @see upload
+     */
+    public suspend fun upload(file: File): Boolean = file.toExternalResource().use { upload(it) }
+
+    /**
+     * 上传文件并发送文件消息.
+     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @see upload
+     */
+    public suspend fun uploadAndSend(resource: ExternalResource): Boolean
+
+    /**
+     * 上传文件并发送文件消息.
+     * @see uploadAndSend
+     */
+    public suspend fun uploadAndSend(file: File): Boolean = file.toExternalResource().use { uploadAndSend(it) }
+
+    /**
+     * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`
+     */
+    public suspend fun getDownloadInfo(): DownloadInfo?
 
     public class DownloadInfo @MiraiInternalApi constructor(
         /**
@@ -251,5 +285,13 @@ public interface RemoteFile {
             return "DownloadInfo(filename='$filename', path='$path', url='$url', sha1=${sha1.toUHexString("")}, " +
                     "md5=${md5.toUHexString("")})"
         }
+    }
+
+    public companion object {
+        /**
+         * 根目录路径
+         * @see RemoteFile.path
+         */
+        public const val ROOT_PATH: String = "/"
     }
 }

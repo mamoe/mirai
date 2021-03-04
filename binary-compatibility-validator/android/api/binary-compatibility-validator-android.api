@@ -5858,6 +5858,8 @@ public class net/mamoe/mirai/utils/PlatformLogger : net/mamoe/mirai/utils/MiraiL
 }
 
 public abstract interface class net/mamoe/mirai/utils/RemoteFile {
+	public static final field Companion Lnet/mamoe/mirai/utils/RemoteFile$Companion;
+	public static final field ROOT_PATH Ljava/lang/String;
 	public fun delete ()Z
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun exists ()Z
@@ -5900,8 +5902,18 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun toMessage ()Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun toMessage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun toString ()Ljava/lang/String;
+	public fun upload (Ljava/io/File;)Z
+	public fun upload (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;)Z
 	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadAndSend (Ljava/io/File;)Z
+	public fun uploadAndSend (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;)Z
+	public abstract fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/utils/RemoteFile$Companion {
+	public static final field ROOT_PATH Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/utils/RemoteFile$DownloadInfo {

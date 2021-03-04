@@ -29,7 +29,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.RemoteFile.Companion.ROOT_PATH
 import java.util.*
 import kotlin.contracts.contract
 
@@ -116,9 +118,9 @@ internal class RemoteFileImpl(
 
     override val parent: RemoteFileImpl?
         get() {
-            if (path == "/") return null
+            if (path == ROOT_PATH) return null
             val s = path.substringBeforeLast('/')
-            return RemoteFileImpl(contact, if (s.isEmpty()) "/" else s)
+            return RemoteFileImpl(contact, if (s.isEmpty()) ROOT_PATH else s)
         }
 
     /**
@@ -302,8 +304,8 @@ internal class RemoteFileImpl(
     override fun resolveSibling(relative: String): RemoteFileImpl {
         val parent = this.parent
         if (parent == null) {
-            if (fs.normalize(relative) != "/") error("Remote path '/' does not have sibling paths.")
-            return RemoteFileImpl(contact, "/")
+            if (fs.normalize(relative) == ROOT_PATH) error("Root path does not have sibling paths.")
+            return RemoteFileImpl(contact, ROOT_PATH)
         }
         return RemoteFileImpl(contact, parent.path, relative)
     }
@@ -348,7 +350,7 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun renameTo(name: String): Boolean {
-        if (path == "/" && name != "/") return false
+        if (path == ROOT_PATH && name != ROOT_PATH) return false
 
         val normalized = fs.normalize(name)
         if (normalized.contains('/')) throw IllegalArgumentException("'/' is not allowed in file or directory names. Given: '$name'.")
@@ -366,7 +368,7 @@ internal class RemoteFileImpl(
      * null means not exist
      */
     private suspend fun getIdSmart(): String? {
-        if (path == "/") return "/"
+        if (path == ROOT_PATH) return ROOT_PATH
         return this.id ?: this.getFileFolderInfo()?.id
     }
 
@@ -403,7 +405,7 @@ internal class RemoteFileImpl(
 
     override suspend fun moveTo(path: String): Boolean = moveTo(resolve(path))
     override suspend fun mkdir(): Boolean {
-        if (path == "/") return false
+        if (path == ROOT_PATH) return false
         if (!isBotOperator()) return false
 
         val parentFolderId: String = parent?.getIdSmart() ?: return false
@@ -423,7 +425,6 @@ internal class RemoteFileImpl(
             filename = this.name
         ).sendAndExpect(bot).toResult("RemoteFile.upload").getOrThrow()
         if (resp.boolFileExist) {
-            FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
             return true
         }
 
@@ -478,8 +479,11 @@ internal class RemoteFileImpl(
             dataFlag = 0
         )
 
-        FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
         return true
+    }
+
+    override suspend fun uploadAndSend(resource: ExternalResource): Boolean {
+        return upload(resource) && toMessage()?.sendTo(contact) != null
     }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
@@ -487,16 +491,13 @@ internal class RemoteFileImpl(
 
     override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {
         val info = getFileFolderInfo() ?: return null
-        if (!info.isFile) return false
+        if (!info.isFile) return null
         val resp = FileManagement.RequestDownload(
             client,
             groupCode = contact.id,
             busId = info.busId,
             fileId = info.id
         ).sendAndExpect(bot).toResult("RemoteFile.getDownloadInfo").getOrThrow()
-        check(resp.int32RetCode == 0) {
-            "Failed RemoteFile.getDownloadInfo, code=${resp.int32RetCode}, msg=${resp.retMsg}"
-        }
 
         return RemoteFile.DownloadInfo(
             filename = name,
