@@ -413,15 +413,15 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun upload(resource: ExternalResource): Boolean {
-        val parent = parent ?: error("Cannot write to root directory.")
-        val parentInfo = parent.getFileFolderInfo().checkExists(path, "Parent path(folder)")
+        val parent = parent ?: return false
+        val parentInfo = parent.getFileFolderInfo() ?: return false
         val resp = FileManagement.RequestUpload(
             client,
             groupCode = contact.id,
             folderId = parentInfo.id,
             resource = resource,
             filename = this.name
-        ).sendAndExpect(bot).toResult("RemoteFile.write").getOrThrow()
+        ).sendAndExpect(bot).toResult("RemoteFile.upload").getOrThrow()
         if (resp.boolFileExist) {
             FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
             return true
@@ -485,9 +485,9 @@ internal class RemoteFileImpl(
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
 //    }
 
-    override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo {
-        val info = getFileFolderInfo().checkExists(path)
-        if (!info.isFile) error("Remote path $path does not refer to a file.")
+    override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {
+        val info = getFileFolderInfo() ?: return null
+        if (!info.isFile) return false
         val resp = FileManagement.RequestDownload(
             client,
             groupCode = contact.id,
@@ -502,10 +502,8 @@ internal class RemoteFileImpl(
             filename = name,
             id = info.id,
             path = path,
-//            cookie = resp.cookieVal,
             url = "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
                     info.id.toByteArray().toUHexString(""),
-//            sha3 = info.sha3,
             sha1 = info.sha,
             md5 = info.md5
         )

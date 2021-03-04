@@ -197,7 +197,7 @@ public interface RemoteFile {
     public suspend fun mkdir(): Boolean
 
     /**
-     * 向这个文件上传数据. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]. 上传后不会关闭 [resource].
+     * 向这个文件上传数据. 当 [RemoteFile] 表示一个目录时返回 `false`. 上传后不会关闭 [resource].
      *
      * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
      * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
@@ -212,9 +212,9 @@ public interface RemoteFile {
 //    public suspend fun writeSession(resource: ExternalResource): FileUploadSession
 
     /**
-     * 获取文件下载链接. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]
+     * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`
      */
-    public suspend fun getDownloadInfo(): DownloadInfo
+    public suspend fun getDownloadInfo(): DownloadInfo?
 
     /**
      * @return [path]
