@@ -5929,9 +5929,8 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun toMessage ()Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun toMessage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun toString ()Ljava/lang/String;
-	public fun write (Lnet/mamoe/mirai/utils/ExternalResource;Z)Z
-	public abstract fun write (Lnet/mamoe/mirai/utils/ExternalResource;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun write$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;)Z
+	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/RemoteFile$DownloadInfo {

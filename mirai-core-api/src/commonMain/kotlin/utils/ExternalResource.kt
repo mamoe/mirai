@@ -44,7 +44,7 @@ import java.io.*
  *
  * ## 释放
  *
- * 当 [ExternalResource] 创建时就可能会打开个文件 (如使用 [File.toExternalResource]).
+ * 当 [ExternalResource] 创建时就可能会打开一个文件 (如使用 [File.toExternalResource]).
  * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
  *
  * @see ExternalResource.uploadAsImage 将资源作为图片上传, 得到 [Image]

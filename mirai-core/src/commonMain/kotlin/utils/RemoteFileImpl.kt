@@ -123,10 +123,27 @@ internal class RemoteFileImpl(
             return RemoteFileImpl(contact, if (s.isEmpty()) "/" else s)
         }
 
+    /**
+     * Prefer id matching.
+     */
+    private suspend fun Flow<Oidb0x6d8.GetFileListRspBody.Item>.findMatching(): Oidb0x6d8.GetFileListRspBody.Item? {
+        var nameMatching: Oidb0x6d8.GetFileListRspBody.Item? = null
+
+        val idMatching = firstOrNull {
+            if (it.name == this@RemoteFileImpl.name) {
+                nameMatching = it
+            }
+            it.id == this@RemoteFileImpl.id
+        }
+
+        return idMatching ?: nameMatching
+    }
+
     private suspend fun getFileFolderInfo(): RemoteFileInfo? {
         val parent = parent ?: return RemoteFileInfo.root
         val info = parent.getFilesFlow()
-            .filter { it.folderInfo?.folderName == this.name || it.fileInfo?.fileName == this.name }.firstOrNull()
+            .filter { it.name == this.name }
+            .findMatching()
             ?: return null
         return when {
             info.folderInfo != null -> info.folderInfo.run {
@@ -344,13 +361,27 @@ internal class RemoteFileImpl(
     /**
      * null means not exist
      */
-    suspend fun getIdSmart(): String? {
+    private suspend fun getIdSmart(): String? {
         if (path == "/") return "/"
         return this.id ?: this.getFileFolderInfo()?.id
     }
 
     override suspend fun moveTo(target: RemoteFile): Boolean {
-        if (target.checkIsImpl().contact != this.contact) error("Cross-group file operation is not yet supported.")
+        if (target.checkIsImpl().contact != this.contact) {
+            // TODO: 2021/3/4 cross-group file move
+
+            //                target.mkdir()
+//                val targetFolderId = target.getIdSmart() ?: return false
+//                this.listFiles().mapNotNull { it.checkIsImpl().getFileFolderInfo() }.collect {
+//                    FileManagement.MoveFile(client, contact.id, it.busId, it.id, it.parentFolderId, targetFolderId)
+//                        .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow()
+//
+//                    // TODO: 2021/3/3 batch packets
+//                }
+//                this.delete() // it is now empty
+
+            error("Cross-group file operation is not yet supported.")
+        }
         if (target.path == this.path) return true
         if (target.parent?.path == this.path) return false
         val info = getFileFolderInfo() ?: return false
@@ -361,16 +392,8 @@ internal class RemoteFileImpl(
         } else {
             if (!contact.botPermission.isOperator()) return false
 
-            target.mkdir()
-            val targetFolderId = target.getIdSmart() ?: return false
-            this.listFiles().mapNotNull { it.checkIsImpl().getFileFolderInfo() }.collect {
-                FileManagement.MoveFile(client, contact.id, it.busId, it.id, it.parentFolderId, targetFolderId)
-                    .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow()
-
-                // TODO: 2021/3/3 batch packets
-            }
-            this.delete() // it is now empty
-//            FileManagement.MoveFolder(client, contact.id, info.id, info.parentFolderId, newParent)
+            return FileManagement.RenameFolder(client, contact.id, info.id, target.name).sendAndExpect(bot)
+                .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
         }
     }
 
@@ -385,7 +408,7 @@ internal class RemoteFileImpl(
             .sendAndExpect(bot).toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
-    override suspend fun write(resource: ExternalResource, override: Boolean): Boolean {
+    override suspend fun upload(resource: ExternalResource): Boolean {
         val parent = parent ?: error("Cannot write to root directory.")
         val parentInfo = parent.getFileFolderInfo().checkExists(path, "Parent path(folder)")
         val resp = FileManagement.RequestUpload(
@@ -396,12 +419,8 @@ internal class RemoteFileImpl(
             filename = this.name
         ).sendAndExpect(bot).toResult("RemoteFile.write").getOrThrow()
         if (resp.boolFileExist) {
-            if (override) {
-                delete()
-            } else {
-                FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
-                return true
-            }
+            FileManagement.Feed(client, contact.id, resp.busId, resp.fileId).sendAndExpect(bot)
+            return true
         }
 
         val ext = GroupFileUploadExt(

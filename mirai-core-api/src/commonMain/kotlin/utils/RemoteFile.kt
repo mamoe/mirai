@@ -197,9 +197,13 @@ public interface RemoteFile {
     public suspend fun mkdir(): Boolean
 
     /**
-     * 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException].
+     * 向这个文件上传数据. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]. 上传后不会关闭 [resource].
+     *
+     * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
+     * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
+     * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      */
-    public suspend fun write(resource: ExternalResource, override: Boolean = false): Boolean
+    public suspend fun upload(resource: ExternalResource): Boolean
 
 //    /**
 //     * 打开一个异步文件上传会话, 向这个文件上传数据并覆盖原文件内容. 当 [RemoteFile] 表示一个目录时抛出 [IllegalStateException]
