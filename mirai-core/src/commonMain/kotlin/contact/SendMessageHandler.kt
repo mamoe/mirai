@@ -149,6 +149,12 @@ internal abstract class SendMessageHandler<C : Contact> {
                                 }
                             }
                         }
+                        if (resp is MessageSvcPbSendMsg.Response.Failed) {
+                            val contact = contact
+                            when (resp.errorCode) {
+                                120 -> if (contact is Group) throw BotIsBeingMutedException(contact)
+                            }
+                        }
                         check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
                             "Send group message failed: $resp"
                         }
