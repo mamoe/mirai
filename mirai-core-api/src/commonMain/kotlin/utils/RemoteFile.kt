@@ -171,7 +171,7 @@ public interface RemoteFile {
     public fun resolveSibling(relative: RemoteFile): RemoteFile
 
     /**
-     * 删除这个文件或目录, 需要管理员权限. 若目录非空, 则会删除目录中的所有文件.
+     * 删除这个文件或目录. 若目录非空, 则会删除目录中的所有文件. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      */
     public suspend fun delete(): Boolean
 
@@ -182,17 +182,17 @@ public interface RemoteFile {
     public suspend fun renameTo(name: String): Boolean
 
     /**
-     * 将这个目录或文件移动到另一个位置. 操作非 Bot 自己上传的文件时需要管理员权限.
+     * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
 
     /**
-     * 将这个目录或文件移动到另一个位置. 操作非 Bot 自己上传的文件时需要管理员权限.
+     * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      */
     public suspend fun moveTo(path: String): Boolean
 
     /**
-     * 创建目录.
+     * 创建目录. 目录已经存在或无管理员权限时返回 `false`.
      */
     public suspend fun mkdir(): Boolean
 

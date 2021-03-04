@@ -16,8 +16,6 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.asQQAndroidBot
@@ -316,11 +314,16 @@ internal class RemoteFileImpl(
         return resolveSibling(relative.path).also { it.id = relative.id }
     }
 
+    private fun RemoteFileInfo.isOperable(): Boolean =
+        creatorId == bot.id || contact.botPermission.isOperator()
+
+    private fun isBotOperator(): Boolean = contact.botPermission.isOperator()
+
     override suspend fun delete(): Boolean {
         val info = getFileFolderInfo() ?: return false
+        if (!info.isOperable()) return false
         return when {
             info.isFile -> {
-                contact.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 FileManagement.DeleteFile(
                     client,
                     groupCode = contact.id,
@@ -351,6 +354,7 @@ internal class RemoteFileImpl(
         if (normalized.contains('/')) throw IllegalArgumentException("'/' is not allowed in file or directory names. Given: '$name'.")
 
         val info = getFileFolderInfo() ?: return false
+        if (!info.isOperable()) return false
         return if (info.isFile) {
             FileManagement.RenameFile(client, contact.id, info.busId, info.id, info.parentFolderId, normalized)
         } else {
@@ -385,13 +389,12 @@ internal class RemoteFileImpl(
         if (target.path == this.path) return true
         if (target.parent?.path == this.path) return false
         val info = getFileFolderInfo() ?: return false
+        if (!info.isOperable()) return false
         return if (info.isFile) {
             val newParentId = target.parent?.checkIsImpl()?.getIdSmart() ?: return false
             FileManagement.MoveFile(client, contact.id, info.busId, info.id, info.parentFolderId, newParentId)
                 .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
         } else {
-            if (!contact.botPermission.isOperator()) return false
-
             return FileManagement.RenameFolder(client, contact.id, info.id, target.name).sendAndExpect(bot)
                 .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
         }
@@ -401,6 +404,7 @@ internal class RemoteFileImpl(
     override suspend fun moveTo(path: String): Boolean = moveTo(resolve(path))
     override suspend fun mkdir(): Boolean {
         if (path == "/") return false
+        if (!isBotOperator()) return false
 
         val parentFolderId: String = parent?.getIdSmart() ?: return false
 
