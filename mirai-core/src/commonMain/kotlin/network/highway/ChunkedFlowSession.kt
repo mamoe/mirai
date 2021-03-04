@@ -23,7 +23,8 @@ import kotlin.contracts.contract
 internal class ChunkedFlowSession<T>(
     private val input: InputStream,
     private val buffer: ByteArray,
-    private val mapper: (buffer: ByteArray, size: Int, offset: Long) -> T
+    private val callback: Highway.ProgressionCallback? = null,
+    private val mapper: (buffer: ByteArray, size: Int, offset: Long) -> T,
 ) : Closeable {
     override fun close() {
         input.close()
@@ -38,6 +39,7 @@ internal class ChunkedFlowSession<T>(
                 val size = runBIO { input.read(buffer) }
                 if (size == -1) return
                 block(mapper(buffer, size, offset.getAndAdd(size.toLongUnsigned())))
+                callback?.onProgression(offset.get())
             }
         }
     }

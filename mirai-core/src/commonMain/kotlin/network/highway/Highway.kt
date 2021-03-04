@@ -46,6 +46,10 @@ internal object Highway {
         var extendInfo: ByteArray? = null,
     )
 
+    fun interface ProgressionCallback {
+        fun onProgression(size: Long)
+    }
+
     suspend fun uploadResourceBdh(
         bot: QQAndroidBot,
         resource: ExternalResource,
@@ -59,11 +63,9 @@ internal object Highway {
         fallbackSession: (Throwable) -> BdhSession = { throw IllegalStateException("Failed to get bdh session", it) },
         resultChecker: (CSDataHighwayHead.RspDataHighwayHead) -> Boolean = { it.errorCode == 0 },
         createConnection: suspend (ip: String, port: Int) -> HighwayProtocolChannel = { ip, port ->
-            PlatformSocket.connect(
-                ip,
-                port
-            )
+            PlatformSocket.connect(ip, port)
         },
+        callback: ProgressionCallback? = null,
         dataFlag: Int = 4096,
         localeId: Int = 2052,
     ): BdhUploadResponse {
@@ -95,7 +97,8 @@ internal object Highway {
                 dataFlag = dataFlag,
                 localeId = localeId,
                 fileMd5 = md5,
-                extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
+                extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo,
+                callback = callback
             ).sendConcurrently(
                 createConnection = { createConnection(ip, port) },
                 coroutines = bot.configuration.highwayUploadCoroutineCount,
@@ -369,13 +372,14 @@ internal fun highwayPacketSession(
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE,
     extendInfo: ByteArray = EMPTY_BYTE_ARRAY,
+    callback: Highway.ProgressionCallback? = null,
 ): ChunkedFlowSession<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
     val ticket = AtomicReference(initialTicket)
 
-    return ChunkedFlowSession(data.inputStream(), ByteArray(sizePerPacket)) { buffer, size, offset ->
+    return ChunkedFlowSession(data.inputStream(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
         val head = CSDataHighwayHead.ReqDataHighwayHead(
             msgBasehead = CSDataHighwayHead.DataHighwayHead(
                 version = 1,

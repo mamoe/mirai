@@ -414,7 +414,7 @@ internal class RemoteFileImpl(
             .sendAndExpect(bot).toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
-    override suspend fun upload(resource: ExternalResource): Boolean {
+    override suspend fun upload(resource: ExternalResource, callback: RemoteFile.ProgressionCallback?): Boolean {
         val parent = parent ?: return false
         val parentInfo = parent.getFileFolderInfo() ?: return false
         val resp = FileManagement.RequestUpload(
@@ -470,13 +470,27 @@ internal class RemoteFileImpl(
             u3 = 0,
         ).toByteArray(GroupFileUploadExt.serializer())
 
-        Highway.uploadResourceBdh(
-            bot = bot,
-            resource = resource,
-            kind = ResourceKind.GROUP_FILE,
-            commandId = 71,
-            extendInfo = ext,
-            dataFlag = 0
+        callback?.onBegin(this, resource)
+
+        kotlin.runCatching {
+            Highway.uploadResourceBdh(
+                bot = bot,
+                resource = resource,
+                kind = ResourceKind.GROUP_FILE,
+                commandId = 71,
+                extendInfo = ext,
+                dataFlag = 0,
+                callback = if (callback == null) null else fun(it: Long) {
+                    callback.onProgression(this, resource, it)
+                }
+            )
+        }.fold(
+            onSuccess = {
+                callback?.onSuccess(this, resource)
+            },
+            onFailure = {
+                callback?.onFailure(this, resource, it)
+            }
         )
 
         return true

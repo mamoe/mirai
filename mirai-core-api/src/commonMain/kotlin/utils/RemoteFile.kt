@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
@@ -225,7 +226,37 @@ public interface RemoteFile {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
+     * 上传进度回调
+     */
+    public interface ProgressionCallback {
+        public fun onBegin(file: RemoteFile, resource: ExternalResource) {}
+        public fun onProgression(file: RemoteFile, resource: ExternalResource, downloadedSize: Long) {}
+        public fun onSuccess(file: RemoteFile, resource: ExternalResource) {}
+        public fun onFailure(file: RemoteFile, resource: ExternalResource, exception: Throwable) {}
+
+        public companion object {
+            @JvmStatic
+            @MiraiExperimentalApi
+            public fun SendChannel<Long>.asProgressionCallback(closeOnFinish: Boolean = true): ProgressionCallback {
+                return object : ProgressionCallback {
+                    override fun onProgression(file: RemoteFile, resource: ExternalResource, downloadedSize: Long) {
+                        offer(downloadedSize)
+                    }
+
+                    override fun onSuccess(file: RemoteFile, resource: ExternalResource) {
+                        if (closeOnFinish) this@asProgressionCallback.close()
+                    }
+
+                    override fun onFailure(file: RemoteFile, resource: ExternalResource, exception: Throwable) {
+                        if (closeOnFinish) this@asProgressionCallback.close(exception)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 上传文件到 [RemoteFile] 表示的路径, 上传过程中调用 [callback] 传递进度. 当无权上传或其他原因失败时返回 `false`.
      *
      * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
      *
@@ -235,7 +266,24 @@ public interface RemoteFile {
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
      */
-    public suspend fun upload(resource: ExternalResource): Boolean
+    public suspend fun upload(
+        resource: ExternalResource,
+        callback: ProgressionCallback? = null
+    ): Boolean
+
+    /**
+     * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
+     *
+     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
+     *
+     * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
+     * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
+     * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
+     *
+     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @see upload
+     */
+    public suspend fun upload(resource: ExternalResource): Boolean = upload(resource, null)
 
     /**
      * 上传文件.

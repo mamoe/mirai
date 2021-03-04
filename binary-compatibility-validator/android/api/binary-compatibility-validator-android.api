@@ -5916,7 +5916,10 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun upload (Ljava/io/File;)Z
 	public fun upload (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;)Z
-	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Z
+	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun uploadAndSend (Ljava/io/File;)Z
 	public fun uploadAndSend (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;)Z
@@ -5959,6 +5962,20 @@ public final class net/mamoe/mirai/utils/RemoteFile$FileInfo {
 	public final fun getUploadTime ()J
 	public final fun getUploaderId ()J
 	public final fun resolveToFile (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/utils/RemoteFile$ProgressionCallback {
+	public static final field Companion Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback$Companion;
+	public static fun asProgressionCallback (Lkotlinx/coroutines/channels/SendChannel;Z)Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;
+	public fun onBegin (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;)V
+	public fun onFailure (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/Throwable;)V
+	public fun onProgression (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;J)V
+	public fun onSuccess (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;)V
+}
+
+public final class net/mamoe/mirai/utils/RemoteFile$ProgressionCallback$Companion {
+	public final fun asProgressionCallback (Lkotlinx/coroutines/channels/SendChannel;Z)Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;
+	public static synthetic fun asProgressionCallback$default (Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback$Companion;Lkotlinx/coroutines/channels/SendChannel;ZILjava/lang/Object;)Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;
 }
 
 public final class net/mamoe/mirai/utils/SilentLogger : net/mamoe/mirai/utils/PlatformLogger {
