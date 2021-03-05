@@ -5926,7 +5926,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
+	public static fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -5934,7 +5934,7 @@ public final class net/mamoe/mirai/utils/RemoteFile$Companion {
 	public static final field ROOT_PATH Ljava/lang/String;
 	public final fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public final fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
+	public final fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public final fun uploadFileAndSend (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

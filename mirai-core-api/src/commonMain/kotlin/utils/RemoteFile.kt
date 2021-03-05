@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.File
 
@@ -258,7 +260,8 @@ public interface RemoteFile {
     /**
      * 上传文件到 [RemoteFile] 表示的路径, 上传过程中调用 [callback] 传递进度. 当无权上传或其他原因失败时返回 `false`.
      *
-     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
+     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件.
+     * 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送, 或使用 [uploadAndSend].
      *
      * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
      * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
@@ -274,7 +277,8 @@ public interface RemoteFile {
     /**
      * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
      *
-     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件. 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送. 或使用
+     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件.
+     * 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送, 或使用 [uploadAndSend].
      *
      * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
      * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
@@ -363,12 +367,15 @@ public interface RemoteFile {
          * @see RemoteFile.upload
          */
         @JvmStatic
-        public suspend fun FileSupported.uploadFileAndSend(path: String, resource: ExternalResource): FileMessage {
+        public suspend fun <C : FileSupported> C.uploadFileAndSend(
+            path: String,
+            resource: ExternalResource
+        ): MessageReceipt<C> {
             val file = this.filesRoot.resolve(path)
             if (!file.upload(resource)) {
                 error("Failed to upload file")
             }
-            return file.toMessage() ?: error("Failed to create FileMessage.")
+            return file.toMessage()?.sendTo(this) ?: error("Failed to create FileMessage.")
         }
     }
 }
