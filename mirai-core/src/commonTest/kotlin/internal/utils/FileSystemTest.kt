@@ -11,6 +11,7 @@
 package net.mamoe.mirai.internal.utils
 
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 internal class FileSystemTest {
@@ -25,7 +26,15 @@ internal class FileSystemTest {
     }
 
     @Test
-    fun testResolve() {
+    fun testNormalize() {
+        assertEquals("/", fs.normalize("/"))
+        assertEquals("/", fs.normalize("\\"))
+        assertEquals("/foo", fs.normalize("/foo"))
+        assertEquals("/foo", fs.normalize("\\foo"))
+        assertEquals("foo", fs.normalize("foo"))
+        assertEquals("foo/", fs.normalize("foo/"))
 
+        assertEquals("/bar", fs.normalize("\\foo", "/bar"))
+        assertEquals("/foo/bar", fs.normalize("\\foo", "bar"))
     }
 }
