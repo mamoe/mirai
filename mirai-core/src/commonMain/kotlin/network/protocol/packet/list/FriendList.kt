@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd50
+import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd6b
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
@@ -187,6 +188,54 @@ internal class FriendList {
             )
         }
 
+        fun forSingleFriend(
+            client: QQAndroidClient,
+            uin: Long
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        funcName = "GetFriendListReq",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
+                        cPacketType = 0x003,
+                        requestId = client.nextRequestPacketRequestId(),
+                        sBuffer = jceRequestSBuffer(
+                            "FL",
+                            GetFriendListReq.serializer(),
+                            GetFriendListReq(
+                                reqtype = 3,
+                                ifGetGroupInfo = 0,
+                                ifReflush = 1,
+                                uin = client.uin,
+                                startIndex = 0,
+                                groupstartIndex = 0,
+                                getgroupCount = 0,
+                                ifShowTermType = 1,
+                                version = 27L,
+                                getfriendCount = 0,
+                                ifGetMSFGroup = 0,
+                                eAppType = 0,
+                                groupid = 0,
+                                ifGetBothFlag = 0,
+                                ifGetDOVId = 0,
+                                uinList = listOf(uin),
+                                vec0xd6bReq = Vec0xd6b.ReqBody().toByteArray(Vec0xd6b.ReqBody.serializer()),
+                                vec0xd50Req = Vec0xd50.ReqBody(
+                                    appid = 10002L,
+                                    reqKsingSwitch = 1,
+                                    reqMusicSwitch = 1,
+                                    reqMutualmarkLbsshare = 1,
+                                    reqMutualmarkAlienation = 1
+                                ).toByteArray(Vec0xd50.ReqBody.serializer())
+                            )
+                        )
+                    )
+                )
+            }
+        }
+
         operator fun invoke(
             client: QQAndroidClient,
             friendListStartIndex: Int,
@@ -202,7 +251,7 @@ internal class FriendList {
                         servantName = "mqq.IMService.FriendListServiceServantObj",
                         version = 3,
                         cPacketType = 0x003,
-                        requestId = 1921334514,
+                        requestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "FL",
                             GetFriendListReq.serializer(),

@@ -149,12 +149,18 @@ internal abstract class SendMessageHandler<C : Contact> {
                                 }
                             }
                         }
+                        if (resp is MessageSvcPbSendMsg.Response.Failed) {
+                            val contact = contact
+                            when (resp.errorCode) {
+                                120 -> if (contact is Group) throw BotIsBeingMutedException(contact)
+                            }
+                        }
                         check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                            "Send group message failed: $resp"
+                            "Send message failed: $resp"
                         }
                     }
                     is MusicSharePacket.Response -> {
-                        resp.pkg.checkSuccess("send group music share")
+                        resp.pkg.checkSuccess("send music share")
 
                         source = constructSourceFromMusicShareResponse(finalMessage, resp)
                     }
@@ -169,7 +175,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 source!!.ensureSequenceIdAvailable()
             } catch (e: Exception) {
                 bot.network.logger.warning(
-                    "Timeout awaiting sequenceId for group message(${finalMessage.content.take(10)}). Some features may not work properly",
+                    "Timeout awaiting sequenceId for message(${finalMessage.content.take(10)}). Some features may not work properly",
                     e
 
                 )
