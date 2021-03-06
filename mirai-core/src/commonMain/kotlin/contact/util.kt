@@ -172,7 +172,7 @@ internal fun MessageChain.verityLength(
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
     fun renderMessage(message: MessageChain): String {
-        return message.filterNot { it is MessageSource }.joinToString("").replaceMagicCodes()
+        return message.filterNot { it is MessageSource }.joinToString("")
     }
 
     fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
@@ -221,7 +221,7 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
                 renderOtherClientMessage(client)
 
             else -> toString()
-        }
+        }.replaceMagicCodes() // group name & sender nick & message
     }
 }
 
