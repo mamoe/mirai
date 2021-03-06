@@ -135,6 +135,9 @@ internal class QQAndroidBot constructor(
     override suspend fun relogin(cause: Throwable?) {
         bdhSyncer.loadFromCache()
         client.useNextServers { host, port ->
+            // net error in login
+            // network is dead therefore can't send any packet
+            reinitializeNetwork()
             network.closeEverythingAndRelogin(host, port, cause, 0)
         }
     }

@@ -28,7 +28,6 @@ import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.closeAndJoin
@@ -75,6 +74,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
     @Suppress("PropertyName")
     internal lateinit var _network: N
+
+    suspend fun reinitializeNetwork() {
+        if (::_network.isInitialized) {
+            _network.closeAndJoin(null)
+        }
+        _network = createNetworkHandler(coroutineContext)
+    }
 
     internal var _isConnecting: Boolean = false
 
@@ -220,7 +226,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
         private suspend fun doRelogin() {
             while (true) {
-                _network = createNetworkHandler(coroutineContext)
+                reinitializeNetwork()
                 try {
                     _isConnecting = true
                     @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
