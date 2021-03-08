@@ -26,7 +26,7 @@ internal class FileMessageImpl(
     override val name: String,
     override val id: String,
     override val size: Long,
-    val busId: Int // internal
+    val busId: Int // internal // TODO: 2021/3/8 introduce OnlineFileMessage and OfflineFileMessage to eliminate property `busId`.
 ) : FileMessage {
     override fun toString(): String = "[mirai:file:$name,$id]"
 
