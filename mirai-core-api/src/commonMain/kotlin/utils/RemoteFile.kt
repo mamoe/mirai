@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("unused")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.utils
 
@@ -30,7 +31,6 @@ import java.io.File
  * @since 2.5
  */
 @MiraiExperimentalApi
-@JvmBlockingBridge
 public interface RemoteFile {
     /**
      * 文件名或目录名.
@@ -350,7 +350,6 @@ public interface RemoteFile {
         }
     }
 
-    @JvmBlockingBridge
     public companion object {
         /**
          * 根目录路径
