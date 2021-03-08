@@ -15,6 +15,10 @@ package net.mamoe.mirai.utils
 import java.util.*
 
 
-public actual fun ByteArray.encodeToBase64(): String {
+public actual fun ByteArray.encodeBase64(): String {
     return Base64.getEncoder().encodeToString(this)
+}
+
+public actual fun String.decodeBase64(): ByteArray {
+    return Base64.getDecoder().decode(this)
 }

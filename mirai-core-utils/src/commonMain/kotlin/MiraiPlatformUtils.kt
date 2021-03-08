@@ -47,7 +47,11 @@ public fun ByteArray.unzip(offset: Int = 0, length: Int = size - offset): ByteAr
 }
 
 public fun InputStream.md5(): ByteArray {
-    val digest = MessageDigest.getInstance("md5")
+    return digest("md5")
+}
+
+public fun InputStream.digest(algorithm: String): ByteArray {
+    val digest = MessageDigest.getInstance(algorithm)
     digest.reset()
     use { input ->
         object : OutputStream() {
@@ -65,6 +69,10 @@ public fun InputStream.md5(): ByteArray {
     return digest.digest()
 }
 
+public fun InputStream.sha1(): ByteArray {
+    return digest("SHA-1")
+}
+
 /**
  * Localhost 解析
  */
@@ -78,6 +86,14 @@ public fun String.md5(): ByteArray = toByteArray().md5()
 public fun ByteArray.md5(offset: Int = 0, length: Int = size - offset): ByteArray {
     checkOffsetAndLength(offset, length)
     return MessageDigest.getInstance("MD5").apply { update(this@md5, offset, length) }.digest()
+}
+
+public fun String.sha1(): ByteArray = toByteArray().sha1()
+
+@JvmOverloads
+public fun ByteArray.sha1(offset: Int = 0, length: Int = size - offset): ByteArray {
+    checkOffsetAndLength(offset, length)
+    return MessageDigest.getInstance("SHA-1").apply { update(this@sha1, offset, length) }.digest()
 }
 
 @JvmOverloads

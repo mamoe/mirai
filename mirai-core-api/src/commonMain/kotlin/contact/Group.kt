@@ -26,7 +26,7 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  * 群.
  */
 @JvmBlockingBridge
-public interface Group : Contact, CoroutineScope {
+public interface Group : Contact, CoroutineScope, FileSupported {
     /**
      * 群名称.
      *
@@ -82,6 +82,7 @@ public interface Group : Contact, CoroutineScope {
      */
     public override val avatarUrl: String
         get() = "https://p.qlogo.cn/gh/$id/${id}/640"
+
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.

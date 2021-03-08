@@ -9,19 +9,20 @@
 
 package net.mamoe.mirai.internal.message
 
+import io.ktor.util.*
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
+import kotlinx.io.core.readUShort
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
-import net.mamoe.mirai.internal.network.protocol.data.proto.CustomFace
-import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 
@@ -144,10 +145,12 @@ private object ReceiveMessageTransformer {
             element.lightApp != null -> decodeLightApp(element.lightApp, builder)
             element.customElem != null -> decodeCustomElem(element.customElem, builder)
             element.commonElem != null -> decodeCommonElem(element.commonElem, builder)
+            element.transElemInfo != null -> decodeTransElem(element.transElemInfo, builder)
 
             element.elemFlags2 != null
                     || element.extraInfo != null
-                    || element.generalFlags != null -> {
+                    || element.generalFlags != null
+            -> {
                 // ignore
             }
             else -> {
@@ -340,6 +343,55 @@ private object ReceiveMessageTransformer {
                 }
             )
         }
+    }
+
+    private fun decodeTransElem(
+        transElement: ImMsgBody.TransElem,
+        list: MessageChainBuilder
+    ) {
+        // file
+        // type=24
+        when (transElement.elemType) {
+            24 -> transElement.elemValue.read {
+                // group file feed
+                // 01 00 77 08 06 12 0A 61 61 61 61 61 61 2E 74 78 74 1A 06 31 35 42 79 74 65 3A 5F 12 5D 08 66 12 25 2F 64 37 34 62 62 66 33 61 2D 37 62 32 35 2D 31 31 65 62 2D 38 34 66 38 2D 35 34 35 32 30 30 37 62 35 64 39 66 18 0F 22 0A 61 61 61 61 61 61 2E 74 78 74 28 00 3A 00 42 20 61 33 32 35 66 36 33 34 33 30 65 37 61 30 31 31 66 37 64 30 38 37 66 63 33 32 34 37 35 34 39 63
+//                fun getFileRsrvAttr(file: ObjMsg.MsgContentInfo.MsgFile): HummerResv21.ResvAttr? {
+//                    if (file.ext.isEmpty()) return null
+//                    val element = kotlin.runCatching {
+//                        jsonForFileDecode.parseToJsonElement(file.ext) as? JsonObject
+//                    }.getOrNull() ?: return null
+//                    val extInfo = element["ExtInfo"]?.toString()?.decodeBase64() ?: return null
+//                    return extInfo.loadAs(HummerResv21.ResvAttr.serializer())
+//                }
+
+                val var7 = readByte()
+                if (var7 == 1.toByte()) {
+                    while (remaining > 2) {
+                        val proto = readProtoBuf(ObjMsg.ObjMsg.serializer(), readUShort().toInt())
+                        // proto.msgType=6
+
+                        val file = proto.msgContentInfo.firstOrNull()?.msgFile ?: continue // officially get(0) only.
+//                        val attr = getFileRsrvAttr(file) ?: continue
+//                        val info = attr.forwardExtFileInfo ?: continue
+
+                        list.add(
+                            FileMessageImpl(
+                                name = file.fileName,
+                                id = file.filePath, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
+                                size = file.fileSize,
+                                busId = file.busId
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
+    private val jsonForFileDecode = Json {
+        isLenient = true
+        coerceInputValues = true
     }
 
     private fun decodeCommonElem(

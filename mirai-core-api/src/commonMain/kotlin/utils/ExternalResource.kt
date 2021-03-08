@@ -18,16 +18,19 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
+import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
 
 
@@ -44,7 +47,7 @@ import java.io.*
  *
  * ## 释放
  *
- * 当 [ExternalResource] 创建时就可能会打开个文件 (如使用 [File.toExternalResource]).
+ * 当 [ExternalResource] 创建时就可能会打开一个文件 (如使用 [File.toExternalResource]).
  * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
  *
  * @see ExternalResource.uploadAsImage 将资源作为图片上传, 得到 [Image]
@@ -60,6 +63,14 @@ public interface ExternalResource : Closeable {
      * 文件内容 MD5. 16 bytes
      */
     public val md5: ByteArray
+
+    /**
+     * 文件内容 SHA1. 16 bytes
+     * @since 2.5
+     */
+    public val sha1: ByteArray
+        get() =
+            throw UnsupportedOperationException("ExternalResource.sha1 is not implemented by ${this::class.simpleName}")
 
     /**
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
@@ -252,6 +263,29 @@ public interface ExternalResource : Closeable {
         public suspend fun File.uploadAsImage(contact: Contact, formatName: String? = null): Image =
             toExternalResource(formatName).withUse { uploadAsImage(contact) }
 
+        /**
+         * 上传文件并获取文件消息.
+         * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
+         * @since 2.5
+         * @see RemoteFile.path
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun File.uploadTo(contact: FileSupported, path: String): FileMessage =
+            toExternalResource().use { contact.uploadFile(path, it) }
+
+        /**
+         * 上传文件并获取文件消息. 无论上传是否成功, 本函数都不会关闭资源.
+         * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
+         * @since 2.5
+         * @see RemoteFile.path
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun ExternalResource.uploadAsFileTo(contact: FileSupported, path: String): FileMessage =
+            contact.uploadFile(path, this)
 
         /**
          * 将文件作为语音上传后构造 [Voice].

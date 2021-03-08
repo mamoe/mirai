@@ -60,7 +60,7 @@ kotlin {
                 api(`kotlinx-serialization-core`)
                 api(`kotlinx-serialization-json`)
                 implementation(`kotlinx-serialization-protobuf`)
-                api(`kotlinx-coroutines-core`)
+                api(`kotlinx-coroutines-jdk8`)
                 implementation(`jetbrains-annotations`)
                 // api(`kotlinx-coroutines-jdk8`)
 

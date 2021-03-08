@@ -10,6 +10,9 @@
 package net.mamoe.mirai.internal.contact
 
 import contact.StrangerImpl
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
@@ -21,6 +24,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
@@ -120,7 +124,7 @@ internal abstract class SendMessageHandler<C : Contact> {
 
         val group = contact
 
-        var source: OnlineMessageSource.Outgoing? = null
+        var source: Deferred<OnlineMessageSource.Outgoing>? = null
 
         bot.network.run {
             sendMessageMultiProtocol(
@@ -162,34 +166,37 @@ internal abstract class SendMessageHandler<C : Contact> {
                     is MusicSharePacket.Response -> {
                         resp.pkg.checkSuccess("send music share")
 
-                        source = constructSourceFromMusicShareResponse(finalMessage, resp)
+                        source = CompletableDeferred(constructSourceForSpecialMessage(finalMessage, 3116))
                     }
+//                    is CommonOidbResponse<*> -> {
+//                        when (resp.toResult("send message").getOrThrow()) {
+//                            is Oidb0x6d9.FeedsRspBody -> {
+//                            }
+//                        }
+//                    }
                 }
             }
 
-            check(source != null) {
-                "Internal error: source is not initialized"
-            }
+            val sourceAwait = source?.await() ?: error("Internal error: source is not initialized")
 
             try {
-                source!!.ensureSequenceIdAvailable()
+                sourceAwait.ensureSequenceIdAvailable()
             } catch (e: Exception) {
                 bot.network.logger.warning(
                     "Timeout awaiting sequenceId for message(${finalMessage.content.take(10)}). Some features may not work properly",
                     e
-
                 )
             }
 
-            return MessageReceipt(source!!, contact)
+            return MessageReceipt(sourceAwait, contact)
         }
     }
 
-    private fun sendMessageMultiProtocol(
+    private suspend fun sendMessageMultiProtocol(
         client: QQAndroidClient,
         message: MessageChain,
         fragmented: Boolean,
-        sourceCallback: (OnlineMessageSource.Outgoing) -> Unit
+        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
         message.takeSingleContent<MusicShare>()?.let { musicShare ->
             return listOf(
@@ -200,6 +207,12 @@ internal abstract class SendMessageHandler<C : Contact> {
             )
         }
 
+        message.takeSingleContent<FileMessage>()?.let { file ->
+            file.checkIsImpl()
+            sourceCallback(contact.async { constructSourceForSpecialMessage(message, 2021) })
+            return listOf(FileManagement.Feed(client, contact.id, file.busId, file.id))
+        }
+
         return messageSvcSendMessage(client, contact, message, fragmented, sourceCallback)
     }
 
@@ -208,12 +221,12 @@ internal abstract class SendMessageHandler<C : Contact> {
         contact: C,
         message: MessageChain,
         fragmented: Boolean,
-        sourceCallback: (OnlineMessageSource.Outgoing) -> Unit,
+        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit,
     ) -> List<OutgoingPacket>
 
-    abstract suspend fun constructSourceFromMusicShareResponse(
+    abstract suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        response: MusicSharePacket.Response
+        fromAppId: Int,
     ): OnlineMessageSource.Outgoing
 
     open suspend fun uploadLongMessageHighway(
@@ -321,39 +334,39 @@ internal sealed class UserSendMessageHandler<C : AbstractUser>(
 ) : SendMessageHandler<C>() {
     override val senderName: String get() = bot.nick
 
-    override suspend fun constructSourceFromMusicShareResponse(
+    override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        response: MusicSharePacket.Response
+        fromAppId: Int
     ): OnlineMessageSource.Outgoing {
-        throw UnsupportedOperationException("Sending MusicShare to user is not yet supported")
+        throw UnsupportedOperationException("Sending MusicShare or FileMessage to User is not yet supported")
     }
 }
 
 internal class FriendSendMessageHandler(
     contact: FriendImpl,
 ) : UserSendMessageHandler<FriendImpl>(contact) {
-    override val messageSvcSendMessage: (client: QQAndroidClient, contact: FriendImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (OnlineMessageSource.Outgoing) -> Unit) -> List<OutgoingPacket> =
+    override val messageSvcSendMessage: (client: QQAndroidClient, contact: FriendImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
         MessageSvcPbSendMsg::createToFriend
 }
 
 internal class StrangerSendMessageHandler(
     contact: StrangerImpl,
 ) : UserSendMessageHandler<StrangerImpl>(contact) {
-    override val messageSvcSendMessage: (client: QQAndroidClient, contact: StrangerImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (OnlineMessageSource.Outgoing) -> Unit) -> List<OutgoingPacket> =
+    override val messageSvcSendMessage: (client: QQAndroidClient, contact: StrangerImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
         MessageSvcPbSendMsg::createToStranger
 }
 
 internal class GroupTempSendMessageHandler(
     contact: NormalMemberImpl,
 ) : UserSendMessageHandler<NormalMemberImpl>(contact) {
-    override val messageSvcSendMessage: (client: QQAndroidClient, contact: NormalMemberImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (OnlineMessageSource.Outgoing) -> Unit) -> List<OutgoingPacket> =
+    override val messageSvcSendMessage: (client: QQAndroidClient, contact: NormalMemberImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
         MessageSvcPbSendMsg::createToTemp
 }
 
 internal class GroupSendMessageHandler(
     override val contact: GroupImpl,
 ) : SendMessageHandler<GroupImpl>() {
-    override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (OnlineMessageSource.Outgoing) -> Unit) -> List<OutgoingPacket> =
+    override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
         MessageSvcPbSendMsg::createToGroup
     override val senderName: String
         get() = contact.botAsMember.nameCardOrNick
@@ -371,14 +384,13 @@ internal class GroupSendMessageHandler(
         }
     }.toMessageChain()
 
-
-    override suspend fun constructSourceFromMusicShareResponse(
+    override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        response: MusicSharePacket.Response
+        fromAppId: Int
     ): OnlineMessageSource.Outgoing {
 
         val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
-            nextEventOrNull(3000) { it.fromAppId == 3116 }
+            nextEventOrNull(3000) { it.fromAppId == fromAppId }
                 ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
 
         return OnlineMessageSourceToGroupImpl(

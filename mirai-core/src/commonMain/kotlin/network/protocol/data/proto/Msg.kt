@@ -1192,12 +1192,12 @@ internal class ObjMsg : ProtoBuf {
         @Serializable
         internal class MsgFile(
             @ProtoNumber(1) @JvmField val busId: Int = 0,
-            @ProtoNumber(2) @JvmField val filePath: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoNumber(2) @JvmField val filePath: String = "", // actually uuid
             @ProtoNumber(3) @JvmField val fileSize: Long = 0L,
             @ProtoNumber(4) @JvmField val fileName: String = "",
             @ProtoNumber(5) @JvmField val int64DeadTime: Long = 0L,
-            @ProtoNumber(6) @JvmField val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(7) @JvmField val ext: ByteArray = EMPTY_BYTE_ARRAY
+            @ProtoNumber(6) @JvmField val fileSha1: ByteArray = EMPTY_BYTE_ARRAY, // empty
+            @ProtoNumber(7) @JvmField val ext: String = "", // originally bytes
         ) : ProtoBuf
     }
 

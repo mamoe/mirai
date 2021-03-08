@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.contact.Friend
@@ -469,7 +471,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
     member: Member,
     message: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (OnlineMessageSourceToTempImpl) -> Unit
+    crossinline sourceCallback: (Deferred<OnlineMessageSourceToTempImpl>) -> Unit
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -482,7 +484,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
         originalMessage = message
     )
-    sourceCallback(source)
+    sourceCallback(CompletableDeferred(source))
     return createToTempImpl(
         client,
         member,
@@ -497,7 +499,7 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
     stranger: Stranger,
     message: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (OnlineMessageSourceToStrangerImpl) -> Unit
+    crossinline sourceCallback: (Deferred<OnlineMessageSourceToStrangerImpl>) -> Unit
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -506,9 +508,8 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
         client,
         stranger,
         message,
-        fragmented,
-        sourceCallback
-    )
+        fragmented
+    ) { sourceCallback(CompletableDeferred(it)) }
 }
 
 internal inline fun MessageSvcPbSendMsg.createToFriend(
@@ -516,7 +517,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
     qq: Friend,
     message: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit
+    crossinline sourceCallback: (Deferred<OnlineMessageSourceToFriendImpl>) -> Unit
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -525,9 +526,8 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
         client,
         qq,
         message,
-        fragmented,
-        sourceCallback
-    )
+        fragmented
+    ) { sourceCallback(CompletableDeferred(it)) }
 }
 
 
@@ -536,7 +536,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     group: Group,
     message: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit
+    crossinline sourceCallback: (Deferred<OnlineMessageSourceToGroupImpl>) -> Unit
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -545,7 +545,6 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
         client,
         group,
         message,
-        fragmented,
-        sourceCallback
-    )
+        fragmented
+    ) { sourceCallback(CompletableDeferred(it)) }
 }
