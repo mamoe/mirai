@@ -15,6 +15,7 @@ import io.ktor.http.content.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
@@ -28,6 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.*
@@ -104,7 +106,7 @@ internal class RemoteFileImpl(
     override val path: String, // absolute
 ) : RemoteFile {
     private val contactRef by contact.weakRef()
-    private val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
+    override val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
 
     constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
 
@@ -496,8 +498,9 @@ internal class RemoteFileImpl(
         return true
     }
 
-    override suspend fun uploadAndSend(resource: ExternalResource): Boolean {
-        return upload(resource) && toMessage()?.sendTo(contact) != null
+    override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
+        if (!upload(resource)) error("Failed to upload file.")
+        return toMessage()?.sendTo(contact) ?: error("Failed to create FileMessage")
     }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {

@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
@@ -52,6 +53,12 @@ public interface RemoteFile {
      * 获取父目录, 当 [RemoteFile] 表示根目录时返回 `null`
      */
     public val parent: RemoteFile?
+
+    /**
+     * 此文件所属的群或好友
+     */
+    @MiraiExperimentalApi
+    public val contact: FileSupported
 
     /**
      * 当 [RemoteFile] 表示一个文件时返回 `true`.
@@ -300,13 +307,16 @@ public interface RemoteFile {
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
      * @see upload
      */
-    public suspend fun uploadAndSend(resource: ExternalResource): Boolean
+    @MiraiExperimentalApi
+    public suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact>
 
     /**
      * 上传文件并发送文件消息.
      * @see uploadAndSend
      */
-    public suspend fun uploadAndSend(file: File): Boolean = file.toExternalResource().use { uploadAndSend(it) }
+    @MiraiExperimentalApi
+    public suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
+        file.toExternalResource().use { uploadAndSend(it) }
 
     /**
      * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`

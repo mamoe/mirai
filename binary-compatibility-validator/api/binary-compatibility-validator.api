@@ -5904,6 +5904,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun exists ()Z
 	public abstract fun exists (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getContact ()Lnet/mamoe/mirai/contact/FileSupported;
 	public fun getDownloadInfo ()Lnet/mamoe/mirai/utils/RemoteFile$DownloadInfo;
 	public abstract fun getDownloadInfo (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()Ljava/lang/String;
@@ -5949,9 +5950,9 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Z
 	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public fun uploadAndSend (Ljava/io/File;)Z
+	public fun uploadAndSend (Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun uploadAndSend (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;)Z
+	public fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun uploadAndSend (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
