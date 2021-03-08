@@ -9,7 +9,7 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package androidutil
+package analyzes
 
 import groovy.util.Node
 import groovy.util.XmlParser
@@ -20,7 +20,6 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import java.io.File
-import java.net.URL
 
 object AndroidApiLevelCheck {
     data class ClassInfo(
@@ -260,11 +259,7 @@ object AndroidApiLevelCheck {
             .filter { it.isFile && it.extension == "class" }
             .map { file ->
                 kotlin.runCatching {
-                    val cnode = ClassNode()
-                    file.inputStream().use {
-                        ClassReader(it).accept(cnode, 0)
-                    }
-                    cnode
+                    AsmUtil.run { file.readClass() }
                 }.getOrNull() to file
             }
             .filter { it.first != null }
