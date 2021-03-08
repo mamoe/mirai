@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.RemoteFile
 
 /**
- * 支持文件操作的 [Contact]
+ * 支持文件操作的 [Contact]. 目前仅 [Group]
  * @since 2.5
  */
 @MiraiExperimentalApi

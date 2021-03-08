@@ -12,7 +12,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.RemoteFile
 import net.mamoe.mirai.utils.safeCast
@@ -33,12 +33,12 @@ public interface FileMessage : MessageContent, ConstrainSingle {
     override fun contentToString(): String = "[文件]$name" // orthodox
 
     /**
-     * 获取一个群内对应的 [RemoteFile]. 当群内不存在这个文件时返回 `null`.
+     * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
      */
     @MiraiExperimentalApi
     @JvmBlockingBridge
-    public suspend fun toRemoteFile(group: Group): RemoteFile? {
-        return group.filesRoot.resolveById(id)
+    public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
+        return contact.filesRoot.resolveById(id)
     }
 
     override val key: Key get() = Key
