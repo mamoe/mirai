@@ -21,7 +21,6 @@ import kotlin.contracts.contract
  *
  * @see MessageChainBuilder
  */
-@JvmSynthetic
 public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChain {
     contract { callsInPlace(block, EXACTLY_ONCE) }
     return MessageChainBuilder().apply(block).asMessageChain()
@@ -32,7 +31,6 @@ public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): Mess
  *
  * @see MessageChainBuilder
  */
-@JvmSynthetic
 public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
     contract { callsInPlace(block, EXACTLY_ONCE) }
     return MessageChainBuilder(initialSize).apply(block).asMessageChain()
