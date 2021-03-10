@@ -662,7 +662,6 @@ public class ForwardMessageBuilder private constructor(
      *
      * @since 2.1
      */
-    @ForwardMessageDsl
     public fun add(event: MessageEvent): ForwardMessageBuilder {
         return event.sender named event.senderName at event.time says event.message
     }
