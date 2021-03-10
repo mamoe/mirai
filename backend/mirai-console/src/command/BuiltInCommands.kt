@@ -131,6 +131,7 @@ public object BuiltInCommands {
                         if (!MiraiConsole.isActive) return@withLock
                         sendMessage("Stopping mirai-console")
                         kotlin.runCatching {
+                            Bot.instances.forEach { it.closeAndJoin() }
                             MiraiConsole.job.cancelAndJoin()
                         }.fold(
                             onSuccess = {
