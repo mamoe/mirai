@@ -4224,14 +4224,30 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public fun <init> (Lnet/mamoe/mirai/contact/Contact;I)V
 	public synthetic fun add (ILjava/lang/Object;)V
 	public fun add (ILnet/mamoe/mirai/message/data/ForwardMessage$INode;)V
+	public final fun add (JLjava/lang/String;ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (JLjava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (JLjava/lang/String;Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (JLjava/lang/String;Lnet/mamoe/mirai/message/data/Message;I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public synthetic fun add (Ljava/lang/Object;)Z
+	public final fun add (Lnet/mamoe/mirai/contact/User;Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (Lnet/mamoe/mirai/contact/User;Lnet/mamoe/mirai/message/data/Message;I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (Lnet/mamoe/mirai/contact/UserOrBot;ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (Lnet/mamoe/mirai/contact/UserOrBot;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (Lnet/mamoe/mirai/contact/UserOrBot;Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun add (Lnet/mamoe/mirai/contact/UserOrBot;Lnet/mamoe/mirai/message/data/Message;I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public final fun add (Lnet/mamoe/mirai/event/events/MessageEvent;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public fun add (Lnet/mamoe/mirai/message/data/ForwardMessage$INode;)Z
+	public static synthetic fun add$default (Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;JLjava/lang/String;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public static synthetic fun add$default (Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;JLjava/lang/String;Lnet/mamoe/mirai/message/data/Message;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public static synthetic fun add$default (Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;Lnet/mamoe/mirai/contact/User;Lnet/mamoe/mirai/message/data/Message;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public static synthetic fun add$default (Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;Lnet/mamoe/mirai/contact/UserOrBot;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public static synthetic fun add$default (Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;Lnet/mamoe/mirai/contact/UserOrBot;Lnet/mamoe/mirai/message/data/Message;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public fun addAll (ILjava/util/Collection;)Z
 	public fun addAll (Ljava/util/Collection;)Z
 	public final fun at (II)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun at (JI)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun at (Lnet/mamoe/mirai/contact/User;I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
+	public final fun at (Lnet/mamoe/mirai/contact/UserOrBot;I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun build ()Lnet/mamoe/mirai/message/data/ForwardMessage;
 	public fun clear ()V
 	public final fun contains (Ljava/lang/Object;)Z
@@ -4254,6 +4270,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public final fun named (ILjava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun named (JLjava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun named (Lnet/mamoe/mirai/contact/User;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
+	public final fun named (Lnet/mamoe/mirai/contact/UserOrBot;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public synthetic fun remove (I)Ljava/lang/Object;
 	public final fun remove (I)Lnet/mamoe/mirai/message/data/ForwardMessage$INode;
 	public final fun remove (Ljava/lang/Object;)Z
@@ -4273,6 +4290,8 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public final fun says (Lnet/mamoe/mirai/contact/User;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public final fun says (Lnet/mamoe/mirai/contact/User;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public final fun says (Lnet/mamoe/mirai/contact/User;Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun says (Lnet/mamoe/mirai/contact/UserOrBot;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
+	public final fun says (Lnet/mamoe/mirai/contact/UserOrBot;Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
 	public fun set (ILnet/mamoe/mirai/message/data/ForwardMessage$INode;)Lnet/mamoe/mirai/message/data/ForwardMessage$INode;
 	public final fun setCurrentTime (I)V
@@ -4297,6 +4316,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNod
 	public final fun says (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public final fun says (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder;
 	public final fun sender (Lnet/mamoe/mirai/contact/User;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
+	public final fun sender (Lnet/mamoe/mirai/contact/UserOrBot;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun senderId (I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun senderId (J)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
 	public final fun senderName (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
@@ -4708,8 +4728,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun FileMessage (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static final synthetic fun Image (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public static final synthetic fun at (Lnet/mamoe/mirai/contact/Member;)Lnet/mamoe/mirai/message/data/At;
-	public static final synthetic fun buildMessageChain (ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
-	public static final synthetic fun buildMessageChain (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static final fun buildMessageChain (ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static final fun buildMessageChain (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static final synthetic fun buildMessageSource (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public static final synthetic fun buildMessageSource (Lnet/mamoe/mirai/IMirai;JLnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public static final synthetic fun buildXmlMessage (ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/ServiceMessage;
