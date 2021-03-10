@@ -46,7 +46,7 @@ public interface User : Contact, UserOrBot, CoroutineScope {
     /**
      * 昵称
      */
-    public val nick: String
+    public override val nick: String
 
     /**
      * 备注信息

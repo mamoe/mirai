@@ -589,6 +589,7 @@ public final class net/mamoe/mirai/contact/UserKt {
 }
 
 public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mirai/contact/ContactOrBot {
+	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 }
 

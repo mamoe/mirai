@@ -63,7 +63,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * 昵称
      */
-    public val nick: String
+    public override val nick: String
 
     /**
      * 日志记录器
