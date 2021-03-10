@@ -27,9 +27,6 @@ jobs:
       - name: mirai-core Tests
         run: ./gradlew check --scan
 
-      - name: verify compiled classes
-        run: ./gradlew verifyCompiledClasses --scan
-
   build-all:
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +52,3 @@ jobs:
 
       - name: All Tests
         run: ./gradlew check --scan
-
-      - name: verify compiled classes
-        run: ./gradlew verifyCompiledClasses --scan

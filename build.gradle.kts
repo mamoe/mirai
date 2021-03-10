@@ -99,6 +99,18 @@ tasks.register("verifyCompiledClasses") {
             }
         }
     }
+}.get().let { task ->
+    tasks.getByName("check").dependsOn(task)
+    listOf("mirai-core-api", "mirai-core-utils").forEach { mppProject ->
+        task.mustRunAfter(":$mppProject:jvmMainClasses")
+        task.mustRunAfter(":$mppProject:androidMainClasses")
+    }
+    listOf("mirai-console", "mirai-console-terminal").forEach { jvmProject ->
+        runCatching {
+            project(jvmProject)
+            task.mustRunAfter(":$jvmProject:classes")
+        }
+    }
 }
 
 allprojects {

@@ -68,9 +68,6 @@ jobs:
       - name: Check
         run: ./gradlew check --scan
 
-      - name: verify compiled classes
-        run: ./gradlew verifyCompiledClasses --scan
-
       - name: Gradle :mirai-core-utils:publish
         run: >
           ./gradlew :mirai-core-utils:publish --scan

@@ -25,8 +25,6 @@ jobs:
         run: chmod -R 777 *
       - name: Gradle build
         run: ./gradlew clean build # if test's failed, don't publish
-      - name: verify compiled classes
-        run: ./gradlew verifyCompiledClasses --scan
       - name: Dokka
         run: ./gradlew :mirai-core-api:dokkaHtml
       - name: GitHub Pages Deploy
@@ -58,8 +56,6 @@ jobs:
         run: chmod -R 777 *
       - name: Gradle build
         run: ./gradlew clean build # if test's failed, don't publish
-      - name: verify compiled classes
-        run: ./gradlew verifyCompiledClasses --scan
       - name: Dokka
         run: ./gradlew :mirai-console:dokkaHtml
       - name: GitHub Pages Deploy
