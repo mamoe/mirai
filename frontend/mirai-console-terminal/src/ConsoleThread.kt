@@ -150,8 +150,8 @@ internal fun UnmatchedCommandSignature.render(command: Command): String {
 @OptIn(ExperimentalCommandDescriptors::class)
 internal fun FailureReason.render(): String {
     return when (this) {
-        is FailureReason.InapplicableArgument -> "参数类型错误"
         is FailureReason.InapplicableReceiverArgument -> "需要由 ${this.parameter.renderAsName()} 执行"
+        is FailureReason.InapplicableArgument -> "参数类型错误"
         is FailureReason.TooManyArguments -> "参数过多"
         is FailureReason.NotEnoughArguments -> "参数不足"
         is FailureReason.ResolutionAmbiguity -> "调用歧义"
