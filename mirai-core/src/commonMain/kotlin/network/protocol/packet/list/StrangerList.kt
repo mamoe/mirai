@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -101,7 +102,7 @@ internal class StrangerList {
                     pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).result.forEach { delResult ->
                         bot.getStranger(delResult.uin)?.let {
                             bot.strangers.remove(delResult.uin)
-                            StrangerRelationChangeEvent.Deleted(it).broadcast()
+                            StrangerRelationChangeEvent.Deleted(it).broadcastWithBot(bot)
                         }
                     }
                 }

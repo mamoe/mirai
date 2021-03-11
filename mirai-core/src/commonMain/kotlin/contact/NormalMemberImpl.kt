@@ -21,6 +21,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
@@ -99,7 +100,7 @@ internal class NormalMemberImpl constructor(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcast()
+                    MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcastWithBot(bot)
                 }
             }
         }
@@ -119,7 +120,7 @@ internal class NormalMemberImpl constructor(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcast()
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcastWithBot(bot)
                 }
             }
         }
@@ -139,7 +140,7 @@ internal class NormalMemberImpl constructor(
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcast()
+        net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcastWithBot(bot)
     }
 
     override suspend fun unmute() {
@@ -154,7 +155,7 @@ internal class NormalMemberImpl constructor(
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast()
+        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcastWithBot(bot)
     }
 
     override suspend fun kick(message: String) {
@@ -174,7 +175,7 @@ internal class NormalMemberImpl constructor(
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
             this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
-            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
+            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcastWithBot(bot)
         }
     }
 }

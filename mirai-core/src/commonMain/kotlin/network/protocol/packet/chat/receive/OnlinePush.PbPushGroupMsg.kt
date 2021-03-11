@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
+import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.MessageSourceKind.GROUP
@@ -145,7 +146,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         val currentNameCard = sender.nameCard
         if (sender is NormalMemberImpl && name != currentNameCard) {
             sender._nameCard = name
-            MemberCardChangeEvent(currentNameCard, name, sender).broadcast()
+            MemberCardChangeEvent(currentNameCard, name, sender).broadcastWithBot(sender.bot)
         }
     }
 

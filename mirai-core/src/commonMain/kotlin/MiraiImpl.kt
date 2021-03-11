@@ -39,6 +39,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -147,7 +148,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         )
 
         event.bot.getFriend(event.fromId)?.let { friend ->
-            FriendAddEvent(friend).broadcast()
+            FriendAddEvent(friend).broadcastWithBot(event.bot)
         }
     }
 
@@ -197,10 +198,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         event.group?.getMember(event.fromId)?.let { member ->
             if (event.invitor != null) {
-                MemberJoinEvent.Invite(member, event.invitor!!).broadcast()
+                MemberJoinEvent.Invite(member, event.invitor!!)
             } else {
-                MemberJoinEvent.Active(member).broadcast()
-            }
+                MemberJoinEvent.Active(member)
+            }.broadcastWithBot(event.bot)
         }
     }
 

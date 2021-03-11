@@ -572,7 +572,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             Mirai.newStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
                 bot.getStranger(id)?.let { previous ->
                     bot.strangers.remove(id)
-                    StrangerRelationChangeEvent.Deleted(previous).broadcast()
+                    StrangerRelationChangeEvent.Deleted(previous).broadcastWithBot(bot)
                 }
                 bot.strangers.delegate.add(it)
 
