@@ -195,14 +195,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             accept = true,
             blackList = false
         )
-
-        event.group?.getMember(event.fromId)?.let { member ->
-            if (event.invitor != null) {
-                MemberJoinEvent.Invite(member, event.invitor!!)
-            } else {
-                MemberJoinEvent.Active(member)
-            }.broadcastWithBot(event.bot)
-        }
     }
 
     @Suppress("DuplicatedCode")
@@ -849,20 +841,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 message = message
             ).sendWithoutExpect()
         }
-
-        if (accept ?: return@run)
-            groups[groupId]?.run {
-                members.delegate.add(
-                    newMember(
-                        MemberInfoImpl(
-                            uin = fromId,
-                            nick = fromNick,
-                            permission = MemberPermission.MEMBER,
-                            "", "", "", 0, null
-                        )
-                    ).cast()
-                )
-            }
+        // Add member in MsgOnlinePush.PbPushMsg
     }
 
     @OptIn(ExperimentalStdlibApi::class)
