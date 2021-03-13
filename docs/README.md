@@ -32,6 +32,8 @@
 [yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
 [Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
+[ParaParty/MPBot]: https://github.com/ParaParty/MPBot
+
 
 [Rhino]: https://github.com/mozilla/rhino
 [OneBot]: https://github.com/howmanybots/onebot
@@ -56,6 +58,7 @@
 | `Go`               | *Mirai Http*                 | [Logiase/gomirai]                           |
 | `易语言`            | *Mirai Http*                 | [only52607/e-mirai]                         |
 | *酷 Q DLL 插件*     | JNI                          | [iTXTech/mirai-native]                      |
+| `PHP`              | *OneBot Http*                 | [ParaParty/MPBot]                           |
 
 > 排名不分先后  
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
