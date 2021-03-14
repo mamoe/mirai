@@ -30,6 +30,10 @@ object NoSuchMethodAnalyzer {
                         }
                     }
                 }
+            } else if (lib.isDirectory) {
+                lib.walk().filter { it.isFile && it.extension == "class" }.forEach { f ->
+                    f.readClass().let { asmClasses[it.name] = it }
+                }
             }
         }
         classes.map { it.walk() }.flatten().filter { it.isFile }
@@ -57,7 +61,7 @@ object NoSuchMethodAnalyzer {
                                     if (insn.owner.startsWith("net/mamoe/mirai/")) {
                                         if (!asmClasses.hasField(insn.owner, insn.name, insn.desc, insn.opcode)) {
                                             report(
-                                                "No such Field",
+                                                "No such field",
                                                 "${insn.owner}.${insn.name}: ${insn.desc}, opcode=${insn.opcode}"
                                             )
                                         }

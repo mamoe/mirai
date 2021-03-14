@@ -69,49 +69,7 @@ tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
     )
 }
 
-tasks.register("verifyCompiledClasses") {
-    val projects = listOf("mirai-core-api", "mirai-core-utils", "mirai-console", "mirai-console-terminal")
-    group = "verification"
-    doFirst {
-        projects.asSequence().mapNotNull {
-            runCatching { project(it) }.getOrNull()
-        }.map { project ->
-            val classesDir = project.buildDir.resolve("classes")
-            listOf(
-                listOf("kotlin/main", "kotlin/jvm/main") to listOf("runtimeClasspath", "jvmRuntimeClasspath"),
-                listOf("kotlin/main", "kotlin/android/main") to listOf(
-                    "runtimeClasspath",
-                    "androidRuntimeClasspath"
-                )
-            ).map { (targetClasses, classpath) ->
-                val libs = classpath.asSequence().mapNotNull {
-                    kotlin.runCatching {
-                        project.configurations.getByName(it)
-                    }.getOrNull()
-                }.map { it.files.asSequence() }.flatten()
-                val sources = targetClasses.asSequence().map { classesDir.resolve(it) }
-                    .filter { it.isDirectory }
-                sources to libs
-            }
-        }.forEach { targets ->
-            targets.forEach { (sources, libs) ->
-                analyzes.NoSuchMethodAnalyzer.check(sources, libs)
-            }
-        }
-    }
-}.get().let { task ->
-    tasks.getByName("check").dependsOn(task)
-    listOf("mirai-core-api", "mirai-core-utils").forEach { mppProject ->
-        task.mustRunAfter(":$mppProject:jvmMainClasses")
-        task.mustRunAfter(":$mppProject:androidMainClasses")
-    }
-    listOf("mirai-console", "mirai-console-terminal").forEach { jvmProject ->
-        runCatching {
-            project(jvmProject)
-            task.mustRunAfter(":$jvmProject:classes")
-        }
-    }
-}
+analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
 allprojects {
     group = "net.mamoe"

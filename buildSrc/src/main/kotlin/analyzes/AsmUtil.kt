@@ -60,7 +60,12 @@ object AsmUtil {
     ): Boolean {
         patchJvmClass(owner)
         val c = this[owner] ?: return false
-        return c.getField(name, desc, opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC) != null
+        val isStatic = opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC
+        if (c.getField(name, desc, isStatic) != null) {
+            return true
+        }
+        if (isStatic) return false
+        return hasField(c.superName ?: "", name, desc, opcode)
     }
 
     fun AsmClassesM.hasMethod(
