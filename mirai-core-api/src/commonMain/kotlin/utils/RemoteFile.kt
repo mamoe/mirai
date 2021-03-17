@@ -28,6 +28,22 @@ import java.io.File
 /**
  * 表示一个远程文件或目录.
  *
+ * ### 获取远程文件进行操作
+ * - [FileSupported.filesRoot] 取根目录
+ * - [FileSupported.filesRoot].[resolve] ("foo.txt") - 表示 `/foo.txt` 文件
+ *
+ * ### 上传文件
+ * [FileSupported.filesRoot].[resolve] ("foo.txt").[uploadAndSend] (...) - 上传一个文件, 并发送信息
+ *
+ * ### 下载文件
+ * 使用 [getDownloadInfo] 获取相关信息, 可以使用任何 HttpClient 访问 [DownloadInfo.url] 下载文件
+ *
+ * ### 列出子文件
+ * - [listFiles] (For Kotlin)
+ * - [listFilesIterator] (For Java)
+ *
+ * @see FileSupported
+ * @see ExternalResource
  * @since 2.5
  */
 @MiraiExperimentalApi
