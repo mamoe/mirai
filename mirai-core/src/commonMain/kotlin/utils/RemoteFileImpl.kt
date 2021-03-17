@@ -417,8 +417,15 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun upload(resource: ExternalResource, callback: RemoteFile.ProgressionCallback?): Boolean {
-        val parent = parent ?: return false
-        val parentInfo = parent.getFileFolderInfo() ?: return false
+        return upload0(resource, callback) != null
+    }
+
+    private suspend fun upload0(
+        resource: ExternalResource,
+        callback: RemoteFile.ProgressionCallback?
+    ): Oidb0x6d6.UploadFileRspBody? {
+        val parent = parent ?: return null
+        val parentInfo = parent.getFileFolderInfo() ?: return null
         val resp = FileManagement.RequestUpload(
             client,
             groupCode = contact.id,
@@ -427,7 +434,7 @@ internal class RemoteFileImpl(
             filename = this.name
         ).sendAndExpect(bot).toResult("RemoteFile.upload").getOrThrow()
         if (resp.boolFileExist) {
-            return true
+            return resp
         }
 
         val ext = GroupFileUploadExt(
@@ -488,6 +495,9 @@ internal class RemoteFileImpl(
             )
         }.fold(
             onSuccess = {
+                if (this.id == null) {
+                    this.id = resp.fileId
+                }
                 callback?.onSuccess(this, resource)
             },
             onFailure = {
@@ -495,12 +505,21 @@ internal class RemoteFileImpl(
             }
         )
 
-        return true
+        return resp
+    }
+
+    override suspend fun uploadFile(
+        resource: ExternalResource,
+        callback: RemoteFile.ProgressionCallback?
+    ): FileMessage {
+        val resp = upload0(resource, null) ?: error("Failed to upload file.")
+        return FileMessageImpl(
+            name, resp.fileId, resource.size, resp.busId
+        )
     }
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
-        if (!upload(resource)) error("Failed to upload file.")
-        return toMessage()?.sendTo(contact) ?: error("Failed to create FileMessage")
+        return uploadFile(resource).sendTo(contact)
     }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {

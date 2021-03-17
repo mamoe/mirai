@@ -21,7 +21,6 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.File
 
@@ -335,6 +334,30 @@ public interface RemoteFile {
         file.toExternalResource().use { uploadAndSend(it) }
 
     /**
+     * 上传文件.
+     * @see upload
+     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @throws IllegalStateException 当无法上传文件时抛出
+     */
+    public suspend fun uploadFile(
+        resource: ExternalResource,
+        callback: ProgressionCallback? = null
+    ): FileMessage
+
+    /**
+     * 上传文件.
+     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @see uploadAndSend
+     */
+    public suspend fun uploadFile(resource: ExternalResource): FileMessage = uploadFile(resource, null)
+
+    /**
+     * 上传文件.
+     * @see uploadAndSend
+     */
+    public suspend fun uploadFile(file: File): FileMessage = file.toExternalResource().use { uploadFile(it) }
+
+    /**
      * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`
      */
     public suspend fun getDownloadInfo(): DownloadInfo?
@@ -381,9 +404,7 @@ public interface RemoteFile {
          */
         @JvmStatic
         public suspend fun FileSupported.uploadFile(path: String, resource: ExternalResource): FileMessage {
-            val file = this.filesRoot.resolve(path)
-            if (!file.upload(resource)) error("Failed to upload file")
-            return file.toMessage() ?: error("Failed to create FileMessage.")
+            return this.filesRoot.resolve(path).uploadFile(resource)
         }
 
         /**
@@ -396,11 +417,8 @@ public interface RemoteFile {
             path: String,
             resource: ExternalResource
         ): MessageReceipt<C> {
-            val file = this.filesRoot.resolve(path)
-            if (!file.upload(resource)) {
-                error("Failed to upload file")
-            }
-            return file.toMessage()?.sendTo(this) ?: error("Failed to create FileMessage.")
+            @Suppress("UNCHECKED_CAST")
+            return this.filesRoot.resolve(path).uploadAndSend(resource) as MessageReceipt<C>
         }
     }
 }
