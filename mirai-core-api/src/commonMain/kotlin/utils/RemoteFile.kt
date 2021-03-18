@@ -23,27 +23,69 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
+import net.mamoe.mirai.utils.RemoteFile.ProgressionCallback.Companion.asProgressionCallback
 import java.io.File
 
 /**
  * 表示一个远程文件或目录.
  *
- * ### 获取远程文件进行操作
- * - [FileSupported.filesRoot] 取根目录
- * - [FileSupported.filesRoot].[resolve] ("foo.txt") - 表示 `/foo.txt` 文件
+ * ## 文件操作
  *
- * ### 上传文件
- * [FileSupported.filesRoot].[resolve] ("foo.txt").[uploadAndSend] (...) - 上传一个文件, 并发送信息
+ * 所有文件操作都在 [RemoteFile] 对象中完成. 可通过 [FileSupported.filesRoot] 获取到表示根目录路径的 [RemoteFile], 并通过 [resolve] 获取到其内文件.
  *
- * ### 下载文件
- * 使用 [getDownloadInfo] 获取相关信息, 可以使用任何 HttpClient 访问 [DownloadInfo.url] 下载文件
+ * 示例:
+ * ```
+ * val file1: RemoteFile = group.filesRoot.resolve("/foo.txt") // 获取表示群文件 "foo.txt" 的 RemoteFile 实例
+ * val file2: RemoteFile = group.filesRoot.resolve("/dir/foo.txt") // 获取表示群文件目录 "dir" 中的 "foo.txt" 的 RemoteFile 实例
  *
- * ### 列出子文件
- * - [listFiles] (For Kotlin)
- * - [listFilesIterator] (For Java)
+ *
+ * val downloadInfo = file1.getDownloadInfo() // 获取该文件的下载方式, 可以自行下载
+ *
+ *
+ * val message: FileMessage = file2.upload(resource) // 向路径 "/dir/foo.txt" 上传一个文件, 返回可以发送到群内的文件消息.
+ * group.sendMessage(message) // 发送文件消息到群, 用户才会收到机器人上传文件的提醒. 可以多次发送.
+ *
+ * file2.uploadAndSend(resource) // 上传文件并发送文件消息. 是上面两行的简单版本.
+ *
+ *
+ * // 要直接上传文件, 也可以简单地使用任一:
+ * group.uploadFile("/foo.txt", resource) // Kotlin
+ * resource.uploadAsFileTo(group, "/foo.txt") // Kotlin
+ * FileSupported.uploadFile(group, "/foo.txt", resource"); // Java
+ * ExternalResource.uploadAsFileTo(resource, group, "/foo.txt") // Java
+ * ```
+ *
+ * ## 目录操作
+ * [RemoteFile] 类似于 [java.io.File], 也可以表示一个目录.
+ * ```
+ * val dir: RemoteFile = group.filesRoot.resolve("/foo") // 获取表示目录 "foo" 的 RemoteFile 实例
+ *
+ * if (dir.exists()) { // 判断目录是否存在
+ *   // ...
+ * }
+ *
+ * dir.listFiles() // Kotlin 使用, 获取该目录中的文件列表.
+ * dir.listFilesIterator() // Java 使用, 获取该目录中的文件列表.
+ * ```
+ *
+ * ## 文件名和目录名可重复
+ *
+ * 服务器允许相同名称的文件或目录存在, 这就导致 "/foo" 可能表示多个重名文件中的一个, 也可能表示一个目录. 依靠路径的判断因此不可靠.
+ *
+ * 这个特性带来的行为有:
+ * - [`FileSupported.uploadFile`][uploadFile] 总是往一个路径上传文件, 如果有同名文件存在, 不会覆盖, 而是再创建一个同名文件.
+ * - [delete] 可能会删除重名文件中的任何一个, 也可能会删除一个目录, 操作顺序取决于服务器.
+ *
+ * 为了解决这个问题, [RemoteFile] 可以拥有一个由服务器分配的固定的唯一识别号 [RemoteFile.id].
+ *
+ * 通过 [listFiles] 获取到的 [RemoteFile] 都拥有非 `null` 的 [id].
+ * 服务器可以通过 [id] 准确定位重名文件中的某一个.
+ * 对这样的文件进行 [upload] 时将会覆盖目标文件 (如果存在), 进行 [delete] 时也只会准确操作目标文件.
+ *
+ * 只要文件内容无变化, 文件的 [id] 就不会变更. 可以保存 [RemoteFile.id] 并在以后通过 [RemoteFile.resolveById] 准确获取一个目标文件.
  *
  * @see FileSupported
- * @see ExternalResource
  * @since 2.5
  */
 @MiraiExperimentalApi
@@ -231,6 +273,8 @@ public interface RemoteFile {
 
     /**
      * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 [emptyFlow].
+     *
+     * 返回的 [Flow] 是*冷*的, 只会在被需要的时候向服务器查询.
      */
     public suspend fun listFiles(): Flow<RemoteFile>
 
@@ -257,6 +301,7 @@ public interface RemoteFile {
 
     /**
      * 上传进度回调
+     * @see asProgressionCallback
      */
     public interface ProgressionCallback {
         public fun onBegin(file: RemoteFile, resource: ExternalResource) {}
@@ -265,8 +310,32 @@ public interface RemoteFile {
         public fun onFailure(file: RemoteFile, resource: ExternalResource, exception: Throwable) {}
 
         public companion object {
+            /**
+             * 将一个 [SendChannel] 作为 [ProgressionCallback] 使用.
+             *
+             * 每当有进度更新, 已下载的字节数都会被[发送][SendChannel.offer]到 [SendChannel] 中.
+             * 进度的发送会通过 [offer][SendChannel.offer], 而不是通过 [send][SendChannel.send]. 意味着 [SendChannel] 通常要实现缓存.
+             *
+             * 若 [closeOnFinish] 为 `true`, 当下载完成 (无论是失败还是成功) 时会 [关闭][SendChannel.close] [SendChannel].
+             *
+             * 使用示例:
+             * ```
+             * val progress = Channel<Long>(Channel.BUFFERED)
+             *
+             * launch {
+             *   // 每 3 秒发送一次上传进度百分比
+             *   progress.receiveAsFlow().sample(3.seconds).collect { bytes ->
+             *     group.sendMessage("File upload: ${(bytes.toDouble() / resource.size * 100).toInt() / 100}%.") // 保留 2 位小数
+             *   }
+             * }
+             *
+             * group.filesRoot.resolve("/foo.txt").upload(resource, progress.asProgressionCallback(true))
+             * group.sendMessage("File uploaded successfully.")
+             * ```
+             *
+             * 直接使用 [ProgressionCallback] 也可以实现示例这样的功能, [asProgressionCallback] 是为了简化操作.
+             */
             @JvmStatic
-            @MiraiExperimentalApi
             public fun SendChannel<Long>.asProgressionCallback(closeOnFinish: Boolean = true): ProgressionCallback {
                 return object : ProgressionCallback {
                     override fun onProgression(file: RemoteFile, resource: ExternalResource, downloadedSize: Long) {
