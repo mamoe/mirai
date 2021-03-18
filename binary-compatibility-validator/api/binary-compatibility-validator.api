@@ -5943,6 +5943,8 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun length (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun listFiles ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun listFiles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun listFilesCollection ()Ljava/util/List;
+	public fun listFilesCollection (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun listFilesIterator (Z)Ljava/util/Iterator;
 	public abstract fun listFilesIterator (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun mkdir ()Z

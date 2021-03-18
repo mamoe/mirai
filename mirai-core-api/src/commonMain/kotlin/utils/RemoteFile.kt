@@ -15,6 +15,7 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.toList
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.FileSupported
@@ -239,6 +240,11 @@ public interface RemoteFile {
      */
     @JavaFriendlyAPI
     public suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile>
+
+    /**
+     * 获取该目录下所有文件, 返回的 [RemoteFile] 都拥有 [RemoteFile.id] 用于区分重名文件或目录. 当 [RemoteFile] 表示一个文件时返回 [emptyList].
+     */
+    public suspend fun listFilesCollection(): List<RemoteFile> = listFiles().toList()
 
     /**
      * 得到相应文件消息, 可以发送. 当 [RemoteFile] 表示一个目录或文件不存在时返回 `null`.
