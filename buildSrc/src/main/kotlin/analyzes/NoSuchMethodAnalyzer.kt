@@ -9,13 +9,49 @@
 
 package analyzes
 
+import analyzes.AsmUtil.hasField
+import analyzes.AsmUtil.hasMethod
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.MethodNode
 import java.io.File
 import java.util.zip.ZipFile
 
 @Suppress("UNCHECKED_CAST")
 object NoSuchMethodAnalyzer {
+    private fun analyzeMethod(
+        analyzer: AndroidApiLevelCheck.Analyzer,
+        method: MethodNode,
+        asmClasses: AsmClassesM
+    ) {
+        analyzer.withContext("Analyze ${method.name}${method.desc}") {
+            method.instructions?.forEach { insn ->
+                when (insn) {
+                    is MethodInsnNode -> {
+                        if (insn.owner.startsWith("net/mamoe/mirai/")) {
+                            if (!asmClasses.hasMethod(insn.owner, insn.name, insn.desc, insn.opcode)) {
+                                report(
+                                    "No such method",
+                                    "${insn.owner}.${insn.name}${insn.desc}, opcode=${insn.opcode}"
+                                )
+                            }
+                        }
+                    }
+                    is FieldInsnNode -> {
+                        if (insn.owner.startsWith("net/mamoe/mirai/")) {
+                            if (!asmClasses.hasField(insn.owner, insn.name, insn.desc, insn.opcode)) {
+                                report(
+                                    "No such field",
+                                    "${insn.owner}.${insn.name}: ${insn.desc}, opcode=${insn.opcode}"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun check(classes: Sequence<File>, libs: Sequence<File>) = AsmUtil.run {
         val analyzer = AndroidApiLevelCheck.Analyzer(emptyMap())
         val asmClasses: AsmClassesM = mutableMapOf()
@@ -44,32 +80,7 @@ object NoSuchMethodAnalyzer {
             }.toList().forEach { (classNode, file) ->
                 analyzer.file = file
                 classNode.methods?.forEach { method ->
-                    analyzer.withContext("Analyze ${method.name}${method.desc}") {
-                        method.instructions?.forEach { insn ->
-                            when (insn) {
-                                is MethodInsnNode -> {
-                                    if (insn.owner.startsWith("net/mamoe/mirai/")) {
-                                        if (!asmClasses.hasMethod(insn.owner, insn.name, insn.desc, insn.opcode)) {
-                                            report(
-                                                "No such method",
-                                                "${insn.owner}.${insn.name}${insn.desc}, opcode=${insn.opcode}"
-                                            )
-                                        }
-                                    }
-                                }
-                                is FieldInsnNode -> {
-                                    if (insn.owner.startsWith("net/mamoe/mirai/")) {
-                                        if (!asmClasses.hasField(insn.owner, insn.name, insn.desc, insn.opcode)) {
-                                            report(
-                                                "No such field",
-                                                "${insn.owner}.${insn.name}: ${insn.desc}, opcode=${insn.opcode}"
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    analyzeMethod(analyzer, method, asmClasses)
                 }
             }
         if (analyzer.reported) {
