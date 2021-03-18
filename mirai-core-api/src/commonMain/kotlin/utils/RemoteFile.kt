@@ -21,7 +21,6 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.File
 
@@ -291,11 +290,12 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @throws IllegalStateException 该文件上传失败时抛出
      */
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null
-    ): Boolean
+    ): FileMessage
 
     /**
      * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
@@ -308,15 +308,16 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @throws IllegalStateException 该文件上传失败时抛出
      * @see upload
      */
-    public suspend fun upload(resource: ExternalResource): Boolean = upload(resource, null)
+    public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
      * 上传文件.
      * @see upload
      */
-    public suspend fun upload(file: File): Boolean = file.toExternalResource().use { upload(it) }
+    public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
      * 上传文件并发送文件消息.
@@ -381,9 +382,7 @@ public interface RemoteFile {
          */
         @JvmStatic
         public suspend fun FileSupported.uploadFile(path: String, resource: ExternalResource): FileMessage {
-            val file = this.filesRoot.resolve(path)
-            if (!file.upload(resource)) error("Failed to upload file")
-            return file.toMessage() ?: error("Failed to create FileMessage.")
+            return this.filesRoot.resolve(path).upload(resource)
         }
 
         /**
@@ -396,11 +395,8 @@ public interface RemoteFile {
             path: String,
             resource: ExternalResource
         ): MessageReceipt<C> {
-            val file = this.filesRoot.resolve(path)
-            if (!file.upload(resource)) {
-                error("Failed to upload file")
-            }
-            return file.toMessage()?.sendTo(this) ?: error("Failed to create FileMessage.")
+            @Suppress("UNCHECKED_CAST")
+            return this.filesRoot.resolve(path).uploadAndSend(resource) as MessageReceipt<C>
         }
     }
 }

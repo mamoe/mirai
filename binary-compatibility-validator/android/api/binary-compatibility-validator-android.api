@@ -5914,11 +5914,11 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun toMessage ()Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun toMessage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun toString ()Ljava/lang/String;
-	public fun upload (Ljava/io/File;)Z
+	public fun upload (Ljava/io/File;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public fun upload (Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;)Z
+	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Z
+	public fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun upload (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun uploadAndSend (Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
