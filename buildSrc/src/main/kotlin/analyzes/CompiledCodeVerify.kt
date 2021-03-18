@@ -70,7 +70,10 @@ object CompiledCodeVerify {
     }
 
     private fun Project.registerVerifyTasks() { // for feature extends
-        registerVerifyTask("verify_NoNoSuchMethodError", NoSuchMethodAnalyzer::check)
+        // https://github.com/mamoe/mirai/pull/1080#issuecomment-801197312
+        if (name != "mirai-console") {
+            registerVerifyTask("verify_NoNoSuchMethodError", NoSuchMethodAnalyzer::check)
+        }
     }
 
     fun Project/*RootProject*/.registerAllVerifyTasks() {
