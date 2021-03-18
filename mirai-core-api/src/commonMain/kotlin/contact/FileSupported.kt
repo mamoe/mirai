@@ -10,20 +10,20 @@
 
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.RemoteFile
 
 /**
- * 支持文件操作的 [Contact]. 目前仅 [Group]
+ * 支持文件操作的 [Contact]. 目前仅 [Group].
+ *
+ * 获取文件操作相关示例: [RemoteFile]
+ *
  * @since 2.5
  */
-@MiraiExperimentalApi
 public interface FileSupported : Contact {
     /**
      * 文件根目录. 可通过 [RemoteFile.listFiles] 获取目录下文件列表.
      *
      * @since 2.5
      */
-    @MiraiExperimentalApi
     public val filesRoot: RemoteFile
 }
