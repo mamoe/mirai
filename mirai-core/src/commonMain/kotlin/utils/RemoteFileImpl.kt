@@ -416,10 +416,6 @@ internal class RemoteFileImpl(
             .sendAndExpect(bot).toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
-    override suspend fun upload(resource: ExternalResource, callback: RemoteFile.ProgressionCallback?): Boolean {
-        return upload0(resource, callback) != null
-    }
-
     private suspend fun upload0(
         resource: ExternalResource,
         callback: RemoteFile.ProgressionCallback?
@@ -508,7 +504,7 @@ internal class RemoteFileImpl(
         return resp
     }
 
-    override suspend fun uploadFile(
+    override suspend fun upload(
         resource: ExternalResource,
         callback: RemoteFile.ProgressionCallback?
     ): FileMessage {
@@ -519,7 +515,7 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
-        return uploadFile(resource).sendTo(contact)
+        return upload(resource).sendTo(contact)
     }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {

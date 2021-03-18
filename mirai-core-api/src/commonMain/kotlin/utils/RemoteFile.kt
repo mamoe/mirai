@@ -290,11 +290,12 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @throws IllegalStateException 该文件上传失败时抛出
      */
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null
-    ): Boolean
+    ): FileMessage
 
     /**
      * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
@@ -307,15 +308,16 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
+     * @throws IllegalStateException 该文件上传失败时抛出
      * @see upload
      */
-    public suspend fun upload(resource: ExternalResource): Boolean = upload(resource, null)
+    public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
      * 上传文件.
      * @see upload
      */
-    public suspend fun upload(file: File): Boolean = file.toExternalResource().use { upload(it) }
+    public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
      * 上传文件并发送文件消息.
@@ -332,30 +334,6 @@ public interface RemoteFile {
     @MiraiExperimentalApi
     public suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
         file.toExternalResource().use { uploadAndSend(it) }
-
-    /**
-     * 上传文件.
-     * @see upload
-     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
-     * @throws IllegalStateException 当无法上传文件时抛出
-     */
-    public suspend fun uploadFile(
-        resource: ExternalResource,
-        callback: ProgressionCallback? = null
-    ): FileMessage
-
-    /**
-     * 上传文件.
-     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
-     * @see uploadAndSend
-     */
-    public suspend fun uploadFile(resource: ExternalResource): FileMessage = uploadFile(resource, null)
-
-    /**
-     * 上传文件.
-     * @see uploadAndSend
-     */
-    public suspend fun uploadFile(file: File): FileMessage = file.toExternalResource().use { uploadFile(it) }
 
     /**
      * 获取文件下载链接, 当文件不存在或 [RemoteFile] 表示一个目录时返回 `null`
@@ -404,7 +382,7 @@ public interface RemoteFile {
          */
         @JvmStatic
         public suspend fun FileSupported.uploadFile(path: String, resource: ExternalResource): FileMessage {
-            return this.filesRoot.resolve(path).uploadFile(resource)
+            return this.filesRoot.resolve(path).upload(resource)
         }
 
         /**
