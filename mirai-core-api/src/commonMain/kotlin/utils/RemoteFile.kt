@@ -22,6 +22,7 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import net.mamoe.mirai.utils.RemoteFile.ProgressionCallback.Companion.asProgressionCallback
@@ -53,7 +54,7 @@ import java.io.File
  * group.uploadFile("/foo.txt", resource) // Kotlin
  * resource.uploadAsFileTo(group, "/foo.txt") // Kotlin
  * FileSupported.uploadFile(group, "/foo.txt", resource"); // Java
- * ExternalResource.uploadAsFileTo(resource, group, "/foo.txt") // Java
+ * ExternalResource.uploadAsFile(resource, group, "/foo.txt") // Java
  * ```
  *
  * ## 目录操作
@@ -392,6 +393,15 @@ public interface RemoteFile {
      * 上传文件.
      * @see upload
      */
+    public suspend fun upload(
+        file: File,
+        callback: ProgressionCallback? = null
+    ): FileMessage = file.toExternalResource().use { upload(it, callback) }
+
+    /**
+     * 上传文件.
+     * @see upload
+     */
     public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
@@ -450,15 +460,31 @@ public interface RemoteFile {
         public const val ROOT_PATH: String = "/"
 
         /**
-         * 上传文件并获取文件消息.
+         * 上传文件并获取文件消息, 但不发送.
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
          * @see RemoteFile.upload
          */
         @JvmStatic
-        public suspend fun FileSupported.uploadFile(path: String, resource: ExternalResource): FileMessage {
-            return this.filesRoot.resolve(path).upload(resource)
-        }
+        @JvmOverloads
+        public suspend fun FileSupported.uploadFile(
+            path: String,
+            resource: ExternalResource,
+            callback: ProgressionCallback? = null
+        ): FileMessage = this.filesRoot.resolve(path).upload(resource, callback)
+
+        /**
+         * 上传文件并获取文件消息, 但不发送.
+         * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        @JvmOverloads
+        public suspend fun FileSupported.uploadFile(
+            path: String,
+            file: File,
+            callback: ProgressionCallback? = null
+        ): FileMessage = this.filesRoot.resolve(path).upload(file, callback)
 
         /**
          * 上传文件并获取文件消息.
@@ -466,12 +492,23 @@ public interface RemoteFile {
          * @see RemoteFile.upload
          */
         @JvmStatic
-        public suspend fun <C : FileSupported> C.uploadFileAndSend(
+        @JvmOverloads
+        public suspend fun <C : FileSupported> C.sendFile(
             path: String,
-            resource: ExternalResource
-        ): MessageReceipt<C> {
-            @Suppress("UNCHECKED_CAST")
-            return this.filesRoot.resolve(path).uploadAndSend(resource) as MessageReceipt<C>
-        }
+            resource: ExternalResource,
+            callback: ProgressionCallback? = null
+        ): MessageReceipt<C> = this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
+
+        /**
+         * 上传文件并获取文件消息.
+         * @see RemoteFile.upload
+         */
+        @JvmStatic
+        @JvmOverloads
+        public suspend fun <C : FileSupported> C.sendFile(
+            path: String,
+            file: File,
+            callback: ProgressionCallback? = null
+        ): MessageReceipt<C> = this.filesRoot.resolve(path).upload(file, callback).sendTo(this)
     }
 }
