@@ -491,9 +491,6 @@ internal class RemoteFileImpl(
             )
         }.fold(
             onSuccess = {
-                if (this.id == null) {
-                    this.id = resp.fileId
-                }
                 callback?.onSuccess(this, resource)
             },
             onFailure = {
