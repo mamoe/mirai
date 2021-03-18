@@ -121,23 +121,22 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ## 开始
 
 - 开发文档: [docs](docs/README.md)
+- 论坛: [Mirai Forum](https://mirai.mamoe.net/)
+  > *Mirai 只有唯一一个官方论坛 Mirai Forum*
+
 - 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
-- 讨论: [GitHub Discussions](https://github.com/mamoe/mirai/discussions) 和 [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) 以及 [MiraiForum](https://mirai.mamoe.net/)
-  > 在 GitHub Discussions 和 MiraiForum 提出的问题可能会收到 mirai 维护者的回复, 也欢迎分享你基于 mirai 的项目或想法.
-  >
-  > *除这三个途径外，Mirai 在各个平台均没有官方交流群或论坛*
+- 在线讨论: [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-- mirai 官方系列项目: [project-mirai](https://github.com/project-mirai)
-- mirai 社区相关项目: [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
+- mirai 开发组和官方系列项目: [project-mirai](https://github.com/project-mirai)
+- mirai 社区相关项目 (旧): [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
 
 - 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
 ## 赞助
- - 本着与更多mirai开发者，用户，支持者共建更好的学习环境为目的，mamoe自2021年3月1日发起mirai官方社区的建设。社区建设可能涉及：学习论坛，插件中心，发布平台。由于社区的运维需要经费，mirai项目开启sponsor功能。
-- 请注意，赞助是全自愿的，赞助者不会获得所谓“特权”，为资金管理方便，赞助后不设退款，折现等选项，最终解释权归社区运营团队所有。
-- 全部赞助金额，流向，票据单号等将全部<a href="https://github.com/project-mirai/mirai-sponsor/tree/main">透明化公示</a>，欢迎任何人随时查看及提出建议。
-- 赞助支持实名/匿名，方式暂定仅支持支付宝。
+- 本着与更多 mirai 开发者、用户、支持者共建更好的学习环境为目的，mirai 自 2021 年 3 月 1 日发起官方社区的建设。社区建设可能涉及：[学习论坛](https://mirai.mamoe.net)、插件中心、发布平台。由于社区的运维需要经费，mirai 项目开启 sponsor 功能。
+- 请注意，赞助是全自愿的。赞助者不会获得特权，不赞助也可以使用全部的功能。为资金管理方便，赞助后不设退款、折现等选项。最终解释权归社区运营团队所有。
+- 全部赞助金额、流向、票据单号等将<a href="https://github.com/project-mirai/mirai-sponsor/tree/main">透明化公示</a>，欢迎任何人随时查看及提出建议。
 
 
 ## 鸣谢

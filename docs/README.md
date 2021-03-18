@@ -69,15 +69,21 @@
 **为了避免遇到各种问题，请仔细阅读。**
 
 1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
+
 2. **配置项目依赖** （二选一）
    - 要把 mirai-core 嵌入一个应用使用，请阅读 [配置项目依赖](ConfiguringProjects.md)。
    - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
 3. 阅读 API 文档（见下文）
 
+
 > 如果你不知道 `mirai-core` 或 [`mirai-console`] 是什么，请阅读 [Mirai 生态概览](mirai-ecology.md)。
 >
 > 如果你希望先确认 mirai 能够正常运行才能安心阅读文档，可克隆 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world) 并运行其中 Kotlin 或 Java 入口点 `main`。
 
+
+之后...
+
+- [让更多人看到你的项目 - 在论坛发布](https://mirai.mamoe.net/category/6/%E9%A1%B9%E7%9B%AE%E5%8F%91%E5%B8%83)
 
 ### mirai-core API 文档
 
