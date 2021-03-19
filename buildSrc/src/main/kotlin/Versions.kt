@@ -63,6 +63,7 @@ fun ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$versi
 
 val `kotlinx-coroutines-core` = kotlinx("coroutines-core", Versions.coroutines)
 val `kotlinx-coroutines-jdk8` = kotlinx("coroutines-jdk8", Versions.coroutines)
+val `kotlinx-coroutines-swing` = kotlinx("coroutines-swing", Versions.coroutines)
 val `kotlinx-serialization-core` = kotlinx("serialization-core", Versions.serialization)
 val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serialization)
 val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
