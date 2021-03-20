@@ -31,6 +31,11 @@ import java.io.File
 /**
  * 表示一个远程文件或目录.
  *
+ * [RemoteFile] 仅保存 [id], [name], [path], [parent], [contact] 这五个属性, 除获取这些属性外的所有的操作都是在*远程*完成的.
+ * 意味着操作的结果会因文件或目录在服务器中的状态变化而变化.
+ *
+ * 与 [File] 类似, [RemoteFile] 是不可变的. [renameTo] 和 [copyTo] 会操作远程文件, 但不会修改当前 [RemoteFile.path] 等属性.
+ *
  * ## 文件操作
  *
  * 所有文件操作都在 [RemoteFile] 对象中完成. 可通过 [FileSupported.filesRoot] 获取到表示根目录路径的 [RemoteFile], 并通过 [resolve] 获取到其内文件.
@@ -70,6 +75,8 @@ import java.io.File
  * dir.listFilesIterator() // Java 使用, 获取该目录中的文件列表.
  * ```
  *
+ * 注意, 服务器目前只支持一层目录. 即只能存在 "/foo.txt" 和 "/xxx/foo.txt", 而 "/xxx/xxx/foo.txt" 不受支持.
+ *
  * ## 文件名和目录名可重复
  *
  * 服务器允许相同名称的文件或目录存在, 这就导致 "/foo" 可能表示多个重名文件中的一个, 也可能表示一个目录. 依靠路径的判断因此不可靠.
@@ -86,10 +93,10 @@ import java.io.File
  *
  * 只要文件内容无变化, 文件的 [id] 就不会变更. 可以保存 [RemoteFile.id] 并在以后通过 [RemoteFile.resolveById] 准确获取一个目标文件.
  *
+ * @suppress 使用 [RemoteFile] 是稳定的, 但不应该自行实现这个接口.
  * @see FileSupported
  * @since 2.5
  */
-@MiraiExperimentalApi
 public interface RemoteFile {
     /**
      * 文件名或目录名.
@@ -116,7 +123,6 @@ public interface RemoteFile {
     /**
      * 此文件所属的群或好友
      */
-    @MiraiExperimentalApi
     public val contact: FileSupported
 
     /**
@@ -148,7 +154,7 @@ public interface RemoteFile {
          */
         public val path: String,
         /**
-         * 文件长度 (大小) bytes, 目录的 [length] 不确定.
+         * 文件长度 (大小) bytes, 目录的 [length] 为 0.
          */
         public val length: Long,
         /**
@@ -164,7 +170,7 @@ public interface RemoteFile {
          */
         public val uploadTime: Long,
         /**
-         * 上次修改时间.
+         * 上次修改时间. 时间戳秒.
          */
         public val lastModifyTime: Long,
         public val sha1: ByteArray,
@@ -199,7 +205,7 @@ public interface RemoteFile {
     /**
      * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录.
      *
-     * @param relative 当初始字符为 '/' 时将作为绝对路径解析
+     * @param relative  相对路径. 当初始字符为 '/' 时将作为绝对路径解析
      * @see File.resolve stdlib 内的类似函数
      */
     public fun resolve(relative: String): RemoteFile
@@ -207,7 +213,7 @@ public interface RemoteFile {
     /**
      * 获取该目录的子文件. 不会检查 [RemoteFile] 是否表示一个目录. 返回的 [RemoteFile.id] 将会与 `relative.id` 相同.
      *
-     * @param relative 当 [RemoteFile.path] 初始字符为 '/' 时将作为绝对路径解析
+     * @param relative 相对路径. 当 [RemoteFile.path] 初始字符为 '/' 时将作为绝对路径解析
      * @see File.resolve stdlib 内的类似函数
      */
     public fun resolve(relative: RemoteFile): RemoteFile
@@ -254,21 +260,30 @@ public interface RemoteFile {
     /**
      * 重命名这个文件或目录, 将会更改 [RemoteFile.name] 属性值.
      * 操作非 Bot 自己上传的文件时需要管理员权限.
+     *
+     * [renameTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
      */
     public suspend fun renameTo(name: String): Boolean
 
     /**
      * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
+     *
+     * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
 
     /**
      * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
+     *
+     * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
      */
     public suspend fun moveTo(path: String): Boolean
 
     /**
      * 创建目录. 目录已经存在或无管理员权限时返回 `false`.
+     *
+     * 创建后 [isDirectory] 也不一定会返回 `true`.
+     * 当 [id] 未指定时, [RemoteFile] 总是表示一个路径而无法确定目标是文件还是目录, [isFile] 或 [isDirectory] 结果取决于服务器.
      */
     public suspend fun mkdir(): Boolean
 
@@ -301,13 +316,30 @@ public interface RemoteFile {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 上传进度回调
+     * 上传进度回调, 可供前端使用, 以提供进度显示.
      * @see asProgressionCallback
      */
     public interface ProgressionCallback {
+        /**
+         * 当上传开始时调用
+         */
         public fun onBegin(file: RemoteFile, resource: ExternalResource) {}
+
+        /**
+         * 每当有进度更新时调用. 此方法可能会同时被多个线程调用.
+         *
+         * 提示: 可通过 [ExternalResource.size] 获取文件总大小.
+         */
         public fun onProgression(file: RemoteFile, resource: ExternalResource, downloadedSize: Long) {}
+
+        /**
+         * 当上传成功时调用
+         */
         public fun onSuccess(file: RemoteFile, resource: ExternalResource) {}
+
+        /**
+         * 当上传以异常失败时调用
+         */
         public fun onFailure(file: RemoteFile, resource: ExternalResource, exception: Throwable) {}
 
         public companion object {
@@ -356,7 +388,7 @@ public interface RemoteFile {
     }
 
     /**
-     * 上传文件到 [RemoteFile] 表示的路径, 上传过程中调用 [callback] 传递进度. 当无权上传或其他原因失败时返回 `false`.
+     * 上传文件到 [RemoteFile] 表示的路径, 上传过程中调用 [callback] 传递进度.
      *
      * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件.
      * 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送, 或使用 [uploadAndSend].
@@ -366,7 +398,8 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
-     * @throws IllegalStateException 该文件上传失败时抛出
+     * @param callback 进度回调
+     * @throws IllegalStateException 该文件上传失败或权限不足时抛出
      */
     public suspend fun upload(
         resource: ExternalResource,
@@ -374,17 +407,7 @@ public interface RemoteFile {
     ): FileMessage
 
     /**
-     * 上传文件到 [RemoteFile] 表示的路径. 当无权上传或其他原因失败时返回 `false`.
-     *
-     * 上传后不会发送文件消息, 即官方客户端只能在 "群文件" 中查看文件.
-     * 可通过 [toMessage] 获取到文件消息并通过 [Group.sendMessage] 发送, 或使用 [uploadAndSend].
-     *
-     * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
-     * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
-     * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
-     *
-     * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
-     * @throws IllegalStateException 该文件上传失败时抛出
+     * 上传文件到 [RemoteFile.path] 表示的路径.
      * @see upload
      */
     public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
@@ -487,7 +510,7 @@ public interface RemoteFile {
         ): FileMessage = this.filesRoot.resolve(path).upload(file, callback)
 
         /**
-         * 上传文件并获取文件消息.
+         * 上传文件并发送文件消息到相关 [FileSupported].
          * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
          * @see RemoteFile.upload
          */
@@ -500,7 +523,7 @@ public interface RemoteFile {
         ): MessageReceipt<C> = this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
 
         /**
-         * 上传文件并获取文件消息.
+         * 上传文件并发送文件消息到相关 [FileSupported].
          * @see RemoteFile.upload
          */
         @JvmStatic
