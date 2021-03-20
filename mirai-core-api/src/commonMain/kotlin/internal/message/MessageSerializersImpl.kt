@@ -27,6 +27,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.isSubclassOf
 
+internal fun SerialDescriptor.copy(newName: String): SerialDescriptor =
+    buildClassSerialDescriptor(newName) { takeElementsFrom(this@copy) }
+
 
 internal fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
     with(descriptor) {

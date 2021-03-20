@@ -10,7 +10,7 @@
 package net.mamoe.mirai.message.code
 
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 
@@ -18,14 +18,6 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * 可以使用 mirai 码表示的 [Message] 类型.
  *
  * 从字符串解析 mirai 码：[MiraiCode.deserializeMiraiCode]
- *
- * @see At
- * @see AtAll
- * @see VipFace
- * @see Face
- * @see Image
- * @see FlashImage
- * @see PokeMessage
  *
  * @see MiraiCode
  */

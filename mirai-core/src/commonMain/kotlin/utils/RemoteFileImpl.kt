@@ -507,7 +507,7 @@ internal class RemoteFileImpl(
     ): FileMessage {
         val resp = upload0(resource, null) ?: error("Failed to upload file.")
         return FileMessageImpl(
-            name, resp.fileId, resource.size, resp.busId
+            resp.fileId, resp.busId, name, resource.size
         )
     }
 
@@ -544,6 +544,6 @@ internal class RemoteFileImpl(
     override suspend fun toMessage(): FileMessage? {
         val info = getFileFolderInfo() ?: return null
         if (!info.isFile) return null
-        return FileMessageImpl(name, info.id, info.size, info.busId)
+        return FileMessageImpl(info.id, info.busId, name, info.size)
     }
 }

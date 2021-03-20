@@ -23,7 +23,6 @@ import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
@@ -898,6 +897,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 @Suppress("INVISIBLE_MEMBER")
                 throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
         }
+    }
+
+    override fun createFileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage {
+        return FileMessageImpl(id, internalId, name, size)
     }
 
     @Suppress("DEPRECATION", "OverridingDeprecatedMember")

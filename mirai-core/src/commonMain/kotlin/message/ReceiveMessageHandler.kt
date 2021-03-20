@@ -376,10 +376,10 @@ private object ReceiveMessageTransformer {
 
                         list.add(
                             FileMessageImpl(
+                                id = file.filePath,
+                                busId = file.busId, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
                                 name = file.fileName,
-                                id = file.filePath, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
-                                size = file.fileSize,
-                                busId = file.busId
+                                size = file.fileSize
                             )
                         )
                     }

@@ -7,7 +7,9 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.message.code
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // MiraiCodeParser
+
+package net.mamoe.mirai.internal.message.code
 
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.code.internal.MiraiCodeParser
@@ -32,7 +34,12 @@ class TestMiraiCode {
     }
 
     @Test
-    fun testCodes() {
+    fun `test serialization`() {
+        assertEquals("[mirai:file:id,1,name,2]", FileMessage("id", 1, "name", 2).serializeToMiraiCode())
+    }
+
+    @Test
+    fun `test deserialization`() {
         assertEquals(AtAll.toMessageChain(), "[mirai:atall]".deserializeMiraiCode())
         assertEquals(PlainText("[Hello").toMessageChain(), "\\[Hello".deserializeMiraiCode())
         assertEquals(buildMessageChain {
@@ -62,6 +69,7 @@ class TestMiraiCode {
         assertEquals(buildMessageChain {
             +Dice(1)
         }, "[mirai:dice:1]".deserializeMiraiCode())
+        assertEquals(FileMessage("id", 1, "name", 2), "[mirai:file:id,1,name,2]".deserializeMiraiCode().single())
 
         val musicShare = MusicShare(
             kind = MusicKind.NeteaseCloudMusic,

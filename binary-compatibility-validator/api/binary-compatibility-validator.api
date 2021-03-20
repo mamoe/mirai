@@ -88,6 +88,7 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun calculateGroupCodeByGroupUin (J)J
 	public fun calculateGroupUinByGroupCode (J)J
 	public abstract fun constructMessageSource (JLnet/mamoe/mirai/message/data/MessageSourceKind;JJ[II[ILnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
+	public abstract fun createFileMessage (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun createImage (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public fun downloadForwardMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)Ljava/util/List;
 	public abstract fun downloadForwardMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -4046,11 +4047,13 @@ public final class net/mamoe/mirai/message/data/Face$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/FileMessage$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public fun contentToString ()Ljava/lang/String;
+	public static fun create (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getInternalId ()I
 	public fun getKey ()Lnet/mamoe/mirai/message/data/FileMessage$Key;
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public abstract fun getName ()Ljava/lang/String;
@@ -4061,6 +4064,16 @@ public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/m
 
 public final class net/mamoe/mirai/message/data/FileMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public static final field SERIAL_NAME Ljava/lang/String;
+	public final fun create (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
+}
+
+public final class net/mamoe/mirai/message/data/FileMessage$Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/FileMessage$Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/FileMessage;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/FileMessage;)V
 }
 
 public final class net/mamoe/mirai/message/data/FlashImage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/HummerMessage, net/mamoe/mirai/message/data/MessageContent {
@@ -4689,6 +4702,7 @@ public final class net/mamoe/mirai/message/data/MessageSourceKind$Companion {
 
 public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun At (Lnet/mamoe/mirai/contact/UserOrBot;)Lnet/mamoe/mirai/message/data/At;
+	public static final synthetic fun FileMessage (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static final synthetic fun Image (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public static final synthetic fun at (Lnet/mamoe/mirai/contact/Member;)Lnet/mamoe/mirai/message/data/At;
 	public static final synthetic fun buildMessageChain (ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;

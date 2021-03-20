@@ -138,6 +138,12 @@ public interface IMirai : LowLevelApiAccessor {
     public fun createImage(imageId: String): Image
 
     /**
+     * 创建一个 [FileMessage]. [name] 与 [size] 只供本地使用, 发送消息时只会使用 [id] 和 [internalId].
+     * @since 2.5
+     */
+    public fun createFileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage
+
+    /**
      * 获取图片下载链接
      *
      * @see Image.queryUrl [Image] 的扩展函数

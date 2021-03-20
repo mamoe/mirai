@@ -22,34 +22,22 @@ internal fun FileMessage.checkIsImpl(): FileMessageImpl {
 
 @Serializable
 @SerialName(FileMessage.SERIAL_NAME)
-internal class FileMessageImpl(
-    override val name: String,
+internal data class FileMessageImpl(
     override val id: String,
+    @SerialName("internalId") val busId: Int,
+    override val name: String,
     override val size: Long,
-    val busId: Int // internal // TODO: 2021/3/8 introduce OnlineFileMessage and OfflineFileMessage to eliminate property `busId`.
 ) : FileMessage {
-    override fun toString(): String = "[mirai:file:$name,$id]"
+    override val internalId: Int
+        get() = busId
 
-    @Suppress("DuplicatedCode")
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as FileMessageImpl
-
-        if (name != other.name) return false
-        if (id != other.id) return false
-        if (size != other.size) return false
-
-        return true
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:file:")
+        builder.append(id).append(",")
+        builder.append(busId).append(",")
+        builder.append(name).append(",")
+        builder.append(size).append("]")
     }
 
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + id.hashCode()
-        result = 31 * result + size.hashCode()
-        result = 31 * result + busId.hashCode()
-        return result
-    }
-
+    override fun toString(): String = "[mirai:file:$name,$id,$size,$busId]"
 }

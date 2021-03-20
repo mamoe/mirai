@@ -130,6 +130,9 @@ private object MiraiCodeParsers: AbstractMap<String, MiraiCodeParser>(), Map<Str
 
         MusicShare(MusicKind.valueOf(kind), title, summary, jumpUrl, pictureUrl, musicUrl, brief)
     },
+    "file" to MiraiCodeParser(Regex("""(.*?),(.*?),(.*?),(.*?)""")) { (id, internalId, name, size) ->
+        FileMessage(id, internalId.toInt(), name, size.toLong())
+    },
 )
 
 
