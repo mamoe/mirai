@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.message.copy
 import net.mamoe.mirai.internal.message.map
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.RemoteFile
@@ -65,6 +66,14 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     public val size: Long
 
     override fun contentToString(): String = "[文件]$name" // orthodox
+
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:file:")
+        builder.appendStringAsMiraiCode(id).append(",")
+        builder.append(internalId).append(",")
+        builder.appendStringAsMiraiCode(name).append(",")
+        builder.append(size).append("]")
+    }
 
     /**
      * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.

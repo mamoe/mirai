@@ -31,13 +31,5 @@ internal data class FileMessageImpl(
     override val internalId: Int
         get() = busId
 
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:file:")
-        builder.append(id).append(",")
-        builder.append(busId).append(",")
-        builder.append(name).append(",")
-        builder.append(size).append("]")
-    }
-
     override fun toString(): String = "[mirai:file:$name,$id,$size,$busId]"
 }
