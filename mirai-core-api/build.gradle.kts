@@ -103,7 +103,7 @@ kotlin {
 
 tasks.register("checkAndroidApiLevel") {
     doFirst {
-        androidutil.AndroidApiLevelCheck.check(
+        analyzes.AndroidApiLevelCheck.check(
             buildDir.resolve("classes/kotlin/android/main"),
             project.property("mirai.android.target.api.level")!!.toString().toInt(),
             project

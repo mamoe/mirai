@@ -69,6 +69,8 @@ tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
     )
 }
 
+analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
+
 allprojects {
     group = "net.mamoe"
     version = Versions.project
