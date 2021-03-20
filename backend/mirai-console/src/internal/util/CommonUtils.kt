@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmName("CommonUtils") // maintain binary compatibility
@@ -41,14 +41,14 @@ internal fun StackFrame.findLoader(): ClassLoader? {
     }.getOrNull()
 }
 
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "UnusedParameter")
 @kotlin.internal.LowPriorityInOverloadResolution
 internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     return this ?: block()
 }
 
-@Suppress("DeprecatedCallableAddReplaceWith")
+@Suppress("DeprecatedCallableAddReplaceWith", "UnusedParameter")
 @Deprecated("Useless ifNull on not null value.")
 @JvmName("ifNull1")
 internal inline fun <T : Any> T.ifNull(block: () -> T): T = this
