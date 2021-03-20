@@ -51,6 +51,7 @@ const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Vers
 
 const val `kotlinx-coroutines-core` = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
 const val `kotlinx-coroutines-jdk8` = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.coroutines}"
+const val `kotlinx-coroutines-swing` = "org.jetbrains.kotlinx:kotlinx-coroutines-swing:${Versions.coroutines}"
 
 const val `kotlinx-serialization-core` = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}"
 const val `kotlinx-serialization-json` = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}"
