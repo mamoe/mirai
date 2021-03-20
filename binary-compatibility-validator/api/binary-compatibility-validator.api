@@ -4050,6 +4050,7 @@ public final class net/mamoe/mirai/message/data/Face$Companion {
 public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/FileMessage$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public fun contentToString ()Ljava/lang/String;
 	public static fun create (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun getId ()Ljava/lang/String;
