@@ -291,7 +291,7 @@ public interface ExternalResource : Closeable {
         @JvmBlockingBridge
         @JvmName("uploadAsFile")
         @JvmOverloads
-        public suspend fun ExternalResource.uploadAsFileTo(
+        public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
             callback: RemoteFile.ProgressionCallback? = null
