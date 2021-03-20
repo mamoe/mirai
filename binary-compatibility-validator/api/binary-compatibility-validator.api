@@ -6090,8 +6090,8 @@ public final class net/mamoe/mirai/utils/RemoteFile$FileInfo {
 	public final fun getSha1 ()[B
 	public final fun getUploadTime ()J
 	public final fun getUploaderId ()J
-	public final fun resolveToFile (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/utils/RemoteFile;
-	public final fun resolveToFile (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resolveToFile (Lnet/mamoe/mirai/contact/FileSupported;)Lnet/mamoe/mirai/utils/RemoteFile;
+	public final fun resolveToFile (Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/utils/RemoteFile$ProgressionCallback {

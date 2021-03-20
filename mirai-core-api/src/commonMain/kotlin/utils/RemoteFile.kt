@@ -179,8 +179,8 @@ public interface RemoteFile {
         /**
          * 根据 [FileInfo.id] 或 [FileInfo.path] 获取到对应的 [RemoteFile].
          */
-        public suspend fun resolveToFile(group: Group): RemoteFile =
-            group.filesRoot.resolveById(id) ?: group.filesRoot.resolve(path)
+        public suspend fun resolveToFile(contact: FileSupported): RemoteFile =
+            contact.filesRoot.resolveById(id) ?: contact.filesRoot.resolve(path)
     }
 
     /**
