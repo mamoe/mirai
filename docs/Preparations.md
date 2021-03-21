@@ -1,6 +1,6 @@
 # Mirai - Preparations
 
-本章节介绍 Mirai 的 JVM 环境和开发准备工作。预计阅读时间 2 分钟。
+本章节介绍 Mirai 的 JVM 环境和开发准备工作。
 
 ## JVM 环境要求
 
@@ -10,7 +10,7 @@
 
 **但注意不要使用 Oracle JDK**（[原因](https://github.com/mamoe/mirai/discussions/779)），可以使用其他任何 JDK。
 
-> 下载 JDK：
+> 要下载 JDK：
 > - 手动下载安装如 [AdoptOpenJDK](https://adoptopenjdk.net/)
 > - 自动在 IntelliJ IDEA `Project Structure`(`Ctrl+Shift+Alt+S`) -> `SDKs` -> `+` -> `Download JDK` 下载安装
 
@@ -26,7 +26,7 @@
 <!--[Kotlin Jvm Blocking Bridge-JB]: https://plugins.jetbrains.com/plugin/14816-kotlin-jvm-blocking-bridge-->
 <!--[Kotlin Jvm Blocking Bridge-OK]: https://plugins.jetbrains.com/embeddable/install/14816-->
 
-推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 或 [Android Studio](https://developer.android.com/studio)。Mirai 提供 IntelliJ 插件来提升开发体验。
+推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 或 [Android Studio](https://developer.android.com/studio)。Mirai 提供 IDE 插件来提升开发体验。
 
 |          插件名           |                         描述                         |               一键安装                |         JetBrains 插件仓库          |
 |:------------------------:|:---------------------------------------------------:|:-----------------------------------:|:----------------------------------:|

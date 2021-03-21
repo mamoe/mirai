@@ -127,4 +127,15 @@ mirai-console-loader 应运而生，它的工作就是简化 console 启动流�
 
 实体关系图采用 [Mermaid](https://github.com/mermaid-js/mermaid) 绘制。
 
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> [回到 Mirai 文档索引](CoreAPI.md)
+
+### 变更记录
+
+当前版本：`1.2.0` (2021/1/24)
+
+- `1.0.0`: 2020/12/13
+  - [PR 初始版本](https://github.com/mamoe/mirai/pull/710)
+- `1.1.0`: 2021/1/13
+  - 增加了作者信息
+- `1.2.0`: 2021/1/24
+  - 进行了语言精简, 简化关系图

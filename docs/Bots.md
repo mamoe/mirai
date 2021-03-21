@@ -228,4 +228,4 @@ contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保�
 
 > 下一步，[Contacts](Contacts.md)
 >
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> [回到 Mirai 文档索引](CoreAPI.md)
