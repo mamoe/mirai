@@ -2,9 +2,9 @@
 
 Mirai Console Gradle 插件。
 
-## 使用
+## 在构建中使用插件
 
-参考 [ConfiguringProjects](../../docs/ConfiguringProjects.md)
+参考 [ConfiguringProjects](../../docs/ConfiguringProjects.md#b使用-gradle-插件配置项目)。
 
 ## 功能
 
@@ -15,7 +15,6 @@ Mirai Console Gradle 插件。
 - 配置 Java 编译目标为 1.8
 - 配置 Java 编译编码为 UTF-8
 - 配置插件 JAR 打包构建任务 `buildPlugin`（带依赖, 成品 JAR 可以被 Mirai Console 加载）
-- 配置插件 JAR 发布任务 `publishPlugin`（到 Bintray）
 
 支持 Kotlin 多平台项目（Multiplatform Projects）。每个 JVM 或 Android 目标平台都会被如上配置，对应打包任务带有编译目标的名称，如 `buildPluginJvm`
 
@@ -35,8 +34,7 @@ Mirai Console Gradle 插件。
 若要修改 Mirai Console Gradle 插件的默认配置，在 `build.gradle.kts` 或 `build.gradle` 内，使用 `mirai`：
 ```kotlin
 mirai { // this: MiraiConsoleExtension
-    // 配置，例如 
-    coreVersion = "2.0.0" // 修改 mirai-core 版本
+    
 }
 ```
 
@@ -57,6 +55,8 @@ mirai {
 }
 ```
 
+*2021/3/21 更新:* 由于 Bintray JCenter 即将关闭，随着论坛的发展，mirai 正在策划插件中心服务。待插件中心完成后将会提供更好的插件分发平台。
+
 #### 排除依赖
 
 如果要在打包 JAR（`buildPlugin`）时排除一些依赖，请使用如下配置：
@@ -67,4 +67,4 @@ mirai {
 }
 ```
 
-插件一般不需要手动排除依赖。Mirai Console 已经包含的依赖都会自动在打包过程中被排除。
+**插件一般不需要手动排除依赖**。Mirai Console 已经包含的依赖都会自动在打包过程中被排除。
