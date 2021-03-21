@@ -4,7 +4,7 @@
 
 ## 生态
 
-**[Mirai 生态概览](mirai-ecology.md)**
+请先阅读 **[Mirai 生态概览](mirai-ecology.md)**。
 
 ## 社区 SDK
 
@@ -66,14 +66,16 @@
 
 ## JVM 平台 Mirai 开发
 
-**为了避免遇到各种问题，请仔细阅读。**
+**为了避免遇到各种问题，请逐步仔细阅读。**
 
-1. [JVM 环境和开发准备工作（2 分钟）](Preparations.md#mirai---preparations)
+1. [JVM 环境和开发准备工作](Preparations.md#mirai---preparations)
 
-2. **配置项目依赖** （二选一）
-   - 要把 mirai-core 嵌入一个应用使用，请阅读 [配置项目依赖](ConfiguringProjects.md)。
-   - 要为 [`mirai-console`] 框架开发插件，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
-3. 阅读 API 文档（见下文）
+2. 选择框架
+   - 若要将 mirai 当做依赖库嵌入你的应用使用，则需要使用 mirai-core，请阅读 [配置项目依赖](ConfiguringProjects.md)。
+
+   - 若要以插件模式开发，可以使用 mirai-console，请阅读 [mirai-console 的配置插件项目](https://github.com/mamoe/mirai-console/blob/master/docs/ConfiguringProjects.md)。
+
+4. 阅读 API 文档（见下文）
 
 
 > 如果你不知道 `mirai-core` 或 [`mirai-console`] 是什么，请阅读 [Mirai 生态概览](mirai-ecology.md)。
@@ -87,11 +89,4 @@
 
 ### mirai-core API 文档
 
-> *适用于 2.x 版本*
-
-- [Bots](Bots.md)
-- [Contacts](Contacts.md)
-- [Events](Events.md)
-- [Messages](Messages.md)
-
-> 希望改进文档? 请在 [#848](https://github.com/mamoe/mirai/discussions/848) 提出建议
+请在 [CoreAPI.md](CoreAPI.md) 阅读 JVM 平台的 mirai-core-api 使用文档。

@@ -39,7 +39,8 @@ Mirai 以事件驱动。
 
 如果你了解事件且不希望详细阅读，可以立即仿照下面示例创建事件监听并跳过本章节。
 
-Kotlin
+### Kotlin
+
 ```kotlin
 // 事件监听器是协程任务。如果你有 CoroutineScope，可从 scope 继承生命周期管理和 coroutineContext
 GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent> { event ->
@@ -47,6 +48,9 @@ GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent
     // event: GroupMessageEvent
     subject.sendMessage("Hello!")
 }
+// `GlobalEventChannel.parentScope(coroutineScope)` 也可以替换为使用扩展 `coroutineScope.globalEventChannel()`, 根据个人习惯选择
+
+
 
 // 如果不想限制生命周期，可获取 listener 处理
 val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEvent> { event -> }
@@ -54,7 +58,8 @@ val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEv
 listener.complete() // 停止监听
 ```
 
-Java
+### Java
+
 ```java
 // 创建监听
 Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
@@ -75,12 +80,12 @@ listener.complete(); // 停止监听
 
 **`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个 bot，请使用 `bot.eventChannel`。**
 
-> 现在你可以继续阅读详细了解事件，或：
+> 你已经了解了基本事件操作。现在你可以继续阅读通道处理和扩展等内容，或：
 >
 > - 跳到下一章 [Messages](Messages.md)
 > - [查看事件列表](../mirai-core-api/src/commonMain/kotlin/event/events/README.md#事件)
-> - 回到 [目录](#目录)  
-> - [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> - [回到事件文档目录](#目录)
+> - [回到 Mirai 文档索引](CoreAPI.md)
 
 ## 事件通道
 
@@ -515,4 +520,4 @@ reply("复读模式结束")
 
 > 下一步，[Messages](Messages.md)
 >
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> [回到 Mirai 文档索引](CoreAPI.md)

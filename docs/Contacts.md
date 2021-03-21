@@ -24,4 +24,4 @@
 
 > 下一步，[Events](Events.md)
 >
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> [回到 Mirai 文档索引](CoreAPI.md)

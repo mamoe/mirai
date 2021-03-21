@@ -421,4 +421,4 @@ new PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 
 > 回到 [目录](#目录)
 >
-> [回到 Mirai 文档索引](README.md#mirai-core-api-文档)
+> [回到 Mirai 文档索引](CoreAPI.md)
