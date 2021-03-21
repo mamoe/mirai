@@ -4,39 +4,44 @@
 
 ## 模块说明
 
-console 由后端和前端一起工作. 使用时必须选择一个前端.
+Mirai Console 分前后端模块实现。开发插件只需要针对同一个后端开发，便可以运行在所有前端。
 
-- `mirai-console`: Mirai Console 后端。
+目前的前端有：
 
-- `mirai-console-terminal`: 终端前端，适用于 JVM。
-- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): Android 应用前端。
-- [`mirai-compose`](https://github.com/sonder-joker/mirai-compose): 跨平台桌面图形前端。
+- `mirai-console-terminal`: JVM 终端前端，适合在测试环境或服务器运行。
+- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): Android 应用前端，可兼容大部分 Mirai Console 插件。
+- [`mirai-compose`](https://github.com/sonder-joker/mirai-compose): 跨平台桌面图形前端，拥有可视化管理。正处于测试阶段。
 
 ## 选择版本
 
-`mirai-console` 与 `mirai-core` 同步版本发布。版本号见 [mirai](https://github.com/mamoe/mirai/blob/dev/docs/ConfiguringProjects.md#%E9%80%89%E6%8B%A9%E7%89%88%E6%9C%AC)。
+`mirai-console` 与 `mirai-core` **同步版本**发布。版本号见 [mirai](https://github.com/mamoe/mirai/blob/dev/docs/ConfiguringProjects.md#%E9%80%89%E6%8B%A9%E7%89%88%E6%9C%AC)。
 
 ## 配置项目
 
-请选择以下三种方法之一。
+请选择以下三种方法之一。不推荐使用 Maven 构建 Mirai Console 插件。
 
-### 使用模板项目
+### A.使用模板项目
 
 Mirai 鼓励插件开发者将自己的作品开源，并为此提供了模板项目。
 
-注意，模板项目依赖的 Mirai Console 不一定是最新的。请检查
+注意，模板项目依赖的版本号不一定是最新的。请自行替换。
 
 1. 访问 [mirai-console-plugin-template](https://github.com/project-mirai/mirai-console-plugin-template)
+
 2. 点击绿色按钮 "Use this template"，创建项目
+
 3. 克隆项目，检查并修改生成的属性
 
-### 使用 Gradle 插件配置项目
+### B.使用 Gradle 插件配置项目
 
 `VERSION`: [选择版本](#选择版本)
 
 若使用 `build.gradle.kts`:
 ```kotlin
 plugins {
+    kotlin("jvm") version "1.4.31"
+    kotlin("serialization") version "1.4.31"
+    
     id("net.mamoe.mirai-console") version "VERSION"
 }
 ```
@@ -44,20 +49,26 @@ plugins {
 若使用 `build.gradle`:
 ```groovy
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.31'
+    
     id 'net.mamoe.mirai-console' version 'VERSION'
 }
 ```
 
 完成。Mirai Console Gradle 插件会为你配置依赖等所有编译环境。
 
-可以在 [README](../tools/gradle-plugin/README.md#mirai-console-gradle-plugin) 获取详细的 Gradle 插件使用方法，**如配置 mirai-core 版本**。
+可以在 [README](../tools/gradle-plugin/README.md#mirai-console-gradle-plugin) 获取详细的 Gradle 插件使用方法。
 
 > 现在你已经配置好了项目，返回 [开发文档索引](README.md#mirai-console)
 
-### 手动配置项目
+### C.手动配置项目
+
+不推荐这种方式，因为通常还需要配置一些不容易配置的编译器参数。
 
 添加依赖：
-`build.gradle.kts`：
+
+`build.gradle.kts` 或 `build.gradle`：
 ```kotlin
 dependencies {
   compileOnly("net.mamoe:mirai-core:$CORE_VERSION") // mirai-core 的 API
