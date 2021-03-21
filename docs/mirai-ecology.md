@@ -127,7 +127,7 @@ mirai-console-loader 应运而生，它的工作就是简化 console 启动流�
 
 实体关系图采用 [Mermaid](https://github.com/mermaid-js/mermaid) 绘制。
 
-> [回到 Mirai 文档索引](CoreAPI.md)
+> [回到 Mirai 文档索引](README.md)
 
 ### 变更记录
 
