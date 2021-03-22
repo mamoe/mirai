@@ -22,6 +22,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import java.io.File
+import java.io.InputStream
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -386,7 +387,18 @@ public open class BotConfiguration { // open for Java
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * 缓存数据目录, 相对于 [workingDir]
+     * 缓存数据目录, 相对于 [workingDir].
+     *
+     * 缓存目录保存的内容均属于不稳定的 Mirai 内部数据, 请不要手动修改它们. 清空缓存不会影响功能. 只会导致一些操作如读取全部群列表要重新进行.
+     * 默认启用的缓存可以加快登录过程.
+     *
+     * 注意: 这个目录只存储能在 [BotConfiguration] 配置的内容, 即包含:
+     * - 联系人列表
+     * - 登录服务器列表
+     * - 资源服务秘钥
+     *
+     * 其他内容如通过 [InputStream] 发送图片时的缓存使用 [FileCacheStrategy], 默认使用系统临时文件且会在关闭时删除文件.
+     *
      * @since 2.4
      */
     public var cacheDir: File = File("cache")
