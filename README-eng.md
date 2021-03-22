@@ -28,6 +28,7 @@ The community, (with `mirai-console`) that allows developers to share their plug
 - `Go`: [gomirai](https://github.com/Logiase/gomirai) The GoLang SDK for mirai.
 - `Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) The Mozilla Rhino (JavaScript) SDK for mirai.
 - `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and native Lua.
+- `C++`: [miraiCP](https://github.com/Nambers/MiraiCP) A C++ SDK using the `JNI` technique to connect the Mirai.
 - `C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
 - `C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
 - `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
