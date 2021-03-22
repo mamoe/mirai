@@ -12,10 +12,13 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Dispatchers
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import net.mamoe.mirai.utils.FileCacheStrategy.MemoryCache
+import net.mamoe.mirai.utils.FileCacheStrategy.TempCache
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -25,12 +28,27 @@ import java.io.InputStream
  *
  * 由于上传资源时服务器要求提前给出 MD5 和文件大小等数据, 一些资源如 [InputStream] 需要首先缓存才能使用.
  *
- * Mirai 全局都使用 [IMirai.FileCacheStrategy]. 可以覆盖.
+ * 资源的缓存都是将 [InputStream] 缓存未 [ExternalResource]. 根据 [FileCacheStrategy] 实现不同, 可以以临时文件存储, 也可以在数据库或是内存按需存储.
+ * Mirai 内置的实现有 [内存存储][MemoryCache] 和 [临时文件存储][TempCache].
+ * 操作 [ExternalResource.toExternalResource] 时将会使用 [IMirai.FileCacheStrategy]. 可以覆盖, 示例:
+ * ```
+ * // Kotlin
+ * Mirai.FileCacheStrategy = FileCacheStrategy.TempCache() // 使用系统默认缓存路径, 也是默认的行为
+ * Mirai.FileCacheStrategy = FileCacheStrategy.TempCache(File("C:/cache")) // 使用自定义缓存路径
+ *
+ * // Java
+ * Mirai.getInstance().setFileCacheStrategy(new FileCacheStrategy.TempCache()); // 使用系统默认缓存路径, 也是默认的行为
+ * Mirai.getInstance().setFileCacheStrategy(new FileCacheStrategy.TempCache(new File("C:/cache"))); // 使用自定义的缓存路径
+ * ```
+ *
+ * 此接口的实现和使用都是稳定的. 自行实现的 [FileCacheStrategy] 也可以被 Mirai 使用.
+ *
+ * 注意, 此接口目前仅缓存 [InputStream] 等一次性数据. 好友列表等数据由每个 [Bot] 的 [BotConfiguration.cacheDir] 缓存.
  *
  * ### 使用 [FileCacheStrategy] 的操作
- * [ExternalResource.toExternalResource],
- * [ExternalResource.uploadAsImage],
- * [ExternalResource.sendAsImageTo]
+ * - [ExternalResource.toExternalResource]
+ * - [ExternalResource.uploadAsImage]
+ * - [ExternalResource.sendAsImageTo]
  *
  * @see ExternalResource
  */
@@ -58,7 +76,7 @@ public interface FileCacheStrategy {
     public fun newCache(input: InputStream): ExternalResource = newCache(input, null)
 
     /**
-     * 使用内存直接存储所有图片文件.
+     * 使用内存直接存储所有图片文件. 由 JVM 执行 GC.
      */
     public object MemoryCache : FileCacheStrategy {
         @Throws(IOException::class)
@@ -68,9 +86,9 @@ public interface FileCacheStrategy {
     }
 
     /**
-     * 使用系统临时文件夹缓存图片文件. 在图片使用完毕后删除临时文件.
+     * 使用系统临时文件夹缓存图片文件. 在图片使用完毕后或 JVM 正常结束时删除临时文件.
      */
-    public class TempCache @JvmOverloads constructor(
+    public class TempCache @JvmOverloads public constructor(
         /**
          * 缓存图片存放位置. 为 `null` 时使用主机系统的临时文件夹: `File.createTempFile("tmp", null, directory)`
          */

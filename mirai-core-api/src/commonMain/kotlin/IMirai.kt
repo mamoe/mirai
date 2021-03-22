@@ -54,6 +54,8 @@ public interface IMirai : LowLevelApiAccessor {
      * Mirai 全局使用的 [FileCacheStrategy].
      *
      * 覆盖后将会立即应用到全局.
+     *
+     * 要覆盖 [FileCacheStrategy],
      */
     public var FileCacheStrategy: FileCacheStrategy
 
