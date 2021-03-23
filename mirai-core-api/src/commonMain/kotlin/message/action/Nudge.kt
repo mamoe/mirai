@@ -36,7 +36,7 @@ public sealed class Nudge {
     public abstract val target: UserOrBot
 
     /**
-     * 发送戳一戳该成员的消息到 [receiver].
+     * 发送戳一戳消息到 [receiver].
      *
      * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
      *
@@ -55,7 +55,7 @@ public sealed class Nudge {
 
     public companion object {
         /**
-         * 发送戳一戳该成员的消息.
+         * 发送戳一戳消息.
          *
          * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
          *
