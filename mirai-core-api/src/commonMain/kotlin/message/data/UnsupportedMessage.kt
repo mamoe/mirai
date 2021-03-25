@@ -56,7 +56,9 @@ public interface UnsupportedMessage : MessageContent {
         deserialize = { Mirai.createUnsupportedMessage(struct.chunkedHexToBytes()) },
         serialize = { Surrogate(struct.toUHexString("")) }
     ) {
+        @Suppress("RemoveRedundantQualifierName")
         @Serializable
+        @SerialName(UnsupportedMessage.SERIAL_NAME)
         private class Surrogate(
             val struct: String // hex
         )

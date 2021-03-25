@@ -27,8 +27,18 @@ import net.mamoe.mirai.utils.copy
 internal data class UnsupportedMessageImpl(
     val structElem: ImMsgBody.Elem
 ) : UnsupportedMessage {
-    override val struct: ByteArray get() = structElem.toByteArray(ImMsgBody.Elem.serializer())
+    override val struct: ByteArray by lazy { structElem.toByteArray(ImMsgBody.Elem.serializer()) }
     override fun toString(): String = content
+    override fun hashCode(): Int {
+        return struct.contentHashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UnsupportedMessageImpl) return false
+        if (other.structElem == this.structElem) return true
+        return other.struct.contentEquals(this.struct)
+    }
 
     object Serializer : KSerializer<UnsupportedMessageImpl> {
         override val descriptor: SerialDescriptor =
