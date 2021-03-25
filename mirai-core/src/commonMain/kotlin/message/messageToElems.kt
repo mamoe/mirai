@@ -239,6 +239,7 @@ internal fun MessageChain.toRichTextElems(
             is InternalFlagOnlyMessage, is ShowImageFlag -> {
                 // ignore
             }
+            is UnsupportedMessageImpl -> elements.add(currentMessage.structElem)
             else -> {
                 // unrecognized types are ignored
                 // error("unsupported message type: ${currentMessage::class.simpleName}")

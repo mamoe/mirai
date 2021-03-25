@@ -154,6 +154,7 @@ private object ReceiveMessageTransformer {
                 // ignore
             }
             else -> {
+                builder.add(UnsupportedMessageImpl(element))
                 // println(it._miraiContentToString())
             }
         }

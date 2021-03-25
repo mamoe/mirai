@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
@@ -108,6 +109,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             MessageSerializers.registerSerializer(
                 OfflineMessageSourceImplData::class,
                 OfflineMessageSourceImplData.serializer()
+            )
+            MessageSerializers.registerSerializer(
+                UnsupportedMessageImpl::class,
+                UnsupportedMessageImpl.serializer()
             )
         }
     }
@@ -902,6 +907,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun createFileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage {
         return FileMessageImpl(id, internalId, name, size)
     }
+
+    override fun createUnsupportedMessage(struct: ByteArray): UnsupportedMessage =
+        UnsupportedMessageImpl(struct.loadAs(ImMsgBody.Elem.serializer()))
 
     @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     override suspend fun queryImageUrl(bot: Bot, image: Image): String = when (image) {
