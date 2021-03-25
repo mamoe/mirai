@@ -20,14 +20,10 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.internal.message.copy
 import net.mamoe.mirai.internal.message.map
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.RemoteFile
-import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.utils.*
 
 /**
  * 文件消息.

@@ -15,6 +15,9 @@ package net.mamoe.mirai.utils
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.StringFormat
+import kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import java.io.File
 
 public fun <T> File.loadNotBlankAs(
@@ -25,4 +28,21 @@ public fun <T> File.loadNotBlankAs(
         return null
     }
     return stringFormat.decodeFromString(serializer, this.readText())
+}
+
+
+public fun SerialDescriptor.copy(newName: String): SerialDescriptor =
+    buildClassSerialDescriptor(newName) { takeElementsFrom(this@copy) }
+
+public fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
+    with(descriptor) {
+        repeat(descriptor.elementsCount) { index ->
+            element(
+                elementName = getElementName(index),
+                descriptor = getElementDescriptor(index),
+                annotations = getElementAnnotations(index),
+                isOptional = isElementOptional(index),
+            )
+        }
+    }
 }

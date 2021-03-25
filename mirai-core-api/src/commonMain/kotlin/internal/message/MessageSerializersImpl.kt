@@ -23,26 +23,10 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.takeElementsFrom
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.isSubclassOf
-
-internal fun SerialDescriptor.copy(newName: String): SerialDescriptor =
-    buildClassSerialDescriptor(newName) { takeElementsFrom(this@copy) }
-
-
-internal fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescriptor) {
-    with(descriptor) {
-        repeat(descriptor.elementsCount) { index ->
-            element(
-                elementName = getElementName(index),
-                descriptor = getElementDescriptor(index),
-                annotations = getElementAnnotations(index),
-                isOptional = isElementOptional(index),
-            )
-        }
-    }
-}
 
 @MiraiInternalApi
 public open class MessageSourceSerializerImpl(serialName: String) :
