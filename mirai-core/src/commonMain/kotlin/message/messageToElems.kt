@@ -194,6 +194,7 @@ internal fun MessageChain.toRichTextElems(
                     }
                 }
             }
+            is Dice -> transformOneMessage(MarketFaceImpl(currentMessage.toJceStruct()))
             is MarketFace -> {
                 if (currentMessage is MarketFaceImpl) {
                     elements.add(ImMsgBody.Elem(marketFace = currentMessage.delegate))
