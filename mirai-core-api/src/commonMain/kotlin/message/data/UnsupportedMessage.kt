@@ -33,7 +33,7 @@ import net.mamoe.mirai.utils.toUHexString
 @SerialName(UnsupportedMessage.SERIAL_NAME)
 @Serializable(UnsupportedMessage.Serializer::class)
 public interface UnsupportedMessage : MessageContent {
-    override fun contentToString(): String = "[不支持的消息#${hashCode()}]"
+    override fun contentToString(): String = "[不支持的消息#${struct.contentHashCode()}]" // to produce 'stable' and reliable text
 
     /**
      * 原生消息数据
