@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.MarketFace
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.chunkedHexToBytes
 
 @SerialName(MarketFace.SERIAL_NAME)
 @Serializable
@@ -83,9 +84,25 @@ internal fun Dice.toJceStruct(): ImMsgBody.MarketFace {
     )
 }
 
+/**
+ * PC 客户端没有 [ImMsgBody.MarketFace.mobileParam], 是按 [ImMsgBody.MarketFace.faceId] 发的...
+ */
+@Suppress("SpellCheckingInspection")
+private val DICE_PC_FACE_IDS = mapOf(
+    1 to "E6EEDE15CDFBEB4DF0242448535354F1".chunkedHexToBytes(),
+    2 to "C5A95816FB5AFE34A58AF0E837A3B5A0".chunkedHexToBytes(),
+    3 to "382131D722EEA4624F087C5B8035AF5F".chunkedHexToBytes(),
+    4 to "FA90E956DCAD76742F2DB87723D3B669".chunkedHexToBytes(),
+    5 to "D51FA892017647431BB243920EC9FB8E".chunkedHexToBytes(),
+    6 to "7A2303AD80755FCB6BBFAC38327E0C01".chunkedHexToBytes(),
+)
+
 private fun ImMsgBody.MarketFace.toDiceOrNull(): Dice? {
     if (this.tabId != 11464) return null
-    val value = mobileParam.lastOrNull()?.toInt()?.and(0xff)?.minus(47) ?: 0
+    val value = when {
+        mobileParam.isNotEmpty() -> mobileParam.lastOrNull()?.toInt()?.and(0xff)?.minus(47) ?: return null
+        else -> DICE_PC_FACE_IDS.entries.find { it.value.contentEquals(faceId) }?.key ?: return null
+    }
     if (value in 1..6) {
         return Dice(value)
     }
