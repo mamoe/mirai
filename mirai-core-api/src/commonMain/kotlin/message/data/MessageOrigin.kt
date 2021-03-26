@@ -26,20 +26,20 @@ import net.mamoe.mirai.utils.safeCast
  * - 合并转发也使用长消息通道传输, 拥有 [resourceId], mirai 解析为 [ForwardMessage]
  * - [MusicShare] 也有特殊通道上传, 但会作为 [LightApp] 接收.
  *
- * 这些经过转换的类型的来源 [RichMessage] 会被包装为 [RichMessageOrigin] 并加入消息链中.
+ * 这些经过转换的类型的来源 [RichMessage] 会被包装为 [MessageOrigin] 并加入消息链中.
  *
- * 如一条被 mirai 解析的长消息的消息链组成为, 第一个元素为 [MessageSource], 第二个元素为 [RichMessageOrigin], 随后为长消息内容.
+ * 如一条被 mirai 解析的长消息的消息链组成为, 第一个元素为 [MessageSource], 第二个元素为 [MessageOrigin], 随后为长消息内容.
  *
- * 又如一条被 mirai 解析的 [MusicShare] 的消息链组成为, 第一个元素为 [MessageSource], 第二个元素为 [RichMessageOrigin], 第三个元素为 [MusicShare].
+ * 又如一条被 mirai 解析的 [MusicShare] 的消息链组成为, 第一个元素为 [MessageSource], 第二个元素为 [MessageOrigin], 第三个元素为 [MusicShare].
  *
  * @suppress **注意**: 这是实验性 API: 类名, 类的类型, 构造, 属性等所有 API 均不稳定. 可能会在未来任意时刻变更.
  *
  * @since 2.3
  */
 @Serializable
-@SerialName(RichMessageOrigin.SERIAL_NAME)
-@MiraiExperimentalApi("RichMessageOrigin 不稳定")
-public class RichMessageOrigin(
+@SerialName(MessageOrigin.SERIAL_NAME)
+@MiraiExperimentalApi("MessageOrigin 不稳定")
+public class MessageOrigin(
     /**
      * 原 [RichMessage].
      */
@@ -70,7 +70,7 @@ public class RichMessageOrigin(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RichMessageOrigin
+        other as MessageOrigin
 
         if (origin != other.origin) return false
         if (resourceId != other.resourceId) return false
@@ -87,8 +87,8 @@ public class RichMessageOrigin(
     }
 
 
-    public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() }) {
-        public const val SERIAL_NAME: String = "RichMessageOrigin"
+    public companion object Key : AbstractMessageKey<MessageOrigin>({ it.safeCast() }) {
+        public const val SERIAL_NAME: String = "MessageOrigin"
     }
 }
 

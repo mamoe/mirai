@@ -28,7 +28,7 @@ internal data class LightAppInternal(
             if (meta.music != null) {
                 MusicKind.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
                     meta.music.run {
-                        return RichMessageOrigin(
+                        return MessageOrigin(
                             LightApp(content),
                             null,
                             RichMessageKind.MUSIC_SHARE
