@@ -24,7 +24,7 @@ object Versions {
 
     const val coroutines = "1.4.2"
     const val atomicFU = "0.15.1"
-    const val serialization = "1.1.0-RC"
+    const val serialization = "1.1.0"
     const val ktor = "1.5.1"
 
     const val binaryValidator = "0.4.0"
