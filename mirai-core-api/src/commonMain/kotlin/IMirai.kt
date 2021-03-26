@@ -55,7 +55,7 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * 覆盖后将会立即应用到全局.
      *
-     * 要覆盖 [FileCacheStrategy],
+     * @see FileCacheStrategy
      */
     public var FileCacheStrategy: FileCacheStrategy
 
