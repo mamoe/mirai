@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("EXPOSED_SUPER_CLASS")
@@ -35,7 +35,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
             """
             账号配置. 可用配置列表 (注意大小写):
             "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH"
-            "device": "deviceInfo.json" 
+            "device": "device.json" 
         """
         )
         val configuration: Map<ConfigurationKey, @Serializable(with = YamlDynamicSerializer::class) Any> = mapOf(),
@@ -87,7 +87,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
                 password = Account.Password(Account.PasswordKind.PLAIN, "pwd"),
                 configuration = mapOf(
                     Account.ConfigurationKey.protocol to "ANDROID_PHONE",
-                    Account.ConfigurationKey.device to "deviceInfo.json"
+                    Account.ConfigurationKey.device to "device.json"
                 )
             )
         )
