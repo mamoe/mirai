@@ -146,6 +146,12 @@ public interface IMirai : LowLevelApiAccessor {
     public fun createFileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage
 
     /**
+     * 创建 [UnsupportedMessage]
+     * @since 2.6
+     */
+    public fun createUnsupportedMessage(struct: ByteArray): UnsupportedMessage
+
+    /**
      * 获取图片下载链接
      *
      * @see Image.queryUrl [Image] 的扩展函数

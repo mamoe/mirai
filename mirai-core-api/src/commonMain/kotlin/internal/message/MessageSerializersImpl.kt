@@ -130,6 +130,7 @@ private val builtInSerializersModule by lazy {
             subclass(MusicShare::class, MusicShare.serializer())
 
             subclass(Dice::class, Dice.serializer())
+            subclass(UnsupportedMessage::class, UnsupportedMessage.Serializer)
         }
 
 
