@@ -180,6 +180,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase("load PermissionService") {
             mainLogger.verbose { "Loading PermissionService..." }
 
+            PermissionServiceProvider.permissionServiceOk = true
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
                     ConsoleDataScope.addAndReloadConfig(ps.config)
