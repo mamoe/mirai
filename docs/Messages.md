@@ -106,6 +106,7 @@ Mirai 支持富文本消息。
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
 |      [`MusicShare`]      | 音乐分享              | `[分享]曲名`             |          2.1          |
 |         [`Dice`]         | 骰子                 | `[骰子:$value]`          |          2.5          |
+|     [`FileMessage`]      | 文件消息              | `[文件]文件名称`          |          2.5          |
 
 
 
