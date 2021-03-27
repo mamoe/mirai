@@ -102,9 +102,8 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         tasks.findByName("shadowJar")?.enabled = false
 
         fun registerBuildPluginTask(target: KotlinTarget, isSingleTarget: Boolean) {
-            tasks.create("buildPlugin".wrapNameWithPlatform(target, isSingleTarget), BuildMiraiPluginTask::class.java).apply shadow@{
+            tasks.create("buildPlugin".wrapNameWithPlatform(target, isSingleTarget), BuildMiraiPluginTask::class.java, target).apply shadow@{
                 group = "mirai"
-                targetField = target
 
                 archiveExtension.set("mirai.jar")
 
