@@ -101,6 +101,7 @@ internal class WtLogin {
             }
 
             data class Error(
+                val code: Int,
                 val title: String,
                 val message: String,
                 val errorInfo: String
@@ -168,7 +169,7 @@ internal class WtLogin {
                 204 /*-52*/ -> onDevLockLogin(tlvMap, bot)
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
-                    onErrorMessage(tlvMap)
+                    onErrorMessage(type.toInt(), tlvMap)
                         ?: error("Cannot find error message, unknown login result type: $type, TLVMap = ${tlvMap._miraiContentToString()}")
                 }
             }
@@ -389,7 +390,7 @@ internal class WtLogin {
                                 ?: 4294967295L, // defaults {}, from asyncContext._G
                             a2ExpiryTime = expireTime, // or from asyncContext._t403.get_body_data()
                             loginBitmap = 0,
-                            tgt = tlvMap119.getOrEmpty(0x10a),
+                            tgt = tlvMap119.getOrFail(0x10a),
                             a2CreationTime = creationTime,
                             tgtKey = tlvMap119.getOrEmpty(0x10d), // from asyncContext._login_bitmap
                             userStSig = UserStSig((tlvMap119.getOrEmpty(0x114)), creationTime),
@@ -404,7 +405,7 @@ internal class WtLogin {
                             openKey = OpenKey(openKey.orEmpty(), creationTime),
                             vKey = VKey(tlvMap119.getOrEmpty(0x136), creationTime, expireTime),
                             accessToken = AccessToken(tlvMap119.getOrEmpty(0x136), creationTime),
-                            d2 = D2(tlvMap119.getOrEmpty(0x143), creationTime, expireTime),
+                            d2 = D2(tlvMap119.getOrFail(0x143), creationTime, expireTime),
                             d2Key = tlvMap119.getOrEmpty(0x305),
                             sid = Sid(tlvMap119.getOrEmpty(0x164), creationTime, expireTime),
                             aqSig = AqSig(tlvMap119.getOrEmpty(0x171), creationTime),

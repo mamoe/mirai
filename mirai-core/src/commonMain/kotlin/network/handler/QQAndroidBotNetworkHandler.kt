@@ -35,10 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin15
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
@@ -134,7 +131,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         channel = PlatformSocket()
-        bot.initClient()
 
         while (isActive) {
             try {
@@ -156,8 +152,56 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
             }
         }
+
         logger.info { "Connected to server $host:$port" }
+        if (bot.client.wLoginSigInfoInitialized) {
+            // do fast login
+        } else {
+            bot.initClient()
+        }
+
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
+
+        if (bot.client.wLoginSigInfoInitialized) {
+            // do fast login
+            kotlin.runCatching {
+                logger.debug { "Try fast login..." }
+                doFastLogin(host, port, cause, step)
+            }.onFailure {
+                bot.initClient()
+                doSlowLogin(host, port, cause, step)
+            }
+        } else {
+            doSlowLogin(host, port, cause, step)
+        }
+
+
+        // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        registerClientOnline()
+        startHeartbeatJobOrKill()
+
+        launch {
+            while (isActive) {
+                bot.client.wLoginSigInfo.sKey.run {
+                    val delay = (expireTime - creationTime).seconds - 5.minutes
+                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                    delay(delay)
+                }
+                runCatching {
+                    refreshKeys()
+                }.onFailure {
+                    logger.error("Failed to refresh key.", it)
+                }
+            }
+        }
+    }
+
+    private suspend fun doFastLogin(host: String, port: Int, cause: Throwable?, step: Int): Boolean {
+        val login10 = WtLogin10(bot.client).sendAndExpect()
+        return login10 is WtLogin.Login.LoginPacketResponse.Success
+    }
+
+    private suspend fun doSlowLogin(host: String, port: Int, cause: Throwable?, step: Int) {
 
         fun LoginSolver?.notnull(): LoginSolver {
             checkNotNull(this) {
@@ -263,24 +307,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        registerClientOnline()
-        startHeartbeatJobOrKill()
-
-        launch {
-            while (isActive) {
-                bot.client.wLoginSigInfo.sKey.run {
-                    val delay = (expireTime - creationTime).seconds - 5.minutes
-                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
-                    delay(delay)
-                }
-                runCatching {
-                    refreshKeys()
-                }.onFailure {
-                    logger.error("Failed to refresh key.", it)
-                }
-            }
-        }
     }
 
     suspend fun refreshKeys() {
