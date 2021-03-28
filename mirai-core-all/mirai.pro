@@ -17,6 +17,8 @@
 }
 
 #-keep class ** extends kotlin.internal.**
-
+# Bouncy Castle
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }
 -keepnames class net.mamoe.mirai.Mirai
 -keepnames class net.mamoe.mirai.MiraiImpl
