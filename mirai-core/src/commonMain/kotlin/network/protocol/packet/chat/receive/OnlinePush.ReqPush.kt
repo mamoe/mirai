@@ -14,7 +14,6 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
@@ -621,7 +620,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             when (msg.msgGroupMsgSync.msgType) {
                 1, 2 -> {
                     bot.groupListModifyLock.withLock {
-                        bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
+                        bot.createGroupForBot(Mirai.calculateGroupUinByGroupCode(msg.msgGroupMsgSync.grpCode))?.let {
                             packetList.add(BotJoinGroupEvent.Active(it))
                         }
                     }
