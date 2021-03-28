@@ -15,10 +15,10 @@
 
 # Serializer on Mirai
 -keep,includedescriptorclasses class net.mamoe.mirai.**$$serializer { *; } # <-- change package name to your app's
--keepclassmembernames class net.mamoe.mirai.** { # <-- change package name to your app's
+-keepclassmembernames class net.mamoe.mirai.** {
     *** Companion;
 }
--keepclassmembernames class net.mamoe.mirai.** { # <-- change package name to your app's
+-keepclassmembernames class net.mamoe.mirai.** {
     kotlinx.serialization.KSerializer serializer(...);
     static kotlinx.serialization.KSerializer serializer(...);
 }
