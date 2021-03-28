@@ -17,7 +17,7 @@
 }
 -keepclassmembernames class ** extends kotlinx.serialization.internal.GeneratedSerializer
 
--keep enum ** {
+-keep enum net.mamoe.mirai.** {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
