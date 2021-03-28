@@ -8,7 +8,13 @@
 -keepclassmembernames class kotlin.coroutines.SafeContinuation {
     volatile <fields>;
 }
-
+# Fields used by atomicfu
+-keepclassmembers class net.mamoe.mirai.** {
+    volatile <fields>;
+}
+-keepclassmembernames class net.mamoe.mirai.** {
+    volatile <fields>;
+}
 -keepclassmembernames class ** extends kotlinx.serialization.internal.GeneratedSerializer
 
 -keep enum ** {
