@@ -37,11 +37,10 @@ configurePublishing("mirai-core-all")
 afterEvaluate {
     tasks.register<proguard.gradle.ProGuardTask>("proguard") {
         group = "mirai"
-        dependsOn("jar", "shadowJar")
 
         verbose()
 
-        injars("build/libs/${project.name}-${project.version}-all.jar")
+        injars(tasks.getByName<ShadowJar>("shadowJar"))
 
         kotlin.runCatching {
             file("build/libs/${project.name}-${project.version}-all-min.jar").delete()
