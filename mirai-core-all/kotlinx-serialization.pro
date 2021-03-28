@@ -13,7 +13,7 @@
 }
 -keepnames class ** extends java.lang.Enum
 
-# Change here com.yourcompany.yourpackage
+# Serializer on Mirai
 -keep,includedescriptorclasses class net.mamoe.mirai.**$$serializer { *; } # <-- change package name to your app's
 -keepclassmembernames class net.mamoe.mirai.** { # <-- change package name to your app's
     *** Companion;
