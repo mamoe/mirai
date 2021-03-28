@@ -85,13 +85,6 @@ afterEvaluate {
         configuration("kotlinx-serialization.pro")
 
         dontobfuscate()
-        keep("""class net.mamoe.mirai.message.**""")
-        keep("""class net.mamoe.mirai.network.**""")
-        keep("""class net.mamoe.mirai.utils.**""")
-        keep("""class net.mamoe.mirai.contact.**""")
-        keep("""class net.mamoe.mirai.internal.message.**""")
-        keep("""class net.mamoe.mirai.internal.utils.**""")
-        keep("""class net.mamoe.mirai.internal.contact.**""")
         // keepattributes("*Annotation*,synthetic")
     }
 
