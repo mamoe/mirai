@@ -9,6 +9,8 @@
 
 @file:Suppress("UnusedImport")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 buildscript {
     dependencies {
         classpath("com.guardsquare:proguard-gradle:${Versions.proguard}")
