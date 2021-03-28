@@ -32,18 +32,18 @@ import net.mamoe.mirai.utils.safeCast
  *
  * 又如一条被 mirai 解析的 [MusicShare] 的消息链组成为, 第一个元素为 [MessageSource], 第二个元素为 [MessageOrigin], 第三个元素为 [MusicShare].
  *
- * @suppress **注意**: 这是实验性 API: 类名, 类的类型, 构造, 属性等所有 API 均不稳定. 可能会在未来任意时刻变更.
+ * @suppress **注意**: 这是实验性 API: 可能会在未来任意时刻变更.
  *
- * @since 2.3
+ * @since 2.6
  */
 @Serializable
 @SerialName(MessageOrigin.SERIAL_NAME)
-@MiraiExperimentalApi("MessageOrigin 不稳定")
-public class MessageOrigin(
+@MiraiExperimentalApi
+public class MessageOrigin( // [2.3, 2.6-M1) 类名为 RichMessageOrigin
     /**
-     * 原 [RichMessage].
+     * 原 [SingleMessage].
      */
-    public val origin: @Polymorphic RichMessage,
+    public val origin: @Polymorphic SingleMessage,
     /**
      * 如果来自长消息或转发消息, 则会有 [resourceId], 否则为 `null`.
      *
@@ -54,7 +54,7 @@ public class MessageOrigin(
     /**
      * 来源类型
      */
-    public val kind: RichMessageKind,
+    public val kind: MessageOriginKind,
 ) : MessageMetadata, ConstrainSingle {
     override val key: Key get() = Key
 
@@ -94,13 +94,9 @@ public class MessageOrigin(
 
 /**
  * 消息来源
- *
- * @suppress 随着更新, 元素数量会增加. 类名不稳定.
- *
- * @since 2.3
+ * @since 2.6
  */
-@MiraiExperimentalApi("RichMessageKind 类名不稳定")
-public enum class RichMessageKind {
+public enum class MessageOriginKind { // [2.3, 2.6-M1) 类名为 RichMessageKind
     /**
      * 长消息
      */
@@ -115,7 +111,6 @@ public enum class RichMessageKind {
     /**
      * 音乐分享
      * @see MusicShare
-     * @since 2.4
      */
     MUSIC_SHARE,
 }

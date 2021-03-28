@@ -31,7 +31,7 @@ internal data class LightAppInternal(
                         return MessageOrigin(
                             LightApp(content),
                             null,
-                            RichMessageKind.MUSIC_SHARE
+                            MessageOriginKind.MUSIC_SHARE
                         ) + MusicShare(
                             kind = musicType, title = title, summary = desc,
                             jumpUrl = jumpUrl, pictureUrl = preview, musicUrl = musicUrl, brief = prompt
