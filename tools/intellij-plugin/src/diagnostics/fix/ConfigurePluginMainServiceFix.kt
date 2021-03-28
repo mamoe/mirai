@@ -13,9 +13,11 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.writeChild
+import net.mamoe.mirai.console.intellij.creator.tasks.readChildText
 import org.jetbrains.kotlin.idea.core.isAndroidModule
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
@@ -49,7 +51,19 @@ class ConfigurePluginMainServiceFix(
             }
 
         project.executeWriteCommand(name) {
-            sourceRoot.writeChild("META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", elementFqName.toByteArray())
+            val filepath = "META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin"
+
+            fun computeContent(): String {
+                val origin = sourceRoot.readChildText(filepath) ?: ""
+                return when {
+                    origin.isBlank() -> elementFqName
+                    origin.endsWith("\n") -> origin + elementFqName
+                    else -> "$origin\n$elementFqName"
+                }
+            }
+
+            sourceRoot.writeChild(filepath, computeContent())
+            VfsUtil.markDirtyAndRefresh(true, false, false, sourceRoot.findChild(filepath))
         }
     }
 }

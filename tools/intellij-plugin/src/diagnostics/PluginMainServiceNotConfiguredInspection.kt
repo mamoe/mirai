@@ -107,7 +107,9 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
                 }
             }
             return@runWithCancellationCheck services.any { serviceFile ->
-                serviceFile.readAction { f -> f.inputStream.bufferedReader().use { it.readLine() }.trim() == fqName }
+                serviceFile.readAction { f ->
+                    f.inputStream.bufferedReader().use { reader -> reader.lineSequence().any { it == fqName } }
+                }
             }
         }
     }
