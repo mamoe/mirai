@@ -186,20 +186,6 @@ internal fun BytePacketBuilder.t106(
     }
 }
 
-internal fun BytePacketBuilder.t10a(tgt: ByteArray) {
-    writeShort(0x10a)
-    writeShortLVPacket {
-        writeFully(tgt)
-    }
-}
-
-internal fun BytePacketBuilder.t143(d2: ByteArray) {
-    writeShort(0x143)
-    writeShortLVPacket {
-        writeFully(d2)
-    }
-}
-
 internal fun BytePacketBuilder.t116(
     miscBitmap: Int,
     subSigMap: Int,
