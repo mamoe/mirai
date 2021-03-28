@@ -91,7 +91,7 @@ internal class RemoteFileInfo(
 ) {
     companion object {
         val root = RemoteFileInfo(
-            "", false, "/", "/", "", 0, 0, 0, 0, 0, 0, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY
+            "/", false, "/", "/", "", 0, 0, 0, 0, 0, 0, EMPTY_BYTE_ARRAY, EMPTY_BYTE_ARRAY
         )
     }
 }
@@ -211,14 +211,16 @@ internal class RemoteFileImpl(
         }
     }
 
-    private fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
+    private suspend fun getFilesFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
+        val info = getFileFolderInfo() ?: return emptyFlow()
+
         return flow {
             var index = 0
             while (true) {
                 val list = FileManagement.GetFileList(
                     client,
                     groupCode = contact.id,
-                    folderId = path,
+                    folderId = info.id,
                     startIndex = index
                 ).sendAndExpect(bot).toResult("RemoteFile.listFiles").getOrThrow()
                 index += list.itemList.size
