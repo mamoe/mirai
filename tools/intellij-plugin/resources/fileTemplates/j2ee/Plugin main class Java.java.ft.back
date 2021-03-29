@@ -1,0 +1,17 @@
+package $PACKAGE_NAME;
+
+import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription;
+
+public final class ${CLASS_NAME} extends JavaPlugin {
+    public static final ${CLASS_NAME} INSTANCE = new ${CLASS_NAME}();
+
+    private ${CLASS_NAME}() {
+        super(JvmPluginDescription.loadFromResource("plugin.yml", ${CLASS_NAME}.class.getClassLoader()));
+    }
+
+    @Override
+    public void onEnable() {
+        getLogger().info("Plugin loaded!");
+    }
+}

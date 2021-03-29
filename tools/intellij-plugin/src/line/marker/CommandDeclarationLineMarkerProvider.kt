@@ -14,7 +14,7 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import net.mamoe.mirai.console.intellij.Icons
+import net.mamoe.mirai.console.intellij.assets.Icons
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
 import net.mamoe.mirai.console.intellij.resolve.isSimpleCommandHandlerOrCompositeCommandSubCommand
 import net.mamoe.mirai.console.intellij.util.runIgnoringErrors

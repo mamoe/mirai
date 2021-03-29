@@ -9,12 +9,19 @@
 
 package net.mamoe.mirai.console.compiler.common
 
+import org.intellij.lang.annotations.Language
+
 /**
  * @suppress 这是内部 API. 可能在任意时刻变动
  */
 public object CheckerConstants {
+    @Language("RegExp")
+    public const val PLUGIN_ID_PATTERN: String = """([a-zA-Z]\w*(?:\.[a-zA-Z]\w*)*)\.([a-zA-Z]\w*(?:-\w+)*)"""
+
     @JvmField
-    public val PLUGIN_ID_REGEX: Regex = Regex("""([a-zA-Z]\w*(?:\.[a-zA-Z]\w*)*)\.([a-zA-Z]\w*(?:-\w+)*)""")
+    public val PLUGIN_ID_REGEX: Regex = Regex(PLUGIN_ID_PATTERN)
+
+
     @JvmField
     public val PLUGIN_FORBIDDEN_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
 }
