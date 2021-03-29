@@ -213,7 +213,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
     }
 
-    private suspend fun doFastLogin(host: String, port: Int, cause: Throwable?, step: Int): Boolean {
+    private suspend fun doFastLogin(): Boolean {
         val login10 = WtLogin10(bot.client).sendAndExpect()
         return login10 is WtLogin.Login.LoginPacketResponse.Success
     }
