@@ -18,7 +18,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.ReqHead
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
@@ -49,7 +48,7 @@ internal object SummaryCard {
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+        )= buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
