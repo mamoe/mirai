@@ -12,48 +12,78 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.utils.GuidSource
+import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
+import net.mamoe.mirai.internal.utils.guidFlag
+import net.mamoe.mirai.utils.generateDeviceInfoData
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toReadPacket
 
 internal object WtLogin10 : WtLoginExt {
-    private const val subCommand = 10.toShort()
 
-    private const val appId = 16L
-
+    const val appId: Long = 16L
     operator fun invoke(
         client: QQAndroidClient,
-    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = KEY_16_ZEROS) { sequenceId ->
-        writeOicqRequestPacket(
+    ) = WtLogin.ExchangeEmp.buildLoginOutgoingPacket(client, bodyType = 2, key = ByteArray(16)) { sequenceId ->
+        writeSsoPacket(
             client,
-            EncryptMethodSessionKeyNew(
-                client.wLoginSigInfo.wtSessionTicket.data,
-                client.wLoginSigInfo.wtSessionTicketKey
-            ),
-            0x0810
+            client.subAppId,
+            WtLogin.ExchangeEmp.commandName,
+            extraData = client.wLoginSigInfo.tgt.toReadPacket(),
+            sequenceId = sequenceId
         ) {
-            writeShort(subCommand)
-            writeShort(17)
+            writeOicqRequestPacket(
+                client,
+                EncryptMethodECDH(client.ecdh),
+                0x0810
+            ) {
+                writeShort(11) // subCommand
+                writeShort(17)
+                t100(appId, 100, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                t10a(client.wLoginSigInfo.tgt)
+                t116(client.miscBitMap, client.subSigMap)
+                t108(client.ksid)
+                t144(
+                    androidId = client.device.androidId,
+                    androidDevInfo = client.device.generateDeviceInfoData(),
+                    osType = client.device.osType,
+                    osVersion = client.device.version.release,
+                    networkType = client.networkType,
+                    simInfo = client.device.simInfo,
+                    unknown = byteArrayOf(),
+                    apn = client.device.apn,
+                    isGuidFromFileNull = false,
+                    isGuidAvailable = true,
+                    isGuidChanged = false,
+                    guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag(0)),
+                    buildModel = client.device.model,
+                    guid = client.device.guid,
+                    buildBrand = client.device.brand,
+                    tgtgtKey = client.wLoginSigInfo.d2Key.md5()
+                )
+                //t112(client.account.phoneNumber.encodeToByteArray())
+                t143(client.wLoginSigInfo.d2.data)
+                t142(client.apkId)
+                t154(sequenceId)
+                t18(appId, uin = client.uin)
+                t141(client.device.simInfo, client.networkType, client.device.apn)
+                t8(2052)
+                //t511()
+                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+                t177(client.buildTime, client.sdkVersion)
+                t187(client.device.macAddress)
+                t188(client.device.androidId)
+                t194(client.device.imsiMd5)
+                t511(
+                    listOf(
+                        "tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
+                        "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
+                        "office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com"
+                    )
+                )
+                //t544()
 
-            t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-            t10a(client.wLoginSigInfo.tgt)//
-            t116(client.miscBitMap, client.subSigMap)
-            t108(client.ksid)
-            t144(client)
-            t143(client.wLoginSigInfo.d2.data)//
-            t142(client.apkId)
-            t154(sequenceId)
-            t18(appId, uin = client.uin)
-            t141(client.device.simInfo, client.networkType, client.device.apn)
-            t8()
-            t147(appId, client.apkVersionName, client.apkSignatureMd5)
-            t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
-            t187(client.device.macAddress)
-            t188(client.device.androidId)
-            t194(client.device.imsiMd5)
-            t202(client.device.wifiBSSID, client.device.wifiSSID)
-            // t544()
-
-            // code=15 你的用户身份已失效，为保证帐号安全，请你重新登录。 t10a tgt 内容有误
-            // 0x9 服务连接中，请稍后再试。
-            // 0x6 缺144/缺10a (缺tlv)
+            }
         }
     }
 }
