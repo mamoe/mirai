@@ -33,6 +33,8 @@ dependencies {
 
     compileOnly(kotlin("stdlib"))
 
+    implementation("com.google.code.gson:gson:2.8.6")
+
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
     api("com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintray}")
