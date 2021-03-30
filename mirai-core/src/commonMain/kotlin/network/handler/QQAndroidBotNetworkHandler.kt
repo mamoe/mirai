@@ -190,6 +190,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         }
                         runCatching {
                             doFastLogin()
+                            registerClientOnline()
                         }.onFailure {
                             logger.error("Failed to Relogin.", it)
                         }

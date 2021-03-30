@@ -366,13 +366,14 @@ internal class WtLogin {
 
                     if (client.wLoginSigInfoInitialized) {
                         client.wLoginSigInfo.apply {
-                            superKey = tlvMap119.getOrDefault(0x16d, superKey)
+                           superKey = tlvMap119.getOrDefault(0x16d, superKey)
                             d2 = D2(
                                 tlvMap119.getOrDefault(0x143, d2.data),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x143, 1728000L)
                             )
                             d2Key = tlvMap119.getOrDefault(0x305, d2Key)
+                            tgt = tlvMap119.getOrDefault(0x10a, tgt)
                             tgtKey = tlvMap119.getOrDefault(0x10d, tgtKey)
                             a2ExpiryTime = creationTime + changeTokenTimeMap.getOrDefault(0x10a, 2160000L)
                             userStWebSig = UserStWebSig(
