@@ -166,7 +166,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             // do fast login
             kotlin.runCatching {
                 logger.debug { "Try fast login..." }
-                doFastLogin(host, port, cause, step)
+                doFastLogin()
             }.onFailure {
                 bot.initClient()
                 doSlowLogin(host, port, cause, step)
@@ -179,24 +179,41 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
         startHeartbeatJobOrKill()
-
-        launch {
-            while (isActive) {
-                bot.client.wLoginSigInfo.sKey.run {
-                    val delay = (expireTime - creationTime).seconds - 5.minutes
-                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
-                    delay(delay)
+        bot.eventChannel.subscribeOnce<BotOnlineEvent>(this.coroutineContext) {
+            val bot = (bot as QQAndroidBot)
+            if (bot.firstLoginSucceed && bot.client.wLoginSigInfoInitialized) {
+                launch {
+                    while (isActive) {
+                        bot.client.wLoginSigInfo.run {
+                            logger.info { "Scheduled Relogin in 10 minutes." }
+                            delay(10.minutes)
+                        }
+                        runCatching {
+                            doFastLogin()
+                        }.onFailure {
+                            logger.error("Failed to Relogin.", it)
+                        }
+                    }
                 }
-                runCatching {
-                    refreshKeys()
-                }.onFailure {
-                    logger.error("Failed to refresh key.", it)
+                launch {
+                    while (isActive) {
+                        bot.client.wLoginSigInfo.sKey.run {
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                            delay(delay)
+                        }
+                        runCatching {
+                            refreshKeys()
+                        }.onFailure {
+                            logger.error("Failed to refresh key.", it)
+                        }
+                    }
                 }
             }
         }
     }
 
-    private suspend fun doFastLogin(host: String, port: Int, cause: Throwable?, step: Int): Boolean {
+    private suspend fun doFastLogin(): Boolean {
         val login10 = WtLogin10(bot.client).sendAndExpect()
         return login10 is WtLogin.Login.LoginPacketResponse.Success
     }
