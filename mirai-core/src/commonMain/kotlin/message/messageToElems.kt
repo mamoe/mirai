@@ -61,7 +61,7 @@ internal fun MessageChain.toRichTextElems(
                             )
                         )
                     )
-                    transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
+                    // transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
                 }
                 is LongMessageInternal -> {
                     check(longTextResId == null) { "There must be no more than one LongMessage element in the message chain" }
