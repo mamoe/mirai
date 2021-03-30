@@ -17,6 +17,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ClientKind
+import net.mamoe.mirai.contact.OtherClientInfo
+import net.mamoe.mirai.contact.Platform
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOfflineEvent
@@ -116,7 +118,7 @@ internal class StatSvc {
         ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
             client.bot.friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
-              //  timeStamp = friendListCache.timeStamp
+                //  timeStamp = friendListCache.timeStamp
             }
         }
 
@@ -273,11 +275,16 @@ internal class StatSvc {
                             ?: kotlin.run {
                                 delay(2000) // sometimes server sync slow
                                 Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
-                            } ?: throw contextualBugReportException(
-                                "SvcReqMSFLoginNotify (OtherClient online)",
-                                notify._miraiContentToString(),
-                                additional = "Failed to find corresponding instanceInfo."
-                            )
+                            } ?: kotlin.run {
+                                // 你的帐号在平板电脑上登录了
+                                val kind = notify.info?.substringAfter("在")?.substringBefore("上").orEmpty()
+                                OtherClientInfo(
+                                    appId,
+                                    Platform.MOBILE,
+                                    deviceName = kind,
+                                    deviceKind = kind
+                                )
+                            }
 
                         val client = bot.createOtherClient(info)
                         bot.otherClients.delegate.add(client)
