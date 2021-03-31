@@ -165,7 +165,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         if (bot.client.wLoginSigInfoInitialized) {
             // do fast login
             kotlin.runCatching {
-                logger.debug { "Try fast login..." }
                 doFastLogin()
             }.onFailure {
                 bot.initClient()
@@ -722,7 +721,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         retry: Int = 2,
         ignoreLock: Boolean = false,
     ): E {
-        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry, ignoreLock)
     }
 
     /**
