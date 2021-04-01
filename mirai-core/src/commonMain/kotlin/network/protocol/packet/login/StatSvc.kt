@@ -104,7 +104,7 @@ internal class StatSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val packet = readUniPacket(SvcRespRegister.serializer())
             packet.iHelloInterval.let {
-                bot.configuration.heartbeatPeriodMillis = it.times(1000).toLong()
+                // bot.configuration.heartbeatPeriodMillis = it.times(1000).toLong()
             }
 
             return Response(packet)
