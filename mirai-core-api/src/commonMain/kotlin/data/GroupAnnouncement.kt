@@ -32,14 +32,14 @@ public data class GroupAnnouncementList(
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncement(
-    @SerialName("u") val sender: Long = 0,
+    @SerialName("u") val sender: Long = 0, //发送者id
     val msg: GroupAnnouncementMsg,
     val settings: GroupAnnouncementSettings? = null,
-    @SerialName("pubt") val time: Long = 0,
-    @SerialName("read_num") val readNum: Int = 0,
-    @SerialName("is_read") val isRead: Int = 0,
-    val pinned: Int = 0,
-    val fid: String? = null      //公告的id
+    @SerialName("pubt") val time: Long = 0, //发布时间, 时区为Asia/Shanghai
+    @SerialName("read_num") val readNum: Int = 0, //如果需要确认,则为确认收到的人数,反之则为已经阅读的人数
+    @SerialName("is_read") val isRead: Int = 0, //好像没用
+    val pinned: Int = 0, //1为置顶, 0为默认
+    val fid: String? = null      //公告的id,不应该为null
 )
 
 @MiraiExperimentalApi
@@ -53,8 +53,8 @@ public data class GroupAnnouncementMsg(
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementSettings(
-    @SerialName("is_show_edit_card") val isShowEditCard: Int = 0,
+    @SerialName("is_show_edit_card") val isShowEditCard: Int = 0, //引导群成员修改该昵称  1 引导
     @SerialName("remind_ts") val remindTs: Int = 0,
-    @SerialName("tip_window_type") val tipWindowType: Int = 0,
-    @SerialName("confirm_required") val confirmRequired: Int = 0
+    @SerialName("tip_window_type") val tipWindowType: Int = 0,  //是否用弹窗展示   1 不使用
+    @SerialName("confirm_required") val confirmRequired: Int = 0 // 是否需要确认收到 1 需要
 )
