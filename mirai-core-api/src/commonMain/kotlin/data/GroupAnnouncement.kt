@@ -26,7 +26,7 @@ public data class GroupAnnouncementList(
     val ec: Int,  //状态码 0 是正常的
     @SerialName("em") val msg: String,   //信息
     val feeds: List<GroupAnnouncement>? = null,   //群公告列表
-    val inst: List<GroupAnnouncement>? = null  //置顶列表？
+    val inst: List<GroupAnnouncement>? = null  //置顶列表？ 应该是发送给新成员的
 )
 
 @MiraiExperimentalApi
@@ -34,12 +34,14 @@ public data class GroupAnnouncementList(
 public data class GroupAnnouncement(
     @SerialName("u") val sender: Long = 0, //发送者id
     val msg: GroupAnnouncementMsg,
+    val type: Int = 0, //20 为inst , 6 为feeds
     val settings: GroupAnnouncementSettings? = null,
-    @SerialName("pubt") val time: Long = 0, //发布时间, 时区为Asia/Shanghai
+    @SerialName("pubt") val time: Long = 0, //发布时间
     @SerialName("read_num") val readNum: Int = 0, //如果需要确认,则为确认收到的人数,反之则为已经阅读的人数
     @SerialName("is_read") val isRead: Int = 0, //好像没用
+    @SerialName("is_all_confirm") val isAllConfirm: Int = 0, //为0 则未全部收到
     val pinned: Int = 0, //1为置顶, 0为默认
-    val fid: String? = null      //公告的id,不应该为null
+    val fid: String? = null,      //公告的id
 )
 
 @MiraiExperimentalApi

@@ -15,8 +15,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -247,6 +246,40 @@ internal class GroupImpl(
         return result.success
     }
 
+
+    override suspend fun getGroupAnnouncements(): List<Announcement> {
+        val sum: MutableList<Announcement> = mutableListOf()
+        var i = 1
+
+        while (true) {
+            val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
+            check(result.ec == 0) { "Group get announcement error at page $i" }
+
+            if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
+                break
+
+            result.inst?.forEach {
+                sum.add(it.covertToAnnouncement())
+            }
+            result.feeds?.forEach {
+                sum.add(it.covertToAnnouncement())
+            }
+        }
+
+        return sum
+    }
+
+    override suspend fun sendGroupAnnouncement(announcement: Announcement): String {
+        return Mirai.sendGroupAnnouncement(bot, id, announcement.covertToGroupAnnouncement())
+    }
+
+    override suspend fun deleteGroupAnnouncement(fid: String) =
+        Mirai.deleteGroupAnnouncement(bot, id, fid)
+
+
+    override suspend fun getGroupAnnouncement(fid: String): Announcement =
+         Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement()
+
     override fun toString(): String = "Group($id)"
 }
 
@@ -277,3 +310,40 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberIm
         anonymousId = id,
     )
 ) as AnonymousMemberImpl
+
+internal fun GroupAnnouncement.covertToAnnouncement(): Announcement {
+    check(this.fid != null) { "GroupAnnouncement don't have id" }
+    check(this.settings != null) { "GroupAnnouncement don't have setting" }
+
+    return Announcement(
+        fid = fid!!,
+        senderId = sender,
+        publishTime = time,
+        title = msg.title ?: "",
+        msg = msg.text,
+        isTop = pinned == 1,
+        sendToNewMember = type == 20,
+        readMemberNumber = readNum,
+        needUseTip = settings!!.tipWindowType == 0,
+        needConfirm = settings!!.confirmRequired == 1,
+        isShowEditCard = settings!!.isShowEditCard == 1
+    )
+}
+
+internal fun Announcement.covertToGroupAnnouncement(): GroupAnnouncement {
+    return GroupAnnouncement(
+        sender = senderId,
+        msg = GroupAnnouncementMsg(
+            title = title,
+            text = msg
+        ),
+        type = if (sendToNewMember) 20 else 6,
+        settings = GroupAnnouncementSettings(
+            isShowEditCard = if (isShowEditCard) 1 else 0,
+            tipWindowType = if (isTop) 0 else 1,
+            confirmRequired = if (needConfirm) 1 else 0,
+        ),
+        pinned = if (isTop) 1 else 0,
+        fid = fid,
+    )
+}

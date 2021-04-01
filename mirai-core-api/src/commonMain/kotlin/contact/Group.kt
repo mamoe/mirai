@@ -14,6 +14,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.data.Announcement
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -174,6 +175,45 @@ public interface Group : Contact, CoroutineScope, FileSupported {
      * @since 2.2
      */
     public suspend fun setEssenceMessage(source: MessageSource): Boolean
+
+    /**
+     * 获取所有群公告列表
+     */
+    @MiraiExperimentalApi
+    public suspend fun getGroupAnnouncements(): List<Announcement>
+
+    /**
+     * 发送群公告
+     *
+     * @param announcement [Announcement] 公告的信息设置
+     *
+     * @throws PermissionDeniedException 没有权限时抛出
+     *
+     * @return 公告的fid
+     */
+    @MiraiExperimentalApi
+    public suspend fun sendGroupAnnouncement(announcement: Announcement): String
+
+    /**
+     * 删除一条群公告
+     * @param fid 公告的id [Announcement.fid]
+     */
+    @MiraiExperimentalApi
+    public suspend fun deleteGroupAnnouncement(fid: String)
+
+    /**
+     * 删除一条群公告
+     * @param announcement 公告 [Announcement]
+     */
+    public suspend fun deleteGroupAnnouncement(announcement: Announcement): Unit =
+        deleteGroupAnnouncement(announcement.fid)
+
+    /**
+     * 获取一条群公告
+     * @param fid 公告的id [Announcement.fid]
+     */
+    @MiraiExperimentalApi
+    public suspend fun getGroupAnnouncement(fid: String): Announcement
 
     public companion object {
         /**
