@@ -53,6 +53,7 @@
 | `JavaScript`       | Node.js / *Mirai Http*       | [RedBeanN/node-mirai]                       |
 | `JavaScript`       | TypeScript / *Mirai Http*    | [YunYouJun/mirai-ts]                        |
 | `JavaScript`       | Node.js / *Mirai Http*       | [drinkal/Mirai-js]                          |
+| `JavaScript`       | Node.js / *OneBot Http*      | [koishijs/koishi]                           |
 | `Go`               | *Mirai Http*                 | [Logiase/gomirai]                           |
 | `易语言`            | *Mirai Http*                 | [only52607/e-mirai]                         |
 | *酷 Q DLL 插件*     | JNI                          | [iTXTech/mirai-native]                      |
