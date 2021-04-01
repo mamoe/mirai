@@ -17,7 +17,7 @@ import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 
 /**
- * 构建一个 [MessageChain]
+ * 构建一个 [MessageChain]. 用法查看 [MessageChainBuilder].
  *
  * @see MessageChainBuilder
  */
@@ -27,7 +27,7 @@ public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): Mess
 }
 
 /**
- * 使用特定的容器大小构建一个 [MessageChain]
+ * 使用特定的容器大小构建一个 [MessageChain]. 用法查看 [MessageChainBuilder].
  *
  * @see MessageChainBuilder
  */
@@ -38,10 +38,35 @@ public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder
 
 /**
  * [MessageChain] 构建器.
- * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能.
- *
  *
  * **注意:** 无并发安全性.
+ *
+ * ### 连续 String 优化
+ *
+ * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能。
+ *
+ * ## Kotlin 示例
+ *
+ * ```
+ * val chain = buildMessageChain {
+ *     +PlainText("a")
+ *     +AtAll
+ *     +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
+ *     add(At(123456))
+ * }
+ * ```
+ *
+ * 该示例中 `+` 是 [MessageChainBuilder.unaryPlus]. 使用 `+` 和使用 `add` 是相等的.
+ *
+ * ## Java 示例
+ * ```java
+ * MessageChain chain = new MessageChainBuilder()
+ *     .append(new PlainText("string"))
+ *     .append("string") // 会被构造成 PlainText 再添加, 相当于上一行
+ *     .append(AtAll.INSTANCE)
+ *     .append(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))
+ *     .build();
+ * ```
  *
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建
@@ -166,8 +191,10 @@ public class MessageChainBuilder private constructor(
         return container.set(index, element)
     }
 
-    ///////
-    // IMPLEMENTATION
+
+    /**
+     * 缓存通过 `add(String)` 添加的字符串, 将连续的字符串连接为一个 [PlainText]
+     */
     private val cache: StringBuilder = StringBuilder()
     private fun flushCache() {
         if (cache.isNotEmpty()) {

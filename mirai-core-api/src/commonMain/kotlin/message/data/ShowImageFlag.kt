@@ -27,9 +27,9 @@ import net.mamoe.mirai.utils.safeCast
  *
  *
  * ```
- * MessageEvent event
+ * MessageEvent event;
  *
- * if (event.message.contains(ShowImageFlag)) {
+ * if (event.message.contains(ShowImageFlag.INSTANCE)) {
  *     // event.message 包含的图片是作为 '秀图' 发送
  * }
  * ```

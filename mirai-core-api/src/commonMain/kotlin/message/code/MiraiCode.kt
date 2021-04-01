@@ -20,6 +20,8 @@ import net.mamoe.mirai.utils.safeCast
 
 /**
  * Mirai 码相关操作.
+ *
+ * 可在 GitHub 查看 [详细文档](https://github.com/mamoe/mirai/blob/dev/docs/Messages.md#mirai-%E7%A0%81).
  */
 public object MiraiCode {
     /**

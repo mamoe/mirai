@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.safeCast
  * 客户端通过 [MessageSource.ids] 等数据定位源消息, 在修改时使用 [MessageSourceBuilder.metadata] 可以修改定位结果.
  *
  * ## 创建引用回复
- * - 直接构造 [QuoteReply]: `new QuoteReply(source)`
+ * - 直接构造 [QuoteReply]: `new QuoteReply(source);`
  * - 在 Kotlin 使用扩展 [MessageSource.quote]
  *
  * @see MessageSource 获取有关消息源的更多信息
@@ -39,8 +39,14 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable
 @SerialName(QuoteReply.SERIAL_NAME)
 public data class QuoteReply(
+    /**
+     * 指代被引用的消息. 其中 [MessageSource.originalMessage] 可以控制客户端显示的消息内容.
+     */
     public val source: MessageSource
 ) : Message, MessageMetadata, ConstrainSingle {
+    /**
+     * 从消息链中获取 [MessageSource] 并构造.
+     */
     public constructor(sourceMessage: MessageChain) : this(sourceMessage.getOrFail(MessageSource))
 
     public override val key: MessageKey<QuoteReply> get() = Key

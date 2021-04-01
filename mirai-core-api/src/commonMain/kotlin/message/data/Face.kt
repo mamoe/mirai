@@ -21,6 +21,9 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 /**
  * QQ 自带表情
  *
+ *
+ * ### 使用 Face
+ *
  * ## mirai 码支持
  * 格式: &#91;mirai:face:*[id]*&#93;
  */
