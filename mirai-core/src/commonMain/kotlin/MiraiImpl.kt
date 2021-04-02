@@ -711,10 +711,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             it.messageChain.ensureSequenceIdAvailable()
         }
 
-        val sequenceId = client.atomicNextMessageSequenceId()
 
         val data = message.calculateValidationData(
-            sequenceId = sequenceId,
+            client = client,
             random = Random.nextInt().absoluteValue,
             sendMessageHandler,
             isLong,
