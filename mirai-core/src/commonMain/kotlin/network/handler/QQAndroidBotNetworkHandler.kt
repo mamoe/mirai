@@ -517,6 +517,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
             when {
+                packet is ParseErrorPacket -> {
+                    packet.direction.getLogger(bot).error(packet.error)
+                }
                 packet is Packet.NoLog -> {
                     // nothing to do
                 }
