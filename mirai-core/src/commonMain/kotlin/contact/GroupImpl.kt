@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -246,39 +247,33 @@ internal class GroupImpl(
         return result.success
     }
 
+    override suspend fun getAnnouncements(): Flow<Announcement> =
+        flow {
+            var i = 1
+            while (true) {
+                val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
+                check(result.ec == 0) { "Gert Group Announcement error at page $i" }
 
-    override suspend fun getGroupAnnouncements(): List<Announcement> {
-        val sum: MutableList<Announcement> = mutableListOf()
-        var i = 1
+                if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
+                    return@flow
 
-        while (true) {
-            val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
-            check(result.ec == 0) { "Group get announcement error at page $i" }
-
-            if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
-                break
-
-            result.inst?.forEach {
-                sum.add(it.covertToAnnouncement())
+                result.inst?.let { emitAll(it.asFlow()) }
+                result.feeds?.let { emitAll(it.asFlow()) }
             }
-            result.feeds?.forEach {
-                sum.add(it.covertToAnnouncement())
-            }
-        }
+        }.map { it.covertToAnnouncement() }
 
-        return sum
-    }
-
-    override suspend fun sendGroupAnnouncement(announcement: Announcement): String {
+    override suspend fun sendAnnouncement(announcement: Announcement): String {
+        checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
         return Mirai.sendGroupAnnouncement(bot, id, announcement.covertToGroupAnnouncement())
     }
 
-    override suspend fun deleteGroupAnnouncement(fid: String) =
+    override suspend fun deleteAnnouncement(fid: String) {
+        checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }
         Mirai.deleteGroupAnnouncement(bot, id, fid)
+    }
 
-
-    override suspend fun getGroupAnnouncement(fid: String): Announcement =
-         Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement()
+    override suspend fun getAnnouncement(fid: String): Announcement =
+        Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement()
 
     override fun toString(): String = "Group($id)"
 }
@@ -321,12 +316,13 @@ internal fun GroupAnnouncement.covertToAnnouncement(): Announcement {
         publishTime = time,
         title = msg.title ?: "",
         msg = msg.text,
-        isTop = pinned == 1,
+        isPinned = pinned == 1,
         sendToNewMember = type == 20,
         readMemberNumber = readNum,
-        needUseTip = settings!!.tipWindowType == 0,
+        isTip = settings!!.tipWindowType == 0,
         needConfirm = settings!!.confirmRequired == 1,
-        isShowEditCard = settings!!.isShowEditCard == 1
+        isShowEditCard = settings!!.isShowEditCard == 1,
+        isAllRead = isAllConfirm != 0
     )
 }
 
@@ -340,10 +336,10 @@ internal fun Announcement.covertToGroupAnnouncement(): GroupAnnouncement {
         type = if (sendToNewMember) 20 else 6,
         settings = GroupAnnouncementSettings(
             isShowEditCard = if (isShowEditCard) 1 else 0,
-            tipWindowType = if (isTop) 0 else 1,
+            tipWindowType = if (isTip) 0 else 1,
             confirmRequired = if (needConfirm) 1 else 0,
         ),
-        pinned = if (isTop) 1 else 0,
+        pinned = if (isPinned) 1 else 0,
         fid = fid,
     )
 }

@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.Announcement
@@ -180,7 +181,7 @@ public interface Group : Contact, CoroutineScope, FileSupported {
      * 获取所有群公告列表
      */
     @MiraiExperimentalApi
-    public suspend fun getGroupAnnouncements(): List<Announcement>
+    public suspend fun getAnnouncements(): Flow<Announcement>
 
     /**
      * 发送群公告
@@ -192,28 +193,28 @@ public interface Group : Contact, CoroutineScope, FileSupported {
      * @return 公告的fid
      */
     @MiraiExperimentalApi
-    public suspend fun sendGroupAnnouncement(announcement: Announcement): String
+    public suspend fun sendAnnouncement(announcement: Announcement): String
 
     /**
      * 删除一条群公告
      * @param fid 公告的id [Announcement.fid]
      */
     @MiraiExperimentalApi
-    public suspend fun deleteGroupAnnouncement(fid: String)
+    public suspend fun deleteAnnouncement(fid: String)
 
     /**
      * 删除一条群公告
      * @param announcement 公告 [Announcement]
      */
-    public suspend fun deleteGroupAnnouncement(announcement: Announcement): Unit =
-        deleteGroupAnnouncement(announcement.fid)
+    public suspend fun deleteAnnouncement(announcement: Announcement): Unit =
+        deleteAnnouncement(announcement.fid)
 
     /**
      * 获取一条群公告
      * @param fid 公告的id [Announcement.fid]
      */
     @MiraiExperimentalApi
-    public suspend fun getGroupAnnouncement(fid: String): Announcement
+    public suspend fun getAnnouncement(fid: String): Announcement
 
     public companion object {
         /**

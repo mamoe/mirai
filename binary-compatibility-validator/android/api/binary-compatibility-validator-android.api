@@ -377,21 +377,21 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
-	public synthetic fun deleteGroupAnnouncement (Ljava/lang/String;)Lkotlin/Unit;
-	public fun deleteGroupAnnouncement (Ljava/lang/String;)V
-	public abstract fun deleteGroupAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public synthetic fun deleteGroupAnnouncement (Lnet/mamoe/mirai/data/Announcement;)Lkotlin/Unit;
-	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/data/Announcement;)V
-	public fun deleteGroupAnnouncement (Lnet/mamoe/mirai/data/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun deleteAnnouncement (Ljava/lang/String;)Lkotlin/Unit;
+	public fun deleteAnnouncement (Ljava/lang/String;)V
+	public abstract fun deleteAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun deleteAnnouncement (Lnet/mamoe/mirai/data/Announcement;)Lkotlin/Unit;
+	public fun deleteAnnouncement (Lnet/mamoe/mirai/data/Announcement;)V
+	public fun deleteAnnouncement (Lnet/mamoe/mirai/data/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
+	public fun getAnnouncement (Ljava/lang/String;)Lnet/mamoe/mirai/data/Announcement;
+	public abstract fun getAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnnouncements ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getAnnouncements (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAvatarUrl ()Ljava/lang/String;
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
-	public fun getGroupAnnouncement (Ljava/lang/String;)Lnet/mamoe/mirai/data/Announcement;
-	public abstract fun getGroupAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getGroupAnnouncements ()Ljava/util/List;
-	public abstract fun getGroupAnnouncements (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()J
 	public abstract fun getMembers ()Lnet/mamoe/mirai/contact/ContactList;
 	public abstract fun getName ()Ljava/lang/String;
@@ -400,8 +400,8 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/data/Announcement;)Ljava/lang/String;
-	public abstract fun sendGroupAnnouncement (Lnet/mamoe/mirai/data/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun sendAnnouncement (Lnet/mamoe/mirai/data/Announcement;)Ljava/lang/String;
+	public abstract fun sendAnnouncement (Lnet/mamoe/mirai/data/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -620,35 +620,20 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 }
 
 public final class net/mamoe/mirai/data/Announcement {
-	public fun <init> (Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;ZZIZZZ)V
-	public synthetic fun <init> (Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;ZZIZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Z
-	public final fun component11 ()Z
-	public final fun component2 ()J
-	public final fun component3 ()J
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Z
-	public final fun component7 ()Z
-	public final fun component8 ()I
-	public final fun component9 ()Z
-	public final fun copy (Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;ZZIZZZ)Lnet/mamoe/mirai/data/Announcement;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/Announcement;Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;ZZIZZZILjava/lang/Object;)Lnet/mamoe/mirai/data/Announcement;
-	public fun equals (Ljava/lang/Object;)Z
+	public fun <init> (Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;ZJZZZZZI)V
+	public synthetic fun <init> (Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;ZJZZZZZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getFid ()Ljava/lang/String;
 	public final fun getMsg ()Ljava/lang/String;
 	public final fun getNeedConfirm ()Z
-	public final fun getNeedUseTip ()Z
 	public final fun getPublishTime ()J
 	public final fun getReadMemberNumber ()I
 	public final fun getSendToNewMember ()Z
 	public final fun getSenderId ()J
 	public final fun getTitle ()Ljava/lang/String;
-	public fun hashCode ()I
+	public final fun isAllRead ()Z
+	public final fun isPinned ()Z
 	public final fun isShowEditCard ()Z
-	public final fun isTop ()Z
-	public fun toString ()Ljava/lang/String;
+	public final fun isTip ()Z
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
