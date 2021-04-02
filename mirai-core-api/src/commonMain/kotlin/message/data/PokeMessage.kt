@@ -23,6 +23,8 @@ import net.mamoe.mirai.utils.castOrNull
  *
  * 备注: 这是消息对话框中显示的 "一个手指" 的戳一戳. 类似微信拍一拍的是 [Nudge].
  *
+ * 使用 [PokeMessage] 的静态字段, 而不要手动构造 [PokeMessage] 实例.
+ *
  * ## mirai 码支持
  * 格式: &#91;mirai:poke:*[name]*,*[pokeType]*,*[id]*&#93;
  *

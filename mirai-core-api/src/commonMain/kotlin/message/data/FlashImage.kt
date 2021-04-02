@@ -28,6 +28,10 @@ import net.mamoe.mirai.utils.safeCast
  * - 在 Kotlin 使用类构造器顶层函数 `FlashImage(image)`.
  * - 在 Kotlin 使用扩展 [Image.flash].
  *
+ * ## 获得闪照代表的原图片
+ *
+ * 访问属性 [FlashImage.image]
+ *
  * ## mirai 码支持
  * 格式: &#91;mirai:flash:*[Image.imageId]*&#93;
  *

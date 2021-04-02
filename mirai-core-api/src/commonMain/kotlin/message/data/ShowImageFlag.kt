@@ -34,6 +34,8 @@ import net.mamoe.mirai.utils.safeCast
  * }
  * ```
  *
+ * 发送 [ShowImageFlag] 不会有任何效果.
+ *
  * @since 2.2
  */
 @SerialName(ShowImageFlag.SERIAL_NAME)

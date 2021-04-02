@@ -25,11 +25,21 @@ import net.mamoe.mirai.utils.safeCast
 import net.mamoe.mirai.utils.toLongUnsigned
 
 
-@MiraiExperimentalApi
+/**
+ * 未通过 [DisplayStrategy] 渲染的合并转发消息. [RawForwardMessage] 仅作为一个中间件, 用于 [ForwardMessageBuilder].
+ *
+ * [RawForwardMessage] 可以序列化保存, 也可以被多次[渲染][RawForwardMessage.render]产生不同格式的 [ForwardMessage].
+ */
 @Serializable
 public data class RawForwardMessage(
+    /**
+     * 消息列表
+     */
     val nodeList: List<ForwardMessage.Node>
 ) {
+    /**
+     * 渲染这个 [RawForwardMessage] 并产生可以发送的 [ForwardMessage]
+     */
     public fun render(displayStrategy: DisplayStrategy): ForwardMessage = ForwardMessage(
         preview = displayStrategy.generatePreview(this),
         title = displayStrategy.generateTitle(this),
@@ -50,11 +60,9 @@ public data class RawForwardMessage(
  * ### 移动端
  * 在移动客户端将会显示为卡片
  *
- * `<title>`: [DisplayStrategy.generateTitle]
- *
- * `<preview>`: [DisplayStrategy.generatePreview]
- *
- * `<summary>`: [DisplayStrategy.generateSummary]
+ * - `<title>`: [DisplayStrategy.generateTitle]
+ * - `<preview>`: [DisplayStrategy.generatePreview]
+ * - `<summary>`: [DisplayStrategy.generateSummary]
  *
  * ```
  * |-------------------------|
@@ -90,6 +98,7 @@ public data class RawForwardMessage(
  *
  *
  * ## 构造
+ * - 使用构建器 [ForwardMessageBuilder]
  * - 使用 [DSL][buildForwardMessage]
  * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
  *
@@ -113,6 +122,8 @@ public data class ForwardMessage(
 
 
     /**
+     * 合并转发卡片展示策略. 用于 [RawForwardMessage] 的 [渲染][RawForwardMessage.render].
+     *
      * @see ForwardMessage
      */
     public interface DisplayStrategy {
@@ -133,7 +144,6 @@ public data class ForwardMessage(
 
         /**
          * 显示在卡片 body 中, 只会显示 sequence 前四个元素.
-         * Java 用户: 使用 [sequenceOf] (`SequenceKt.sequenceOf`) 或 [asSequence] (`SequenceKt.asSequence`)
          */
         public fun generatePreview(forward: RawForwardMessage): List<String> =
             forward.nodeList.map { it.senderName + ": " + it.messageChain.contentToString() }
@@ -143,6 +153,9 @@ public data class ForwardMessage(
          */
         public fun generateSummary(forward: RawForwardMessage): String = "查看 ${forward.nodeList.size} 条转发消息"
 
+        /**
+         * 默认的, 与官方客户端相似的展示方案.
+         */
         public companion object Default : DisplayStrategy
     }
 
@@ -381,7 +394,7 @@ public annotation class ForwardMessageDsl
  */
 public class ForwardMessageBuilder private constructor(
     /**
-     * 消息语境. 可为 [Group] 或 [User]
+     * 消息语境. 可为 [Group] 或 [User]. 用来确定某 ID 的用户的昵称.
      */
     public val context: Contact,
     private val container: MutableList<ForwardMessage.INode>
@@ -732,15 +745,18 @@ public class ForwardMessageBuilder private constructor(
     // endregion
 
 
-    /** 构造 [ForwardMessage] */
-    public fun build(): ForwardMessage = RawForwardMessage(container.map {
-        ForwardMessage.Node(
-            it.senderId,
-            it.time,
-            it.senderName,
-            it.messageChain
-        )
-    }).render(this.displayStrategy)
+    /**
+     * 构造 [RawForwardMessage]. [RawForwardMessage] 可以被多个 [DisplayStrategy] [渲染][RawForwardMessage.render].
+     * @since 2.6
+     */
+    public fun toRawForwardMessage(): RawForwardMessage = RawForwardMessage(container.map {
+        ForwardMessage.Node(it.senderId, it.time, it.senderName, it.messageChain)
+    })
+
+    /**
+     * 使用 [displayStrategy] 渲染并构造可以发送的 [ForwardMessage].
+     */
+    public fun build(): ForwardMessage = toRawForwardMessage().render(this.displayStrategy)
 
     internal fun Bot.smartName(): String = when (val c = this@ForwardMessageBuilder.context) {
         is Group -> c.botAsMember.nameCardOrNick

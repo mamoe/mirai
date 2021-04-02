@@ -11,6 +11,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -19,7 +20,9 @@ import net.mamoe.mirai.utils.safeCast
 
 
 /**
- * 需要通过上传到服务器的消息，如语音、文件
+ * 需要通过上传到服务器的消息，如语音、文件.
+ *
+ * @suppress 不要使用这个接口. 目前只应该使用 [Voice].
  */
 @Serializable
 @MiraiExperimentalApi
@@ -42,7 +45,13 @@ public abstract class PttMessage : MessageContent {
  * 语音消息, 目前只支持接收和转发
  *
  * 目前, 使用 [Voice] 类型是稳定的, 但调用 [Voice] 中的属性 [fileName], [md5], [fileSize] 是不稳定的. 语音的序列化也可能会在未来有变动.
- * 可安全地通过 [ExternalResource.uploadAsVoice] 上传语音并使用.
+ *
+ * ## 使用语音
+ *
+ * 可以通过 [ExternalResource.uploadAsVoice] 或者 [Group.uploadVoice] 上传语音文件到服务器, 得到 [Voice] 实例. 但这不会发送给目标群.
+ * 上传后需要通过 [Group.sendMessage] 发送 [Voice] 实例.
+ *
+ * [Voice] 实例可以通过序列化方式保存. 下次可以用它发送因而不需要上传. 但可能由于未来服务器更新, 这项功能就不稳定. 因此建议总是上传音频文件而不要保存 [Voice].
  */
 @Serializable // experimental
 @SerialName(Voice.SERIAL_NAME)

@@ -85,6 +85,10 @@ internal data class ForwardMessageInternal(override val content: String, val res
     }
 }
 
+/**
+ * 在接收解析消息后会经过一层转换的消息.
+ * @see MessageChain.refine
+ */
 internal interface RefinableMessage : SingleMessage {
 
     /**

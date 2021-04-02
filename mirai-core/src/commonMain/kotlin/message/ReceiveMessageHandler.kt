@@ -90,6 +90,10 @@ private fun List<MsgComm.Msg>.toMessageChain(
     return builder.build().cleanupRubbishMessageElements()
 }
 
+/**
+ * 接收消息的解析器. 将 [MsgComm.Msg] 转换为对应的 [SingleMessage]
+ * @see joinToMessageChain
+ */
 private object ReceiveMessageTransformer {
     fun createMessageSource(
         bot: Bot,

@@ -25,6 +25,8 @@ import kotlin.random.nextInt
 /**
  * 骰子.
  *
+ * 构造 [Dice] 实例即可使用. 也可以通过 [Dice.random] 获得一个随机点数的实例.
+ *
  * @since 2.5
  */
 @Serializable

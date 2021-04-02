@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.safeCast
 /**
  * VIP 表情.
  *
- * 不支持发送.
+ * 不支持发送, 在发送时会变为纯文本.
  *
  * ## mirai 码支持
  * 格式: &#91;mirai:vipface:*[Kind.id]*,*[Kind.name]*,*[count]*&#93;

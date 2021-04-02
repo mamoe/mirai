@@ -26,6 +26,13 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * ## 使用 [AtAll]
  *
  * [AtAll] 是单例, 将 [AtAll] 实例[添加][Message.plus]到消息链中即可.
+ * ```
+ * // Kotlin
+ * contact.sendMessage(AtAll + "test")
+ *
+ * // Java
+ * contact.sendMessage(MessageUtils.newChain(AtAll.INSTANCE, new PlainText("test")));
+ * ```
  *
  * ## mirai 码支持
  * 格式: &#91;mirai:atall&#93;
