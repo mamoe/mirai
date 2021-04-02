@@ -247,12 +247,12 @@ internal class GroupImpl(
         return result.success
     }
 
-    override suspend fun getAnnouncements(): Flow<Announcement> =
+    override suspend fun getAnnouncements(): Flow<ReadAnnouncement> =
         flow {
             var i = 1
             while (true) {
                 val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
-                check(result.ec == 0) { "Gert Group Announcement error at page $i" }
+                check(result.ec == 0) { "Get Group Announcement error at page $i" }
 
                 if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
                     return@flow
@@ -261,6 +261,28 @@ internal class GroupImpl(
                 result.feeds?.let { emitAll(it.asFlow()) }
             }
         }.map { it.covertToAnnouncement() }
+
+    override suspend fun sendAnnouncement(
+        senderId: Long,
+        title: String,
+        msg: String,
+        sendToNewMember: Boolean,
+        isPinned: Boolean,
+        isShowEditCard: Boolean,
+        isTip: Boolean,
+        needConfirm: Boolean
+    ): String = sendAnnouncement(
+        AnnouncementImpl(
+            senderId,
+            title,
+            msg,
+            sendToNewMember,
+            isPinned,
+            isShowEditCard,
+            isTip,
+            needConfirm
+        )
+    )
 
     override suspend fun sendAnnouncement(announcement: Announcement): String {
         checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
@@ -272,7 +294,7 @@ internal class GroupImpl(
         Mirai.deleteGroupAnnouncement(bot, id, fid)
     }
 
-    override suspend fun getAnnouncement(fid: String): Announcement =
+    override suspend fun getAnnouncement(fid: String): ReadAnnouncement =
         Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement()
 
     override fun toString(): String = "Group($id)"
@@ -306,11 +328,11 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberIm
     )
 ) as AnonymousMemberImpl
 
-internal fun GroupAnnouncement.covertToAnnouncement(): Announcement {
+internal fun GroupAnnouncement.covertToAnnouncement(): ReadAnnouncement {
     check(this.fid != null) { "GroupAnnouncement don't have id" }
     check(this.settings != null) { "GroupAnnouncement don't have setting" }
 
-    return Announcement(
+    return ReadAnnouncementImpl(
         fid = fid!!,
         senderId = sender,
         publishTime = time,
@@ -340,6 +362,5 @@ internal fun Announcement.covertToGroupAnnouncement(): GroupAnnouncement {
             confirmRequired = if (needConfirm) 1 else 0,
         ),
         pinned = if (isPinned) 1 else 0,
-        fid = fid,
     )
 }

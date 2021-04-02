@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.Announcement
+import net.mamoe.mirai.data.ReadAnnouncement
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -184,7 +185,35 @@ public interface Group : Contact, CoroutineScope, FileSupported {
     public suspend fun getAnnouncements(): Flow<Announcement>
 
     /**
-     * 发送群公告
+     * 发送一条群公告
+     *
+     * @throws PermissionDeniedException 没有权限时抛出
+     *
+     * @param senderId 公告发送者的QQ号
+     * @param title 公告的标题
+     * @param msg 公告的内容
+     * @param sendToNewMember 是否发送给新成员
+     * @param isPinned 是否置顶，可以有多个置顶公告
+     * @param isShowEditCard 是否显示能够引导群成员修改昵称窗口
+     * @param isTip 是否使用弹窗
+     * @param needConfirm 是否需要群成员确认
+     *
+     * @return 公告的fid
+     */
+    @MiraiExperimentalApi
+    public suspend fun sendAnnouncement(
+        senderId: Long,
+        title: String,
+        msg: String,
+        sendToNewMember: Boolean,
+        isPinned: Boolean = false,
+        isShowEditCard: Boolean = false,
+        isTip: Boolean = false,
+        needConfirm: Boolean = false
+    ): String
+
+    /**
+     * 发送一条群公告
      *
      * @param announcement [Announcement] 公告的信息设置
      *
@@ -197,24 +226,27 @@ public interface Group : Contact, CoroutineScope, FileSupported {
 
     /**
      * 删除一条群公告
-     * @param fid 公告的id [Announcement.fid]
+     * @param fid 公告的id [ReadAnnouncement.fid]
+     *
+     * @throws PermissionDeniedException 没有权限时抛出
      */
     @MiraiExperimentalApi
     public suspend fun deleteAnnouncement(fid: String)
 
     /**
      * 删除一条群公告
-     * @param announcement 公告 [Announcement]
+     * @param readAnnouncement 公告 [ReadAnnouncement]
      */
-    public suspend fun deleteAnnouncement(announcement: Announcement): Unit =
-        deleteAnnouncement(announcement.fid)
+    @MiraiExperimentalApi
+    public suspend fun deleteAnnouncement(readAnnouncement: ReadAnnouncement): Unit =
+        deleteAnnouncement(readAnnouncement.fid)
 
     /**
      * 获取一条群公告
-     * @param fid 公告的id [Announcement.fid]
+     * @param fid 公告的id [ReadAnnouncement.fid]
      */
     @MiraiExperimentalApi
-    public suspend fun getAnnouncement(fid: String): Announcement
+    public suspend fun getAnnouncement(fid: String): ReadAnnouncement
 
     public companion object {
         /**
