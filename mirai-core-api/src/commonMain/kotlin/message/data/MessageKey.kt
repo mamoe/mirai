@@ -85,10 +85,7 @@ public fun MessageKey<*>.isInstance(message: SingleMessage): Boolean = this.safe
 
 /**
  * 获取最上层 [MessageKey].
- *
- * 当 [this][MessageKey] 为 [AbstractPolymorphicMessageKey]
- *
- * 如 [FlashImage], 其 [MessageKey]
+ * @see AbstractPolymorphicMessageKey
  */
 public val <A : SingleMessage> MessageKey<A>.topmostKey: MessageKey<*>
     get() = when (this) {

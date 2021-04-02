@@ -434,7 +434,13 @@ public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Bool
 // region toMessageChain
 
 /**
- * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ * 返回一个包含 [messages] 所有元素的消息链, 保留.
+ *
+ * ```
+ * val chain = messageChainOf(messageChainOf(AtAll, new PlainText("")), messageChainOf(Image(""), QuoteReply()))
+ * ```
+ * 将会得到 `chain` 为 `[AtAll, PlainText, Image, QuoteReply]`
+ *
  * @see buildMessageChain
  */
 @JvmName("newChain")
