@@ -97,7 +97,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private fun startStatHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
         statHeartbeatJob?.cancel(cancelCause)
 
-        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("HelloJob")) helloJob@{
+        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("statHeartbeatJob")) statHeartbeatJob@{
             while (this.isActive) {
                 delay(bot.configuration.statHeartbeatPeriodMillis)
                 val failException = doStatHeartbeat()
@@ -107,7 +107,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     bot.launch {
                         BotOfflineEvent.Dropped(bot, failException).broadcast()
                     }
-                    return@helloJob
+                    return@statHeartbeatJob
                 }
             }
         }.also { statHeartbeatJob = it }
