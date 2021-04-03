@@ -93,9 +93,11 @@ public class MessageOrigin( // [2.3, 2.6-M1) 类名为 RichMessageOrigin
 }
 
 /**
- * 消息来源
+ * [MessageOrigin] 来源
+ * @see MessageOrigin.kind
  * @since 2.6
  */
+@Serializable
 public enum class MessageOriginKind { // [2.3, 2.6-M1) 类名为 RichMessageKind
     /**
      * 长消息
