@@ -187,7 +187,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         if (bot.client.wLoginSigInfoInitialized) {
             // do fast login
             kotlin.runCatching {
-                logger.debug { "Try fast login..." }
                 doFastLogin()
             }.onFailure {
                 bot.initClient()
@@ -210,14 +209,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         bot.client.wLoginSigInfo.vKey.run {
                             //由过期时间最短的且不会被skey更换更新的vkey计算重新登录的时间
                             val delay = (expireTime - creationTime).seconds - 5.minutes
-                            logger.info { "Scheduled relogin in ${delay.toHumanReadableString()}." }
+                            logger.info { "Scheduled refresh login session in ${delay.toHumanReadableString()}." }
                             delay(delay)
                         }
                         runCatching {
                             doFastLogin()
                             registerClientOnline()
                         }.onFailure {
-                            logger.error("Failed to relogin.", it)
+                            logger.warning("Failed to refresh login session.", it)
                         }
                     }
                 }
@@ -239,9 +238,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
     }
 
+    private val fastLoginOrSendPacketLock = Mutex()
+
     private suspend fun doFastLogin(): Boolean {
-        val login10 = WtLogin10(bot.client).sendAndExpect()
-        return login10 is WtLogin.Login.LoginPacketResponse.Success
+        fastLoginOrSendPacketLock.withLock {
+            val login10 = WtLogin10(bot.client).sendAndExpect(ignoreLock = true)
+            return login10 is WtLogin.Login.LoginPacketResponse.Success
+        }
     }
 
     private suspend fun doSlowLogin(host: String, port: Int, cause: Throwable?, step: Int) {
@@ -752,16 +755,27 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
         timeoutMillis: Long = 5000,
-        retry: Int = 2
+        retry: Int = 2,
+        ignoreLock: Boolean = false,
     ): E {
-        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry, ignoreLock)
     }
 
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
     @Suppress("UNCHECKED_CAST")
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2,
+        ignoreLock: Boolean = false
+    ): E {
+        return if (!ignoreLock) fastLoginOrSendPacketLock.withLock {
+            sendAndExpectImpl(timeoutMillis, retry)
+        } else sendAndExpectImpl(timeoutMillis, retry)
+    }
+
+    private suspend fun <E : Packet> OutgoingPacket.sendAndExpectImpl(timeoutMillis: Long, retry: Int): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry in 0..10) { "retry must in 0..10" }
 
