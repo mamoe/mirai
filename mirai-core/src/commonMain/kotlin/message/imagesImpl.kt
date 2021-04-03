@@ -117,6 +117,8 @@ OnlineFriendImage() {
  *  SHARPP: 1004
  */
 
+internal val UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED = systemProp("mirai.unknown.image.type.logging", false)
+
 internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"
@@ -125,7 +127,15 @@ internal fun getImageType(id: Int): String {
         1005 -> "bmp"
         2000 -> "gif"
         2001, 3 -> "png"
-        else -> DEFAULT_FORMAT_NAME
+        else -> {
+            if (UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED) {
+                MiraiLogger.TopLevel.debug(
+                    "Unknown image id: $id. Stacktrace:",
+                    Exception()
+                )
+            }
+            DEFAULT_FORMAT_NAME
+        }
     }
 }
 
