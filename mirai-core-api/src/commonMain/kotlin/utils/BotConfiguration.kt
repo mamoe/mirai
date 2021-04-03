@@ -145,7 +145,10 @@ public open class BotConfiguration { // open for Java
     /** 连接心跳包周期. 过长会导致被服务器断开连接. */
     public var heartbeatPeriodMillis: Long = 60.secondsToMillis
 
-    /** 状态心跳包周期. 过长会导致掉线. */
+    /**
+     * 状态心跳包周期. 过长会导致掉线.
+     * 该值会在登录时根据服务器下发的配置自动进行更新.
+     * */
     public var statHeartbeatPeriodMillis: Long = 300.secondsToMillis
 
     /**
