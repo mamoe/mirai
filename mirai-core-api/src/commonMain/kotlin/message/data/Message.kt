@@ -105,7 +105,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * ```
  * MessageChain msg = event.message;
  * String content = msg.contentToString();
- * if (content != "#" && content.startsWith("#")) {
+ * if (!content.equals("#") && content.startsWith("#")) {
  *     String name = content.substring(content.indexOf('#') + 1); // `#` 之后的内容
  *     switch(name) {
  *         "mute": event.sender.mute(60000) // 发 #mute 就把自己禁言 1 分钟
