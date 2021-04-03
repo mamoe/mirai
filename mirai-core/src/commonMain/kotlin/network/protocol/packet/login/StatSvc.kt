@@ -95,6 +95,29 @@ internal class StatSvc {
         }
     }
 
+    internal object SimpleGet : OutgoingPacketFactory<SimpleGet.Response>("StatSvc.SimpleGet") {
+        internal object Response : Packet {
+            override fun toString(): String = "Response(SimpleGet.Response)"
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient
+        ): OutgoingPacket = buildLoginOutgoingPacket(
+            client,
+            bodyType = 1,
+            extraData = client.wLoginSigInfo.d2.data,
+            key = client.wLoginSigInfo.d2Key
+        ) {
+            writeSsoPacket(client, client.subAppId, commandName, sequenceId = it) {
+
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            return Response
+        }
+    }
+
     internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
         internal class Response(
@@ -106,7 +129,7 @@ internal class StatSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val packet = readUniPacket(SvcRespRegister.serializer())
             packet.iHelloInterval.let {
-                bot.configuration.heartbeatPeriodMillis = it.times(1000).toLong()
+                bot.configuration.statHeartbeatPeriodMillis = it.times(1000).toLong()
             }
 
             return Response(packet)

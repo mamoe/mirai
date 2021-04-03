@@ -35,10 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin15
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
@@ -63,6 +60,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private var _packetReceiverJob: Job? = null
     private var heartbeatJob: Job? = null
+    private var statHeartbeatJob: Job? = null
 
     private val packetReceiveLock: Mutex = Mutex()
 
@@ -96,6 +94,25 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.also { _packetReceiverJob = it }
     }
 
+    private fun startStatHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
+        statHeartbeatJob?.cancel(cancelCause)
+
+        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("statHeartbeatJob")) statHeartbeatJob@{
+            while (this.isActive) {
+                delay(bot.configuration.statHeartbeatPeriodMillis)
+                val failException = doStatHeartbeat()
+                if (failException != null) {
+                    delay(bot.configuration.firstReconnectDelayMillis)
+
+                    bot.launch {
+                        BotOfflineEvent.Dropped(bot, failException).broadcast()
+                    }
+                    return@statHeartbeatJob
+                }
+            }
+        }.also { statHeartbeatJob = it }
+    }
+
     private fun startHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
         heartbeatJob?.cancel(cancelCause)
 
@@ -121,6 +138,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?, step: Int) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
+        statHeartbeatJob?.cancel(CancellationException("relogin", cause))
+        statHeartbeatJob?.join()
         _packetReceiverJob?.cancel(CancellationException("relogin", cause))
         _packetReceiverJob?.join()
         if (::channel.isInitialized) {
@@ -134,7 +153,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         channel = PlatformSocket()
-        bot.initClient()
 
         while (isActive) {
             try {
@@ -156,8 +174,80 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
             }
         }
+
         logger.info { "Connected to server $host:$port" }
+        if (bot.client.wLoginSigInfoInitialized) {
+            // do fast login
+        } else {
+            bot.initClient()
+        }
+
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
+
+        if (bot.client.wLoginSigInfoInitialized) {
+            // do fast login
+            kotlin.runCatching {
+                doFastLogin()
+            }.onFailure {
+                bot.initClient()
+                doSlowLogin(host, port, cause, step)
+            }
+        } else {
+            doSlowLogin(host, port, cause, step)
+        }
+
+
+        // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        registerClientOnline()
+        startStatHeartbeatJobOrKill()
+        startHeartbeatJobOrKill()
+        bot.eventChannel.subscribeOnce<BotOnlineEvent>(this.coroutineContext) {
+            val bot = (bot as QQAndroidBot)
+            if (bot.firstLoginSucceed && bot.client.wLoginSigInfoInitialized) {
+                launch {
+                    while (isActive) {
+                        bot.client.wLoginSigInfo.vKey.run {
+                            //由过期时间最短的且不会被skey更换更新的vkey计算重新登录的时间
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled refresh login session in ${delay.toHumanReadableString()}." }
+                            delay(delay)
+                        }
+                        runCatching {
+                            doFastLogin()
+                            registerClientOnline()
+                        }.onFailure {
+                            logger.warning("Failed to refresh login session.", it)
+                        }
+                    }
+                }
+                launch {
+                    while (isActive) {
+                        bot.client.wLoginSigInfo.sKey.run {
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                            delay(delay)
+                        }
+                        runCatching {
+                            refreshKeys()
+                        }.onFailure {
+                            logger.error("Failed to refresh key.", it)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private val fastLoginOrSendPacketLock = Mutex()
+
+    private suspend fun doFastLogin(): Boolean {
+        fastLoginOrSendPacketLock.withLock {
+            val login10 = WtLogin10(bot.client).sendAndExpect(ignoreLock = true)
+            return login10 is WtLogin.Login.LoginPacketResponse.Success
+        }
+    }
+
+    private suspend fun doSlowLogin(host: String, port: Int, cause: Throwable?, step: Int) {
 
         fun LoginSolver?.notnull(): LoginSolver {
             checkNotNull(this) {
@@ -263,24 +353,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        registerClientOnline()
-        startHeartbeatJobOrKill()
-
-        launch {
-            while (isActive) {
-                bot.client.wLoginSigInfo.sKey.run {
-                    val delay = (expireTime - creationTime).seconds - 5.minutes
-                    logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
-                    delay(delay)
-                }
-                runCatching {
-                    refreshKeys()
-                }.onFailure {
-                    logger.error("Failed to refresh key.", it)
-                }
-            }
-        }
     }
 
     suspend fun refreshKeys() {
@@ -427,6 +499,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         } ?: error("timeout syncing friend message history.")
         logger.info { "Syncing friend message history: Success." }
+    }
+
+    private suspend fun doStatHeartbeat(): Throwable? {
+        return retryCatching(2) {
+            StatSvc.SimpleGet(bot.client)
+                .sendAndExpect<StatSvc.SimpleGet.Response>(
+                    timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                    retry = 2
+                )
+            return null
+        }.exceptionOrNull()
     }
 
     private suspend fun doHeartBeat(): Throwable? {
@@ -675,16 +758,27 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
         timeoutMillis: Long = 5000,
-        retry: Int = 2
+        retry: Int = 2,
+        ignoreLock: Boolean = false,
     ): E {
-        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
+        return (this as OutgoingPacket).sendAndExpect(timeoutMillis, retry, ignoreLock)
     }
 
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
     @Suppress("UNCHECKED_CAST")
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2,
+        ignoreLock: Boolean = false
+    ): E {
+        return if (!ignoreLock) fastLoginOrSendPacketLock.withLock {
+            sendAndExpectImpl(timeoutMillis, retry)
+        } else sendAndExpectImpl(timeoutMillis, retry)
+    }
+
+    private suspend fun <E : Packet> OutgoingPacket.sendAndExpectImpl(timeoutMillis: Long, retry: Int): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry in 0..10) { "retry must in 0..10" }
 
