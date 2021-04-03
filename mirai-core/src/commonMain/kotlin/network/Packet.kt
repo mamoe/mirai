@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.internal.network
 
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.utils.MiraiLogger
+
 /*
 
 // moved to `mirai-core`
@@ -40,4 +43,20 @@ internal open class MultiPacketBySequence<out P : Packet>(internal val delegate:
     override operator fun iterator(): Iterator<P> = delegate.iterator()
 
     override fun toString(): String = "MultiPacketBySequence"
+}
+
+internal class ParseErrorPacket(
+    val error: Throwable,
+    val direction: Direction = Direction.TO_BOT_LOGGER,
+) : Packet, Packet.NoLog {
+    enum class Direction {
+        TO_BOT_LOGGER {
+            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.logger
+        },
+        TO_NETWORK_LOGGER {
+            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.network.logger
+        };
+
+        abstract fun getLogger(bot: QQAndroidBot): MiraiLogger
+    }
 }
