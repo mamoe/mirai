@@ -4608,6 +4608,62 @@ public abstract interface class net/mamoe/mirai/message/data/MessageMetadata : n
 	public fun contentToString ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/message/data/MessageOrigin : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
+	public static final field Key Lnet/mamoe/mirai/message/data/MessageOrigin$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/SingleMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/MessageOriginKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Lnet/mamoe/mirai/message/data/SingleMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/MessageOriginKind;)V
+	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageOrigin$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public final fun getOrigin ()Lnet/mamoe/mirai/message/data/SingleMessage;
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/MessageOrigin;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/data/MessageOrigin$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageOrigin$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageOrigin;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MessageOrigin;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/MessageOrigin$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/MessageOriginKind : java/lang/Enum {
+	public static final field Companion Lnet/mamoe/mirai/message/data/MessageOriginKind$Companion;
+	public static final field FORWARD Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public static final field LONG Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public static final field MUSIC_SHARE Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/MessageOriginKind;
+}
+
+public final class net/mamoe/mirai/message/data/MessageOriginKind$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageOriginKind$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageOriginKind;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MessageOriginKind;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/MessageOriginKind$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/Message, net/mamoe/mirai/message/data/MessageMetadata {
 	public static final field Key Lnet/mamoe/mirai/message/data/MessageSource$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;

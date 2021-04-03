@@ -111,7 +111,7 @@ internal class MessageSerializationTest {
         image.flash(),
         image.toForwardMessage(1L, "test"),
         MusicShare(MusicKind.NeteaseCloudMusic, "123", "123", "123", "123", "123", "123"),
-        RichMessageOrigin(SimpleServiceMessage(1, "content"), "resource id", RichMessageKind.LONG),
+        MessageOrigin(SimpleServiceMessage(1, "content"), "resource id", MessageOriginKind.LONG),
         ShowImageFlag,
         Dice(1),
         FileMessageImpl("id", 2, "name", 1)
