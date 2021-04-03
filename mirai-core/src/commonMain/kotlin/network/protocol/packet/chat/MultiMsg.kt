@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.message.MessageSourceInternal
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
@@ -31,6 +32,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ForwardMessage
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.md5
@@ -46,17 +48,31 @@ internal class MessageValidationData(
 }
 
 internal fun Collection<ForwardMessage.INode>.calculateValidationData(
-    sequenceId: Int,
+    client: QQAndroidClient,
     random: Int,
     handler: SendMessageHandler<*>,
     isLong: Boolean,
 ): MessageValidationData {
+    val offeredSourceIds = mutableSetOf<Int>()
+    fun calculateMsgSeq(node: ForwardMessage.INode): Int {
+        node.messageChain[MessageSource]?.let { source ->
+            source as MessageSourceInternal
+
+            val sid = source.sequenceIds.first()
+            // Duplicate message added
+            if (offeredSourceIds.add(sid)) {
+                return sid
+            }
+        }
+        return client.atomicNextMessageSequenceId()
+    }
+
     val msgList = map { chain ->
         MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
                 fromUin = chain.senderId,
                 toUin = if (isLong) { handler.targetUserUin ?: 0 } else 0,
-                msgSeq = sequenceId,
+                msgSeq = calculateMsgSeq(chain),
                 msgTime = chain.time,
                 msgUid = 0x01000000000000000L or random.toLongUnsigned(),
                 mutiltransHead = MsgComm.MutilTransHead(
