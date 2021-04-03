@@ -5518,6 +5518,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getProtocol ()Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
 	public final fun getReconnectPeriodMillis ()J
 	public final fun getReconnectionRetryTimes ()I
+	public final fun getStatHeartbeatPeriodMillis ()J
 	public final fun getWorkingDir ()Ljava/io/File;
 	public final synthetic fun inheritCoroutineContext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isConvertLineSeparator ()Z
@@ -5560,6 +5561,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setProtocol (Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;)V
 	public final fun setReconnectPeriodMillis (J)V
 	public final fun setReconnectionRetryTimes (I)V
+	public final fun setStatHeartbeatPeriodMillis (J)V
 	public final fun setWorkingDir (Ljava/io/File;)V
 }
 

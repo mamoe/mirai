@@ -272,7 +272,13 @@ internal class WtLogin {
 
                     tlvMap119[0x118]?.let { client.mainDisplayName = it }
                     tlvMap119[0x108]?.let { client.ksid = it }
-
+                    tlvMap119[0x11a]?.read {
+                        val faceId = readShort().toInt()
+                        val age = readByte().toInt()
+                        val gender = readByte().toInt()
+                        val nickLength = readByte().toInt()
+                        bot.nick = readString(nickLength)
+                    }
                     var openId: ByteArray? = null
                     var openKey: ByteArray? = null
                     tlvMap119[0x125]?.read {
@@ -303,6 +309,7 @@ internal class WtLogin {
                             }.getOrElse { ByteReadPacket(byteArrayOf()) }
                         )
                     }
+
                     tlvMap119[0x167]?.let {
                         val imgType = byteArrayOf(readByte())
                         val imgFormat = byteArrayOf(readByte())
@@ -402,8 +409,12 @@ internal class WtLogin {
                                     client.wLoginSigInfo.wtSessionTicket.data
                                 ), creationTime
                             )
+
                             wtSessionTicketKey = tlvMap119.getOrDefault(0x134, client.wLoginSigInfo.wtSessionTicketKey)
                             deviceToken = tlvMap119.getOrDefault(0x322, deviceToken)
+                            encryptedDownloadSession = tlvMap119[0x11d]?.let {
+                                client.analysisTlv11d(it)
+                            } ?: encryptedDownloadSession
                         }
                     } else {
                         var a1: ByteArray? = tlvMap119.getOrFail(0x106)
@@ -494,7 +505,10 @@ internal class WtLogin {
                             da2 = tlvMap119.getOrEmpty(0x203),
                             wtSessionTicket = WtSessionTicket(tlvMap119.getOrEmpty(0x133), creationTime),
                             wtSessionTicketKey = tlvMap119.getOrEmpty(0x134),
-                            deviceToken = tlvMap119.getOrEmpty(0x322)
+                            deviceToken = tlvMap119.getOrEmpty(0x322),
+                            encryptedDownloadSession = tlvMap119[0x11d]?.let {
+                                client.analysisTlv11d(it)
+                            }
                         )
                     }
                     //bot.network.logger.error(client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString())

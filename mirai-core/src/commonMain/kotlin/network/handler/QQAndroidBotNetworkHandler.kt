@@ -60,6 +60,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private var _packetReceiverJob: Job? = null
     private var heartbeatJob: Job? = null
+    private var statHeartbeatJob: Job? = null
 
     private val packetReceiveLock: Mutex = Mutex()
 
@@ -93,6 +94,25 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.also { _packetReceiverJob = it }
     }
 
+    private fun startStatHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
+        statHeartbeatJob?.cancel(cancelCause)
+
+        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("statHeartbeatJob")) statHeartbeatJob@{
+            while (this.isActive) {
+                delay(bot.configuration.statHeartbeatPeriodMillis)
+                val failException = doStatHeartbeat()
+                if (failException != null) {
+                    delay(bot.configuration.firstReconnectDelayMillis)
+
+                    bot.launch {
+                        BotOfflineEvent.Dropped(bot, failException).broadcast()
+                    }
+                    return@statHeartbeatJob
+                }
+            }
+        }.also { statHeartbeatJob = it }
+    }
+
     private fun startHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
         heartbeatJob?.cancel(cancelCause)
 
@@ -118,6 +138,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?, step: Int) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
+        statHeartbeatJob?.cancel(CancellationException("relogin", cause))
+        statHeartbeatJob?.join()
         _packetReceiverJob?.cancel(CancellationException("relogin", cause))
         _packetReceiverJob?.join()
         if (::channel.isInitialized) {
@@ -177,20 +199,38 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
+        startStatHeartbeatJobOrKill()
         startHeartbeatJobOrKill()
         bot.eventChannel.subscribeOnce<BotOnlineEvent>(this.coroutineContext) {
             val bot = (bot as QQAndroidBot)
             if (bot.firstLoginSucceed && bot.client.wLoginSigInfoInitialized) {
                 launch {
                     while (isActive) {
-                        bot.client.wLoginSigInfo.run {
-                            delay(10.minutes)
+                        bot.client.wLoginSigInfo.vKey.run {
+                            //由过期时间最短的且不会被skey更换更新的vkey计算重新登录的时间
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled refresh login session in ${delay.toHumanReadableString()}." }
+                            delay(delay)
                         }
                         runCatching {
                             doFastLogin()
                             registerClientOnline()
                         }.onFailure {
                             logger.warning("Failed to refresh login session.", it)
+                        }
+                    }
+                }
+                launch {
+                    while (isActive) {
+                        bot.client.wLoginSigInfo.sKey.run {
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                            delay(delay)
+                        }
+                        runCatching {
+                            refreshKeys()
+                        }.onFailure {
+                            logger.error("Failed to refresh key.", it)
                         }
                     }
                 }
@@ -459,6 +499,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         } ?: error("timeout syncing friend message history.")
         logger.info { "Syncing friend message history: Success." }
+    }
+
+    private suspend fun doStatHeartbeat(): Throwable? {
+        return retryCatching(2) {
+            StatSvc.SimpleGet(bot.client)
+                .sendAndExpect<StatSvc.SimpleGet.Response>(
+                    timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                    retry = 2
+                )
+            return null
+        }.exceptionOrNull()
     }
 
     private suspend fun doHeartBeat(): Throwable? {
