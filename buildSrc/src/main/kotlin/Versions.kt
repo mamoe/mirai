@@ -43,6 +43,7 @@ object Versions {
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
     const val asm = "9.1"
+    const val difflib = "1.3.0"
 
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
