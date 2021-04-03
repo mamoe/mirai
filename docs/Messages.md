@@ -231,7 +231,7 @@ MessageChain chain = new MessageChainBuilder()
     .build();
 ```
 
-该示例中 `+` 是 `Message.unaryPlus` 扩展。使用 `+` 和使用 `add` 是相等的。
+该示例中 `+` 是位于 `MessageChainBuilder` 的 `Message.unaryPlus` 扩展。使用 `+` 和使用 `add` 是相等的。
 
 ### 作为字符串处理消息
 
