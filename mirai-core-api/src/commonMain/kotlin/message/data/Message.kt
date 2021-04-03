@@ -71,6 +71,8 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * friend.sendMessage(text); // "Hello world!"
  * ```
  *
+ * 注: 若需要拼接较多 [Message], 推荐使用 [MessageChainBuilder] 加快拼接效率
+ *
  * ### 使用 [MessageChainBuilder] 来构建消息
  *
  * 查看 [MessageChainBuilder].
