@@ -148,7 +148,8 @@ public open class BotConfiguration { // open for Java
     /**
      * 状态心跳包周期. 过长会导致掉线.
      * 该值会在登录时根据服务器下发的配置自动进行更新.
-     * */
+     * @since 2.6
+     */
     public var statHeartbeatPeriodMillis: Long = 300.secondsToMillis
 
     /**
