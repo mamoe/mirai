@@ -127,6 +127,7 @@ internal object KnownPacketFactories {
         WtLogin.ExchangeEmp,
         StatSvc.Register,
         StatSvc.GetOnlineStatus,
+        StatSvc.SimpleGet,
         StatSvc.GetDevLoginInfo,
         MessageSvcPbGetMsg,
         MessageSvcPushForceOffline,
