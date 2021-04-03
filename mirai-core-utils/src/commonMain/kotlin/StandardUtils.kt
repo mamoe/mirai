@@ -164,3 +164,6 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
         li.set(operator(li.next()))
     }
 }
+
+public fun systemProp(name: String, default: Boolean): Boolean =
+    System.getProperty(name, default.toString())?.toBoolean() ?: default
