@@ -184,15 +184,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             if (bot.firstLoginSucceed && bot.client.wLoginSigInfoInitialized) {
                 launch {
                     while (isActive) {
-                        bot.client.wLoginSigInfo.run {
-                            logger.info { "Scheduled Relogin in 10 minutes." }
-                            delay(10.minutes)
+                        bot.client.wLoginSigInfo.vKey.run {
+                            //由过期时间最短的且不会被skey更换更新的vkey计算重新登录的时间
+                            val delay = (expireTime - creationTime).seconds - 5.minutes
+                            logger.info { "Scheduled relogin in ${delay.toHumanReadableString()}." }
+                            delay(delay)
                         }
                         runCatching {
                             doFastLogin()
                             registerClientOnline()
                         }.onFailure {
-                            logger.error("Failed to Relogin.", it)
+                            logger.error("Failed to relogin.", it)
                         }
                     }
                 }

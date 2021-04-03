@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
@@ -114,6 +115,23 @@ internal interface WtLoginExt { // so as not to register to global extension
                 )
             )
         }
+    }
+
+    /**
+     * Encrypt sig and key for pic downloading
+     */
+    fun QQAndroidClient.analysisTlv11d(t11d: ByteArray): WLoginSigInfo.EncryptedDownloadSession = t11d.read {
+        val appid = readInt().toLong().and(4294967295L)
+        val stKey = ByteArray(16)
+        readAvailable(stKey)
+        val stSigLength = readUShort().toInt()
+        val stSig = ByteArray(stSigLength)
+        readAvailable(stSig)
+        WLoginSigInfo.EncryptedDownloadSession(
+            appid,
+            stKey,
+            stSig
+        )
     }
 
     /**
