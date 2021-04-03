@@ -266,6 +266,11 @@ public interface ExternalResource : Closeable {
 
         /**
          * 上传文件并获取文件消息.
+         *
+         * 如果要上传的文件格式是图片或者语音, 也会将它们作为文件上传而不会调整消息类型.
+         *
+         * 需要调用方手动[关闭资源][ExternalResource.close].
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
@@ -281,7 +286,12 @@ public interface ExternalResource : Closeable {
         ): FileMessage = toExternalResource().use { contact.uploadFile(path, it, callback) }
 
         /**
-         * 上传文件并获取文件消息. 无论上传是否成功, 本函数都不会关闭资源.
+         * 上传文件并获取文件消息.
+         *
+         * 如果要上传的文件格式是图片或者语音, 也会将它们作为文件上传而不会调整消息类型.
+         *
+         * 需要调用方手动[关闭资源][ExternalResource.close].
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
@@ -299,6 +309,9 @@ public interface ExternalResource : Closeable {
 
         /**
          * 上传文件并发送文件消息.
+         *
+         * 如果要上传的文件格式是图片或者语音, 也会将它们作为文件上传而不会调整消息类型.
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
@@ -314,7 +327,10 @@ public interface ExternalResource : Closeable {
         ): MessageReceipt<C> = toExternalResource().use { contact.sendFile(path, it, callback) }
 
         /**
-         * 上传文件并发送件消息. 无论上传是否成功, 本函数都不会关闭资源.
+         * 上传文件并发送件消息.  如果要上传的文件格式是图片或者语音, 也会将它们作为文件上传而不会调整消息类型.
+         *
+         * 需要调用方手动[关闭资源][ExternalResource.close].
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
@@ -331,10 +347,11 @@ public interface ExternalResource : Closeable {
         ): MessageReceipt<C> = contact.sendFile(path, this, callback)
 
         /**
-         * 将文件作为语音上传后构造 [Voice].
+         * 将文件作为语音上传后构造 [Voice]. 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友.
          *
-         * - 请手动关闭输入流
-         * - 请使用 amr 或 silk 格式
+         * **服务器仅支持音频格式 `silk` 或 `amr`**. 需要调用方手动[关闭资源][ExternalResource.close].
+         *
+         * 目前仅支持发送给群.
          *
          * @throws OverFileSizeMaxException
          */

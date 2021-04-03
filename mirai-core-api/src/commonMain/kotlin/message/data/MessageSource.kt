@@ -37,29 +37,40 @@ import net.mamoe.mirai.utils.safeCast
  *
  *
  * ## 组成
- * [MessageSource] 由 定位属性, 发信人和收信人, 内容 组成
+ * [MessageSource] 由以下属性组成:
+ * - 三个*定位属性* [ids], [internalId], [time]
+ * - 发送人 ID [fromId]
+ * - 收信人 ID [targetId]
+ * - 原消息内容 [originalMessage]
  *
- * ### 定位属性
- * - [ids] 消息 ids (序列号)
- * - [internalIds] 消息内部 ids
- * - [time] 时间
+ * 官方客户端通过这三个*定位属性*来准确定位消息, 撤回和引用回复都是如此 (有这三个属性才可以精确撤回和引用某个消息).
  *
- * 官方客户端通过这三个属性定位消息, 撤回和引用回复都是如此.
- *
- * ### 发信人和收信人
- * - [fromId] 消息发送人
- * - [targetId] 消息发送目标
- *
- * ### 内容
- * - [originalMessage] 消息内容
+ * 即使三个*定位属性*就可以知道原消息是哪一条, 但服务器和官方客户端都实现为读取 [originalMessage] 的内容.
+ * 也就是说, 如果[引用][quote]一个 [MessageSource], *定位属性*只会被用来支持跳转到原消息, 引用中显示的被引用消息内容只取决于 [originalMessage].
+ * 可以通过修改 [originalMessage] 来达到显示的内容与跳转内容不符合的效果. 但一般没有必要这么做.
  *
  * ## 获取
  * - 来自 [MessageEvent.message] 的 [MessageChain] 总是包含 [MessageSource]. 可通过 [MessageChain.get] 获取 [MessageSource]:
  *    ```
- *    val source = chain[MessageSource]
+ *    // Kotlin
+ *    val source: MessageSource? = chain[MessageSource]
+ *    val notNull: MessageSource = chain.source // 可能抛出 NoSuchElementException
  *    ```
- * - 构造离线消息源 [IMirai.constructMessageSource]
+ *    ```
+ *    // Java
+ *    MessageSource source = chain.get(MessageSource.Key);
+ *    ```
+ * - 构造离线消息源: [IMirai.constructMessageSource]
+ * - 使用构建器构造: [MessageSourceBuilder]
  *
+ * ### "修改" 一个 [MessageSource]
+ * [MessageSource] 是不可变的. 因此不能修改其中属性, 但可以通过 [MessageSource.copyAmend] 或者 [MessageSourceBuilder.allFrom] 来复制一个.
+ * ```
+ * MessageSource newSource = new MessageSourceBuilder()
+ *     .allFrom(source) // 从 source 继承所有数据
+ *     .message(new PlainText("aaa")) // 覆盖消息
+ *     .build();
+ * ```
  *
  * ## 使用
  *
@@ -67,6 +78,24 @@ import net.mamoe.mirai.utils.safeCast
  *
  * 对于来自 [MessageEvent.message] 的 [MessageChain], 总是包含 [MessageSource].
  * 因此也可以对这样的 [MessageChain] 进行 [引用回复][MessageChain.quote] 或 [撤回][MessageChain.recall].
+ *
+ * ### Kotlin 示例
+ * ```
+ * val source: MessageSource = ...
+ * source.recall() // 通过 MessageSource 撤回
+ *
+ * val event: MessageEvent = ...
+ * event.message.recall() // 也可以通过来自服务器的 [MessageChain] 撤回, 因为这些 chain 包含 [MessageSource]
+ * ```
+ *
+ * ### Java 示例
+ * ```
+ * val source: MessageSource = ...
+ * source.recall() // 通过 MessageSource 撤回
+ *
+ * val event: MessageEvent = ...
+ * event.message.recall() // 也可以通过来自服务器的 [MessageChain] 撤回, 因为这些 chain 包含 [MessageSource]
+ * ```
  *
  *
  * @see IMirai.recallMessage 撤回一条消息
@@ -89,9 +118,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
 
     /**
      * 消息 ids (序列号). 在获取失败时 (概率很低) 为空数组.
-     *
-     * ### 值域
-     * 值的范围约为 [UShort] 的范围.
      *
      * ### 顺序
      * 群消息的 id 由服务器维护. 好友消息的 id 由 mirai 维护.
@@ -128,7 +154,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val time: Int
 
     /**
-     * 发送人.
+     * 发送人用户 ID.
      *
      * - 当 [OnlineMessageSource.Outgoing] 时为 [机器人][Bot.id]
      * - 当 [OnlineMessageSource.Incoming] 时为发信 [来源用户][User.id] 或 [群][Group.id]
@@ -137,7 +163,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val fromId: Long
 
     /**
-     * 消息发送目标.
+     * 消息发送目标用户或群号码.
      *
      * - 当 [OnlineMessageSource.Outgoing] 时为发信 [目标用户][User.id] 或 [群][Group.id]
      * - 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
@@ -146,9 +172,9 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val targetId: Long // groupCode / friendUin / memberUin
 
     /**
-     * 原消息内容.
+     * 该 source 指代的原消息内容.
      *
-     * 此属性是 **lazy** 的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
+     * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
     @LazyProperty
     public abstract val originalMessage: MessageChain
@@ -233,7 +259,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         }
 
         /**
-         * 引用这条消息
+         * 引用这条消息.
          * @see QuoteReply
          */
         @JvmStatic
@@ -535,12 +561,11 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
 }
 
 /**
- * 由一条消息中的 [QuoteReply] 得到的 [MessageSource].
- * 此消息源可能来自一条与机器人无关的消息. 因此无法提供对象化的 `sender` 或 `target` 获取.
+ * 由一条消息中的 [QuoteReply] 得到的, 或通过 [MessageSourceBuilder] 手动构建的 [MessageSource].
  *
- * @see buildMessageSource 构建一个 [OfflineMessageSource]
- * @see IMirai.constructMessageSource
- * @see OnlineMessageSource.toOffline
+ * 此消息源可能来自一条与机器人无关的消息, 因此缺少相关发送环境信息, 无法提供 `sender` 或 `target` 对象的获取.
+ *
+ * 要获得 [OfflineMessageSource], 使用 [MessageSourceBuilder]. 或通过 [OnlineMessageSource.toOffline] 转换得到 (一般没有必要).
  */
 public abstract class OfflineMessageSource : MessageSource() { // TODO: 2021/1/10 Extract to separate file in Kotlin 1.5
     public companion object Key :

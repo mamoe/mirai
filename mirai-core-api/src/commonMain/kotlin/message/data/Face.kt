@@ -21,6 +21,8 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 /**
  * QQ 自带表情
  *
+ * 使用时通过 [Face.JING_YA] 等静态字段得到 ID 然后构造 [Face] 实例.
+ *
  * ## mirai 码支持
  * 格式: &#91;mirai:face:*[id]*&#93;
  */

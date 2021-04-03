@@ -22,7 +22,9 @@ import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
 
 /**
- * XML, JSON 消息等富文本消息
+ * XML, JSON 消息等富文本消息.
+ *
+ * 通常构造 [LightApp] 和 [ServiceMessage]
  *
  * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
  *
@@ -87,7 +89,7 @@ public interface RichMessage : MessageContent, ConstrainSingle {
 }
 
 /**
- * 小程序, 如音乐分享.
+ * 小程序.
  *
  * 大部分 JSON 消息为此类型, 另外一部分为 [ServiceMessage]
  *
@@ -154,7 +156,10 @@ public class SimpleServiceMessage(
 /**
  * 服务消息, 可以是 JSON 消息或 XML 消息.
  *
+ * XML 消息有时候是 [SimpleServiceMessage], 有时候是 [LightApp].
  * JSON 消息更多情况下通过 [LightApp] 发送.
+ *
+ * 建议使用官方客户端发送来确定具体是哪种类型.
  *
  * @see LightApp 小程序类型消息
  * @see SimpleServiceMessage

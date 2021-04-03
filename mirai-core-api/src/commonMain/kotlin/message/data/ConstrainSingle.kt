@@ -22,8 +22,8 @@ package net.mamoe.mirai.message.data
  *
  * 实现此接口的元素将会在连接时自动处理替换.
  *
- * 要获取有关键的信息, 查看 [MessageKey].
- * 要获取有关约束的处理方式, 查看 [AbstractPolymorphicMessageKey].
+ * - 要获取有关键的信息, 查看 [MessageKey].
+ * - 要获取有关约束的处理方式, 查看 [AbstractPolymorphicMessageKey].
  */
 public interface ConstrainSingle : SingleMessage {
     /**
