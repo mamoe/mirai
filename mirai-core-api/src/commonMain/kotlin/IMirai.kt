@@ -68,7 +68,13 @@ public interface IMirai : LowLevelApiAccessor {
     public var Http: HttpClient
 
     /**
-     * 获取 uin
+     * 获取 uin.
+     *
+     * - 用户的 uin 就是用户的 ID (QQ 号码, [User.id]).
+     * - 部分旧群的 uin 需要通过算法计算 [calculateGroupUinByGroupCode]. 新群的 uin 与在客户端能看到的群号码 ([Group.id]) 相同.
+     *
+     * 除了一些偏底层的 API 如 [MessageSourceBuilder.id] 外, mirai 的所有其他 API 都使用在客户端能看到的用户 QQ 号码和群号码 ([Contact.id]). 并会在需要的时候进行合适转换.
+     * 若需要使用 uin, 在特定方法的文档中会标出.
      */
     public fun getUin(contactOrBot: ContactOrBot): Long {
         return if (contactOrBot is Group)
@@ -78,6 +84,7 @@ public interface IMirai : LowLevelApiAccessor {
 
     /**
      * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
+     * @see getUin
      */
     public fun calculateGroupUinByGroupCode(groupCode: Long): Long {
         var left: Long = groupCode / 1000000L
@@ -95,6 +102,7 @@ public interface IMirai : LowLevelApiAccessor {
 
     /**
      * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
+     * @see getUin
      */
     public fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
         var left: Long = groupUin / 1000000L

@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
@@ -260,7 +261,11 @@ internal class NewContact {
                     ) { // duplicate
                         return@mapNotNull null
                     }
-                    handleStruct(struct)
+                    try {
+                        handleStruct(struct)
+                    } catch (e: Throwable) {
+                        ParseErrorPacket(e)
+                    }
                 }.let { packets ->
                     when {
                         packets.isEmpty() -> null

@@ -39,8 +39,14 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable
 @SerialName(QuoteReply.SERIAL_NAME)
 public data class QuoteReply(
+    /**
+     * 指代被引用的消息. 其中 [MessageSource.originalMessage] 可以控制客户端显示的消息内容.
+     */
     public val source: MessageSource
 ) : Message, MessageMetadata, ConstrainSingle {
+    /**
+     * 从消息链中获取 [MessageSource] 并构造.
+     */
     public constructor(sourceMessage: MessageChain) : this(sourceMessage.getOrFail(MessageSource))
 
     public override val key: MessageKey<QuoteReply> get() = Key

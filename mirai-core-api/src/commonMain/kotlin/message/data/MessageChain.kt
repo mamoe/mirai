@@ -134,7 +134,18 @@ import kotlin.streams.asSequence
  *
  * 相关地还可以使用 [MessageChain.contains] 和 [MessageChain.getOrFail]
  *
+ * ## 直接索引访问
+ *
+ * [MessageChain] 实现接口 [List], 可以通过索引 `get(index)` 来访问. 由于 [MessageChain] 是稳定的, 这种访问操作也是稳定的.
+ *
+ * 但在处理来自服务器的 [MessageChain] 时, 请尽量避免这种直接索引访问. 来自服务器的消息的组成有可能会变化, 可能会有新的 [MessageMetadata] 加入.
+ * 例如用户发送了两条内容相同的消息, 但其中一条带有引用回复而另一条没有, 则两条消息的索引可能有变化 (当然内容顺序不会改变, 只是 [QuoteReply] 的位置有可能会变化).
+ * 因此在使用直接索引访问时要格外注意兼容性, 故不推荐这种访问方案.
+ *
  * ## 撤回和引用
+ *
+ * 要撤回消息, 查看 [MessageSource]
+ *
  * - [MessageSource.quote]
  * - [MessageSource.recall]
  * - [MessageSource.recallIn]
@@ -424,6 +435,12 @@ public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Bool
 
 /**
  * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ *
+ * ```
+ * val chain = messageChainOf(messageChainOf(AtAll, new PlainText("")), messageChainOf(Image(""), QuoteReply()))
+ * ```
+ * 将会得到 `chain` 为 `[AtAll, PlainText, Image, QuoteReply]`
+ *
  * @see buildMessageChain
  */
 @JvmName("newChain")

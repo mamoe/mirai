@@ -24,7 +24,7 @@ internal data class LongMessageInternal internal constructor(override val conten
         val bot = contact.bot.asQQAndroidBot()
         val long = Mirai.downloadLongMessage(bot, resId)
 
-        return RichMessageOrigin(SimpleServiceMessage(serviceId, content), resId, RichMessageKind.LONG) + long
+        return MessageOrigin(SimpleServiceMessage(serviceId, content), resId, MessageOriginKind.LONG) + long
     }
 
     companion object Key :
@@ -59,7 +59,7 @@ internal data class ForwardMessageInternal(override val content: String, val res
         val preview = titles
         val source = xmlFoot.findField("name")
 
-        return RichMessageOrigin(SimpleServiceMessage(serviceId, content), resId, RichMessageKind.FORWARD) + ForwardMessage(
+        return MessageOrigin(SimpleServiceMessage(serviceId, content), resId, MessageOriginKind.FORWARD) + ForwardMessage(
             preview = preview,
             title = title,
             brief = brief,
@@ -85,6 +85,10 @@ internal data class ForwardMessageInternal(override val content: String, val res
     }
 }
 
+/**
+ * 在接收解析消息后会经过一层转换的消息.
+ * @see MessageChain.refine
+ */
 internal interface RefinableMessage : SingleMessage {
 
     /**

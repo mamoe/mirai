@@ -24,6 +24,9 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  *
  * 使用时直接构造即可. [Message] 也可以直接与 [String] 相加, 详见 [Message.plus].
  *
+ * ## mirai 码支持
+ * 将 [content] 转义. 而没有 `[mirai:`.
+ *
  * @see String.toPlainText
  */
 @Serializable

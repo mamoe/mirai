@@ -99,11 +99,13 @@ private val builtInSerializersModule by lazy {
 
         contextual(ShowImageFlag::class, ShowImageFlag.Serializer)
 
+        contextual(MessageOriginKind::class, MessageOriginKind.serializer())
 
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())
             subclass(QuoteReply::class, QuoteReply.serializer())
             subclass(ShowImageFlag::class, ShowImageFlag.Serializer)
+            subclass(MessageOrigin::class, MessageOrigin.serializer())
         }
 
         fun PolymorphicModuleBuilder<MessageContent>.messageContentSubclasses() {

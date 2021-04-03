@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal
 
-import contact.StrangerImpl
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
@@ -711,10 +710,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             it.messageChain.ensureSequenceIdAvailable()
         }
 
-        val sequenceId = client.atomicNextMessageSequenceId()
 
         val data = message.calculateValidationData(
-            sequenceId = sequenceId,
+            client = client,
             random = Random.nextInt().absoluteValue,
             sendMessageHandler,
             isLong,

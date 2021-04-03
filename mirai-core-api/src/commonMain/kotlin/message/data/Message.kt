@@ -22,103 +22,120 @@ import kotlinx.coroutines.flow.fold
 import kotlinx.serialization.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.code.MiraiCode
+import net.mamoe.mirai.message.code.MiraiCode.serializeToMiraiCode
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * 可发送的或从服务器接收的消息.
  *
- * [消息][Message] 分为
- * - [SingleMessage]:
+ * [Message] 派生为 [SingleMessage] 和 [MessageChain].
+ *
+ * [SingleMessage] 分为:
  *   - [MessageMetadata] 消息元数据, 即消息的属性. 包括: [消息来源][MessageSource], [引用回复][QuoteReply] 等.
  *   - [MessageContent] 含内容的消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
- * - [MessageChain]: 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
+ *
+ * [MessageChain] 是链表形式链接的多个 [SingleMessage] 实例, 类似 [List].
+ *
+ * ## [Message] 是不可变的
+ *
+ * 所有类型的 [Message] 都是不可变的 (immutable), 它们被构造后其所有属性的值就已经固定了. 因此在多线程环境使用是安全的.
+ * 因此 [contentToString], [serializeToJsonString], [MiraiCode.serializeToMiraiCode] 的返回都是不变的.
+ *
+ * [MessageChain] 的 [contentToString] 会被缓存, 只会在第一次调用时计算.
  *
  * ## 获得 [Message]
  *
- * 请先根据实际需求确定需要的类型.
- *
- * 特别地, 要以字符串方式处理消息, 可使用 [contentToString] 或 [content] 得到内容字符串.
- *
- *
- * - [PlainText]: 纯文本
- * - [Image]: 图片
- * - [Face]: 原生表情
- * - [At]: 一个群成员的引用
- * - [AtAll]: 全体成员的引用
- * - [QuoteReply]: 一条消息的引用
- * - [RichMessage]: 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
- * - [FlashImage]: 闪照
- * - [PokeMessage]: 戳一戳 (消息)
- * - [VipFace]: VIP 表情
- * - [CustomMessage]: 自定义消息类型
- * - ...
+ * 查看 [Message] 子类. 或在 GitHub 查看 [表格](https://github.com/mamoe/mirai/blob/dev/docs/Messages.md#%E6%B6%88%E6%81%AF%E5%85%83%E7%B4%A0).
  *
  * ## 使用 [Message]
  *
- * ### 在 Kotlin 使用 [Message]:
- * 与使用 [String] 的使用类似.
+ * ### 转换为 [MessageChain]
  *
- * - 比较 [SingleMessage] 与 [String]:
- *  `if(message.content == "你好") friend.sendMessage(event)`
+ * [MessageChain] 为多个 [SingleMessage] 的集合. [Message] 可能表示 single 也可能表示 chain. 可以通过 [toMessageChain] 将 [Message] 转换为 [MessageChain] 统一处理.
  *
- * - 连接 [Message] 与 [Message], [String], (使用操作符 [Message.plus]):
- *  ```
+ * ### 连接两个或多个 [Message]
+ *
+ * 在 Kotlin, 使用操作符 [Message.plus]:
+ * ```
  * val text = PlainText("Hello ") + PlainText("world") + "!"
  * friend.sendMessage(text) // "Hello world!"
- *  ```
- * 但注意: 不能 `String + Message`. 只能 `Message + String`
+ * ```
  *
+ * 在 Java, 使用 [plus]:
+ * ```
+ * MessageChain text = new PlainText("Hello ")
+ *     .plus(new PlainText("world"))
+ *     .plus("!");
+ * friend.sendMessage(text); // "Hello world!"
+ * ```
  *
- * ### 在 Java 使用 [Message]:
+ * 注: 若需要拼接较多 [Message], 推荐使用 [MessageChainBuilder] 加快拼接效率
  *
+ * ### 使用 [MessageChainBuilder] 来构建消息
+ *
+ * 查看 [MessageChainBuilder].
+ *
+ * ### 发送消息
+ *
+ * - [Contact.sendMessage] 接收 [Message] 参数
+ * - [Message.sendTo] 是发送的扩展
+ *
+ * ### 处理消息
+ *
+ * 除了直接访问 [Message] 子类的对象外, 有时候可能需要将 [Message] 作为字符串处理,
+ * 通常可以使用 [contentToString] 方法或 [content] 扩展得到与官方客户端显示格式相同的内容字符串.
+ *
+ * #### 文字处理示例
+ *
+ * 本示例实现处理以 `#` 开头的消息:
+ *
+ * Kotlin:
+ * ```
+ * val msg = event.message
+ * val content = msg.content.trim()
+ * if (content.startsWith("#")) {
+ *     val name = content.substringAfter("#", "")
+ *     when(name) {
+ *         "mute" -> event.sender.mute(60000) // 发 #mute 就把自己禁言 1 分钟
+ *     }
+ * }
+ * ```
+ *
+ * Java:
+ * ```
+ * MessageChain msg = event.message;
+ * String content = msg.contentToString();
+ * if (!content.equals("#") && content.startsWith("#")) {
+ *     String name = content.substring(content.indexOf('#') + 1); // `#` 之后的内容
+ *     switch(name) {
+ *         "mute": event.sender.mute(60000) // 发 #mute 就把自己禁言 1 分钟
+ *     }
+ * }
+ * ```
+ *
+ * 若使用 Java 对象的 [toString], 会得到包含更多信息. 因此 [toString] 结果可能会随着 mirai 更新变化. [toString] 不适合用来处理消息. 只适合用来调试输出.
+ *
+ * [Message] 还提供了 [Mirai 码][MiraiCode] 和 [JSON][MessageChain.serializeToJsonString] 序列化方式. 可在 [MessageChain] 文档详细了解它们.
  *
  * ### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
- *
- * @see PlainText 纯文本
- * @see Image 图片
- * @see Face 原生表情
- * @see At 一个群成员的引用
- * @see AtAll 全体成员的引用
- * @see QuoteReply 一条消息的引用
- * @see RichMessage 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
- * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage], [VIP表情][VipFace]
- * @see CustomMessage 自定义消息类型
  *
  * @see MessageChain 消息链(即 `List<Message>`)
  * @see buildMessageChain 构造一个 [MessageChain]
  *
  * @see Contact.sendMessage 发送消息
  *
- * @suppress **注意:** [Message] 类型大多有隐藏的协议实现, 不能被第三方应用继承,
+ * @suppress **注意:** [Message] 类型大多有隐藏的协议实现, 不能被第三方应用继承.
  */
 public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
 
     /**
-     * 将 `this` 和 [tail] 连接.
+     * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`.
      *
-     * 连接后可以保证 [ConstrainSingle] 的元素单独存在.
-     *
-     * 例:
-     * ```
-     * val a = PlainText("Hello ")
-     * val b = PlainText("world!")
-     * val c: MessageChain = a + b
-     * println(c) // "Hello world!"
-     * ```
-     *
-     * 在 Java 使用 [plus]
-     *
-     * @see plus `+` 操作符重载
-     */
-    @JvmSynthetic // in java they should use `plus` instead
-    public fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
-
-    /**
-     * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`
-     *
-     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
+     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString].
      *
      * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
@@ -135,7 +152,10 @@ public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.
     /**
      * 转为最接近官方格式的字符串. 如 `At(member) + "test"` 将转为 `"@群名片 test"`.
      *
-     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
+     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString].
+     *
+     * 由于消息元素都是不可变的, [contentToString] 的返回也是不变的.
+     * [MessageChain] 的 [contentToString] 会被缓存, 只会在第一次调用时计算.
      *
      * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
@@ -200,6 +220,26 @@ public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.
     public fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         return this.contentToString().equals(another, ignoreCase = ignoreCase)
     }
+
+    /**
+     * 将 `this` 和 [tail] 连接.
+     *
+     * 连接后可以保证 [ConstrainSingle] 的元素单独存在.
+     *
+     * 例:
+     * ```
+     * val a = PlainText("Hello ")
+     * val b = PlainText("world!")
+     * val c: MessageChain = a + b
+     * println(c) // "Hello world!"
+     * ```
+     *
+     * 在 Java 使用 [plus]
+     *
+     * @see plus `+` 操作符重载
+     */
+    @JvmSynthetic // in java they should use `plus` instead
+    public fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: MessageChain): MessageChain = this + another as Message

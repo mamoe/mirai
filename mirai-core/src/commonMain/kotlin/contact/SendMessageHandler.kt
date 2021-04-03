@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import contact.StrangerImpl
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async

@@ -21,7 +21,8 @@
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIE1lc3NhZ2VDaGFpblxuTWVzc2FnZUNoYWluIDogTGlzdH5TaW5nbGVNZXNzYWdlflxuXG5NZXNzYWdlPHwtLU1lc3NhZ2VDaGFpblxuTWVzc2FnZTx8LS1TaW5nbGVNZXNzYWdlXG5cbk1lc3NhZ2VDaGFpbiBvLS0gU2luZ2xlTWVzc2FnZVxuXG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VDb250ZW50XG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VNZXRhZGF0YVxuXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIE1lc3NhZ2VDaGFpblxuTWVzc2FnZUNoYWluIDogTGlzdH5TaW5nbGVNZXNzYWdlflxuXG5NZXNzYWdlPHwtLU1lc3NhZ2VDaGFpblxuTWVzc2FnZTx8LS1TaW5nbGVNZXNzYWdlXG5cbk1lc3NhZ2VDaGFpbiBvLS0gU2luZ2xlTWVzc2FnZVxuXG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VDb250ZW50XG5TaW5nbGVNZXNzYWdlPHwtLU1lc3NhZ2VNZXRhZGF0YVxuXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)
 
-`SingleMessage` 表示单个消息元素，`MessageChain`（消息链） 是 `List<SingleMessage>`。主动发送的消息和从服务器接收消息都是 `MessageChain`。
+`SingleMessage` 表示单个消息元素。  
+`MessageChain`（消息链） 是 `List<SingleMessage>`。主动发送的消息和从服务器接收消息都是 `MessageChain`。
 
 
 > 回到 [目录](#目录)
@@ -52,6 +53,8 @@ Mirai 支持富文本消息。
 > 回到 [目录](#目录)
 
 ## 消息元素
+
+Mirai 支持多种消息类型。
 
 消息拥有三种转换到字符串的表示方式。
 
@@ -109,6 +112,8 @@ Mirai 支持富文本消息。
 |     [`FileMessage`]      | 文件消息              | `[文件]文件名称`          |          2.5          |
 
 
+> *(1)*: [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收
+
 
 
 | [`MessageMetadata`] 类型 | 解释         | 最低支持的版本 |
@@ -119,9 +124,11 @@ Mirai 支持富文本消息。
 |  [`RichMessageOrigin`]  | 富文本消息源   |     2.3     |
 
 
-**请打开相关消息类型的源码查看用法。**
+### 用法
 
-> *(1)*: [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收
+只需要得到各种类型 `Message` 的实例就可以使用，可以直接发送（`Contact.sendMessage`）也可以连接到消息链中（`Message.plus`）。
+
+可在上文表格中找到需要的类型并在源码内文档获取更多实践上的帮助。
 
 > 回到 [目录](#目录)
 
@@ -224,6 +231,7 @@ MessageChain chain = new MessageChainBuilder()
     .build();
 ```
 
+该示例中 `+` 是位于 `MessageChainBuilder` 的 `Message.unaryPlus` 扩展。使用 `+` 和使用 `add` 是相等的。
 
 ### 作为字符串处理消息
 

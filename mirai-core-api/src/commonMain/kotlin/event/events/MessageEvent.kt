@@ -16,8 +16,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.EventChannel
-import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -28,9 +26,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 
 
 /**
- * 一个 (收到的) 消息事件.
- *
- * 它是一个 [BotEvent], 因此可以被 [监听][EventChannel.subscribe]
+ * 一个消息事件.
  *
  * @see isContextIdenticalWith 判断语境相同
  */
@@ -43,13 +39,13 @@ public interface MessageEvent : Event, Packet, BotPassiveEvent { // TODO: 2021/1
     /**
      * 消息事件主体.
      *
-     * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
-     * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
-     * - 对于陌生人消息, 这个属性为 [Stranger] 的实例, 与 [sender] 引用相同
-     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 引用相同
-     * - 对于其他客户端消息, 这个属性为 [OtherClient] 的实例, 与 [OtherClientMessageEvent.client] 引用相同
+     * - 对于私聊会话, 这个属性与 [sender] 相同;
+     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 相同.
      *
-     * 在回复消息时, 可通过 [subject] 作为回复对象
+     * 如果在 [GroupMessageEvent] 对 [sender] 发送消息, 将会通过私聊发送给群员, 而不会发送在群内.
+     * 使用 [subject] 作为消息目标则可以确保消息发送到用户所在的场景.
+     *
+     * 在回复消息时, 可通过 [subject] 作为回复对象.
      */
     public val subject: Contact
 
@@ -61,23 +57,24 @@ public interface MessageEvent : Event, Packet, BotPassiveEvent { // TODO: 2021/1
     public val sender: User
 
     /**
-     * 发送人名称
+     * 发送人名称. 由群员发送时为群员名片, 由好友发送时为好友昵称. 使用 [User.nameCardOrNick] 也能得到相同的结果.
      */
     public val senderName: String
 
     /**
      * 消息内容.
      *
-     * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据.
-     * 随后的元素为拥有顺序的真实消息内容.
+     * 返回的消息链中一定包含 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据. 随后的元素为拥有顺序的真实消息内容.
+     *
+     * 详细查看 [MessageChain]
      */
     public val message: MessageChain
 
-    /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
+    /** 消息发送时间戳, 单位为秒. 由服务器提供, 可能与本地有时差. */
     public val time: Int
 
     /**
-     * 消息源. 来自 [message] 的第一个元素,
+     * 消息源. 来自 [message]. 相当于对 [message] 以 [MessageSource] 参数调用 [MessageChain.get].
      */
     public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
@@ -261,5 +258,8 @@ public class StrangerMessageEvent constructor(
     public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
 }
 
+/**
+ * 消息事件的公共抽象父类, 保留将来使用. 这是内部 API, 请不要使用.
+ */
 @MiraiInternalApi
 public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent()

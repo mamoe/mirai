@@ -143,7 +143,7 @@ internal class ConfigPushSvc {
                     serverListPush.mobileSSOServerList
                 }
 
-                bot.logger.info { "Server list: ${pushServerList.joinToString()}." }
+                bot.network.logger.info { "Server list: ${pushServerList.joinToString()}." }
 
                 if (pushServerList.isNotEmpty()) {
                     bot.serverList.clear()

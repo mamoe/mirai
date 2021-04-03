@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network
 
-import contact.StrangerImpl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -22,6 +21,7 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.StrangerImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl

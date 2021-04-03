@@ -27,6 +27,8 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 /**
  * At 一个群成员. 只能发送给一个群.
  *
+ * 使用时直接构造 At 实例即可.
+ *
  * ## mirai 码支持
  * 格式: &#91;mirai:at:*[target]*&#93;
  *

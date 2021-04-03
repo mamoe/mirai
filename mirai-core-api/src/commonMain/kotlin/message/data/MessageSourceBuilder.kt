@@ -118,19 +118,26 @@ public inline fun Bot.buildMessageSource(
  *     target(target)
  *     metadata(source) // 从另一个消息源复制 ids, internalIds, time
  *
+ *     time(System.currentTimeMillis())
+ *     // 也可以不设置 time, 则会使用当前系统时间
+ *
  *     messages { // 指定消息内容
  *         +"hi"
  *     }
+ *
+ *     messages(messageChain) // 也可以赋值一个 MessageChain
  * }
  * ```
  *
+ * Kotlin 也可以使用
+ *
  * Java:
  * ```java
- * MessageSourceBuilder
- *     .create()
+ * new MessageSourceBuilder()
  *     .from(bot)
  *     .target(target)
  *     .metadata(source) // 从另一个消息源复制 ids, internalIds, time
+ *     .time(System.currentTimeMillis()) // 也可以不设置, 则会使用当前系统时间
  *     .messages(new PlainText("hi"))
  *     .build(botId, MessageSourceKind.FRIEND);
  * ```
@@ -194,10 +201,17 @@ public open class MessageSourceBuilder public constructor() {
         this.originalMessages.addAll(source.originalMessage)
     }
 
+    /**
+     * 添加消息. 不会清空已有消息.
+     */
     public fun messages(messages: Iterable<Message>): MessageSourceBuilder = apply {
         this.originalMessages.addAll(messages)
     }
 
+
+    /**
+     * 添加消息. 不会清空已有消息.
+     */
     public fun messages(vararg message: Message): MessageSourceBuilder = apply {
         for (it in message) {
             this.originalMessages.add(it)
@@ -212,13 +226,14 @@ public open class MessageSourceBuilder public constructor() {
     public fun clearMessages(): MessageSourceBuilder = apply { this.originalMessages.clear() }
 
     /**
-     * 设置发信人
+     * 设置发信人.
      */
     public fun sender(sender: ContactOrBot): MessageSourceBuilder = apply {
         this.fromId = sender.id
     }
 
     /**
+     * 设置发信人. 需使用 uin.
      * @see IMirai.getUin
      */
     public fun sender(uin: Long): MessageSourceBuilder = apply {
@@ -233,15 +248,22 @@ public open class MessageSourceBuilder public constructor() {
     }
 
     /**
+     * 设置发信目标. 需使用 uin.
      * @see IMirai.getUin
      */
     public fun target(uin: Long): MessageSourceBuilder = apply {
         this.targetId = uin
     }
 
+    /**
+     * 同时设置 [sender] 和 [target]
+     */
     public fun setSenderAndTarget(sender: ContactOrBot, target: ContactOrBot): MessageSourceBuilder =
         sender(sender).target(target)
 
+    /**
+     * 构建生成 [OfflineMessageSource]
+     */
     public fun build(botId: Long, kind: MessageSourceKind): OfflineMessageSource {
         return Mirai.constructMessageSource(
             botId,

@@ -142,7 +142,7 @@ public interface NormalMember : Member {
 /**
  * 获取非空群名片或昵称.
  * @return 当 [User] 为 [NormalMember] 时返回 [Member.nameCardOrNick], 否则返回 [Member.nick]
- */
+ */ // Java: NormalMemberKt.getNameCardOrNick(user)
 public val User.nameCardOrNick: String
     get() = when (this) {
         is NormalMember -> this.nameCardOrNick
