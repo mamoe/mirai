@@ -42,12 +42,12 @@ object CompiledCodeVerify {
             sequenceOf("kotlin/main")
         }.map { sequenceOf(project.buildDir.resolve("classes").resolve(it)) }
 
-    private fun getLibraries(project: Project, info: ProjectInfo): Sequence<Sequence<File>> =
+    private fun getLibraries(project: Project, info: ProjectInfo): Sequence<Sequence<File>?> =
         if (info.isMpp) {
             sequenceOf("jvmCompileClasspath", "androidCompileClasspath")
         } else {
             sequenceOf("compileClasspath")
-        }.mapNotNull {
+        }.map {
             project.configurations.findByName(it)?.files?.asSequence()
         }
 
@@ -66,7 +66,9 @@ object CompiledCodeVerify {
             doFirst {
                 getCompiledClassesPath(project, projectInfo).zip(getLibraries(project, projectInfo))
                     .forEach { (compiledClasses, libraries) ->
-                        action(compiledClasses, libraries)
+                        if (libraries != null) {
+                            action(compiledClasses, libraries)
+                        }
                     }
             }
         }
