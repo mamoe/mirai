@@ -459,7 +459,7 @@ val event: BotNudgedEvent = nextEvent<BotNudgedEvent>(5000) { it.bot.id == 12345
 ```kotlin
 MyCoroutineScope.subscribeAlways<GroupMessageEvent> {
     if (message.contentEquals("ocr")) {
-        reply("请发送你要进行 OCR 的图片或图片链接")
+        subject.sendMessage("请发送你要进行 OCR 的图片或图片链接")
         val image: InputStream = selectMessages {
             has<Image> { URL(it.queryUrl()).openStream() }
             has<PlainText> { URL(it.content).openStream() }
@@ -468,7 +468,7 @@ MyCoroutineScope.subscribeAlways<GroupMessageEvent> {
         } ?: return@subscribeAlways
         
         val result = ocr(image)
-        quoteReply(result)
+        subject.sendMessage(message.quote() + result)
     }
 }
 ```
