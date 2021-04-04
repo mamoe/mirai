@@ -89,7 +89,7 @@ kotlin {
     }
 }
 
-if(isAndroidSDKAvailable) {
+if (isAndroidSDKAvailable) {
     tasks.register("checkAndroidApiLevel") {
         doFirst {
             analyzes.AndroidApiLevelCheck.check(
