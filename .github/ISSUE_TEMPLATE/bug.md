@@ -37,7 +37,7 @@ assignees: ''
 #### 版本
 - mirai-core: `1.3.0` <!--在 `` 中填写你正在使用的版本号，如 `1.3.0`-->
 
-<!--如果你使用 mirai-console 或其他中间件, 请同样提供版本号-->
+<!--如果你正在通过 mirai-console 或其他间接使用 mirai-core 的中间件（如 mirai-native、mirai-api-http 或者其他第三方 SDK）, 请同样提供版本号-->
 
 
 #### 补充信息
