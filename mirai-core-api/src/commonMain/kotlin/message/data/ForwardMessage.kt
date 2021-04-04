@@ -31,7 +31,6 @@ import net.mamoe.mirai.utils.toLongUnsigned
  * [RawForwardMessage] 可以序列化保存, 也可以被多次[渲染][RawForwardMessage.render]产生不同格式的 [ForwardMessage].
  */
 @Serializable
-@MiraiExperimentalApi
 public data class RawForwardMessage(
     /**
      * 消息列表
@@ -745,16 +744,18 @@ public class ForwardMessageBuilder private constructor(
 
     // endregion
 
+    /**
+     * 构造 [RawForwardMessage]. [RawForwardMessage] 可以被多个 [DisplayStrategy] [渲染][RawForwardMessage.render].
+     * @since 2.6
+     */
+    public fun toRawForwardMessage(): RawForwardMessage = RawForwardMessage(container.map {
+        ForwardMessage.Node(it.senderId, it.time, it.senderName, it.messageChain)
+    })
 
-    /** 构造 [ForwardMessage] */
-    public fun build(): ForwardMessage = RawForwardMessage(container.map {
-        ForwardMessage.Node(
-            it.senderId,
-            it.time,
-            it.senderName,
-            it.messageChain
-        )
-    }).render(this.displayStrategy)
+    /**
+     * 使用 [displayStrategy] 渲染并构造可以发送的 [ForwardMessage].
+     */
+    public fun build(): ForwardMessage = toRawForwardMessage().render(this.displayStrategy)
 
     internal fun Bot.smartName(): String = when (val c = this@ForwardMessageBuilder.context) {
         is Group -> c.botAsMember.nameCardOrNick
