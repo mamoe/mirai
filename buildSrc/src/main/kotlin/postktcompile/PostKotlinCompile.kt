@@ -53,7 +53,7 @@ object PostKotlinCompile {
                                 // println("${klass.name} . ${method.name}${method.desc}, ${insn.owner}.${insn.name}${insn.desc} (${insn.opcode})")
                                 edited = true
                                 logs.add(
-                                    "[${klass.name}] [${method.name}${method.desc}] - Change opcode of ${insn.owner}${insn.name}${insn.desc} from ${insn.opcode} to ${Opcodes.INVOKEINTERFACE}"
+                                    "[${klass.name}] [${method.name}${method.desc}] - Change opcode of ${insn.owner}.${insn.name}${insn.desc} from ${insn.opcode} to ${Opcodes.INVOKEINTERFACE}"
                                 )
                                 insn.opcode = Opcodes.INVOKEINTERFACE
                             }
@@ -93,10 +93,11 @@ object PostKotlinCompile {
                     val diff = DiffUtils.generateUnifiedDiff(logFile.name, logFile.name + ".rebuild", oldLog, patch, 3)
                     logFile.parentFile.mkdirs()
                     logFile.writeText(newLog.joinToString("\n", postfix = "\n"))
+                    val diffMsg = diff.joinToString("\n")
                     if (rootProject.hasProperty("mirai.pkc.check.enable")) {
-                        error(diff.joinToString("\n"))
+                        error(diffMsg)
                     } else {
-                        println(diff)
+                        println(diffMsg)
                     }
                 }
             }
