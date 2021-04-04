@@ -47,7 +47,9 @@ object CompiledCodeVerify {
             sequenceOf("jvmCompileClasspath", "androidCompileClasspath")
         } else {
             sequenceOf("compileClasspath")
-        }.map { project.configurations.getByName(it).files.asSequence() }
+        }.mapNotNull {
+            project.configurations.findByName(it)?.files?.asSequence()
+        }
 
     fun Project.registerVerifyTask(taskName: String, action: VerifyAction) {
 
@@ -55,7 +57,11 @@ object CompiledCodeVerify {
 
         tasks.register(taskName) {
             group = VERIFICATION_GROUP_NAME
-            mustRunAfter(*projectInfo.compileTasks)
+            projectInfo.compileTasks.forEach {
+                tasks.findByPath(it)?.run {
+                    mustRunAfter(this)
+                }
+            }
 
             doFirst {
                 getCompiledClassesPath(project, projectInfo).zip(getLibraries(project, projectInfo))
