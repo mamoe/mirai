@@ -58,8 +58,8 @@ object CompiledCodeVerify {
         tasks.register(taskName) {
             group = VERIFICATION_GROUP_NAME
             projectInfo.compileTasks.forEach {
-                tasks.findByPath(it)?.run {
-                    mustRunAfter(this)
+                tasks.findByPath(it)?.also { compileTask ->
+                    mustRunAfter(compileTask)
                 }
             }
 
