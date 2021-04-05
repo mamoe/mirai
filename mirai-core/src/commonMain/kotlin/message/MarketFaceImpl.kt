@@ -44,7 +44,7 @@ internal class MarketFaceInternal(
     override val name: String get() = delegate.faceName.decodeToString()
     override val id: Int get() = delegate.tabId
 
-    override suspend fun refine(contact: Contact, context: MessageChain): Message {
+    override fun tryRefine(contact: Contact, context: MessageChain): Message {
         delegate.toDiceOrNull()?.let { return it } // TODO: 2021/2/12 add dice origin, maybe rename MessageOrigin
         return MarketFaceImpl(delegate)
     }
