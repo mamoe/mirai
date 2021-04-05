@@ -109,14 +109,16 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
                     "${it.group}:${it.name}:${it.version}"
                 }.distinct()
 
-                val json = Gson().toJson(PluginMetadata(
-                    metadataVersion = 1,
-                    groupId = mirai.publishing.groupId ?: project.group.toString(),
-                    artifactId = mirai.publishing.artifactId ?: project.name,
-                    version = mirai.publishing.version ?: project.version.toString(),
-                    description = mirai.publishing.description ?: project.description,
-                    dependencies = dependencies
-                ))
+                val json = Gson().toJson(
+                    PluginMetadata(
+                        metadataVersion = 1,
+                        groupId = mirai.publishing.groupId ?: project.group.toString(),
+                        artifactId = mirai.publishing.artifactId ?: project.name,
+                        version = mirai.publishing.version ?: project.version.toString(),
+                        description = mirai.publishing.description ?: project.description,
+                        dependencies = dependencies
+                    )
+                )
 
                 logger.info("Generated mirai plugin metadata json: $json")
 
@@ -209,10 +211,12 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
 
                 artifact(sourcesJar.get())
                 artifact(tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target })
-                artifact(mapOf(
-                    "source" to tasks.getByName("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).outputs.files.singleFile,
-                    "extension" to "mirai.metadata"
-                ))
+                artifact(
+                    mapOf(
+                        "source" to tasks.getByName("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).outputs.files.singleFile,
+                        "extension" to "mirai.metadata"
+                    )
+                )
 
                 mirai.publishing.mavenPublicationConfigs.forEach { it.invoke(this) }
             }

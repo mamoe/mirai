@@ -14,9 +14,10 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.OutputFile
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import java.io.File
+import javax.inject.Inject
 
 @CacheableTask
-public open class BuildMiraiPluginTask(
+public open class BuildMiraiPluginTask @Inject constructor(
     @JvmField internal val target: KotlinTarget
 ) : ShadowJar() {
     /**

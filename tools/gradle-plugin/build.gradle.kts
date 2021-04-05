@@ -13,6 +13,7 @@ plugins {
     kotlin("jvm")
     id("java-gradle-plugin")
     id("com.gradle.plugin-publish")
+    groovy
     id("java")
     //signing
     `maven-publish`
@@ -21,13 +22,15 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
+val integTest = sourceSets.create("integTest")
+
 dependencies {
     compileOnly(gradleApi())
     compileOnly(gradleKotlinDsl())
-    compileOnly(kotlin("gradle-plugin-api").toString()) {
+    api(kotlin("gradle-plugin-api").toString()) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
     }
-    compileOnly(kotlin("gradle-plugin").toString()) {
+    api(kotlin("gradle-plugin").toString()) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
     }
 
@@ -38,6 +41,18 @@ dependencies {
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
     api("com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintray}")
+
+
+    testApi(kotlin("test-junit5"))
+    testApi("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+    testApi("org.junit.jupiter:junit-jupiter-params:${Versions.junit}")
+
+    "integTestApi"(kotlin("test-junit5"))
+    "integTestApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+    "integTestApi"("org.junit.jupiter:junit-jupiter-params:${Versions.junit}")
+    "integTestImplementation"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
+//    "integTestImplementation"("org.spockframework:spock-core:1.3-groovy-2.5")
+    "integTestImplementation"(gradleTestKit())
 }
 
 version = Versions.console
@@ -54,6 +69,7 @@ pluginBundle {
 }
 
 gradlePlugin {
+    testSourceSets(integTest)
     plugins {
         create("miraiConsole") {
             id = "net.mamoe.mirai-console"
@@ -71,13 +87,24 @@ kotlin.target.compilations.all {
     }
 }
 
+val integrationTestTask = tasks.register<Test>("integTest") {
+    description = "Runs the integration tests."
+    group = "verification"
+    testClassesDirs = integTest.output.classesDirs
+    classpath = integTest.runtimeClasspath
+    mustRunAfter(tasks.test)
+}
+tasks.check {
+    dependsOn(integrationTestTask)
+}
+
 tasks {
     val compileKotlin by getting {}
 
     val fillBuildConstants by registering {
         group = "mirai"
         doLast {
-            (compileKotlin as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).source.filter { it.name == "VersionConstants.kt" }.single()
+            projectDir.resolve("src").walk().filter { it.name == "VersionConstants.kt" }.single()
                 .let { file ->
                     file.writeText(
                         file.readText()

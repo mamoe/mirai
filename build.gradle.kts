@@ -141,6 +141,8 @@ fun Project.configureEncoding() {
 }
 
 fun Project.configureSourceSets() {
+    val flatten = extra.runCatching { get("flatten.sourceset") }.getOrNull()?.toString()?.toBoolean() ?: true
+    if (!flatten) return
     sourceSets {
         findByName("main")?.apply {
             resources.setSrcDirs(listOf(projectDir.resolve("resources")))
