@@ -85,26 +85,3 @@ internal data class ForwardMessageInternal(override val content: String, val res
     }
 }
 
-/**
- * 在接收解析消息后会经过一层转换的消息.
- * @see MessageChain.refine
- */
-internal interface RefinableMessage : SingleMessage {
-
-    /**
-     * Refine if possible (without suspension), returns self otherwise.
-     * @since 2.6
-     */ // see #1157
-    fun tryRefine(
-        contact: Contact,
-        context: MessageChain,
-    ): Message? = this
-
-    /**
-     * This message [RefinableMessage] will be replaced by return value of [refine]
-     */
-    suspend fun refine(
-        contact: Contact,
-        context: MessageChain,
-    ): Message? = tryRefine(contact, context)
-}
