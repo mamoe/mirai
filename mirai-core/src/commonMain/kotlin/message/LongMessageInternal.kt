@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.message
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
@@ -20,8 +20,8 @@ internal data class LongMessageInternal internal constructor(override val conten
     AbstractServiceMessage(), RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(contact: Contact, context: MessageChain): Message {
-        val bot = contact.bot.asQQAndroidBot()
+    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+        bot.asQQAndroidBot()
         val long = Mirai.downloadLongMessage(bot, resId)
 
         return MessageOrigin(SimpleServiceMessage(serviceId, content), resId, MessageOriginKind.LONG) + long
@@ -37,8 +37,8 @@ internal data class ForwardMessageInternal(override val content: String, val res
     RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(contact: Contact, context: MessageChain): Message {
-        val bot = contact.bot.asQQAndroidBot()
+    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+        bot.asQQAndroidBot()
 
         val msgXml = content.substringAfter("<msg", "")
         val xmlHead = msgXml.substringBefore("<item")

@@ -32,7 +32,6 @@ import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
@@ -402,13 +401,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                             if (fromSync) {
                                 FriendMessageSyncEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
                                     msgHead.msgTime
                                 )
                             } else {
                                 FriendMessageEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
                                     msgHead.msgTime
                                 )
                             }
@@ -427,13 +426,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         if (fromSync) {
                             StrangerMessageSyncEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER),
                                 msgHead.msgTime
                             )
                         } else {
                             StrangerMessageEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER),
                                 msgHead.msgTime
                             )
                         }
@@ -507,13 +506,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         return if (fromSync) {
                             GroupTempMessageSyncEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP),
                                 msgHead.msgTime
                             )
                         } else {
                             GroupTempMessageEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP),
                                 msgHead.msgTime
                             )
                         }
