@@ -48,7 +48,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     } // other client 消息的这个是0
     override val time: Int = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChainNoSource(bot.id, 0, MessageSourceKind.FRIEND)
+        msg.toMessageChainNoSource(bot, 0, MessageSourceKind.FRIEND)
     }
     override val sender: Friend = bot.getFriendOrFail(msg.first().msgHead.fromUin)
 
@@ -72,7 +72,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     } // other client 消息的这个是0
     override val time: Int = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChainNoSource(bot.id, 0, MessageSourceKind.STRANGER)
+        msg.toMessageChainNoSource(bot, 0, MessageSourceKind.STRANGER)
     }
     override val sender: Stranger = bot.getStrangerOrFail(msg.first().msgHead.fromUin)
 
@@ -133,7 +133,7 @@ internal class OnlineMessageSourceFromTempImpl(
     override val ids: IntArray get() = sequenceIds//
     override val time: Int = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChainNoSource(bot.id, groupIdOrZero = 0, MessageSourceKind.TEMP)
+        msg.toMessageChainNoSource(bot, groupIdOrZero = 0, MessageSourceKind.TEMP)
     }
     override val sender: Member = with(msg.first().msgHead) {
         bot.getGroupOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
@@ -157,7 +157,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     override val ids: IntArray get() = sequenceIds
     override val time: Int = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
-        msg.toMessageChainNoSource(bot.id, groupIdOrZero = group.id, MessageSourceKind.GROUP)
+        msg.toMessageChainNoSource(bot, groupIdOrZero = group.id, MessageSourceKind.GROUP)
     }
 
     override val sender: Member by lazy {

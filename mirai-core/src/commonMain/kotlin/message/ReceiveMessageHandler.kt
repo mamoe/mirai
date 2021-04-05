@@ -27,13 +27,13 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 
 internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
-    botId: Long,
+    bot: Bot,
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
-        joinToMessageChain(elements, groupIdOrZero, messageSourceKind, botId, this)
+        joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, this)
     }.cleanupRubbishMessageElements()
 }
 
@@ -43,7 +43,7 @@ internal fun List<MsgComm.Msg>.toMessageChainOnline(
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
-    return toMessageChain(bot, bot.id, groupIdOrZero, true, messageSourceKind)
+    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind)
 }
 
 internal fun List<MsgComm.Msg>.toMessageChainOffline(
@@ -51,20 +51,19 @@ internal fun List<MsgComm.Msg>.toMessageChainOffline(
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
-    return toMessageChain(bot, bot.id, groupIdOrZero, false, messageSourceKind)
+    return toMessageChain(bot, groupIdOrZero, false, messageSourceKind)
 }
 
 internal fun List<MsgComm.Msg>.toMessageChainNoSource(
-    botId: Long,
+    bot: Bot,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
-    return toMessageChain(null, botId, groupIdOrZero, null, messageSourceKind)
+    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind)
 }
 
 private fun List<MsgComm.Msg>.toMessageChain(
-    bot: Bot?,
-    botId: Long,
+    bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean?,
     messageSourceKind: MessageSourceKind
@@ -77,11 +76,10 @@ private fun List<MsgComm.Msg>.toMessageChain(
     val builder = MessageChainBuilder(elements.size)
 
     if (onlineSource != null) {
-        checkNotNull(bot)
         builder.add(ReceiveMessageTransformer.createMessageSource(bot, onlineSource, messageSourceKind, messageList))
     }
 
-    joinToMessageChain(elements, groupIdOrZero, messageSourceKind, botId, builder)
+    joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, builder)
 
     for (msg in messageList) {
         msg.msgBody.richText.ptt?.toVoice()?.let { builder.add(it) }
@@ -120,12 +118,12 @@ private object ReceiveMessageTransformer {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        botId: Long,
+        bot: Bot,
         builder: MessageChainBuilder
     ) {
         // (this._miraiContentToString().soutv())
         for (element in elements) {
-            transformElement(element, groupIdOrZero, messageSourceKind, botId, builder)
+            transformElement(element, groupIdOrZero, messageSourceKind, bot, builder)
             when {
                 element.richMsg != null -> decodeRichMessage(element.richMsg, builder)
             }
@@ -136,11 +134,11 @@ private object ReceiveMessageTransformer {
         element: ImMsgBody.Elem,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        botId: Long,
+        bot: Bot,
         builder: MessageChainBuilder
     ) {
         when {
-            element.srcMsg != null -> decodeSrcMsg(element.srcMsg, builder, botId, messageSourceKind, groupIdOrZero)
+            element.srcMsg != null -> decodeSrcMsg(element.srcMsg, builder, bot, messageSourceKind, groupIdOrZero)
             element.notOnlineImage != null -> builder.add(OnlineFriendImageImpl(element.notOnlineImage))
             element.customFace != null -> decodeCustomFace(element.customFace, builder)
             element.face != null -> builder.add(Face(element.face.index))
@@ -281,11 +279,11 @@ private object ReceiveMessageTransformer {
     private fun decodeSrcMsg(
         srcMsg: ImMsgBody.SourceMsg,
         list: MessageChainBuilder,
-        botId: Long,
+        bot: Bot,
         messageSourceKind: MessageSourceKind,
         groupIdOrZero: Long
     ) {
-        list.add(QuoteReply(OfflineMessageSourceImplData(srcMsg, botId, messageSourceKind, groupIdOrZero)))
+        list.add(QuoteReply(OfflineMessageSourceImplData(srcMsg, bot, messageSourceKind, groupIdOrZero)))
     }
 
     private fun decodeCustomFace(

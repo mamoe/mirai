@@ -963,7 +963,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
         return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.LONG_MESSAGE).msg
-            .toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+            .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
     }
 
     override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
@@ -974,7 +974,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 senderName = msg.msgHead.groupInfo?.groupCard
                     ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
                     ?: msg.msgHead.fromUin.toString(),
-                messageChain = listOf(msg).toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+                messageChain = listOf(msg).toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
             )
         }
     }
