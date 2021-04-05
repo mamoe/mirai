@@ -23,10 +23,10 @@ jobs:
 
       - name: chmod -R 777 *
         run: chmod -R 777 *
-      - name: Gradle build
-        run: ./gradlew clean build # if test's failed, don't publish
+      - name: Gradle build -Pmirai.pkc.check.enable
+        run: ./gradlew clean build -Pmirai.pkc.check.enable # if test's failed, don't publish
       - name: Dokka
-        run: ./gradlew :mirai-core-api:dokkaHtml
+        run: ./gradlew :mirai-core-api:dokkaHtml -Pmirai.pkc.check.enable
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -55,9 +55,9 @@ jobs:
       - name: chmod -R 777 *
         run: chmod -R 777 *
       - name: Gradle build
-        run: ./gradlew clean build # if test's failed, don't publish
+        run: ./gradlew clean build -Pmirai.pkc.check.enable # if test's failed, don't publish
       - name: Dokka
-        run: ./gradlew :mirai-console:dokkaHtml
+        run: ./gradlew :mirai-console:dokkaHtml -Pmirai.pkc.check.enable
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
