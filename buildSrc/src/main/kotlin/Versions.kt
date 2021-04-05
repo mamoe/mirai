@@ -35,6 +35,8 @@ object Versions {
 
     const val blockingBridge = "1.6.0"
 
+    const val junit = "5.4.2"
+
     @Suppress("SpellCheckingInspection")
     const val yamlkt = "0.7.5"
 
