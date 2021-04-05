@@ -14,13 +14,60 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
+import java.io.Closeable
 import java.io.File
 import java.io.InputStream
+import java.util.zip.ZipFile
 
-typealias AsmClasses = Map<String, ClassNode>
-typealias AsmClassesM = MutableMap<String, ClassNode>
+@Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
+class AsmClassesM(
+    var res: List<Closeable>?,
+    val map: MutableMap<String, Lazy<ClassNode>>
+) : AbstractMap<String, Lazy<ClassNode>>(),
+    MutableMap<String, Lazy<ClassNode>> by map,
+    Closeable {
+    operator fun plusAssign(map: AsmClassesM) {
+        this.map.putAll(map.map)
+        val r = res
+        if (r is MutableList<Closeable>) {
+            r.addAll(map.res ?: emptyList())
+            return
+        }
+        res = (res ?: emptyList()) + (map.res ?: emptyList())
+    }
+
+    override fun close() {
+        res?.forEach { it.close() }
+        res = null
+        map.clear()
+    }
+}
+
+typealias AsmClasses = AsmClassesM
 
 object AsmUtil {
+    var cc = 0
+    fun File.readLib(): AsmClassesM {
+        val rs = mutableListOf<Closeable>()
+        val result: AsmClassesM = AsmClassesM(rs, HashMap())
+        if (this.name.endsWith(".jar")) {
+            val zip = ZipFile(this)
+            rs.add(zip)
+            zip.entries().iterator().forEach l@{ entry ->
+                if (entry.isDirectory) return@l
+                if (!entry.name.endsWith(".class")) return@l
+                result[entry.name.removePrefix("/").removeSuffix(".class")] = lazy {
+                    zip.getInputStream(entry).use { it.readClass() }
+                }
+            }
+        } else if (this.isDirectory) {
+            this.walk().filter { it.isFile && it.extension == "class" }.forEach { f ->
+                f.readClass().let { result[it.name] = lazyOf(it) }
+            }
+        }
+        return result
+    }
+
     fun ClassNode.getMethod(name: String, desc: String, isStatic: Boolean): MethodNode? {
         return methods?.firstOrNull {
             it.name == name && it.desc == desc && ((it.access and Opcodes.ACC_STATIC) != 0) == isStatic
@@ -33,7 +80,7 @@ object AsmUtil {
         }
     }
 
-    fun File.readClass(): ClassNode = inputStream().use { it.readClass() }
+    fun File.readClass(): ClassNode = inputStream().buffered().use { it.readClass() }
 
     fun InputStream.readClass(): ClassNode {
         val cnode = ClassNode()
@@ -46,7 +93,7 @@ object AsmUtil {
             if (!this.containsKey(owner)) {
                 ClassLoader.getSystemClassLoader().getResourceAsStream("$owner.class")?.use {
                     val c = it.readClass()
-                    this[c.name] = c
+                    this[c.name] = lazyOf(c)
                 }
             }
         }
@@ -59,7 +106,7 @@ object AsmUtil {
         opcode: Int
     ): Boolean {
         patchJvmClass(owner)
-        val c = this[owner] ?: return false
+        val c = this[owner]?.value ?: return false
         val isStatic = opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC
         if (c.getField(name, desc, isStatic) != null) {
             return true
@@ -77,7 +124,7 @@ object AsmUtil {
         patchJvmClass(owner)
         when (opcode) {
             Opcodes.INVOKESTATIC -> {
-                val c = this[owner] ?: return false
+                val c = this[owner]?.value ?: return false
                 return c.getMethod(name, desc, true) != null
             }
             Opcodes.INVOKEINTERFACE,
@@ -85,7 +132,7 @@ object AsmUtil {
             Opcodes.INVOKEVIRTUAL -> {
                 fun loopFind(current: String): Boolean {
                     patchJvmClass(current)
-                    val c = this[current] ?: return false
+                    val c = this[current]?.value ?: return false
                     if (c.getMethod(name, desc, false) != null) return true
                     c.superName?.let {
                         if (loopFind(it)) {
