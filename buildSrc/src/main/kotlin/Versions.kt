@@ -45,6 +45,7 @@ object Versions {
     const val asm = "9.1"
     const val difflib = "1.3.0"
 
+    const val junit = "5.4.2"
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
