@@ -4301,6 +4301,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder : java/uti
 	public fun subList (II)Ljava/util/List;
 	public fun toArray ()[Ljava/lang/Object;
 	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
+	public final fun toRawForwardMessage ()Lnet/mamoe/mirai/message/data/RawForwardMessage;
 }
 
 public final class net/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode : net/mamoe/mirai/message/data/ForwardMessage$INode {
