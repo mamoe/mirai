@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
 
+import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
@@ -521,9 +522,14 @@ internal class WtLogin {
     }
 
     internal object ExchangeEmp : OutgoingPacketFactory<Login.LoginPacketResponse>("wtlogin.exchange_emp"), WtLoginExt {
+        var isFirstExchange = atomic(false)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Login.LoginPacketResponse {
             return Login.run {
                 decode(bot)
+            }.also {
+                if (it is Login.LoginPacketResponse.Success) {
+                    isFirstExchange.getAndSet(true)
+                }
             }
         }
 

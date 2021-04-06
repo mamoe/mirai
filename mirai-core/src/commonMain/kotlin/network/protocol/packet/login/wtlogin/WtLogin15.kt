@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.ExchangeEmp.isFirstExchange
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import java.util.*
 import kotlin.math.abs
@@ -34,7 +35,7 @@ internal object WtLogin15 : WtLoginExt {
             0x0810
         ) {
             writeShort(subCommand) // subCommand
-            if (client.isFastLogin.value) {
+            if (isFirstExchange.value) {
                 writeShort(25) // 第一次 exchange 没有 108
             } else {
                 writeShort(24)
@@ -91,7 +92,7 @@ internal object WtLogin15 : WtLoginExt {
             t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
 
             t107(0)
-            if (client.isFastLogin.value) {
+            if (isFirstExchange.value) {
                 t108(client.ksid) // 第一次 exchange 没有 108
             }
             t144(client)

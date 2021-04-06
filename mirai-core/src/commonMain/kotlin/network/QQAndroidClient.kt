@@ -225,7 +225,6 @@ internal open class QQAndroidClient(
 
     var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
     var loginState = 0
-    var isFastLogin = atomic(false)
 
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
