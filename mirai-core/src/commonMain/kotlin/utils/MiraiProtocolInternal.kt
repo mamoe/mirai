@@ -36,12 +36,12 @@ internal class MiraiProtocolInternal(
                 "com.tencent.mobileqq",
                 537066978,
                 "8.5.5",
-                "6.0.0.2454",
-                184024956,
+                "6.0.0.2463",
+                150470524,
                 0x10400,
-                34869472,
+                16724722,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                1604580615L,
+                1609322643L,
             )
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
