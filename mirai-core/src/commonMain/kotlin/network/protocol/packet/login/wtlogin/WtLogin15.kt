@@ -34,11 +34,7 @@ internal object WtLogin15 : WtLoginExt {
             0x0810
         ) {
             writeShort(subCommand) // subCommand
-            if (!client.isFirstExchange.value) {
-                writeShort(25) // 第一次 exchange 没有 108
-            } else {
-                writeShort(24)
-            }
+            writeShort(24)
 
 
 //            writeFully(("00 18 00 16 00 01 00 00 06 00 00 00 00 10 00 00 00 00 76 E4 B8 DD 00 00 00 00 00 01 00 14 00 01 5A 11 60 11 76 E4 B8 DD 60 0D 44 35 90 E8 11 1B 00 00 " +
@@ -91,9 +87,8 @@ internal object WtLogin15 : WtLoginExt {
             t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
 
             t107(0)
-            if (!client.isFirstExchange.value) {
-                t108(client.ksid) // 第一次 exchange 没有 108
-            }
+
+            //t108(client.ksid) // 第一次 exchange 没有 108
             t144(client)
             t142(client.apkId)
             t145(client.device.guid)
