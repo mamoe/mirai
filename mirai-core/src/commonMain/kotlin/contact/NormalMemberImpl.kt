@@ -129,6 +129,9 @@ internal class NormalMemberImpl constructor(
         check(this.id != bot.id) {
             "A bot can't mute itself."
         }
+        check(durationSeconds != 0) {
+            "durationSeconds cannot equal zero"
+        }
         checkBotPermissionHigherThanThis("mute")
         bot.network.run {
             TroopManagement.Mute(
