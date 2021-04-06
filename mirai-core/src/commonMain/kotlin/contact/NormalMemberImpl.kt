@@ -141,6 +141,7 @@ internal class NormalMemberImpl constructor(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcastWithBot(bot)
+        this._muteTimestamp = currentTimeSeconds().toInt() + durationSeconds
     }
 
     override suspend fun unmute() {
