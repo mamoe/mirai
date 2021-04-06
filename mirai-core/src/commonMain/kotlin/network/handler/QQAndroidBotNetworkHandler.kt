@@ -188,9 +188,11 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             // do fast login
             kotlin.runCatching {
                 doFastLogin()
+                bot.client.isFastLogin.getAndSet(true)
             }.onFailure {
                 bot.initClient()
                 doSlowLogin(host, port, cause, step)
+                //isFastLogin is false by default
             }
         } else {
             doSlowLogin(host, port, cause, step)
