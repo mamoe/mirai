@@ -245,6 +245,11 @@ internal open class QQAndroidClient(
     @Suppress("PropertyName")
     internal var _uin: Long = account.id
 
+    /**
+     * 是否第一次交换 Token
+     */
+    internal val isFirstExchange = atomic(true)
+
     var t530: ByteArray? = null
     var t528: ByteArray? = null
 
