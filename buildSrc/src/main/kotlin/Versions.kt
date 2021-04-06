@@ -50,7 +50,7 @@ object Versions {
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
     const val yamlkt = "0.7.5"
-    const val intellijGradlePlugin = "0.4.16"
+    const val intellijGradlePlugin = "0.7.2"
     const val kotlinIntellijPlugin = "203-1.4.30-release-IJ7148.5" // keep to newest as kotlinCompiler
     const val intellij = "2020.3.2" // don't update easily unless you want your disk space -= 500MB
 
