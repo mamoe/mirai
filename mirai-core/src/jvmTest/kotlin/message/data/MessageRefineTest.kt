@@ -112,5 +112,10 @@ internal class MessageRefineTest {
         )
     }
 
+    @Test
+    fun `toMessageCainOffline`() = runBlockingUnit {
+
+    }
+
     // TODO: 2021/4/7 tests using `toMessageChainOffline` etc.
 }
