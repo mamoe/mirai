@@ -38,7 +38,7 @@ object Versions {
     const val junit = "5.4.2"
 
     @Suppress("SpellCheckingInspection")
-    const val yamlkt = "0.7.5"
+    const val yamlkt = "0.9.0"
 
     const val intellijGradlePlugin = "0.7.2"
 }
