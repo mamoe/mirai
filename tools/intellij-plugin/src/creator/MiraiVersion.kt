@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.intellij.creator
 
 import kotlinx.coroutines.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 
 typealias MiraiVersion = String
 
@@ -33,23 +34,33 @@ enum class MiraiVersionKind {
 
         private val REGEX_STABLE = Regex("""^\d+\.\d+(?:\.\d+)?$""")
 
-        private suspend fun getMiraiVersionList(): Set<MiraiVersion>? {
-            val xml = runInterruptible {
+        private suspend fun getMiraiVersionList(): Set<MiraiVersion> {
+            fun download(url: String): Document {
+                return Jsoup.connect(url)
+                    .followRedirects(true)
+                    .ignoreContentType(true)
+                    .ignoreHttpErrors(true)
+                    .get()
+            }
+
+            val document = runInterruptible {
                 // https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml
                 // https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml
                 kotlin.runCatching {
-                    Jsoup.connect("https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml").get()
+                    download("https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml")
                 }.recoverCatching {
-                    Jsoup.connect("https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml").get()
-                }.getOrNull()
-            }?.body()?.toString() ?: return null
+                    download("https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml")
+                }.getOrThrow()
+            }
+
+            val xml = document.toString()
 
             return Regex("""<version>\s*(.*?)\s*</version>""").findAll(xml).mapNotNull { it.groupValues[1] }.toSet()
         }
 
         fun CoroutineScope.getMiraiVersionListAsync(): Deferred<Set<MiraiVersion>> {
             return async(CoroutineName("getMiraiVersionListAsync")) {
-               getMiraiVersionList()?: setOf("+")
+                getMiraiVersionList()
             }
         }
     }

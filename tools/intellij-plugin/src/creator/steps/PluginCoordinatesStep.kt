@@ -11,7 +11,10 @@
 package net.mamoe.mirai.console.intellij.creator.steps
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.compiler.common.CheckerConstants.PLUGIN_ID_PATTERN
 import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
@@ -92,12 +95,18 @@ class PluginCoordinatesStep(
             if (!model.availableMiraiVersionsOrFail.isCompleted) return@launch
             miraiVersionBox.removeAllItems()
             val expectingKind = miraiVersionKindBox.selectedItem as? MiraiVersionKind ?: MiraiVersionKind.DEFAULT
-            model.availableMiraiVersionsOrFail.await()
-                .sortedDescending()
-                .filter { v ->
-                    expectingKind.isThatKind(v)
-                }
-                .forEach { v -> miraiVersionBox.addItem(v) }
+            kotlin.runCatching { model.availableMiraiVersionsOrFail.await() }
+                .fold(
+                    onSuccess = { versions ->
+                        versions.sortedDescending()
+                            .filter { v -> expectingKind.isThatKind(v) }
+                            .forEach { v -> miraiVersionBox.addItem(v) }
+                    },
+                    onFailure = { e ->
+                        Validation.popup("Failed to download version list, please select a version by yourself. \nCause: ${e.cause ?: e}", miraiVersionBox)
+                    }
+                )
+
             miraiVersionBox.isEnabled = true
         }
     }
