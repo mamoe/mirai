@@ -245,9 +245,9 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
                     +"a"
                     +QuoteReply(sourceStub(PlainText("a")))
                     +At(1234567890)
-                    +" r"
-                    +"[骰子]" // client does not support
-                    +"[合并转发]请升级新版本查看" // client support but mirai does not.
+                    +PlainText(" r")
+                    +PlainText("[骰子]") // client does not support
+                    +PlainText("[合并转发]请升级新版本查看") // client support but mirai does not.
                 }
                 deep() // deep only
             }
