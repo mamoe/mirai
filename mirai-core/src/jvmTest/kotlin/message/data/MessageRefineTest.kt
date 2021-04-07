@@ -13,6 +13,8 @@ package net.mamoe.mirai.internal.message.data
 import kotlinx.serialization.decodeFromHexString
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
+import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
@@ -20,6 +22,7 @@ import net.mamoe.mirai.internal.message.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer
 import net.mamoe.mirai.internal.message.RefinableMessage
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
@@ -89,7 +92,13 @@ private fun RefinableMessage0(
     }
 }
 
-internal class MessageRefineTest {
+private object MiraiImplForRefineTest : MiraiImpl() {
+    override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
+        return super.downloadForwardMessage(bot, resourceId)
+    }
+}
+
+internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
 
     @Test
     fun `can remove self`() = runBlockingUnit {
@@ -159,23 +168,20 @@ internal class MessageRefineTest {
             decodeProto("06e601ea02e20108adfc1010d285d8cc04188feab4830620012a120a100a0e5be99a8fe69cbae9aab0e5ad905d420a1894bbc6f481808080014aad010a2d08d285d8cc0410d285d8cc04185228adfc10308feab483063894bbc6f481808080014a0608d285d8cc04e001011a7c0a7a125e325c0a0e5be99a8fe69cbae9aab0e5ad905d1006180122104823d3adb15df08014ce5d6796b76ee128c85930033a1034303965326136396231363931386639480050c80158c8016211727363547970653f313b76616c75653d336a02400112120a100a0e5be99a8fe69cbae9aab0e5ad905d12044a0208001b0a190a0840616161746573741a0d00010000000800499602d20000080a060a04206162634baa02489a0145080120cb507800c80100f00100f80100900200c80200980300a00300b00300c00300d00300e803008a04021003900480c0829004b80400c00400ca0400f804dc8002880500044a0240011082010d0a076161617465737418012803")
 
         /**
-         * forward[quote + dice + quote]
+         * forward[quote + dice + forward]
          */
         val complexForward =
-            decodeProto(
-                "048a046287040a820401789cad93cb6ed34014865fe5685878557c4b531bd9ae90a04aa40489245cdaaaaaa6f6d819341e07cf384dbaabc402c1a2b060531521a4b20071e98a0552799b38e95b30762a280b5875369ed1b1bff9cfff1f7beb9394c198e48266dcd7cc9b86068487594479e26b0f061b2b8e0642621e619671e26b532234580fbc542420483ea62169dff191bd8a409274c4b0accf26021cca8a89c694ec770b2669572408f6724a621f6d2f0e5fcc4e3f2ebe9ecdcedfec204877732268e4a3bc671c98518beb497cfbf1fdf1ddad0e379f440fe38215a3b8f7a8334c5b836cc8e57e6b337bdacdb6ac565b2f4c33343607aed39b742a544c19b98753e2a3a6db70aca6b36adbae6b396b6eb3e1289dfd22558a1188acc843a264b5d5c5068222673e4210339cd4751c2963fa34e17535bdec61a32e1b28f0a8ea18189e66855c765cbd2fa9b265972e8978f90c3c49252320e881126537140c4f3a9413e1230b0153bbfe0887aa665a2898ff3c55eecc8f9f5df5c8d36bc4df24ab8920cc5896fbe8c65abdfe4fc658c523e42d005cad6b666e5f1c1f95273f2e3e9dcdbebcdab96ec17be16fe23087218d22a272893113442529a78cd48eeb81278a34c5f9f4df5706e5bb0ff3939776f9f6fde2fcf3ece875f9fd7979f8cdd32fbf0c3cbd8a5691ea01015ecfd2d53410d0b09aed3f53ae76a35195f68a598bd0d50f12fc0252992eac102348aa02459a014208017800c80100f00100f80100900200c80200980300a00300b00300c00300d00300e803008a04021003900480c0829004b80400c00400ca0400f804dc8002880500024a001082010d0a076161617465737418012803"
-            )
-
-        /**
-         * forward[plain ]
-         */
-        val simpleForward =
-            decodeProto(
-                "04f10362ee030ae90301789c7d924f6fd33018c6bfca2b73c869b469bab4437126c136286b1123dda04268721327f570fe2876ba26b7491c101c10072e088490c6010901276ee3dbf4cfc7c071271807f0c5b65efbe7e779fc3adbb398c394e682a50936cceb4d0368e2a7014b226c1c0ef736ba0608499280f034a1d828a93060db75621181a0f994f9b4b78391b58940d238e344eabd8980f8b266a229a3a783824b3610118271ce6888d1e3d5d98bf9f9e7d5d7eff38b374f10c4c739152cc0e876afbcb575e40fc2f42422bb0777463be383cc7a74327b7014dd1c0d9ff687d5b823f633b1597a0fef979568b7abe290ec5783bba3497fd7ab5121e3f41e892946f656bbdbb2bb1dd3342ddbb6ecae5debf48a582b146991fb54c9eaa9879b088a9c638420e424528e94834005e3b128d1d5f8d2c39e2e3791eb30e5183829d342ae1dd7e72553b11cb33591ac67d7914c720a82554a94d5563032ebb3840a8c5a08b85a7919f155cd6c2177f9f35ca5b37cfbec6a464e4323fe26b56c047ecad31ca36b1d3dfe4f26447d8f903700c8d8ff4d9ce43061414095cd9070415530b2e4541b68b88e28e298e4e5bf9f74171f3e2ddfbd3417ef3fae2ebecc5fbd5efc78be38fbe6342e6fba4ea34e4a9174de90e8afb96a0e01f3eb56f9d3346a956575781ba616d150fde6fe02ea85f2d7102348aa02459a014208017800c80100f00100f80100900200c80200980300a00300b00300c00300d00300e803008a04021003900480c0829004b80400c00400ca0400f804dc8002880500024a001082010d0a076161617465737418012803"
-            )
+            "044b0a3a08d285d8cc041852288f831130dfffb6830638a7c4dfde87808080014a0e08d285d8cc042206e7b289e889b2a2010b10b0f083f7fbffffffff011a0d0a0b12050a030a016112024a00dc010a3a08d285d8cc0418522891831130e4ffb68306388fc594dd85808080014a0e08d285d8cc042206e7b289e889b2a2010b10b1f083f7fbffffffff011a9d010a9a011270ea026d088f831110d285d8cc0418dfffb6830620012a050a030a0161420a18a7c4dfde87808080014a400a2d08d285d8cc0410d285d8cc041852288f831130dfffb6830638a7c4dfde87808080014a0608d285d8cc04e001011a0f0a0d12050a030a016112044a02080050d285d8cc04121a0a180a0740e7b289e889b21a0d00010000000300499602d2000012060a040a02207212024a00520a3a08d285d8cc0418522892831130f2ffb6830638a8e4d1eb80808080014a0e08d285d8cc042206e7b289e889b2a2010b10b2f083f7fbffffffff011a140a12120c0a0a0a085be9aab0e5ad905d12024a00700a3a08d285d8cc04185228978311308d80b7830638a0e8bfa582808080014a0e08d285d8cc042206e7b289e889b2a2010b10b3f083f7fbffffffff011a320a30122a0a280a265be59088e5b9b6e8bdace58f915de8afb7e58d87e7baa7e696b0e78988e69cace69fa5e79c8b12024a00"
+                .let { s ->
+                    ProtoBuf.decodeFromHexString<List<MsgComm.Msg>>(s).flatMap { it.msgBody.richText.elems }
+                }
 
         private fun decodeProto(p: String) = ProtoBuf.decodeFromHexString<List<ImMsgBody.Elem>>(p)
     }
+
+//    override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
+//        return super.downloadForwardMessage(bot, resourceId)
+//    }
 
     /**
      * We cannot test LongMessage and MusicShare in unit tests (for now), but these tests will be sufficient
@@ -236,12 +242,14 @@ internal class MessageRefineTest {
             },
             RefineTest(testCases.complexForward) {
                 expected {
-                    +QuoteReply(sourceStub(PlainText("[随机骰子]")))
+                    +"a"
+                    +QuoteReply(sourceStub(PlainText("a")))
                     +At(1234567890)
-                    +" abc"
+                    +" r"
+                    +"[骰子]" // client does not support
+                    +"[合并转发]请升级新版本查看" // client support but mirai does not.
                 }
-                light()
-                deep()
+                deep() // deep only
             }
         )
 
