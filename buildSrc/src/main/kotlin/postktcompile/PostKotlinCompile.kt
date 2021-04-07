@@ -71,6 +71,7 @@ object PostKotlinCompile {
     }
 
     fun registerForAll(rootProject: Project) {
+        val checkEnabled = rootProject.hasProperty("mirai.pkc.check.enable")
         val validator = rootProject.file("binary-compatibility-validator/kt-compile-edit")
         rootProject.subprojects {
             val subp: Project = this@subprojects
@@ -92,9 +93,11 @@ object PostKotlinCompile {
 
                     val diff = DiffUtils.generateUnifiedDiff(logFile.name, logFile.name + ".rebuild", oldLog, patch, 3)
                     logFile.parentFile.mkdirs()
-                    logFile.writeText(newLog.joinToString("\n", postfix = "\n"))
+                    if (checkEnabled || newLog.isNotEmpty()) { // Kotlin classes not recompiled.
+                        logFile.writeText(newLog.joinToString("\n", postfix = "\n"))
+                    }
                     val diffMsg = diff.joinToString("\n")
-                    if (rootProject.hasProperty("mirai.pkc.check.enable")) {
+                    if (checkEnabled) {
                         error(diffMsg)
                     } else {
                         println(diffMsg)
