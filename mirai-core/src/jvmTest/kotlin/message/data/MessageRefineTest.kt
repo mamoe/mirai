@@ -177,6 +177,9 @@ internal class MessageRefineTest {
         private fun decodeProto(p: String) = ProtoBuf.decodeFromHexString<List<ImMsgBody.Elem>>(p)
     }
 
+    /**
+     * We cannot test LongMessage and MusicShare in unit tests (for now), but these tests will be sufficient
+     */
     @Test
     fun `recursive refinement`() = runBlockingUnit {
         val map = listOf(
@@ -218,6 +221,24 @@ internal class MessageRefineTest {
             RefineTest(testCases.dice4) {
                 expected {
                     +Dice(4)
+                }
+                light()
+                deep()
+            },
+            RefineTest(testCases.quoteDice4) {
+                expected {
+                    +QuoteReply(sourceStub(PlainText("[随机骰子]")))
+                    +At(1234567890)
+                    +" abc"
+                }
+                light()
+                deep()
+            },
+            RefineTest(testCases.complexForward) {
+                expected {
+                    +QuoteReply(sourceStub(PlainText("[随机骰子]")))
+                    +At(1234567890)
+                    +" abc"
                 }
                 light()
                 deep()
