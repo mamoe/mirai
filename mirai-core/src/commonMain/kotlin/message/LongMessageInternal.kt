@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.message
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 
@@ -59,13 +60,19 @@ internal data class ForwardMessageInternal(override val content: String, val res
         val preview = titles
         val source = xmlFoot.findField("name")
 
-        return MessageOrigin(SimpleServiceMessage(serviceId, content), resId, MessageOriginKind.FORWARD) + ForwardMessage(
+        return MessageOrigin(
+            SimpleServiceMessage(serviceId, content),
+            resId,
+            MessageOriginKind.FORWARD
+        ) + ForwardMessage(
             preview = preview,
             title = title,
             brief = brief,
             source = source,
             summary = summary.trim(),
-            nodeList = Mirai.downloadForwardMessage(bot, resId)
+            nodeList = Mirai.downloadForwardMessage(bot, resId).map { n ->
+                ForwardMessage.Node(n.senderId, n.time, n.senderName, n.messageChain.refineDeep(bot))
+            }
         )
     }
 
