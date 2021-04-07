@@ -15,7 +15,6 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.writeChild
 import net.mamoe.mirai.console.intellij.assets.FT
 import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 import net.mamoe.mirai.console.intellij.creator.tasks.getTemplate
@@ -24,6 +23,7 @@ import net.mamoe.mirai.console.intellij.creator.tasks.runWriteActionAndWait
 import net.mamoe.mirai.console.intellij.creator.tasks.writeChild
 import net.mamoe.mirai.console.intellij.creator.templateProperties
 import org.jetbrains.kotlin.idea.core.util.toPsiFile
+import java.nio.file.Path
 
 sealed class ProjectCreator(
     val module: Module,
@@ -36,11 +36,11 @@ sealed class ProjectCreator(
         model.checkValuesNotNull()
     }
 
-    protected val filesChanged = mutableListOf<VirtualFile>()
+    protected val filesChanged = mutableListOf<Path>()
 
     @Synchronized
-    protected fun addFileChanged(vf: VirtualFile) {
-        filesChanged.add(vf)
+    protected fun addFileChanged(path: Path) {
+        filesChanged.add(path)
     }
 
     protected fun getTemplate(name: String) = project.getTemplate(name, model.templateProperties)
@@ -49,7 +49,7 @@ sealed class ProjectCreator(
         indicator.text2 = "Reformatting files"
         invokeAndWait {
             for (file in filesChanged) {
-                val psi = file.toPsiFile(project) ?: continue
+                val psi = file.toFile().toPsiFile(project) ?: continue
                 ReformatCodeProcessor(psi, false).run()
             }
         }
@@ -69,12 +69,13 @@ sealed class GradleProjectCreator(
         runWriteActionAndWait {
             VfsUtil.createDirectoryIfMissing(root, "src/main/${model.languageType.sourceSetDirName}")
             VfsUtil.createDirectoryIfMissing(root, "src/main/resources")
-            filesChanged += root.writeChild(model.languageType.pluginMainClassFile(this))
-            filesChanged += root.writeChild("src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", model.mainClassQualifiedName)
-            filesChanged += root.writeChild("gradle.properties", getTemplate(FT.GradleProperties))
+            addFileChanged(root.writeChild(model.languageType.pluginMainClassFile(this)))
+            addFileChanged(root.writeChild("src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", model.mainClassQualifiedName))
+            addFileChanged(root.writeChild("gradle.properties", getTemplate(FT.GradleProperties)))
         }
     }
 }
+
 
 class GradleKotlinProjectCreator(
     module: Module, root: VirtualFile, model: MiraiProjectModel,
@@ -84,8 +85,8 @@ class GradleKotlinProjectCreator(
     override fun createProject(module: Module, root: VirtualFile, model: MiraiProjectModel) {
         super.createProject(module, root, model)
         runWriteActionAndWait {
-            filesChanged += root.writeChild("build.gradle.kts", getTemplate(FT.BuildGradleKts))
-            filesChanged += root.writeChild("settings.gradle.kts", getTemplate(FT.SettingsGradleKts))
+            addFileChanged(root.writeChild("build.gradle.kts", getTemplate(FT.BuildGradleKts)))
+            addFileChanged(root.writeChild("settings.gradle.kts", getTemplate(FT.SettingsGradleKts)))
         }
     }
 }
@@ -98,8 +99,8 @@ class GradleGroovyProjectCreator(
     override fun createProject(module: Module, root: VirtualFile, model: MiraiProjectModel) {
         super.createProject(module, root, model)
         runWriteActionAndWait {
-            filesChanged += root.writeChild("build.gradle", getTemplate(FT.BuildGradle))
-            filesChanged += root.writeChild("settings.gradle", getTemplate(FT.SettingsGradle))
+            addFileChanged(root.writeChild("build.gradle", getTemplate(FT.BuildGradle)))
+            addFileChanged(root.writeChild("settings.gradle", getTemplate(FT.SettingsGradle)))
         }
     }
 }

@@ -18,7 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.writeChild
+import com.intellij.util.io.writeChild
 import net.mamoe.mirai.console.intellij.creator.steps.NamedFile
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
@@ -81,7 +81,13 @@ fun Project.getTemplate(
 ): String = getTemplate(templateName, properties.toMap())
 
 
-fun VirtualFile.writeChild(namedFile: NamedFile): VirtualFile = this.writeChild(namedFile.path, namedFile.content)
+internal fun VirtualFile.writeChild(pluginMainClassFile: NamedFile): Path {
+    return writeChild(pluginMainClassFile.path, pluginMainClassFile.content)
+}
+
+internal fun VirtualFile.writeChild(path: String, content: String): Path {
+    return toNioPath().writeChild(path, content)
+}
 
 @Language("RegExp")
 const val CLASS_NAME_PATTERN = "[a-zA-Z]+[0-9a-zA-Z_]*" // self written

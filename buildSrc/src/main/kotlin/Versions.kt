@@ -20,8 +20,8 @@ object Versions {
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
 
-    const val kotlinIntellijPlugin = "203-1.4.21-release-IJ5981.133" // keep to newest as kotlinCompiler
-    const val intellij = "2020.3" // don't update easily unless you want your disk space -= 500MB
+    const val kotlinIntellijPlugin = "211-1.4.32-release-IJ6693.72" // keep to newest as kotlinCompiler
+    const val intellij = "2021.1" // don't update easily unless you want your disk space -= 500MB
 
 
     const val coroutines = "1.4.0"
@@ -40,7 +40,7 @@ object Versions {
     @Suppress("SpellCheckingInspection")
     const val yamlkt = "0.7.5"
 
-    const val intellijGradlePlugin = "0.4.16"
+    const val intellijGradlePlugin = "0.7.2"
 }
 
 const val `kotlin-compiler` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}"
