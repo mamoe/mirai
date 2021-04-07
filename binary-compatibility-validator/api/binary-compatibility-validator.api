@@ -185,6 +185,12 @@ public final class net/mamoe/mirai/Mirai {
 	public static final synthetic fun recallMessage (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class net/mamoe/mirai/_MiraiInstance {
+	public static final field INSTANCE Lnet/mamoe/mirai/_MiraiInstance;
+	public static final fun get ()Lnet/mamoe/mirai/IMirai;
+	public static final fun set (Lnet/mamoe/mirai/IMirai;)V
+}
+
 public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/mamoe/mirai/contact/Member {
 	public abstract fun getAnonymousId ()Ljava/lang/String;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
