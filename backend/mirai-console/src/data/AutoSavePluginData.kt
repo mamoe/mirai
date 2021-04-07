@@ -1,22 +1,23 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused", "PropertyName", "PrivatePropertyName")
 
 package net.mamoe.mirai.console.data
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
-import net.mamoe.mirai.console.internal.plugin.updateWhen
+import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.TimedTask
+import net.mamoe.mirai.console.util.launchTimedTask
 import net.mamoe.mirai.utils.*
 
 /**
@@ -46,6 +47,16 @@ public open class AutoSavePluginData private constructor(
         _saveName = saveName
     }
 
+    private fun logException(e: Throwable) {
+        owner_.coroutineContext[CoroutineExceptionHandler]?.handleException(owner_.coroutineContext, e)
+            ?.let { return }
+        MiraiConsole.mainLogger.error(
+            "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
+                "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner_::class.qualifiedNameOrTip}",
+            e
+        )
+    }
+
     @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
         check(owner is AutoSavePluginDataHolder) { "owner must be AutoSavePluginDataHolder for AutoSavePluginData" }
@@ -57,42 +68,25 @@ public open class AutoSavePluginData private constructor(
         this.storage_ = storage
         this.owner_ = owner
 
-        owner_.coroutineContext[Job]?.invokeOnCompletion {
-            kotlin.runCatching {
-                doSave()
-            }.onFailure { e ->
-                owner_.coroutineContext[CoroutineExceptionHandler]?.handleException(owner_.coroutineContext, e)
-                    ?.let { return@invokeOnCompletion }
-                MiraiConsole.mainLogger.error(
-                    "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
-                        "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
-                    e
-                )
-            }
-        }
+        owner_.coroutineContext[Job]?.invokeOnCompletion { save() }
+
+        saverTask = owner_.launchTimedTask(
+            intervalMillis = autoSaveIntervalMillis_.first,
+            coroutineContext = CoroutineName("AutoSavePluginData.saver: ${this::class.qualifiedNameOrTip}")
+        ) { save() }
 
         if (shouldPerformAutoSaveWheneverChanged()) {
+            // 定时自动保存, 用于 kts 序列化的对象
             owner_.launch(CoroutineName("AutoSavePluginData.timedAutoSave: ${this::class.qualifiedNameOrTip}")) {
                 while (isActive) {
-                    try {
-                        delay(autoSaveIntervalMillis_.last)  // 定时自动保存一次, 用于 kts 序列化的对象
-                    } catch (e: CancellationException) {
-                        return@launch
-                    }
-                    withContext(owner_.coroutineContext) {
-                        doSave()
-                    }
+                    runIgnoreException<CancellationException> { delay(autoSaveIntervalMillis_.last) } ?: return@launch
+                    doSave()
                 }
             }
         }
     }
 
-    @JvmField
-    @Volatile
-    internal var lastAutoSaveJob_: Job? = null
-
-    @JvmField
-    internal val currentFirstStartTime_ = atomic(MAGIC_NUMBER_CFST_INIT)
+    private var saverTask: TimedTask? = null
 
     /**
      * @return `true` 时, 一段时间后, 即使无属性改变, 也会进行保存.
@@ -102,41 +96,17 @@ public open class AutoSavePluginData private constructor(
         return true
     }
 
-    private val updaterBlock: suspend CoroutineScope.() -> Unit = l@{
-        if (::storage_.isInitialized) {
-            currentFirstStartTime_.updateWhen({ it == MAGIC_NUMBER_CFST_INIT }, { currentTimeMillis() })
-            try {
-                delay(autoSaveIntervalMillis_.first.coerceAtLeast(1000)) // for safety
-            } catch (e: CancellationException) {
-                return@l
-            }
-
-            if (lastAutoSaveJob_ == this.coroutineContext[Job]) {
-
-                withContext(owner_.coroutineContext) {
-                    doSave()
-                }
-            } else {
-                if (currentFirstStartTime_.updateWhen(
-                        { it != MAGIC_NUMBER_CFST_INIT && currentTimeMillis() - it >= autoSaveIntervalMillis_.last },
-                        { MAGIC_NUMBER_CFST_INIT })
-                ) {
-                    withContext(owner_.coroutineContext) {
-                        doSave()
-                    }
-                }
-            }
-        }
-    }
-
     @ConsoleExperimentalApi
     public final override fun onValueChanged(value: Value<*>) {
         debuggingLogger1.error { "onValueChanged: $value" }
-        if (::owner_.isInitialized) {
-            lastAutoSaveJob_ = owner_.launch(
-                block = updaterBlock,
-                context = CoroutineName("AutoSavePluginData.passiveAutoSave: ${this::class.qualifiedNameOrTip}")
-            )
+        saverTask?.setChanged()
+    }
+
+    private fun save() {
+        kotlin.runCatching {
+            doSave()
+        }.onFailure { e ->
+            logException(e)
         }
     }
 
