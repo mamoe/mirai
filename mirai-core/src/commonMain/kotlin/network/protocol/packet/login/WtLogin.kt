@@ -415,6 +415,8 @@ internal class WtLogin {
                             encryptedDownloadSession = tlvMap119[0x11d]?.let {
                                 client.analysisTlv11d(it)
                             } ?: encryptedDownloadSession
+                            encryptA1 = tlvMap119.getOrDefault(0x106, encryptA1)
+                            noPicSig = tlvMap119.getOrDefault(0x16a, noPicSig)
                         }
                     } else {
                         var a1: ByteArray? = tlvMap119.getOrFail(0x106)

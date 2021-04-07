@@ -74,13 +74,7 @@ internal object WtLogin10 : WtLoginExt {
                 t187(client.device.macAddress)
                 t188(client.device.androidId)
                 t194(client.device.imsiMd5)
-                t511(
-                    listOf(
-                        "tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
-                        "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
-                        "office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com"
-                    )
-                )
+                t511()
                 //t544()
 
             }

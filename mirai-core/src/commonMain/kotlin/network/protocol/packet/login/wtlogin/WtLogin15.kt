@@ -87,7 +87,8 @@ internal object WtLogin15 : WtLoginExt {
             t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
 
             t107(0)
-            // t108(client.ksid) // 第一次 exchange 没有 108
+
+            //t108(client.ksid) // 第一次 exchange 没有 108
             t144(client)
             t142(client.apkId)
             t145(client.device.guid)
