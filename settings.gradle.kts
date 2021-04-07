@@ -6,6 +6,7 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+import org.gradle.api.JavaVersion
 
 pluginManagement {
     repositories {
@@ -38,15 +39,9 @@ includeProject(":mirai-console-gradle", "tools/gradle-plugin")
 if (!disableOldFrontEnds) {
     includeProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
 
-    val jdkVersion = kotlin.runCatching {
-        System.getProperty("java.version").let { v ->
-            v.toIntOrNull() ?: v.removePrefix("1.").substringBefore("-").toIntOrNull()
-        }
-    }.getOrNull() ?: -1
+    println("JDK version: ${JavaVersion.current()}")
 
-    println("JDK version: $jdkVersion")
-
-    if (jdkVersion >= 9) {
+    if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
         includeProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
     } else {
         println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
