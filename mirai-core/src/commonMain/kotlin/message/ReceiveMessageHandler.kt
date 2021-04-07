@@ -49,13 +49,13 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot)
 }
 
-internal fun List<MsgComm.Msg>.toMessageChainOffline(
-    bot: Bot,
-    groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
-): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, false, messageSourceKind).refineLight(bot)
-}
+//internal fun List<MsgComm.Msg>.toMessageChainOffline(
+//    bot: Bot,
+//    groupIdOrZero: Long,
+//    messageSourceKind: MessageSourceKind
+//): MessageChain {
+//    return toMessageChain(bot, groupIdOrZero, false, messageSourceKind).refineLight(bot)
+//}
 
 internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     bot: Bot,
