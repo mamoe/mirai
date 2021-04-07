@@ -34,7 +34,8 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * [IMirai] 实例
  */
 @get:JvmName("getInstance") // Java 调用: Mirai.getInstance()
-public val Mirai: IMirai by lazy { findMiraiInstance() }
+public val Mirai: IMirai
+    get() = _MiraiInstance.get()
 
 /**
  * Mirai API 接口.
@@ -283,6 +284,25 @@ public interface IMirai : LowLevelApiAccessor {
 @JvmSynthetic
 public suspend inline fun IMirai.recallMessage(bot: Bot, message: MessageChain): Unit =
     this.recallMessage(bot, message.source)
+
+/**
+ * @since 2.6-RC
+ */
+@PublishedApi // for tests and potential public uses.
+@Suppress("ClassName")
+internal object _MiraiInstance {
+    private var instance: IMirai? = null
+
+    @JvmStatic
+    fun set(instance: IMirai) {
+        this.instance = instance
+    }
+
+    @JvmStatic
+    fun get(): IMirai {
+        return instance ?: findMiraiInstance().also { instance = it }
+    }
+}
 
 @JvmSynthetic
 internal expect fun findMiraiInstance(): IMirai
