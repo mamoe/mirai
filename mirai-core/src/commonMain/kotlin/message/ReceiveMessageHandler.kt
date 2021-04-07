@@ -96,7 +96,7 @@ private fun List<MsgComm.Msg>.toMessageChain(
  * 接收消息的解析器. 将 [MsgComm.Msg] 转换为对应的 [SingleMessage]
  * @see joinToMessageChain
  */
-private object ReceiveMessageTransformer {
+internal object ReceiveMessageTransformer {
     fun createMessageSource(
         bot: Bot,
         onlineSource: Boolean,
@@ -125,6 +125,7 @@ private object ReceiveMessageTransformer {
         bot: Bot,
         builder: MessageChainBuilder
     ) {
+//        ProtoBuf.encodeToHexString(elements).soutv("join")
         // (this._miraiContentToString().soutv())
         for (element in elements) {
             transformElement(element, groupIdOrZero, messageSourceKind, bot, builder)
