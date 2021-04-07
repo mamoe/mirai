@@ -54,15 +54,9 @@ fun includeConsoleProjects() {
     if (!disableOldFrontEnds) {
         includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
 
-        val jdkVersion = kotlin.runCatching {
-            System.getProperty("java.version").let { v ->
-                v.toIntOrNull() ?: v.removePrefix("1.").substringBefore("-").toIntOrNull()
-            }
-        }.getOrNull() ?: -1
+        println("JDK version: ${JavaVersion.current()}")
 
-        println("JDK version: $jdkVersion")
-
-        if (jdkVersion >= 9) {
+        if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
             includeConsoleProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
         } else {
             println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
