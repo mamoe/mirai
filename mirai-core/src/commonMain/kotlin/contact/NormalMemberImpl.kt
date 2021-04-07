@@ -129,6 +129,9 @@ internal class NormalMemberImpl constructor(
         check(this.id != bot.id) {
             "A bot can't mute itself."
         }
+        require(durationSeconds > 0) {
+            "durationSeconds must greater than zero"
+        }
         checkBotPermissionHigherThanThis("mute")
         bot.network.run {
             TroopManagement.Mute(
@@ -141,6 +144,7 @@ internal class NormalMemberImpl constructor(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcastWithBot(bot)
+        this._muteTimestamp = currentTimeSeconds().toInt() + durationSeconds
     }
 
     override suspend fun unmute() {
@@ -156,6 +160,7 @@ internal class NormalMemberImpl constructor(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcastWithBot(bot)
+        this._muteTimestamp = 0
     }
 
     override suspend fun kick(message: String) {

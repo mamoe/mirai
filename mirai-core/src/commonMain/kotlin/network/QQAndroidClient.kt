@@ -251,7 +251,7 @@ internal open class QQAndroidClient(
     /**
      * t108 时更新
      */
-    var ksid: ByteArray = "|454001228437590|A8.2.7.27f6ea96".toByteArray()
+    var ksid: ByteArray = EMPTY_BYTE_ARRAY
 
     /**
      * t186
