@@ -69,11 +69,11 @@ internal class LoginExtraData(
 
 internal class WLoginSigInfo(
     val uin: Long,
-    val encryptA1: ByteArray?, // sigInfo[0]
+    var encryptA1: ByteArray?, // sigInfo[0]
     /**
      * WARNING, please check [QQAndroidClient.tlv16a]
      */
-    val noPicSig: ByteArray?, // sigInfo[1]
+    var noPicSig: ByteArray?, // sigInfo[1]
 
     val simpleInfo: WLoginSimpleInfo,
 
