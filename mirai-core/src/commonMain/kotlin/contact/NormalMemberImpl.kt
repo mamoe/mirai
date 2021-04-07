@@ -129,7 +129,7 @@ internal class NormalMemberImpl constructor(
         check(this.id != bot.id) {
             "A bot can't mute itself."
         }
-        check(durationSeconds > 0) {
+        require(durationSeconds > 0) {
             "durationSeconds must greater than zero"
         }
         checkBotPermissionHigherThanThis("mute")
