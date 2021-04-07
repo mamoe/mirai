@@ -43,17 +43,17 @@ class CreateProjectTask(
         val build = model.buildSystemType.createBuildSystem(module, root.vf, model)
 
         build.createProject(module, root.vf, model)
-        build.doFinish(indicator)
 
         invokeLater {
             VfsUtil.markDirtyAndRefresh(false, true, true, root.vf)
         }
 
         invokeLater {
-            @Suppress("UnstableApiUsage")
-            (linkAndRefreshGradleProject(root.toAbsolutePath().toString(), project))
+            linkAndRefreshGradleProject(root.toAbsolutePath().toString(), project)
             showProgress(project)
         }
+
+        build.doFinish(indicator)
     }
 
 }
