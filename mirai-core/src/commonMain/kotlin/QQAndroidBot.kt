@@ -10,30 +10,28 @@
 
 package net.mamoe.mirai.internal
 
-import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.*
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.ScheduledJob
 import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.ForwardMessage
+import net.mamoe.mirai.message.data.RichMessage
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.contract
@@ -83,29 +81,29 @@ internal class QQAndroidBot constructor(
 
     val friendListCache: FriendListCache? by lazy {
         if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-            val file = configuration.friendCacheFile()
-            val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
+        val file = configuration.friendCacheFile()
+        val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
 
-            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            bot.eventChannel.parentScope(this@QQAndroidBot)
-                .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
-                    friendListSaver?.notice()
-                }
-            ret
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        bot.eventChannel.parentScope(this@QQAndroidBot)
+            .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
+                friendListSaver?.notice()
+            }
+        ret
     }
 
     val groupMemberListCaches: GroupMemberListCaches? by lazy {
         if (!configuration.contactListCache.groupMemberListCacheEnabled) {
             return@lazy null
         }
-            GroupMemberListCaches(this)
+        GroupMemberListCaches(this)
     }
 
-    private val friendListSaver by lazy {
+    private val friendListSaver: ScheduledJob? by lazy {
         if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-            ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
-                runBIO { saveFriendCache() }
-            }
+        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
+            runBIO { saveFriendCache() }
+        }
     }
 
     fun saveFriendCache() {
