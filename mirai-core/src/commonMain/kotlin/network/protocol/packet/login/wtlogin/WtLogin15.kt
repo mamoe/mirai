@@ -23,7 +23,7 @@ internal object WtLogin15 : WtLoginExt {
 
     operator fun invoke(
         client: QQAndroidClient,
-    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = ByteArray(16)) { sequenceId ->
+    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = ByteArray(16)) {
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(
             client,
@@ -130,6 +130,7 @@ internal object WtLogin15 : WtLoginExt {
     }
 }
 
+@Suppress("FunctionName", "SpellCheckingInspection")
 internal fun get_mpasswd(): String {
     var var5: String
     val random = Random()

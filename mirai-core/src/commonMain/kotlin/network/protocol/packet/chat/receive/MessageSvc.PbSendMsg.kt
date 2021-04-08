@@ -83,9 +83,9 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                     txtAdd = true
                     last.add(element)
                 } else {
-                    val splitted = element.content.chunked(80)
+                    val split = element.content.chunked(80)
                     flush()
-                    splitted.forEach { results.add(PlainText(it).toMessageChain()) }
+                    split.forEach { results.add(PlainText(it).toMessageChain()) }
                 }
             } else {
                 last.add(element)
@@ -299,7 +299,6 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         targetMember: Member,
         message: MessageChain,
-        fragmented: Boolean,
         source: OnlineMessageSourceToTempImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
         writeProtoBuf(
@@ -466,6 +465,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal inline fun MessageSvcPbSendMsg.createToTemp(
     client: QQAndroidClient,
     member: Member,
@@ -489,7 +489,6 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         client,
         member,
         message,
-        fragmented,
         source
     ).let { listOf(it) }
 }

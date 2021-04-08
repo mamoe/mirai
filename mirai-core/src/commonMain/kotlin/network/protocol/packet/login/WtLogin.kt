@@ -273,9 +273,9 @@ internal class WtLogin {
                     tlvMap119[0x118]?.let { client.mainDisplayName = it }
                     tlvMap119[0x108]?.let { client.ksid = it }
                     tlvMap119[0x11a]?.read {
-                        val faceId = readShort().toInt()
-                        val age = readByte().toInt()
-                        val gender = readByte().toInt()
+                        readShort().toInt() // faceId
+                        readByte().toInt() // age
+                        readByte().toInt() // gender
                         val nickLength = readByte().toInt()
                         bot.nick = readString(nickLength)
                     }

@@ -24,7 +24,8 @@ import net.mamoe.mirai.contact.platform
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.logMessageReceived
+import net.mamoe.mirai.internal.contact.replaceMagicCodes
 import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
@@ -36,7 +37,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils.NoRouteToHostException
+import net.mamoe.mirai.internal.utils.PlatformSocket
+import net.mamoe.mirai.internal.utils.SocketException
+import net.mamoe.mirai.internal.utils.UnknownHostException
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -800,6 +804,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             // CancellationException means network closed so don't retry
         ) {
             withPacketListener(commandName, sequenceId) { listener ->
+                @Suppress("UNCHECKED_CAST")
                 return withTimeout(timeoutMillis) { // may throw CancellationException
                     channel.send(data, 0, data.size)
                     logger.verbose { "Send: $commandName" }
