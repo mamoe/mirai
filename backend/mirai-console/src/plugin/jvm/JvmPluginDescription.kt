@@ -52,7 +52,7 @@ public interface JvmPluginDescription : PluginDescription {
 
             val bytes = stream.use { it.readBytes() }
 
-            return Yaml.default.decodeFromString(SimpleJvmPluginDescription.SerialData.serializer(), String(bytes)).toJvmPluginDescription()
+            return Yaml.decodeFromString(SimpleJvmPluginDescription.SerialData.serializer(), String(bytes)).toJvmPluginDescription()
         }
     }
 }

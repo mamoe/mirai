@@ -36,7 +36,7 @@ internal open class MultiFilePluginDataStorageImpl(
         val text = getPluginDataFile(holder, instance).readText()
         if (text.isNotBlank()) {
             logger.warning { "Deserializing $text" }
-            Yaml.default.decodeFromString(instance.updaterSerializer, text)
+            Yaml.decodeFromString(instance.updaterSerializer, text)
         } else {
             this.store(holder, instance) // save an initial copy
         }
@@ -68,7 +68,7 @@ internal open class MultiFilePluginDataStorageImpl(
         encodeDefaults = true
     }
 
-    private val yaml = Yaml.default
+    private val yaml = Yaml
 
     @ConsoleExperimentalApi
     public override fun store(holder: PluginDataHolder, instance: PluginData) {

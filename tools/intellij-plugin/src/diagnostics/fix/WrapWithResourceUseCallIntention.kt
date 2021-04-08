@@ -62,5 +62,5 @@ class WrapWithResourceUseCallJavaIntention : SelfTargetingIntention<PsiMethodCal
 }
 
 fun PsiElement.isJavaVersionAtLeast(version: JavaSdkVersion): Boolean {
-    return this.module?.getService(JavaVersionService::class.java)?.isAtLeast(this, JavaSdkVersion.JDK_1_9) == true
+    return this.module?.getService(JavaVersionService::class.java)?.isAtLeast(this, version) == true
 }

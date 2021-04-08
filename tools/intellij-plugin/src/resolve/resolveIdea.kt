@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.intellij.resolve
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
-import com.intellij.psi.util.parentsWithSelf
+import com.intellij.psi.util.parents
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.*
 import org.jetbrains.kotlin.descriptors.*
@@ -68,7 +68,7 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
         yieldAll(superTypeListEntries)
         for (list in superTypeListEntries.asSequence()) {
             yieldAll(
-                (list.typeAsUserType?.referenceExpression?.resolve()?.parentsWithSelf?.filterIsInstance<KtClass>()
+                (list.typeAsUserType?.referenceExpression?.resolve()?.parents(true)?.filterIsInstance<KtClass>()
                     ?.firstOrNull())?.allSuperTypes.orEmpty()
             )
         }
