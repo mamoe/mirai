@@ -9,10 +9,6 @@
 
 package net.mamoe.mirai.internal.utils
 
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Contact
@@ -302,7 +298,22 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun resolveById(id: String, deep: Boolean): RemoteFile? {
-        return getFilesFlow().filter { it.id == id }.firstOrNull()?.resolveToFile()
+        if (this.id == id) return this
+        val dirs = mutableListOf<Oidb0x6d8.GetFileListRspBody.Item>()
+        getFilesFlow().mapNotNull { item ->
+            when {
+                item.id == id -> item.resolveToFile()
+                deep && item.folderInfo != null -> {
+                    dirs.add(item)
+                    null
+                }
+                else -> null
+            }
+        }.firstOrNull()?.let { return it }
+        for (dir in dirs) {
+            dir.resolveToFile()?.resolveById(id, deep)?.let { return it }
+        }
+        return null
     }
 
     override fun resolveSibling(relative: String): RemoteFileImpl {
