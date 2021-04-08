@@ -186,6 +186,7 @@ public interface Group : Contact, CoroutineScope, FileSupported {
          * @since 2.2
          */
         @JvmBlockingBridge
+        @JvmStatic
         public suspend fun Group.setEssenceMessage(chain: MessageChain): Boolean = setEssenceMessage(chain.source)
     }
 }
