@@ -52,7 +52,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     }
     override val sender: Friend = bot.getFriendOrFail(msg.first().msgHead.fromUin)
 
-    private val jceData by lazy { msg.toJceDataPrivate(internalIds) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
@@ -76,7 +76,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     }
     override val sender: Stranger = bot.getStrangerOrFail(msg.first().msgHead.fromUin)
 
-    private val jceData by lazy { msg.toJceDataPrivate(internalIds) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
@@ -139,7 +139,7 @@ internal class OnlineMessageSourceFromTempImpl(
         bot.getGroupOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
     }
 
-    private val jceData by lazy { msg.toJceDataPrivate(internalIds) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -178,7 +178,7 @@ internal class OnlineMessageSourceFromGroupImpl(
         }
     }
 
-    private val jceData by lazy {
+    private val jceData: ImMsgBody.SourceMsg by lazy {
         ImMsgBody.SourceMsg(
             origSeqs = intArrayOf(msg.first().msgHead.msgSeq),
             senderUin = msg.first().msgHead.fromUin,

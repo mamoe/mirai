@@ -90,7 +90,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override val ids: IntArray
         get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    private val jceData by lazy { toJceDataImpl(subject) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -105,7 +105,7 @@ internal class OnlineMessageSourceToStrangerImpl(
 ) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
 
     constructor(
-        delegate: OnlineMessageSource.Outgoing,
+        delegate: Outgoing,
         target: Stranger
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
@@ -116,7 +116,7 @@ internal class OnlineMessageSourceToStrangerImpl(
     override val ids: IntArray
         get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    private val jceData by lazy { toJceDataImpl(subject) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -130,7 +130,7 @@ internal class OnlineMessageSourceToTempImpl(
     override val target: Member
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
     constructor(
-        delegate: OnlineMessageSource.Outgoing,
+        delegate: Outgoing,
         target: Member
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
@@ -141,7 +141,7 @@ internal class OnlineMessageSourceToTempImpl(
     override val ids: IntArray
         get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    private val jceData by lazy { toJceDataImpl(subject) }
+    private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -190,7 +190,7 @@ internal class OnlineMessageSourceToGroupImpl(
 
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
-    private val jceData by lazy {
+    private val jceData: ImMsgBody.SourceMsg by lazy {
         val elements = originalMessage.toRichTextElems(subject, withGeneralFlags = true)
         ImMsgBody.SourceMsg(
             origSeqs = sequenceIds,

@@ -32,7 +32,7 @@ private fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) 
     return this.joinToString(prefix = "$prefix$indent", separator = "\n$prefix$indent", transform = transform)
 }
 
-private val SoutvLogger by lazy { MiraiLogger.create("soutv") }
+private val SoutvLogger: MiraiLogger by lazy { MiraiLogger.create("soutv") }
 internal fun Any?.soutv(name: String = "unnamed") {
     @Suppress("DEPRECATION")
     SoutvLogger.debug { "$name = ${this._miraiContentToString()}" }
