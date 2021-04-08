@@ -20,6 +20,7 @@ import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
 import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsInput
 import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsOld
+import net.mamoe.mirai.utils.read
 
 /**
  * The main entry point to work with Tars serialization.
@@ -32,7 +33,9 @@ internal class Tars(
     private val old = TarsOld(charset)
 
     fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output) {
-        output.writePacket(old.dumpAsPacket(serializer, ojb))
+        old.dumpAsPacket(serializer, ojb).use {
+            output.writePacket(it)
+        }
     }
 
     fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T {
@@ -44,7 +47,9 @@ internal class Tars(
     }
 
     override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
-        return load(deserializer, ByteReadPacket(bytes))
+        bytes.read {
+            return load(deserializer, this)
+        }
     }
 
     companion object {
