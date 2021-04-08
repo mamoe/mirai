@@ -28,9 +28,11 @@ import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
@@ -957,20 +959,28 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
         return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.LONG_MESSAGE).msg
-            .toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
+            .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
+            .refineDeep(bot)
     }
 
     override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
         return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).msg.map { msg ->
-            ForwardMessage.Node(
-                senderId = msg.msgHead.fromUin,
-                time = msg.msgHead.msgTime,
-                senderName = msg.msgHead.groupInfo?.groupCard
-                    ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
-                    ?: msg.msgHead.fromUin.toString(),
-                messageChain = listOf(msg).toMessageChainNoSource(bot.id, 0, MessageSourceKind.GROUP)
-            )
+            msg.toNode(bot)
         }
+    }
+
+    protected open suspend fun MsgComm.Msg.toNode(bot: Bot): ForwardMessage.Node {
+        val msg = this
+        return ForwardMessage.Node(
+            senderId = msg.msgHead.fromUin,
+            time = msg.msgHead.msgTime,
+            senderName = msg.msgHead.groupInfo?.groupCard
+                ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
+                ?: msg.msgHead.fromUin.toString(),
+            messageChain = listOf(msg)
+                .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
+                .refineDeep(bot)
+        )
     }
 
     private suspend fun downloadMultiMsgTransmit(
@@ -1020,7 +1030,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
                 val down = longResp.msgDownRsp.single()
                 check(down.result == 0) {
-                    "Message download failed, result=${down.result}, resId=${down.msgResid}, msgContent=${down.msgContent.toUHexString()}"
+                    "Message download failed, result=${down.result}, resId=${down.msgResid.encodeToString()}, msgContent=${down.msgContent.toUHexString()}"
                 }
 
                 val content = down.msgContent.ungzip()

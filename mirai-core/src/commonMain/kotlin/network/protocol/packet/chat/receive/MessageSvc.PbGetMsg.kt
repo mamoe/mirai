@@ -26,14 +26,13 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
@@ -45,7 +44,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.*
@@ -404,13 +402,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                             if (fromSync) {
                                 FriendMessageSyncEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
                                     msgHead.msgTime
                                 )
                             } else {
                                 FriendMessageEvent(
                                     friend,
-                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND).refine(friend),
+                                    msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
                                     msgHead.msgTime
                                 )
                             }
@@ -429,13 +427,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         if (fromSync) {
                             StrangerMessageSyncEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER),
                                 msgHead.msgTime
                             )
                         } else {
                             StrangerMessageEvent(
                                 stranger,
-                                listOf(this).toMessageChainOnline(bot, 0, STRANGER).refine(stranger),
+                                listOf(this).toMessageChainOnline(bot, 0, STRANGER),
                                 msgHead.msgTime
                             )
                         }
@@ -509,13 +507,13 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                         return if (fromSync) {
                             GroupTempMessageSyncEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP),
                                 msgHead.msgTime
                             )
                         } else {
                             GroupTempMessageEvent(
                                 member,
-                                listOf(this).toMessageChainOnline(bot, 0, TEMP).refine(member),
+                                listOf(this).toMessageChainOnline(bot, 0, TEMP),
                                 msgHead.msgTime
                             )
                         }
