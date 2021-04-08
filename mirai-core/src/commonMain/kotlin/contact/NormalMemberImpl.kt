@@ -17,7 +17,6 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -46,7 +45,7 @@ internal class NormalMemberImpl constructor(
 
     override fun toString(): String = "NormalMember($id)"
 
-    private val handler by lazy { GroupTempSendMessageHandler(this) }
+    private val handler: GroupTempSendMessageHandler by lazy { GroupTempSendMessageHandler(this) }
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
@@ -182,6 +181,41 @@ internal class NormalMemberImpl constructor(
             this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcastWithBot(bot)
         }
+    }
+
+    override suspend fun modifyAdmin(operation: Boolean) {
+        checkBotPermissionHighest("modifyAdmin")
+
+        bot.network.run {
+            val resp: TroopManagement.ModifyAdmin.Response = TroopManagement.ModifyAdmin(
+                client = bot.client,
+                member = this@NormalMemberImpl,
+                operation = operation
+            ).sendAndExpect()
+
+            check(resp.success) {
+                "modify admin failed: TODO"
+            }
+
+            val origin = this@NormalMemberImpl.permission
+            val new = if (operation) {
+                MemberPermission.ADMINISTRATOR
+            } else {
+                MemberPermission.MEMBER
+            }
+
+            this@NormalMemberImpl.permission = new
+
+            MemberPermissionChangeEvent(this@NormalMemberImpl, origin, new).broadcastWithBot(bot)
+        }
+    }
+}
+
+internal fun Member.checkBotPermissionHighest(operationName: String) {
+    check(group.botPermission == MemberPermission.OWNER) {
+        throw PermissionDeniedException(
+            "`$operationName` operation requires the highest permission, while ${group.botPermission} == ${MemberPermission.OWNER}"
+        )
     }
 }
 

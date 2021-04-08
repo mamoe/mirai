@@ -103,6 +103,18 @@ public interface NormalMember : Member {
     public suspend fun kick(message: String)
 
     /**
+     * 给予或移除群成员的管理员权限。
+     *
+     * 此操作需要 Bot 为群主 [MemberPermission.OWNER]
+     *
+     * @param operation true 为给予
+     *
+     * @see MemberPermissionChangeEvent 群成员权限变更事件
+     * @throws PermissionDeniedException 无权限修改时抛出
+     */
+    public suspend fun modifyAdmin(operation: Boolean)
+
+    /**
      * 向群成员发送消息.
      * 若群成员同时是好友, 则会发送好友消息. 否则发送临时会话消息.
      *

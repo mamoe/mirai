@@ -29,7 +29,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.daysToSeconds
 
 internal class TroopManagement {
-
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             //屁用没有
@@ -373,6 +372,44 @@ internal class TroopManagement {
                     )
                 )
             }
+        }
+
+    }
+
+    internal object ModifyAdmin : OutgoingPacketFactory<ModifyAdmin.Response>("OidbSvc.0x55c_1") {
+        data class Response(val success: Boolean) : Packet {
+            override fun toString(): String {
+                return "TroopManagement.ModifyAdmin.Response"
+            }
+        }
+
+        /**
+         * @param operation: true is add
+         */
+        operator fun invoke(
+            client: QQAndroidClient,
+            member: Member,
+            operation: Boolean
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    OidbSso.OIDBSSOPkg.serializer(),
+                    OidbSso.OIDBSSOPkg(
+                        command = 1372,
+                        serviceType = 1,
+                        bodybuffer = buildPacket {
+                            writeInt(member.group.id.toInt())
+                            writeInt(member.id.toInt())
+                            writeByte(if (operation) 1 else 0)
+                        }.readBytes()
+                    )
+                )
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ModifyAdmin.Response {
+            val result = readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).result
+            return ModifyAdmin.Response(result == 0)
         }
 
     }
