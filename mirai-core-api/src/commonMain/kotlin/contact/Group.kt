@@ -185,46 +185,6 @@ public interface Group : Contact, CoroutineScope, FileSupported {
     public suspend fun getAnnouncements(): Flow<Announcement>
 
     /**
-     * 发送一条群公告
-     *
-     * @throws PermissionDeniedException 没有权限时抛出
-     *
-     * @param senderId 公告发送者的QQ号
-     * @param title 公告的标题
-     * @param msg 公告的内容
-     * @param sendToNewMember 是否发送给新成员
-     * @param isPinned 是否置顶，可以有多个置顶公告
-     * @param isShowEditCard 是否显示能够引导群成员修改昵称窗口
-     * @param isTip 是否使用弹窗
-     * @param needConfirm 是否需要群成员确认
-     *
-     * @return 公告的fid
-     */
-    @MiraiExperimentalApi
-    public suspend fun sendAnnouncement(
-        senderId: Long,
-        title: String,
-        msg: String,
-        sendToNewMember: Boolean,
-        isPinned: Boolean = false,
-        isShowEditCard: Boolean = false,
-        isTip: Boolean = false,
-        needConfirm: Boolean = false
-    ): String
-
-    /**
-     * 发送一条群公告
-     *
-     * @param announcement [Announcement] 公告的信息设置
-     *
-     * @throws PermissionDeniedException 没有权限时抛出
-     *
-     * @return 公告的fid
-     */
-    @MiraiExperimentalApi
-    public suspend fun sendAnnouncement(announcement: Announcement): String
-
-    /**
      * 删除一条群公告
      * @param fid 公告的id [ReadAnnouncement.fid]
      *

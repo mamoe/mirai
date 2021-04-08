@@ -260,34 +260,7 @@ internal class GroupImpl(
                 result.inst?.let { emitAll(it.asFlow()) }
                 result.feeds?.let { emitAll(it.asFlow()) }
             }
-        }.map { it.covertToAnnouncement() }
-
-    override suspend fun sendAnnouncement(
-        senderId: Long,
-        title: String,
-        msg: String,
-        sendToNewMember: Boolean,
-        isPinned: Boolean,
-        isShowEditCard: Boolean,
-        isTip: Boolean,
-        needConfirm: Boolean
-    ): String = sendAnnouncement(
-        AnnouncementImpl(
-            senderId,
-            title,
-            msg,
-            sendToNewMember,
-            isPinned,
-            isShowEditCard,
-            isTip,
-            needConfirm
-        )
-    )
-
-    override suspend fun sendAnnouncement(announcement: Announcement): String {
-        checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
-        return Mirai.sendGroupAnnouncement(bot, id, announcement.covertToGroupAnnouncement())
-    }
+        }.map { it.covertToAnnouncement(bot.id) }
 
     override suspend fun deleteAnnouncement(fid: String) {
         checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }
@@ -295,7 +268,7 @@ internal class GroupImpl(
     }
 
     override suspend fun getAnnouncement(fid: String): ReadAnnouncement =
-        Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement()
+        Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement(bot.id)
 
     override fun toString(): String = "Group($id)"
 }
@@ -328,39 +301,3 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberIm
     )
 ) as AnonymousMemberImpl
 
-internal fun GroupAnnouncement.covertToAnnouncement(): ReadAnnouncement {
-    check(this.fid != null) { "GroupAnnouncement don't have id" }
-    check(this.settings != null) { "GroupAnnouncement don't have setting" }
-
-    return ReadAnnouncementImpl(
-        fid = fid!!,
-        senderId = sender,
-        publishTime = time,
-        title = msg.title ?: "",
-        msg = msg.text,
-        isPinned = pinned == 1,
-        sendToNewMember = type == 20,
-        readMemberNumber = readNum,
-        isTip = settings!!.tipWindowType == 0,
-        needConfirm = settings!!.confirmRequired == 1,
-        isShowEditCard = settings!!.isShowEditCard == 1,
-        isAllRead = isAllConfirm != 0
-    )
-}
-
-internal fun Announcement.covertToGroupAnnouncement(): GroupAnnouncement {
-    return GroupAnnouncement(
-        sender = senderId,
-        msg = GroupAnnouncementMsg(
-            title = title,
-            text = msg
-        ),
-        type = if (sendToNewMember) 20 else 6,
-        settings = GroupAnnouncementSettings(
-            isShowEditCard = if (isShowEditCard) 1 else 0,
-            tipWindowType = if (isTip) 0 else 1,
-            confirmRequired = if (needConfirm) 1 else 0,
-        ),
-        pinned = if (isPinned) 1 else 0,
-    )
-}
