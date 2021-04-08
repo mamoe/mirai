@@ -482,8 +482,10 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
 	public synthetic fun kick (Ljava/lang/String;)Lkotlin/Unit;
 	public fun kick (Ljava/lang/String;)V
-	public fun modifyAdmin(Z)V;
 	public abstract fun kick (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun modifyAdmin (Z)Lkotlin/Unit;
+	public fun modifyAdmin (Z)V
+	public abstract fun modifyAdmin (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
