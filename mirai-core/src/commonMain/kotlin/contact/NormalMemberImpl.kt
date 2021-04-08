@@ -186,6 +186,17 @@ internal class NormalMemberImpl constructor(
     override suspend fun modifyAdmin(operation: Boolean) {
         checkBotPermissionHighest("modifyAdmin")
 
+        val origin = this@NormalMemberImpl.permission
+        val new = if (operation) {
+            MemberPermission.ADMINISTRATOR
+        } else {
+            MemberPermission.MEMBER
+        }
+
+        check(origin != new) {
+            "Member ${this.id} is already $new"
+        }
+
         bot.network.run {
             val resp: TroopManagement.ModifyAdmin.Response = TroopManagement.ModifyAdmin(
                 client = bot.client,
@@ -195,13 +206,6 @@ internal class NormalMemberImpl constructor(
 
             check(resp.success) {
                 "modify admin failed: TODO"
-            }
-
-            val origin = this@NormalMemberImpl.permission
-            val new = if (operation) {
-                MemberPermission.ADMINISTRATOR
-            } else {
-                MemberPermission.MEMBER
             }
 
             this@NormalMemberImpl.permission = new
