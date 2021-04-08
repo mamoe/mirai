@@ -10,17 +10,19 @@
 package net.mamoe.mirai.console.intellij.resolve
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.*
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementFactory
+import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.util.parents
-import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
+import org.jetbrains.kotlin.idea.references.resolveToDescriptors
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -194,8 +196,8 @@ fun ResolvedCall<*>.valueParametersWithArguments(): List<Pair<ValueParameterDesc
     return this.valueParameters.zip(this.valueArgumentsByIndex?.mapNotNull { it.arguments.firstOrNull() }.orEmpty())
 }
 
-fun ValueArgument.resolveStringConstantValues(): Sequence<String>? {
-    return this.getArgumentExpression()?.resolveStringConstantValues()
+fun ValueArgument.resolveStringConstantValues(bindingContext: BindingContext): Sequence<String>? {
+    return this.getArgumentExpression()?.resolveStringConstantValues(bindingContext)
 }
 
 val PsiElement.allChildrenFlat: Sequence<PsiElement>
@@ -248,18 +250,17 @@ fun DeclarationDescriptor.companionObjectDescriptor(): ClassDescriptor? {
     return this.companionObjectDescriptor
 }
 
-fun KtExpression.resolveStringConstantValues(): Sequence<String> {
+fun KtExpression.resolveStringConstantValues(bindingContext: BindingContext): Sequence<String> {
     when (this) {
         is KtNameReferenceExpression -> {
-            when (val reference = references.firstIsInstance<KtSimpleNameReference>().resolve()) {
-                is KtDeclaration -> {
-                    val descriptor = reference.resolveToDescriptorIfAny(BodyResolveMode.FULL).castOrNull<VariableDescriptor>() ?: return emptySequence()
+            when (val descriptor = references.firstIsInstance<KtSimpleNameReference>().resolveToDescriptors(bindingContext).singleOrNull()) {
+                is VariableDescriptor -> {
                     val compileTimeConstant = descriptor.compileTimeInitializer ?: return emptySequence()
                     return compileTimeConstant.selfOrChildrenConstantStrings()
                 }
-                is PsiDeclarationStatement -> {
-                    // TODO: 2020/9/18 compile-time constants from Java
-                }
+                //is PsiDeclarationStatement -> {
+                //    // TODO: 2020/9/18 compile-time constants from Java
+                //}
             }
         }
         is KtStringTemplateExpression -> {

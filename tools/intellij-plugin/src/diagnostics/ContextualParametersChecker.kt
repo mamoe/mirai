@@ -62,8 +62,9 @@ class ContextualParametersChecker : DeclarationChecker {
         context: DeclarationCheckerContext,
     ) {
         val elementCheckers = parameter.resolveContextKinds?.mapNotNull(checkersMap::get) ?: return
+        if (elementCheckers.isEmpty()) return
 
-        val resolvedConstants = argument.resolveStringConstantValues()?.toList().orEmpty()
+        val resolvedConstants = argument.resolveStringConstantValues(context.bindingContext)?.toList() ?: return
 
         for (elementChecker in elementCheckers) {
             if (resolvedConstants.isEmpty()) {
