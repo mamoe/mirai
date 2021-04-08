@@ -70,7 +70,7 @@ internal class GroupMemberListCaches(
     }
 
     private val changedGroups: MutableCollection<Long> = ConcurrentLinkedQueue()
-    private val groupListSaver by lazy {
+    private val groupListSaver: ScheduledJob by lazy {
         ScheduledJob(bot.coroutineContext, bot.configuration.contactListCache.saveIntervalMillis.milliseconds) {
             runBIO { saveGroupCaches() }
         }
@@ -90,7 +90,7 @@ internal class GroupMemberListCaches(
         return ret
     }
 
-    private val cacheDir by lazy { bot.configuration.groupCacheDir() }
+    private val cacheDir: File by lazy { bot.configuration.groupCacheDir() }
 
     private fun resolveCacheFile(groupCode: Long): File {
         cacheDir.mkdirs()
