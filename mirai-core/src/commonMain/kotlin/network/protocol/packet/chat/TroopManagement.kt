@@ -13,6 +13,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
@@ -408,8 +410,8 @@ internal class TroopManagement {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ModifyAdmin.Response {
-            val result = readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).result
-            return ModifyAdmin.Response(result == 0)
+            val stupidTencentCrapPkg = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
+            return ModifyAdmin.Response(stupidTencentCrapPkg.result == 0)
         }
 
     }

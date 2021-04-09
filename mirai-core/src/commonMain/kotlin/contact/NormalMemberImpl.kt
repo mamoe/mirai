@@ -218,7 +218,7 @@ internal class NormalMemberImpl constructor(
 internal fun Member.checkBotPermissionHighest(operationName: String) {
     check(group.botPermission == MemberPermission.OWNER) {
         throw PermissionDeniedException(
-            "`$operationName` operation requires the highest permission, while ${group.botPermission} == ${MemberPermission.OWNER}"
+            "`$operationName` operation requires the OWNER permission, while bot has ${group.botPermission}"
         )
     }
 }
