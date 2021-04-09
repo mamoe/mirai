@@ -193,10 +193,6 @@ internal class NormalMemberImpl constructor(
             MemberPermission.MEMBER
         }
 
-        check(origin != new) {
-            "Member ${this.id} is already $new"
-        }
-
         bot.network.run {
             val resp: TroopManagement.ModifyAdmin.Response = TroopManagement.ModifyAdmin(
                 client = bot.client,
@@ -205,7 +201,7 @@ internal class NormalMemberImpl constructor(
             ).sendAndExpect()
 
             check(resp.success) {
-                "modify admin failed: TODO"
+                "Failed to modify admin, cause: ${resp.msg}"
             }
 
             this@NormalMemberImpl.permission = new

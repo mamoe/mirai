@@ -379,9 +379,9 @@ internal class TroopManagement {
     }
 
     internal object ModifyAdmin : OutgoingPacketFactory<ModifyAdmin.Response>("OidbSvc.0x55c_1") {
-        data class Response(val success: Boolean) : Packet {
+        data class Response(val success: Boolean, val msg: String) : Packet {
             override fun toString(): String {
-                return "TroopManagement.ModifyAdmin.Response"
+                return "TroopManagement.ModifyAdmin.Response(success=${success}, msg=${msg})"
             }
         }
 
@@ -410,8 +410,13 @@ internal class TroopManagement {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ModifyAdmin.Response {
-            val stupidTencentCrapPkg = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
-            return ModifyAdmin.Response(stupidTencentCrapPkg.result == 0)
+            val ShaBiTengXunNengBuNengYuanDiBaoZha = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
+            return ShaBiTengXunNengBuNengYuanDiBaoZha.run {
+                ModifyAdmin.Response(
+                    this.result == 0,
+                    this.errorMsg
+                )
+            }
         }
 
     }
