@@ -6071,7 +6071,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun mkdir ()Z
 	public abstract fun mkdir (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveTo (Ljava/lang/String;)Z
-	public abstract fun moveTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun moveTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;)Z
 	public abstract fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameTo (Ljava/lang/String;)Z
