@@ -32,6 +32,7 @@
 [yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
 [Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
+[Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
 
 [Rhino]: https://github.com/mozilla/rhino
 [OneBot]: https://github.com/howmanybots/onebot
@@ -48,6 +49,7 @@
 | `C++`              | *Mirai Http*                 | [Chlorie/miraipp]                           |
 | `C#`               | *Mirai Http*                 | [Executor-Cheng/mirai-CSharp]               |
 | `C#`               | *Mirai Http*                 | [Hyperai][theGravityLab/ProjHyperai]        |
+| `C#`               | *WebSocket*                  | [Coloryr/ColorMirai]                        |
 | `Rust`             | *Mirai Http*                 | [HoshinoTented/mirai-rs]                    |
 | `JavaScript`       | [Rhino] / JVM                | [iTXTech/mirai-js]                          |
 | `JavaScript`       | Node.js / *Mirai Http*       | [RedBeanN/node-mirai]                       |
