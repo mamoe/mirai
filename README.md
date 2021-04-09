@@ -135,7 +135,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
 ## 赞助
-- 本着与更多 mirai 开发者、用户、支持者共建更好的学习环境为目的，mirai 自 2021 年 3 月 1 日发起官方社区的建设。社区建设可能涉及：[学习论坛](https://mirai.mamoe.net)、插件中心、发布平台。由于社区的运维需要经费，mirai 项目开启 sponsor 功能。
+- 本着与更多 mirai 开发者、用户、支持者共建更好的学习环境为目的，mirai 自 2021 年 3 月 1 日发起官方社区的建设。社区建设可能涉及：[学习论坛](https://mirai.mamoe.net)、[插件中心（在建）](https://github.com/project-mirai/mirai-plugin-center)等。由于社区的运维需要经费，mirai 项目开启 sponsor 功能。
 - 请注意，赞助是全自愿的。赞助者不会获得特权，不赞助也可以使用全部的功能。为资金管理方便，赞助后不设退款、折现等选项。最终解释权归社区运营团队所有。
 - 全部赞助金额、流向、票据单号等将<a href="https://github.com/project-mirai/mirai-sponsor/tree/main">透明化公示</a>，欢迎任何人随时查看及提出建议。
 
