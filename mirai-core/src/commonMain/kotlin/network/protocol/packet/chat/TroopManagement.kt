@@ -225,7 +225,7 @@ internal class TroopManagement {
             groupCode: Long,
             switch: Boolean
         ): OutgoingPacket = impl(client, groupCode) {
-            shutupTime = if (switch) 1 else 0
+            shutupTime = if (switch) 0x0FFFFFFF else 0
         }
 
         private inline fun impl(
