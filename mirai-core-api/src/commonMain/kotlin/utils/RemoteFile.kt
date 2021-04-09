@@ -266,9 +266,11 @@ public interface RemoteFile {
     public suspend fun renameTo(name: String): Boolean
 
     /**
-     * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
+     * 将这个目录或文件移动到 [target] 位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      *
      * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
+     *
+     * @param target 目标文件位置.
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
 
@@ -276,8 +278,25 @@ public interface RemoteFile {
      * 将这个目录或文件移动到另一个位置. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时返回 `false`.
      *
      * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
+     *
+     * **已弃用:** 当 [path] 是绝对路径时, 这个函数运行正常;
+     * 当它是相对路径时, 将会尝试把当前文件移动到 [RemoteFile.path] 下的子路径 [path], 因此总是失败.
+     *
+     * 使用参数为 [RemoteFile] 的 [moveTo] 代替.
+     *
+     * @suppress 在 2.6 弃用. 请使用 [moveTo]
      */
-    public suspend fun moveTo(path: String): Boolean
+    @Deprecated(
+        "Use moveTo(RemoteFile) instead.",
+        replaceWith = ReplaceWith("this.moveTo(this.resolveSibling(path))"),
+        level = DeprecationLevel.WARNING
+    )
+    public suspend fun moveTo(path: String): Boolean {
+        // Impl notes:
+        // if `path` is absolute, this works as intended.
+        // if not, `resolve(path)` will be a child path from this dir and fails always.
+        return moveTo(resolve(path))
+    }
 
     /**
      * 创建目录. 目录已经存在或无管理员权限时返回 `false`.

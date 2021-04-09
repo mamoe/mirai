@@ -418,7 +418,6 @@ internal class RemoteFileImpl(
     }
 
 
-    override suspend fun moveTo(path: String): Boolean = moveTo(resolve(path))
     override suspend fun mkdir(): Boolean {
         if (path == ROOT_PATH) return false
         if (!isBotOperator()) return false
