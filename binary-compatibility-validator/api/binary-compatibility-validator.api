@@ -169,6 +169,8 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun refreshKeys (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
 	public abstract fun sendGroupAnnouncement (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun sendGroupAnnouncementWithImage (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncementImage;Lnet/mamoe/mirai/data/GroupAnnouncement;)Ljava/lang/String;
+	public abstract fun sendGroupAnnouncementWithImage (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/data/GroupAnnouncementImage;Lnet/mamoe/mirai/data/GroupAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public synthetic fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)Lkotlin/Unit;
 	public fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZ)V
 	public abstract fun solveBotInvitedJoinGroupRequestEvent (Lnet/mamoe/mirai/Bot;JJJZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -179,6 +181,8 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public synthetic fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)Lkotlin/Unit;
 	public fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZ)V
 	public abstract fun solveNewFriendRequestEvent (Lnet/mamoe/mirai/Bot;JJLjava/lang/String;ZZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadGroupAnnouncementImage (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/data/GroupAnnouncementImage;
+	public abstract fun uploadGroupAnnouncementImage (Lnet/mamoe/mirai/Bot;JLnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/Mirai {
@@ -620,6 +624,7 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 public abstract interface class net/mamoe/mirai/data/Announcement {
 	public abstract fun getAnnouncementConfiguration ()Lnet/mamoe/mirai/data/AnnouncementConfiguration;
 	public abstract fun getBotId ()J
+	public abstract fun getImage ()Lnet/mamoe/mirai/utils/ExternalResource;
 	public abstract fun getMsg ()Ljava/lang/String;
 	public abstract fun getTitle ()Ljava/lang/String;
 	public abstract fun publish (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -645,10 +650,12 @@ public abstract interface class net/mamoe/mirai/data/AnnouncementConfigurationLa
 
 public final class net/mamoe/mirai/data/AnnouncementKt {
 	public static final fun AnnouncementConfiguration (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/data/AnnouncementConfiguration;
-	public static final fun BuildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementConfiguration;)Lnet/mamoe/mirai/data/Announcement;
-	public static final fun BuildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementConfigurationLambda;)Lnet/mamoe/mirai/data/Announcement;
-	public static synthetic fun BuildAnnouncement$default (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementConfiguration;ILjava/lang/Object;)Lnet/mamoe/mirai/data/Announcement;
-	public static final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementConfiguration;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun BuildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfiguration;)Lnet/mamoe/mirai/data/Announcement;
+	public static final fun BuildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfigurationLambda;)Lnet/mamoe/mirai/data/Announcement;
+	public static synthetic fun BuildAnnouncement$default (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfiguration;ILjava/lang/Object;)Lnet/mamoe/mirai/data/Announcement;
+	public static synthetic fun BuildAnnouncement$default (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfigurationLambda;ILjava/lang/Object;)Lnet/mamoe/mirai/data/Announcement;
+	public static final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfiguration;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/data/AnnouncementConfiguration;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
@@ -1003,6 +1010,39 @@ public final class net/mamoe/mirai/data/GroupAnnouncement$$serializer : kotlinx/
 }
 
 public final class net/mamoe/mirai/data/GroupAnnouncement$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/data/GroupAnnouncementImage {
+	public static final field Companion Lnet/mamoe/mirai/data/GroupAnnouncementImage$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/data/GroupAnnouncementImage;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupAnnouncementImage;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupAnnouncementImage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getWidth ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupAnnouncementImage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/data/GroupAnnouncementImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncementImage$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncementImage;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupAnnouncementImage;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/data/GroupAnnouncementImage$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

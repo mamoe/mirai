@@ -60,3 +60,11 @@ public data class GroupAnnouncementSettings(
     @SerialName("tip_window_type") val tipWindowType: Int = 0,  //是否用弹窗展示   1 不使用
     @SerialName("confirm_required") val confirmRequired: Int = 0 // 是否需要确认收到 1 需要
 )
+
+@MiraiExperimentalApi
+@Serializable
+public data class GroupAnnouncementImage(
+    @SerialName("h") val height:String,
+    @SerialName("w") val width:String,
+    @SerialName("id") val id:String
+)

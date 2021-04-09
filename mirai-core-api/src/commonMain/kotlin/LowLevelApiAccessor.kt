@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
@@ -141,6 +142,18 @@ public interface LowLevelApiAccessor {
     ): GroupAnnouncementList
 
     /**
+     * 上传群公告的所需要的一个图片，但不发送
+     *
+     */
+    @LowLevelApi
+    @MiraiExperimentalApi
+    public suspend fun uploadGroupAnnouncementImage(
+        bot: Bot,
+        groupId: Long,
+        resource: ExternalResource
+    ): GroupAnnouncementImage
+
+    /**
      * 发送群公告
      *
      * @return 公告的fid
@@ -153,6 +166,19 @@ public interface LowLevelApiAccessor {
         announcement: GroupAnnouncement
     ): String
 
+    /**
+     * 发送包含图片的群公告
+     *
+     * @return 公告的fid
+     */
+    @LowLevelApi
+    @MiraiExperimentalApi
+    public suspend fun sendGroupAnnouncementWithImage(
+        bot: Bot,
+        groupId: Long,
+        image: GroupAnnouncementImage,
+        announcement: GroupAnnouncement
+    ):String
 
     /**
      * 删除群公告
