@@ -22,7 +22,7 @@ repositories {
     maven("https://maven.aliyun.com/repository/public")
 }
 
-version = "2.6-RC"
+version = Versions.intellij
 description = "IntelliJ plugin for Mirai Console"
 
 // JVM fails to compile
