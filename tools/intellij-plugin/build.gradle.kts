@@ -22,7 +22,7 @@ repositories {
     maven("https://maven.aliyun.com/repository/public")
 }
 
-version = Versions.console
+version = "2.6-RC"
 description = "IntelliJ plugin for Mirai Console"
 
 // JVM fails to compile
@@ -41,8 +41,7 @@ intellij {
     setPlugins(
         "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
         "java",
-        "gradle",
-        "maven"
+        "gradle"
     )
 }
 
