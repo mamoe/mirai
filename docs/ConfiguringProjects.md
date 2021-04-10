@@ -11,7 +11,7 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             2.5.0              |
+|  稳定   |             2.5.2              |
 |  预览   |             2.6-M2             |
 |  开发   | [![Version]][Bintray Download] |
 
@@ -32,11 +32,11 @@
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.4.31" // 确保添加 Kotlin
+    kotlin("jvm") version "1.4.32" // 确保添加 Kotlin
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "2.5.0")
+    api("net.mamoe", "mirai-core", "2.5.2")
 }
 ```
 
@@ -52,11 +52,11 @@ dependencies {
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.31' // 确保添加 Kotlin
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32' // 确保添加 Kotlin
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '2.5.0')
+    api('net.mamoe', 'mirai-core', '2.5.2')
 }
 ```
 
@@ -69,7 +69,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.5.0"
+    val miraiVersion = "2.5.2"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -85,7 +85,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.2</version>
     </dependency>
 </dependencies>
 ```
@@ -97,7 +97,7 @@ dependencies {
 
 ```xml
 <properties>
-    <kotlin.version>1.4.31</kotlin.version>
+    <kotlin.version>1.4.32</kotlin.version>
 </properties>
 ```
 ```xml
