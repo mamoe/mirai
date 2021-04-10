@@ -239,13 +239,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * @throws IllegalStateException 当前端实例不是 `this` 时抛出
      */
     public val backendAccess: BackendAccess
-        get() {
-            if (instanceInitialized) {
-                if (this === instance)
-                    return backendAccessInstance
-            }
-            throw IllegalStateException("Permission denied")
-        }
+        get() = backendAccessInstance
 
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
