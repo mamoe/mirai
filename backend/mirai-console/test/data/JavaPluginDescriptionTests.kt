@@ -9,33 +9,28 @@
 package data
 
 import net.mamoe.mirai.console.AbstractConsoleTest
-import net.mamoe.mirai.console.data.Value
-import net.mamoe.mirai.console.data.java.JAutoSavePluginData
-import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 @Suppress("unused")
 class JavaPluginDescriptionTests : AbstractConsoleTest() {
 
-    @Test
-    fun testSimpleValue() {
-        class MyJavaData : JAutoSavePluginData("data") {
-            val list: Value<String> = value("str")
-        }
-
-        val d = MyJavaData()
-        mockPlugin.reloadPluginData(d)
-        assertEquals("str", d.list.value)
-    }
-
-    @Test
-    fun testValueSet() {
-        class MyJavaData : JAutoSavePluginData("data") {
-            val list: Value<Set<String>> = typedValue(createKType(MutableSet::class.java, createKType(String::class.java)))
-        }
-
-        mockPlugin.reloadPluginData(MyJavaData())
-    }
+//    @Test
+//    fun testSimpleValue() {
+//        class MyJavaData : JAutoSavePluginData("data") {
+//            val list: Value<String> = value("str")
+//        }
+//
+//        val d = MyJavaData()
+//        mockPlugin.reloadPluginData(d)
+//        assertEquals("str", d.list.value)
+//    }
+//
+//    @Test
+//    fun testValueSet() {
+//        class MyJavaData : JAutoSavePluginData("data") {
+//            val list: Value<Set<String>> = typedValue(createKType(MutableSet::class.java, createKType(String::class.java)))
+//        }
+//
+//        mockPlugin.reloadPluginData(MyJavaData())
+//    }
 
 }
