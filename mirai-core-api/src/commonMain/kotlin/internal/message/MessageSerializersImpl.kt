@@ -192,7 +192,11 @@ private val builtInSerializersModule by lazy {
 internal object MessageSerializersImpl : MessageSerializers {
     @Volatile
     private var serializersModuleField: SerializersModule? = null
-    override val serializersModule: SerializersModule get() = serializersModuleField ?: builtInSerializersModule
+    override val serializersModule: SerializersModule
+        get() {
+            Mirai // ensure registered, for tests
+            return serializersModuleField ?: builtInSerializersModule
+        }
 
     @Synchronized
     override fun <M : SingleMessage> registerSerializer(type: KClass<M>, serializer: KSerializer<M>) {

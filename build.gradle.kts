@@ -70,6 +70,7 @@ tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
 }
 
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
+postktcompile.PostKotlinCompile.run { registerForAll(rootProject) }
 
 allprojects {
     group = "net.mamoe"
@@ -206,39 +207,6 @@ fun Project.configureMppShadow() {
                 "Implementation-Version" to this.version.toString()
             )
         }*/
-        }
-    }
-
-    fun Project.configureEncoding() {
-        tasks.withType(JavaCompile::class.java) {
-            options.encoding = "UTF8"
-        }
-    }
-
-    fun Project.configureKotlinTestSettings() {
-        tasks.withType(Test::class) {
-            useJUnitPlatform()
-        }
-        when {
-            isKotlinJvmProject -> {
-                dependencies {
-                    testImplementation(kotlin("test-junit5"))
-
-                    testApi("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
-                }
-            }
-            isKotlinMpp -> {
-                kotlinSourceSets?.forEach { sourceSet ->
-                    if (sourceSet.name.endsWith("test", ignoreCase = true)) {
-                        sourceSet.dependencies {
-                            api(kotlin("test-junit5"))
-                            api("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                            runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
-                        }
-                    }
-                }
-            }
         }
     }
 }

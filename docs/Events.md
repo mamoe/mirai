@@ -459,7 +459,7 @@ val event: BotNudgedEvent = nextEvent<BotNudgedEvent>(5000) { it.bot.id == 12345
 ```kotlin
 MyCoroutineScope.subscribeAlways<GroupMessageEvent> {
     if (message.contentEquals("ocr")) {
-        reply("请发送你要进行 OCR 的图片或图片链接")
+        subject.sendMessage("请发送你要进行 OCR 的图片或图片链接")
         val image: InputStream = selectMessages {
             has<Image> { URL(it.queryUrl()).openStream() }
             has<PlainText> { URL(it.content).openStream() }
@@ -468,7 +468,7 @@ MyCoroutineScope.subscribeAlways<GroupMessageEvent> {
         } ?: return@subscribeAlways
         
         val result = ocr(image)
-        quoteReply(result)
+        subject.sendMessage(message.quote() + result)
     }
 }
 ```
@@ -493,15 +493,15 @@ val image = when (下一条消息) {
 `whileSelectMessages`：挂起当前协程，等待任意一个事件监听器返回 `false` 后返回。
 
 ```kotlin
-reply("开启复读模式")
+subject.sendMessage("开启复读模式")
 whileSelectMessages {
     "stop" {
-        reply("已关闭复读")
+        subject.sendMessage("已关闭复读")
         false // 停止循环
     }
     // 也可以使用 startsWith("") { true } 等 DSL
     default {
-        reply(message)
+        subject.sendMessage(message)
         true // 继续循环
     }
     timeout(3000) {
@@ -509,7 +509,7 @@ whileSelectMessages {
         true
     }
 } // 等待直到 `false`
-reply("复读模式结束")
+subject.sendMessage("复读模式结束")
 ```
 
 > 回到 [目录](#目录)

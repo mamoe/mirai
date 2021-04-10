@@ -62,10 +62,10 @@ jobs:
           fillBuildConstants --scan
 
       - name: Assemble
-        run: ./gradlew assemble --scan
+        run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
 
       - name: Check
-        run: ./gradlew check --scan
+        run: ./gradlew check -Pmirai.pkc.check.enable --scan
 
       - name: Gradle :mirai-core-utils:publish
         run: >

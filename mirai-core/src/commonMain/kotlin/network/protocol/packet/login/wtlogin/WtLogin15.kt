@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
-import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
@@ -23,7 +23,7 @@ internal object WtLogin15 : WtLoginExt {
 
     operator fun invoke(
         client: QQAndroidClient,
-    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = ByteArray(16)) { sequenceId ->
+    ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(client, bodyType = 2, key = ByteArray(16)) {
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(
             client,
@@ -87,7 +87,8 @@ internal object WtLogin15 : WtLoginExt {
             t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
 
             t107(0)
-            // t108(client.ksid) // 第一次 exchange 没有 108
+
+            //t108(client.ksid) // 第一次 exchange 没有 108
             t144(client)
             t142(client.apkId)
             t145(client.device.guid)
@@ -129,6 +130,7 @@ internal object WtLogin15 : WtLoginExt {
     }
 }
 
+@Suppress("FunctionName", "SpellCheckingInspection")
 internal fun get_mpasswd(): String {
     var var5: String
     val random = Random()

@@ -43,14 +43,16 @@ object Versions {
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
     const val asm = "9.1"
+    const val difflib = "1.3.0"
 
+    const val junit = "5.4.2"
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
-    const val yamlkt = "0.7.5"
-    const val intellijGradlePlugin = "0.4.16"
-    const val kotlinIntellijPlugin = "203-1.4.30-release-IJ7148.5" // keep to newest as kotlinCompiler
-    const val intellij = "2020.3.2" // don't update easily unless you want your disk space -= 500MB
+    const val yamlkt = "0.9.0"
+    const val intellijGradlePlugin = "0.7.2"
+    const val kotlinIntellijPlugin = "211-1.4.32-release-IJ6693.72" // keep to newest as kotlinCompiler
+    const val intellij = "2021.1" // don't update easily unless you want your disk space -= 500MB
 
 }
 

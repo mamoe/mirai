@@ -75,8 +75,8 @@ fun Project.configureKotlinTestSettings() {
             dependencies {
                 "testImplementation"(kotlin("test-junit5"))
 
-                "testApi"("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                "testApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
             }
         }
         isKotlinMpp -> {
@@ -90,8 +90,8 @@ fun Project.configureKotlinTestSettings() {
                     sourceSet.dependencies {
                         implementation(kotlin("test-junit5"))
 
-                        implementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
-                        implementation("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                        implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+                        implementation("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
                     }
                 }
             }
@@ -138,6 +138,8 @@ fun KotlinSourceSet.configureKotlinExperimentalUsages() {
 }
 
 fun Project.configureFlattenSourceSets() {
+    val flatten = extra.runCatching { get("flatten.sourceset") }.getOrNull()?.toString()?.toBoolean() ?: true
+    if (!flatten) return
     sourceSets {
         findByName("main")?.apply {
             resources.setSrcDirs(listOf(projectDir.resolve("resources")))

@@ -15,8 +15,8 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.readUShort
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
@@ -26,45 +26,48 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 
+/**
+ * 只在手动构造 [OfflineMessageSource] 时调用
+ */
 internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
-    botId: Long,
+    bot: Bot,
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
-        joinToMessageChain(elements, groupIdOrZero, messageSourceKind, botId, this)
-    }.cleanupRubbishMessageElements()
+        joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, this)
+    }.cleanupRubbishMessageElements().refineLight(bot)
 }
 
 
-internal fun List<MsgComm.Msg>.toMessageChainOnline(
+internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     bot: Bot,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
-    return toMessageChain(bot, bot.id, groupIdOrZero, true, messageSourceKind)
+    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot)
 }
 
-internal fun List<MsgComm.Msg>.toMessageChainOffline(
-    bot: Bot,
-    groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
-): MessageChain {
-    return toMessageChain(bot, bot.id, groupIdOrZero, false, messageSourceKind)
-}
+//internal fun List<MsgComm.Msg>.toMessageChainOffline(
+//    bot: Bot,
+//    groupIdOrZero: Long,
+//    messageSourceKind: MessageSourceKind
+//): MessageChain {
+//    return toMessageChain(bot, groupIdOrZero, false, messageSourceKind).refineLight(bot)
+//}
 
 internal fun List<MsgComm.Msg>.toMessageChainNoSource(
-    botId: Long,
+    bot: Bot,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind
 ): MessageChain {
-    return toMessageChain(null, botId, groupIdOrZero, null, messageSourceKind)
+    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot)
 }
 
+
 private fun List<MsgComm.Msg>.toMessageChain(
-    bot: Bot?,
-    botId: Long,
+    bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean?,
     messageSourceKind: MessageSourceKind
@@ -77,11 +80,10 @@ private fun List<MsgComm.Msg>.toMessageChain(
     val builder = MessageChainBuilder(elements.size)
 
     if (onlineSource != null) {
-        checkNotNull(bot)
         builder.add(ReceiveMessageTransformer.createMessageSource(bot, onlineSource, messageSourceKind, messageList))
     }
 
-    joinToMessageChain(elements, groupIdOrZero, messageSourceKind, botId, builder)
+    joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, builder)
 
     for (msg in messageList) {
         msg.msgBody.richText.ptt?.toVoice()?.let { builder.add(it) }
@@ -94,7 +96,7 @@ private fun List<MsgComm.Msg>.toMessageChain(
  * 接收消息的解析器. 将 [MsgComm.Msg] 转换为对应的 [SingleMessage]
  * @see joinToMessageChain
  */
-private object ReceiveMessageTransformer {
+internal object ReceiveMessageTransformer {
     fun createMessageSource(
         bot: Bot,
         onlineSource: Boolean,
@@ -120,12 +122,13 @@ private object ReceiveMessageTransformer {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        botId: Long,
+        bot: Bot,
         builder: MessageChainBuilder
     ) {
+//        ProtoBuf.encodeToHexString(elements).soutv("join")
         // (this._miraiContentToString().soutv())
         for (element in elements) {
-            transformElement(element, groupIdOrZero, messageSourceKind, botId, builder)
+            transformElement(element, groupIdOrZero, messageSourceKind, bot, builder)
             when {
                 element.richMsg != null -> decodeRichMessage(element.richMsg, builder)
             }
@@ -136,11 +139,11 @@ private object ReceiveMessageTransformer {
         element: ImMsgBody.Elem,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        botId: Long,
+        bot: Bot,
         builder: MessageChainBuilder
     ) {
         when {
-            element.srcMsg != null -> decodeSrcMsg(element.srcMsg, builder, botId, messageSourceKind, groupIdOrZero)
+            element.srcMsg != null -> decodeSrcMsg(element.srcMsg, builder, bot, messageSourceKind, groupIdOrZero)
             element.notOnlineImage != null -> builder.add(OnlineFriendImageImpl(element.notOnlineImage))
             element.customFace != null -> decodeCustomFace(element.customFace, builder)
             element.face != null -> builder.add(Face(element.face.index))
@@ -281,11 +284,11 @@ private object ReceiveMessageTransformer {
     private fun decodeSrcMsg(
         srcMsg: ImMsgBody.SourceMsg,
         list: MessageChainBuilder,
-        botId: Long,
+        bot: Bot,
         messageSourceKind: MessageSourceKind,
         groupIdOrZero: Long
     ) {
-        list.add(QuoteReply(OfflineMessageSourceImplData(srcMsg, botId, messageSourceKind, groupIdOrZero)))
+        list.add(QuoteReply(OfflineMessageSourceImplData(srcMsg, bot, messageSourceKind, groupIdOrZero)))
     }
 
     private fun decodeCustomFace(
@@ -507,43 +510,4 @@ private object ReceiveMessageTransformer {
         format,
         kotlinx.io.core.String(downPara)
     )
-}
-
-/**
- * 解析 [ForwardMessageInternal], [LongMessageInternal]
- * 并处理换行符问题
- */
-internal suspend fun MessageChain.refine(contact: Contact): MessageChain {
-    val convertLineSeparator = contact.bot.asQQAndroidBot().configuration.convertLineSeparator
-
-    if (none {
-            it is RefinableMessage
-                    || (it is PlainText && convertLineSeparator && it.content.contains('\r'))
-        }
-    ) return this
-
-
-    val builder = MessageChainBuilder(this.size)
-    for (singleMessage in this) {
-        if (singleMessage is RefinableMessage) {
-            val v = singleMessage.refine(contact, this)
-            if (v != null) builder.add(v)
-        } else if (singleMessage is PlainText && convertLineSeparator) {
-            val content = singleMessage.content
-            if (content.contains('\r')) {
-                builder.add(
-                    PlainText(
-                        content
-                            .replace("\r\n", "\n")
-                            .replace('\r', '\n')
-                    )
-                )
-            } else {
-                builder.add(singleMessage)
-            }
-        } else {
-            builder.add(singleMessage)
-        }
-    }
-    return builder.build()
 }

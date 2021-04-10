@@ -16,14 +16,12 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.message.refine
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -122,7 +120,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         if (isFromSelfAccount) {
             return GroupMessageSyncEvent(
-                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP),
                 time = msgHead.msgTime,
                 group = group,
                 sender = sender,
@@ -135,7 +133,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             return GroupMessageEvent(
                 senderName = name,
                 sender = sender,
-                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP).refine(group),
+                message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP),
                 permission = sender.permission,
                 time = msgHead.msgTime
             )

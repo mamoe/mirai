@@ -117,7 +117,7 @@ internal fun OfflineMessageSourceImplData(
         fromId = head.fromUin,
         targetId = head.groupInfo?.groupCode ?: head.toUin,
         originalMessage = delegate.toMessageChainNoSource(
-            bot.id,
+            bot,
             groupIdOrZero = head.groupInfo?.groupCode ?: 0,
             messageSourceKind = kind
         ),
@@ -151,7 +151,7 @@ internal fun OfflineMessageSourceImplData(
 
 internal fun OfflineMessageSourceImplData(
     delegate: ImMsgBody.SourceMsg,
-    botId: Long,
+    bot: Bot,
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long,
 ): OfflineMessageSourceImplData {
@@ -161,7 +161,7 @@ internal fun OfflineMessageSourceImplData(
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessageLazy = lazy { delegate.toMessageChainNoSource(botId, messageSourceKind, groupIdOrZero) },
+        originalMessageLazy = lazy { delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero) },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
@@ -176,7 +176,7 @@ internal fun OfflineMessageSourceImplData(
             }"
             )*/
         },
-        botId = botId
+        botId = bot.id
     ).apply {
         jceData = delegate
     }

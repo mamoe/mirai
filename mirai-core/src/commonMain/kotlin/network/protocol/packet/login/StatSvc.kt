@@ -27,10 +27,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.network.FriendListCache
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.getRandomByteArray
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline

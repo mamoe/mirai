@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
-import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.GuidSource
@@ -74,13 +74,7 @@ internal object WtLogin10 : WtLoginExt {
                 t187(client.device.macAddress)
                 t188(client.device.androidId)
                 t194(client.device.imsiMd5)
-                t511(
-                    listOf(
-                        "tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
-                        "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
-                        "office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com"
-                    )
-                )
+                t511()
                 //t544()
 
             }

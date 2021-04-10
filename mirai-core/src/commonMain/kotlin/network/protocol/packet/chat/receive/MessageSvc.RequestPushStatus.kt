@@ -29,7 +29,6 @@ internal object MessageSvcRequestPushStatus : IncomingPacketFactory<Packet?>(
         bot.otherClientsLock.withLock {
             val instanceInfo = packet.vecInstanceList?.firstOrNull()
             val appId = instanceInfo?.iAppId ?: 1
-            val platformId = instanceInfo?.iPlatform?.toInt()
             return when (packet.status.toInt()) {
                 1 -> { // online
                     if (bot.otherClients.any { appId == it.appId }) return null

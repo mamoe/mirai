@@ -9,10 +9,6 @@
 
 package net.mamoe.mirai.internal.utils
 
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Contact
@@ -24,6 +20,7 @@ import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
@@ -33,9 +30,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.RemoteFile.Companion.ROOT_PATH
-import java.io.File
 import java.util.*
 import kotlin.contracts.contract
 
@@ -194,9 +189,6 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun isFile(): Boolean = this.getFileFolderInfo().checkExists(this.path).isFile
-
-    // compiler bug
-    override suspend fun isDirectory(): Boolean = !isFile()
     override suspend fun length(): Long = this.getFileFolderInfo().checkExists(this.path).size
     override suspend fun exists(): Boolean = this.getFileFolderInfo() != null
     override suspend fun getInfo(): RemoteFile.FileInfo? {
@@ -259,9 +251,6 @@ internal class RemoteFileImpl(
         }
     }
 
-    // compiler bug
-    override suspend fun listFilesCollection(): List<RemoteFile> = listFiles().toList()
-
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(JavaFriendlyAPI::class)
     override suspend fun listFilesIterator(lazy: Boolean): Iterator<RemoteFile> {
@@ -310,11 +299,23 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun resolveById(id: String, deep: Boolean): RemoteFile? {
-        return getFilesFlow().filter { it.id == id }.firstOrNull()?.resolveToFile()
+        if (this.id == id) return this
+        val dirs = mutableListOf<Oidb0x6d8.GetFileListRspBody.Item>()
+        getFilesFlow().mapNotNull { item ->
+            when {
+                item.id == id -> item.resolveToFile()
+                deep && item.folderInfo != null -> {
+                    dirs.add(item)
+                    null
+                }
+                else -> null
+            }
+        }.firstOrNull()?.let { return it }
+        for (dir in dirs) {
+            dir.resolveToFile()?.resolveById(id, deep)?.let { return it }
+        }
+        return null
     }
-
-    // compiler bug
-    override suspend fun resolveById(id: String): RemoteFile? = resolveById(id, deep = true)
 
     override fun resolveSibling(relative: String): RemoteFileImpl {
         val parent = this.parent
@@ -418,7 +419,6 @@ internal class RemoteFileImpl(
     }
 
 
-    override suspend fun moveTo(path: String): Boolean = moveTo(resolve(path))
     override suspend fun mkdir(): Boolean {
         if (path == ROOT_PATH) return false
         if (!isBotOperator()) return false
@@ -524,33 +524,9 @@ internal class RemoteFileImpl(
         )
     }
 
-    // compiler bug
-    override suspend fun upload(resource: ExternalResource): FileMessage {
-        return upload(resource, null)
-    }
-
-    // compiler bug
-    override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
-        file.toExternalResource().use { upload(it, callback) }
-
-    //compiler bug
-    override suspend fun upload(file: File): FileMessage {
-        // Dear compiler:
-        //
-        // Please generate invokeinterface.
-        //
-        // Yours Sincerely
-        // Him188
-        return file.toExternalResource().use { upload(it) }
-    }
-
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         return upload(resource).sendTo(contact)
     }
-
-    // compiler bug
-    override suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
-        file.toExternalResource().use { uploadAndSend(it) }
 
 //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
 //    }

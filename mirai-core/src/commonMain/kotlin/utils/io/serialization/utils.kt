@@ -52,7 +52,9 @@ internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
 ): T {
-    return Tars.UTF_8.load(serializer, this.readPacketExact(length))
+    this.readPacketExact(length).use {
+        return Tars.UTF_8.load(serializer, it)
+    }
 }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceRequestPacket(
