@@ -193,6 +193,8 @@ internal class NormalMemberImpl constructor(
             MemberPermission.MEMBER
         }
 
+        if (origin == new) return
+
         bot.network.run {
             val resp: TroopManagement.ModifyAdmin.Response = TroopManagement.ModifyAdmin(
                 client = bot.client,
