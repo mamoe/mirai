@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.console
 
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import org.junit.jupiter.api.AfterEach
@@ -25,6 +26,6 @@ abstract class AbstractConsoleTest {
 
     @AfterEach
     fun afterTest() {
-        MiraiConsole.cancel()
+        runBlocking { MiraiConsole.job.cancelAndJoin() }
     }
 }

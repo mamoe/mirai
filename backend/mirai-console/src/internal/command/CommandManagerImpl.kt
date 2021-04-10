@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.console.internal.command
@@ -83,22 +83,22 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
             throw IllegalStateException("Failed to init command ${command}.", it)
         }
 
-        this@CommandManagerImpl.modifyLock.withLock {
+        modifyLock.withLock {
             if (!override) {
                 if (command.findDuplicate() != null) return false
             }
-            this@CommandManagerImpl._registeredCommands.add(command)
+            _registeredCommands.add(command)
             if (command.prefixOptional) {
                 for (name in command.allNames) {
                     val lowerCaseName = name.toLowerCase()
-                    this@CommandManagerImpl.optionalPrefixCommandMap[lowerCaseName] = command
-                    this@CommandManagerImpl.requiredPrefixCommandMap[lowerCaseName] = command
+                    optionalPrefixCommandMap[lowerCaseName] = command
+                    requiredPrefixCommandMap[lowerCaseName] = command
                 }
             } else {
                 for (name in command.allNames) {
                     val lowerCaseName = name.toLowerCase()
-                    this@CommandManagerImpl.optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
-                    this@CommandManagerImpl.requiredPrefixCommandMap[lowerCaseName] = command
+                    optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
+                    requiredPrefixCommandMap[lowerCaseName] = command
                 }
             }
             return true
