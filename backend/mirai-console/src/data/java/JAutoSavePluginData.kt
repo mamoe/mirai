@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused", "EXPOSED_SUPER_CLASS")
@@ -16,9 +16,12 @@ import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.setValueBySerializer
 import net.mamoe.mirai.console.internal.data.valueImpl
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
+import kotlin.reflect.KVariance
 import kotlin.reflect.full.createType
 
 /**
@@ -120,16 +123,16 @@ public abstract class JAutoSavePluginData public constructor(saveName: String) :
     /**
      * 构造一个支持泛型的 [Value].
      *
-     * 对于 [Map], [Set], [List] 等标准库类型, 这个函数会尝试构造 [LinkedHashMap], [LinkedHashSet], [ArrayList] 等相关类型.
+     * 对于 [Map], [Set], [List], [ConcurrentMap] 等标准库类型, 这个函数会尝试构造 [LinkedHashMap], [LinkedHashSet], [ArrayList], [ConcurrentHashMap] 等相关类型.
      * 而对于自定义数据类型, 本函数只会反射获取 [objectInstance][KClass.objectInstance] 或使用*无参构造器*构造实例.
      *
      * @param type Kotlin 类型. 可通过 [createKType] 获得
      *
      * @param T 类型 T. 仅支持:
      * - 基础数据类型, [String]
-     * - 标准库集合类型 ([List], [Map], [Set])
+     * - 标准库集合类型 ([List], [Map], [Set], [ConcurrentMap])
      * - 标准库数据类型 ([Map.Entry], [Pair], [Triple])
-     * - 使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的类
+     * - 使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的 **Kotlin** 类
      */
     @JvmOverloads
     public fun <T : Any> typedValue(type: KType, default: T? = null): SerializerAwareValue<T> {
@@ -151,7 +154,7 @@ public abstract class JAutoSavePluginData public constructor(saveName: String) :
          */
         @JvmStatic
         public fun <T : Any> createKType(clazz: Class<T>, nullable: Boolean, vararg genericArguments: KType): KType {
-            return clazz.kotlin.createType(genericArguments.map { KTypeProjection(null, it) }, nullable)
+            return clazz.kotlin.createType(genericArguments.map { KTypeProjection(KVariance.INVARIANT, it) }, nullable)
         }
 
         /**
