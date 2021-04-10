@@ -65,6 +65,12 @@ public interface NormalMember : Member {
     public val muteTimeRemaining: Int
 
     /**
+     * 当该群员处于禁言状态时返回 `true`.
+     * @since 2.6
+     */
+    public val isMuted: Boolean get() = muteTimeRemaining != 0
+
+    /**
      * 入群时间. 单位为秒.
      *
      * @since 2.1
@@ -161,12 +167,6 @@ public val UserOrBot.nameCardOrNick: String
     }
 
 /**
- * 判断群成员是否处于禁言状态.
- */
-public val NormalMember.isMuted: Boolean
-    get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
-
-/**
  * @see Member.mute
  */
 @ExperimentalTime
@@ -182,3 +182,12 @@ public suspend inline fun NormalMember.mute(duration: Duration) {
 public suspend inline fun NormalMember.mute00(duration: Duration) {
     return mute(duration)
 }
+
+/**
+ * 判断群成员是否处于禁言状态.
+ * @suppress 在 2.6 移入了 [NormalMember] 成员函数. 保留二进制兼容.
+ */
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXTENSION_SHADOWED_BY_MEMBER")
+@kotlin.internal.LowPriorityInOverloadResolution
+public val NormalMember.isMuted: Boolean
+    get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
