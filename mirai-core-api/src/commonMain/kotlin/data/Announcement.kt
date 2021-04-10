@@ -184,19 +184,19 @@ public inline fun AnnouncementParameters(block: AnnouncementParameters.() -> Uni
  *
  * @param title 公告标题
  * @param msg 公告内容
- * @param parameters 公告设置
+ * @param announcementParameters 公告设置
  */
 @MiraiExperimentalApi
 public suspend fun Group.sendAnnouncement(
     title: String,
     msg: String,
-    parameters: AnnouncementParameters = AnnouncementParameters()
+    announcementParameters: AnnouncementParameters = AnnouncementParameters()
 ) {
     checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
     Mirai.sendGroupAnnouncement(
         bot,
         id,
-        AnnouncementImpl(bot.id, title, msg, parameters).covertToGroupAnnouncement()
+        AnnouncementImpl(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
     )
 }
 
