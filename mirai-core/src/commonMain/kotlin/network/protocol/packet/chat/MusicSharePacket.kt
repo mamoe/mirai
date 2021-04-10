@@ -13,6 +13,7 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.clientVersion
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbCmd0xb77
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory

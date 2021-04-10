@@ -5578,6 +5578,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getHeartbeatTimeoutMillis ()J
 	public final fun getHighwayUploadCoroutineCount ()I
 	public final fun getJson ()Lkotlinx/serialization/json/Json;
+	public final fun getLoginCacheEnabled ()Z
 	public final fun getLoginSolver ()Lnet/mamoe/mirai/utils/LoginSolver;
 	public final fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
 	public final fun getParentCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
@@ -5621,6 +5622,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setHeartbeatTimeoutMillis (J)V
 	public final fun setHighwayUploadCoroutineCount (I)V
 	public final fun setJson (Lkotlinx/serialization/json/Json;)V
+	public final fun setLoginCacheEnabled (Z)V
 	public final fun setLoginSolver (Lnet/mamoe/mirai/utils/LoginSolver;)V
 	public final fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
 	public final fun setParentCoroutineContext (Lkotlin/coroutines/CoroutineContext;)V

@@ -11,6 +11,9 @@ package net.mamoe.mirai.internal.network.protocol.packet.login
 
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.AbstractEvent
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.DebuggingProperties.SHOW_TLV_MAP_ON_LOGIN_SUCCESS
@@ -95,43 +98,55 @@ internal class WtLogin {
         }
 
 
-        sealed class LoginPacketResponse : Packet {
-            object Success : LoginPacketResponse() {
+        sealed class LoginPacketResponse : Packet, BotEvent, Packet.NoEventLog, AbstractEvent() {
+            class Success(override val bot: Bot) : LoginPacketResponse() {
                 override fun toString(): String = "LoginPacketResponse.Success"
             }
 
             data class Error(
+                override val bot: Bot,
                 val code: Int,
                 val title: String,
                 val message: String,
-                val errorInfo: String
+                val errorInfo: String,
             ) : LoginPacketResponse()
 
             sealed class Captcha : LoginPacketResponse() {
 
                 class Slider(
-                    val url: String
+                    override val bot: Bot,
+                    val url: String,
                 ) : Captcha() {
                     override fun toString(): String = "LoginPacketResponse.Captcha.Slider"
                 }
 
                 class Picture(
+                    override val bot: Bot,
                     val data: ByteArray,
-                    val sign: ByteArray
+                    val sign: ByteArray,
                 ) : Captcha() {
                     override fun toString(): String = "LoginPacketResponse.Captcha.Picture"
                 }
             }
 
-            data class UnsafeLogin(val url: String) : LoginPacketResponse()
+            data class UnsafeLogin(
+                override val bot: Bot,
+                val url: String,
+            ) : LoginPacketResponse()
 
-            class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
+            class SMSVerifyCodeNeeded(
+                override val bot: Bot,
+                val t402: ByteArray,
+                val t403: ByteArray,
+            ) : LoginPacketResponse() {
                 override fun toString(): String {
                     return "LoginPacketResponse.SMSVerifyCodeNeeded(t402=${t402.toUHexString()}, t403=${t403.toUHexString()})"
                 }
             }
 
-            object DeviceLockLogin : LoginPacketResponse() {
+            class DeviceLockLogin(
+                override val bot: Bot,
+            ) : LoginPacketResponse() {
                 override fun toString(): String = "WtLogin.Login.LoginPacketResponse.DeviceLockLogin"
             }
         }
@@ -165,11 +180,11 @@ internal class WtLogin {
             return when (type.toInt()) {
                 0 -> onLoginSuccess(subCommand, tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
-                160, 239 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
+                160, 239 /*-96*/ -> onUnsafeDeviceLogin(tlvMap, bot)
                 204 /*-52*/ -> onDevLockLogin(tlvMap, bot)
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
-                    onErrorMessage(type.toInt(), tlvMap)
+                    onErrorMessage(type.toInt(), tlvMap, bot)
                         ?: error("Cannot find error message, unknown login result type: $type, TLVMap = ${tlvMap._miraiContentToString()}")
                 }
             }
@@ -186,11 +201,11 @@ internal class WtLogin {
                 client.G = (client.device.guid + client.dpwd + tlvMap.getOrFail(0x402)).md5()
             }
             // println("403： " + tlvMap[0x403]?.toUHexString())
-            return LoginPacketResponse.DeviceLockLogin
+            return LoginPacketResponse.DeviceLockLogin(bot)
         }
 
-        private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
-            return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).encodeToString())
+        private fun onUnsafeDeviceLogin(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {
+            return LoginPacketResponse.UnsafeLogin(bot, tlvMap.getOrFail(0x204).encodeToString())
         }
 
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
@@ -207,7 +222,7 @@ internal class WtLogin {
             // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
             bot.client.t104 = tlvMap.getOrFail(0x104)
             tlvMap[0x192]?.let {
-                return LoginPacketResponse.Captcha.Slider(it.encodeToString())
+                return LoginPacketResponse.Captcha.Slider(bot, it.encodeToString())
             }
             tlvMap[0x165]?.let {
                 // if (question[18].toInt() == 0x36) {
@@ -220,8 +235,8 @@ internal class WtLogin {
                     val sign = imageData.readBytes(signInfoLength.toInt())
 
                     LoginPacketResponse.Captcha.Picture(
-                        data = imageData.readBytes(),
-                        sign = sign
+                        bot,
+                        data = imageData.readBytes(), sign = sign
                     )
                 }
                 // } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}, tlvMap=" + tlvMap.contentToString())
@@ -374,7 +389,7 @@ internal class WtLogin {
                     if (client.wLoginSigInfoInitialized) {
                         client.wLoginSigInfo.apply {
                             superKey = tlvMap119.getOrDefault(0x16d, superKey)
-                            d2 = D2(
+                            d2 = KeyWithExpiry(
                                 tlvMap119.getOrDefault(0x143, d2.data),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x143, 1728000L)
@@ -383,13 +398,14 @@ internal class WtLogin {
                             tgt = tlvMap119.getOrDefault(0x10a, tgt)
                             tgtKey = tlvMap119.getOrDefault(0x10d, tgtKey)
                             a2ExpiryTime = creationTime + changeTokenTimeMap.getOrDefault(0x10a, 2160000L)
-                            userStWebSig = UserStWebSig(
+                            userStWebSig = KeyWithExpiry(
                                 tlvMap119.getOrDefault(0x103, userStWebSig.data),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x103, 6000L)
                             )
                             userStKey = tlvMap119.getOrDefault(0x10e, userStKey)
-                            userStSig = UserStSig((tlvMap119.getOrDefault(0x114, userStSig.data)), creationTime)
+                            userStSig =
+                                KeyWithCreationTime((tlvMap119.getOrDefault(0x114, userStSig.data)), creationTime)
                             appPri = tlvMap119[0x11f]?.let {
                                 it.read {
                                     //change interval (int time)
@@ -398,12 +414,12 @@ internal class WtLogin {
                                 }
                             }
                                 ?: appPri
-                            sKey = SKey(
+                            sKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x120),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x120, 86400L)
                             )
-                            wtSessionTicket = WtSessionTicket(
+                            wtSessionTicket = KeyWithCreationTime(
                                 tlvMap119.getOrDefault(
                                     0x133,
                                     client.wLoginSigInfo.wtSessionTicket.data
@@ -454,50 +470,50 @@ internal class WtLogin {
                             tgt = tlvMap119.getOrFail(0x10a),
                             a2CreationTime = creationTime,
                             tgtKey = tlvMap119.getOrEmpty(0x10d), // from asyncContext._login_bitmap
-                            userStSig = UserStSig((tlvMap119.getOrEmpty(0x114)), creationTime),
+                            userStSig = KeyWithCreationTime((tlvMap119.getOrEmpty(0x114)), creationTime),
                             userStKey = tlvMap119.getOrEmpty(0x10e),
-                            userStWebSig = UserStWebSig(
+                            userStWebSig = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x103),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x103, 6000L)
                             ),
-                            userA5 = UserA5(tlvMap119.getOrEmpty(0x10b), creationTime),
-                            userA8 = UserA8(
+                            userA5 = KeyWithCreationTime(tlvMap119.getOrEmpty(0x10b), creationTime),
+                            userA8 = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x102),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x102, 72000L)
                             ),
-                            lsKey = LSKey(
+                            lsKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x11c),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x11c, 1641600L)
                             ),
-                            sKey = SKey(
+                            sKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x120),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x120, 86400L)
                             ),
-                            userSig64 = UserSig64(tlvMap119.getOrEmpty(0x121), creationTime),
+                            userSig64 = KeyWithCreationTime(tlvMap119.getOrEmpty(0x121), creationTime),
                             openId = openId.orEmpty(),
-                            openKey = OpenKey(openKey.orEmpty(), creationTime),
-                            vKey = VKey(
+                            openKey = KeyWithCreationTime(openKey.orEmpty(), creationTime),
+                            vKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x136),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x136, 1728000L)
                             ),
-                            accessToken = AccessToken(tlvMap119.getOrEmpty(0x136), creationTime),
-                            d2 = D2(
+                            accessToken = KeyWithCreationTime(tlvMap119.getOrEmpty(0x136), creationTime),
+                            d2 = KeyWithExpiry(
                                 tlvMap119.getOrFail(0x143),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x143, 1728000L)
                             ),
                             d2Key = tlvMap119.getOrEmpty(0x305),
-                            sid = Sid(
+                            sid = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x164),
                                 creationTime,
                                 creationTime + changeTokenTimeMap.getOrDefault(0x164, 1728000L)
                             ),
-                            aqSig = AqSig(tlvMap119.getOrEmpty(0x171), creationTime),
+                            aqSig = KeyWithCreationTime(tlvMap119.getOrEmpty(0x171), creationTime),
                             psKeyMap = outPSKeyMap.orEmpty().toMutableMap(),
                             pt4TokenMap = outPt4TokenMap.orEmpty().toMutableMap(),
                             superKey = tlvMap119.getOrEmpty(0x16d),
@@ -505,7 +521,7 @@ internal class WtLogin {
                             pf = pf.orEmpty(),
                             pfKey = pfKey.orEmpty(),
                             da2 = tlvMap119.getOrEmpty(0x203),
-                            wtSessionTicket = WtSessionTicket(tlvMap119.getOrEmpty(0x133), creationTime),
+                            wtSessionTicket = KeyWithCreationTime(tlvMap119.getOrEmpty(0x133), creationTime),
                             wtSessionTicketKey = tlvMap119.getOrEmpty(0x134),
                             deviceToken = tlvMap119.getOrEmpty(0x322),
                             encryptedDownloadSession = tlvMap119[0x11d]?.let {
@@ -517,7 +533,7 @@ internal class WtLogin {
                 }
             }
 
-            return LoginPacketResponse.Success
+            return LoginPacketResponse.Success(bot)
         }
 
     }

@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf

@@ -16,8 +16,8 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
@@ -286,7 +286,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     val body = encryptMethod.makeBody(client, bodyBlock)
     writeByte(0x02) // head
     writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
-    writeShort(client.protocolVersion)
+    writeShort(8001)
     writeShort(commandId.toShort())
     writeShort(1) // const??
     writeInt(client.uin.toInt())

@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.daysToSeconds
 

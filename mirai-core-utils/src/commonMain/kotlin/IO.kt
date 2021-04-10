@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -125,6 +125,9 @@ public inline fun Input.readString(length: UShort, charset: Charset = Charsets.U
 
 public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
+
+public fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
+public fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
 public fun File.createFileIfNotExists() {
     if (!this.exists()) {

@@ -15,6 +15,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.LoginType
+import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.network.writeLoginExtraData
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag

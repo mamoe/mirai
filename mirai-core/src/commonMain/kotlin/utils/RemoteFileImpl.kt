@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
