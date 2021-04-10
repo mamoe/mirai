@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeProjection
 import org.jetbrains.kotlin.types.typeUtil.supertypes
+import org.jetbrains.kotlin.utils.KotlinExceptionWithAttachments
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
 
@@ -136,7 +137,13 @@ fun getElementForLineMark(callElement: PsiElement): PsiElement =
     }
 
 val KtAnnotationEntry.annotationClass: KtClass?
-    get() = calleeExpression?.constructorReferenceExpression?.resolve()?.findParent<KtClass>()
+    get() = calleeExpression?.constructorReferenceExpression?.run {
+        try {
+            resolve()
+        } catch (e: KotlinExceptionWithAttachments) {
+            null // type inference with `by lazy {}` is unstable for now. I just ignore exceptions encountering with such issue.
+        }
+    }?.findParent<KtClass>()
 
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
