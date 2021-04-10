@@ -11,12 +11,37 @@ package net.mamoe.mirai.console.terminal
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
+import net.mamoe.mirai.console.logging.LoggerController
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 
 fun main() {
     configureUserDir()
 
-    MiraiConsoleTerminalLoader.startAsDaemon()
+    val terminal = object : MiraiConsoleImplementationTerminal() {
+        override val loggerController: LoggerController = object : LoggerController {
+            override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
+        }
+    }
+
+    val mockPlugin = object : KotlinPlugin(JvmPluginDescription("org.test.test", "1.0.0")) {}
+
+    terminal.backendAccess.globalComponentStorage.contribute(
+        BotConfigurationAlterer,
+        mockPlugin,
+        BotConfigurationAlterer { _, configuration ->
+            configuration.networkLoggerSupplier = { MiraiLogger.create("Net.${it.id}") } // deploy
+            configuration
+        }
+    )
+
+    MiraiConsoleTerminalLoader.startAsDaemon(terminal)
+
+
     runCatching { runBlocking { MiraiConsole.job.join() } }
 }
 

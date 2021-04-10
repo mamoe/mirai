@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress(
@@ -55,9 +55,9 @@ import java.nio.file.Paths
  * @see MiraiConsoleTerminalLoader CLI 入口点
  */
 @ConsoleExperimentalApi
-class MiraiConsoleImplementationTerminal
+open class MiraiConsoleImplementationTerminal
 @JvmOverloads constructor(
-    override val rootPath: Path = Paths.get(System.getProperty("user.dir", ".")).toAbsolutePath(),
+    final override val rootPath: Path = Paths.get(System.getProperty("user.dir", ".")).toAbsolutePath(),
     override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader }),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplTerminal,
@@ -67,13 +67,13 @@ class MiraiConsoleImplementationTerminal
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
-            CoroutineExceptionHandler { coroutineContext, throwable ->
-                if (throwable is CancellationException) {
-                    return@CoroutineExceptionHandler
-                }
-                val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
-                MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
-            }) {
+        CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable is CancellationException) {
+                return@CoroutineExceptionHandler
+            }
+            val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
+            MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
+        }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
     override val isAnsiSupported: Boolean get() = true
 
