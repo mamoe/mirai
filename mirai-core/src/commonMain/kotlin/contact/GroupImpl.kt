@@ -247,7 +247,7 @@ internal class GroupImpl(
         return result.success
     }
 
-    override suspend fun getAnnouncements(): Flow<ReadAnnouncement> =
+    override suspend fun getAnnouncements(): Flow<ReceiveAnnouncement> =
         flow {
             var i = 1
             while (true) {
@@ -267,7 +267,7 @@ internal class GroupImpl(
         Mirai.deleteGroupAnnouncement(bot, id, fid)
     }
 
-    override suspend fun getAnnouncement(fid: String): ReadAnnouncement =
+    override suspend fun getAnnouncement(fid: String): ReceiveAnnouncement =
         Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement(bot.id)
 
     override fun toString(): String = "Group($id)"

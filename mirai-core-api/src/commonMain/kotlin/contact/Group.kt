@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.Announcement
-import net.mamoe.mirai.data.ReadAnnouncement
+import net.mamoe.mirai.data.ReceiveAnnouncement
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -186,7 +186,7 @@ public interface Group : Contact, CoroutineScope, FileSupported {
 
     /**
      * 删除一条群公告
-     * @param fid 公告的id [ReadAnnouncement.fid]
+     * @param fid 公告的id [ReceiveAnnouncement.fid]
      *
      * @throws PermissionDeniedException 没有权限时抛出
      */
@@ -195,18 +195,18 @@ public interface Group : Contact, CoroutineScope, FileSupported {
 
     /**
      * 删除一条群公告
-     * @param readAnnouncement 公告 [ReadAnnouncement]
+     * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
      */
     @MiraiExperimentalApi
-    public suspend fun deleteAnnouncement(readAnnouncement: ReadAnnouncement): Unit =
-        deleteAnnouncement(readAnnouncement.fid)
+    public suspend fun deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
+        deleteAnnouncement(receiveAnnouncement.fid)
 
     /**
      * 获取一条群公告
-     * @param fid 公告的id [ReadAnnouncement.fid]
+     * @param fid 公告的id [ReceiveAnnouncement.fid]
      */
     @MiraiExperimentalApi
-    public suspend fun getAnnouncement(fid: String): ReadAnnouncement
+    public suspend fun getAnnouncement(fid: String): ReceiveAnnouncement
 
     public companion object {
         /**
