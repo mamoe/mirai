@@ -265,7 +265,12 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
-            if (::instance.isInitialized) error("Mirai Console is already initialized.")
+            if (::instance.isInitialized && instance.isActive) {
+                error(
+                    "Mirai Console is already initialized and is currently running. " +
+                        "Run MiraiConsole.cancel to kill old instance before starting another instance."
+                )
+            }
             this@Companion.instance = this
             kotlin.runCatching {
                 MiraiConsoleImplementationBridge.doStart()
