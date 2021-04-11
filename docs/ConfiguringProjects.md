@@ -4,7 +4,7 @@
 
 ### 选择版本
 
-有关各类版本的区别，参考 [版本规范](Evolution.md#版本规范)
+有关各类版本的区别，参考 [版本规范](Evolution.md#版本规范)。通常建议选择最新稳定版本。
 
 [Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg?
 [Bintray Download]: https://bintray.com/him188moe/mirai/mirai-core/
