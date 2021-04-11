@@ -10,7 +10,7 @@
 
 **mirai 官方提供 [Kotlin/Java 等 JVM 平台语言开发支持](#jvm-平台-mirai-开发)。如果不熟悉这些语言，请使用以下社区 SDK：**
 
-要使用这些社区 SDK 需要先配置 Mirai Console，可以使用 [一键安装](files/install-20210412.cmd)（32位，带 HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化安装。
+要使用这些社区 SDK 需要先配置 Mirai Console，可以使用 [一键安装](https://downgit.github.io/#/home?url=https://github.com/mamoe/mirai/blob/dev/docs/files/install-20210412.cmd)（32位，带 HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化安装。
 
 你可以使用一个或多个语言来开发插件，而且在自己开发的同时也可以[使用下载的插件](UserManual.md#下载和安装插件)。
 
@@ -62,7 +62,7 @@
 | ***Mirai Http*** | Mirai 标准    | [mamoe/mirai-api-http]         |
 | *OneBot Http*    | [OneBot] 标准 | [yyuueexxiinngg/onebot-kotlin] |
 
-下表列举基于 Mirai HTTP 插件实现对一些编程语言支持的项目列表。要使用它们，你需要[在 Mirai Console 安装 `mirai-api-http`](https://github.com/project-mirai/mirai-api-http#%E5%AE%89%E8%A3%85mirai-api-http)。
+下表列举基于 Mirai HTTP 插件实现对一些编程语言支持的项目列表。要使用它们，你需要[在 Mirai Console 安装 `mirai-api-http`](https://github.com/project-mirai/mirai-api-http#%E5%AE%89%E8%A3%85mirai-api-http)（如果使用上面的一键安装则不需要额外操作）。
 
 
 | 语言和技术                  | 维护者及项目地址                               |
