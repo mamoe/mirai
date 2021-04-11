@@ -2,10 +2,11 @@
 
 欢迎来到 mirai-console 开发文档!
 
-**Mirai Console 基于 [Mirai](https://github.com/mamoe/mirai)，因此请先阅读 [Mirai 文档](https://github.com/mamoe/mirai/tree/dev/docs)。**
+**Mirai Console 基于 [Mirai](https://github.com/mamoe/mirai)，因此请先阅读 [Mirai 文档](https://github.com/mamoe/mirai/blob/dev/docs/CoreAPI.md)。**
 
-- **[配置项目](ConfiguringProjects.md)**
-- **[启动 Console](Run.md)**
+> 其他链接：
+> - **[如何配置 Mirai Console 项目](ConfiguringProjects.md)**
+> - **[如何启动 Mirai Console](Run.md)**
 
 ### 后端插件开发基础
 

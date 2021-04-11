@@ -4,14 +4,11 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 ## 使用工具自动独立启动
 
-独立启动 Mirai Console 作为一个应用程序，由 Console 扫描 plugins 目录加载插件。
-
-官方: https://github.com/iTXTech/mirai-console-loader  
-第三方: https://github.com/LXY1226/MiraiOK
+该部分文档已经转移到 [用户手册](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md)。
 
 ## 嵌入应用启动（实验性）
 
-将 Mirai Console 作为一个依赖嵌入一个 JVM 应用启动，开发者主动加载插件。
+将 Mirai Console 作为一个依赖嵌入一个 JVM 应用启动，开发者主动加载插件。尤其适合在开发时启动真实环境的测试。
 
 ### 环境
 
@@ -24,12 +21,9 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 `build.gradle.kts`:
 ```kotlin
-repositories {
-    jcenter()
-}
 dependencies {
-    implementation("net.mamoe:mirai-console-terminal:2.0.0") // 自行替换版本
-    implementation("net.mamoe:mirai-core:2.0.0")
+    api("net.mamoe:mirai-console-terminal:2.0.0") // 自行替换版本
+    api("net.mamoe:mirai-core:2.0.0")
 }
 ```
 
@@ -55,8 +49,8 @@ Plugin.load() // 扩展函数
 Plugin.enable() // 扩展函数 
 
 // Java
-PluginManager.INSTANCE.loadPlugin(Plugin)
-PluginManager.INSTANCE.enablePlugin(Plugin)
+PluginManager.INSTANCE.loadPlugin(Plugin.INSTANCE)
+PluginManager.INSTANCE.enablePlugin(Plugin.INSTANCE)
 ```
 
 但注意：这种方法目前是实验性的——一些特定的功能如注册扩展可能不会正常工作。

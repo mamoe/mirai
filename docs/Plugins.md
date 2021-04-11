@@ -407,7 +407,7 @@ object MyData : AutoSavePluginData() {
 ```
 
 ### 打包插件
-若 [使用了 Mirai Console Gradle 插件](ConfiguringProjects.md#b使用-gradle-插件配置项目), 执行 Gradle 任务 `buildPlugin` 即可打包插件 JAR. 之后可以在 `build/mirai/` 找到 JAR 文件. 这个文件可以放入 Mirai Console `plugins` 目录中加载.
+若 [使用了 Mirai Console Gradle 插件](ConfiguringProjects.md#c使用-gradle-插件配置项目), 执行 Gradle 任务 `buildPlugin` 即可打包插件 JAR. 之后可以在 `build/mirai/` 找到 JAR 文件. 这个文件可以放入 Mirai Console `plugins` 目录中加载.
 
 若没有使用, 请打包插件并附带资源文件和所有依赖到一个单独的 JAR.
 
