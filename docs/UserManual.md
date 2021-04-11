@@ -1,6 +1,6 @@
 # Mirai - UserManual
 
-Mirai 用户手册。本文面向对开发不熟悉而希望使用 Mirai 的用户。
+Mirai 用户手册。本文面向对开发不熟悉而希望使用 Mirai 的用户。如果你要开发，请先阅读 [开发文档](README.md)。
 
 ## 启动 Mirai
 
