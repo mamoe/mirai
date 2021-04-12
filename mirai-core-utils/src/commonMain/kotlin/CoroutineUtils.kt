@@ -33,6 +33,10 @@ public suspend inline fun <R> runBIO(
     noinline block: () -> R
 ): R = runInterruptible(context = Dispatchers.IO, block = block)
 
+public suspend inline fun <T, R> T.runBIO(
+    crossinline block: T.() -> R
+): R = runInterruptible(context = Dispatchers.IO, block = { block() })
+
 public inline fun CoroutineScope.launchWithPermit(
     semaphore: Semaphore,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

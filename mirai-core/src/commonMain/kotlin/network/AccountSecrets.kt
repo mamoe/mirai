@@ -25,7 +25,7 @@ internal interface AccountSecrets {
     var wLoginSigInfoField: WLoginSigInfo?
 
     val wLoginSigInfoInitialized get() = wLoginSigInfoField != null
-    var wLoginSigInfo
+    var wLoginSigInfo: WLoginSigInfo
         get() = wLoginSigInfoField ?: error("wLoginSigInfoField is not yet initialized")
         set(value) {
             wLoginSigInfoField = value
@@ -49,12 +49,13 @@ internal interface AccountSecrets {
     val randomKey: ByteArray
 }
 
+@Suppress("ArrayInDataClass") // for `copy`
 @Serializable
-internal class AccountSecretsImpl(
+internal data class AccountSecretsImpl(
     override var loginExtraData: MutableSet<LoginExtraData>,
     override var wLoginSigInfoField: WLoginSigInfo?,
     override var G: ByteArray,
-    override var dpwd: ByteArray,
+    override var dpwd: ByteArray = get_mpasswd().toByteArray(),
     override var randSeed: ByteArray,
     override var ksid: ByteArray,
     override var tgtgtKey: ByteArray,

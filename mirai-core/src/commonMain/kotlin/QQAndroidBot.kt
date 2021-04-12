@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -32,7 +33,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.ScheduledJob
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.RichMessage
@@ -58,9 +58,9 @@ internal fun QQAndroidBot.createOtherClient(
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
-    private val account: BotAccount,
+    internal val account: BotAccount,
     configuration: BotConfiguration
-) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
+) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id), SsoContext {
     val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
 
     ///////////////////////////////////////////////////////////////////////////
@@ -101,38 +101,9 @@ internal class QQAndroidBot constructor(
         }
     }
 
-    private fun loadSecretsFromCacheOrCreate(deviceInfo: DeviceInfo): AccountSecrets {
-        val loaded = if (configuration.loginCacheEnabled && accountSecretsFile.exists()) {
-            kotlin.runCatching {
-                TEA.decrypt(accountSecretsFile.readBytes(), account.passwordMd5).loadAs(AccountSecretsImpl.serializer())
-            }.getOrElse { e ->
-                logger.error("Failed to load account secrets from local cache. Invalidating cache...", e)
-                accountSecretsFile.delete()
-                null
-            }
-        } else null
-        if (loaded != null) {
-            logger.info { "Loaded account secrets from local cache." }
-            return loaded
-        }
-
-        return AccountSecretsImpl(deviceInfo, account) // wLoginSigInfoField is null, no need to save.
-    }
-
     /////////////////////////// accounts secrets end
 
-    var client: QQAndroidClient = initClient()
-
-    fun initClient(): QQAndroidClient {
-        val device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
-        client = QQAndroidClient(
-            account,
-            device = device,
-            accountSecrets = loadSecretsFromCacheOrCreate(device)
-        )
-        client._bot = this
-        return client
-    }
+    override lateinit var client: QQAndroidClient
 
 
     override val bot: QQAndroidBot get() = this

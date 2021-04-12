@@ -22,6 +22,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.net.protocol.LoginSessionAware
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
@@ -65,13 +66,15 @@ internal val DefaultServerList: MutableSet<Pair<String, Int>> =
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@PublishedApi
+/**
+ * holds all the states related to network.
+ */
 internal open class QQAndroidClient(
     val account: BotAccount,
-    val ecdh: ECDH = ECDH(),
+    override val ecdh: ECDH = ECDH(),
     val device: DeviceInfo,
     accountSecrets: AccountSecrets
-) : AccountSecrets by accountSecrets {
+) : AccountSecrets by accountSecrets, LoginSessionAware {
     lateinit var _bot: QQAndroidBot
     val bot: QQAndroidBot get() = _bot
 
@@ -124,6 +127,7 @@ internal open class QQAndroidClient(
         return new
     }
 
+    // TODO: 2021/4/14 investigate whether they can be minimized
     private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
     internal fun getFriendSeq(): Int = friendSeq.value
 
@@ -213,8 +217,8 @@ internal open class QQAndroidClient(
     @PublishedApi
     internal val apkId: ByteArray = "com.tencent.mobileqq".toByteArray()
 
-    var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
-    var loginState = 0
+    override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
+    override var loginState = 0
 
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
