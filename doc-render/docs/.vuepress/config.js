@@ -1,6 +1,6 @@
 module.exports = {
     title: "mirai",
-    description: "Mirai HTTP API (console) plugin",
+    description: "Mirai Project",
     base: "/",
     markdown: {
         lineNumbers: true,
