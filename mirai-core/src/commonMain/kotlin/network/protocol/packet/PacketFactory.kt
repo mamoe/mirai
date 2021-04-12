@@ -96,11 +96,14 @@ internal abstract class IncomingPacketFactory<TPacket : Packet?>(
 }
 
 @JvmName("decode0")
-private suspend inline fun <P : Packet?> OutgoingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P =
+internal suspend inline fun <P : Packet?> OutgoingPacketFactory<P>.decode(
+    bot: QQAndroidBot,
+    packet: ByteReadPacket
+): P =
     packet.decode(bot)
 
 @JvmName("decode1")
-private suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
+internal suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
     bot: QQAndroidBot,
     packet: ByteReadPacket,
     sequenceId: Int

@@ -72,6 +72,7 @@ kotlin {
 
                 api1(`kotlinx-io-jvm`)
                 implementation1(`kotlinx-coroutines-io`)
+                implementation(`netty-all`)
             }
         }
 
