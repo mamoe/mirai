@@ -44,6 +44,7 @@ object Versions {
     const val log4j = "2.13.3"
     const val asm = "9.1"
     const val difflib = "1.3.0"
+    const val netty = "4.1.63.Final"
 
     const val junit = "5.4.2"
 
@@ -111,3 +112,4 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
+const val `netty-all` = "io.netty:netty-all:${Versions.netty}"

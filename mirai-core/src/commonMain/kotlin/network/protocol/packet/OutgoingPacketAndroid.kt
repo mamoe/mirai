@@ -30,6 +30,7 @@ internal class OutgoingPacketWithRespType<R : Packet?> constructor(
     delegate: ByteReadPacket
 ) : OutgoingPacket(name, commandName, sequenceId, delegate)
 
+// TODO: 2021/4/12 generalize
 internal open class OutgoingPacket constructor(
     name: String?,
     val commandName: String,
