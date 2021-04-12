@@ -3,8 +3,8 @@
   "version": "1.9.7",
   "description": "Mirai Project",
   "main": "index.js",
-  "repository": "https://github.com/project-mirai/mirai-api-http.git",
-  "author": "project-mirai",
+  "repository": "https://github.com/mamoe/mirai.git",
+  "author": "mamoe",
   "license": "AGPL-3.0",
   "devDependencies": {
     "@vuepress/plugin-medium-zoom": "^1.8.0",
