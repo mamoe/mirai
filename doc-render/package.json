@@ -1,0 +1,23 @@
+{
+  "name": "mirai",
+  "version": "1.9.7",
+  "description": "Mirai Project",
+  "main": "index.js",
+  "repository": "https://github.com/project-mirai/mirai-api-http.git",
+  "author": "project-mirai",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "@vuepress/plugin-medium-zoom": "^1.8.0",
+    "@vuepress/plugin-nprogress": "^1.8.0",
+    "@vuepress/plugin-pwa": "^1.8.0",
+    "vuepress": "^1.8.0",
+    "vuepress-theme-antdocs": "^1.2.2"
+  },
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "dependencies": {
+    "core-js": "^2.6.11"
+  }
+}
