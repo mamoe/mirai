@@ -26,35 +26,35 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
-import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
-import net.mamoe.mirai.internal.network.closeAndJoin
-import net.mamoe.mirai.network.ForceOfflineException
-import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
+internal abstract class AbstractBot constructor(
     final override val configuration: BotConfiguration,
     final override val id: Long,
 ) : Bot, CoroutineScope {
-    // FASTEST INIT
+    ///////////////////////////////////////////////////////////////////////////
+    // lifecycle
+    ///////////////////////////////////////////////////////////////////////////
 
-    val supervisor = SupervisorJob(configuration.parentCoroutineContext[Job])
+    // FASTEST INIT
+    private val supervisor = SupervisorJob(configuration.parentCoroutineContext[Job])
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
             .plus(supervisor)
-            .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
-                ?: CoroutineExceptionHandler { _, e ->
-                    logger.error("An exception was thrown under a coroutine of Bot", e)
-                }
+            .plus(
+                configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                    ?: CoroutineExceptionHandler { _, e ->
+                        logger.error("An exception was thrown under a coroutine of Bot", e)
+                    }
             )
             .plus(CoroutineName("Mirai Bot"))
 
@@ -66,36 +66,24 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
         }
     }
 
-    // region network
-    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf()
+    ///////////////////////////////////////////////////////////////////////////
+    // overrides
+    ///////////////////////////////////////////////////////////////////////////
 
-    val network: N get() = _network
-
-    @Suppress("PropertyName")
-    internal lateinit var _network: N
-
-    suspend fun reinitializeNetwork() {
-        if (::_network.isInitialized) {
-            _network.closeAndJoin(null)
-        }
-        _network = createNetworkHandler(coroutineContext)
-    }
-
-    internal var _isConnecting: Boolean = false
-
-    override val isOnline: Boolean get() = _network.areYouOk()
+    final override val isOnline: Boolean get() = _network.state == NetworkHandler.State.OK
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
-    val otherClientsLock = Mutex() // lock sync
     override val otherClients: ContactList<OtherClient> = ContactList()
 
-    /**
-     * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]
-     */
-    @ThisApiMustBeUsedInWithConnectionLockBlock
-    @Throws(LoginFailedException::class) // only
-    protected abstract suspend fun relogin(cause: Throwable?)
+    ///////////////////////////////////////////////////////////////////////////
+    // sync (// TODO: 2021/4/14 extract sync logic
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    val otherClientsLock = Mutex() // lock sync
+
+    // TODO: 2021/4/14 extract offlineListener
 
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
@@ -108,11 +96,11 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             if (
                 !event.bot.isActive // bot closed
                 || !::_network.isInitialized // bot 还未登录就被 close
-                || _isConnecting // bot 还在登入
+            // || _isConnecting // bot 还在登入 // TODO: 2021/4/14 处理还在登入?
             ) {
                 // Close network to avoid endless reconnection while network is ok
                 // https://github.com/mamoe/mirai/issues/894
-                kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
+                kotlin.runCatching { network.close() }
                 return@subscribeAlways
             }
             /*
@@ -125,7 +113,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     val cause = event.cause
                     val msg = if (cause == null) "" else " with exception: $cause"
                     bot.logger.info("Bot is closed manually $msg", cause)
-                    network.cancel(CancellationException("Bot offline manually $msg", cause))
+                    network.close()
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
@@ -135,7 +123,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                         bot.logger.info { "Reconnecting..." }
                         // delay(3000)
                     } else {
-                        network.cancel(ForceOfflineException("Connection occupied by another android device: ${event.message}"))
+                        network.close()
                     }
                 }
                 is BotOfflineEvent.MsfOffline,
@@ -148,7 +136,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             }
 
             if (event.reconnect) {
-                if (!_network.isActive) {
+                if (_network.state != NetworkHandler.State.OK) {
                     // normally closed
                     return@subscribeAlways
                 }
@@ -158,7 +146,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                 bot.asQQAndroidBot().client.run {
                     if (serverList.isEmpty()) {
-                        bot.asQQAndroidBot().bdhSyncer.loadServerListFromCache()
+                        bot.bdhSyncer.loadServerListFromCache()
                         if (serverList.isEmpty()) {
                             serverList.addAll(DefaultServerList)
                         } else Unit
@@ -167,7 +155,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
                 bot.launch {
                     val success: Boolean
-                    val time = measureTime { success = Reconnect().reconnect(event) }
+                    val time = measureTime {
+                        success = TODO("relogin")
+                    }
 
                     if (success) {
                         logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
@@ -176,141 +166,18 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             }
         }
 
-    private inner class Reconnect {
-        suspend fun reconnect(event: BotOfflineEvent): Boolean {
-            retryCatchingExceptions<Unit>(
-                configuration.reconnectionRetryTimes,
-                except = LoginFailedException::class
-            ) { tryCount, _ ->
-                if (tryCount != 0) {
-                    delay(configuration.reconnectPeriodMillis)
-                }
+    ///////////////////////////////////////////////////////////////////////////
+    // network
+    ///////////////////////////////////////////////////////////////////////////
 
+    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf()
 
-                // Close network to avoid endless reconnection while network is ok
-                // https://github.com/mamoe/mirai/issues/894
-                kotlin.runCatching { network.close(event.castOrNull<BotOfflineEvent.CauseAware>()?.cause) }
+    // TODO: 2021/4/14 handle serverList
 
-                login()
-                _network.postInitActions()
-//              network.withConnectionLock {
-//                  /**
-//                   * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
-//                   */
-//                  @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-//                  relogin((event as? BotOfflineEvent.Dropped)?.cause)
-//              }
-                launch {
-                    BotReloginEvent(bot, (event as? BotOfflineEvent.CauseAware)?.cause).broadcast()
-                }
-                return true
-            }.getOrElse { exception ->
-                if (exception is LoginFailedException && !exception.killBot) {
-                    logger.info { "Cannot reconnect." }
-                    logger.error(exception)
-                    // logger.info { "Retrying in 3s..." }
-                    // delay(3000)
-                    return false
-                }
-                logger.info { "Cannot reconnect." }
-                bot.cancel(CancellationException("Cannot reconnect.", exception))
-                return false
-            }
+    val network: NetworkHandler get() = _network
 
-            return false
-        }
-    }
-
-    /**
-     * 仅用在 [login]
-     */
-    private inner class Login {
-
-        private suspend fun doRelogin() {
-            while (true) {
-                reinitializeNetwork()
-                try {
-                    _isConnecting = true
-                    @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                    relogin(null)
-                    return
-                } catch (e: Exception) {
-                    if (e is LoginFailedException) {
-                        if (e.killBot) throw e
-                    } else {
-                        network.logger.error(e)
-                    }
-                    logger.warning { "Login failed. Retrying in 3s... (rootCause=${e.rootCause})" }
-                    _network.closeAndJoin(e)
-                    delay(3000)
-                    continue
-                } finally {
-                    _isConnecting = false
-                }
-                // unreachable here
-            }
-        }
-
-        private suspend fun doInit() {
-            retryCatchingExceptions(5) { count, lastException ->
-                if (count != 0) {
-                    if (!isActive) {
-                        logger.error("Cannot init due to fatal error")
-                        throw lastException ?: error("<No lastException>")
-                    }
-                    logger.warning { "Init failed. Retrying in 3s... (rootCause=${lastException?.rootCause})" }
-                    delay(3000)
-                }
-
-                _network.init()
-            }.getOrElse {
-                logger.error { "Cannot init. some features may be affected" }
-                throw it // abort
-            }
-        }
-
-        @ThisApiMustBeUsedInWithConnectionLockBlock
-        private suspend fun reinitializeNetworkHandler(cause: Throwable?) {
-
-            // logger.info("Initializing BotNetworkHandler")
-
-            if (::_network.isInitialized) {
-                _network.cancel(CancellationException("manual re-login", cause = cause))
-
-                BotReloginEvent(this@AbstractBot, cause).broadcast()
-                doRelogin()
-                return
-            }
-
-            doRelogin()
-            doInit()
-        }
-
-        suspend fun doLogin() {
-            logger.info { "Logging in..." }
-            if (::_network.isInitialized) {
-                network.withConnectionLock {
-                    @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                    reinitializeNetworkHandler(null)
-                }
-            } else {
-                @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                reinitializeNetworkHandler(null)
-            }
-
-            // https://github.com/mamoe/mirai/issues/1019
-            kotlin.runCatching {
-                bot.nick
-            }.onFailure {
-                bot.asQQAndroidBot().nick = MiraiImpl.queryProfile(bot, bot.id).nickname
-                if (bot.nick.isBlank()) {
-                    logger.warning { "Unable to fetch nickname of bot." }
-                }
-            }
-
-            logger.info { "Login successful" }
-        }
-    }
+    @Suppress("PropertyName")
+    internal lateinit var _network: NetworkHandler
 
 
     /**
@@ -319,10 +186,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
      */
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
-        Login().doLogin()
+        network
     }
 
-    protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N
+    protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler
 
     // endregion
 
@@ -332,7 +199,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             logger.info { "Bot cancelled" + throwable?.message?.let { ": $it" }.orEmpty() }
 
             kotlin.runCatching {
-                network.close(throwable)
+                network.close()
             }
             offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 
@@ -353,20 +220,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             return
         }
 
-        if (::_network.isInitialized) {
-            if (this.network.areYouOk()) {
-
-                // send log out
-                kotlin.runCatching { runBlocking { sendLogout() } } // just ignore errors
-
-                GlobalScope.launch {
-                    runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
-                        ?.let { logger.error(it) }
-                }
-            }
-
-            this.network.close(cause)
-        }
+        this.network.close()
 
         if (supervisorJob.isActive) {
             if (cause == null) {
@@ -390,6 +244,3 @@ private val Throwable.rootCause: Throwable
         }
         return rootCause ?: this
     }
-
-@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
-internal annotation class ThisApiMustBeUsedInWithConnectionLockBlock

@@ -16,12 +16,14 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.net.NetworkHandler.State
 import net.mamoe.mirai.internal.network.net.protocol.SsoController
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import java.util.concurrent.CancellationException
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Immutable context for [NetworkHandler]
@@ -57,6 +59,12 @@ internal class NetworkHandlerContextImpl(
  */
 internal interface NetworkHandler {
     val context: NetworkHandlerContext
+
+    val logger get() = context.logger // TODO: 2021/4/14 just for migration
+
+    @Deprecated("") // TODO: 2021/4/14 migrate NetworkHandler.coroutineContext
+    val coroutineContext: CoroutineContext
+        get() = error("ERROR")
 
     /**
      * State of this handler.
@@ -115,11 +123,26 @@ internal interface NetworkHandler {
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
+    suspend fun OutgoingPacket.sendWithoutExpect() = sendWithoutExpect(this)
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
+    suspend fun <R> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): R = TODO()
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
+    suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2
+    ): R = TODO()
+
 
     /**
      * Closes this handler gracefully and suspends the coroutine for its completion.
      */
-    suspend fun close()
+    fun close()
 }
 
 /**
@@ -209,5 +232,7 @@ internal class SelectorNetworkHandler(
         instance().sendAndExpect(packet, timeout, attempts)
 
     override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
-    override suspend fun close() = instance().close()
+    override fun close() {
+        selector.getResumedInstance()?.close()
+    }
 }

@@ -167,3 +167,14 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
 
 public fun systemProp(name: String, default: Boolean): Boolean =
     System.getProperty(name, default.toString())?.toBoolean() ?: default
+
+
+public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
+    var depth = 0
+    var rootCause: Throwable? = this
+    while (rootCause?.cause != null) {
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) break
+    }
+    return rootCause ?: this
+}

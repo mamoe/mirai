@@ -131,7 +131,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         if (resp.result != 0) {
             bot.network.logger
                 .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
-            bot.network.launch(CoroutineName("MessageSvcPushNotify.retry")) {
+            bot.launch(CoroutineName("MessageSvcPushNotify.retry")) {
                 delay(500 + Random.nextLong(0, 1000))
                 bot.network.run {
                     MessageSvcPbGetMsg(bot.client, syncCookie = null).sendWithoutExpect()
