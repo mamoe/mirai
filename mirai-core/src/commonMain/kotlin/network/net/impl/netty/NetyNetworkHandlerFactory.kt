@@ -9,9 +9,6 @@
 
 package net.mamoe.mirai.internal.network.net.impl.netty
 
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInboundHandlerAdapter
-import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.net.NetworkHandlerFactory
 import java.net.SocketAddress
@@ -21,18 +18,4 @@ internal object NettyNetworkHandlerFactory : NetworkHandlerFactory<NettyNetworkH
         return NettyNetworkHandler(context, address)
     }
 
-}
-
-internal class RetrieveContextInboundHandler : ChannelInboundHandlerAdapter() {
-    val instance: CompletableDeferred<ChannelHandlerContext> = CompletableDeferred()
-
-    override fun channelActive(ctx: ChannelHandlerContext) {
-        if (!instance.isCompleted) instance.complete(ctx)
-    }
-}
-
-internal object PacketDecodeInboundHandler : ChannelInboundHandlerAdapter() {
-    override fun channelRead(ctx: ChannelHandlerContext?, msg: Any?) {
-        super.channelRead(ctx, msg)
-    }
 }

@@ -41,16 +41,16 @@ internal class SsoController(
     private val handler: NetworkHandler,
 ) {
     @Throws(LoginFailedException::class)
-    suspend fun login() {
-        try {
-            fastLogin()
-        } catch (exceptionOnFast: Exception) {
-            try {
+    suspend fun login() = withExceptionCollector {
+        if (bot.client.wLoginSigInfoInitialized) {
+            kotlin.runCatching {
+                fastLogin()
+            }.onFailure { e ->
+                collectException(e)
                 slowLogin()
-            } catch (e: Exception) {
-                e.addSuppressed(exceptionOnFast)
-                throw e
             }
+        } else {
+            slowLogin()
         }
     }
 
@@ -181,7 +181,7 @@ internal class SsoController(
 
     }
 
-    private fun initClient() {
+    internal fun initClient() {
         val device = configuration.deviceInfo?.invoke(bot) ?: DeviceInfo.random()
         ssoContext.client = QQAndroidClient(
             bot.account,

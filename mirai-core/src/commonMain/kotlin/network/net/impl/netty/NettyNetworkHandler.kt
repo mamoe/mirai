@@ -67,8 +67,7 @@ internal class NettyNetworkHandler(
 
     private inner class RawIncomingPacketCollector(
         private val decodePipeline: PacketDecodePipeline
-    ) :
-        SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
+    ) : SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
         override fun channelRead0(ctx: ChannelHandlerContext, msg: RawIncomingPacket) {
             decodePipeline.send(msg)
         }
@@ -78,8 +77,7 @@ internal class NettyNetworkHandler(
         val contextResult = CompletableDeferred<ChannelHandlerContext>()
 
         val eventLoopGroup = NioEventLoopGroup()
-        val bootstrap = Bootstrap()
-        bootstrap.group(eventLoopGroup)
+        Bootstrap().group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
             .handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
@@ -93,8 +91,9 @@ internal class NettyNetworkHandler(
                         .addLast(RawIncomingPacketCollector(decodePipeline))
                 }
             })
+            .connect(address).runBIO { await() }
+        // TODO: 2021/4/14  eventLoopGroup 移动到 bot, 并在 bot.close() 时关闭
 
-        bootstrap.connect(address).runBIO { await() }
         return contextResult.await()
     }
 

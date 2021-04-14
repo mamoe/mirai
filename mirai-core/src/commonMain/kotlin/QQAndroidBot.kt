@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -60,7 +61,7 @@ internal fun QQAndroidBot.createOtherClient(
 internal class QQAndroidBot constructor(
     internal val account: BotAccount,
     configuration: BotConfiguration
-) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
+) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id), SsoContext {
     val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
 
     ///////////////////////////////////////////////////////////////////////////
@@ -103,7 +104,7 @@ internal class QQAndroidBot constructor(
 
     /////////////////////////// accounts secrets end
 
-    override var client: QQAndroidClient = initClient()
+    override lateinit var client: QQAndroidClient
 
 
     override val bot: QQAndroidBot get() = this
