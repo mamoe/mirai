@@ -9,22 +9,37 @@
 
 package net.mamoe.mirai.internal.network.net
 
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.net.NetworkHandler.State
+import net.mamoe.mirai.internal.network.net.protocol.SsoProtocol
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.BotConfiguration
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import java.util.concurrent.CancellationException
 
-internal typealias HState = NetworkHandler.State
+/**
+ * Immutable context for [NetworkHandler]
+ */
+internal interface NetworkHandlerContext {
+    val ssoProtocol: SsoProtocol
+
+    val configuration: BotConfiguration
+
+    fun getNextAddress(): SocketAddress
+}
 
 /**
- * Basic interface available to application. Usually wrapped with [NetworkHandlerWithSelector].
+ * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
  *
  * A [NetworkHandler] holds no reference to [Bot]s.
  */
-internal interface NetworkHandler { // TODO: 2021/4/13 how to hold data?
+internal interface NetworkHandler {
+    val context: NetworkHandlerContext
+
     /**
      * State of this handler.
      */
@@ -40,7 +55,7 @@ internal interface NetworkHandler { // TODO: 2021/4/13 how to hold data?
         INITIALIZED,
 
         /**
-         * Connection to server, including logging in.
+         * Connection to server, including the process of authentication.
          *
          * At this state [resumeConnection] does nothing. [sendAndExpect] suspends for the result of connection started in [INITIALIZED].
          */
@@ -52,28 +67,30 @@ internal interface NetworkHandler { // TODO: 2021/4/13 how to hold data?
         OK,
 
         /**
-         * No Internet Connection is available but it is possible to establish a connection again(switching state to [CONNECTING]).
+         * No Internet Connection available or for any other reasons but it is possible to establish a connection again(switching state to [CONNECTING]).
          */
-        SNEAK_OFF,
+        CONNECTION_LOST,
 
         /**
-         * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException]
+         * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException].
+         *
+         * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.
          */
         CLOSED,
     }
 
     /**
-     * Attempts to resume the connection.
-     * @see HState
+     * Attempts to resume the connection. Throws no exception but changes [state]
+     * @see State
      */
-    suspend fun resumeConnection(): Boolean
+    suspend fun resumeConnection()
 
 
     /**
      * Sends [packet] and expects to receive a response from the server.
-     * @param retry ranges `1..INFINITY`
+     * @param attempts ranges `1..INFINITY`
      */
-    suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, retry: Int = 2): Packet
+    suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): Packet?
 
     /**
      * Sends [packet] and does not expect any response. (Response is still processed but not passed as a return value of this function.)
@@ -88,80 +105,90 @@ internal interface NetworkHandler { // TODO: 2021/4/13 how to hold data?
 }
 
 /**
- * Factory for a specific [NetworkHandler].
+ * Factory for a specific [NetworkHandler] implementation.
  */
 internal interface NetworkHandlerFactory<H : NetworkHandler> {
-    fun create(host: String, port: Int): H = create(InetSocketAddress.createUnresolved(host, port))
-    fun create(host: InetAddress, port: Int): H = create(InetSocketAddress(host, port))
+    fun create(context: NetworkHandlerContext, host: String, port: Int): H =
+        create(context, InetSocketAddress.createUnresolved(host, port))
+
+    fun create(context: NetworkHandlerContext, host: InetAddress, port: Int): H =
+        create(context, InetSocketAddress(host, port))
 
     /**
-     * Create an instance of [H]. The returning [H] has [NetworkHandler.state] of [NetworkHandler.State1.INITIALIZED]
+     * Create an instance of [H]. The returning [H] has [NetworkHandler.state] of [State.INITIALIZED]
      */
-    fun create(host: SocketAddress): H
+    fun create(context: NetworkHandlerContext, address: SocketAddress): H
 }
 
 /**
- * Strategy of managing [NetworkHandler].
+ * A lazy stateful selector of [NetworkHandler].
  *
  * - Calls [factory.create][NetworkHandlerFactory.create] to create [NetworkHandler]s.
  * - Re-initialize [NetworkHandler] instances if the old one is dead.
  * - Suspends requests when connection is not available.
+ *
+ * No connection is created until first invocation of [getResumedInstance],
+ * and new connections are created only when calling [getResumedInstance] if the old connection was dead.
  */
-internal abstract class NetworkHandlerSelector<H : NetworkHandler>(
-    protected val factory: NetworkHandlerFactory<H>
-) {
+internal abstract class NetworkHandlerSelector<H : NetworkHandler> {
+    /**
+     * Returns an instance immediately without suspension, or `null` if instance not ready.
+     * @see awaitResumeInstance
+     */
+    abstract fun getResumedInstance(): H?
+
     /**
      * Returns an alive [NetworkHandler], or suspends the coroutine until the connection has been made again.
      */
-    abstract suspend fun awaitInstance(): H
-
-    /**
-     * Returns an instance immediately without suspension, or `null` if instance not ready.
-     * @see awaitInstance
-     */
-    abstract fun getInstance(): H?
+    abstract suspend fun awaitResumeInstance(): H
 }
 
-internal class NetworkHandlerSelectorImpl<H : NetworkHandler>(factory: NetworkHandlerFactory<H>) :
-    NetworkHandlerSelector<H>(factory) {
+internal abstract class AutoReconnectNetworkHandlerSelector<H : NetworkHandler> : NetworkHandlerSelector<H>() {
+    private val current = atomic<H?>(null)
 
-    private fun createInstance(): H {
-        // TODO: 2021/4/13 how to pass information about conn. here?
-//        factory.create()
-        TODO()
+    protected abstract fun createInstance(): H
+
+    final override fun getResumedInstance(): H? = current.value
+
+    final override tailrec suspend fun awaitResumeInstance(): H {
+        val current = getResumedInstance()
+        return if (current != null) {
+            when (current.state) {
+                State.OK -> current
+                State.CLOSED -> {
+                    this.current.compareAndSet(current, null) // invalidate the instance and try again.
+                    awaitResumeInstance()
+                }
+                else -> {
+                    current.resumeConnection() // try to advance state.
+                    awaitResumeInstance()
+                }
+            }
+        } else {
+            this.current.compareAndSet(current, createInstance())
+            awaitResumeInstance()
+        }
     }
-
-    override suspend fun awaitInstance(): H {
-        getInstance()?.let { return it }
-        TODO()
-    }
-
-    override fun getInstance(): H? = TODO()
 }
 
 /**
- * Delegates [NetworkHandler] calls to instance returned by [NetworkHandlerSelector.awaitInstance].
+ * Delegates [NetworkHandler] calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
  */
-internal class NetworkHandlerWithSelector(
+internal class SelectorNetworkHandler(
+    override val context: NetworkHandlerContext,
     private val selector: NetworkHandlerSelector<*>
 ) : NetworkHandler {
-    private suspend inline fun instance(): NetworkHandler = selector.awaitInstance()
+    private suspend inline fun instance(): NetworkHandler = selector.awaitResumeInstance()
 
-    override val state: HState get() = selector.getInstance()?.state ?: HState.INITIALIZED
+    override val state: State get() = selector.getResumedInstance()?.state ?: State.INITIALIZED
 
-    override suspend fun resumeConnection(): Boolean {
-        return instance().resumeConnection()
+    override suspend fun resumeConnection() {
+        instance() // the selector will resume connection for us.
     }
 
-    override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, retry: Int): Packet {
-        return instance().sendAndExpect(packet, timeout, retry)
-    }
+    override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int) =
+        instance().sendAndExpect(packet, timeout, attempts)
 
-    override suspend fun sendWithoutExpect(packet: OutgoingPacket) {
-        return instance().sendWithoutExpect(packet)
-    }
-
-    override suspend fun close() {
-        return instance().close()
-    }
+    override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
+    override suspend fun close() = instance().close()
 }

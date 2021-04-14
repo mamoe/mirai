@@ -12,30 +12,15 @@ package net.mamoe.mirai.internal.network.net.impl.netty
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import kotlinx.coroutines.CompletableDeferred
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.net.NetworkHandler
+import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.net.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import java.net.SocketAddress
 
-internal class NettyNetworkHandler : NetworkHandler {
-    override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, retry: Int): Packet {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun sendWithoutExpect(packet: OutgoingPacket) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun close() {
-
-    }
-}
-
 internal object NettyNetworkHandlerFactory : NetworkHandlerFactory<NettyNetworkHandler> {
-    override fun create(host: SocketAddress): NettyNetworkHandler {
-        return NettyNetworkHandler()
+    override fun create(context: NetworkHandlerContext, address: SocketAddress): NettyNetworkHandler {
+        return NettyNetworkHandler(context, address)
     }
+
 }
 
 internal class RetrieveContextInboundHandler : ChannelInboundHandlerAdapter() {

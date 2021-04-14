@@ -40,6 +40,17 @@ internal open class OutgoingPacket constructor(
     val name: String = name ?: commandName
 }
 
+internal open class IncomingPacket constructor(
+    val commandName: String,
+    val sequenceId: Int,
+
+    val data: Packet?,
+    /**
+     * If not `null`, [data] is `null`
+     */
+    val exception: Throwable?, // may complete with exception (thrown by decoders)
+)
+
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
     network: QQAndroidBotNetworkHandler,
     timeoutMillis: Long = 5000,
