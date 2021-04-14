@@ -42,3 +42,23 @@ public inline fun CoroutineScope.launchWithPermit(
         semaphore.withPermit { block() }
     }
 }
+
+/**
+ * Creates a child scope of the receiver scope.
+ */
+public fun CoroutineScope.childScope(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): CoroutineScope {
+    val ctx = this.coroutineContext + coroutineContext
+    return CoroutineScope(ctx + SupervisorJob(ctx.job))
+}
+
+/**
+ * Creates a child scope of the receiver context scope.
+ */
+public fun CoroutineContext.childScope(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): CoroutineScope {
+    val ctx = this + coroutineContext
+    return CoroutineScope(ctx + SupervisorJob(ctx.job))
+}
