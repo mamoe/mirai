@@ -10,7 +10,7 @@
 
 **mirai 官方提供 [Kotlin/Java 等 JVM 平台语言开发支持](#jvm-平台-mirai-开发)。如果不熟悉这些语言，请使用以下社区 SDK：**
 
-要使用这些社区 SDK 需要先配置 Mirai Console，可以使用 [一键安装](https://downgit.github.io/#/home?url=https://github.com/mamoe/mirai/blob/dev/docs/files/install-20210412.cmd)（32位，带 HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化安装。
+要使用这些社区 SDK 需要先配置 Mirai Console，可以使用 [一键安装](https://mirai.mamoe.net/assets/uploads/files/1618372079496-install-20210412.cmd)（32位，带 HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化安装。
 
 你可以使用一个或多个语言来开发插件，而且在自己开发的同时也可以[使用下载的插件](UserManual.md#下载和安装插件)。
 
