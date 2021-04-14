@@ -11,11 +11,13 @@ package net.mamoe.mirai.internal.network.net
 
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.net.NetworkHandler.State
-import net.mamoe.mirai.internal.network.net.protocol.SsoProtocol
+import net.mamoe.mirai.internal.network.net.protocol.SsoController
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.SocketAddress
@@ -25,11 +27,27 @@ import java.util.concurrent.CancellationException
  * Immutable context for [NetworkHandler]
  */
 internal interface NetworkHandlerContext {
-    val ssoProtocol: SsoProtocol
+    val bot: QQAndroidBot
 
+    val logger: MiraiLogger
+    val ssoController: SsoController
     val configuration: BotConfiguration
 
-    fun getNextAddress(): SocketAddress
+    fun getNextAddress(): SocketAddress // FIXME: 2021/4/14
+}
+
+internal class NetworkHandlerContextImpl(
+    override val bot: QQAndroidBot,
+    override val ssoController: SsoController,
+) : NetworkHandlerContext {
+    override val configuration: BotConfiguration
+        get() = bot.configuration
+
+    override fun getNextAddress(): SocketAddress {
+        TODO("Not yet implemented")
+    }
+
+    override val logger: MiraiLogger by lazy { configuration.networkLoggerSupplier(bot) }
 }
 
 /**
@@ -143,6 +161,7 @@ internal abstract class NetworkHandlerSelector<H : NetworkHandler> {
     abstract suspend fun awaitResumeInstance(): H
 }
 
+// TODO: 2021/4/14 better naming
 internal abstract class AutoReconnectNetworkHandlerSelector<H : NetworkHandler> : NetworkHandlerSelector<H>() {
     private val current = atomic<H?>(null)
 

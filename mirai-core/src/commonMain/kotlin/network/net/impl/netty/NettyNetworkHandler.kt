@@ -10,19 +10,34 @@
 package net.mamoe.mirai.internal.network.net.impl.netty
 
 import io.netty.bootstrap.Bootstrap
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelInitializer
+import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.async
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.streams.outputStream
 import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
+import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
+import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.runBIO
+import net.mamoe.mirai.utils.withUse
 import java.net.SocketAddress
+import kotlin.coroutines.CoroutineContext
 
 internal class NettyNetworkHandler(
     context: NetworkHandlerContext,
@@ -37,6 +52,71 @@ internal class NettyNetworkHandler(
         val state = _state as NettyState
         state.sendPacketImpl(packet)
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // netty conn.
+    ///////////////////////////////////////////////////////////////////////////
+
+    private inner class ByteBufToIncomingPacketDecoder : SimpleChannelInboundHandler<ByteBuf>(ByteBuf::class.java) {
+        override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
+            ctx.fireChannelRead(msg.toReadPacket().use { packet ->
+                PacketCodec.decodeRaw(context.bot.client, packet)
+            })
+        }
+    }
+
+    private inner class RawIncomingPacketCollector(
+        private val decodePipeline: PacketDecodePipeline
+    ) :
+        SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
+        override fun channelRead0(ctx: ChannelHandlerContext, msg: RawIncomingPacket) {
+            decodePipeline.send(msg)
+        }
+    }
+
+    private suspend fun createConnection(decodePipeline: PacketDecodePipeline): ChannelHandlerContext {
+        val contextResult = CompletableDeferred<ChannelHandlerContext>()
+
+        val eventLoopGroup = NioEventLoopGroup()
+        val bootstrap = Bootstrap()
+        bootstrap.group(eventLoopGroup)
+            .channel(NioSocketChannel::class.java)
+            .handler(object : ChannelInitializer<SocketChannel>() {
+                override fun initChannel(ch: SocketChannel) {
+                    ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
+                        override fun channelActive(ctx: ChannelHandlerContext) {
+                            contextResult.complete(ctx)
+                        }
+                    })
+                        .addLast(LengthFieldBasedFrameDecoder(Int.MAX_VALUE, 0, 4, -4, 0))
+                        .addLast(ByteBufToIncomingPacketDecoder())
+                        .addLast(RawIncomingPacketCollector(decodePipeline))
+                }
+            })
+
+        bootstrap.connect(address).runBIO { await() }
+        return contextResult.await()
+    }
+
+    private inner class PacketDecodePipeline(parentContext: CoroutineContext) :
+        CoroutineScope by parentContext.childScope() {
+        private val channel: Channel<RawIncomingPacket> = Channel(Channel.BUFFERED)
+
+        init {
+            launch(CoroutineName("PacketDecodePipeline processor")) {
+                // 'single thread' processor
+                channel.consumeAsFlow().collect { raw ->
+                    val result = PacketCodec.processBody(context.bot, raw)
+                    if (result == null) {
+                        collectUnknownPacket(raw)
+                    } else collectReceived(result)
+                }
+            }
+        }
+
+        fun send(raw: RawIncomingPacket) = channel.sendBlocking(raw)
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     // states
@@ -54,27 +134,30 @@ internal class NettyNetworkHandler(
         }
 
         override suspend fun resumeConnection() {
-            setState(StateConnecting())
+            setState(StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)))
         }
     }
 
-    private inner class StateConnecting : NettyState(NetworkHandler.State.CONNECTING) {
+    private inner class StateConnecting(
+        val decodePipeline: PacketDecodePipeline,
+    ) : NettyState(NetworkHandler.State.CONNECTING) {
         private val connection = async {
-            createConnection()
+            createConnection(decodePipeline)
         }
 
         private val connectResult = async {
             val connection = connection.await()
-            context.ssoProtocol.login(this@NettyNetworkHandler)
+            context.ssoController.login()
             setState(StateOK(connection))
         }.apply {
             invokeOnCompletion { error ->
-                if (error != null) setState(StateClosed())
+                if (error != null) setState(StateClosed()) // logon failure closes the network handler.
             }
         }
 
-        override suspend fun sendPacketImpl(packet: OutgoingPacket) =
-            error("Cannot send packet when connection is not set.")
+        override suspend fun sendPacketImpl(packet: OutgoingPacket) {
+            connection.await().writeAndFlush(packet)
+        }
 
         override suspend fun resumeConnection() {
             connectResult.await() // propagates exceptions
@@ -97,42 +180,11 @@ internal class NettyNetworkHandler(
     }
 
     override fun initialState(): BaseStateImpl = StateInitialized()
+}
 
-    ///////////////////////////////////////////////////////////////////////////
-    // netty conn.
-    ///////////////////////////////////////////////////////////////////////////
-
-    private fun setupChannelContext(ctx: ChannelHandlerContext) {
-        // TODO: 2021/4/14 decoders
-
-        // incoming collector, last.
-        ctx.channel().pipeline().addLast(object : ChannelInboundHandlerAdapter() {
-            override fun channelRead(ctx: ChannelHandlerContext?, msg: Any?) {
-                if (msg is IncomingPacket) {
-                    collectReceived(msg)
-                }
-            }
-        })
-    }
-
-    private suspend fun createConnection(): ChannelHandlerContext {
-        val contextResult = CompletableDeferred<ChannelHandlerContext>()
-
-        val eventLoopGroup = NioEventLoopGroup()
-        val bootstrap = Bootstrap()
-        bootstrap.group(eventLoopGroup)
-            .channel(NioSocketChannel::class.java)
-            .handler(object : ChannelInitializer<SocketChannel>() {
-                override fun initChannel(ch: SocketChannel) {
-                    ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
-                        override fun channelActive(ctx: ChannelHandlerContext) {
-                            contextResult.complete(ctx)
-                            setupChannelContext(ctx)
-                        }
-                    })
-                }
-            })
-        bootstrap.connect(address)
-        return contextResult.await()
+private fun ByteBuf.toReadPacket(): ByteReadPacket {
+    val buf = this
+    return buildPacket {
+        ByteBufInputStream(buf).withUse { copyTo(outputStream()) }
     }
 }

@@ -40,7 +40,7 @@ internal open class OutgoingPacket constructor(
     val name: String = name ?: commandName
 }
 
-internal open class IncomingPacket constructor(
+internal class IncomingPacket constructor(
     val commandName: String,
     val sequenceId: Int,
 
@@ -49,7 +49,20 @@ internal open class IncomingPacket constructor(
      * If not `null`, [data] is `null`
      */
     val exception: Throwable?, // may complete with exception (thrown by decoders)
-)
+) {
+    init {
+        if (exception != null) require(data == null) { "When exception is not null, data must be null." }
+        if (data != null) require(exception == null) { "When data is not null, exception must be null." }
+    }
+
+    override fun toString(): String {
+        return if (exception == null) {
+            "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$data)"
+        } else {
+            "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$exception)"
+        }
+    }
+}
 
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
     network: QQAndroidBotNetworkHandler,

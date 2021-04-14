@@ -13,13 +13,15 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.lateinitMutableProperty
+import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
+
+private val PACKET_DEBUG = systemProp("mirai.debug.packet.logger", true)
 
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
@@ -44,6 +46,11 @@ internal abstract class NetworkHandlerSupport(
                 }
             }
         }
+    }
+
+    protected fun collectUnknownPacket(raw: RawIncomingPacket) {
+        packetLogger.debug { "Unknown packet: commandName=${raw.commandName}, body=${raw.body.toUHexString()}" }
+        // may add hooks here (to context)
     }
 
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
@@ -78,6 +85,10 @@ internal abstract class NetworkHandlerSupport(
         coroutineContext.job.cancel("NetworkHandler closed.")
     }
 
+    protected val packetLogger: MiraiLogger by lazy {
+        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PACKET_DEBUG)
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // await impl
     ///////////////////////////////////////////////////////////////////////////
@@ -109,12 +120,14 @@ internal abstract class NetworkHandlerSupport(
     protected abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,
     ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext.job)) {
+        @Throws(Exception::class)
         abstract suspend fun resumeConnection()
     }
 
     /**
-     * State is *lazy*, it is initialized only if requested.
+     * State is *lazy*, initialized only if requested.
      */
+    @Suppress("PropertyName")
     protected var _state: BaseStateImpl by lateinitMutableProperty { initialState() }
         private set
 
