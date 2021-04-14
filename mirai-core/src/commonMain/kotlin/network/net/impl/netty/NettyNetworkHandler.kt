@@ -43,7 +43,7 @@ internal class NettyNetworkHandler(
     context: NetworkHandlerContext,
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
-    override suspend fun close() {
+    override fun close() {
         super.close()
         setState(StateClosed())
     }
@@ -92,7 +92,7 @@ internal class NettyNetworkHandler(
                 }
             })
             .connect(address).runBIO { await() }
-        // TODO: 2021/4/14  eventLoopGroup 移动到 bot, 并在 bot.close() 时关闭
+        // TODO: 2021/4/14  eventLoopGroup 关闭
 
         return contextResult.await()
     }
@@ -181,6 +181,7 @@ internal class NettyNetworkHandler(
     override fun initialState(): BaseStateImpl = StateInitialized()
 }
 
+// TODO: 2021/4/14 Add test for toReadPacket
 private fun ByteBuf.toReadPacket(): ByteReadPacket {
     val buf = this
     return buildPacket {

@@ -87,10 +87,7 @@ internal object PacketCodec {
                 check(returnCode == 0) {
                     if (returnCode <= -10000) {
                         // https://github.com/mamoe/mirai/issues/470
-                        throw KnownPacketFactories.PacketFactoryIllegalStateException(
-                            returnCode,
-                            "returnCode = $returnCode"
-                        )
+                        error("returnCode = $returnCode")
                     } else "returnCode = $returnCode"
                 }
 
