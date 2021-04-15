@@ -92,7 +92,7 @@ kotlin {
             val androidTest by getting {
                 dependencies {
                     implementation(kotlin("test", Versions.kotlinCompiler))
-                    implementation(kotlin("test-junit", Versions.kotlinCompiler))
+                    implementation(kotlin("test-junit5", Versions.kotlinCompiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
