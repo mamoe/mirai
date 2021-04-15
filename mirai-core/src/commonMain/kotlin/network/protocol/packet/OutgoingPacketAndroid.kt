@@ -17,7 +17,7 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.net.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket

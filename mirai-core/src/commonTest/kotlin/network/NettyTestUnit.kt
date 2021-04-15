@@ -13,7 +13,7 @@ import io.netty.channel.DefaultChannelPromise
 import io.netty.channel.embedded.EmbeddedChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.internal.network.net.impl.netty.awaitKt
+import net.mamoe.mirai.internal.network.handler.impl.netty.awaitKt
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test

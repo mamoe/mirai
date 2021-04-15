@@ -24,9 +24,9 @@ import net.mamoe.mirai.internal.message.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.net.NetworkHandler
-import net.mamoe.mirai.internal.network.net.NetworkHandlerContextImpl
-import net.mamoe.mirai.internal.network.net.impl.netty.NettyNetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType

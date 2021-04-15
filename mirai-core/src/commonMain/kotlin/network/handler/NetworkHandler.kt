@@ -7,13 +7,13 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net
+package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.net.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
