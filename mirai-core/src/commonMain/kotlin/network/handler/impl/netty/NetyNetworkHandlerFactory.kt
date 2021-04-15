@@ -7,10 +7,10 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net.impl.netty
+package net.mamoe.mirai.internal.network.handler.impl.netty
 
-import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.net.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import java.net.SocketAddress
 
 internal object NettyNetworkHandlerFactory : NetworkHandlerFactory<NettyNetworkHandler> {

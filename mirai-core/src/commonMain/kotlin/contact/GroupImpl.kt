@@ -23,13 +23,13 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.network.BdhSession
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
 import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
-import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
