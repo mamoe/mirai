@@ -14,7 +14,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.net.NetworkHandler.State
-import net.mamoe.mirai.internal.network.net.protocol.SsoController
+import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.BotConfiguration
@@ -32,7 +32,7 @@ internal interface NetworkHandlerContext {
     val bot: QQAndroidBot
 
     val logger: MiraiLogger
-    val ssoController: SsoController
+    val ssoContext: SsoContext
     val configuration: BotConfiguration
 
     fun getNextAddress(): SocketAddress // FIXME: 2021/4/14
@@ -40,7 +40,7 @@ internal interface NetworkHandlerContext {
 
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
-    override val ssoController: SsoController,
+    override val ssoContext: SsoContext,
 ) : NetworkHandlerContext {
     override val configuration: BotConfiguration
         get() = bot.configuration
