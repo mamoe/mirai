@@ -12,10 +12,7 @@ package net.mamoe.mirai.internal.network.net.impl.netty
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInboundHandlerAdapter
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -35,7 +32,6 @@ import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.net.protocol.SsoController
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.runBIO
 import net.mamoe.mirai.utils.withUse
 import java.net.SocketAddress
 import kotlin.coroutines.CoroutineContext
@@ -77,29 +73,33 @@ internal class NettyNetworkHandler(
 
     private suspend fun createConnection(decodePipeline: PacketDecodePipeline): ChannelHandlerContext {
         val contextResult = CompletableDeferred<ChannelHandlerContext>()
-
         val eventLoopGroup = NioEventLoopGroup()
 
-        Bootstrap().group(eventLoopGroup)
+        val future = Bootstrap().group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
             .handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
-                    ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
-                        override fun channelActive(ctx: ChannelHandlerContext) {
-                            contextResult.complete(ctx)
-                        }
-                    })
+                    ch.pipeline()
+                        .addLast(object : ChannelInboundHandlerAdapter() {
+                            override fun channelActive(ctx: ChannelHandlerContext) {
+                                contextResult.complete(ctx)
+                            }
+
+                            override fun channelInactive(ctx: ChannelHandlerContext?) {
+                                eventLoopGroup.shutdownGracefully()
+                            }
+                        })
                         .addLast(LengthFieldBasedFrameDecoder(Int.MAX_VALUE, 0, 4, -4, 0))
                         .addLast(ByteBufToIncomingPacketDecoder())
                         .addLast(RawIncomingPacketCollector(decodePipeline))
                 }
             })
             .connect(address)
-            .runBIO { await() }
-            .channel().closeFuture().addListener {
-                // TODO: 2021/4/15 可能要设置为 lost
-                setState { StateClosed(it.cause()) }
-            }
+            .awaitKt()
+
+        future.channel().closeFuture().addListener {
+            setState { StateConnectionLost(it.cause()) }
+        }
         // TODO: 2021/4/14  eventLoopGroup 关闭
 
         return contextResult.await()
@@ -162,6 +162,7 @@ internal class NettyNetworkHandler(
         }.apply {
             invokeOnCompletion { error ->
                 if (error != null) setState { StateClosed(error) } // logon failure closes the network handler.
+                // and this error will also be thrown by `StateConnecting.resumeConnection`
             }
         }
 
@@ -184,18 +185,15 @@ internal class NettyNetworkHandler(
         override suspend fun resumeConnection() {} // noop
     }
 
-    private inner class StateConnectionLost(
-        val decodePipeline: PacketDecodePipeline,
-    ) : NettyState(NetworkHandler.State.CONNECTION_LOST) {
-        private val connection = async {
-            createConnection(decodePipeline)
-        }
-
+    private inner class StateConnectionLost(private val cause: Throwable) :
+        NettyState(NetworkHandler.State.CONNECTION_LOST) {
         override suspend fun sendPacketImpl(packet: OutgoingPacket) {
-            connection.await().writeAndFlush(packet)
+            throw IllegalStateException("Connection is lost so cannot send packet. Call resumeConnection first.", cause)
         }
 
-        override suspend fun resumeConnection() {} // noop
+        override suspend fun resumeConnection() {
+            setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
+        } // noop
     }
 
     private inner class StateClosed(
@@ -212,6 +210,18 @@ internal class NettyNetworkHandler(
     }
 
     override fun initialState(): BaseStateImpl = StateInitialized()
+}
+
+private suspend fun ChannelFuture.awaitKt(): ChannelFuture {
+    suspendCancellableCoroutine<Unit> { cont ->
+        cont.invokeOnCancellation {
+            channel().close()
+        }
+        addListener {
+            cont.resumeWith(Result.success(Unit))
+        }
+    }
+    return this
 }
 
 // TODO: 2021/4/14 Add test for toReadPacket
