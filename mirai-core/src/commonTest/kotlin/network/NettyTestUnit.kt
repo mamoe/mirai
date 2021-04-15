@@ -13,12 +13,13 @@ import io.netty.channel.DefaultChannelPromise
 import io.netty.channel.embedded.EmbeddedChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.internal.network.net.impl.netty.awaitKt
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import kotlin.test.fail
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+import kotlin.time.seconds
 
 internal class NettyTestUnit {
     companion object {
@@ -32,36 +33,37 @@ internal class NettyTestUnit {
     }
 
     @Test
-    fun testAwait() = runBlocking {
-        withTimeout(10000) {
-            val future = DefaultChannelPromise(channel)
-            launch {
-                delay(2000)
-                future.setSuccess()
-            }
-            future.awaitKt()
-        }
-        withTimeout(10000) {
-            val future = DefaultChannelPromise(channel)
+    fun canAwait() = runBlockingUnit(timeout = 5.seconds) {
+        val future = DefaultChannelPromise(channel)
+        launch {
+            delay(2000)
             future.setSuccess()
-            future.awaitKt()
         }
-        withTimeout(10000) {
+        future.awaitKt()
+    }
+
+    @Test
+    fun returnsImmediatelyIfCompleted() = runBlockingUnit(timeout = 5.seconds) {
+        val future = DefaultChannelPromise(channel)
+        future.setSuccess()
+        future.awaitKt()
+    }
+
+    @Test
+    fun testAwait() {
+        class MyError : AssertionError("My") // coroutine debugger will modify the exception if inside coroutine
+
+        runBlockingUnit(timeout = 5.seconds) {
             val future = DefaultChannelPromise(channel)
-            val e = IllegalArgumentException()
             launch {
                 delay(2000)
-                future.setFailure(e)
+                future.setFailure(MyError())
             }
-            try {
+            assertFailsWith<AssertionError> {
                 future.awaitKt()
-                fail("await exception fail")
-            } catch (e1: IllegalArgumentException) {
-                if (e1 !== e) {
-                    throw e1
-                }
+            }.let { actual ->
+                assertTrue { actual is MyError }
             }
         }
     }
-
 }
