@@ -21,7 +21,15 @@ import org.junit.jupiter.api.Test
 import kotlin.test.fail
 
 internal class NettyTestUnit {
-    private val channel = EmbeddedChannel()
+    companion object {
+        private val channel = EmbeddedChannel()
+
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            channel.close()
+        }
+    }
 
     @Test
     fun testAwait() = runBlocking {
@@ -56,8 +64,4 @@ internal class NettyTestUnit {
         }
     }
 
-    @AfterAll
-    fun afterAll() {
-        channel.close()
-    }
 }
