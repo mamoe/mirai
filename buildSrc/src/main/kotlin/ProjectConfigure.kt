@@ -70,28 +70,32 @@ fun Project.configureKotlinTestSettings() {
     tasks.withType(Test::class) {
         useJUnitPlatform()
     }
+    val b = "Auto-set for project '${project.path}'. (configureKotlinTestSettings)"
     when {
         isKotlinJvmProject -> {
             dependencies {
-                "testImplementation"(kotlin("test-junit5"))
+                "testImplementation"(kotlin("test-junit5"))?.because(b)
 
-                "testApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
+                "testApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
+                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
             }
         }
         isKotlinMpp -> {
             kotlinSourceSets?.forEach { sourceSet ->
-                if (sourceSet.name == "common") {
-                    sourceSet.dependencies {
-                        implementation(kotlin("test"))
-                        implementation(kotlin("test-annotations-common"))
+                when {
+                    sourceSet.name == "commonTest" -> {
+                        sourceSet.dependencies {
+                            implementation(kotlin("test"))?.because(b)
+                            implementation(kotlin("test-annotations-common"))?.because(b)
+                        }
                     }
-                } else {
-                    sourceSet.dependencies {
-                        implementation(kotlin("test-junit5"))
+                    sourceSet.name.contains("test") -> {
+                        sourceSet.dependencies {
+                            implementation(kotlin("test-junit5"))?.because(b)
 
-                        implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-                        implementation("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
+                            implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
+                            runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                        }
                     }
                 }
             }
