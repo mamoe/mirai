@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.internal.network.net.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.net.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.net.protocol.SsoContext
-import net.mamoe.mirai.internal.network.net.protocol.SsoController
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -172,9 +171,7 @@ internal class QQAndroidBot constructor(
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
         return NettyNetworkHandler(
-            NetworkHandlerContextImpl(
-                this, SsoController(this, TODO("!!!recursive dependency here"))
-            ),
+            NetworkHandlerContextImpl(this, this),
             InetSocketAddress("123", 1) // TODO: 2021/4/14 address
         ) // TODO: 2021/4/14
     }
