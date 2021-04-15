@@ -32,6 +32,7 @@ import net.mamoe.mirai.internal.network.net.NetworkHandler
 import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
+import net.mamoe.mirai.internal.network.net.protocol.SsoController
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.runBIO
@@ -45,7 +46,7 @@ internal class NettyNetworkHandler(
 ) : NetworkHandlerSupport(context) {
     override fun close() {
         super.close()
-        setState(StateClosed())
+        setState(StateClosed(null))
     }
 
     override suspend fun sendPacketImpl(packet: OutgoingPacket) {
@@ -77,6 +78,7 @@ internal class NettyNetworkHandler(
         val contextResult = CompletableDeferred<ChannelHandlerContext>()
 
         val eventLoopGroup = NioEventLoopGroup()
+
         Bootstrap().group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
             .handler(object : ChannelInitializer<SocketChannel>() {
@@ -91,7 +93,12 @@ internal class NettyNetworkHandler(
                         .addLast(RawIncomingPacketCollector(decodePipeline))
                 }
             })
-            .connect(address).runBIO { await() }
+            .connect(address)
+            .runBIO { await() }
+            .channel().closeFuture().addListener {
+                // TODO: 2021/4/15 可能要设置为 lost
+                setState(StateClosed(it.cause()))
+            }
         // TODO: 2021/4/14  eventLoopGroup 关闭
 
         return contextResult.await()
@@ -140,17 +147,17 @@ internal class NettyNetworkHandler(
     private inner class StateConnecting(
         val decodePipeline: PacketDecodePipeline,
     ) : NettyState(NetworkHandler.State.CONNECTING) {
-        private val connection = async {
-            createConnection(decodePipeline)
-        }
+        private val ssoController = SsoController(context.ssoContext, this@NettyNetworkHandler)
+
+        private val connection = async { createConnection(decodePipeline) }
 
         private val connectResult = async {
             val connection = connection.await()
-            context.ssoController.login()
+            ssoController.login()
             setState(StateOK(connection))
         }.apply {
             invokeOnCompletion { error ->
-                if (error != null) setState(StateClosed()) // logon failure closes the network handler.
+                if (error != null) setState(StateClosed(error)) // logon failure closes the network handler.
             }
         }
 
@@ -173,9 +180,27 @@ internal class NettyNetworkHandler(
         override suspend fun resumeConnection() {} // noop
     }
 
-    private inner class StateClosed : NettyState(NetworkHandler.State.OK) {
-        override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")
+    private inner class StateConnectionLost(
+        val decodePipeline: PacketDecodePipeline,
+    ) : NettyState(NetworkHandler.State.CONNECTION_LOST) {
+        private val connection = async {
+            createConnection(decodePipeline)
+        }
+
+        override suspend fun sendPacketImpl(packet: OutgoingPacket) {
+            connection.await().writeAndFlush(packet)
+        }
+
         override suspend fun resumeConnection() {} // noop
+    }
+
+    private inner class StateClosed(
+        val exception: Throwable?
+    ) : NettyState(NetworkHandler.State.OK) {
+        override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")
+        override suspend fun resumeConnection() {
+            exception?.let { throw it }
+        } // noop
     }
 
     override fun initialState(): BaseStateImpl = StateInitialized()
