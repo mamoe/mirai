@@ -132,7 +132,11 @@ internal abstract class NetworkHandlerSupport(
         private set
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
-    protected fun setState(impl: BaseStateImpl) { // we can add monitor here for debug.
+    protected inline fun setState(crossinline new: () -> BaseStateImpl) = synchronized(this) {
+        // we can add hooks here for debug.
+
+        val impl = new()
+
         val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
         old.cancel()

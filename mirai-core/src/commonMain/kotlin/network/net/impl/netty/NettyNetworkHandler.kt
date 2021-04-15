@@ -45,9 +45,10 @@ internal class NettyNetworkHandler(
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
     override fun close() {
-        super.close()
-        setState(StateClosed(null))
+        setState { StateClosed(null) }
     }
+
+    private fun closeSuper() = super.close()
 
     override suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
@@ -97,7 +98,7 @@ internal class NettyNetworkHandler(
             .runBIO { await() }
             .channel().closeFuture().addListener {
                 // TODO: 2021/4/15 可能要设置为 lost
-                setState(StateClosed(it.cause()))
+                setState { StateClosed(it.cause()) }
             }
         // TODO: 2021/4/14  eventLoopGroup 关闭
 
@@ -128,6 +129,9 @@ internal class NettyNetworkHandler(
     // states
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * When state is initialized, it must be set to [_state]. (inside [setState])
+     */
     private abstract inner class NettyState(
         correspondingState: NetworkHandler.State
     ) : BaseStateImpl(correspondingState) {
@@ -140,7 +144,7 @@ internal class NettyNetworkHandler(
         }
 
         override suspend fun resumeConnection() {
-            setState(StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)))
+            setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
         }
     }
 
@@ -154,10 +158,10 @@ internal class NettyNetworkHandler(
         private val connectResult = async {
             val connection = connection.await()
             ssoController.login()
-            setState(StateOK(connection))
+            setState { StateOK(connection) }
         }.apply {
             invokeOnCompletion { error ->
-                if (error != null) setState(StateClosed(error)) // logon failure closes the network handler.
+                if (error != null) setState { StateClosed(error) } // logon failure closes the network handler.
             }
         }
 
@@ -197,6 +201,10 @@ internal class NettyNetworkHandler(
     private inner class StateClosed(
         val exception: Throwable?
     ) : NettyState(NetworkHandler.State.OK) {
+        init {
+            closeSuper()
+        }
+
         override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")
         override suspend fun resumeConnection() {
             exception?.let { throw it }
