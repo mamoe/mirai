@@ -89,7 +89,7 @@ fun Project.configureKotlinTestSettings() {
                             implementation(kotlin("test-annotations-common"))?.because(b)
                         }
                     }
-                    sourceSet.name.contains("test") -> {
+                    sourceSet.name.contains("test", ignoreCase = true) -> {
                         sourceSet.dependencies {
                             implementation(kotlin("test-junit5"))?.because(b)
 
