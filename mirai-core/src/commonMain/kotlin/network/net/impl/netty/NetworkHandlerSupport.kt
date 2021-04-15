@@ -116,6 +116,8 @@ internal abstract class NetworkHandlerSupport(
      * A **scoped** state corresponding to [NetworkHandler.State].
      *
      * CoroutineScope is cancelled when switched to another state.
+     *
+     * State can only be changed inside [setState].
      */
     protected abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,

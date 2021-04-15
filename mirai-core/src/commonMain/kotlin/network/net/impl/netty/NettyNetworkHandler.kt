@@ -100,7 +100,6 @@ internal class NettyNetworkHandler(
         future.channel().closeFuture().addListener {
             setState { StateConnectionLost(it.cause()) }
         }
-        // TODO: 2021/4/14  eventLoopGroup 关闭
 
         return contextResult.await()
     }
