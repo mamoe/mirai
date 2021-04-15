@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net.impl.netty
+package net.mamoe.mirai.internal.network.handler.impl.netty
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
@@ -23,8 +23,9 @@ import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.internal.network.net.NetworkHandler
-import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.impl.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.net.protocol.SsoController

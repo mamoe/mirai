@@ -27,7 +27,7 @@ import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.network.DefaultServerList
-import net.mamoe.mirai.internal.network.net.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext

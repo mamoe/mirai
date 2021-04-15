@@ -7,12 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net.impl.netty
+package net.mamoe.mirai.internal.network.handler.impl
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.net.NetworkHandler
-import net.mamoe.mirai.internal.network.net.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
