@@ -11,9 +11,10 @@ package net.mamoe.mirai.console.intellij.diagnostics
 
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_DECLARATION_RECEIVER
 import net.mamoe.mirai.console.compiler.common.resolve.COMMAND_SENDER_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.hasAnnotation
 import net.mamoe.mirai.console.intellij.resolve.hasSuperType
-import net.mamoe.mirai.console.intellij.resolve.isCompositeCommandSubCommand
-import net.mamoe.mirai.console.intellij.resolve.isSimpleCommandHandler
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -27,10 +28,9 @@ class CommandDeclarationChecker : DeclarationChecker {
 
         // exclusive checks or return
         when {
-            declaration.isSimpleCommandHandler() -> {
+            descriptor.hasAnnotation(SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME) -> {
             }
-
-            declaration.isCompositeCommandSubCommand() -> {
+            descriptor.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME) -> {
             }
             else -> return
         }
