@@ -82,20 +82,31 @@ fun Project.configureKotlinTestSettings() {
         }
         isKotlinMpp -> {
             kotlinSourceSets?.forEach { sourceSet ->
+                fun configureJvmTest(sourceSet: KotlinSourceSet) {
+                    sourceSet.dependencies {
+                        implementation(kotlin("test-junit5"))?.because(b)
+
+                        implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
+                        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                    }
+                }
+
+                val target = kotlinTargets.orEmpty()
+                    .find { it.name == sourceSet.name.substringBeforeLast("Main").substringBeforeLast("Test") }
+
                 when {
                     sourceSet.name == "commonTest" -> {
-                        sourceSet.dependencies {
-                            implementation(kotlin("test"))?.because(b)
-                            implementation(kotlin("test-annotations-common"))?.because(b)
+                        if (target?.platformType == KotlinPlatformType.jvm || target?.platformType == KotlinPlatformType.androidJvm) {
+                            configureJvmTest(sourceSet)
+                        } else {
+                            sourceSet.dependencies {
+                                implementation(kotlin("test"))?.because(b)
+                                implementation(kotlin("test-annotations-common"))?.because(b)
+                            }
                         }
                     }
                     sourceSet.name.contains("test", ignoreCase = true) -> {
-                        sourceSet.dependencies {
-                            implementation(kotlin("test-junit5"))?.because(b)
-
-                            implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
-                            runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
-                        }
+                        configureJvmTest(sourceSet)
                     }
                 }
             }
