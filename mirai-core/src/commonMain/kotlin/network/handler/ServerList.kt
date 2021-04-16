@@ -16,32 +16,39 @@ internal data class ServerAddress(
     val host: String,
     val port: Int
 ) {
+    init {
+        require(port >= 0) { "port must be positive: '$port'" }
+        require(host.isNotBlank()) { "host is invalid: '$host'" }
+    }
+
     fun toSocketAddress(): InetSocketAddress = InetSocketAddress.createUnresolved(host, port)
 }
 
 /**
  * Queue of servers. Pop each time when trying to connect.
  */
-internal class ServerList {
+internal class ServerList(
+    initial: Collection<ServerAddress> = emptyList()
+) {
     @Volatile
-    private var preferred: Set<ServerAddress>? = null
+    private var preferred: Set<ServerAddress> = DefaultServerList
 
     @Volatile
-    private var current: Queue<ServerAddress> = ArrayDeque()
+    private var current: Queue<ServerAddress> = ArrayDeque(initial)
 
     @Synchronized
     fun setPreferred(list: Collection<ServerAddress>) {
+        require(list.isNotEmpty()) { "list cannot be empty." }
         preferred = list.toSet()
+    }
+
+    init {
+        refresh()
     }
 
     @Synchronized
     fun refresh() {
-        val preferred = preferred
-        current = if (preferred?.isEmpty() == false) {
-            preferred.toCollection(ArrayDeque(current.size))
-        } else {
-            DefaultServerList.toCollection(ArrayDeque(current.size))
-        }
+        current = preferred.toCollection(ArrayDeque(current.size))
         check(current.isNotEmpty()) {
             "Internal error: failed to fill server list. No server available."
         }

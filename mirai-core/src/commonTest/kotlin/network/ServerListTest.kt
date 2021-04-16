@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.internal.network
 
+import net.mamoe.mirai.internal.network.handler.ServerAddress
 import net.mamoe.mirai.internal.network.handler.ServerList
-import kotlin.test.Test
-import kotlin.test.assertNotEquals
+import kotlin.test.*
 
 internal class ServerListTest {
 
@@ -20,4 +20,49 @@ internal class ServerListTest {
         assertNotEquals(0, ServerList.DefaultServerList.size)
     }
 
+    @Test
+    fun `can poll current for initial`() {
+        assertNotNull(ServerList().pollCurrent())
+    }
+
+    @Test
+    fun `not empty for initial`() {
+        assertNotNull(ServerList().pollAny())
+    }
+
+    @Test
+    fun `poll current will end with null`() {
+        val instance = ServerList()
+        repeat(100) {
+            instance.pollCurrent()
+        }
+        assertNull(instance.pollCurrent())
+    }
+
+    @Test
+    fun `poll any is always not null`() {
+        val instance = ServerList()
+        repeat(100) {
+            instance.pollAny()
+        }
+        assertNotNull(instance.pollAny())
+    }
+
+    @Test
+    fun `preferred cannot be empty`() {
+        assertFailsWith<IllegalArgumentException> {
+            ServerList().setPreferred(emptyList())
+        }
+    }
+
+    @Test
+    fun `use preferred`() {
+        val instance = ServerList()
+        val addr = ServerAddress("test", 1)
+        instance.setPreferred(listOf(addr))
+        repeat(100) {
+            instance.pollAny()
+        }
+        assertSame(addr, instance.pollAny())
+    }
 }
