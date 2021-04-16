@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.handler.impl
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.error
 
 /**
@@ -54,13 +55,16 @@ internal interface StateObserver {
 internal class LoggingStateObserver(
     val logger: MiraiLogger
 ) : StateObserver {
+    override fun toString(): String {
+        return "LoggingStateObserver(logger=$logger)"
+    }
 
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
         new: NetworkHandlerSupport.BaseStateImpl
     ) {
-        logger.error { "State changed: ${previous.correspondingState} -> ${new.correspondingState}" }
+        logger.debug { "State changed: ${previous.correspondingState} -> ${new.correspondingState}" }
     }
 
     override fun exceptionOnCreatingNewState(
@@ -68,7 +72,7 @@ internal class LoggingStateObserver(
         previousState: NetworkHandlerSupport.BaseStateImpl,
         exception: Throwable
     ) {
-        logger.error({ "State changed: ${previousState.correspondingState} -> $exception" }, exception)
+        logger.debug({ "State changed: ${previousState.correspondingState} -> $exception" }, exception)
     }
 
     override fun afterStateResume(
@@ -78,10 +82,10 @@ internal class LoggingStateObserver(
     ) {
         result.fold(
             onSuccess = {
-                logger.error { "State resumed: ${state.correspondingState}." }
+                logger.debug { "State resumed: ${state.correspondingState}." }
             },
             onFailure = {
-                logger.error(
+                logger.debug(
                     { "State resumed: ${state.correspondingState} ${result.exceptionOrNull()}" },
                     result.exceptionOrNull()
                 )
@@ -101,6 +105,11 @@ internal class SafeStateObserver(
     val delegate: StateObserver,
     val logger: MiraiLogger,
 ) : StateObserver {
+
+    override fun toString(): String {
+        return "SafeStateObserver(delegate=$delegate)"
+    }
+
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,

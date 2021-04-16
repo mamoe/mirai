@@ -23,12 +23,14 @@ import kotlin.io.use
  * - Transforms [ByteReadPacket] to [RawIncomingPacket]
  */
 internal object PacketCodec {
+    val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", true)
+
     /**
      * 数据包相关的调试输出.
      * 它默认是关闭的.
      */
     internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
-        MiraiLogger.create("Packet").withSwitch(false)
+        MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)
     }
 
     /**
@@ -88,7 +90,7 @@ internal object PacketCodec {
     )
 
     private fun parseSsoFrame(client: SsoSession, bytes: ByteArray): DecodeResult =
-        bytes.toReadPacket().use { input ->
+        bytes.toReadPacket().let { input ->
             val commandName: String
             val ssoSequenceId: Int
             val dataCompressed: Int

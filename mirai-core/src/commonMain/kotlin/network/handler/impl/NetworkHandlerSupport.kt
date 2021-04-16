@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.network.net.protocol.PacketCodec.PACKET_DEBUG
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -21,8 +22,6 @@ import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
-
-private val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", true)
 
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
@@ -36,6 +35,7 @@ internal abstract class NetworkHandlerSupport(
      * Called when a packet is received.
      */
     protected fun collectReceived(packet: IncomingPacket) {
+        logger.verbose({ "Recv: ${packet.commandName} ${packet.data ?: packet.exception}" }, packet.exception)
         for (listener in packetListeners) {
             if (!listener.isExpected(packet)) continue
             if (packetListeners.remove(listener)) {
@@ -56,10 +56,11 @@ internal abstract class NetworkHandlerSupport(
 
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
         val listener = PacketListener(packet.commandName, packet.sequenceId)
-        packetListeners.add(listener)
         var exception: Throwable? = null
         repeat(attempts.coerceAtLeast(1)) {
+            logger.verbose { "Send: ${packet.commandName}" }
             try {
+                packetListeners.add(listener)
                 sendPacketImpl(packet)
                 try {
                     return withTimeout(timeout) {
@@ -72,19 +73,25 @@ internal abstract class NetworkHandlerSupport(
                     exception = e // show last exception
                 }
             } finally {
-                packetListeners.remove()
+                listener.result.complete(null)
+                packetListeners.remove(listener)
             }
         }
         throw exception!!
     }
 
     final override suspend fun sendWithoutExpect(packet: OutgoingPacket) {
+        logger.verbose { "Send: ${packet.commandName}" }
         sendPacketImpl(packet)
     }
 
     override fun close(cause: Throwable?) {
-        logger.info { "NetworkHandler closed: $cause" }
-        coroutineContext.job.cancel("NetworkHandler closed.")
+//        if (cause == null) {
+//            logger.info { "NetworkHandler '$this' closed" }
+//        } else {
+//            logger.info { "NetworkHandler '$this' closed: $cause" }
+//        }
+        coroutineContext.job.cancel("NetworkHandler closed.", cause)
     }
 
     protected val packetLogger: MiraiLogger by lazy {
@@ -154,6 +161,18 @@ internal abstract class NetworkHandlerSupport(
     final override val state: NetworkHandler.State get() = _state.correspondingState
 
     /**
+     * Can only be used in a job launched within the state scope.
+     */
+    @Suppress("SuspendFunctionOnCoroutineScope")
+    protected suspend inline fun setStateForJobCompletion(crossinline new: () -> BaseStateImpl) {
+        val job = currentCoroutineContext()[Job]
+        this.launch {
+            job?.join()
+            setState(new)
+        }
+    }
+
+    /**
      * You may need to call [BaseStateImpl.resumeConnection] since state is lazy.
      *
      * Do not check for instances of [BaseStateImpl]. Instances may be decorated by [StateObserver] for extended functionality.
@@ -170,7 +189,7 @@ internal abstract class NetworkHandlerSupport(
 
         val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
-        old.cancel()
+        old.cancel(CancellationException("State is switched from $old to $impl"))
         _state = impl
 
         context.stateObserver?.stateChanged(this, old, impl)
