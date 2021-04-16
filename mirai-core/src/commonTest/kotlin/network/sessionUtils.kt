@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network
 
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.net.protocol.LoginSessionAware
+import net.mamoe.mirai.internal.network.net.protocol.SsoSession
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -20,12 +20,12 @@ import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.withUse
 import java.io.File
 
-internal class TestLoginSessionAware(
+internal class TestSsoSession(
     private val accountSecrets: AccountSecrets,
     override var outgoingPacketSessionId: ByteArray = byteArrayOf(1, 2, 3, 4),
     override var loginState: Int = 0,
     override val ecdh: ECDH = ECDH(),
-) : LoginSessionAware {
+) : SsoSession {
     override var wLoginSigInfo: WLoginSigInfo by accountSecrets::wLoginSigInfo
     override val randomKey: ByteArray by accountSecrets::randomKey
 }
@@ -39,7 +39,7 @@ internal fun loadSession(
 }
 
 /**
- * secure to share with others.
+ * Secure to share with others. Designed to save real data for tests.
  */
 internal fun QQAndroidClient.dumpSessionSafe(): ByteArray {
     val secrets =

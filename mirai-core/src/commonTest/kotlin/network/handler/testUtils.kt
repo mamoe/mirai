@@ -13,9 +13,9 @@ import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.handler.impl.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.net.protocol.SsoContext
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
@@ -24,8 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class TestNetworkHandlerContext(
     override val bot: QQAndroidBot = MockBot(),
     override val logger: MiraiLogger = MiraiLogger.create("Test"),
-    override val ssoContext: SsoContext = bot,
-    override val configuration: BotConfiguration = bot.configuration
+    override val ssoProcessor: SsoProcessor = SsoProcessor(SsoProcessorContextImpl(bot)),
 ) : NetworkHandlerContext
 
 internal open class TestNetworkHandler(
