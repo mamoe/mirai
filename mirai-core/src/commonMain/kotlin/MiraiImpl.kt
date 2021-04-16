@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
@@ -610,13 +611,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             headers {
                 append(
                     "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
+                    "uin=o${id};" +
+                            " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                            " p_uin=o${id};" +
+                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                )
             }
+        }
         val jsonObj = json.parseToJsonElement(data)
         if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
             throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
