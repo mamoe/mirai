@@ -20,13 +20,15 @@ package net.mamoe.mirai.internal
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.OtherClient
+import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
-import net.mamoe.mirai.internal.network.DefaultServerList
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.ServerList
 import net.mamoe.mirai.supervisorJob
@@ -71,11 +73,17 @@ internal abstract class AbstractBot constructor(
     // overrides
     ///////////////////////////////////////////////////////////////////////////
 
-    final override val isOnline: Boolean get() = _network.state == NetworkHandler.State.OK
+    final override val isOnline: Boolean get() = network.state == NetworkHandler.State.OK
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
-    override val otherClients: ContactList<OtherClient> = ContactList()
+    final override val otherClients: ContactList<OtherClient> = ContactList()
+    final override val friends: ContactList<Friend> = ContactList()
+    final override val groups: ContactList<Group> = ContactList()
+    final override val strangers: ContactList<Stranger> = ContactList()
+
+    final override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
+    final override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
 
     ///////////////////////////////////////////////////////////////////////////
     // sync (// TODO: 2021/4/14 extract sync logic
@@ -96,7 +104,6 @@ internal abstract class AbstractBot constructor(
             val bot = bot.asQQAndroidBot()
             if (
                 !event.bot.isActive // bot closed
-                || !::_network.isInitialized // bot 还未登录就被 close
             // || _isConnecting // bot 还在登入 // TODO: 2021/4/14 处理还在登入?
             ) {
                 // Close network to avoid endless reconnection while network is ok
@@ -137,22 +144,13 @@ internal abstract class AbstractBot constructor(
             }
 
             if (event.reconnect) {
-                if (_network.state != NetworkHandler.State.OK) {
+                if (network.state != NetworkHandler.State.OK) {
                     // normally closed
                     return@subscribeAlways
                 }
 
                 val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
                 bot.logger.info { "Connection lost, retrying login ($causeMessage)" }
-
-                bot.asQQAndroidBot().client.run {
-                    if (serverList.isEmpty()) {
-                        bot.bdhSyncer.loadServerListFromCache()
-                        if (serverList.isEmpty()) {
-                            serverList.addAll(DefaultServerList)
-                        } else Unit
-                    } else serverList.removeAt(0)
-                }
 
                 bot.launch {
                     val success: Boolean
@@ -173,13 +171,13 @@ internal abstract class AbstractBot constructor(
 
     internal val serverList: MutableList<Pair<String, Int>> = mutableListOf() // TODO: 2021/4/16 remove old
     internal val serverListNew = ServerList() // TODO: 2021/4/16 load server list from cache (add a provider)
+    // bot.bdhSyncer.loadServerListFromCache()
 
     // TODO: 2021/4/14 handle serverList
 
-    val network: NetworkHandler get() = _network
-
-    @Suppress("PropertyName")
-    internal lateinit var _network: NetworkHandler
+    val network: NetworkHandler by lazy {
+        createNetworkHandler(coroutineContext)
+    }
 
 
     /**
@@ -188,10 +186,11 @@ internal abstract class AbstractBot constructor(
      */
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
-        network
+        network.resumeConnection()
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler
+    protected abstract suspend fun sendLogout()
 
     // endregion
 
@@ -211,10 +210,9 @@ internal abstract class AbstractBot constructor(
             }
             groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
             friends.delegate.clear()
+            strangers.delegate.clear()
         }
     }
-
-    protected abstract suspend fun sendLogout()
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) {
