@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal
 
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.contact.OtherClientImpl
@@ -57,7 +56,117 @@ internal class QQAndroidBot constructor(
     internal val account: BotAccount,
     configuration: BotConfiguration
 ) : AbstractBot(configuration, account.id), SsoContext {
+    override lateinit var client: QQAndroidClient
+    override val bot: QQAndroidBot get() = this
+
     val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
+    internal var firstLoginSucceed: Boolean = false
+
+    ///////////////////////////////////////////////////////////////////////////
+    // network
+    ///////////////////////////////////////////////////////////////////////////
+
+    // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
+
+    override suspend fun sendLogout() {
+        network.sendWithoutExpect(StatSvc.Register.offline(client))
+    }
+
+    override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
+        val context = NetworkHandlerContextImpl(this, this)
+        return SelectorNetworkHandler(
+            context,
+            FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, serverListNew, context)
+        ) // We can move the factory to configuration but this is not necessary for now.
+    }
+
+
+    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2
+    ): E = network.run { sendAndExpect(timeoutMillis, retry) }
+
+    suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E =
+        network.run { sendAndExpect(timeoutMillis, retry) }
+
+    /**
+     * 获取 获取群公告 所需的 bkn 参数
+     * */
+    val bkn: Int
+        get() = client.wLoginSigInfo.sKey.data
+            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
+            .and(Int.MAX_VALUE)
+
+    ///////////////////////////////////////////////////////////////////////////
+    // contacts
+    ///////////////////////////////////////////////////////////////////////////
+
+    override lateinit var nick: String
+
+    override val friends: ContactList<Friend> = ContactList()
+    override val groups: ContactList<Group> = ContactList()
+    override val strangers: ContactList<Stranger> = ContactList()
+
+    override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
+    override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
+
+
+    @JvmField
+    val groupListModifyLock = Mutex()
+
+    // internally visible only
+    fun getGroupByUin(uin: Long): Group {
+        return getGroupByUinOrNull(uin)
+            ?: throw NoSuchElementException("Group ${Mirai.calculateGroupCodeByGroupUin(uin)} not found")
+    }
+
+    fun getGroupByUinOrNull(uin: Long): Group? {
+        return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // contact cache
+    ///////////////////////////////////////////////////////////////////////////
+
+    inline val json get() = configuration.json
+
+    val friendListCache: FriendListCache? by lazy {
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+        val file = configuration.friendCacheFile()
+        val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
+
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        bot.eventChannel.parentScope(this@QQAndroidBot)
+            .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
+                friendListSaver?.notice()
+            }
+        ret
+    }
+
+    val groupMemberListCaches: GroupMemberListCaches? by lazy {
+        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
+            return@lazy null
+        }
+        GroupMemberListCaches(this)
+    }
+
+    private val friendListSaver: ScheduledJob? by lazy {
+        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
+        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
+            runBIO { saveFriendCache() }
+        }
+    }
+
+    fun saveFriendCache() {
+        val friendListCache = friendListCache ?: return
+
+        configuration.friendCacheFile().run {
+            createFileIfNotExists()
+            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
+            bot.network.context.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Account secrets cache
@@ -99,106 +208,4 @@ internal class QQAndroidBot constructor(
 
     /////////////////////////// accounts secrets end
 
-    override lateinit var client: QQAndroidClient
-
-
-    override val bot: QQAndroidBot get() = this
-
-    internal var firstLoginSucceed: Boolean = false
-
-    inline val json get() = configuration.json
-
-    override val friends: ContactList<Friend> = ContactList()
-
-    val friendListCache: FriendListCache? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        val file = configuration.friendCacheFile()
-        val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
-
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        bot.eventChannel.parentScope(this@QQAndroidBot)
-            .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
-                friendListSaver?.notice()
-            }
-        ret
-    }
-
-    val groupMemberListCaches: GroupMemberListCaches? by lazy {
-        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
-            return@lazy null
-        }
-        GroupMemberListCaches(this)
-    }
-
-    private val friendListSaver: ScheduledJob? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
-            runBIO { saveFriendCache() }
-        }
-    }
-
-    fun saveFriendCache() {
-        val friendListCache = friendListCache ?: return
-
-        configuration.friendCacheFile().run {
-            createFileIfNotExists()
-            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
-            bot.network.context.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
-        }
-    }
-
-    override lateinit var nick: String
-
-    override val asFriend: Friend by lazy {
-        @OptIn(LowLevelApi::class)
-        Mirai.newFriend(this, FriendInfoImpl(uin, nick, ""))
-    }
-
-    override val groups: ContactList<Group> = ContactList()
-
-    // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
-
-    override suspend fun sendLogout() {
-        network.sendWithoutExpect(StatSvc.Register.offline(client))
-    }
-
-    override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
-        val context = NetworkHandlerContextImpl(this, this)
-        return SelectorNetworkHandler(
-            context,
-            FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, serverListNew, context)
-        ) // We can move the factory to configuration but this is not necessary for now.
-    }
-
-    @JvmField
-    val groupListModifyLock = Mutex()
-
-    // internally visible only
-    fun getGroupByUin(uin: Long): Group {
-        return getGroupByUinOrNull(uin)
-            ?: throw NoSuchElementException("Group ${Mirai.calculateGroupCodeByGroupUin(uin)} not found")
-    }
-
-    fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
-    }
-
-
-    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2
-    ): E = network.run { sendAndExpect(timeoutMillis, retry) }
-
-    suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E =
-        network.run { sendAndExpect(timeoutMillis, retry) }
-
-    /**
-     * 获取 获取群公告 所需的 bkn 参数
-     * */
-    val bkn: Int
-        get() = client.wLoginSigInfo.sKey.data
-            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
-            .and(Int.MAX_VALUE)
-    override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
-    override val strangers: ContactList<Stranger> = ContactList()
 }
