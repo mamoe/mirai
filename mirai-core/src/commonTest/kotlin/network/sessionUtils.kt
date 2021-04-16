@@ -12,10 +12,10 @@ package net.mamoe.mirai.internal.network
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.net.protocol.LoginSessionAware
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.withUse
 import java.io.File

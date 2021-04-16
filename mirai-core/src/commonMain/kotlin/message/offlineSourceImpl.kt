@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OfflineMessageSource
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -64,8 +65,8 @@ internal class OfflineMessageSourceImplData(
             ),
             type = 0,
             time = time,
-            pbReserve = net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY,
-            srcMsg = net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
+            pbReserve = EMPTY_BYTE_ARRAY,
+            srcMsg = EMPTY_BYTE_ARRAY
         ).also { jceData = it }
     }
 
