@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
 
-private val PACKET_DEBUG = systemProp("mirai.debug.packet.logger", true)
+private val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", true)
 
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
@@ -121,7 +121,7 @@ internal abstract class NetworkHandlerSupport(
      *
      * State can only be changed inside [setState].
      */
-    protected abstract inner class BaseStateImpl(
+    abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,
     ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext.job)) {
 
@@ -129,7 +129,19 @@ internal abstract class NetworkHandlerSupport(
          * May throw any exception that caused the state to fail.
          */
         @Throws(Exception::class)
-        abstract suspend fun resumeConnection()
+        suspend fun resumeConnection() {
+            val observer = context.stateObserver
+            if (observer != null) {
+                observer.beforeStateResume(this@NetworkHandlerSupport, _state)
+                val result = kotlin.runCatching { resumeConnection0() }
+                observer.afterStateResume(this@NetworkHandlerSupport, _state, result)
+                result.getOrThrow()
+            } else {
+                resumeConnection0()
+            }
+        }
+
+        protected abstract suspend fun resumeConnection0()
     }
 
     /**
@@ -143,16 +155,26 @@ internal abstract class NetworkHandlerSupport(
 
     /**
      * You may need to call [BaseStateImpl.resumeConnection] since state is lazy.
+     *
+     * Do not check for instances of [BaseStateImpl]. Instances may be decorated by [StateObserver] for extended functionality.
      */
     protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
         // we can add hooks here for debug.
 
-        val impl = new()
+        val impl = try {
+            new() // inline only once
+        } catch (e: Throwable) {
+            context.stateObserver?.exceptionOnCreatingNewState(this, _state, e)
+            throw e
+        }
 
         val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
         old.cancel()
         _state = impl
+
+        context.stateObserver?.stateChanged(this, old, impl)
+
         return impl
     }
 
