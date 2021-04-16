@@ -41,7 +41,11 @@ internal class NetworkHandlerContextImpl(
     override val ssoProcessor: SsoProcessor,
     override val logger: MiraiLogger,
     override val stateObserver: StateObserver?,
-) : NetworkHandlerContext
+) : NetworkHandlerContext {
+    override fun toString(): String {
+        return "NetworkHandlerContextImpl(bot=${bot.id}, stateObserver=$stateObserver)"
+    }
+}
 
 /**
  * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
