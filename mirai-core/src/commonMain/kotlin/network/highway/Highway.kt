@@ -23,6 +23,7 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.utils.PlatformSocket

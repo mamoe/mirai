@@ -15,7 +15,6 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
@@ -32,7 +31,6 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.highway.*
-import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
@@ -567,49 +565,20 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @MiraiExperimentalApi
     override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
         bot.asQQAndroidBot().run {
-            val rep = withContext(network.coroutineContext) {
-                Mirai.Http.post<String> {
-                    url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                    body = MultiPartFormDataContent(formData {
-                        append("qid", groupId)
-                        append("bkn", bkn)
-                        append("text", announcement.msg.text)
-                        append("pinned", announcement.pinned)
-                        append(
-                            "settings",
-                            json.encodeToString(
-                                GroupAnnouncementSettings.serializer(),
-                                announcement.settings ?: GroupAnnouncementSettings()
-                            )
-                        )
-                        append("format", "json")
-                    })
-                    headers {
-                        append(
-                            "cookie",
-                            "uin=o${id};" +
-                                    " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                    " p_uin=o${id};" +
-                                    " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                        )
-                    }
-                }
-            }
-            val jsonObj = json.parseToJsonElement(rep)
-            return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-                ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-        }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
-        val data = withContext(network.coroutineContext) {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
+            val rep = Mirai.Http.post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
                     append("bkn", bkn)
-                    append("fid", fid)
+                    append("text", announcement.msg.text)
+                    append("pinned", announcement.pinned)
+                    append(
+                        "settings",
+                        json.encodeToString(
+                            GroupAnnouncementSettings.serializer(),
+                            announcement.settings ?: GroupAnnouncementSettings()
+                        )
+                    )
                     append("format", "json")
                 })
                 headers {
@@ -622,7 +591,32 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     )
                 }
             }
+            val jsonObj = json.parseToJsonElement(rep)
+            return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
+                ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
         }
+
+    @LowLevelApi
+    @MiraiExperimentalApi
+    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
+        val data = Mirai.Http.post<String> {
+            url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
+            body = MultiPartFormDataContent(formData {
+                append("qid", groupId)
+                append("bkn", bkn)
+                append("fid", fid)
+                append("format", "json")
+            })
+            headers {
+                append(
+                    "cookie",
+                        "uin=o${id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }
         val jsonObj = json.parseToJsonElement(data)
         if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
             throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")

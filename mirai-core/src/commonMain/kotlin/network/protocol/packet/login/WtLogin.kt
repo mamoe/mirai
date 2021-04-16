@@ -17,6 +17,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.DebuggingProperties.SHOW_TLV_MAP_ON_LOGIN_SUCCESS
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLoginExt
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.analysisTlv0x531
