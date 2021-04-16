@@ -25,15 +25,15 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.network.*
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
-import net.mamoe.mirai.utils.DeviceInfo
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.withExceptionCollector
 import java.io.File
 
 internal interface SsoContext {
     var client: QQAndroidClient
+    val configuration: BotConfiguration
+    val loginSessionAware: LoginSessionAware get() = client
+    val accountSecrets: AccountSecrets get() = client
 }
 
 internal class SsoController(
@@ -42,7 +42,7 @@ internal class SsoController(
 ) {
     @Throws(LoginFailedException::class)
     suspend fun login() = withExceptionCollector {
-        if (bot.client.wLoginSigInfoInitialized) {
+        if (ssoContext.accountSecrets.wLoginSigInfoInitialized) {
             kotlin.runCatching {
                 fastLogin()
             }.onFailure { e ->
@@ -181,6 +181,7 @@ internal class SsoController(
 
     }
 
+    @Suppress("unused") // false positive
     internal fun initClient() {
         val device = configuration.deviceInfo?.invoke(bot) ?: DeviceInfo.random()
         ssoContext.client = QQAndroidClient(
@@ -188,7 +189,7 @@ internal class SsoController(
             device = device,
             accountSecrets = loadSecretsFromCacheOrCreate(device)
         ).apply {
-            _bot = bot
+            _bot = this@SsoController.bot
         }
     }
 
@@ -201,7 +202,7 @@ internal class SsoController(
     // TODO: 2021/4/14 extract a cache service
 
     private val cacheDir: File by lazy {
-        configuration.workingDir.resolve(bot.configuration.cacheDir).apply { mkdirs() }
+        configuration.workingDir.resolve(ssoContext.configuration.cacheDir).apply { mkdirs() }
     }
     private val accountSecretsFile: File by lazy {
         cacheDir.resolve("account.secrets")
