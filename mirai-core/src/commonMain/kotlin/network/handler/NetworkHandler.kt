@@ -23,7 +23,6 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import java.util.concurrent.CancellationException
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Immutable context for [NetworkHandler]
@@ -59,12 +58,6 @@ internal class NetworkHandlerContextImpl(
  */
 internal interface NetworkHandler {
     val context: NetworkHandlerContext
-
-    val logger get() = context.logger // TODO: 2021/4/14 just for migration
-
-    @Deprecated("") // TODO: 2021/4/14 migrate NetworkHandler.coroutineContext
-    val coroutineContext: CoroutineContext
-        get() = error("ERROR")
 
     /**
      * State of this handler.
@@ -123,27 +116,43 @@ internal interface NetworkHandler {
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
-    suspend fun OutgoingPacket.sendWithoutExpect() = sendWithoutExpect(this)
+    /**
+     * Closes this handler gracefully.
+     */
+    fun close()
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
-    suspend fun <R> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): R = TODO()
+    ///////////////////////////////////////////////////////////////////////////
+    // compatibility
+    ///////////////////////////////////////////////////////////////////////////
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @JvmName("sendWithoutExpect1") // TODO: 2021/4/14 just for migration
+    /**
+     * @suppress This is for compatibility with old code. Use [sendWithoutExpect] without extension receiver instead.
+     */
+    suspend fun OutgoingPacket.sendWithoutExpect(
+        antiCollisionParam: Any? = null
+    ) = this@NetworkHandler.sendWithoutExpect(this)
+
+    /**
+     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
+     */
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <R> OutgoingPacket.sendAndExpect(
+        timeoutMillis: Long = 5000,
+        retry: Int = 2,
+        antiCollisionParam: Any? = null // signature collision
+    ): R = sendAndExpect(this, timeoutMillis, retry) as R
+
+    /**
+     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
+     */
+    @Suppress("UNCHECKED_CAST")
     suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(
         timeoutMillis: Long = 5000,
         retry: Int = 2
-    ): R = TODO()
-
-
-    /**
-     * Closes this handler gracefully and suspends the coroutine for its completion.
-     */
-    fun close()
+    ): R = sendAndExpect(this, timeoutMillis, retry) as R
 }
+
+internal val NetworkHandler.logger: MiraiLogger get() = context.logger
 
 /**
  * Factory for a specific [NetworkHandler] implementation.
