@@ -21,10 +21,8 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
-import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandler
+import net.mamoe.mirai.internal.network.handler.*
+import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.net.protocol.SsoContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
@@ -36,7 +34,6 @@ import net.mamoe.mirai.internal.utils.friendCacheFile
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
 import java.io.File
-import java.net.InetSocketAddress
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
@@ -165,10 +162,11 @@ internal class QQAndroidBot constructor(
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
-        return NettyNetworkHandler(
-            NetworkHandlerContextImpl(this, this),
-            InetSocketAddress("123", 1) // TODO: 2021/4/14 address
-        ) // TODO: 2021/4/14
+        val context = NetworkHandlerContextImpl(this, this)
+        return SelectorNetworkHandler(
+            context,
+            FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, serverListNew, context)
+        ) // We can move the factory to configuration but this is not necessary for now.
     }
 
     @JvmField

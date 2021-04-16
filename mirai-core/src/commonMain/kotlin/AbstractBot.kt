@@ -28,6 +28,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.ServerList
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
@@ -170,7 +171,8 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf()
+    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf() // TODO: 2021/4/16 remove old
+    internal val serverListNew = ServerList() // TODO: 2021/4/16 load server list from cache (add a provider)
 
     // TODO: 2021/4/14 handle serverList
 

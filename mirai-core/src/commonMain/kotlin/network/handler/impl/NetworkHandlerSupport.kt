@@ -122,6 +122,10 @@ internal abstract class NetworkHandlerSupport(
     protected abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,
     ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext.job)) {
+
+        /**
+         * May throw any exception that caused the state to fail.
+         */
         @Throws(Exception::class)
         abstract suspend fun resumeConnection()
     }

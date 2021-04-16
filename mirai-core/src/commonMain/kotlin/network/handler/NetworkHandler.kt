@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
@@ -33,8 +32,6 @@ internal interface NetworkHandlerContext {
     val logger: MiraiLogger
     val ssoContext: SsoContext
     val configuration: BotConfiguration
-
-    fun getNextAddress(): SocketAddress // FIXME: 2021/4/14
 }
 
 internal class NetworkHandlerContextImpl(
@@ -43,10 +40,6 @@ internal class NetworkHandlerContextImpl(
 ) : NetworkHandlerContext {
     override val configuration: BotConfiguration
         get() = bot.configuration
-
-    override fun getNextAddress(): SocketAddress {
-        TODO("Not yet implemented")
-    }
 
     override val logger: MiraiLogger by lazy { configuration.networkLoggerSupplier(bot) }
 }
@@ -99,9 +92,12 @@ internal interface NetworkHandler {
     }
 
     /**
-     * Attempts to resume the connection. Throws no exception but changes [state]
+     * Attempts to resume the connection.
+     *
+     * May throw exception that had caused current state to fail.
      * @see State
      */
+    @Throws(Exception::class)
     suspend fun resumeConnection()
 
 
@@ -168,80 +164,4 @@ internal interface NetworkHandlerFactory<H : NetworkHandler> {
      * Create an instance of [H]. The returning [H] has [NetworkHandler.state] of [State.INITIALIZED]
      */
     fun create(context: NetworkHandlerContext, address: SocketAddress): H
-}
-
-/**
- * A lazy stateful selector of [NetworkHandler].
- *
- * - Calls [factory.create][NetworkHandlerFactory.create] to create [NetworkHandler]s.
- * - Re-initialize [NetworkHandler] instances if the old one is dead.
- * - Suspends requests when connection is not available.
- *
- * No connection is created until first invocation of [getResumedInstance],
- * and new connections are created only when calling [getResumedInstance] if the old connection was dead.
- */
-internal abstract class NetworkHandlerSelector<H : NetworkHandler> {
-    /**
-     * Returns an instance immediately without suspension, or `null` if instance not ready.
-     * @see awaitResumeInstance
-     */
-    abstract fun getResumedInstance(): H?
-
-    /**
-     * Returns an alive [NetworkHandler], or suspends the coroutine until the connection has been made again.
-     */
-    abstract suspend fun awaitResumeInstance(): H
-}
-
-// TODO: 2021/4/14 better naming
-internal abstract class AutoReconnectNetworkHandlerSelector<H : NetworkHandler> : NetworkHandlerSelector<H>() {
-    private val current = atomic<H?>(null)
-
-    protected abstract fun createInstance(): H
-
-    final override fun getResumedInstance(): H? = current.value
-
-    final override tailrec suspend fun awaitResumeInstance(): H {
-        val current = getResumedInstance()
-        return if (current != null) {
-            when (current.state) {
-                State.OK -> current
-                State.CLOSED -> {
-                    this.current.compareAndSet(current, null) // invalidate the instance and try again.
-                    awaitResumeInstance()
-                }
-                else -> {
-                    current.resumeConnection() // try to advance state.
-                    awaitResumeInstance()
-                }
-            }
-        } else {
-            this.current.compareAndSet(current, createInstance())
-            awaitResumeInstance()
-        }
-    }
-}
-
-/**
- * Delegates [NetworkHandler] calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
- */
-internal class SelectorNetworkHandler(
-    override val context: NetworkHandlerContext,
-    private val selector: NetworkHandlerSelector<*>
-) : NetworkHandler {
-    private suspend inline fun instance(): NetworkHandler = selector.awaitResumeInstance()
-
-    override val state: State get() = selector.getResumedInstance()?.state ?: State.INITIALIZED
-
-    override suspend fun resumeConnection() {
-        instance() // the selector will resume connection for us.
-    }
-
-    override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int) =
-        instance().sendAndExpect(packet, timeout, attempts)
-
-    override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
-    override fun close() {
-        selector.getResumedInstance()?.close()
-    }
 }
