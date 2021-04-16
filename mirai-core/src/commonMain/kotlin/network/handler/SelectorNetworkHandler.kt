@@ -91,7 +91,6 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     final override fun getResumedInstance(): H? = current.value
 
-    // TODO: 2021/4/16 add test for AbstractKeepAliveNetworkHandlerSelector
     final override tailrec suspend fun awaitResumeInstance(): H {
         val current = getResumedInstance()
         return if (current != null) {
