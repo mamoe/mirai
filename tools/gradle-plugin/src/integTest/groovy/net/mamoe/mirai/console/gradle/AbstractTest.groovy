@@ -23,7 +23,7 @@ abstract class AbstractTest {
     File settingsFile
     File propertiesFile
 
-    def gradleRunner() {
+    GradleRunner gradleRunner() {
         println(PluginUnderTestMetadataReading.readImplementationClasspath())
         GradleRunner.create()
                 .withProjectDir(tempDir)
