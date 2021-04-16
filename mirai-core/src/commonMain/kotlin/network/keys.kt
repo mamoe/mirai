@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.internal.network
 
+import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.writeFully
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.*
@@ -59,6 +61,16 @@ internal class LoginExtraData(
 ) {
     override fun toString(): String {
         return "LoginExtraData(uin=$uin, ip=${ip.toUHexString()}, time=$time, version=$version)"
+    }
+}
+
+internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
+    loginExtraData.run {
+        writeLong(uin)
+        writeByte(ip.size.toByte())
+        writeFully(ip)
+        writeInt(time)
+        writeInt(version)
     }
 }
 

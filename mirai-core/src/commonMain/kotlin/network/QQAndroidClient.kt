@@ -7,18 +7,15 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "unused")
 
 package net.mamoe.mirai.internal.network
 
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.String
 import kotlinx.io.core.toByteArray
-import kotlinx.io.core.writeFully
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -30,7 +27,6 @@ import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.utils.*
-import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
 
 
@@ -77,19 +73,22 @@ internal open class QQAndroidClient(
     lateinit var _bot: QQAndroidBot
     val bot: QQAndroidBot get() = _bot
 
+    /**
+     * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.
+     *
+     * **注意**: 总是使用这个属性, 而不要使用 [BotAccount.id]. 将来它可能会变为 [String]
+     */
+    val uin: Long get() = _uin
 
-    internal var strangerSeq: Int = 0
+    override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
+    override var loginState = 0
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
-
-    internal val miscBitMap: Int get() = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
-    internal val mainSigMap: Int get() = protocol.mainSigMap
+    var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
 
     @Volatile
     private var _ssoSequenceId: Int = Random.nextInt(100000)
-
-    var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
 
     @Synchronized
     @MiraiInternalApi("Do not use directly. Get from the lambda param of buildSsoPacket")
@@ -124,6 +123,8 @@ internal open class QQAndroidClient(
         return new
     }
 
+    internal var strangerSeq: Int = 0
+
     // TODO: 2021/4/14 investigate whether they can be minimized
     private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
     internal fun getFriendSeq(): Int = friendSeq.value
@@ -131,15 +132,6 @@ internal open class QQAndroidClient(
     internal fun nextFriendSeq(): Int = friendSeq.incrementAndGet()
 
     internal fun setFriendSeq(compare: Int, id: Int): Boolean = friendSeq.compareAndSet(compare, id % 65535)
-
-    val appClientVersion: Int = 0
-
-
-    val ssoVersion: Int = 15
-
-
-    var networkType: NetworkType = NetworkType.WIFI
-
 
     internal val groupConfig: GroupConfig = GroupConfig()
 
@@ -207,16 +199,6 @@ internal open class QQAndroidClient(
 
     val syncingController = MessageSvcSyncData()
 
-    /*
-     * 以下登录使用
-     */
-    @Suppress("SpellCheckingInspection")
-    @PublishedApi
-    internal val apkId: ByteArray = "com.tencent.mobileqq".toByteArray()
-
-    override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
-    override var loginState = 0
-
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
     var ipFromT149: ByteArray? = null
@@ -225,13 +207,6 @@ internal open class QQAndroidClient(
      * 客户端与服务器时间差
      */
     var timeDifference: Long = 0
-
-    /**
-     * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.
-     *
-     * **注意**: 总是使用这个属性, 而不要使用 [BotAccount.id]. 将来它可能会变为 [String]
-     */
-    val uin: Long get() = _uin
 
     @Suppress("PropertyName")
     internal var _uin: Long = account.id
@@ -247,11 +222,17 @@ internal open class QQAndroidClient(
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
     var t402: ByteArray? = null
-    lateinit var qrPushSig: ByteArray
-    lateinit var mainDisplayName: ByteArray
     lateinit var t104: ByteArray
 }
 
+internal val QQAndroidClient.apkId: ByteArray get() = "com.tencent.mobileqq".toByteArray()
+internal val QQAndroidClient.ssoVersion: Int get() = 15
+internal val QQAndroidClient.networkType: NetworkType get() = NetworkType.WIFI
+internal val QQAndroidClient.appClientVersion: Int get() = 0
+internal val QQAndroidClient.buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+internal val QQAndroidClient.apkVersionName: ByteArray get() = protocol.ver.toByteArray() //"8.4.18".toByteArray()
+internal val QQAndroidClient.mainSigMap: Int get() = protocol.mainSigMap
+internal val QQAndroidClient.miscBitMap: Int get() = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
 internal val QQAndroidClient.clientVersion: String get() = "android ${protocol.ver}" // android 8.5.0
 internal val QQAndroidClient.protocol get() = MiraiProtocolInternal[bot.configuration.protocol]
 internal val QQAndroidClient.sdkVersion: String get() = protocol.sdkVer
@@ -259,21 +240,3 @@ internal val QQAndroidClient.buildTime: Long get() = protocol.buildTime
 internal val QQAndroidClient.subAppId: Long get() = protocol.id
 internal val QQAndroidClient.apkSignatureMd5: ByteArray get() = protocol.sign.hexToBytes() // "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 internal val QQAndroidClient.subSigMap: Int get() = protocol.subSigMap // 0x10400 //=66,560
-
-internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraData) {
-    loginExtraData.run {
-        writeLong(uin)
-        writeByte(ip.size.toByte())
-        writeFully(ip)
-        writeInt(time)
-        writeInt(version)
-    }
-}
-
-@Serializable
-internal class BdhSession(
-    val sigSession: ByteArray,
-    val sessionKey: ByteArray,
-    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
-    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
-)

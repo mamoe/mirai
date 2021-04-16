@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.miscBitMap
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId

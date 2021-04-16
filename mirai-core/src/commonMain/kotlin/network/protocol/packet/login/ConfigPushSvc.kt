@@ -18,9 +18,10 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.handler.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.network.networkType
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushResp
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
