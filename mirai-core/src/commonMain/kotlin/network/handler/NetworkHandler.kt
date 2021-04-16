@@ -27,7 +27,8 @@ import java.util.concurrent.CancellationException
  * Immutable context for [NetworkHandler]
  */
 internal interface NetworkHandlerContext {
-    val bot: QQAndroidBot
+    val bot: QQAndroidBot // // TODO: 2021/4/16 this is bad, making it difficult to write unit tests.
+    // however migration requires a major change.
 
     val logger: MiraiLogger
     val ssoContext: SsoContext
