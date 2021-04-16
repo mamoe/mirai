@@ -22,7 +22,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
-import net.mamoe.mirai.internal.network.BdhSession
+import net.mamoe.mirai.internal.network.handler.BdhSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
