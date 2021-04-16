@@ -141,7 +141,7 @@ internal class NettyNetworkHandler(
             error("Cannot send packet when connection is not set. (resumeConnection not called.)")
         }
 
-        override suspend fun resumeConnection() {
+        override suspend fun resumeConnection0() {
             setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
                 .resumeConnection()
         }
@@ -173,7 +173,7 @@ internal class NettyNetworkHandler(
             connection.await().writeAndFlush(packet)
         }
 
-        override suspend fun resumeConnection() {
+        override suspend fun resumeConnection0() {
             connectResult.await() // propagates exceptions
         }
     }
@@ -185,7 +185,7 @@ internal class NettyNetworkHandler(
             connection.writeAndFlush(packet)
         }
 
-        override suspend fun resumeConnection() {} // noop
+        override suspend fun resumeConnection0() {} // noop
     }
 
     private inner class StateConnectionLost(private val cause: Throwable) :
@@ -194,7 +194,7 @@ internal class NettyNetworkHandler(
             throw IllegalStateException("Connection is lost so cannot send packet. Call resumeConnection first.", cause)
         }
 
-        override suspend fun resumeConnection() {
+        override suspend fun resumeConnection0() {
             setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
                 .resumeConnection() // the user wil
         } // noop
@@ -208,7 +208,7 @@ internal class NettyNetworkHandler(
         }
 
         override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")
-        override suspend fun resumeConnection() {
+        override suspend fun resumeConnection0() {
             exception?.let { throw it }
         } // noop
     }

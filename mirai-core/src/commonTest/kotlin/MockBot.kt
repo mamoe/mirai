@@ -19,9 +19,26 @@ internal val MockAccount = BotAccount(1, "pwd")
 internal val MockConfiguration = BotConfiguration {
 }
 
+internal class MockBotBuilder(
+    val conf: BotConfiguration = BotConfiguration(),
+    val debugConf: BotDebugConfiguration = BotDebugConfiguration()
+) {
+    fun conf(action: BotConfiguration.() -> Unit): MockBotBuilder {
+        conf.apply(action)
+        return this
+    }
+
+    fun debugConf(action: BotDebugConfiguration.() -> Unit): MockBotBuilder {
+        debugConf.apply(action)
+        return this
+    }
+}
+
 @Suppress("TestFunctionName")
-internal fun MockBot(conf: BotConfiguration.() -> Unit) =
-    QQAndroidBot(MockAccount, MockConfiguration.copy().apply(conf))
+internal fun MockBot(conf: MockBotBuilder.() -> Unit) =
+    MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
+        QQAndroidBot(MockAccount, this.conf, debugConf)
+    }
 
 @Suppress("TestFunctionName")
 internal fun MockBot() =
