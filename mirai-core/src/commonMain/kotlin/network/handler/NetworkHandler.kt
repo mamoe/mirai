@@ -13,6 +13,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.impl.StateObserver
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
@@ -31,12 +32,15 @@ internal interface NetworkHandlerContext {
 
     val logger: MiraiLogger
     val ssoProcessor: SsoProcessor
+
+    val stateObserver: StateObserver?
 }
 
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
     override val ssoProcessor: SsoProcessor,
     override val logger: MiraiLogger,
+    override val stateObserver: StateObserver?,
 ) : NetworkHandlerContext
 
 /**

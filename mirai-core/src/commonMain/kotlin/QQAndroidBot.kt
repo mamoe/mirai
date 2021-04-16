@@ -19,6 +19,9 @@ import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.*
+import net.mamoe.mirai.internal.network.handler.impl.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.impl.SafeStateObserver
+import net.mamoe.mirai.internal.network.handler.impl.StateObserver
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
@@ -49,10 +52,22 @@ internal fun QQAndroidBot.createOtherClient(
     return OtherClientImpl(this, coroutineContext, info)
 }
 
+internal class BotDebugConfiguration(
+    var stateObserver: StateObserver? = when {
+        systemProp("mirai.debug.network.state.observer.logging", false) ->
+            SafeStateObserver(
+                LoggingStateObserver(MiraiLogger.create("States")),
+                MiraiLogger.create("StateObserver errors")
+            )
+        else -> null
+    }
+)
+
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
     internal val account: BotAccount,
-    configuration: BotConfiguration
+    configuration: BotConfiguration,
+    private val debugConfiguration: BotDebugConfiguration = BotDebugConfiguration(),
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
@@ -74,7 +89,12 @@ internal class QQAndroidBot constructor(
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
-        val context = NetworkHandlerContextImpl(this, ssoProcessor, configuration.networkLoggerSupplier(this))
+        val context = NetworkHandlerContextImpl(
+            this,
+            ssoProcessor,
+            configuration.networkLoggerSupplier(this),
+            debugConfiguration.stateObserver
+        )
         return SelectorNetworkHandler(
             context,
             FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, serverListNew, context)
