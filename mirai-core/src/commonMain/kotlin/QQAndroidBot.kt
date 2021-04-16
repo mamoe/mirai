@@ -13,11 +13,10 @@ package net.mamoe.mirai.internal
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
-import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.*
@@ -102,14 +101,6 @@ internal class QQAndroidBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     override lateinit var nick: String
-
-    override val friends: ContactList<Friend> = ContactList()
-    override val groups: ContactList<Group> = ContactList()
-    override val strangers: ContactList<Stranger> = ContactList()
-
-    override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
-    override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
-
 
     @JvmField
     val groupListModifyLock = Mutex()
