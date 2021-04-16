@@ -12,8 +12,10 @@ package net.mamoe.mirai.console.util
 
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 import kotlin.test.assertEquals
+import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 internal class TestCoroutineUtils {
@@ -54,18 +56,20 @@ internal class TestCoroutineUtils {
     fun `test launchTimedTask finishes multiple times`() = runBlocking {
         val scope = CoroutineScope(SupervisorJob())
 
-        withTimeout(10000) {
-            suspendCancellableCoroutine<Unit> { cont ->
-                val task = scope.launchTimedTask(3.seconds.toLongMilliseconds()) {
-                    cont.resume(Unit)
-                }
-                task.setChanged()
-                launch {
-                    delay(4000)
-                    task.setChanged()
-                }
-            }
+        val resumedTimes = AtomicInteger(0)
+        val task = scope.launchTimedTask(3000.milliseconds.toLongMilliseconds()) {
+            resumedTimes.incrementAndGet()
         }
+        task.setChanged()
+        launch {
+            delay(4000)
+            task.setChanged()
+        }
+
+        delay(6000)
+        assertEquals(1, resumedTimes.get())
+        delay(15000)
+        assertEquals(2, resumedTimes.get())
 
         scope.cancel()
     }
