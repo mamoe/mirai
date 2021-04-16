@@ -17,11 +17,11 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.*
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
-import net.mamoe.mirai.internal.network.net.protocol.SsoContext
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -53,8 +53,7 @@ internal fun QQAndroidBot.createOtherClient(
 internal class QQAndroidBot constructor(
     internal val account: BotAccount,
     configuration: BotConfiguration
-) : AbstractBot(configuration, account.id), SsoContext {
-    override lateinit var client: QQAndroidClient
+) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
     val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
@@ -66,12 +65,16 @@ internal class QQAndroidBot constructor(
 
     // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
 
+    private val ssoProcessor: SsoProcessor by lazy { SsoProcessor(SsoProcessorContextImpl(this)) }
+
+    val client get() = ssoProcessor.client
+
     override suspend fun sendLogout() {
         network.sendWithoutExpect(StatSvc.Register.offline(client))
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
-        val context = NetworkHandlerContextImpl(this, this)
+        val context = NetworkHandlerContextImpl(this, ssoProcessor, configuration.networkLoggerSupplier(this))
         return SelectorNetworkHandler(
             context,
             FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, serverListNew, context)

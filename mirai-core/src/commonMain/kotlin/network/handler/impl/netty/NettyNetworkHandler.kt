@@ -29,7 +29,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.impl.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
-import net.mamoe.mirai.internal.network.net.protocol.SsoController
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.childScope
 import java.net.SocketAddress
@@ -39,11 +39,11 @@ internal class NettyNetworkHandler(
     context: NetworkHandlerContext,
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
-    override fun close() {
-        setState { StateClosed(null) }
+    override fun close(cause: Throwable?) {
+        setState { StateClosed(cause) }
     }
 
-    private fun closeSuper() = super.close()
+    private fun closeSuper(cause: Throwable?) = super.close(cause)
 
     override suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
@@ -57,7 +57,7 @@ internal class NettyNetworkHandler(
     private inner class ByteBufToIncomingPacketDecoder : SimpleChannelInboundHandler<ByteBuf>(ByteBuf::class.java) {
         override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
             ctx.fireChannelRead(msg.toReadPacket().use { packet ->
-                PacketCodec.decodeRaw(context.bot.client, packet)
+                PacketCodec.decodeRaw(context.ssoProcessor.ssoSession, packet)
             })
         }
     }
@@ -143,19 +143,24 @@ internal class NettyNetworkHandler(
 
         override suspend fun resumeConnection() {
             setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
+                .resumeConnection()
         }
     }
 
+    /**
+     * 1. Connect to server.
+     * 2. Perform SSO login with [SsoProcessor]
+     * 3. If failure, set state to [StateClosed]
+     * 4. If success, set state to [StateOK]
+     */
     private inner class StateConnecting(
         val decodePipeline: PacketDecodePipeline,
     ) : NettyState(NetworkHandler.State.CONNECTING) {
-        private val ssoController = SsoController(context.ssoContext, this@NettyNetworkHandler)
-
         private val connection = async { createConnection(decodePipeline) }
 
         private val connectResult = async {
             val connection = connection.await()
-            ssoController.login()
+            context.ssoProcessor.login(this@NettyNetworkHandler)
             setState { StateOK(connection) }
         }.apply {
             invokeOnCompletion { error ->
@@ -191,6 +196,7 @@ internal class NettyNetworkHandler(
 
         override suspend fun resumeConnection() {
             setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
+                .resumeConnection() // the user wil
         } // noop
     }
 
@@ -198,7 +204,7 @@ internal class NettyNetworkHandler(
         val exception: Throwable?
     ) : NettyState(NetworkHandler.State.OK) {
         init {
-            closeSuper()
+            closeSuper(exception)
         }
 
         override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")

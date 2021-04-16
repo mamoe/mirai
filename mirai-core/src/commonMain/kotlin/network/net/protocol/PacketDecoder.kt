@@ -17,13 +17,26 @@ import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
 import kotlin.io.use
 
+/**
+ * Packet decoders.
+ *
+ * - Transforms [ByteReadPacket] to [RawIncomingPacket]
+ */
 internal object PacketCodec {
+    /**
+     * 数据包相关的调试输出.
+     * 它默认是关闭的.
+     */
+    internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
+        MiraiLogger.create("Packet").withSwitch(false)
+    }
+
     /**
      * It's caller's responsibility to close [input]
      * @param input received from sockets.
      * @return decoded
      */
-    fun decodeRaw(client: LoginSessionAware, input: ByteReadPacket): RawIncomingPacket = input.run {
+    fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
         // login
         val flag1 = readInt()
 
@@ -74,7 +87,7 @@ internal object PacketCodec {
         val body: ByteReadPacket,
     )
 
-    private fun parseSsoFrame(client: LoginSessionAware, bytes: ByteArray): DecodeResult =
+    private fun parseSsoFrame(client: SsoSession, bytes: ByteArray): DecodeResult =
         bytes.toReadPacket().use { input ->
             val commandName: String
             val ssoSequenceId: Int
@@ -139,7 +152,7 @@ internal object PacketCodec {
         }
 
     private fun ByteReadPacket.parseOicqResponse(
-        client: LoginSessionAware,
+        client: SsoSession,
     ): ByteArray {
         check(readByte().toInt() == 2)
         this.discardExact(2)
@@ -215,7 +228,10 @@ internal object PacketCodec {
     }
 }
 
-internal open class RawIncomingPacket constructor(
+/**
+ * Represents a packet that has just been decrypted. Subsequent operation is normally passing it to a responsible [PacketFactory] according to [commandName] from [KnownPacketFactories].
+ */
+internal class RawIncomingPacket constructor(
     val commandName: String,
     val sequenceId: Int,
     /**

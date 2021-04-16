@@ -108,7 +108,7 @@ internal abstract class AbstractBot constructor(
             ) {
                 // Close network to avoid endless reconnection while network is ok
                 // https://github.com/mamoe/mirai/issues/894
-                kotlin.runCatching { network.close() }
+                kotlin.runCatching { network.close(null) }
                 return@subscribeAlways
             }
             /*
@@ -121,7 +121,7 @@ internal abstract class AbstractBot constructor(
                     val cause = event.cause
                     val msg = if (cause == null) "" else " with exception: $cause"
                     bot.logger.info("Bot is closed manually $msg", cause)
-                    network.close()
+                    network.close(null)
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
@@ -131,7 +131,7 @@ internal abstract class AbstractBot constructor(
                         bot.logger.info { "Reconnecting..." }
                         // delay(3000)
                     } else {
-                        network.close()
+                        network.close(null)
                     }
                 }
                 is BotOfflineEvent.MsfOffline,
@@ -200,7 +200,7 @@ internal abstract class AbstractBot constructor(
             logger.info { "Bot cancelled" + throwable?.message?.let { ": $it" }.orEmpty() }
 
             kotlin.runCatching {
-                network.close()
+                network.close(throwable)
             }
             offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 
@@ -220,7 +220,7 @@ internal abstract class AbstractBot constructor(
             return
         }
 
-        this.network.close()
+        this.network.close(cause)
 
         if (supervisorJob.isActive) {
             if (cause == null) {

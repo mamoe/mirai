@@ -12,11 +12,6 @@ package net.mamoe.mirai.internal.network
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.internal.network.getRandomByteArray
-import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
-import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*
 
 
@@ -175,64 +170,3 @@ internal open class KeyWithCreationTime(
         return "KeyWithCreationTime(data=${data.toUHexString()}, creationTime=$creationTime)"
     }
 }
-
-internal suspend inline fun QQAndroidClient.useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
-    if (bot.serverList.isEmpty()) {
-        bot.bdhSyncer.loadServerListFromCache()
-        if (bot.serverList.isEmpty()) {
-            bot.serverList.addAll(DefaultServerList)
-        }
-    }
-    retryCatchingExceptions(bot.serverList.size, except = LoginFailedException::class) l@{
-        val pair = bot.serverList[0]
-        runCatchingExceptions {
-            block(pair.first, pair.second)
-            return@l
-        }.getOrElse {
-            bot.serverList.remove(pair)
-            if (it !is LoginFailedException) {
-                // 不要重复打印.
-                bot.logger.warning(it)
-            }
-            throw it
-        }
-    }.getOrElse {
-        if (it is LoginFailedException) {
-            throw it
-        }
-        bot.serverList.addAll(DefaultServerList)
-        throw NoServerAvailableException(it)
-    }
-}
-
-
-@Suppress("RemoveRedundantQualifierName") // bug
-internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    (getRandomByteArray(16) + guid).md5()
-
-internal inline fun <R> QQAndroidClient.tryDecryptOrNull(
-    data: ByteArray,
-    size: Int = data.size,
-    mapper: (ByteArray) -> R
-): R? {
-    keys.forEach { (key, value) ->
-        kotlin.runCatching {
-            return mapper(TEA.decrypt(data, value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
-        }
-    }
-    return null
-}
-
-internal fun QQAndroidClient.allKeys() = mapOf(
-    "16 zero" to ByteArray(16),
-    "D2 key" to wLoginSigInfo.d2Key,
-    "wtSessionTicketKey" to wLoginSigInfo.wtSessionTicketKey,
-    "userStKey" to wLoginSigInfo.userStKey,
-    "tgtgtKey" to tgtgtKey,
-    "tgtKey" to wLoginSigInfo.tgtKey,
-    "deviceToken" to wLoginSigInfo.deviceToken,
-    "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey
-    //"t108" to wLoginSigInfo.t1,
-    //"t10c" to t10c,
-    //"t163" to t163
-)

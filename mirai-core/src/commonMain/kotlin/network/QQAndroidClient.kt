@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.net.protocol.LoginSessionAware
+import net.mamoe.mirai.internal.network.net.protocol.SsoSession
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
@@ -73,14 +73,12 @@ internal open class QQAndroidClient(
     override val ecdh: ECDH = ECDH(),
     val device: DeviceInfo,
     accountSecrets: AccountSecrets
-) : AccountSecrets by accountSecrets, LoginSessionAware {
+) : AccountSecrets by accountSecrets, SsoSession {
     lateinit var _bot: QQAndroidBot
     val bot: QQAndroidBot get() = _bot
 
 
     internal var strangerSeq: Int = 0
-
-    val keys: Map<String, ByteArray> by lazy { allKeys() }
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 

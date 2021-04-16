@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -81,7 +82,8 @@ internal abstract class NetworkHandlerSupport(
         sendPacketImpl(packet)
     }
 
-    override fun close() {
+    override fun close(cause: Throwable?) {
+        logger.info { "NetworkHandler closed: $cause" }
         coroutineContext.job.cancel("NetworkHandler closed.")
     }
 
@@ -138,7 +140,11 @@ internal abstract class NetworkHandlerSupport(
         private set
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
-    protected inline fun setState(crossinline new: () -> BaseStateImpl) = synchronized(this) {
+
+    /**
+     * You may need to call [BaseStateImpl.resumeConnection] since state is lazy.
+     */
+    protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
         // we can add hooks here for debug.
 
         val impl = new()
@@ -147,6 +153,7 @@ internal abstract class NetworkHandlerSupport(
         check(old !== impl) { "Old and new states cannot be the same." }
         old.cancel()
         _state = impl
+        return impl
     }
 
     final override suspend fun resumeConnection() {

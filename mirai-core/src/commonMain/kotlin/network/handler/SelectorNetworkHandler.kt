@@ -39,8 +39,8 @@ internal class SelectorNetworkHandler(
         instance().sendAndExpect(packet, timeout, attempts)
 
     override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
-    override fun close() {
-        selector.getResumedInstance()?.close()
+    override fun close(cause: Throwable?) {
+        selector.getResumedInstance()?.close(cause)
     }
 }
 

@@ -14,9 +14,11 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 
 /**
+ * Contains secrets for encryption and decryption during a session created by [SsoProcessor] and [PacketCodec].
+ *
  * @see AccountSecrets
  */
-internal interface LoginSessionAware {
+internal interface SsoSession {
     var outgoingPacketSessionId: ByteArray
 
     /**

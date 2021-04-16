@@ -13,10 +13,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.net.protocol.SsoContext
+import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -27,23 +26,18 @@ import java.util.concurrent.CancellationException
  * Immutable context for [NetworkHandler]
  */
 internal interface NetworkHandlerContext {
-    val bot: QQAndroidBot // // TODO: 2021/4/16 this is bad, making it difficult to write unit tests.
+    val bot: QQAndroidBot
     // however migration requires a major change.
 
     val logger: MiraiLogger
-    val ssoContext: SsoContext
-    val configuration: BotConfiguration
+    val ssoProcessor: SsoProcessor
 }
 
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
-    override val ssoContext: SsoContext,
-) : NetworkHandlerContext {
-    override val configuration: BotConfiguration
-        get() = bot.configuration
-
-    override val logger: MiraiLogger by lazy { configuration.networkLoggerSupplier(bot) }
-}
+    override val ssoProcessor: SsoProcessor,
+    override val logger: MiraiLogger,
+) : NetworkHandlerContext
 
 /**
  * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
@@ -116,7 +110,7 @@ internal interface NetworkHandler {
     /**
      * Closes this handler gracefully.
      */
-    fun close()
+    fun close(cause: Throwable?)
 
     ///////////////////////////////////////////////////////////////////////////
     // compatibility

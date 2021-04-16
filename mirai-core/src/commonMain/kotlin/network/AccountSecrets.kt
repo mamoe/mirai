@@ -20,7 +20,9 @@ import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toByteArray
 import java.util.concurrent.CopyOnWriteArraySet
 
-
+/**
+ * Secrets for authentication with server. (login)
+ */
 internal interface AccountSecrets {
     var wLoginSigInfoField: WLoginSigInfo?
 
