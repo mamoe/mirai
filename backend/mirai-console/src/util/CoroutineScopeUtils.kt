@@ -68,13 +68,19 @@ internal class TimedTask(
         // `delay` always checks for cancellation
         lastChangedTime.loop { last ->
             val current = currentTimeMillis()
-            if (current - last > intervalMillis) {
-                if (!lastChangedTime.compareAndSet(last, UNCHANGED)) return@loop
-                action()
+            if (last == UNCHANGED) {
+                runIgnoreException<CancellationException> {
+                    delay(3.seconds) // accuracy not necessary
+                } ?: return@launch
+            } else {
+                if (current - last > intervalMillis) {
+                    if (!lastChangedTime.compareAndSet(last, UNCHANGED)) return@loop
+                    action()
+                }
+                runIgnoreException<CancellationException> {
+                    delay(3.seconds) // accuracy not necessary
+                } ?: return@launch
             }
-            runIgnoreException<CancellationException> {
-                delay(3.seconds) // accuracy not necessary
-            } ?: return@launch
         }
     }
 }
