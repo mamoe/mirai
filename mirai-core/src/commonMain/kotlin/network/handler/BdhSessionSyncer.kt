@@ -15,11 +15,11 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.JsonForCache
 import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.utils.actualCacheDir
 import java.io.File
+import java.util.concurrent.CopyOnWriteArraySet
 
 @Serializable
 private data class ServerHostAndPort(
@@ -127,3 +127,11 @@ internal class BdhSessionSyncer(
 
     }
 }
+
+@Serializable
+internal class BdhSession(
+    val sigSession: ByteArray,
+    val sessionKey: ByteArray,
+    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+)

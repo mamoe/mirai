@@ -12,6 +12,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.LoginType

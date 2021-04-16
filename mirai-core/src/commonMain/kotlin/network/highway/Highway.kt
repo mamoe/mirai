@@ -21,8 +21,8 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.handler.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.subAppId

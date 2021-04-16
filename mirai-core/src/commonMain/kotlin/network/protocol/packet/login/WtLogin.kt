@@ -286,7 +286,7 @@ internal class WtLogin {
                     tlvMap119[0x528]?.let { client.t528 = it }
                     tlvMap119[0x530]?.let { client.t530 = it }
 
-                    tlvMap119[0x118]?.let { client.mainDisplayName = it }
+//                    tlvMap119[0x118]?.let { client.mainDisplayName = it }
                     tlvMap119[0x108]?.let { client.ksid = it }
                     tlvMap119[0x11a]?.read {
                         readShort().toInt() // faceId
@@ -333,7 +333,7 @@ internal class WtLogin {
                         // dont move into constructor, keep order
                         client.reserveUinInfo = ReserveUinInfo(imgType, imgFormat, imgUrl)
                     }
-                    client.qrPushSig = tlvMap119[0x317] ?: byteArrayOf()
+//                    client.qrPushSig = tlvMap119[0x317] ?: byteArrayOf()
 
 
                     var payToken: ByteArray? = null
