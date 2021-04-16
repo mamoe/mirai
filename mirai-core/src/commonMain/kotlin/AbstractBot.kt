@@ -73,7 +73,7 @@ internal abstract class AbstractBot constructor(
     // overrides
     ///////////////////////////////////////////////////////////////////////////
 
-    final override val isOnline: Boolean get() = network.state == NetworkHandler.State.OK
+    final override val isOnline: Boolean get() = network.isOk()
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
@@ -144,7 +144,7 @@ internal abstract class AbstractBot constructor(
             }
 
             if (event.reconnect) {
-                if (network.state != NetworkHandler.State.OK) {
+                if (!network.isOk()) {
                     // normally closed
                     return@subscribeAlways
                 }
