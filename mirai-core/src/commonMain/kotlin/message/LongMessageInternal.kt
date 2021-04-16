@@ -114,3 +114,65 @@ internal data class ForwardMessageInternal(
     }
 }
 
+
+internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
+    val limited: String = if (brief.length > 30) {
+        brief.take(30) + "…"
+    } else {
+        brief
+    }
+
+    val template = """
+                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+                <msg serviceID="35" templateID="1" action="viewMultiMsg"
+                     brief="$limited"
+                     m_resid="$resId"
+                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
+                     flag="3" adverSign="0" multiMsgFlag="1">
+                    <item layout="1">
+                        <title>$limited</title>
+                        <hr hidden="false" style="0"/>
+                        <summary>点击查看完整消息</summary>
+                    </item>
+                    <source name="聊天记录" icon="" action="" appid="-1"/>
+                </msg>
+            """.trimIndent().trim()
+
+    return LongMessageInternal(template, resId)
+}
+
+
+internal fun RichMessage.Key.forwardMessage(
+    resId: String,
+    timeSeconds: Long,
+    forwardMessage: ForwardMessage,
+): ForwardMessageInternal = with(forwardMessage) {
+    val template = """
+        <?xml version="1.0" encoding="utf-8"?>
+        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30)}"
+             m_resid="$resId" m_fileName="$timeSeconds"
+             tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
+            <item layout="1" advertiser_id="0" aid="0">
+                <title size="34" maxLines="2" lineSpace="12">${title.take(50)}</title>
+                ${
+        when {
+            preview.size > 4 -> {
+                preview.take(3).joinToString("") {
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
+            }
+            else -> {
+                preview.joinToString("") {
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                }
+            }
+        }
+    }
+                <hr hidden="false" style="0"/>
+                <summary size="26" color="#777777">${summary.take(50)}</summary>
+            </item>
+            <source name="${source.take(50)}" icon="" action="" appid="-1"/>
+        </msg>
+    """.trimIndent().replace("\n", " ").trim()
+    return ForwardMessageInternal(template, resId)
+}

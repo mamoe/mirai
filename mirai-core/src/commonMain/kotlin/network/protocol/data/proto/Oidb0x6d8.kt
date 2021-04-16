@@ -13,8 +13,8 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 internal class Oidb0x6d8 : ProtoBuf {
     @Serializable

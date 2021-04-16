@@ -21,6 +21,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.KEY_16_ZEROS
 
 @kotlin.Suppress("unused")
 internal class OutgoingPacketWithRespType<R : Packet?> constructor(
@@ -100,9 +102,6 @@ internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
     return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
 }
 
-
-internal val KEY_16_ZEROS = ByteArray(16)
-internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 @Suppress("DuplicatedCode")
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(

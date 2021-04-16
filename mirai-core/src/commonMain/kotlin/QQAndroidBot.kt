@@ -20,8 +20,6 @@ import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.message.ForwardMessageInternal
-import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -36,8 +34,6 @@ import net.mamoe.mirai.internal.utils.ScheduledJob
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.friendCacheFile
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.message.data.ForwardMessage
-import net.mamoe.mirai.message.data.RichMessage
 import net.mamoe.mirai.utils.*
 import java.io.File
 import java.net.InetSocketAddress
@@ -206,68 +202,4 @@ internal class QQAndroidBot constructor(
             .and(Int.MAX_VALUE)
     override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
     override val strangers: ContactList<Stranger> = ContactList()
-}
-
-internal val EMPTY_BYTE_ARRAY = ByteArray(0)
-
-internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
-    val limited: String = if (brief.length > 30) {
-        brief.take(30) + "…"
-    } else {
-        brief
-    }
-
-    val template = """
-                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-                <msg serviceID="35" templateID="1" action="viewMultiMsg"
-                     brief="$limited"
-                     m_resid="$resId"
-                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
-                     flag="3" adverSign="0" multiMsgFlag="1">
-                    <item layout="1">
-                        <title>$limited</title>
-                        <hr hidden="false" style="0"/>
-                        <summary>点击查看完整消息</summary>
-                    </item>
-                    <source name="聊天记录" icon="" action="" appid="-1"/>
-                </msg>
-            """.trimIndent().trim()
-
-    return LongMessageInternal(template, resId)
-}
-
-
-internal fun RichMessage.Key.forwardMessage(
-    resId: String,
-    timeSeconds: Long,
-    forwardMessage: ForwardMessage,
-): ForwardMessageInternal = with(forwardMessage) {
-    val template = """
-        <?xml version="1.0" encoding="utf-8"?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30)}"
-             m_resid="$resId" m_fileName="$timeSeconds"
-             tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
-            <item layout="1" advertiser_id="0" aid="0">
-                <title size="34" maxLines="2" lineSpace="12">${title.take(50)}</title>
-                ${
-        when {
-            preview.size > 4 -> {
-                preview.take(3).joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
-                } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
-            }
-            else -> {
-                preview.joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
-                }
-            }
-        }
-    }
-                <hr hidden="false" style="0"/>
-                <summary size="26" color="#777777">${summary.take(50)}</summary>
-            </item>
-            <source name="${source.take(50)}" icon="" action="" appid="-1"/>
-        </msg>
-    """.trimIndent().replace("\n", " ").trim()
-    return ForwardMessageInternal(template, resId, null)
 }

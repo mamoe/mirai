@@ -18,7 +18,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd6b
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
@@ -26,6 +25,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 
 internal class FriendList {

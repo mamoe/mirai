@@ -12,10 +12,10 @@ package net.mamoe.mirai.internal.network
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.BotAccount
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.DeviceInfo
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toByteArray
 import java.util.concurrent.CopyOnWriteArraySet

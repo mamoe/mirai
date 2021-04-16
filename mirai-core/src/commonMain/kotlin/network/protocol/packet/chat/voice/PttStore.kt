@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat.voice
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -22,6 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.toIpV4AddressString
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toUHexString

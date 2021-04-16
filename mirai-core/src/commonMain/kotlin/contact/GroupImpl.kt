@@ -31,7 +31,6 @@ import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
 import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
