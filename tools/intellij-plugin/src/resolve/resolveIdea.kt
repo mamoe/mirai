@@ -10,17 +10,12 @@
 package net.mamoe.mirai.console.intellij.resolve
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementFactory
-import com.intellij.psi.PsiModifierListOwner
-import com.intellij.psi.util.parents
+import com.intellij.psi.*
 import net.mamoe.mirai.console.compiler.common.resolve.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
-import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.references.resolveToDescriptors
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
@@ -31,7 +26,6 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
-import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
@@ -75,6 +69,15 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
             )
         }
     }
+
+fun PsiElement.parents(withSelf: Boolean): Sequence<PsiElement> {
+    val seed = if (withSelf) this else parentWithoutWalkingDirectories(this)
+    return generateSequence(seed, ::parentWithoutWalkingDirectories)
+}
+
+private fun parentWithoutWalkingDirectories(element: PsiElement): PsiElement? {
+    return if (element is PsiFile) null else element.parent
+}
 
 val PsiClass.allSuperTypes: Sequence<PsiClass>
     get() = sequence {
