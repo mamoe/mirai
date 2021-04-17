@@ -16,6 +16,7 @@ import kotlinx.serialization.builtins.SetSerializer
 import net.mamoe.mirai.internal.network.JsonForCache
 import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.network.handler.component.ComponentKey
+import net.mamoe.mirai.internal.network.handler.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.context.BdhSession
 import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.utils.BotConfiguration
@@ -45,8 +46,8 @@ internal interface BdhSessionSyncer {
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class BdhSessionSyncerImpl(
     private val configuration: BotConfiguration,
-    private val serverList: ServerList,
     private val logger: MiraiLogger,
+    private val componentStorage: ComponentStorage,
 ) : BdhSessionSyncer {
     override var bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
     override val hasSession: Boolean
@@ -74,7 +75,7 @@ internal class BdhSessionSyncerImpl(
             logger.verbose("Loading server list from cache.")
             kotlin.runCatching {
                 val list = JsonForCache.decodeFromString(ServerListSerializer, serverListCacheFile.readText())
-                serverList.setPreferred(list.map { ServerAddress(it.host, it.port) })
+                componentStorage[ServerList].setPreferred(list.map { ServerAddress(it.host, it.port) })
             }.onFailure {
                 logger.warning("Error in loading server list from cache", it)
             }
@@ -110,7 +111,7 @@ internal class BdhSessionSyncerImpl(
             serverListCacheFile.writeText(
                 JsonForCache.encodeToString(
                     ServerListSerializer,
-                    serverList.getPreferred()
+                    componentStorage[ServerList].getPreferred()
                 )
             )
         }.onFailure {
