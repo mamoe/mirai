@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.GroupMngReqJce
 import net.mamoe.mirai.internal.network.protocol.data.jce.GroupMngRes
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
@@ -36,7 +35,7 @@ internal class ProfileService {
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(

@@ -40,7 +40,7 @@ internal class WtLogin {
         object SubCommand7 {
             operator fun invoke(
                 client: QQAndroidClient
-            ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            ) = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(
                     client,
                     client.subAppId,
@@ -70,7 +70,7 @@ internal class WtLogin {
         object SubCommand17 {
             operator fun invoke(
                 client: QQAndroidClient
-            ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            ) = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(
                     client,
                     client.subAppId,

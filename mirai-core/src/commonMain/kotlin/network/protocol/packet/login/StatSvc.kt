@@ -74,7 +74,7 @@ internal class StatSvc {
 
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(client, 1) {
+        ) = buildLoginOutgoingPacket(client, 1) {
             writeProtoBuf(
                 StatSvcGetOnline.ReqBody.serializer(), StatSvcGetOnline.ReqBody(
                     uin = client.uin,
@@ -100,7 +100,7 @@ internal class StatSvc {
 
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(
+        ) = buildLoginOutgoingPacket(
             client,
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
