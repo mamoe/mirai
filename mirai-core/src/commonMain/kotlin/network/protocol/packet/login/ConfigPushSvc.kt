@@ -19,10 +19,10 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.handler.components.ServerAddress
-import net.mamoe.mirai.internal.network.handler.components.ServerList
-import net.mamoe.mirai.internal.network.handler.context.BdhSession
+import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.components.ServerAddress
+import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.networkType
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList

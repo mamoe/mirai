@@ -11,9 +11,9 @@ package net.mamoe.mirai.internal.network
 
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.handler.context.AccountSecrets
-import net.mamoe.mirai.internal.network.handler.context.AccountSecretsImpl
-import net.mamoe.mirai.internal.network.handler.context.SsoSession
+import net.mamoe.mirai.internal.network.context.AccountSecrets
+import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
+import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray

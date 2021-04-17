@@ -12,10 +12,10 @@
 package net.mamoe.mirai.internal.network.handler
 
 import net.mamoe.mirai.internal.MockBot
-import net.mamoe.mirai.internal.network.handler.component.ConcurrentComponentStorage
-import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
-import net.mamoe.mirai.internal.network.handler.components.SsoProcessorImpl
-import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContextImpl
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
+import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver

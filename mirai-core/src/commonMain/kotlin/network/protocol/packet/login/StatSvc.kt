@@ -28,7 +28,7 @@ import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.contact.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.handler.components.ContactCacheService
+import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
