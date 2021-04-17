@@ -559,7 +559,12 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             }
         }
 //        bot.network.logger.error(rep)
-        return bot.json.decodeFromString(GroupAnnouncementList.serializer(), rep)
+        return json.decodeFromString(GroupAnnouncementList.serializer(), rep)
+    }
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
     }
 
     @LowLevelApi

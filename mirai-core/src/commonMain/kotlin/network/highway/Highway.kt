@@ -21,7 +21,9 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.context.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
@@ -71,7 +73,7 @@ internal object Highway {
         localeId: Int = 2052,
     ): BdhUploadResponse {
         val bdhSession = kotlin.runCatching {
-            val deferred = bot.bdhSyncer.bdhSession
+            val deferred = bot.asQQAndroidBot().components[BdhSessionSyncer].bdhSession
             // no need to care about timeout. proceed by bot init
             @OptIn(ExperimentalCoroutinesApi::class)
             if (noBdhAwait) deferred.getCompleted() else deferred.await()

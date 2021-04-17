@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.handler.components.ContactCacheService
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -136,7 +137,7 @@ internal class StatSvc {
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
         ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
-            client.bot.friendListCache?.let { friendListCache: FriendListCache ->
+            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
                 //  timeStamp = friendListCache.timeStamp
             }

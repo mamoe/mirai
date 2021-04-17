@@ -19,7 +19,9 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.handler.components.ServerAddress
+import net.mamoe.mirai.internal.network.handler.components.ServerList
 import net.mamoe.mirai.internal.network.handler.context.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.networkType
@@ -87,6 +89,8 @@ internal class ConfigPushSvc {
         }
 
         override suspend fun QQAndroidBot.handle(packet: PushReqResponse, sequenceId: Int): OutgoingPacket? {
+            val bdhSyncer = bot.components[BdhSessionSyncer]
+
             fun handleConfigPush(packet: PushReqResponse.ConfigPush) {
                 val pushReq = packet.struct
 
@@ -94,9 +98,10 @@ internal class ConfigPushSvc {
                 val fileStoragePushFSSvcList = pushReq.jcebuf.loadAs(FileStoragePushFSSvcList.serializer())
                 bot.client.fileStoragePushFSSvcList = fileStoragePushFSSvcList
 
+
                 val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
                 if (bigDataChannel?.vBigdataPbBuf == null) {
-                    bot.bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
                     return
                 }
 
@@ -149,10 +154,11 @@ internal class ConfigPushSvc {
                 bot.network.logger.info { "Server list: ${pushServerList.joinToString()}." }
 
                 if (pushServerList.isNotEmpty()) {
-                    bot.serverListNew.setPreferred(pushServerList.shuffled().map { ServerAddress(it.host, it.port) })
+                    bot.components[ServerList].setPreferred(
+                        pushServerList.shuffled().map { ServerAddress(it.host, it.port) })
                 }
-                bot.bdhSyncer.saveToCache()
-                bot.bdhSyncer.saveServerListToCache()
+                bdhSyncer.saveToCache()
+                bdhSyncer.saveServerListToCache()
                 if (serverListPush.reconnectNeeded == 1) {
                     bot.logger.info { "Server request to change server." }
                     bot.launch {
