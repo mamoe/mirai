@@ -86,6 +86,7 @@ val `ktor-network` = ktor("network", Versions.ktor)
 val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
 
 const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
+const val `slf4j-simple` = "org.slf4j:slf4j-simple:" + Versions.slf4j
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
 
 val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)
