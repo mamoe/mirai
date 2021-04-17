@@ -56,7 +56,7 @@ Mirai 鼓励插件开发者将自己的作品开源，并为此提供了模板�
 ```kotlin
 plugins {
     kotlin("jvm") version "1.4.32"
-    kotlin("serialization") version "1.4.32"
+    kotlin("plugin.serialization") version "1.4.32"
     
     id("net.mamoe.mirai-console") version "VERSION"
 }
