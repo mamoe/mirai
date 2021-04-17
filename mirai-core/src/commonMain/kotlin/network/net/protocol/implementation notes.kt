@@ -15,45 +15,6 @@ package net.mamoe.mirai.internal.network.net.protocol
  * 垃圾分类
  */
 
-private object `handle packet1` {
-//    if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-//        when {
-//            packet is ParseErrorPacket -> {
-//                packet.direction.getLogger(bot).error(packet.error)
-//            }
-//            packet is Packet.NoLog -> {
-//                // nothing to do
-//            }
-//            packet is MessageEvent -> packet.logMessageReceived()
-//            packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
-//                "Event: $packet".replaceMagicCodes()
-//            }
-//            else -> logger.verbose { "Recv: $packet".replaceMagicCodes() }
-//        }
-//    }
-}
-
-private object `handle packet2` {
-//    if (packet is Event) {
-//        if ((packet as? BroadcastControllable)?.shouldBroadcast != false) {
-//            if (packet is BotEvent) {
-//                withContext(bot.coroutineContext[CoroutineExceptionHandler] ?: CoroutineExceptionHandler { _, t ->
-//                    bot.logger.warning(
-//                        """
-//                            Event processing: An exception occurred but no CoroutineExceptionHandler found in coroutineContext of bot
-//                        """.trimIndent(), t
-//                    )
-//                }) {
-//                    packet.broadcast()
-//                }
-//            } else {
-//                packet.broadcast()
-//            }
-//        }
-//
-//        if (packet is CancellableEvent && packet.isCancelled) return
-//    }
-}
 
 private object `stat heartbeat` {
 //    private suspend fun doStatHeartbeat(): Throwable? {
@@ -67,18 +28,6 @@ private object `stat heartbeat` {
 //        }.exceptionOrNull()
 //    }
 
-}
-
-private object syncMessageSvc {
-//    private suspend fun syncMessageSvc() {
-//        logger.info { "Syncing friend message history..." }
-//        withTimeoutOrNull(30000) {
-//            launch(CoroutineName("Syncing friend message history")) { nextEvent<MessageSvcPbGetMsg.GetMsgSuccess> { it.bot == this@QQAndroidBotNetworkHandler.bot } }
-//            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect<Packet>()
-//
-//        } ?: error("timeout syncing friend message history.")
-//        logger.info { "Syncing friend message history: Success." }
-//    }
 }
 
 private object `config push syncer` {
@@ -108,42 +57,6 @@ private object `config push syncer` {
 //    }
 }
 
-private object `network init` {
-//    suspend fun init(): Unit = coroutineScope {
-//        check(bot.isActive) { "bot is dead therefore network can't init." }
-//        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init." }
-//
-//        contactUpdater.closeAllContacts(CancellationException("re-init"))
-//
-//        if (!pendingEnabled) {
-//            pendingIncomingPackets = ConcurrentLinkedQueue()
-//            _pendingEnabled.value = true
-//        }
-//
-//        val registerResp = registerClientOnline()
-//
-//        this@QQAndroidBotNetworkHandler.launch(
-//            CoroutineName("Awaiting ConfigPushSvc.PushReq"),
-//            block = ConfigPushSyncer()
-//        )
-//
-//        launch {
-//            syncMessageSvc()
-//        }
-//
-//        launch {
-//            bot.otherClientsLock.withLock {
-//                updateOtherClientsList()
-//            }
-//        }
-//
-//        contactUpdater.loadAll(registerResp.origin)
-//
-//        bot.firstLoginSucceed = true
-//        postInitActions()
-//    }
-
-}
 
 private object `update other client list` {
 //

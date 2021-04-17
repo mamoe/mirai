@@ -171,14 +171,14 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    val network: NetworkHandler by lazy { createNetworkHandler(coroutineContext) }
+    val network: NetworkHandler by lazy { createNetworkHandler() }
 
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
         network.resumeConnection()
     }
 
-    protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler
+    protected abstract fun createNetworkHandler(): NetworkHandler
     protected abstract suspend fun sendLogout()
 
     // endregion

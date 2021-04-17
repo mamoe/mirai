@@ -22,7 +22,7 @@ internal class ComponentKeyTest {
     @Test
     fun testComponentName() {
         assertEquals("TestComponent", TestComponent.componentName(false))
-        assertEquals(TestComponent::class.qualifiedName!!, TestComponent.smartToString(true))
+        assertEquals(TestComponent::class.qualifiedName!!, TestComponent.componentName(true))
     }
 
     @Test

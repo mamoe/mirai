@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.handler.state
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.component.ComponentKey
+import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
 
 /**
  * Stateless observer of state changes.
@@ -50,5 +51,19 @@ internal interface StateObserver {
 
     }
 
-    companion object : ComponentKey<StateObserver>
+    companion object : ComponentKey<StateObserver> {
+        internal val NOP = object : StateObserver {
+            override fun toString(): String {
+                return "StateObserver.NOP"
+            }
+        }
+
+        fun chainOfNotNull(
+            vararg observers: StateObserver?,
+        ): StateObserver {
+            return observers.reduceOrNull { acc, stateObserver ->
+                acc + stateObserver
+            } ?: NOP
+        }
+    }
 }
