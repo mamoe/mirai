@@ -11,14 +11,18 @@ package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
-import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
+import net.mamoe.mirai.internal.network.handler.components.PacketCodec
+import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
+import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Implements basic logics of [NetworkHandler]
+ */
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
     final override val coroutineContext: CoroutineContext = SupervisorJob(),
@@ -169,9 +173,9 @@ internal abstract class NetworkHandlerSupport(
     }
 
     /**
-     * You may need to call [BaseStateImpl.resumeConnection] since state is lazy.
+     * Calculate [new state][new] and set it as the current.
      *
-     * Do not check for instances of [BaseStateImpl]. Instances may be decorated by [StateObserver] for extended functionality.
+     * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
     protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
         // we can add hooks here for debug.

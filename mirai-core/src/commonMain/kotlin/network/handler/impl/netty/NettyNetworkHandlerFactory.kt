@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.network.handler.impl.netty
 
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 import java.net.SocketAddress
 
 internal object NettyNetworkHandlerFactory : NetworkHandlerFactory<NettyNetworkHandler> {

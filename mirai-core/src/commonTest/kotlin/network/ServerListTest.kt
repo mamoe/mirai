@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.network
 
-import net.mamoe.mirai.internal.network.handler.ServerAddress
-import net.mamoe.mirai.internal.network.handler.ServerList
+import net.mamoe.mirai.internal.network.handler.components.ServerAddress
+import net.mamoe.mirai.internal.network.handler.components.ServerList
 import kotlin.test.*
 
 internal class ServerListTest {

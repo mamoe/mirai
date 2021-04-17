@@ -31,7 +31,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.ServerList
+import net.mamoe.mirai.internal.network.handler.components.ServerList
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext

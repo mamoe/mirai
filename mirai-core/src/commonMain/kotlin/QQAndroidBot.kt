@@ -19,12 +19,16 @@ import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.*
+import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
+import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
-import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
-import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -72,7 +76,7 @@ internal class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
-    val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
+    val bdhSyncer: BdhSessionSyncer by lazy { BdhSessionSyncer(configuration, serverListNew, network.logger) }
     internal var firstLoginSucceed: Boolean = false
 
     ///////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
+import net.mamoe.mirai.internal.network.handler.components.PacketCodec
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit

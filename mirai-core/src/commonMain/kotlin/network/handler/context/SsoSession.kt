@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net.protocol
+package net.mamoe.mirai.internal.network.handler.context
 
 import net.mamoe.mirai.internal.network.AccountSecrets
 import net.mamoe.mirai.internal.network.WLoginSigInfo

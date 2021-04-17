@@ -7,10 +7,11 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.net.protocol
+package net.mamoe.mirai.internal.network.handler.components
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.handler.context.SsoSession
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
