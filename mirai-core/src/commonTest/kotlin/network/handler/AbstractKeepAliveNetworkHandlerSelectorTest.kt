@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.handler
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.selector.AbstractKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*

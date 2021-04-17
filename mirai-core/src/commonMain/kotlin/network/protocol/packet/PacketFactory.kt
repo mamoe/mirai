@@ -13,7 +13,7 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
+import net.mamoe.mirai.internal.network.handler.components.PacketCodec
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
@@ -113,7 +113,7 @@ internal suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
  */
 @Deprecated(
     "Kept for binary compatibility.",
-    ReplaceWith("PacketCodec.PacketLogger", "net.mamoe.mirai.internal.network.net.protocol.PacketCodec"),
+    ReplaceWith("PacketCodec.PacketLogger", "net.mamoe.mirai.internal.network.handler.components.PacketCodec"),
     level = DeprecationLevel.ERROR,
 )
 @PublishedApi

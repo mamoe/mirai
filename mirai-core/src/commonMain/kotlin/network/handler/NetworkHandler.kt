@@ -9,12 +9,9 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.impl.StateObserver
-import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.MiraiLogger
@@ -24,33 +21,11 @@ import java.net.SocketAddress
 import java.util.concurrent.CancellationException
 
 /**
- * Immutable context for [NetworkHandler]
- */
-internal interface NetworkHandlerContext {
-    val bot: QQAndroidBot
-    // however migration requires a major change.
-
-    val logger: MiraiLogger
-    val ssoProcessor: SsoProcessor
-
-    val stateObserver: StateObserver?
-}
-
-internal class NetworkHandlerContextImpl(
-    override val bot: QQAndroidBot,
-    override val ssoProcessor: SsoProcessor,
-    override val logger: MiraiLogger,
-    override val stateObserver: StateObserver?,
-) : NetworkHandlerContext {
-    override fun toString(): String {
-        return "NetworkHandlerContextImpl(bot=${bot.id}, stateObserver=$stateObserver)"
-    }
-}
-
-/**
  * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
  *
- * A [NetworkHandler] holds no reference to [Bot]s.
+ * Implementation is usually subclass of [NetworkHandlerSupport].
+ *
+ * @see NetworkHandlerSupport
  */
 internal interface NetworkHandler {
     val context: NetworkHandlerContext

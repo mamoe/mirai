@@ -7,96 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.handler.impl
+package net.mamoe.mirai.internal.network.handler.state
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.error
-
-/**
- * Stateless observer of state changes.
- *
- * @see SafeStateObserver
- * @see LoggingStateObserver
- */
-internal interface StateObserver {
-
-    fun stateChanged(
-        networkHandler: NetworkHandlerSupport,
-        previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
-    ) {
-    }
-
-    fun exceptionOnCreatingNewState(
-        networkHandler: NetworkHandlerSupport,
-        previousState: NetworkHandlerSupport.BaseStateImpl,
-        exception: Throwable,
-    ) {
-    }
-
-    fun beforeStateResume(
-        networkHandler: NetworkHandler,
-        state: NetworkHandlerSupport.BaseStateImpl,
-    ) {
-
-    }
-
-    fun afterStateResume(
-        networkHandler: NetworkHandler,
-        state: NetworkHandlerSupport.BaseStateImpl,
-        result: Result<Unit>,
-    ) {
-
-    }
-}
-
-internal class LoggingStateObserver(
-    val logger: MiraiLogger
-) : StateObserver {
-    override fun toString(): String {
-        return "LoggingStateObserver(logger=$logger)"
-    }
-
-    override fun stateChanged(
-        networkHandler: NetworkHandlerSupport,
-        previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
-    ) {
-        logger.debug { "State changed: ${previous.correspondingState} -> ${new.correspondingState}" }
-    }
-
-    override fun exceptionOnCreatingNewState(
-        networkHandler: NetworkHandlerSupport,
-        previousState: NetworkHandlerSupport.BaseStateImpl,
-        exception: Throwable
-    ) {
-        logger.debug({ "State changed: ${previousState.correspondingState} -> $exception" }, exception)
-    }
-
-    override fun afterStateResume(
-        networkHandler: NetworkHandler,
-        state: NetworkHandlerSupport.BaseStateImpl,
-        result: Result<Unit>
-    ) {
-        result.fold(
-            onSuccess = {
-                logger.debug { "State resumed: ${state.correspondingState}." }
-            },
-            onFailure = {
-                logger.debug(
-                    { "State resumed: ${state.correspondingState} ${result.exceptionOrNull()}" },
-                    result.exceptionOrNull()
-                )
-            }
-        )
-    }
-}
-
-internal class ExceptionInStateObserverException(
-    override val cause: Throwable
-) : RuntimeException()
 
 /**
  * Catches exception then log by [logger]
