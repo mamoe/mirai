@@ -9,9 +9,10 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.MiraiLogger
@@ -37,6 +38,11 @@ internal interface NetworkHandler {
      */
     val state: State
 
+    /**
+     * For suspension until a state. e.g login.
+     */
+    val onStateChanged: SelectClause1<State>
+
     enum class State {
         /**
          * Just created and no connection has been made.
@@ -54,12 +60,25 @@ internal interface NetworkHandler {
         CONNECTING,
 
         /**
-         * Everything is working. [resumeConnection] does nothing. [sendAndExpect] does not suspend for connection reasons.
+         * Loading essential data from server and local cache. Data include contact list.
+         *
+         * At this state [resumeConnection] waits for the jobs. [sendAndExpect] works normally.
+         */
+        LOADING,
+
+        /**
+         * Everything is working.
+         *
+         * At this state [resumeConnection] does nothing. [sendAndExpect] works normally.
          */
         OK,
 
         /**
-         * No Internet Connection available or for any other reasons but it is possible to establish a connection again(switching state to [CONNECTING]).
+         * No Internet Connection available or for any other reasons
+         * but it is possible to establish a connection again(switching state to [CONNECTING]).
+         *
+         * At this state [resumeConnection] turns the handle to [CONNECTING].
+         * [sendAndExpect] throws [IllegalStateException]
          */
         CONNECTION_LOST,
 
@@ -67,6 +86,9 @@ internal interface NetworkHandler {
          * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException].
          *
          * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.
+         *
+         * At this state [resumeConnection] throws the exception caught from underlying socket implementation (i.e netty).
+         * [sendAndExpect] throws [IllegalStateException]
          */
         CLOSED,
     }

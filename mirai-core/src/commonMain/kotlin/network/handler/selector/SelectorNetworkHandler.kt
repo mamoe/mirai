@@ -9,6 +9,11 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
@@ -26,10 +31,14 @@ internal class SelectorNetworkHandler(
     override val context: NetworkHandlerContext, // impl notes: may consider to move into function member.
     private val selector: NetworkHandlerSelector<*>,
 ) : NetworkHandler {
+    private val scope = CoroutineScope(SupervisorJob(context.bot.coroutineContext[Job]))
     private suspend inline fun instance(): NetworkHandler = selector.awaitResumeInstance()
 
     override val state: State
         get() = selector.getResumedInstance()?.state ?: State.INITIALIZED
+    override val onStateChanged: SelectClause1<State>
+        get() = selector.getResumedInstance()?.onStateChanged
+            ?: scope.async { instance().state }.onAwait
 
     override suspend fun resumeConnection() {
         instance() // the selector will resume connection for us.

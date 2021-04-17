@@ -25,7 +25,7 @@ import net.mamoe.mirai.event.events.OtherClientOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.appId
-import net.mamoe.mirai.internal.createOtherClient
+import net.mamoe.mirai.internal.contact.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.components.ContactCacheService

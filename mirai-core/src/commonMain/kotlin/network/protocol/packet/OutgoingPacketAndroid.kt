@@ -65,41 +65,34 @@ internal class IncomingPacket constructor(
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
     network: NetworkHandler,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = network.run {
-    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
-}
+): E = network.sendAndExpect(this, timeoutMillis, retry) as E
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
 @kotlin.internal.LowPriorityInOverloadResolution
 internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
     network: NetworkHandler,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = network.run {
-    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
-}
+): E = network.sendAndExpect(this, timeoutMillis, retry) as E
 
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
     bot: QQAndroidBot,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = bot.network.run {
-    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
-}
+): E = (this@sendAndExpect as OutgoingPacket).sendAndExpect(bot.network, timeoutMillis, retry)
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
 @kotlin.internal.LowPriorityInOverloadResolution
 internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
     bot: QQAndroidBot,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = bot.network.run {
-    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
-}
+): E = bot.network.sendAndExpect(this, timeoutMillis, retry) as E
 
 
 @Suppress("DuplicatedCode")

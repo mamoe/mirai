@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import org.jetbrains.annotations.TestOnly
@@ -37,7 +38,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     final override fun getResumedInstance(): H? = current.value
 
-    final override tailrec suspend fun awaitResumeInstance(): H {
+    final override tailrec suspend fun awaitResumeInstance(): H { // TODO: 2021/4/18 max 5 retry
+        yield()
         val current = getResumedInstance()
         return if (current != null) {
             when (current.state) {
@@ -45,9 +47,15 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     this.current.compareAndSet(current, null) // invalidate the instance and try again.
                     awaitResumeInstance() // will create new instance.
                 }
-                NetworkHandler.State.CONNECTING,
                 NetworkHandler.State.CONNECTION_LOST,
-                NetworkHandler.State.INITIALIZED,
+                NetworkHandler.State.CONNECTING,
+                NetworkHandler.State.INITIALIZED -> {
+                    current.resumeConnection()
+                    return awaitResumeInstance()
+                }
+                NetworkHandler.State.LOADING -> {
+                    return current
+                }
                 NetworkHandler.State.OK -> {
                     current.resumeConnection()
                     return current
