@@ -16,7 +16,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 
 /**

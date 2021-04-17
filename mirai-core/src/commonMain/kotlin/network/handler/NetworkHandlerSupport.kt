@@ -12,10 +12,9 @@ package net.mamoe.mirai.internal.network.handler
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.handler.components.PacketCodec
-import net.mamoe.mirai.internal.network.handler.components.PacketHandler
-import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
-import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.components.PacketCodec
+import net.mamoe.mirai.internal.network.components.PacketHandler
+import net.mamoe.mirai.internal.network.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket

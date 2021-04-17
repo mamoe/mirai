@@ -18,7 +18,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.getImageType
-import net.mamoe.mirai.internal.network.handler.context.BdhSession
+import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE

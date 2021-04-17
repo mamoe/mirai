@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
+import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.handler.components.ServerList
-import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 
 /**
  * [AbstractKeepAliveNetworkHandlerSelector] implementation delegating [createInstance] to [factory]
