@@ -21,7 +21,7 @@ internal data class LongMessageInternal internal constructor(override val conten
     AbstractServiceMessage(), RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+    override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         bot.asQQAndroidBot()
         val long = Mirai.downloadLongMessage(bot, resId)
 
@@ -38,7 +38,7 @@ internal data class ForwardMessageInternal(override val content: String, val res
     RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+    override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         bot.asQQAndroidBot()
 
         val msgXml = content.substringAfter("<msg", "")

@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer
 import net.mamoe.mirai.internal.message.RefinableMessage
+import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.test.runBlockingUnit
@@ -75,7 +76,7 @@ private fun RefinableMessage(
     refine: (bot: Bot, context: MessageChain) -> Message?
 ): RefinableMessage {
     return object : RefinableMessage, TM() {
-        override fun tryRefine(bot: Bot, context: MessageChain): Message? {
+        override fun tryRefine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message? {
             return refine(bot, context)
         }
     }
@@ -86,7 +87,7 @@ private fun RefinableMessage0(
     refine: () -> Message?
 ): RefinableMessage {
     return object : RefinableMessage, TM() {
-        override fun tryRefine(bot: Bot, context: MessageChain): Message? {
+        override fun tryRefine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message? {
             return refine()
         }
     }

@@ -25,6 +25,7 @@ internal interface RefinableMessage : SingleMessage {
     fun tryRefine(
         bot: Bot,
         context: MessageChain,
+        refineContext: RefineContext = EmptyRefineContext,
     ): Message? = this
 
     /**
@@ -33,7 +34,8 @@ internal interface RefinableMessage : SingleMessage {
     suspend fun refine(
         bot: Bot,
         context: MessageChain,
-    ): Message? = tryRefine(bot, context)
+        refineContext: RefineContext = EmptyRefineContext,
+    ): Message? = tryRefine(bot, context, refineContext)
 }
 
 internal sealed class MessageRefiner {
@@ -45,7 +47,7 @@ internal sealed class MessageRefiner {
 
         if (none {
                 it is RefinableMessage
-                        || (it is PlainText && convertLineSeparator && it.content.contains('\r'))
+                    || (it is PlainText && convertLineSeparator && it.content.contains('\r'))
             }
         ) return this
 
@@ -76,14 +78,76 @@ internal sealed class MessageRefiner {
     }
 }
 
+@Suppress("unused")
+internal class RefineContextKey<T : Any>(
+    val name: String?
+) {
+    override fun toString(): String {
+        return buildString {
+            append("Key(")
+            name?.also(this@buildString::append) ?: kotlin.run {
+                append('#').append(this@RefineContextKey.hashCode())
+            }
+            append(')')
+        }
+    }
+}
+
+/**
+ * 转换消息时的上下文
+ */
+internal interface RefineContext {
+    operator fun contains(key: RefineContextKey<*>): Boolean
+    operator fun <T : Any> get(key: RefineContextKey<T>): T?
+    fun <T : Any> getNotNull(key: RefineContextKey<T>): T = get(key) ?: error("No such value of `$key`")
+}
+
+internal interface MutableRefineContext : RefineContext {
+    operator fun <T : Any> set(key: RefineContextKey<T>, value: T)
+    fun remove(key: RefineContextKey<*>)
+}
+
+internal object EmptyRefineContext : RefineContext {
+    override fun contains(key: RefineContextKey<*>): Boolean = false
+    override fun <T : Any> get(key: RefineContextKey<T>): T? = null
+    override fun toString(): String {
+        return "EmptyRefineContext"
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+internal class SimpleRefineContext(
+    private val delegate: MutableMap<RefineContextKey<*>, Any>
+) : MutableRefineContext {
+
+    override fun contains(key: RefineContextKey<*>): Boolean = delegate.containsKey(key)
+    override fun <T : Any> get(key: RefineContextKey<T>): T? {
+        return (delegate[key] ?: return null) as T
+    }
+
+    override fun <T : Any> set(key: RefineContextKey<T>, value: T) {
+        delegate[key] = value
+    }
+
+    override fun remove(key: RefineContextKey<*>) {
+        delegate.remove(key)
+    }
+}
+
 internal object LightMessageRefiner : MessageRefiner() {
-    fun MessageChain.refineLight(bot: Bot): MessageChain {
-        return refineImpl(bot) { it.tryRefine(bot, this) }
+    fun MessageChain.refineLight(
+        bot: Bot,
+        refineContext: RefineContext = EmptyRefineContext,
+    ): MessageChain {
+        return refineImpl(bot) { it.tryRefine(bot, this, refineContext) }
     }
 }
 
 internal object DeepMessageRefiner : MessageRefiner() {
-    suspend fun MessageChain.refineDeep(bot: Bot): MessageChain {
-        return refineImpl(bot) { it.refine(bot, this) }
+    suspend fun MessageChain.refineDeep(
+        bot: Bot,
+        refineContext: RefineContext = EmptyRefineContext,
+    ): MessageChain {
+        return refineImpl(bot) { it.refine(bot, this, refineContext) }
     }
 }
