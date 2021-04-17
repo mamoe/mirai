@@ -33,7 +33,7 @@ internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
     bot: Bot,
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long,
-    refineContext: RefineContext,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
@@ -46,7 +46,7 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     bot: Bot,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
-    refineContext: RefineContext,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot, refineContext)
 }
@@ -63,7 +63,7 @@ internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     bot: Bot,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
-    refineContext: RefineContext,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
     return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
