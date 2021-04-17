@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.network.handler.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.getSecretsOrCreate
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandler
@@ -39,7 +39,7 @@ import net.mamoe.mirai.utils.withExceptionCollector
  * Used by [NettyNetworkHandler.StateConnecting].
  */
 internal class SsoProcessor(
-    private val ssoContext: SsoProcessorContext,
+    internal val ssoContext: SsoProcessorContext,
 ) {
     @Volatile
     internal var client = createClient(ssoContext.bot)
@@ -50,7 +50,7 @@ internal class SsoProcessor(
      * Do login. Throws [LoginFailedException] if failed
      */
     @Throws(LoginFailedException::class)
-    suspend fun login(handler: NetworkHandler) = withExceptionCollector<Unit> {
+    suspend fun login(handler: NetworkHandler) = withExceptionCollector {
         if (client.wLoginSigInfoInitialized) {
             kotlin.runCatching {
                 FastLoginImpl(handler).doLogin()
@@ -62,6 +62,7 @@ internal class SsoProcessor(
             client = createClient(ssoContext.bot)
             SlowLoginImpl(handler).doLogin()
         }
+        ssoContext.accountSecretsManager.saveSecrets(ssoContext.account, AccountSecretsImpl(client))
     }
 
     private fun createClient(bot: QQAndroidBot): QQAndroidClient {

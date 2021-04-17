@@ -17,14 +17,16 @@
 
 package net.mamoe.mirai.internal
 
-import io.ktor.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.ConcurrencyKind
+import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.EventPriority.MONITOR
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
@@ -167,21 +169,11 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    internal val serverList: MutableList<Pair<String, Int>> = mutableListOf() // TODO: 2021/4/16 remove old
     internal val serverListNew = ServerList() // TODO: 2021/4/16 load server list from cache (add a provider)
     // bot.bdhSyncer.loadServerListFromCache()
 
-    // TODO: 2021/4/14 handle serverList
+    val network: NetworkHandler by lazy { createNetworkHandler(coroutineContext) }
 
-    val network: NetworkHandler by lazy {
-        createNetworkHandler(coroutineContext)
-    }
-
-
-    /**
-     * **Exposed public API**
-     * [AbstractBot.relogin] && [BotNetworkHandler.init]
-     */
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
         network.resumeConnection()

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network
+package net.mamoe.mirai.internal.network.handler.components
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -27,7 +27,9 @@ import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.network.isValid
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.data.jce.isValid

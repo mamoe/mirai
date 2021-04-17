@@ -11,9 +11,9 @@ package net.mamoe.mirai.internal.network.handler.context
 
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.AccountSecretsManager
-import net.mamoe.mirai.internal.network.createAccountsSecretsManager
+import net.mamoe.mirai.internal.network.handler.components.AccountSecretsManager
 import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.components.createAccountsSecretsManager
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 

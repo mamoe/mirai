@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import org.jetbrains.annotations.TestOnly
 
 /**

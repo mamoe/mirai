@@ -19,6 +19,7 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.handler.context.AccountSecrets
 import net.mamoe.mirai.internal.network.handler.context.SsoSession
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList

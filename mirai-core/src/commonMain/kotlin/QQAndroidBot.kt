@@ -32,13 +32,9 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.ScheduledJob
-import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
-import java.io.File
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.milliseconds
@@ -185,45 +181,4 @@ internal class QQAndroidBot constructor(
             bot.network.context.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Account secrets cache
-    ///////////////////////////////////////////////////////////////////////////
-
-    // We cannot extract these logics until we rewrite the network framework.
-
-    private val cacheDir: File by lazy {
-        configuration.workingDir.resolve(bot.configuration.cacheDir).apply { mkdirs() }
-    }
-    private val accountSecretsFile: File by lazy {
-        cacheDir.resolve("account.secrets")
-    }
-
-    private fun saveSecrets(secrets: AccountSecretsImpl) {
-        if (secrets.wLoginSigInfoField == null) return
-
-        accountSecretsFile.writeBytes(
-            TEA.encrypt(
-                secrets.toByteArray(AccountSecretsImpl.serializer()),
-                account.passwordMd5
-            )
-        )
-
-        network.context.logger.info { "Saved account secrets to local cache for fast login." }
-    }
-
-    init {
-        if (configuration.loginCacheEnabled) {
-            eventChannel.parentScope(this).subscribeAlways<WtLogin.Login.LoginPacketResponse> { event ->
-                if (event is WtLogin.Login.LoginPacketResponse.Success) {
-                    if (client.wLoginSigInfoInitialized) {
-                        saveSecrets(AccountSecretsImpl(client))
-                    }
-                }
-            }
-        }
-    }
-
-    /////////////////////////// accounts secrets end
-
 }
