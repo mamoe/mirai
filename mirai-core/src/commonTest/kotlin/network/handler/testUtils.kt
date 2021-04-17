@@ -12,10 +12,9 @@ package net.mamoe.mirai.internal.network.handler
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.handler.impl.LoggingStateObserver
-import net.mamoe.mirai.internal.network.handler.impl.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.impl.SafeStateObserver
-import net.mamoe.mirai.internal.network.handler.impl.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket

@@ -7,21 +7,17 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.handler.impl
+package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.network.net.protocol.PacketCodec.PACKET_DEBUG
+import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
-
 
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
@@ -95,7 +91,7 @@ internal abstract class NetworkHandlerSupport(
     }
 
     protected val packetLogger: MiraiLogger by lazy {
-        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PACKET_DEBUG)
+        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PacketCodec.PACKET_DEBUG)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -201,5 +197,3 @@ internal abstract class NetworkHandlerSupport(
         _state.resumeConnection()
     }
 }
-
-

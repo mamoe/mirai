@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.handler.impl.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.net.protocol.PacketCodec
 import net.mamoe.mirai.internal.network.net.protocol.RawIncomingPacket

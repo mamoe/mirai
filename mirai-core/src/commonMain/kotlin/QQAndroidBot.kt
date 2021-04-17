@@ -19,10 +19,10 @@ import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.handler.*
-import net.mamoe.mirai.internal.network.handler.impl.LoggingStateObserver
-import net.mamoe.mirai.internal.network.handler.impl.SafeStateObserver
-import net.mamoe.mirai.internal.network.handler.impl.StateObserver
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessor
 import net.mamoe.mirai.internal.network.net.protocol.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
