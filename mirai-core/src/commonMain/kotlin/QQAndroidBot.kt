@@ -17,17 +17,11 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.network.FriendListCache
-import net.mamoe.mirai.internal.network.GroupMemberListCaches
-import net.mamoe.mirai.internal.network.JsonForCache
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.handler.component.set
-import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncerImpl
-import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
-import net.mamoe.mirai.internal.network.handler.components.SsoProcessorImpl
+import net.mamoe.mirai.internal.network.handler.components.*
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
@@ -40,12 +34,11 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.utils.ScheduledJob
-import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.systemProp
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.milliseconds
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -91,14 +84,18 @@ internal class QQAndroidBot constructor(
 
     private val components: ConcurrentComponentStorage by lazy {
         ConcurrentComponentStorage().apply {
-            set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
+            set(
+                SsoProcessor,
+                SsoProcessorImpl(SsoProcessorContextImpl(bot))
+            ) // put sso processor at the first to make `client` faster.
+
             set(StateObserver, debugConfiguration.stateObserver)
+            set(ContactCacheService, ContactCacheServiceImpl(bot))
+            set(ContactUpdater, ContactUpdaterImpl(bot, this))
         }
     }
 
-    private val ssoProcessor: SsoProcessor by lazy { SsoProcessorImpl(SsoProcessorContextImpl(this)) }
-
-    val client get() = ssoProcessor.client
+    val client get() = components[SsoProcessor].client
 
     override suspend fun sendLogout() {
         network.sendWithoutExpect(StatSvc.Register.offline(client))
@@ -150,49 +147,5 @@ internal class QQAndroidBot constructor(
 
     fun getGroupByUinOrNull(uin: Long): Group? {
         return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    // contact cache
-    ///////////////////////////////////////////////////////////////////////////
-
-    inline val json get() = configuration.json
-
-    val friendListCache: FriendListCache? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        val file = configuration.friendCacheFile()
-        val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
-
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        bot.eventChannel.parentScope(this@QQAndroidBot)
-            .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
-                friendListSaver?.notice()
-            }
-        ret
-    }
-
-    val groupMemberListCaches: GroupMemberListCaches? by lazy {
-        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
-            return@lazy null
-        }
-        GroupMemberListCaches(this)
-    }
-
-    private val friendListSaver: ScheduledJob? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
-            runBIO { saveFriendCache() }
-        }
-    }
-
-    fun saveFriendCache() {
-        val friendListCache = friendListCache ?: return
-
-        configuration.friendCacheFile().run {
-            createFileIfNotExists()
-            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
-            bot.network.context.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
-        }
     }
 }
