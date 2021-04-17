@@ -33,7 +33,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.components.ServerList
+import net.mamoe.mirai.internal.network.handler.components.ServerListImpl
 import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
@@ -172,7 +172,7 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    internal val serverListNew = ServerList() // TODO: 2021/4/16 load server list from cache (add a provider)
+    internal val serverListNew = ServerListImpl() // TODO: 2021/4/16 load server list from cache (add a provider)
     // bot.bdhSyncer.loadServerListFromCache()
 
     val network: NetworkHandler by lazy { createNetworkHandler(coroutineContext) }

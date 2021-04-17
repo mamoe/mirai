@@ -11,6 +11,8 @@ package net.mamoe.mirai.internal.network.handler.components
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.handler.component.ComponentKey
+import net.mamoe.mirai.internal.network.handler.components.PacketCodec.Companion.PacketLogger
 import net.mamoe.mirai.internal.network.handler.context.SsoSession
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
@@ -18,28 +20,43 @@ import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
 import kotlin.io.use
 
+
 /**
  * Packet decoders.
  *
  * - Transforms [ByteReadPacket] to [RawIncomingPacket]
  */
-internal object PacketCodec {
-    val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", true)
-
-    /**
-     * 数据包相关的调试输出.
-     * 它默认是关闭的.
-     */
-    internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
-        MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)
-    }
-
+internal interface PacketCodec {
     /**
      * It's caller's responsibility to close [input]
      * @param input received from sockets.
      * @return decoded
      */
-    fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
+    fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket
+
+    /**
+     * Process [RawIncomingPacket] using [IncomingPacketFactory.decode].
+     *
+     * This function wraps exceptions into [IncomingPacket]
+     */
+    suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket?
+
+    companion object : ComponentKey<PacketCodec> {
+        val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", true)
+
+        /**
+         * 数据包相关的调试输出.
+         * 它默认是关闭的.
+         */
+        internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
+            MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)
+        }
+    }
+}
+
+internal class PacketCodecImpl : PacketCodec {
+
+    override fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
         // login
         val flag1 = readInt()
 
@@ -210,7 +227,7 @@ internal object PacketCodec {
      *
      * This function wraps exceptions into [IncomingPacket]
      */
-    suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket? {
+    override suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket? {
         val factory = KnownPacketFactories.findPacketFactory(input.commandName) ?: return null
 
         return kotlin.runCatching {

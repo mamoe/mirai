@@ -12,7 +12,10 @@ package net.mamoe.mirai.internal.network.handler
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.handler.component.ComponentStorage
+import net.mamoe.mirai.internal.network.handler.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.components.SsoProcessorImpl
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
@@ -23,16 +26,20 @@ import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
-
 internal class TestNetworkHandlerContext(
     override val bot: QQAndroidBot = MockBot(),
     override val logger: MiraiLogger = MiraiLogger.create("Test"),
-    override val ssoProcessor: SsoProcessor = SsoProcessor(SsoProcessorContextImpl(bot)),
-    override val stateObserver: StateObserver? = SafeStateObserver(
-        LoggingStateObserver(MiraiLogger.create("States")),
-        MiraiLogger.create("StateObserver errors")
-    ),
-) : NetworkHandlerContext
+    components: ComponentStorage = ConcurrentComponentStorage().apply {
+        set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
+        set(
+            StateObserver,
+            SafeStateObserver(
+                LoggingStateObserver(MiraiLogger.create("States")),
+                MiraiLogger.create("StateObserver errors")
+            )
+        )
+    }
+) : NetworkHandlerContext, ComponentStorage by components
 
 internal open class TestNetworkHandler(
     context: NetworkHandlerContext,

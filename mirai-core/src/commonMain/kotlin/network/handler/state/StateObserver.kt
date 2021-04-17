@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.handler.state
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.component.ComponentKey
 
 /**
  * Stateless observer of state changes.
@@ -48,4 +49,6 @@ internal interface StateObserver {
     ) {
 
     }
+
+    companion object : ComponentKey<StateObserver>
 }

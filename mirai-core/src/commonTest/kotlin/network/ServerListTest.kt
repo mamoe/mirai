@@ -11,28 +11,29 @@ package net.mamoe.mirai.internal.network
 
 import net.mamoe.mirai.internal.network.handler.components.ServerAddress
 import net.mamoe.mirai.internal.network.handler.components.ServerList
+import net.mamoe.mirai.internal.network.handler.components.ServerListImpl
 import kotlin.test.*
 
 internal class ServerListTest {
 
     @Test
     fun canInitializeDefaults() {
-        assertNotEquals(0, ServerList.DefaultServerList.size)
+        assertNotEquals(0, ServerList.DEFAULT_SERVER_LIST.size)
     }
 
     @Test
     fun `can poll current for initial`() {
-        assertNotNull(ServerList().pollCurrent())
+        assertNotNull(ServerListImpl().pollCurrent())
     }
 
     @Test
     fun `not empty for initial`() {
-        assertNotNull(ServerList().pollAny())
+        assertNotNull(ServerListImpl().pollAny())
     }
 
     @Test
     fun `poll current will end with null`() {
-        val instance = ServerList()
+        val instance = ServerListImpl()
         repeat(100) {
             instance.pollCurrent()
         }
@@ -41,7 +42,7 @@ internal class ServerListTest {
 
     @Test
     fun `poll any is always not null`() {
-        val instance = ServerList()
+        val instance = ServerListImpl()
         repeat(100) {
             instance.pollAny()
         }
@@ -51,13 +52,13 @@ internal class ServerListTest {
     @Test
     fun `preferred cannot be empty`() {
         assertFailsWith<IllegalArgumentException> {
-            ServerList().setPreferred(emptyList())
+            ServerListImpl().setPreferred(emptyList())
         }
     }
 
     @Test
     fun `use preferred`() {
-        val instance = ServerList()
+        val instance = ServerListImpl()
         val addr = ServerAddress("test", 1)
         instance.setPreferred(listOf(addr))
         repeat(100) {

@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.handler.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.isValid
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
@@ -44,6 +45,8 @@ internal interface ContactUpdater {
     suspend fun loadAll(registerResp: SvcRespRegister)
 
     fun closeAllContacts(e: CancellationException)
+
+    companion object : ComponentKey<ContactUpdater>
 }
 
 internal class ContactUpdaterImpl(

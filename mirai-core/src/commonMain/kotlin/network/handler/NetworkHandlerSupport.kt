@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.components.PacketCodec
 import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
@@ -137,7 +138,7 @@ internal abstract class NetworkHandlerSupport(
          */
         @Throws(Exception::class)
         suspend fun resumeConnection() {
-            val observer = context.stateObserver
+            val observer = context.getOrNull(StateObserver)
             if (observer != null) {
                 observer.beforeStateResume(this@NetworkHandlerSupport, _state)
                 val result = kotlin.runCatching { resumeConnection0() }
@@ -180,10 +181,12 @@ internal abstract class NetworkHandlerSupport(
     protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
         // we can add hooks here for debug.
 
+        val stateObserver = context.getOrNull(StateObserver)
+
         val impl = try {
             new() // inline only once
         } catch (e: Throwable) {
-            context.stateObserver?.exceptionOnCreatingNewState(this, _state, e)
+            stateObserver?.exceptionOnCreatingNewState(this, _state, e)
             throw e
         }
 
@@ -192,7 +195,7 @@ internal abstract class NetworkHandlerSupport(
         old.cancel(CancellationException("State is switched from $old to $impl"))
         _state = impl
 
-        context.stateObserver?.stateChanged(this, old, impl)
+        stateObserver?.stateChanged(this, old, impl)
 
         return impl
     }
