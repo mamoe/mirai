@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.components.PacketCodec
+import net.mamoe.mirai.internal.network.handler.components.PacketCodecImpl
 import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
@@ -63,7 +63,10 @@ internal class NettyNetworkHandler(
     private inner class ByteBufToIncomingPacketDecoder : SimpleChannelInboundHandler<ByteBuf>(ByteBuf::class.java) {
         override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
             ctx.fireChannelRead(msg.toReadPacket().use { packet ->
-                PacketCodec.decodeRaw(context.ssoProcessor.ssoSession, packet)
+                PacketCodecImpl().decodeRaw(
+                    context[SsoProcessor].ssoSession,
+                    packet
+                ) // TODO: 2021/4/17 components integration
             })
         }
     }
@@ -124,7 +127,7 @@ internal class NettyNetworkHandler(
             launch(CoroutineName("PacketDecodePipeline processor")) {
                 // 'single thread' processor
                 channel.consumeAsFlow().collect { raw ->
-                    val result = PacketCodec.processBody(context.bot, raw)
+                    val result = PacketCodecImpl().processBody(context.bot, raw) // TODO: 2021/4/17 components
                     if (result == null) {
                         collectUnknownPacket(raw)
                     } else collectReceived(result)
@@ -175,7 +178,7 @@ internal class NettyNetworkHandler(
 
         private val connectResult = async {
             val connection = connection.await()
-            context.ssoProcessor.login(this@NettyNetworkHandler)
+            context[SsoProcessor].login(this@NettyNetworkHandler)
             setStateForJobCompletion { StateOK(connection) }
         }.apply {
             invokeOnCompletion { error ->

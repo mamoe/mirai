@@ -17,13 +17,21 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.handler.*
+import net.mamoe.mirai.internal.network.FriendListCache
+import net.mamoe.mirai.internal.network.GroupMemberListCaches
+import net.mamoe.mirai.internal.network.JsonForCache
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.handler.component.set
 import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.handler.components.BdhSessionSyncerImpl
 import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.components.SsoProcessorImpl
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
@@ -72,7 +80,7 @@ internal class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
-    val bdhSyncer: BdhSessionSyncer by lazy { BdhSessionSyncer(configuration, serverListNew, network.logger) }
+    val bdhSyncer: BdhSessionSyncer by lazy { BdhSessionSyncerImpl(configuration, serverListNew, network.logger) }
     internal var firstLoginSucceed: Boolean = false
 
     ///////////////////////////////////////////////////////////////////////////
@@ -81,7 +89,14 @@ internal class QQAndroidBot constructor(
 
     // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
 
-    private val ssoProcessor: SsoProcessor by lazy { SsoProcessor(SsoProcessorContextImpl(this)) }
+    private val components: ConcurrentComponentStorage by lazy {
+        ConcurrentComponentStorage().apply {
+            set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
+            set(StateObserver, debugConfiguration.stateObserver)
+        }
+    }
+
+    private val ssoProcessor: SsoProcessor by lazy { SsoProcessorImpl(SsoProcessorContextImpl(this)) }
 
     val client get() = ssoProcessor.client
 
@@ -92,9 +107,8 @@ internal class QQAndroidBot constructor(
     override fun createNetworkHandler(coroutineContext: CoroutineContext): NetworkHandler {
         val context = NetworkHandlerContextImpl(
             this,
-            ssoProcessor,
             configuration.networkLoggerSupplier(this),
-            debugConfiguration.stateObserver
+            components
         )
         return SelectorNetworkHandler(
             context,

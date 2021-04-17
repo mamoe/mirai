@@ -11,31 +11,26 @@ package net.mamoe.mirai.internal.network.handler.context
 
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.component.ComponentStorage
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
  * Immutable context for [NetworkHandler]
  * @see NetworkHandlerContextImpl
  */
-internal interface NetworkHandlerContext {
+internal interface NetworkHandlerContext : ComponentStorage {
     val bot: QQAndroidBot
     // however migration requires a major change.
 
     val logger: MiraiLogger
-    val ssoProcessor: SsoProcessor
-
-    val stateObserver: StateObserver?
 }
 
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
-    override val ssoProcessor: SsoProcessor,
     override val logger: MiraiLogger,
-    override val stateObserver: StateObserver?,
-) : NetworkHandlerContext {
+    storage: ComponentStorage
+) : NetworkHandlerContext, ComponentStorage by storage {
     override fun toString(): String {
-        return "NetworkHandlerContextImpl(bot=${bot.id}, stateObserver=$stateObserver)"
+        return "NetworkHandlerContextImpl(storage=$)"
     }
 }
