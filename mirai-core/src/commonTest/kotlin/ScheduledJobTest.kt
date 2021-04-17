@@ -26,7 +26,7 @@ internal class ScheduledJobTest : AbstractTest() {
                 throwable.printStackTrace()
             })
             val invoked = AtomicInteger(0)
-            val job = ScheduledJob(scope.coroutineContext, 1 * 1000) {
+            val job = ScheduledJob(scope.coroutineContext, 1000) {
                 invoked.incrementAndGet()
             }
             delay(100)
