@@ -32,21 +32,23 @@ import net.mamoe.mirai.utils.*
 internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
     bot: Bot,
     messageSourceKind: MessageSourceKind,
-    groupIdOrZero: Long
+    groupIdOrZero: Long,
+    refineContext: RefineContext,
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
         joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, this)
-    }.cleanupRubbishMessageElements().refineLight(bot)
+    }.cleanupRubbishMessageElements().refineLight(bot, refineContext)
 }
 
 
 internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     bot: Bot,
     groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
+    messageSourceKind: MessageSourceKind,
+    refineContext: RefineContext,
 ): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot)
+    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot, refineContext)
 }
 
 //internal fun List<MsgComm.Msg>.toMessageChainOffline(
@@ -60,9 +62,10 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
 internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     bot: Bot,
     groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
+    messageSourceKind: MessageSourceKind,
+    refineContext: RefineContext,
 ): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot)
+    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
 
 
