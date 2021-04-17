@@ -69,9 +69,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
         syncCookie: ByteArray?, //PbPushMsg.msg.msgHead.msgTime
-    ) = buildOutgoingUniPacket(
-        client
-    ) {
+    ) = buildOutgoingUniPacket(client) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
         writeProtoBuf(
             MsgSvc.PbGetMsgReq.serializer(),
