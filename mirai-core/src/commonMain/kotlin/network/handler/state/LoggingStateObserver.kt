@@ -18,7 +18,7 @@ internal class LoggingStateObserver(
     val logger: MiraiLogger
 ) : StateObserver {
     override fun toString(): String {
-        return "LoggingStateObserver(logger=$logger)"
+        return "LoggingStateObserver"
     }
 
     override fun stateChanged(

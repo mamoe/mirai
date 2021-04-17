@@ -14,6 +14,11 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.error
 
+internal fun StateObserver.safe(logger: MiraiLogger): StateObserver {
+    if (this is SafeStateObserver) return this
+    return SafeStateObserver(this, logger)
+}
+
 /**
  * Catches exception then log by [logger]
  */

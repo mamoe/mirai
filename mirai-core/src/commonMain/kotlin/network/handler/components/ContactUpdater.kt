@@ -13,7 +13,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.data.FriendInfo
@@ -38,6 +40,8 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
@@ -46,7 +50,7 @@ import net.mamoe.mirai.utils.verbose
  * Uses [ContactCacheService]
  */
 internal interface ContactUpdater {
-    suspend fun loadAll(registerResp: SvcRespRegister) // TODO: 2021/4/17 call this fun
+    suspend fun loadAll(registerResp: SvcRespRegister)
 
     fun closeAllContacts(e: CancellationException)
 
@@ -55,16 +59,19 @@ internal interface ContactUpdater {
 
 internal class ContactUpdaterImpl(
     val bot: QQAndroidBot, // not good
-    val components: ComponentStorage
+    val components: ComponentStorage,
+    private val logger: MiraiLogger,
 ) : ContactUpdater {
     private val cacheService get() = components[ContactCacheService]
+    private val lock = Mutex()
 
-    @Synchronized
     override suspend fun loadAll(registerResp: SvcRespRegister) {
-        coroutineScope {
-            launch { reloadFriendList(registerResp) }
-            launch { reloadGroupList() }
-            launch { reloadStrangerList() }
+        lock.withLock {
+            coroutineScope {
+                launch { reloadFriendList(registerResp) }
+                launch { reloadGroupList() }
+                launch { reloadStrangerList() }
+            }
         }
     }
 
@@ -94,7 +101,7 @@ internal class ContactUpdaterImpl(
     /**
      * Don't use concurrently
      */
-    private suspend fun reloadFriendList(registerResp: SvcRespRegister) = bot.network.run {
+    private suspend fun reloadFriendList(registerResp: SvcRespRegister) {
         if (initFriendOk) {
             return
         }
@@ -119,7 +126,7 @@ internal class ContactUpdaterImpl(
             while (true) {
                 val data = FriendList.GetFriendGroupList(
                     bot.client, count, 150, 0, 0
-                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(bot, timeoutMillis = 5000, retry = 2)
 
                 total = data.totalFriendCount
 
@@ -142,7 +149,7 @@ internal class ContactUpdaterImpl(
             // For sync bot nick
             FriendList.GetFriendGroupList(
                 bot.client, 0, 1, 0, 0
-            ).sendAndExpect<Packet>()
+            ).sendAndExpect<Packet>(bot)
 
             list
         } else {
@@ -198,14 +205,14 @@ internal class ContactUpdaterImpl(
         )
     }
 
-    private suspend fun reloadStrangerList() = bot.network.run {
+    private suspend fun reloadStrangerList() {
         if (initStrangerOk) {
             return
         }
         var currentCount = 0
         logger.info { "Start loading stranger list..." }
         val response = StrangerList.GetStrangerList(bot.client)
-            .sendAndExpect<StrangerList.GetStrangerList.Response>(timeoutMillis = 5000, retry = 2)
+            .sendAndExpect<StrangerList.GetStrangerList.Response>(bot, timeoutMillis = 5000, retry = 2)
 
         if (response.result == 0) {
             response.strangerList.forEach {
@@ -220,15 +227,15 @@ internal class ContactUpdaterImpl(
 
     }
 
-    private suspend fun reloadGroupList() = bot.network.run {
+    private suspend fun reloadGroupList() {
         if (initGroupOk) {
             return
         }
-        TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>()
+        TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>(bot)
 
         logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
-            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 5)
+            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(bot, retry = 5)
 
         val semaphore = Semaphore(30)
 

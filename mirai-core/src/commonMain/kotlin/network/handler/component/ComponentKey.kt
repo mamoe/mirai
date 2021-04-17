@@ -20,7 +20,7 @@ import kotlin.reflect.full.allSupertypes
  *
  * @param T is a type hint.
  */
-internal interface ComponentKey<out T : Any> {
+internal interface ComponentKey<T : Any> {
     /**
      * Get name of `T`.
      *

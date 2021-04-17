@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.handler
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.components.PacketCodec
+import net.mamoe.mirai.internal.network.handler.components.PacketHandler
 import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
@@ -32,11 +33,12 @@ internal abstract class NetworkHandlerSupport(
     protected abstract fun initialState(): BaseStateImpl
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
 
+    private val packetHandler: PacketHandler by lazy { context[PacketHandler] }
+
     /**
      * Called when a packet is received.
      */
-    protected fun collectReceived(packet: IncomingPacket) {
-        logger.verbose({ "Recv: ${packet.commandName} ${packet.data ?: packet.exception}" }, packet.exception)
+    protected open fun collectReceived(packet: IncomingPacket) {
         for (listener in packetListeners) {
             if (!listener.isExpected(packet)) continue
             if (packetListeners.remove(listener)) {
@@ -46,6 +48,13 @@ internal abstract class NetworkHandlerSupport(
                 } else {
                     listener.result.complete(packet.data)
                 }
+            }
+        }
+        launch {
+            try {
+                packetHandler.handlePacket(packet)
+            } catch (e: Throwable) { // do not pass it to CoroutineExceptionHandler for a more controllable behavior.
+                logger.error(e)
             }
         }
     }
@@ -192,8 +201,8 @@ internal abstract class NetworkHandlerSupport(
 
         val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
+        _state = impl // switch state first. selector may be busy selecting.
         old.cancel(CancellationException("State is switched from $old to $impl"))
-        _state = impl
 
         stateObserver?.stateChanged(this, old, impl)
 

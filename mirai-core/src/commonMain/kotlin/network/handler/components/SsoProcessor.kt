@@ -9,15 +9,21 @@
 
 package net.mamoe.mirai.internal.network.handler.components
 
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.handler.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.impl.netty.NettyNetworkHandler
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
@@ -36,6 +42,13 @@ internal interface SsoProcessor {
     val ssoContext: SsoProcessorContext
     val client: QQAndroidClient
     val ssoSession: SsoSession
+
+    /**
+     * The observers to launch jobs for states.
+     *
+     * E.g. start heartbeat job for [NetworkHandler.State.OK].
+     */
+    fun createObserverChain(): StateObserver
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -60,6 +73,17 @@ internal class SsoProcessorImpl(
     override var client = createClient(ssoContext.bot)
 
     override val ssoSession: SsoSession get() = client
+    override fun createObserverChain(): StateObserver = StateObserver.chainOfNotNull(
+        object : StateChangedObserver(NetworkHandler.State.OK) {
+            override fun stateChanged0(
+                networkHandler: NetworkHandlerSupport,
+                previous: NetworkHandlerSupport.BaseStateImpl,
+                new: NetworkHandlerSupport.BaseStateImpl
+            ) {
+                new.launch { }
+            }
+        }
+    )
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -90,6 +114,20 @@ internal class SsoProcessorImpl(
             _bot = bot
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // state observers
+    ///////////////////////////////////////////////////////////////////////////
+
+    private fun CoroutineScope.launchHeartbeat() = launch(CoroutineName("")) {
+
+    }
+
+    private inner class HeartbeatHandler
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Login methods
+    ///////////////////////////////////////////////////////////////////////////
 
     // we have exactly two methods----slow and fast.
 

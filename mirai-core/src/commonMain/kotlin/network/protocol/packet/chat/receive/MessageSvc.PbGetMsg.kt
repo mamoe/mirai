@@ -41,7 +41,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
@@ -70,7 +69,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
         syncCookie: ByteArray?, //PbPushMsg.msg.msgHead.msgTime
-    ): OutgoingPacket = buildOutgoingUniPacket(
+    ) = buildOutgoingUniPacket(
         client
     ) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")

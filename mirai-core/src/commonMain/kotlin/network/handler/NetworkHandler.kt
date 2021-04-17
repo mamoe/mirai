@@ -54,12 +54,25 @@ internal interface NetworkHandler {
         CONNECTING,
 
         /**
-         * Everything is working. [resumeConnection] does nothing. [sendAndExpect] does not suspend for connection reasons.
+         * Loading essential data from server and local cache. Data include contact list.
+         *
+         * At this state [resumeConnection] waits for the jobs. [sendAndExpect] works normally.
+         */
+        LOADING,
+
+        /**
+         * Everything is working.
+         *
+         * At this state [resumeConnection] does nothing. [sendAndExpect] works normally.
          */
         OK,
 
         /**
-         * No Internet Connection available or for any other reasons but it is possible to establish a connection again(switching state to [CONNECTING]).
+         * No Internet Connection available or for any other reasons
+         * but it is possible to establish a connection again(switching state to [CONNECTING]).
+         *
+         * At this state [resumeConnection] turns the handle to [CONNECTING].
+         * [sendAndExpect] throws [IllegalStateException]
          */
         CONNECTION_LOST,
 
@@ -67,6 +80,9 @@ internal interface NetworkHandler {
          * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException].
          *
          * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.
+         *
+         * At this state [resumeConnection] throws the exception caught from underlying socket implementation (i.e netty).
+         * [sendAndExpect] throws [IllegalStateException]
          */
         CLOSED,
     }
