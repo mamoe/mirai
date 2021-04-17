@@ -621,37 +621,62 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 }
 
-public abstract interface class net/mamoe/mirai/data/Announcement {
-	public abstract fun getAnnouncementParameters ()Lnet/mamoe/mirai/data/AnnouncementParameters;
-	public abstract fun getBotId ()J
-	public abstract fun getMsg ()Ljava/lang/String;
-	public abstract fun getTitle ()Ljava/lang/String;
-	public abstract fun publish (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public class net/mamoe/mirai/data/Announcement {
+	public static final field Companion Lnet/mamoe/mirai/data/Announcement$Companion;
+	public static final fun create (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)Lnet/mamoe/mirai/data/Announcement;
+	public final fun getBotId ()J
+	public final fun getMsg ()Ljava/lang/String;
+	public final fun getParameters ()Lnet/mamoe/mirai/data/AnnouncementParameters;
+	public final fun getTitle ()Ljava/lang/String;
+	public synthetic fun publish (Lnet/mamoe/mirai/contact/Group;)Lkotlin/Unit;
+	public fun publish (Lnet/mamoe/mirai/contact/Group;)V
+	public final fun publish (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/data/Announcement$Companion {
+	public final fun create (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)Lnet/mamoe/mirai/data/Announcement;
 }
 
 public final class net/mamoe/mirai/data/AnnouncementKt {
-	public static final fun AnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/data/AnnouncementParameters;
-	public static final fun buildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/data/Announcement;
-	public static final fun buildAnnouncement (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)Lnet/mamoe/mirai/data/Announcement;
-	public static synthetic fun buildAnnouncement$default (JLjava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/data/Announcement;
+	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/data/AnnouncementParameters;
 	public static final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/data/AnnouncementParameters {
 	public fun <init> ()V
+	public final fun builder ()Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
 	public final fun getImage ()[B
 	public final fun getNeedConfirm ()Z
 	public final fun getSendToNewMember ()Z
 	public final fun isPinned ()Z
 	public final fun isShowEditCard ()Z
 	public final fun isTip ()Z
+}
+
+public final class net/mamoe/mirai/data/AnnouncementParametersBuilder {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/data/AnnouncementParameters;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/data/AnnouncementParameters;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun build ()Lnet/mamoe/mirai/data/AnnouncementParameters;
+	public final fun getImage ()[B
+	public final fun getNeedConfirm ()Z
+	public final fun getSendToNewMember ()Z
+	public final fun image ([B)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
+	public final fun isPinned ()Z
+	public final fun isShowEditCard ()Z
+	public final fun isTip ()Z
+	public final fun needConfirm (Z)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
+	public final fun pinned (Z)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
+	public final fun sendToNewMember (Z)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
 	public final fun setImage ([B)V
 	public final fun setNeedConfirm (Z)V
 	public final fun setPinned (Z)V
 	public final fun setSendToNewMember (Z)V
 	public final fun setShowEditCard (Z)V
 	public final fun setTip (Z)V
+	public final fun showEditCard (Z)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
+	public final fun tip (Z)Lnet/mamoe/mirai/data/AnnouncementParametersBuilder;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
@@ -1533,12 +1558,12 @@ public final class net/mamoe/mirai/data/OnlineStatus$Companion {
 	public final fun ofIdOrNull (I)Lnet/mamoe/mirai/data/OnlineStatus;
 }
 
-public abstract interface class net/mamoe/mirai/data/ReceiveAnnouncement : net/mamoe/mirai/data/Announcement {
-	public abstract fun getFid ()Ljava/lang/String;
-	public abstract fun getPublishTime ()J
-	public abstract fun getReadMemberNumber ()I
-	public abstract fun getSenderId ()J
-	public abstract fun isAllRead ()Z
+public final class net/mamoe/mirai/data/ReceiveAnnouncement : net/mamoe/mirai/data/Announcement {
+	public final fun getFid ()Ljava/lang/String;
+	public final fun getPublishTime ()J
+	public final fun getReadMemberNumber ()I
+	public final fun getSenderId ()J
+	public final fun isAllRead ()Z
 }
 
 public abstract interface class net/mamoe/mirai/data/StrangerInfo : net/mamoe/mirai/data/UserInfo {

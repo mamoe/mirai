@@ -7,8 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+@file:JvmBlockingBridge
+
 package net.mamoe.mirai.data
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
@@ -18,166 +22,246 @@ import net.mamoe.mirai.containsGroup
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import java.time.Instant
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 /**
- * 群公告.
+ * 表示一个群公告. [ReceiveAnnouncement] 表示
+ *
+ * 可通过 [Announcement.create] 构造.
+ *
+ * @see Announcement
  */
-public interface Announcement {
-
+public open class Announcement internal constructor(
     /**
      * bot的Id
      */
-    public val botId: Long
+    public val botId: Long,
 
     /**
      * 公告的标题
      */
-    public val title: String
+    public val title: String,
 
     /**
      * 公告的内容
      */
-    public val msg: String
+    public val msg: String,
 
     /**
-     * 公告的可变参数
+     * 公告的可变参数. 可以通过 [AnnouncementParametersBuilder] 构建获得.
+     * @see AnnouncementParameters
+     * @see AnnouncementParametersBuilder
      */
-    public val announcementParameters: AnnouncementParameters
-
+    public val parameters: AnnouncementParameters
+) {
     /**
-     * 发送一个公告
-     *
-     * @param group 群
+     * 发送该公告到群
      */
-    public suspend fun publish(group: Group)
+    public suspend fun publish(group: Group) {
+        val bot = Bot.getInstance(botId)
+        require(bot.containsGroup(group.id)) { "Bot don't have such group" }
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
+        if (parameters.image == null)
+            Mirai.sendGroupAnnouncement(bot, group.id, covertToGroupAnnouncement())
+        else {
+            val image =
+                Mirai.uploadGroupAnnouncementImage(bot, group.id, parameters.image.toExternalResource())
+            Mirai.sendGroupAnnouncementWithImage(bot, group.id, image, covertToGroupAnnouncement())
+        }
+    }
+
+    public companion object {
+        /**
+         * 构造一个 [Announcement].
+         * @see Announcement
+         */
+        @JvmStatic
+        public fun create(botId: Long, title: String, msg: String, parameters: AnnouncementParameters): Announcement {
+            return Announcement(botId, title, msg, parameters)
+        }
+    }
 }
 
 /**
- * 群公告的可变参数，不使用则为默认值
+ * 群公告的扩展参数.
+ *
+ * 可通过 [AnnouncementParametersBuilder] 构建. [AnnouncementParameters] 用于 [创建公告][Announcement.create].
  */
-public class AnnouncementParameters {
-
+public class AnnouncementParameters internal constructor(
     /**
      * 群公告的图片，目前仅支持发送图片，不支持获得图片
      */
-
-    public var image: ByteArray? = null
+    public val image: ByteArray? = null,
 
     /**
      * 是否发送给新成员
      */
-    public var sendToNewMember: Boolean = false
+    public val sendToNewMember: Boolean = false,
 
     /**
      * 是否置顶，可以有多个置顶公告
      */
-    public var isPinned: Boolean = false
+    public val isPinned: Boolean = false,
 
     /**
      * 是否显示能够引导群成员修改昵称的窗口
      */
-    public var isShowEditCard: Boolean = false
+    public val isShowEditCard: Boolean = false,
 
     /**
      * 是否使用弹窗
      */
-    public var isTip: Boolean = false
+    public val isTip: Boolean = false,
 
     /**
      * 是否需要群成员确认
      */
-    public var needConfirm: Boolean = false
+    public val needConfirm: Boolean = false,
+) {
+    /**
+     * 以该对象的参数创建一个 [AnnouncementParametersBuilder].
+     */
+    public fun builder(): AnnouncementParametersBuilder = AnnouncementParametersBuilder().apply {
+        val outer = this@AnnouncementParameters
+        this.image = outer.image
+        this.sendToNewMember = outer.sendToNewMember
+        this.isPinned = outer.isPinned
+        this.isShowEditCard = outer.isShowEditCard
+        this.isTip = outer.isTip
+        this.needConfirm = outer.needConfirm
+    }
 }
 
 /**
- * 收到的群公告.
+ * 表示一个收到的群公告. 只能由 mirai 构造.
  */
-public interface ReceiveAnnouncement : Announcement {
+public class ReceiveAnnouncement internal constructor(
+    /**
+     * bot的 Id
+     */
+    botId: Long,
+    /**
+     * 公告的标题
+     */
+    title: String,
+    /**
+     * 公告的内容
+     */
+    msg: String,
+    /**
+     * 公告的可变参数
+     */
+    parameters: AnnouncementParameters,
+    /**
+     * 公告发送者的 QQ 号
+     */
+    public val senderId: Long,
 
     /**
-     * 公告发送者的QQ号
+     * 公告的 `fid，每个公告仅有一条 `fid`，类似于主键
      */
-    public val senderId: Long
+    public val fid: String,
 
     /**
-     * 公告的fid，每个公告仅有一条fid，类似于主键
+     * 所有人都已阅读, 如果 [AnnouncementParameters.needConfirm] 为 `true` 则为所有人都已确认,
      */
-    public val fid: String
+    public val isAllRead: Boolean,
 
     /**
-     * 所有人都已阅读, 如果 [AnnouncementParameters.needConfirm] 为true则为所有人都已确认,
+     * 已经阅读的成员数量，如果 [AnnouncementParameters.needConfirm] 为 `true` 则为已经确认的成员数量
      */
-    public val isAllRead: Boolean
-
-    /**
-     * 已经阅读的成员数量，如果 [AnnouncementParameters.needConfirm] 为true则为已经确认的成员数量
-     */
-    public val readMemberNumber: Int
+    public val readMemberNumber: Int,
 
     /**
      * 公告发出的时间，为 EpochSecond (自 1970-01-01T00：00：00Z 的秒数)
      *
      * @see Instant.ofEpochSecond
      */
-    public val publishTime: Long
-}
+    public val publishTime: Long,
+) : Announcement(botId, title, msg, parameters)
 
 /**
- * Announcement的构造函数
+ * [AnnouncementParameters] 的构建器. 可以构建一个 [AnnouncementParameters] 实例.
  *
- * @param botId bot的id
- * @param title 公告的标题
- * @param msg 公告的信息
- * @param announcementParameters [AnnouncementParameters] 的设置，不构造则为默认值
- * @return [Announcement] 返回构造的Announcement
- */
-@Suppress("unused")
-public fun buildAnnouncement(
-    botId: Long,
-    title: String,
-    msg: String,
-    announcementParameters: AnnouncementParameters = AnnouncementParameters()
-): Announcement = AnnouncementImpl(
-    botId,
-    title,
-    msg,
-    announcementParameters
-)
-
-/**
- * Announcement的构造函数
+ * ## 获得实例
  *
- * @param botId bot的id
- * @param title 公告的标题
- * @param msg 公告的信息
- * @param announcementParameters [AnnouncementParameters] 的DSL构造函数
- * @return [Announcement] 返回构造的Announcement
+ * 直接构造实例: `new AnnouncementParametersBuilder()` 或者从已有的公告中获取 [AnnouncementParameters.builder].
+ *
+ * ## 使用
+ *
+ * ### 在 Kotlin 使用
+ *
+ * ```
+ * val parameters = buildAnnouncementParameters {
+ *     sendToNewMember = true
+ *     // ...
+ * }
+ * ```
+ *
+ * ### 在 Java 使用
+ *
+ * ```java
+ * AnnouncementParameters parameters = new AnnouncementParametersBuilder()
+ *         .sendToNewMember(true)
+ *         .pinned(true)
+ *         .build();
+ * ```
+ *
+ * @see buildAnnouncementParameters
  */
-@Suppress("unused")
-public inline fun buildAnnouncement(
-    botId: Long,
-    title: String,
-    msg: String,
-    announcementParameters: AnnouncementParameters.() -> Unit
-): Announcement = buildAnnouncement(
-    botId,
-    title,
-    msg,
-    AnnouncementParameters().apply(announcementParameters)
-)
+public class AnnouncementParametersBuilder @JvmOverloads constructor(
+    prototype: AnnouncementParameters = AnnouncementParameters()
+) {
+    public var image: ByteArray? = prototype.image
+    public var sendToNewMember: Boolean = prototype.sendToNewMember
+    public var isPinned: Boolean = prototype.isPinned
+    public var isShowEditCard: Boolean = prototype.isShowEditCard
+    public var isTip: Boolean = prototype.isTip
+    public var needConfirm: Boolean = prototype.needConfirm
 
-/**
- * [AnnouncementParameters] 的DSL构造函数
- */
-@MiraiExperimentalApi
-public inline fun AnnouncementParameters(block: AnnouncementParameters.() -> Unit): AnnouncementParameters {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    public fun image(image: ByteArray?): AnnouncementParametersBuilder {
+        this.image = image
+        return this
     }
-    return AnnouncementParameters().apply(block)
+
+    public fun sendToNewMember(sendToNewMember: Boolean): AnnouncementParametersBuilder {
+        this.sendToNewMember = sendToNewMember
+        return this
+    }
+
+    public fun pinned(isPinned: Boolean): AnnouncementParametersBuilder {
+        this.isPinned = isPinned
+        return this
+    }
+
+    public fun showEditCard(isShowEditCard: Boolean): AnnouncementParametersBuilder {
+        this.isShowEditCard = isShowEditCard
+        return this
+    }
+
+    public fun tip(isTip: Boolean): AnnouncementParametersBuilder {
+        this.isTip = isTip
+        return this
+    }
+
+    public fun needConfirm(needConfirm: Boolean): AnnouncementParametersBuilder {
+        this.needConfirm = needConfirm
+        return this
+    }
+
+    /**
+     * 使用当前参数构造 [AnnouncementParameters].
+     */
+    public fun build(): AnnouncementParameters =
+        AnnouncementParameters(image, sendToNewMember, isPinned, isShowEditCard, isTip, needConfirm)
 }
+
+/**
+ * 使用 [AnnouncementParametersBuilder] 构建 [AnnouncementParameters].
+ * @see AnnouncementParametersBuilder
+ */
+public inline fun buildAnnouncementParameters(
+    builderAction: AnnouncementParametersBuilder.() -> Unit
+): AnnouncementParameters = AnnouncementParametersBuilder().apply(builderAction).build()
 
 /**
  * 发送一个 [Announcement]
@@ -196,51 +280,15 @@ public suspend fun Group.sendAnnouncement(
     Mirai.sendGroupAnnouncement(
         bot,
         id,
-        AnnouncementImpl(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
+        Announcement(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
     )
 }
-
-///////
-// IMPLEMENTATION
-internal open class AnnouncementImpl(
-    override val botId: Long,
-    override val title: String,
-    override val msg: String,
-    override val announcementParameters: AnnouncementParameters,
-) : Announcement {
-    override suspend fun publish(group: Group) {
-        val bot = Bot.getInstance(botId)
-        require(bot.containsGroup(group.id)) { "Bot don't have such group" }
-        group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
-        if (announcementParameters.image == null)
-            Mirai.sendGroupAnnouncement(bot, group.id, covertToGroupAnnouncement())
-        else {
-            val image =
-                Mirai.uploadGroupAnnouncementImage(bot, group.id, announcementParameters.image!!.toExternalResource())
-            Mirai.sendGroupAnnouncementWithImage(bot, group.id, image, covertToGroupAnnouncement())
-        }
-    }
-}
-
-internal class ReceiveAnnouncementImpl(
-    override val botId: Long,
-    override val fid: String,
-    override val senderId: Long,
-    override val title: String,
-    override val msg: String,
-    override val publishTime: Long,
-    override val isAllRead: Boolean,
-    override val readMemberNumber: Int,
-    override val announcementParameters: AnnouncementParameters
-) : AnnouncementImpl(botId, title, msg, announcementParameters),
-    ReceiveAnnouncement
-
 
 internal fun GroupAnnouncement.covertToAnnouncement(botId: Long): ReceiveAnnouncement {
     check(this.fid != null) { "GroupAnnouncement don't have id" }
     check(this.settings != null) { "GroupAnnouncement don't have setting" }
 
-    return ReceiveAnnouncementImpl(
+    return ReceiveAnnouncement(
         botId = botId,
         fid = fid,
         senderId = sender,
@@ -249,7 +297,7 @@ internal fun GroupAnnouncement.covertToAnnouncement(botId: Long): ReceiveAnnounc
         msg = msg.text,
         readMemberNumber = readNum,
         isAllRead = isAllConfirm != 0,
-        announcementParameters = AnnouncementParameters {
+        parameters = buildAnnouncementParameters {
             isPinned = pinned == 1
             sendToNewMember = type == 20
             isTip = settings.tipWindowType == 0
@@ -266,12 +314,12 @@ internal fun Announcement.covertToGroupAnnouncement(): GroupAnnouncement {
             title = title,
             text = msg
         ),
-        type = if (announcementParameters.sendToNewMember) 20 else 6,
+        type = if (parameters.sendToNewMember) 20 else 6,
         settings = GroupAnnouncementSettings(
-            isShowEditCard = if (announcementParameters.isShowEditCard) 1 else 0,
-            tipWindowType = if (announcementParameters.isTip) 0 else 1,
-            confirmRequired = if (announcementParameters.needConfirm) 1 else 0,
+            isShowEditCard = if (parameters.isShowEditCard) 1 else 0,
+            tipWindowType = if (parameters.isTip) 0 else 1,
+            confirmRequired = if (parameters.needConfirm) 1 else 0,
         ),
-        pinned = if (announcementParameters.isPinned) 1 else 0,
+        pinned = if (parameters.isPinned) 1 else 0,
     )
 }
