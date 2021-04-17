@@ -54,7 +54,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":mirai-core-utils"))
-                api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
                 api(`kotlinx-serialization-core`)
