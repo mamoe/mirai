@@ -14,12 +14,40 @@ import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.AtAll
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.safeCast
 
 
-internal fun At.toJceData(group: Group?): ImMsgBody.Text {
-    val text = "@${group?.members?.get(this.target)?.nameCardOrNick ?: target}"
+internal fun At.toJceData(
+    group: Group?,
+    source: MessageSource?,
+    isForward: Boolean,
+): ImMsgBody.Text {
+    fun findFromGroup(g: Group?): String? {
+        return g?.members?.get(this.target)?.nameCardOrNick
+    }
+
+    fun findFromSource(): String? {
+        return when (source) {
+            is OnlineMessageSource -> {
+                return findFromGroup(source.target.safeCast())
+            }
+            is OfflineMessageSource -> {
+                if (source.kind == MessageSourceKind.GROUP) {
+                    return findFromGroup(group?.bot?.getGroup(source.targetId))
+                } else null
+            }
+            else -> null
+        }
+    }
+
+    val text = "@${
+        if (isForward) {
+            findFromSource() ?: findFromGroup(group)
+        } else {
+            findFromGroup(group) ?: findFromSource()
+        } ?: target
+    }"
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {

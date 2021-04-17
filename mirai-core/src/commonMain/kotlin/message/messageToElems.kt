@@ -34,7 +34,8 @@ internal val UNSUPPORTED_VOICE_MESSAGE_PLAIN = PlainText("收到语音消息，�
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal fun MessageChain.toRichTextElems(
     messageTarget: ContactOrBot?,
-    withGeneralFlags: Boolean
+    withGeneralFlags: Boolean,
+    isForward: Boolean = false,
 ): MutableList<ImMsgBody.Elem> {
     val forGroup = messageTarget is Group
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
@@ -114,7 +115,15 @@ internal fun MessageChain.toRichTextElems(
                 )
             }
             is At -> {
-                elements.add(ImMsgBody.Elem(text = currentMessage.toJceData(messageTarget.safeCast())))
+                elements.add(
+                    ImMsgBody.Elem(
+                        text = currentMessage.toJceData(
+                            messageTarget.safeCast(),
+                            this[MessageSource],
+                            isForward,
+                        )
+                    )
+                )
                 // elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
                 // removed by https://github.com/mamoe/mirai/issues/524
                 // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
