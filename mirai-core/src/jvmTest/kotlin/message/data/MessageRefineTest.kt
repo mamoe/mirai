@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.message.data
 import kotlinx.serialization.decodeFromHexString
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.MockBot
@@ -24,10 +25,14 @@ import net.mamoe.mirai.internal.message.RefinableMessage
 import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.utils.PlatformLogger
+import net.mamoe.mirai.utils.autoHexToBytes
+import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -177,6 +182,10 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
                     ProtoBuf.decodeFromHexString<List<MsgComm.Msg>>(s).flatMap { it.msgBody.richText.elems }
                 }
 
+        val nestedForward =
+            "0a790a3008d285d8cc041852200028f9263084f99c83064a1608d285d8cc04220ee69eabe790b3c2b7e99ba8e88eb9a2010210011a450a430a0618d5f0fbdf0412390a370a315be59088e5b9b6e8bdace58f915de8afb7e4bdbfe794a8e6898be69cba5151e69c80e696b0e78988e69cace69fa5e79c8b1a005a000a620a3f08d285d8cc041852200028fb2630f5f99c83064a2508d285d8cc04221de7bea4e59e83e59cbeefbc8ce697b6e4b88de697b6e69da5e8a2ab6763a2010210011a1f0a1d0a0618df98a9a10d12090a070a01351a005a0012084a060890e60260000a97010a3f08d285d8cc0418522000288a2730ef999d83064a2508d285d8cc04221de7bea4e59e83e59cbeefbc8ce697b6e4b88de697b6e69da5e8a2ab6763a2010210011a540a520a0618a19bc4fe09122fea022c08fb2610d285d8cc0418f5f99c830620012a050a030a01353001420a188fefa5ae8a8080800150d285d8cc04120d0a0b0a0561736566661a005a0012084a060890e602600012fe060a084d756c74694d736712f1060af0040a3008d285d8cc041852200028f9263084f99c83064a1608d285d8cc04220ee69eabe790b3c2b7e99ba8e88eb9a2010210011abb040ab8040a0618d5f0fbdf0412ad0462aa040aa30401789cbd535d6f1241147df7574cc6676497a5c036bb3408bbb608550a02d234cdb2ccc2da1db6ccccb2edbe359af8fdf5604c6cad8969134d8d9a98544d2c0ffe1617f0c9bfe080561b5f7c30f14e723373ef9c73ef99dc51e636b003fa8850dbedaa503c234080baa6dbb2bb6d157acc8aa4e05cfa14e0a660da064d62234b85cbe3ad5be1decbf1ebb7e1d1a31508f0aa653b68d1c0488545cf617691b6571389999ca8c96224a38952249ee43b5917e488248852327936abcb991c0486c9a6a5fb36f28fa110b0b287551883c0720cde88040145a46f9b6821c74f33c715cb76c02b8a02ef1aa48162338481636cba1ee351c823cc660e02a6ebb84485a785a971ae294c8a430e1a0df6b898d1936b272501253a45fe85219698300c770f460fde7d7eff75fbc5f8dec75950a15cc23f3164caf99a96af674dcbcad44c400d622d87db83d1cdeb2bffb933fe3ae1eed57067f0edd39de1e3c32f1fee723f7cba3f7e7ed0366741f55c3568cc2fe1a5b546bd12d3a592b0982b89eb976b58971af54ea715bbe417af14e58b55d6aaf17ca3baae558235bfd835850b755d0a7a3d9f90423320fd3c08923579a3d9d419958c8542b613b082ee5332df4f56b4780a8bbee9457b74be10b43cdfa71ea3e7b576aee4aabf0501a543d24a943ba0500f63836cfe52971226eb8ff779b63fdab93d3e7a15de7f383cbc31dc7ac329a23f919c233a19a8b4425d8f980874a7e37d724c202ff62339b9ccff47fa3b18253b9f10231a000a620a3f08d285d8cc041852200028fb2630f5f99c83064a2508d285d8cc04221de7bea4e59e83e59cbeefbc8ce697b6e4b88de697b6e69da5e8a2ab6763a2010210011a1f0a1d0a0618df98a9a10d12090a070a01351a005a0012084a060890e60260000a97010a3f08d285d8cc0418522000288a2730ef999d83064a2508d285d8cc04221de7bea4e59e83e59cbeefbc8ce697b6e4b88de697b6e69da5e8a2ab6763a2010210011a540a520a0618a19bc4fe09122fea022c08fb2610d285d8cc0418f5f99c830620012a050a030a01353001420a188fefa5ae8a8080800150d285d8cc04120d0a0b0a0561736566661a005a0012084a060890e602600012f3040a2d4d756c74694d73675f36363544314539312d414531332d343739312d394630392d33303133373742434639414412c1040a4e0a3108d285d8cc041852200028ffb20130fef89c83064a1608d285d8cc04220ee69eabe790b3c2b7e99ba8e88eb9a2010210011a190a170a061881f9d1ae02120d0a0b0a0554734d73671a005a000ab9010a3108d285d8cc041852200028ffb20130fff89c83064a1608d285d8cc04220ee69eabe790b3c2b7e99ba8e88eb9a2010210011a83010a80010a0618e3fde8a20b121b0a190a1341534a57454a58436366664157630a736172661a005a00125942571220463042383130354243463033374133323733413644343133453941333043393338b0bd858e0940b787ace70b485050005a0060006a10f0b8105bcf037a3273a6d413e9a30c93a00100b001ac02b8018302c801b85c0a4e0a3108d285d8cc041852200028ffb2013080f99c83064a1608d285d8cc04220ee69eabe790b3c2b7e99ba8e88eb9a2010210011a190a170a0618d1afffda02120d0a0b0a0554734d73671a005a000ae2010a4008d285d8cc041852200028ffb2013081f99c83064a2508d285d8cc04221de7bea4e59e83e59cbeefbc8ce697b6e4b88de697b6e69da5e8a2ab6763a2010210011a9d010a9a010a0618bfb1ebfb0f128f010a8c010a85015647567a5a48526d526b5a585432463351304e4451317059576d46335a586868643255774d6a4d3950567464573246335a567045547a6b774d6e63304f5846337a71717772724c627a72764a0a7a3757397862624674733361494c43687a744c46777372487637544534386d317763752f7173484c7a64757777737574734b456744516f3d1a005a00"
+                .autoHexToBytes().loadAs(MsgTransmit.PbMultiMsgTransmit.serializer())
+
         private fun decodeProto(p: String) = ProtoBuf.decodeFromHexString<List<ImMsgBody.Elem>>(p)
     }
 
@@ -263,6 +272,55 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
             }
         }
     }
+
+    @Test
+    fun `test nested forward refinement`() = runBlockingUnit {
+        val redefined = Mirai.cast<MiraiImpl>().run { testCases.nestedForward.toForwardMessageNodes(bot) }
+        assertNodesEquals(
+            listOf(
+                ForwardMessage.Node(
+                    senderId = 1234567890,
+                    time = 1617378436,
+                    senderName = "枫琳·雨莹",
+                    messageChain = buildMessageChain {
+                        +redefined[0].messageChain[MessageOrigin]!!
+                        val rf = redefined[0].messageChain[ForwardMessage]!!
+                        +ForwardMessage(
+                            preview = rf.preview,
+                            title = rf.title,
+                            brief = rf.brief,
+                            source = rf.source,
+                            summary = rf.summary,
+                            nodeList = listOf(
+                                ForwardMessage.Node(1234567890, 1617378430, "枫琳·雨莹", PlainText("TsMsg")),
+                                ForwardMessage.Node(
+                                    1234567890,
+                                    1617378431,
+                                    "枫琳·雨莹",
+                                    PlainText("ASJWEJXCcffAWc\nsarf") + Image("{F0B8105B-CF03-7A32-73A6-D413E9A30C93}.mirai")
+                                ),
+                                ForwardMessage.Node(1234567890, 1617378432, "枫琳·雨莹", PlainText("TsMsg")),
+                                ForwardMessage.Node(
+                                    1234567890,
+                                    1617378433,
+                                    "群垃圾，时不时来被gc",
+                                    PlainText("VGVzZHRmRkZXT2F3Q0NDQ1pYWmF3ZXhhd2UwMjM9PVtdW2F3ZVpETzkwMnc0OXF3zqqwrrLbzrvJ\nz7W9xbbFts3aILChztLFwsrHv7TE48m1wcu/qsHLzduwwsutsKEgDQo=")
+                                ),
+                            )
+                        )
+                    }
+                ),
+                ForwardMessage.Node(
+                    1234567890, 1617378549, "群垃圾，时不时来被gc", PlainText("5")
+                ),
+                ForwardMessage.Node(
+                    1234567890, 1617382639, "群垃圾，时不时来被gc", redefined[2].messageChain[QuoteReply]!! + PlainText("aseff")
+                ),
+            ),
+            redefined,
+        )
+    }
+
 }
 
 
@@ -284,6 +342,22 @@ private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: Me
             c.refineDeep(bot)
         }
     }
+    assertMessageChainEquals(expected, actual)
+}
+
+private fun assertNodesEquals(excepted: List<ForwardMessage.Node>, actual: List<ForwardMessage.Node>) {
+    assert(excepted.size == actual.size) { "Length not match" }
+    for (i in excepted.indices) {
+        val en = excepted[i]
+        val an = actual[i]
+        assertEquals(en.senderId, an.senderId)
+        assertEquals(en.time, an.time)
+        assertEquals(en.senderName, an.senderName)
+        assertMessageChainEquals(en.messageChain, an.messageChain)
+    }
+}
+
+private fun assertMessageChainEquals(expected: MessageChain, actual: MessageChain) {
     val color = object : PlatformLogger("") {
         val yellow get() = Color.LIGHT_YELLOW.toString()
         val green get() = Color.LIGHT_GREEN.toString()
@@ -301,6 +375,19 @@ private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: Me
                 is MessageSource -> {
                     if (a !is MessageSource) return false
                     if (!compare(e.originalMessage, a.originalMessage)) return false
+                }
+                is ForwardMessage -> {
+                    if (a !is ForwardMessage) return false
+                    if (e.brief != a.brief) return false
+                    if (e.summary != a.summary) return false
+                    if (e.source != a.source) return false
+                    if (e.title != a.title) return false
+                    if (e.preview != a.preview) return false
+                    assertNodesEquals(e.nodeList, a.nodeList)
+                }
+                is Image -> {
+                    if (a !is Image) return false
+                    if (e.imageId != a.imageId) return false
                 }
                 else -> {
                     if (e != a) return false

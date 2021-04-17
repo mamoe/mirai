@@ -974,12 +974,27 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
-        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).msg.map { msg ->
-            msg.toNode(bot)
-        }
+        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).toForwardMessageNodes(bot)
     }
 
-    protected open suspend fun MsgComm.Msg.toNode(bot: Bot): ForwardMessage.Node {
+    internal open suspend fun MsgTransmit.PbMultiMsgNew.toForwardMessageNodes(
+        bot: Bot,
+        context: RefineContext
+    ): List<ForwardMessage.Node> {
+        return msg.map { it.toNode(bot, context) }
+    }
+
+    internal open suspend fun MsgTransmit.PbMultiMsgTransmit.toForwardMessageNodes(bot: Bot): List<ForwardMessage.Node> {
+        val pbs = this.pbItemList.associate {
+            it.fileName to it.buffer.loadAs(MsgTransmit.PbMultiMsgNew.serializer())
+        }
+        val main = pbs["MultiMsg"] ?: return this.msg.map { it.toNode(bot, EmptyRefineContext) }
+        val context = SimpleRefineContext(mutableMapOf())
+        context[ForwardMessageInternal.MsgTransmits] = pbs
+        return main.toForwardMessageNodes(bot, context)
+    }
+
+    protected open suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {
         val msg = this
         return ForwardMessage.Node(
             senderId = msg.msgHead.fromUin,
@@ -989,7 +1004,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 ?: msg.msgHead.fromUin.toString(),
             messageChain = listOf(msg)
                 .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
-                .refineDeep(bot)
+                .refineDeep(bot, refineContext)
         )
     }
 
