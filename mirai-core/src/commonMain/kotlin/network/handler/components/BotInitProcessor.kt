@@ -50,7 +50,6 @@ private class BotInitProcessorAsStateObserverAdapter(
     ) {
         new.launch(CoroutineName("BotInitProcessor.init")) {
             try {
-                error("")
                 processor.init()
             } catch (e: Throwable) {
                 throw IllegalStateException("Exception in BotInitProcessor.init", e)
@@ -86,12 +85,12 @@ internal class BotInitProcessorImpl(
         } // TODO: 2021/4/17 should we launch here?
 
         // do them parallel.
-        coroutineScope {
-            launch { syncMessageSvc() }
+        supervisorScope {
+//            launch { syncMessageSvc() }
             launch { context[OtherClientUpdater].update() }
+            launch { context[ContactUpdater].loadAll(registerResp.origin) }
         }
 
-        context[ContactUpdater].loadAll(registerResp.origin)
         bot.firstLoginSucceed = true
     }
 

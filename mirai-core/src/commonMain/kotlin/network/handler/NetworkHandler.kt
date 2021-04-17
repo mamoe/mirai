@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
@@ -36,6 +37,11 @@ internal interface NetworkHandler {
      * State of this handler.
      */
     val state: State
+
+    /**
+     * For suspension until a state. e.g login.
+     */
+    val onStateChanged: SelectClause1<State>
 
     enum class State {
         /**

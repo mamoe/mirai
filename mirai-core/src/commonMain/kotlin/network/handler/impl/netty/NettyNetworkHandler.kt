@@ -29,7 +29,6 @@ import net.mamoe.mirai.internal.network.handler.components.PacketCodec
 import net.mamoe.mirai.internal.network.handler.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.context.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.childScope
@@ -83,7 +82,7 @@ internal class NettyNetworkHandler(
 
     private inner class OutgoingPacketEncoder : MessageToByteEncoder<OutgoingPacket>(OutgoingPacket::class.java) {
         override fun encode(ctx: ChannelHandlerContext, msg: OutgoingPacket, out: ByteBuf) {
-            logger.debug { "encode: $msg" }
+            PacketCodec.PacketLogger.debug { "encode: $msg" }
             out.writeBytes(msg.delegate)
         }
     }
@@ -184,9 +183,8 @@ internal class NettyNetworkHandler(
         private val connection = async { createConnection(decodePipeline) }
 
         private val connectResult = async {
-            val connection = connection.await()
+            connection.join()
             context[SsoProcessor].login(this@NettyNetworkHandler)
-            setStateForJobCompletion { StateLoading(connection) }
         }.apply {
             invokeOnCompletion { error ->
                 if (error != null) setState {
@@ -205,6 +203,9 @@ internal class NettyNetworkHandler(
 
         override suspend fun resumeConnection0() {
             connectResult.await() // propagates exceptions
+            val connection = connection.await()
+            setState { StateLoading(connection) }
+                .resumeConnection()
         }
 
         override fun toString(): String = "StateConnecting"
@@ -224,7 +225,7 @@ internal class NettyNetworkHandler(
         override suspend fun resumeConnection0() {
             (coroutineContext.job as CompletableJob).run {
                 complete()
-                join() // wait for children jobs
+                join()
             }
             setState { StateOK(connection) }
         } // noop

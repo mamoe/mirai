@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.components.PacketCodec
 import net.mamoe.mirai.internal.network.handler.components.PacketHandler
@@ -83,7 +84,7 @@ internal abstract class NetworkHandlerSupport(
                     exception = e // show last exception
                 }
             } finally {
-                listener.result.complete(null)
+                listener.result.completeExceptionally(exception ?: IllegalStateException("No response"))
                 packetListeners.remove(listener)
             }
         }
@@ -170,6 +171,13 @@ internal abstract class NetworkHandlerSupport(
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
 
+    private var _stateChangedDeferred = CompletableDeferred<NetworkHandler.State>()
+
+    /**
+     * For suspension until a state. e.g login.
+     */
+    override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedDeferred.onAwait
+
     /**
      * Can only be used in a job launched within the state scope.
      */
@@ -201,10 +209,17 @@ internal abstract class NetworkHandlerSupport(
 
         val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
-        _state = impl // switch state first. selector may be busy selecting.
-        old.cancel(CancellationException("State is switched from $old to $impl"))
 
+
+        // Order notes:
+        // 1. Notify observers to attach jobs to [impl] (if so)
+        _stateChangedDeferred.complete(impl.correspondingState)
         stateObserver?.stateChanged(this, old, impl)
+        _stateChangedDeferred = CompletableDeferred()
+        // 2. Update state to [state]. This affects selectors.
+        _state = impl // switch state first. selector may be busy selecting.
+        // 3. Cleanup, cancel old states.
+        old.cancel(CancellationException("State is switched from $old to $impl"))
 
         return impl
     }
