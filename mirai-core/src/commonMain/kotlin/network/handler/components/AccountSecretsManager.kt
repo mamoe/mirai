@@ -7,10 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network
+package net.mamoe.mirai.internal.network.handler.components
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount
+import net.mamoe.mirai.internal.network.handler.context.AccountSecrets
+import net.mamoe.mirai.internal.network.handler.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
