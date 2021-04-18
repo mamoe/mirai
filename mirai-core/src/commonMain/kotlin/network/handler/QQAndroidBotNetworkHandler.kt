@@ -244,10 +244,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private val fastLoginOrSendPacketLock = Mutex()
 
-    private suspend fun doFastLogin(): Boolean {
+    private suspend fun doFastLogin() {
         fastLoginOrSendPacketLock.withLock {
             val login10 = WtLogin10(bot.client).sendAndExpect(ignoreLock = true)
-            return login10 is WtLogin.Login.LoginPacketResponse.Success
+            check(login10 is WtLogin.Login.LoginPacketResponse.Success) { "Fast login failed: $login10" }
         }
     }
 
