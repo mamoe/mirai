@@ -22,15 +22,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
-import net.mamoe.mirai.internal.network.components.BotInitProcessor
-import net.mamoe.mirai.internal.network.components.PacketCodec
-import net.mamoe.mirai.internal.network.components.RawIncomingPacket
-import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.components.*
+import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.debug
 import java.net.SocketAddress
@@ -113,12 +112,19 @@ internal class NettyNetworkHandler(
 
         contextResult.complete(future.channel())
 
+        coroutineContext.job.invokeOnCompletion {
+            future.channel().close()
+            eventLoopGroup.shutdownGracefully()
+        }
+
         future.channel().closeFuture().addListener {
             setState { StateConnectionLost(it.cause()) }
         }
 
         return contextResult.await()
     }
+
+    private val decodePipeline = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)
 
     private inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
@@ -164,7 +170,7 @@ internal class NettyNetworkHandler(
         }
 
         override suspend fun resumeConnection0() {
-            setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
+            setState { StateConnecting(ExceptionCollector()) }
                 .resumeConnection()
         }
 
@@ -178,7 +184,12 @@ internal class NettyNetworkHandler(
      * 4. If success, set state to [StateOK]
      */
     private inner class StateConnecting(
-        val decodePipeline: PacketDecodePipeline,
+        /**
+         * Collected (suppressed) exceptions that have led this state.
+         *
+         * Dropped when state becomes [StateOK].
+         */
+        private val collectiveExceptions: ExceptionCollector
     ) : NettyState(State.CONNECTING) {
         private val connection = async { createConnection(decodePipeline) }
 
@@ -189,7 +200,7 @@ internal class NettyNetworkHandler(
             invokeOnCompletion { error ->
                 if (error != null) setState {
                     StateClosed(
-                        CancellationException("Connection failure.", error)
+                        CancellationException("Connection failure.", collectiveExceptions.collectGet(error))
                     )
                 } // logon failure closes the network handler.
                 // and this error will also be thrown by `StateConnecting.resumeConnection`
@@ -236,24 +247,77 @@ internal class NettyNetworkHandler(
     private inner class StateOK(
         private val connection: NettyChannel
     ) : NettyState(State.OK) {
+        init {
+            coroutineContext.job.invokeOnCompletion {
+                connection.close()
+            }
+        }
+
+        private val heartbeatProcessor = context[HeartbeatProcessor]
+
+        private val heartbeat = async(CoroutineName("Heartbeat Scheduler")) {
+            while (isActive) {
+                try {
+                    delay(context[SsoProcessorContext].configuration.heartbeatPeriodMillis)
+                } catch (e: CancellationException) {
+                    return@async // considered normally cancel
+                }
+
+                try {
+                    heartbeatProcessor.doHeartbeatNow(this@NettyNetworkHandler)
+                } catch (e: Throwable) {
+                    setState {
+                        StateConnecting(ExceptionCollector(IllegalStateException("Exception in Heartbeat job", e)))
+                    }
+                }
+            }
+        }
+
+        private val configPush = launch(CoroutineName("ConfigPush sync")) {
+            try {
+                context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
+            } catch (e: ConfigPushProcessor.RequireReconnectException) {
+                setState { StateClosed(e) }
+            }
+        }
+
+        // we can also move them as observers if needed.
+
+        private val keyRefresh = launch(CoroutineName("Key refresh")) {
+            context[KeyRefreshProcessor].keyRefreshLoop(this@NettyNetworkHandler)
+        }
+
         override suspend fun sendPacketImpl(packet: OutgoingPacket) {
             connection.writeAndFlush(packet)
         }
 
-        override suspend fun resumeConnection0() {} // noop
+        override suspend fun resumeConnection0() {
+            joinCompleted(coroutineContext.job)
+            joinCompleted(heartbeat)
+            joinCompleted(configPush)
+            joinCompleted(keyRefresh)
+        } // noop
+
+        private suspend inline fun joinCompleted(job: Job) {
+            if (job.isCompleted) job.join()
+        }
+
         override fun toString(): String = "StateOK"
     }
 
     private inner class StateConnectionLost(
-        private val cause: Throwable
+        private val cause: Throwable?
     ) : NettyState(State.CONNECTION_LOST) {
         override suspend fun sendPacketImpl(packet: OutgoingPacket) {
-            throw IllegalStateException("Connection is lost so cannot send packet. Call resumeConnection first.", cause)
+            throw IllegalStateException(
+                "Internal error: connection is lost so cannot send packet. Call resumeConnection first.",
+                cause
+            )
         }
 
         override suspend fun resumeConnection0() {
-            setState { StateConnecting(PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)) }
-                .resumeConnection() // the user wil
+            setState { StateConnecting(ExceptionCollector(cause)) }
+                .resumeConnection()
         } // noop
     }
 

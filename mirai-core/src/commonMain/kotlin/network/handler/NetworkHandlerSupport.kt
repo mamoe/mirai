@@ -140,7 +140,7 @@ internal abstract class NetworkHandlerSupport(
      */
     abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,
-    ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext.job)) {
+    ) : CoroutineScope by CoroutineScope(coroutineContext + Job(coroutineContext.job)) {
 
         /**
          * May throw any exception that caused the state to fail.
@@ -176,18 +176,6 @@ internal abstract class NetworkHandlerSupport(
      * For suspension until a state. e.g login.
      */
     override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedDeferred.onAwait
-
-    /**
-     * Can only be used in a job launched within the state scope.
-     */
-    @Suppress("SuspendFunctionOnCoroutineScope")
-    protected suspend inline fun setStateForJobCompletion(crossinline new: () -> BaseStateImpl) {
-        val job = currentCoroutineContext()[Job]
-        this.launch {
-            job?.join()
-            setState(new)
-        }
-    }
 
     /**
      * Calculate [new state][new] and set it as the current.

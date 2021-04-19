@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.context
 
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.components.createAccountsSecretsManager
@@ -34,6 +35,8 @@ internal interface SsoProcessorContext {
     val accountSecretsManager: AccountSecretsManager
 
     val configuration: BotConfiguration
+
+    companion object : ComponentKey<SsoProcessorContext>
 }
 
 internal class SsoProcessorContextImpl(
