@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.*
+import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
@@ -86,8 +87,11 @@ internal class QQAndroidBot constructor(
     internal val components: ConcurrentComponentStorage by lazy {
         ConcurrentComponentStorage().apply {
             val components = this // avoid mistakes
-            set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
-            // put sso processor at the first to make `client` faster.
+            set(SsoProcessorContext, SsoProcessorContextImpl(bot))
+            set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
+            set(HeartbeatProcessor, HeartbeatProcessor())
+            set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger))
+            set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger))
 
             set(BotInitProcessor, BotInitProcessorImpl(bot, components, bot.logger))
             set(ContactCacheService, ContactCacheServiceImpl(bot))
@@ -96,7 +100,7 @@ internal class QQAndroidBot constructor(
             set(ServerList, ServerListImpl())
             set(
                 PacketHandler, PacketHandlerChain(
-                    LoggingPacketHandler(bot, components, logger),
+                    LoggingPacketHandler(bot, components, networkLogger),
                     EventBroadcasterPacketHandler(bot, components, logger)
                 )
             )

@@ -126,7 +126,7 @@ internal class ContactUpdaterImpl(
             while (true) {
                 val data = FriendList.GetFriendGroupList(
                     bot.client, count, 150, 0, 0
-                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(bot, timeoutMillis = 5000, retry = 2)
+                ).sendAndExpect(bot, timeoutMillis = 5000, retry = 2)
 
                 total = data.totalFriendCount
 
@@ -183,7 +183,7 @@ internal class ContactUpdaterImpl(
         val members = if (cache != null) {
             if (cache.isValid(stTroopNum)) {
                 cache.list.asSequence().also {
-                    bot.network.logger.info { "Loaded ${cache.list.size} members from local cache for group ${groupName} (${groupCode})" }
+                    bot.network.logger.info { "Loaded ${cache.list.size} members from local cache for group $groupName (${groupCode})" }
                 }
             } else refreshGroupMemberList().also { sequence ->
                 cache.troopMemberNumSeq = dwMemberNumSeq ?: 0
@@ -212,7 +212,7 @@ internal class ContactUpdaterImpl(
         var currentCount = 0
         logger.info { "Start loading stranger list..." }
         val response = StrangerList.GetStrangerList(bot.client)
-            .sendAndExpect<StrangerList.GetStrangerList.Response>(bot, timeoutMillis = 5000, retry = 2)
+            .sendAndExpect(bot, timeoutMillis = 5000, retry = 2)
 
         if (response.result == 0) {
             response.strangerList.forEach {
@@ -231,11 +231,11 @@ internal class ContactUpdaterImpl(
         if (initGroupOk) {
             return
         }
-        TroopManagement.GetTroopConfig(bot.client).sendAndExpect<TroopManagement.GetTroopConfig.Response>(bot)
+        TroopManagement.GetTroopConfig(bot.client).sendAndExpect(bot)
 
         logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
-            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(bot, retry = 5)
+            .sendAndExpect(bot, retry = 5)
 
         val semaphore = Semaphore(30)
 

@@ -16,66 +16,9 @@ package net.mamoe.mirai.internal.network.net.protocol
  */
 
 
-private object `stat heartbeat` {
-//    private suspend fun doStatHeartbeat(): Throwable? {
-//        return retryCatching(2) {
-//            StatSvc.SimpleGet(bot.client)
-//                .sendAndExpect<StatSvc.SimpleGet.Response>(
-//                    timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-//                    retry = 2
-//                )
-//            return null
-//        }.exceptionOrNull()
-//    }
-
-}
-
-private object `config push syncer` {
-//    @Suppress("FunctionName", "UNUSED_VARIABLE")
-//    private fun BotNetworkHandler.ConfigPushSyncer(): suspend CoroutineScope.() -> Unit = launch@{
-//        logger.info { "Awaiting ConfigPushSvc.PushReq." }
-//        when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(20_000)) {
-//            null -> {
-//                val hasSession = bot.bdhSyncer.hasSession
-//                kotlin.runCatching { bot.bdhSyncer.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
-//                if (!hasSession) {
-//                    logger.warning { "Missing ConfigPushSvc.PushReq. Switching server..." }
-//                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
-//                } else {
-//                    logger.warning { "Missing ConfigPushSvc.PushReq. Using the latest response. File uploading may be affected." }
-//                }
-//            }
-//            is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
-//                logger.info { "ConfigPushSvc.PushReq: Config updated." }
-//            }
-//            is ConfigPushSvc.PushReq.PushReqResponse.ServerListPush -> {
-//                logger.info { "ConfigPushSvc.PushReq: Server updated." }
-//                // handled in ConfigPushSvc
-//                return@launch
-//            }
-//        }
-//    }
-}
-
-
-private object `update other client list` {
-//
-//    private suspend fun updateOtherClientsList() {
-//        val list = Mirai.getOnlineOtherClientsList(bot)
-//        bot.otherClients.delegate.clear()
-//        bot.otherClients.delegate.addAll(list.map { bot.createOtherClient(it) })
-//
-//        if (bot.otherClients.isEmpty()) {
-//            bot.logger.info { "No OtherClient online." }
-//        } else {
-//            bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform?.name ?: "unknown platform"})" } }
-//        }
-//    }
-}
-
 private object `skey refresh` {
 
-//    suspend fun refreshKeys() {
+//    suspend fun refreshKeysNow() {
 //        WtLogin15(bot.client).sendAndExpect()
 //    }
 
@@ -106,7 +49,7 @@ private object `skey refresh` {
                             delay(delay)
                         }
                         runCatching {
-                            refreshKeys()
+                            refreshKeysNow()
                         }.onFailure {
                             logger.error("Failed to refresh key.", it)
                         }

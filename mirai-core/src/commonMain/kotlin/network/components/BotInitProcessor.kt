@@ -17,8 +17,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.JobAttachStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -36,30 +35,7 @@ internal interface BotInitProcessor {
 }
 
 internal fun BotInitProcessor.asObserver(targetState: State = State.LOADING): StateObserver {
-    return BotInitProcessorAsStateObserverAdapter(this, targetState)
-}
-
-private class BotInitProcessorAsStateObserverAdapter(
-    private val processor: BotInitProcessor,
-    targetState: State
-) : StateChangedObserver(targetState) {
-    override fun stateChanged0(
-        networkHandler: NetworkHandlerSupport,
-        previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
-    ) {
-        new.launch(CoroutineName("BotInitProcessor.init")) {
-            try {
-                processor.init()
-            } catch (e: Throwable) {
-                throw IllegalStateException("Exception in BotInitProcessor.init", e)
-            }
-        }
-    }
-
-    override fun toString(): String {
-        return "BotInitProcessorAsStateObserverAdapter"
-    }
+    return JobAttachStateObserver("BotInitProcessor.init", targetState) { init() }
 }
 
 
