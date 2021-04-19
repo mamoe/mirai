@@ -2,6 +2,8 @@
 
 本文介绍如何在一个 JVM 项目中使用 mirai。
 
+具体项目可参考 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world)。
+
 ### 选择版本
 
 有关各类版本的区别，参考 [版本规范](Evolution.md#版本规范)。通常建议选择最新稳定版本。
