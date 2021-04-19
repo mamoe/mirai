@@ -87,7 +87,8 @@ internal class PacketCodecImpl : PacketCodec {
                     2 -> RawIncomingPacket(
                         raw.commandName,
                         raw.sequenceId,
-                        raw.body.withUse { parseOicqResponse(client) })
+                        raw.body.withUse { parseOicqResponse(client) }
+                    )
                     else -> error("Unknown flag2=$flag2")
                 }
             }
@@ -170,7 +171,9 @@ internal class PacketCodecImpl : PacketCodec {
     private fun ByteReadPacket.parseOicqResponse(
         client: SsoSession,
     ): ByteArray {
-        check(readByte().toInt() == 2)
+        readByte().toInt().let {
+            check(it == 2) { "$it" }
+        }
         this.discardExact(2)
         this.discardExact(2)
         this.readUShort()
