@@ -32,21 +32,23 @@ import net.mamoe.mirai.utils.*
 internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
     bot: Bot,
     messageSourceKind: MessageSourceKind,
-    groupIdOrZero: Long
+    groupIdOrZero: Long,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
         joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, this)
-    }.cleanupRubbishMessageElements().refineLight(bot)
+    }.cleanupRubbishMessageElements().refineLight(bot, refineContext)
 }
 
 
 internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     bot: Bot,
     groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
+    messageSourceKind: MessageSourceKind,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot)
+    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot, refineContext)
 }
 
 //internal fun List<MsgComm.Msg>.toMessageChainOffline(
@@ -60,9 +62,10 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
 internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     bot: Bot,
     groupIdOrZero: Long,
-    messageSourceKind: MessageSourceKind
+    messageSourceKind: MessageSourceKind,
+    refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot)
+    return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
 
 
@@ -479,14 +482,20 @@ internal object ReceiveMessageTransformer {
                 val resId = findStringProperty("m_resid")
 
                 val msg = if (resId.isEmpty()) {
-                    SimpleServiceMessage(35, content)
+                    // Nested ForwardMessage
+                    val fileName = findStringProperty("m_fileName")
+                    if (fileName.isNotEmpty() && findStringProperty("action") == "viewMultiMsg") {
+                        ForwardMessageInternal(content, null, fileName)
+                    } else {
+                        SimpleServiceMessage(35, content)
+                    }
                 } else when (findStringProperty("multiMsgFlag").toIntOrNull()) {
                     1 -> LongMessageInternal(content, resId)
-                    0 -> ForwardMessageInternal(content, resId)
+                    0 -> ForwardMessageInternal(content, resId, null)
                     else -> {
                         // from PC QQ
                         if (findStringProperty("action") == "viewMultiMsg") {
-                            ForwardMessageInternal(content, resId)
+                            ForwardMessageInternal(content, resId, null)
                         } else {
                             SimpleServiceMessage(35, content)
                         }

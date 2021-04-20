@@ -85,7 +85,11 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
                     elems = chain.messageChain.toMessageChain()
-                        .toRichTextElems(handler.contact, withGeneralFlags = false).toMutableList()
+                        .toRichTextElems(
+                            handler.contact,
+                            withGeneralFlags = false,
+                            isForward = true,
+                        ).toMutableList()
                 )
             )
         )

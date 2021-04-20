@@ -22,7 +22,7 @@ internal data class LightAppInternal(
     companion object Key :
         AbstractPolymorphicMessageKey<RichMessage, LightAppInternal>(RichMessage, { it.safeCast() })
 
-    override fun tryRefine(bot: Bot, context: MessageChain): Message {
+    override fun tryRefine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         val struct = tryDeserialize() ?: return LightApp(content)
         struct.run {
             if (meta.music != null) {

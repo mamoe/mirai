@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toUHexString
@@ -16,7 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TypeConversionTest {
+internal class TypeConversionTest : AbstractTest() {
 
     @ExperimentalUnsignedTypes
     @Test

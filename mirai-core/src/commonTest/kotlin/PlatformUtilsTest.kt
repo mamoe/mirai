@@ -10,11 +10,12 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.utils.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal class PlatformUtilsTest {
+internal class PlatformUtilsTest : AbstractTest() {
 
     @Test
     fun testZip() {

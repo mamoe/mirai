@@ -11,7 +11,9 @@ package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 
@@ -20,7 +22,7 @@ internal data class LongMessageInternal internal constructor(override val conten
     AbstractServiceMessage(), RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+    override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         bot.asQQAndroidBot()
         val long = Mirai.downloadLongMessage(bot, resId)
 
@@ -33,11 +35,15 @@ internal data class LongMessageInternal internal constructor(override val conten
 
 // internal runtime value, not serializable
 @Suppress("RegExpRedundantEscape", "UnnecessaryVariable")
-internal data class ForwardMessageInternal(override val content: String, val resId: String) : AbstractServiceMessage(),
+internal data class ForwardMessageInternal(
+    override val content: String,
+    val resId: String?,
+    val fileName: String?,
+) : AbstractServiceMessage(),
     RefinableMessage {
     override val serviceId: Int get() = 35
 
-    override suspend fun refine(bot: Bot, context: MessageChain): Message {
+    override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         bot.asQQAndroidBot()
 
         val msgXml = content.substringAfter("<msg", "")
@@ -59,6 +65,23 @@ internal data class ForwardMessageInternal(override val content: String, val res
         val preview = titles
         val source = xmlFoot.findField("name")
 
+        if (fileName != null) { // nested
+            val transmits = refineContext.getNotNull(MsgTransmits)[fileName]
+                ?: return SimpleServiceMessage(serviceId, content) // Refine failed
+            return MessageOrigin(
+                SimpleServiceMessage(serviceId, content),
+                null, // Nested don't have resource id
+                MessageOriginKind.FORWARD
+            ) + ForwardMessage(
+                preview = preview,
+                title = title,
+                brief = brief,
+                source = source,
+                summary = summary.trim(),
+                nodeList = MiraiImpl.run { transmits.toForwardMessageNodes(bot, refineContext) }
+            )
+        }
+
         return MessageOrigin(
             SimpleServiceMessage(serviceId, content),
             resId,
@@ -69,7 +92,7 @@ internal data class ForwardMessageInternal(override val content: String, val res
             brief = brief,
             source = source,
             summary = summary.trim(),
-            nodeList = Mirai.downloadForwardMessage(bot, resId)
+            nodeList = Mirai.downloadForwardMessage(bot, resId!!)
         )
     }
 
@@ -86,6 +109,8 @@ internal data class ForwardMessageInternal(override val content: String, val res
             return substringAfter("$type=\"", "")
                 .substringBefore("\"", "")
         }
+
+        val MsgTransmits = RefineContextKey<Map<String, MsgTransmit.PbMultiMsgNew>>("MsgTransmit")
     }
 }
 

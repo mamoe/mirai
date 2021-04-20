@@ -10,11 +10,13 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.internal.test.AbstractTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 
-internal abstract class AbstractTestWithMiraiImpl : MiraiImpl() {
+internal abstract class AbstractTestWithMiraiImpl : IMirai by MiraiImpl(), AbstractTest() {
     private val originalImpl = Mirai
 
     @BeforeEach

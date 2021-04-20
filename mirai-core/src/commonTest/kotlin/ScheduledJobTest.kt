@@ -12,12 +12,13 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.ScheduledJob
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 
-internal class ScheduledJobTest {
+internal class ScheduledJobTest : AbstractTest() {
     @Test
     fun testScheduledJob() {
         runBlocking {
