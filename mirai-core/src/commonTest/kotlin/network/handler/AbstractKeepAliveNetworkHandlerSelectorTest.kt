@@ -31,7 +31,7 @@ internal class KeepAliveNetworkHandlerSelectorTest {
 
     @Test
     fun `can initialize instance`() {
-        val selector = TestSelector { createHandler() }
+        val selector = TestSelector { createHandler().apply { setState(State.OK) } }
         runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
         assertNotNull(selector.getResumedInstance())
     }
