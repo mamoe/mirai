@@ -174,5 +174,5 @@ internal fun RichMessage.Key.forwardMessage(
             <source name="${source.take(50)}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ").trim()
-    return ForwardMessageInternal(template, resId)
+    return ForwardMessageInternal(template, resId, null)
 }
