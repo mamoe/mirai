@@ -49,7 +49,7 @@ internal class KeepAliveNetworkHandlerSelectorTest {
     @Test
     fun `initialize another when closed`() {
         val selector = TestSelector {
-            createHandler()
+            createHandler().apply { setState(State.OK) }
         }
         val handler = createHandler()
         selector.setCurrent(handler)
