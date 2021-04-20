@@ -13,6 +13,9 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 public class ExceptionCollector {
+
+    // TODO: 2021/4/20 drop last
+
     public constructor()
     public constructor(initial: Throwable?) {
         collect(initial)
