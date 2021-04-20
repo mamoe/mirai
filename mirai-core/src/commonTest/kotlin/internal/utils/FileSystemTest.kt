@@ -10,11 +10,12 @@
 
 package net.mamoe.mirai.internal.utils
 
+import net.mamoe.mirai.internal.test.AbstractTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-internal class FileSystemTest {
+internal class FileSystemTest : AbstractTest() {
 
     private val fs = FileSystem
 

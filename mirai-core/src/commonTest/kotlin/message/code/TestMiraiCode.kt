@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message.code
 
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.code.internal.MiraiCodeParser
 import net.mamoe.mirai.message.data.*
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class TestMiraiCode {
+class TestMiraiCode : AbstractTest() {
     @Test
     fun testDynamicMiraiCodeParser() {
         fun runTest(args: Int, code: String, parse: (args: Array<String>) -> Unit) {

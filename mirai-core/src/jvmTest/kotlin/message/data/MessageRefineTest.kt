@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal.message.data
 import kotlinx.serialization.decodeFromHexString
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.MockBot
@@ -32,7 +31,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.utils.PlatformLogger
 import net.mamoe.mirai.utils.autoHexToBytes
-import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -275,7 +273,7 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
 
     @Test
     fun `test nested forward refinement`() = runBlockingUnit {
-        val redefined = Mirai.cast<MiraiImpl>().run { testCases.nestedForward.toForwardMessageNodes(bot) }
+        val redefined = MiraiImpl.run { testCases.nestedForward.toForwardMessageNodes(bot) }
         assertNodesEquals(
             listOf(
                 ForwardMessage.Node(

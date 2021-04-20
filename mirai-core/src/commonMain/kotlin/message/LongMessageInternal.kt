@@ -15,7 +15,6 @@ import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.safeCast
 
 // internal runtime value, not serializable
@@ -79,7 +78,7 @@ internal data class ForwardMessageInternal(
                 brief = brief,
                 source = source,
                 summary = summary.trim(),
-                nodeList = Mirai.cast<MiraiImpl>().run { transmits.toForwardMessageNodes(bot, refineContext) }
+                nodeList = MiraiImpl.run { transmits.toForwardMessageNodes(bot, refineContext) }
             )
         }
 
