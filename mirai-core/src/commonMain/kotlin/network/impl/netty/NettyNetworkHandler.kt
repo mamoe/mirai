@@ -205,15 +205,19 @@ internal class NettyNetworkHandler(
             context[SsoProcessor].login(this@NettyNetworkHandler)
         }.apply {
             invokeOnCompletion { error ->
-                if (error != null) setState {
-                    StateConnecting(
-                        collectiveExceptions.apply { collect(error) },
-                        wait = true
-                    )
-                } // logon failure closes the network handler.
+                if (error != null) {
+                    setState {
+                        StateConnecting(
+                            collectiveExceptions.apply { collect(error) },
+                            wait = true
+                        )
+                    } // logon failure closes the network handler.
+                }
                 // and this error will also be thrown by `StateConnecting.resumeConnection`
             }
         }
+
+        override fun getCause(): Throwable? = collectiveExceptions.getLast()
 
         override suspend fun sendPacketImpl(packet: OutgoingPacket) {
             connection.await() // split line number
@@ -316,6 +320,8 @@ internal class NettyNetworkHandler(
     private inner class StateConnectionLost(
         private val cause: Throwable?
     ) : NettyState(State.CONNECTION_LOST) {
+        override fun getCause(): Throwable? = cause
+
         override suspend fun sendPacketImpl(packet: OutgoingPacket) {
             throw IllegalStateException(
                 "Internal error: connection is lost so cannot send packet. Call resumeConnection first.",
@@ -336,6 +342,7 @@ internal class NettyNetworkHandler(
             closeSuper(exception)
         }
 
+        override fun getCause(): Throwable? = exception
         override suspend fun sendPacketImpl(packet: OutgoingPacket) = error("NetworkHandler is already closed.")
         override suspend fun resumeConnection0() {
             exception?.let { throw it }

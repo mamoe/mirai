@@ -10,10 +10,15 @@
 
 package net.mamoe.mirai.internal
 
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentStorage
@@ -25,11 +30,9 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
-import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
-import net.mamoe.mirai.internal.network.handler.state.safe
+import net.mamoe.mirai.internal.network.handler.state.*
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -78,6 +81,19 @@ internal class QQAndroidBot constructor(
         val components = this
         return StateObserver.chainOfNotNull(
             components[BotInitProcessor].asObserver().safe(networkLogger),
+            StateChangedObserver(NetworkHandler.State.OK) { new ->
+                new.launch(logger.asCoroutineExceptionHandler()) {
+                    BotOnlineEvent(bot).broadcast()
+                    if (bot.firstLoginSucceed) { // TODO: 2021/4/21 actually no use
+                        BotReloginEvent(bot, new.getCause()).broadcast()
+                    }
+                }
+            },
+            StateChangedObserver(NetworkHandler.State.CLOSED) { new ->
+                new.launch(logger.asCoroutineExceptionHandler()) {
+                    BotOfflineEvent.Dropped(bot, new.getCause()).broadcast()
+                }
+            },
             debugConfiguration.stateObserver
         )
     }
