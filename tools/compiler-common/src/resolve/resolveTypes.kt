@@ -73,7 +73,7 @@ val Annotated.resolveContextKinds: List<ResolveContextKind>?
             .castOrNull<ArrayValue>()?.value
             ?.mapNotNull { value ->
                 val (_, enumEntryName) = value.castOrNull<EnumValue>()?.value ?: return@mapNotNull null
-                ResolveContextKind.valueOf(enumEntryName.asString())
+                ResolveContextKind.valueOfOrNull(enumEntryName.asString())
             }
             ?: return null // undetermined kind
     }
