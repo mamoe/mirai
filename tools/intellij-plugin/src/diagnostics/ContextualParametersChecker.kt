@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.bodyCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
-import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
 import net.mamoe.mirai.console.intellij.util.RequirementHelper
 import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
@@ -50,8 +49,10 @@ class ContextualParametersChecker : DeclarationChecker {
         val calls = declaration.bodyCalls(context.bindingContext) ?: return
 
         for ((call, _) in calls) {
-            for ((parameter, argument) in call.valueParametersWithArguments()) {
-                checkArgument(parameter, argument, context)
+            for ((parameter, resolvedArgument) in call.valueArguments) {
+                for (valueArgument in resolvedArgument.arguments) {
+                    checkArgument(parameter, valueArgument, context)
+                }
             }
         }
     }
