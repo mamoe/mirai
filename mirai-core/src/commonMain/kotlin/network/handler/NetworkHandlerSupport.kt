@@ -183,7 +183,7 @@ internal abstract class NetworkHandlerSupport(
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
     protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
-        // we can add hooks here for debug.
+        if (_state.correspondingState == NetworkHandler.State.CLOSED) error("Cannot change state while it has already been CLOSED.")
 
         val stateObserver = context.getOrNull(StateObserver)
 

@@ -118,6 +118,7 @@ internal class NettyNetworkHandler(
         }
 
         future.channel().closeFuture().addListener {
+            if (_state.correspondingState == State.CLOSED) return@addListener
             setState { StateConnecting(ExceptionCollector(it.cause())) }
         }
 
