@@ -12,6 +12,21 @@ package net.mamoe.mirai.internal.network.handler.state
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 
+internal fun StateChangedObserver(
+    state: State,
+    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
+): StateChangedObserver {
+    return object : StateChangedObserver(state) {
+        override fun stateChanged0(
+            networkHandler: NetworkHandlerSupport,
+            previous: NetworkHandlerSupport.BaseStateImpl,
+            new: NetworkHandlerSupport.BaseStateImpl
+        ) {
+            action(new)
+        }
+    }
+}
+
 internal abstract class StateChangedObserver(
     val state: State,
 ) : StateObserver {

@@ -12,10 +12,15 @@ package net.mamoe.mirai.internal.network.impl.netty
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.streams.outputStream
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority.ERROR
 import net.mamoe.mirai.utils.withUse
 
 
@@ -39,5 +44,18 @@ internal fun ByteBuf.toReadPacket(): ByteReadPacket {
     val buf = this
     return buildPacket {
         ByteBufInputStream(buf).withUse { copyTo(outputStream()) }
+    }
+}
+
+
+internal fun MiraiLogger.asCoroutineExceptionHandler(
+    priority: SimpleLogger.LogPriority = ERROR
+): CoroutineExceptionHandler {
+    return CoroutineExceptionHandler { context, e ->
+        call(
+            priority,
+            context[CoroutineName]?.let { "Exception in coroutine '${it.name}'." } ?: "Exception in unnamed coroutine.",
+            e
+        )
     }
 }
