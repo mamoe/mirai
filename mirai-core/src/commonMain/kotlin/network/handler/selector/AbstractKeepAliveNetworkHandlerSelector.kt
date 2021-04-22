@@ -47,7 +47,6 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     this.current.compareAndSet(current, null) // invalidate the instance and try again.
                     awaitResumeInstance() // will create new instance.
                 }
-                NetworkHandler.State.CONNECTION_LOST,
                 NetworkHandler.State.CONNECTING,
                 NetworkHandler.State.INITIALIZED -> {
                     current.resumeConnection()
