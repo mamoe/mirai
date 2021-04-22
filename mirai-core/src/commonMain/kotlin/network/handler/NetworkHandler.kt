@@ -73,15 +73,6 @@ internal interface NetworkHandler {
         OK,
 
         /**
-         * No Internet Connection available or for any other reasons
-         * but it is possible to establish a connection again(switching state to [CONNECTING]).
-         *
-         * At this state [resumeConnection] turns the handle to [CONNECTING].
-         * [sendAndExpect] throws [IllegalStateException]
-         */
-        CONNECTION_LOST,
-
-        /**
          * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException].
          *
          * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.

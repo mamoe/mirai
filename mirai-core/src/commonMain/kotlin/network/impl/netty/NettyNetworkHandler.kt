@@ -317,24 +317,6 @@ internal class NettyNetworkHandler(
         override fun toString(): String = "StateOK"
     }
 
-    private inner class StateConnectionLost(
-        private val cause: Throwable?
-    ) : NettyState(State.CONNECTION_LOST) {
-        override fun getCause(): Throwable? = cause
-
-        override suspend fun sendPacketImpl(packet: OutgoingPacket) {
-            throw IllegalStateException(
-                "Internal error: connection is lost so cannot send packet. Call resumeConnection first.",
-                cause
-            )
-        }
-
-        override suspend fun resumeConnection0() {
-            setState { StateConnecting(ExceptionCollector(cause)) }
-                .resumeConnection()
-        } // noop
-    }
-
     private inner class StateClosed(
         val exception: Throwable?
     ) : NettyState(State.CLOSED) {
