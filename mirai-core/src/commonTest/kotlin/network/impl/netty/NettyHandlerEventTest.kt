@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.impl.netty
 import io.netty.channel.Channel
 import io.netty.channel.embedded.EmbeddedChannel
 import kotlinx.coroutines.delay
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
@@ -90,6 +91,20 @@ internal class NettyHandlerEventTest : AbstractRealNetworkHandlerTest<TestNettyN
             network.resumeConnection()
             delay(3.seconds)
             assertEquals(State.OK, network.state)
+        }
+    }
+
+    @Test
+    fun `BotOfflineEvent after successful reconnection`() = runBlockingUnit {
+        assertEquals(State.INITIALIZED, network.state)
+        bot.login()
+        bot.firstLoginSucceed = true
+        assertEquals(State.OK, network.state)
+        delay(3.seconds) // `login` launches a job which broadcasts the event
+        assertEventBroadcasts<BotOfflineEvent>(1) {
+            network.setStateClosed()
+            delay(3.seconds)
+            assertEquals(State.CLOSED, network.state)
         }
     }
 }

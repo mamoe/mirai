@@ -27,7 +27,9 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.*
@@ -80,17 +82,34 @@ internal open class QQAndroidBot constructor(
         val components = this
         return StateObserver.chainOfNotNull(
             components[BotInitProcessor].asObserver(),
-            StateChangedObserver(NetworkHandler.State.OK) { new ->
-                new.launch(logger.asCoroutineExceptionHandler()) {
+            StateChangedObserver(State.OK) { new ->
+                bot.launch(logger.asCoroutineExceptionHandler()) {
                     BotOnlineEvent(bot).broadcast()
                     if (bot.firstLoginSucceed) { // TODO: 2021/4/21 actually no use
                         BotReloginEvent(bot, new.getCause()).broadcast()
                     }
                 }
             },
-            StateChangedObserver(NetworkHandler.State.CLOSED) { new ->
-                new.launch(logger.asCoroutineExceptionHandler()) {
-                    BotOfflineEvent.Dropped(bot, new.getCause()).broadcast()
+            object : StateObserver {
+                override fun stateChanged(
+                    networkHandler: NetworkHandlerSupport,
+                    previous: NetworkHandlerSupport.BaseStateImpl,
+                    new: NetworkHandlerSupport.BaseStateImpl
+                ) {
+                    val p = previous.correspondingState
+                    val n = new.correspondingState
+                    when {
+                        p == State.OK && n == State.CONNECTING -> {
+                            bot.launch(logger.asCoroutineExceptionHandler()) {
+                                BotOfflineEvent.Dropped(bot, new.getCause()).broadcast()
+                            }
+                        }
+                        p == State.OK && n == State.CLOSED -> {
+                            bot.launch(logger.asCoroutineExceptionHandler()) {
+                                BotOfflineEvent.Active(bot, new.getCause()).broadcast()
+                            }
+                        }
+                    }
                 }
             },
             debugConfiguration.stateObserver
