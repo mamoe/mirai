@@ -12,9 +12,10 @@ package net.mamoe.mirai.internal.network
 import net.mamoe.mirai.internal.network.components.ServerAddress
 import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.components.ServerListImpl
+import net.mamoe.mirai.internal.test.AbstractTest
 import kotlin.test.*
 
-internal class ServerListTest {
+internal class ServerListTest : AbstractTest() {
 
     @Test
     fun canInitializeDefaults() {

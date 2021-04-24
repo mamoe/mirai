@@ -9,7 +9,7 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.internal.network.handler
+package net.mamoe.mirai.internal.network.framework
 
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -19,9 +19,12 @@ import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.utils.MiraiLogger
+import org.junit.jupiter.api.TestInstance
 
-internal abstract class AbstractNetworkHandlerTest {
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+internal abstract class AbstractMockNetworkHandlerTest : AbstractTest() {
     protected open fun createNetworkHandlerContext() = TestNetworkHandlerContext(bot, logger, components)
     protected open fun createNetworkHandler() = TestNetworkHandler(createNetworkHandlerContext())
 
