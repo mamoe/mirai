@@ -7,12 +7,13 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network
+package net.mamoe.mirai.internal.network.impl.netty
 
 import io.netty.channel.DefaultChannelPromise
 import io.netty.channel.embedded.EmbeddedChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
@@ -20,7 +21,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.seconds
 
-internal class NettyTestUnit {
+/**
+ * @see awaitKt
+ */
+internal class NettyUtilsTest : AbstractTest() {
     companion object {
         private val channel = EmbeddedChannel()
 

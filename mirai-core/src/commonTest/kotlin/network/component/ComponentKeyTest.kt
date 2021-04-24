@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.component
 
+import net.mamoe.mirai.internal.test.AbstractTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +17,7 @@ private class TestComponent {
     companion object : ComponentKey<TestComponent>
 }
 
-internal class ComponentKeyTest {
+internal class ComponentKeyTest : AbstractTest() {
 
     @Test
     fun testComponentName() {

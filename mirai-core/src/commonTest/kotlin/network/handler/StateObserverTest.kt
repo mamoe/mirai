@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.CONNECTING
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.INITIALIZED
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-internal class StateObserverTest : AbstractNetworkHandlerTest() {
+internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
     @Test
     fun `can trigger observer`() {
         val called = ArrayList<Pair<NetworkHandlerSupport.BaseStateImpl, NetworkHandlerSupport.BaseStateImpl>>()
