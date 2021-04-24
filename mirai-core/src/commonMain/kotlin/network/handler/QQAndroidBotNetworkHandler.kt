@@ -373,7 +373,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         //      StatSvc.Register.offline(bot.client).sendAndExpect()
         //  }.getOrElse { logger.warning(it) }
 
-        return StatSvc.Register.online(bot.client).sendAndExpect()
+        return StatSvc.Register.online(bot.client).sendAndExpect().also {
+            lastRegisterResp = it
+        }
     }
 
     private suspend fun updateOtherClientsList() {
@@ -398,6 +400,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         ConcurrentLinkedQueue()
 
     private val contactUpdater: ContactUpdater by lazy { ContactUpdaterImpl(bot) }
+    private lateinit var lastRegisterResp: StatSvc.Register.Response
 
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init." }
@@ -409,8 +412,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             pendingIncomingPackets = ConcurrentLinkedQueue()
             _pendingEnabled.value = true
         }
-
-        val registerResp = registerClientOnline()
 
         this@QQAndroidBotNetworkHandler.launch(
             CoroutineName("Awaiting ConfigPushSvc.PushReq"),
@@ -427,7 +428,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        contactUpdater.loadAll(registerResp.origin)
+        contactUpdater.loadAll(lastRegisterResp.origin)
 
         bot.firstLoginSucceed = true
         postInitActions()
