@@ -13,9 +13,18 @@ import net.mamoe.mirai.internal.test.AbstractTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-private class TestComponent {
+private open class TestComponent {
     companion object : ComponentKey<TestComponent>
 }
+
+
+private interface MyInterface
+
+private open class TestComponentExt : TestComponent(), MyInterface
+
+private open class Key<R> : ComponentKey<R> where R : TestComponent, R : MyInterface
+private class KeyActual : Key<TestComponentExt>()
+
 
 internal class ComponentKeyTest : AbstractTest() {
 
@@ -26,8 +35,37 @@ internal class ComponentKeyTest : AbstractTest() {
     }
 
     @Test
+    fun `componentName with erased type argument`() {
+        assertEquals(
+            "TestComponent & MyInterface",
+            Key<TestComponentExt>().componentName(false)
+        )
+        assertEquals(
+            "${TestComponent::class.qualifiedName!!} & ${MyInterface::class.qualifiedName!!}",
+            Key<TestComponentExt>().componentName(true)
+        )
+    }
+
+    @Test
+    fun `componentName with actual type argument`() {
+        assertEquals(
+            "TestComponentExt",
+            KeyActual().componentName(false)
+        )
+        assertEquals(
+            TestComponentExt::class.qualifiedName!!,
+            KeyActual().componentName(true)
+        )
+    }
+
+    @Test
     fun `test smartToString`() {
         assertEquals("ComponentKey<TestComponent>", TestComponent.smartToString(false))
         assertEquals("ComponentKey<${TestComponent::class.qualifiedName!!}>", TestComponent.smartToString(true))
+        assertEquals(
+            "ComponentKey<${TestComponent::class.qualifiedName!!} & ${MyInterface::class.qualifiedName!!}>",
+            Key<TestComponentExt>().smartToString(true)
+        )
+        assertEquals("ComponentKey<${TestComponentExt::class.qualifiedName!!}>", KeyActual().smartToString(true))
     }
 }
