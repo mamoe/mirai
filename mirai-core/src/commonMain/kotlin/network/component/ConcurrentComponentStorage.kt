@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.component
 
 import net.mamoe.mirai.utils.systemProp
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * A thread-safe implementation of [MutableComponentStorage]
@@ -55,4 +56,4 @@ internal class ConcurrentComponentStorage(
     }
 }
 
-private val SHOW_ALL_COMPONENTS = systemProp("mirai.debug.network.show.all.components", false)
+private val SHOW_ALL_COMPONENTS: Boolean by lazy(NONE) { systemProp("mirai.debug.network.show.all.components", false) }

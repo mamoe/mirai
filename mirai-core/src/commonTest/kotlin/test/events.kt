@@ -12,41 +12,37 @@ package net.mamoe.mirai.internal.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.GlobalEventChannel
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal inline fun <reified T : Event, R> assertEventBroadcasts(times: Int = 1, block: () -> R): R {
-    val receivedEvents = AtomicInteger(0)
-    val listener = GlobalEventChannel.subscribeAlways<T> {
-        receivedEvents.incrementAndGet()
-    }
-    try {
+    assertEventBroadcasts<T>(times) {
         return block()
-    } finally {
-        listener.complete()
-        assertEquals(
-            times,
-            receivedEvents.get(),
-            "Expected event ${T::class.simpleName} broadcast $times time(s). But actual is ${receivedEvents.get()}."
-        )
     }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal inline fun <reified T : Event> assertEventBroadcasts(times: Int = 1, block: () -> Unit) {
-    val receivedEvents = AtomicInteger(0)
-    val listener = GlobalEventChannel.subscribeAlways<T> {
-        receivedEvents.incrementAndGet()
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+
+    val receivedEvents = ConcurrentLinkedQueue<Event>()
+    val listener = GlobalEventChannel.subscribeAlways<Event> { event ->
+        receivedEvents.add(event)
     }
     try {
         return block()
     } finally {
+        val actual = receivedEvents.filterIsInstance<T>().count()
         listener.complete()
         assertEquals(
             times,
-            receivedEvents.get(),
-            "Expected event ${T::class.simpleName} broadcast $times time(s). But actual is ${receivedEvents.get()}."
+            actual,
+            "Expected event ${T::class.simpleName} broadcast $times time(s). " +
+                    "But actual count is ${actual}. " +
+                    "\nAll received events: ${receivedEvents.joinToString(", ", "[", "]")}"
         )
     }
 }

@@ -88,6 +88,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 因 returnCode = -10008 等原因掉线
      */
     @MiraiInternalApi("This is very experimental and might be changed")
+    @Deprecated("Deprecated with no replacement", level = DeprecationLevel.ERROR)
     public data class PacketFactoryErrorCode @MiraiInternalApi public constructor(
         val returnCode: Int,
         public override val bot: Bot,
