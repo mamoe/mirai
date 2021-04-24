@@ -20,6 +20,7 @@ internal class ConcurrentComponentStorage(
 ) : ComponentStorage, MutableComponentStorage {
     private val map = ConcurrentHashMap<ComponentKey<*>, Any?>()
 
+    override val keys: Set<ComponentKey<*>> get() = map.keys
     override val size: Int get() = map.size
 
     override operator fun <T : Any> get(key: ComponentKey<T>): T {

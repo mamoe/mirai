@@ -15,16 +15,21 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
-internal class HeartbeatProcessor {
+internal interface HeartbeatProcessor {
 
     @Throws(Exception::class)
-    suspend fun doHeartbeatNow(networkHandler: NetworkHandler) {
+    suspend fun doHeartbeatNow(networkHandler: NetworkHandler)
+
+    companion object : ComponentKey<HeartbeatProcessor>
+}
+
+internal class HeartbeatProcessorImpl : HeartbeatProcessor {
+    @Throws(Exception::class)
+    override suspend fun doHeartbeatNow(networkHandler: NetworkHandler) {
         StatSvc.SimpleGet(networkHandler.context.bot.client).sendAndExpect(
             networkHandler,
             timeoutMillis = networkHandler.context[SsoProcessorContext].configuration.heartbeatTimeoutMillis,
             retry = 2
         )
     }
-
-    companion object : ComponentKey<HeartbeatProcessor>
 }
