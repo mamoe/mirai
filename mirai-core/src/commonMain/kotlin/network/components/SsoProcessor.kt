@@ -41,7 +41,6 @@ import net.mamoe.mirai.utils.withExceptionCollector
  * Handles login, and acts also as a mediator of [BotInitProcessor], []
  */
 internal interface SsoProcessor {
-    val ssoContext: SsoProcessorContext
     val client: QQAndroidClient
     val ssoSession: SsoSession
 
@@ -50,7 +49,7 @@ internal interface SsoProcessor {
      *
      * E.g. start heartbeat job for [NetworkHandler.State.OK].
      */
-    fun createObserverChain(): StateObserver
+    fun createObserverChain(): StateObserver // todo not used
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -69,7 +68,7 @@ internal interface SsoProcessor {
  * Used by [NettyNetworkHandler.StateConnecting].
  */
 internal class SsoProcessorImpl(
-    override val ssoContext: SsoProcessorContext,
+    val ssoContext: SsoProcessorContext,
 ) : SsoProcessor {
 
     ///////////////////////////////////////////////////////////////////////////
