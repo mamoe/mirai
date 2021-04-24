@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.handler
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.CONNECTING
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.INITIALIZED
+import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import org.junit.jupiter.api.Test
@@ -64,5 +65,37 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
         assertEquals(1, called.size)
         assertEquals(INITIALIZED, called[0].first.correspondingState)
         assertEquals(CONNECTING, called[0].second.correspondingState)
+    }
+
+    @Test
+    fun `can combine`() {
+        val called = ArrayList<Pair<NetworkHandlerSupport.BaseStateImpl, NetworkHandlerSupport.BaseStateImpl>>()
+        components[StateObserver] = object : StateChangedObserver(CONNECTING) {
+            override fun stateChanged0(
+                networkHandler: NetworkHandlerSupport,
+                previous: NetworkHandlerSupport.BaseStateImpl,
+                new: NetworkHandlerSupport.BaseStateImpl
+            ) {
+                called.add(previous to new)
+            }
+        } + object : StateChangedObserver(CONNECTING) {
+            override fun stateChanged0(
+                networkHandler: NetworkHandlerSupport,
+                previous: NetworkHandlerSupport.BaseStateImpl,
+                new: NetworkHandlerSupport.BaseStateImpl
+            ) {
+                called.add(previous to new)
+            }
+        }
+        val handler = createNetworkHandler()
+        assertEquals(0, called.size)
+        handler.setState(INITIALIZED)
+        assertEquals(0, called.size)
+        handler.setState(CONNECTING)
+        assertEquals(2, called.size)
+        assertEquals(INITIALIZED, called[0].first.correspondingState)
+        assertEquals(CONNECTING, called[0].second.correspondingState)
+        assertEquals(INITIALIZED, called[1].first.correspondingState)
+        assertEquals(CONNECTING, called[1].second.correspondingState)
     }
 }

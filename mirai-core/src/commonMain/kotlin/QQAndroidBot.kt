@@ -35,7 +35,6 @@ import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
@@ -61,7 +60,7 @@ internal class BotDebugConfiguration(
 )
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
-internal class QQAndroidBot constructor(
+internal open class QQAndroidBot constructor(
     internal val account: BotAccount,
     configuration: BotConfiguration,
     private val debugConfiguration: BotDebugConfiguration = BotDebugConfiguration(),
@@ -77,10 +76,10 @@ internal class QQAndroidBot constructor(
     // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
 
     // IDE error, don't move into lazy
-    private fun ComponentStorage.stateObserverChain(): StateObserver {
+    fun ComponentStorage.stateObserverChain(): StateObserver {
         val components = this
         return StateObserver.chainOfNotNull(
-            components[BotInitProcessor].asObserver().safe(networkLogger),
+            components[BotInitProcessor].asObserver(),
             StateChangedObserver(NetworkHandler.State.OK) { new ->
                 new.launch(logger.asCoroutineExceptionHandler()) {
                     BotOnlineEvent(bot).broadcast()
@@ -95,7 +94,7 @@ internal class QQAndroidBot constructor(
                 }
             },
             debugConfiguration.stateObserver
-        )
+        ).safe(logger)
     }
 
 
@@ -135,7 +134,7 @@ internal class QQAndroidBot constructor(
     val client get() = components[SsoProcessor].client
 
     override suspend fun sendLogout() {
-        network.sendWithoutExpect(StatSvc.Register.offline(client))
+        components[SsoProcessor].logout(network)
     }
 
     override fun createNetworkHandler(): NetworkHandler {

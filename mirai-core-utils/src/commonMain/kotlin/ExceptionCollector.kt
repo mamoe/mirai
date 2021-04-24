@@ -12,7 +12,7 @@ package net.mamoe.mirai.utils
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-public class ExceptionCollector {
+public class ExceptionCollector : Sequence<Throwable> {
 
     // TODO: 2021/4/20 drop last
 
@@ -35,6 +35,12 @@ public class ExceptionCollector {
         if (e == null) return
         val last = last
         if (last != null) {
+            last.itr().forEach { suppressed ->
+                if (suppressed.stackTrace.contentEquals(e.stackTrace)) {
+                    // filter out useless duplicates.
+                    return
+                }
+            }
             e.addSuppressed(last)
         }
         this.last = e
@@ -60,6 +66,15 @@ public class ExceptionCollector {
 
     @DslMarker
     private annotation class TerminalOperation
+
+    private fun Throwable.itr(): Iterator<Throwable> {
+        return (sequenceOf(this) + this.suppressed.asSequence().flatMap { it.itr().asSequence() }).iterator()
+    }
+
+    override fun iterator(): Iterator<Throwable> {
+        val last = getLast() ?: return emptyList<Throwable>().iterator()
+        return last.itr()
+    }
 }
 
 /**
