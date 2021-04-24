@@ -12,9 +12,13 @@ package net.mamoe.mirai.internal.network.component
 import org.jetbrains.annotations.TestOnly
 
 /**
- * Facade for [component][ComponentKey]s. Implementation must be thread-safe.
+ * Mediator for [component][ComponentKey]s accessing each other.
+ *
+ * Implementation must be thread-safe.
+ *
  * @see MutableComponentStorage
  * @see ConcurrentComponentStorage
+ * @see plus
  */
 internal interface ComponentStorage {
     @get:TestOnly
@@ -24,6 +28,39 @@ internal interface ComponentStorage {
     operator fun <T : Any> get(key: ComponentKey<T>): T
     fun <T : Any> getOrNull(key: ComponentKey<T>): T?
 
+    val keys: Set<ComponentKey<*>>
+
     override fun toString(): String
 }
 
+internal operator fun ComponentStorage.plus(fallback: ComponentStorage): ComponentStorage =
+    CombinedComponentStorage(this, fallback)
+
+private class CombinedComponentStorage(
+    val main: ComponentStorage,
+    val fallback: ComponentStorage,
+) : ComponentStorage {
+    override val keys: Set<ComponentKey<*>> get() = main.keys + fallback.keys
+    override val size: Int get() = keys.size
+
+    override fun <T : Any> get(key: ComponentKey<T>): T {
+        return main.getOrNull(key) ?: fallback.getOrNull(key) ?: main[key] // let `main` throw exception
+    }
+
+    override fun <T : Any> getOrNull(key: ComponentKey<T>): T? {
+        return main.getOrNull(key) ?: fallback.getOrNull(key)
+    }
+
+    override fun toString(): String = buildString {
+        appendLine("CombinedComponentStorage {")
+        appendLine("* main:")
+        main.toString().lines().forEach {
+            append("  ").appendLine(it)
+        }
+        appendLine("*** fallback:")
+        fallback.toString().lines().forEach {
+            append("  ").appendLine(it)
+        }
+        appendLine("}")
+    }
+}

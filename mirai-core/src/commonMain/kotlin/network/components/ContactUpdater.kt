@@ -18,6 +18,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -47,11 +48,23 @@ import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
 
 /**
- * Uses [ContactCacheService]
+ * Manager of caches for [Contact]s.
+ *
+ * Uses [ContactCacheService].
  */
 internal interface ContactUpdater {
+    /**
+     * Load all caches to the bot this [ContactUpdater] works for.
+     *
+     * Implementation must be thread-safe.
+     */
     suspend fun loadAll(registerResp: SvcRespRegister)
 
+    /**
+     * Closes all contacts and save them to cache if needed.
+     *
+     * Implementation must be thread-safe.
+     */
     fun closeAllContacts(e: CancellationException)
 
     companion object : ComponentKey<ContactUpdater>
