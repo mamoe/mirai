@@ -9,6 +9,16 @@
 
 package net.mamoe.mirai.internal.test
 
+import org.junit.jupiter.api.Test
+
 internal actual fun initPlatform() {
     // nothing to do
+}
+
+
+internal actual class PlatformInitializationTest : AbstractTest() {
+    @Test
+    actual fun test() {
+        // nop
+    }
 }

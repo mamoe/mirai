@@ -12,34 +12,46 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal val MockAccount = BotAccount(1, "pwd")
 
 internal val MockConfiguration = BotConfiguration {
+    randomDeviceInfo()
 }
 
 internal class MockBotBuilder(
     val conf: BotConfiguration = BotConfiguration(),
-    val debugConf: BotDebugConfiguration = BotDebugConfiguration()
+    val debugConf: BotDebugConfiguration = BotDebugConfiguration(),
 ) {
+    var nhProvider: (QQAndroidBot.(bot: QQAndroidBot) -> NetworkHandler)? = null
+
     fun conf(action: BotConfiguration.() -> Unit): MockBotBuilder {
+        contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
         conf.apply(action)
         return this
     }
 
     fun debugConf(action: BotDebugConfiguration.() -> Unit): MockBotBuilder {
+        contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
         debugConf.apply(action)
+        return this
+    }
+
+    fun networkHandlerProvider(provider: QQAndroidBot.(bot: QQAndroidBot) -> NetworkHandler): MockBotBuilder {
+        this.nhProvider = provider
         return this
     }
 }
 
 @Suppress("TestFunctionName")
-internal fun MockBot(conf: MockBotBuilder.() -> Unit) =
+internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}) =
     MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
-        QQAndroidBot(MockAccount, this.conf, debugConf)
+        object : QQAndroidBot(MockAccount, this.conf, debugConf) {
+            override fun createNetworkHandler(): NetworkHandler =
+                nhProvider?.invoke(this, this) ?: super.createNetworkHandler()
+        }
     }
-
-@Suppress("TestFunctionName")
-internal fun MockBot() =
-    QQAndroidBot(MockAccount, MockConfiguration.copy())

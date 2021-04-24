@@ -10,22 +10,25 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.selects.SelectClause1
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.components.BotInitProcessor
+import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.MiraiLogger
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.SocketAddress
-import java.util.concurrent.CancellationException
 
 /**
  * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
  *
  * Implementation is usually subclass of [NetworkHandlerSupport].
  *
+ * Instances are often created by [NetworkHandlerFactory].
+ *
  * @see NetworkHandlerSupport
+ * @see NetworkHandlerFactory
  */
 internal interface NetworkHandler {
     val context: NetworkHandlerContext
@@ -33,7 +36,7 @@ internal interface NetworkHandler {
     fun isOk() = state == State.OK
 
     /**
-     * State of this handler.
+     * Current state of this handler. This is volatile.
      */
     val state: State
 
@@ -42,6 +45,28 @@ internal interface NetworkHandler {
      */
     val onStateChanged: SelectClause1<State>
 
+    /**
+     * State of this handler.
+     *
+     * ## States transition overview
+     *
+     * There are 5 [State]s, each of which encapsulates the state of the network connection.
+     *
+     * Initial state is [State.INITIALIZED], at which no packets can be send before [resumeConnection], which transmits state into [State.CONNECTING].
+     * On [State.CONNECTING], [NetworkHandler] establishes a connection with the server while [SsoProcessor] takes responsibility in the single-sign-on process.
+     *
+     * Successful logon turns state to [State.LOADING], an **open state**, which does nothing by default. Jobs can be *attached* by [StateObserver]s.
+     * For example, attaching a [BotInitProcessor] to handle session-relevant jobs to the [Bot].
+     *
+     * Failure during [State.CONNECTING] and [State.LOADING] switches state to [State.CLOSED], on which [NetworkHandler] is considered permanently dead.
+     *
+     * The state after finish of [State.LOADING] is [State.OK]. This state lasts for the majority of time.
+     *
+     * When connection is lost (e.g. due to Internet unavailability), it returns to [State.CONNECTING] and repeatedly attempts to reconnect.
+     * Immediately after successful recovery, [State.OK] will be set.
+     *
+     * @see state
+     */
     enum class State {
         /**
          * Just created and no connection has been made.
@@ -73,18 +98,18 @@ internal interface NetworkHandler {
         OK,
 
         /**
-         * Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [CancellationException].
+         * The terminal state. Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [IllegalStateException].
          *
          * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.
          *
          * At this state [resumeConnection] throws the exception caught from underlying socket implementation (i.e netty).
-         * [sendAndExpect] throws [IllegalStateException]
+         * [sendAndExpect] throws [IllegalStateException].
          */
         CLOSED,
     }
 
     /**
-     * Attempts to resume the connection.
+     * Suspends the coroutine until [sendAndExpect] can be executed without suspension.
      *
      * May throw exception that had caused current state to fail.
      * @see State
@@ -95,17 +120,23 @@ internal interface NetworkHandler {
 
     /**
      * Sends [packet] and expects to receive a response from the server.
+     *
+     * Coroutine suspension may happen if connection if not yet available however, [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED]
+     *
      * @param attempts ranges `1..INFINITY`
      */
     suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): Packet?
 
     /**
-     * Sends [packet] and does not expect any response. (Response is still processed but not passed as a return value of this function.)
+     * Sends [packet] and does not expect any response.
+     *
+     * Response is still being processed but not passed as a return value of this function, so it does not suspends this function.
+     * However, coroutine is still suspended if connection if not yet available, and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED]
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 
     /**
-     * Closes this handler gracefully.
+     * Closes this handler gracefully (i.e. asynchronously).
      */
     fun close(cause: Throwable?)
 
@@ -142,18 +173,3 @@ internal interface NetworkHandler {
 
 internal val NetworkHandler.logger: MiraiLogger get() = context.logger
 
-/**
- * Factory for a specific [NetworkHandler] implementation.
- */
-internal interface NetworkHandlerFactory<H : NetworkHandler> {
-    fun create(context: NetworkHandlerContext, host: String, port: Int): H =
-        create(context, InetSocketAddress.createUnresolved(host, port))
-
-    fun create(context: NetworkHandlerContext, host: InetAddress, port: Int): H =
-        create(context, InetSocketAddress(host, port))
-
-    /**
-     * Create an instance of [H]. The returning [H] has [NetworkHandler.state] of [State.INITIALIZED]
-     */
-    fun create(context: NetworkHandlerContext, address: SocketAddress): H
-}

@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.info
  * Facade of [ContactUpdater], [OtherClientUpdater], [ConfigPushSyncer].
  * Handles initialization jobs after successful logon.
  *
- * Attached to handler state [NetworkHandler.State.LOADING] [as state observer][asObserver].
+ * Attached to handler state [NetworkHandler.State.LOADING] [as state observer][asObserver] in [QQAndroidBot.stateObserverChain].
  */
 internal interface BotInitProcessor {
     suspend fun init()
