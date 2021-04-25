@@ -39,7 +39,7 @@ import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.withExceptionCollector
 
 /**
- * Handles login, and acts also as a mediator of [BotInitProcessor], []
+ * Handles login, and acts also as a mediator of [BotInitProcessor]
  */
 internal interface SsoProcessor {
     val client: QQAndroidClient
@@ -108,6 +108,7 @@ internal class SsoProcessorImpl(
      */
     @Throws(LoginFailedException::class)
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
+        ssoContext.bot.components[BdhSessionSyncer].loadServerListFromCache()
         if (client.wLoginSigInfoInitialized) {
             kotlin.runCatching {
                 FastLoginImpl(handler).doLogin()
@@ -121,7 +122,7 @@ internal class SsoProcessorImpl(
         }
         ssoContext.accountSecretsManager.saveSecrets(ssoContext.account, AccountSecretsImpl(client))
         registerClientOnline(handler)
-        ssoContext.bot.logger.info { "SSO login successful." }
+        ssoContext.bot.logger.info { "Login successful." }
     }
 
     private suspend fun registerClientOnline(handler: NetworkHandler): StatSvc.Register.Response {

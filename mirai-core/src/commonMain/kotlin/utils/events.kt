@@ -16,10 +16,12 @@ import net.mamoe.mirai.internal.contact.replaceMagicCodes
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.verbose
 
+@Deprecated("broad", ReplaceWith("this.broadcast()", "net.mamoe.mirai.event.broadcast"))
 internal suspend fun <T : Event> T.broadcastWithBot(bot: Bot): T {
     this.let log@{ event ->
         val logger = bot.logger
         if (event is Packet.NoLog) return@log
+        if (event is Packet.NoEventLog) return@log
         if (event is Packet.NoEventLog) {
             logger.verbose { "Recv: $event".replaceMagicCodes() }
         } else {
