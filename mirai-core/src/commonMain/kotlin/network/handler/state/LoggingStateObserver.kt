@@ -55,10 +55,7 @@ internal class LoggingStateObserver(
                 logger.debug { "State resumed: ${state.correspondingState}." }
             },
             onFailure = {
-                logger.debug(
-                    { "State resumed: ${state.correspondingState} ${result.exceptionOrNull()}" },
-                    result.exceptionOrNull()
-                )
+                logger.debug { "State resumed: ${state.correspondingState} ${result.exceptionOrNull()}" }
             }
         )
     }

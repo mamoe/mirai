@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
@@ -72,6 +73,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override val client: QQAndroidClient get() = bot.client
             override val ssoSession: SsoSession get() = bot.client
             override var firstLoginSucceed: Boolean = false
+            override var registerResp: StatSvc.Register.Response? = null
             override fun createObserverChain(): StateObserver = get(StateObserver)
             override suspend fun login(handler: NetworkHandler) {
                 nhEvents.add(NHEvent.Login)
