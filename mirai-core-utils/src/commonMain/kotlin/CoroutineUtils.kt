@@ -52,19 +52,14 @@ public inline fun CoroutineScope.launchWithPermit(
  */
 public fun CoroutineScope.childScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-): CoroutineScope {
-    val ctx = this.coroutineContext + coroutineContext
-    return CoroutineScope(ctx + SupervisorJob(ctx.job))
-}
+): CoroutineScope = this.coroutineContext.childScope(coroutineContext)
 
 /**
  * Creates a child scope of the receiver context scope.
  */
 public fun CoroutineContext.childScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-): CoroutineScope {
-    return CoroutineScope(this.childScopeContext(coroutineContext))
-}
+): CoroutineScope = CoroutineScope(this.childScopeContext(coroutineContext))
 
 /**
  * Creates a child scope of the receiver context scope.
@@ -73,12 +68,11 @@ public fun CoroutineContext.childScopeContext(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ): CoroutineContext {
     val ctx = this + coroutineContext
-    return ctx + SupervisorJob(ctx.job)
+    val job = ctx[Job] ?: return ctx + SupervisorJob()
+    return ctx + SupervisorJob(job)
 }
 
 public inline fun <E : U, U : CoroutineContext.Element> CoroutineContext.getOrElse(
     key: CoroutineContext.Key<E>,
     default: () -> U
-): U {
-    return this[key] ?: default()
-}
+): U = this[key] ?: default()

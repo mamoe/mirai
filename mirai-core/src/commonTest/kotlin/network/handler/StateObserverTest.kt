@@ -68,6 +68,21 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
     }
 
     @Test
+    fun `test StateChangedObserver2`() {
+        val called = ArrayList<NetworkHandlerSupport.BaseStateImpl>()
+        components[StateObserver] = StateChangedObserver(INITIALIZED, CONNECTING) { new ->
+            called.add(new)
+        }
+        val handler = createNetworkHandler()
+        assertEquals(0, called.size)
+        handler.setState(INITIALIZED)
+        assertEquals(0, called.size)
+        handler.setState(CONNECTING)
+        assertEquals(1, called.size)
+        assertEquals(CONNECTING, called[0].correspondingState)
+    }
+
+    @Test
     fun `can combine`() {
         val called = ArrayList<Pair<NetworkHandlerSupport.BaseStateImpl, NetworkHandlerSupport.BaseStateImpl>>()
         components[StateObserver] = object : StateChangedObserver(CONNECTING) {

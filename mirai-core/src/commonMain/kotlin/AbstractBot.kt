@@ -7,13 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress(
-    "EXPERIMENTAL_API_USAGE",
-    "DEPRECATION_ERROR",
-    "OverridingDeprecatedMember",
-    "INVISIBLE_REFERENCE",
-    "INVISIBLE_MEMBER"
-)
 
 package net.mamoe.mirai.internal
 
@@ -29,8 +22,13 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.supervisorJob
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.childScopeContext
+import net.mamoe.mirai.utils.info
+import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -45,29 +43,44 @@ internal abstract class AbstractBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     // FASTEST INIT
-    final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
+    @Suppress("LeakingThis")
+    final override val logger: MiraiLogger = configuration.botLoggerSupplier(this)
 
-    final override val coroutineContext: CoroutineContext = configuration.parentCoroutineContext.childScopeContext(
-        configuration.parentCoroutineContext.getOrElse(CoroutineExceptionHandler) {
-            CoroutineExceptionHandler { _, e ->
-                logger.error("An exception was thrown under a coroutine of Bot", e)
+    final override val coroutineContext: CoroutineContext =
+        CoroutineName("Bot.$id")
+            .plus(logger.asCoroutineExceptionHandler())
+            .childScopeContext(configuration.parentCoroutineContext)
+            .apply {
+                job.invokeOnCompletion { throwable ->
+                    logger.info { "Bot cancelled" + throwable?.message?.let { ": $it" }.orEmpty() }
+
+                    kotlin.runCatching {
+                        network.close(throwable)
+                    }.onFailure {
+                        if (it !is CancellationException) logger.error(it)
+                    }
+
+                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                    Bot._instances.remove(id)
+
+                    // help GC release instances
+                    groups.forEach { it.members.delegate.clear() }
+                    groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
+                    friends.delegate.clear()
+                    strangers.delegate.clear()
+                }
             }
-        } + CoroutineName("Mirai Bot")
-    )
-
-    abstract val components: ConcurrentComponentStorage
 
     init {
-        @Suppress("LeakingThis")
+        @Suppress("LeakingThis", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         Bot._instances[this.id] = this
-        supervisorJob.invokeOnCompletion {
-            Bot._instances.remove(id)
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // overrides
     ///////////////////////////////////////////////////////////////////////////
+
+    abstract val components: ConcurrentComponentStorage
 
     final override val isOnline: Boolean get() = network.isOk()
     final override val eventChannel: EventChannel<BotEvent> =
@@ -79,7 +92,19 @@ internal abstract class AbstractBot constructor(
     final override val strangers: ContactList<Stranger> = ContactList()
 
     final override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
-    final override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
+    final override val asStranger: Stranger by lazy { Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)) }
+
+    override fun close(cause: Throwable?) {
+        if (!this.isActive) return
+
+        if (cause == null) {
+            supervisorJob.cancel()
+        } else {
+            supervisorJob.cancel(CancellationException("Bot closed", cause))
+        }
+    }
+
+    final override fun toString(): String = "Bot($id)"
 
     ///////////////////////////////////////////////////////////////////////////
     // network
@@ -93,56 +118,4 @@ internal abstract class AbstractBot constructor(
     }
 
     protected abstract fun createNetworkHandler(): NetworkHandler
-    protected abstract suspend fun sendLogout()
-
-    // endregion
-
-
-    init {
-        coroutineContext[Job]!!.invokeOnCompletion { throwable ->
-            logger.info { "Bot cancelled" + throwable?.message?.let { ": $it" }.orEmpty() }
-
-            kotlin.runCatching {
-                network.close(throwable)
-            }
-
-            // help GC release instances
-            groups.forEach {
-                it.members.delegate.clear()
-            }
-            groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
-            friends.delegate.clear()
-            strangers.delegate.clear()
-        }
-    }
-
-    override fun close(cause: Throwable?) {
-        if (!this.isActive) {
-            // already cancelled
-            return
-        }
-
-        this.network.close(cause)
-
-        if (supervisorJob.isActive) {
-            if (cause == null) {
-                supervisorJob.cancel()
-            } else {
-                supervisorJob.cancel(CancellationException("Bot closed", cause))
-            }
-        }
-    }
-
-    final override fun toString(): String = "Bot($id)"
 }
-
-private val Throwable.rootCause: Throwable
-    get() {
-        var depth = 0
-        var rootCause: Throwable? = this
-        while (rootCause?.cause != null) {
-            rootCause = rootCause.cause
-            if (depth++ == 20) break
-        }
-        return rootCause ?: this
-    }
