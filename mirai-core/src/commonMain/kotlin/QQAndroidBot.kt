@@ -163,9 +163,10 @@ internal open class QQAndroidBot constructor(
             set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger))
             set(BdhSessionSyncer, BdhSessionSyncerImpl(configuration, networkLogger, components))
             set(ServerList, ServerListImpl())
+            set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
             set(
                 PacketHandler, PacketHandlerChain(
-                    LoggingPacketHandler(bot, networkLogger),
+                    LoggingPacketHandlerAdapter(networkLogger, get(PacketLoggingStrategy)),
                     EventBroadcasterPacketHandler(networkLogger),
                     CallPacketFactoryPacketHandler(bot)
                 )

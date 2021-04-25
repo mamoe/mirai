@@ -14,6 +14,7 @@ import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.components.PacketHandler
+import net.mamoe.mirai.internal.network.components.PacketLoggingStrategy
 import net.mamoe.mirai.internal.network.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
@@ -69,7 +70,7 @@ internal abstract class NetworkHandlerSupport(
         val listener = PacketListener(packet.commandName, packet.sequenceId)
         var exception: Throwable? = null
         repeat(attempts.coerceAtLeast(1)) {
-            logger.verbose { "Send: ${packet.commandName}" }
+            context[PacketLoggingStrategy].logSent(logger, packet)
             try {
                 packetListeners.add(listener)
                 sendPacketImpl(packet)
@@ -92,7 +93,7 @@ internal abstract class NetworkHandlerSupport(
     }
 
     final override suspend fun sendWithoutExpect(packet: OutgoingPacket) {
-        logger.verbose { "Send: ${packet.commandName}" }
+        context[PacketLoggingStrategy].logSent(logger, packet)
         sendPacketImpl(packet)
     }
 
@@ -102,7 +103,7 @@ internal abstract class NetworkHandlerSupport(
 //        } else {
 //            logger.info { "NetworkHandler '$this' closed: $cause" }
 //        }
-        coroutineContext.job.cancel("NetworkHandler closed.", cause)
+        coroutineContext.job.cancel("NetworkHandler closed", cause)
     }
 
     protected val packetLogger: MiraiLogger by lazy {
