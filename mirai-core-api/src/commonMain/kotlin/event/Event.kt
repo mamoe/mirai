@@ -15,7 +15,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.internal.event.broadcastInternal
+import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -143,26 +144,32 @@ public interface CancellableEvent : Event {
  * @see __broadcastJava Java 使用
  */
 @JvmSynthetic
-public suspend fun <E : Event> E.broadcast(): E = apply {
+public suspend fun <E : Event> E.broadcast(): E {
     check(this is AbstractEvent) {
         "Events must extend AbstractEvent"
     }
 
     if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return@apply
+        return this
     }
     this.broadCastLock.withLock {
         this._intercepted = false
         if (EventDisabled) return@withLock
         if (this is Packet.NoEventLog) return@withLock
-        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandler]
+        if (this is Packet.NoLog) return@withLock
+        if (this is MessageEvent) return@withLock // specially handled in [LoggingPacketHandlerAdapter]
+//        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
+
         if (this is BotEvent) {
             this.bot.logger.verbose { "Event: $this" }
         } else {
             MiraiLogger.TopLevel.verbose { "Event: $this" }
         }
-        this.broadcastInternal() // inline, no extra cost
+
+        callAndRemoveIfRequired(this)
     }
+
+    return this
 }
 
 /**

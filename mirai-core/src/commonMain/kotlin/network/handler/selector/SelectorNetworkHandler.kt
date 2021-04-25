@@ -18,6 +18,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A proxy to [NetworkHandler] that delegates calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
@@ -51,6 +52,9 @@ internal class SelectorNetworkHandler(
     override fun close(cause: Throwable?) {
         selector.getResumedInstance()?.close(cause)
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = selector.getResumedInstance()?.coroutineContext ?: scope.coroutineContext // merely use fallback
 
     override fun toString(): String = "SelectorNetworkHandler(currentInstance=${selector.getResumedInstance()})"
 }

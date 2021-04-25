@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network
 
-import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.utils.MiraiLogger
 
@@ -52,12 +52,12 @@ internal class ParseErrorPacket(
 ) : Packet, Packet.NoLog {
     enum class Direction {
         TO_BOT_LOGGER {
-            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.logger
+            override fun getLogger(bot: AbstractBot): MiraiLogger = bot.logger
         },
         TO_NETWORK_LOGGER {
-            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.network.logger
+            override fun getLogger(bot: AbstractBot): MiraiLogger = bot.network.logger
         };
 
-        abstract fun getLogger(bot: QQAndroidBot): MiraiLogger
+        abstract fun getLogger(bot: AbstractBot): MiraiLogger
     }
 }

@@ -81,7 +81,7 @@ internal open class NettyNetworkHandler(
 
     private inner class OutgoingPacketEncoder : MessageToByteEncoder<OutgoingPacket>(OutgoingPacket::class.java) {
         override fun encode(ctx: ChannelHandlerContext, msg: OutgoingPacket, out: ByteBuf) {
-            PacketCodec.PacketLogger.debug { "encode: $msg" }
+            packetLogger.debug { "encode: $msg" }
             out.writeBytes(msg.delegate)
         }
     }
@@ -261,19 +261,29 @@ internal open class NettyNetworkHandler(
             connection.writeAndFlush(packet)
         }
 
+        private val configPush = this@NettyNetworkHandler.launch(CoroutineName("ConfigPush sync")) {
+            try {
+                context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
+            } catch (e: ConfigPushProcessor.RequireReconnectException) {
+                setState { StateConnecting(ExceptionCollector(e), false) }
+            }
+        }
+
         override suspend fun resumeConnection0() {
             (coroutineContext.job as CompletableJob).run {
                 complete()
                 join()
             }
-            setState { StateOK(connection) }
+            joinCompleted(configPush) // throw exception
+            setState { StateOK(connection, configPush) }
         } // noop
 
         override fun toString(): String = "StateLoading"
     }
 
     protected inner class StateOK(
-        private val connection: NettyChannel
+        private val connection: NettyChannel,
+        private val configPush: Job,
     ) : NettyState(State.OK) {
         init {
             coroutineContext.job.invokeOnCompletion {
@@ -307,14 +317,6 @@ internal open class NettyNetworkHandler(
             }
         }
 
-        private val configPush = launch(CoroutineName("ConfigPush sync")) {
-            try {
-                context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
-            } catch (e: ConfigPushProcessor.RequireReconnectException) {
-                setState { StateClosed(e) }
-            }
-        }
-
         // we can also move them as observers if needed.
 
         private val keyRefresh = launch(CoroutineName("Key refresh")) {
@@ -331,10 +333,6 @@ internal open class NettyNetworkHandler(
             joinCompleted(configPush)
             joinCompleted(keyRefresh)
         } // noop
-
-        private suspend inline fun joinCompleted(job: Job) {
-            if (job.isCompleted) job.join()
-        }
 
         override fun toString(): String = "StateOK"
     }
