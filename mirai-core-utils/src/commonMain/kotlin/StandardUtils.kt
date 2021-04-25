@@ -185,3 +185,13 @@ public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
     }
     return rootCause ?: this
 }
+
+public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence {
+    var depth = 0
+    var rootCause: Throwable? = this@causes
+    while (rootCause?.cause != null) {
+        yield(rootCause.cause!!)
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) break
+    }
+}
