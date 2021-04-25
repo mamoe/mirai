@@ -164,7 +164,9 @@ internal object ReceiveMessageTransformer {
                 // ignore
             }
             else -> {
-                builder.add(UnsupportedMessageImpl(element))
+                UnsupportedMessageImpl(element).takeIf {
+                    it.struct.isNotEmpty()
+                }?.let(builder::add)
                 // println(it._miraiContentToString())
             }
         }
