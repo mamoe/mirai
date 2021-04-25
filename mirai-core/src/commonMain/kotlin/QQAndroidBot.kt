@@ -51,12 +51,25 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 }
 
 internal class BotDebugConfiguration(
-    var stateObserver: StateObserver? = when {
-        systemProp("mirai.debug.network.state.observer.logging", false) ->
+    var stateObserver: StateObserver? = when (systemProp(
+        "mirai.debug.network.state.observer.logging",
+        "off"
+    ).toLowerCase()) {
+        "full" -> {
             SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States")),
+                LoggingStateObserver(MiraiLogger.create("States"), true),
                 MiraiLogger.create("LoggingStateObserver errors")
             )
+        }
+        "off", "false" -> {
+            null
+        }
+        "on", "true" -> {
+            SafeStateObserver(
+                LoggingStateObserver(MiraiLogger.create("States"), false),
+                MiraiLogger.create("LoggingStateObserver errors")
+            )
+        }
         else -> null
     }
 )
@@ -69,6 +82,14 @@ internal open class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
+
+    @Deprecated(
+        "",
+        replaceWith = ReplaceWith(
+            "this.components[SsoProcessor].firstLoginSucceed",
+            "net.mamoe.mirai.internal.network.components.SsoProcessor"
+        )
+    )
     internal var firstLoginSucceed: Boolean = false
 
     ///////////////////////////////////////////////////////////////////////////
@@ -85,7 +106,7 @@ internal open class QQAndroidBot constructor(
             StateChangedObserver(to = State.OK) { new ->
                 bot.launch(logger.asCoroutineExceptionHandler()) {
                     BotOnlineEvent(bot).broadcast()
-                    if (bot.firstLoginSucceed) { // TODO: 2021/4/21 actually no use
+                    if (bot.components[SsoProcessor].firstLoginSucceed) { // TODO: 2021/4/21 actually no use
                         BotReloginEvent(bot, new.getCause()).broadcast()
                     }
                 }

@@ -71,6 +71,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         set(SsoProcessor, object : SsoProcessor {
             override val client: QQAndroidClient get() = bot.client
             override val ssoSession: SsoSession get() = bot.client
+            override var firstLoginSucceed: Boolean = false
             override fun createObserverChain(): StateObserver = get(StateObserver)
             override suspend fun login(handler: NetworkHandler) {
                 nhEvents.add(NHEvent.Login)
