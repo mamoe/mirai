@@ -85,19 +85,6 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     }
 
     /**
-     * 因 returnCode = -10008 等原因掉线
-     */
-    @MiraiInternalApi("This is very experimental and might be changed")
-    @Deprecated("Deprecated with no replacement", level = DeprecationLevel.ERROR)
-    public data class PacketFactoryErrorCode @MiraiInternalApi public constructor(
-        val returnCode: Int,
-        public override val bot: Bot,
-        public override val cause: Throwable
-    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
-        override var reconnect: Boolean = true
-    }
-
-    /**
      * 服务器主动要求更换另一个服务器
      */
     @MiraiInternalApi
