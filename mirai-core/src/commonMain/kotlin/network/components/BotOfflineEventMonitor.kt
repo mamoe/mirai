@@ -18,7 +18,7 @@ import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -37,13 +37,13 @@ internal interface BotOfflineEventMonitor {
     /**
      * Attach a listener to the [scope]. [scope] is usually the scope of [NetworkHandler.State.OK].
      */
-    fun attachJob(bot: QQAndroidBot, scope: CoroutineScope)
+    fun attachJob(bot: AbstractBot, scope: CoroutineScope)
 }
 
 private data class BotClosedByEvent(val event: BotOfflineEvent) : RuntimeException("Bot is closed by event '$event'.")
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
-    override fun attachJob(bot: QQAndroidBot, scope: CoroutineScope) {
+    override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
         bot.eventChannel.parentScope(scope).subscribeAlways(
             ::onEvent,
             priority = EventPriority.MONITOR,
@@ -79,23 +79,17 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
             is BotOfflineEvent.Force -> {
                 bot.logger.info { "Connection occupied by another android device: ${event.message}" }
                 closeNetwork()
-                if (event.reconnect) {
-                    bot.logger.info { "Reconnecting..." }
-                } else {
-                }
             }
             is BotOfflineEvent.MsfOffline,
             is BotOfflineEvent.Dropped,
             is BotOfflineEvent.RequireReconnect,
             -> {
-                // nothing to do
+                val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
+                bot.logger.info { "Connection lost, retrying login ($causeMessage)." }
             }
         }
 
         if (event.reconnect) {
-            val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
-            bot.logger.info { "Connection lost, retrying login ($causeMessage)." }
-
             bot.launch {
                 val success: Boolean
                 val time = measureTime {

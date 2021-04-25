@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.StrangerRelationChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
@@ -20,7 +21,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x5d4
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -96,7 +96,7 @@ internal class StrangerList {
                     pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).result.forEach { delResult ->
                         bot.getStranger(delResult.uin)?.let {
                             bot.strangers.remove(delResult.uin)
-                            StrangerRelationChangeEvent.Deleted(it).broadcastWithBot(bot)
+                            StrangerRelationChangeEvent.Deleted(it).broadcast()
                         }
                     }
                 }

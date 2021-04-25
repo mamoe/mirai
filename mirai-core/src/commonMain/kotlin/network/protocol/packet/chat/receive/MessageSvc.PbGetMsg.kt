@@ -25,6 +25,7 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -46,7 +47,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
@@ -203,7 +203,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.client.syncingController.syncCookie
-                    ).sendAndExpect<Packet>()
+                    ).sendAndExpect()
                 }
                 return
             }
@@ -214,7 +214,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.client.syncingController.syncCookie
-                    ).sendAndExpect<Packet>()
+                    ).sendAndExpect()
                 }
                 return
             }
@@ -568,7 +568,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             Mirai.newStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
                 bot.getStranger(id)?.let { previous ->
                     bot.strangers.remove(id)
-                    StrangerRelationChangeEvent.Deleted(previous).broadcastWithBot(bot)
+                    StrangerRelationChangeEvent.Deleted(previous).broadcast()
                 }
                 bot.strangers.delegate.add(it)
 

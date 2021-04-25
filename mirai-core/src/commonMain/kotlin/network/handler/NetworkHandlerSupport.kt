@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KClass
 
 /**
  * Implements basic logics of [NetworkHandler]
@@ -184,12 +185,16 @@ internal abstract class NetworkHandlerSupport(
         val new: BaseStateImpl,
     ) : CancellationException("State is switched from $old to $new")
 
+
+    protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? = setState(S::class, new)
+
     /**
      * Calculate [new state][new] and set it as the current, returning the new state, or `null` if state has concurrently been set to CLOSED.
      *
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
-    protected fun <S : BaseStateImpl> setState(new: () -> S): S? = synchronized(this) {
+    protected fun <S : BaseStateImpl> setState(newType: KClass<S>, new: () -> S): S? = synchronized(this) {
+        if (_state::class == newType) return@synchronized null // already set to expected state by another thread.
         if (_state.correspondingState == NetworkHandler.State.CLOSED) return null // error("Cannot change state while it has already been CLOSED.")
 
         val stateObserver = context.getOrNull(StateObserver)

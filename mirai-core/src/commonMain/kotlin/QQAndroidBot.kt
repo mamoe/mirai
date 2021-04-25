@@ -10,6 +10,7 @@
 
 package net.mamoe.mirai.internal
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -30,6 +31,8 @@ import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.*
@@ -103,11 +106,18 @@ internal open class QQAndroidBot constructor(
         val components = this
         return StateObserver.chainOfNotNull(
             components[BotInitProcessor].asObserver(),
-            StateChangedObserver(to = State.OK) { new ->
-                bot.launch(logger.asCoroutineExceptionHandler()) {
-                    BotOnlineEvent(bot).broadcast()
-                    if (bot.components[SsoProcessor].firstLoginSucceed) { // TODO: 2021/4/21 actually no use
-                        BotReloginEvent(bot, new.getCause()).broadcast()
+            object : StateChangedObserver(State.OK) {
+                private val shouldBroadcastRelogin = atomic(false)
+                override fun stateChanged0(
+                    networkHandler: NetworkHandlerSupport,
+                    previous: BaseStateImpl,
+                    new: BaseStateImpl
+                ) {
+                    bot.launch(logger.asCoroutineExceptionHandler()) {
+                        BotOnlineEvent(bot).broadcast()
+                        if (shouldBroadcastRelogin.compareAndSet(false, true)) {
+                            BotReloginEvent(bot, new.getCause()).broadcast()
+                        }
                     }
                 }
             },
@@ -155,8 +165,9 @@ internal open class QQAndroidBot constructor(
             set(ServerList, ServerListImpl())
             set(
                 PacketHandler, PacketHandlerChain(
-                    LoggingPacketHandler(bot, components, networkLogger),
-                    EventBroadcasterPacketHandler(bot, components, logger)
+                    LoggingPacketHandler(bot, networkLogger),
+                    EventBroadcasterPacketHandler(networkLogger),
+                    CallPacketFactoryPacketHandler(bot)
                 )
             )
             set(PacketCodec, PacketCodecImpl())
