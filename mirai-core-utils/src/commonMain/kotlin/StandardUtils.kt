@@ -165,6 +165,9 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     }
 }
 
+public fun systemProp(name: String, default: String): String =
+    System.getProperty(name, default) ?: default
+
 public fun systemProp(name: String, default: Boolean): Boolean =
     System.getProperty(name, default.toString())?.toBoolean() ?: default
 

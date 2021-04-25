@@ -13,7 +13,11 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
+import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitorImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
@@ -23,6 +27,29 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
+
+    @Test
+    fun `closed on Force offline with BotOfflineEventMonitor`() = runBlockingUnit {
+        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
+        bot.login()
+        assertState(OK)
+        BotOfflineEvent.Force(bot, "test", "test").broadcast()
+        assertState(CLOSED)
+        assertFalse { network.isActive }
+        assertTrue { bot.isActive }
+    }
+
+    @Test
+    fun `closed on Active offline with BotOfflineEventMonitor`() = runBlockingUnit {
+        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
+        bot.login()
+        assertState(OK)
+        BotOfflineEvent.Active(bot, null).broadcast()
+        assertState(CLOSED)
+        assertFalse { network.isActive }
+        assertTrue { bot.isActive }
+    }
+
 
     @Test
     fun `send logout on exit`() = runBlockingUnit {

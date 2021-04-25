@@ -10,8 +10,10 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.yield
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -19,16 +21,26 @@ import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.toHumanReadableString
 import kotlin.time.measureTime
 
+/**
+ * Handles [BotOfflineEvent]
+ */
 internal interface BotOfflineEventMonitor {
     companion object : ComponentKey<BotOfflineEventMonitor>
 
+    /**
+     * Attach a listener to the [scope]. [scope] is usually the scope of [NetworkHandler.State.OK].
+     */
     fun attachJob(bot: QQAndroidBot, scope: CoroutineScope)
 }
+
+private data class BotClosedByEvent(val event: BotOfflineEvent) : RuntimeException("Bot is closed by event '$event'.")
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     override fun attachJob(bot: QQAndroidBot, scope: CoroutineScope) {
@@ -39,38 +51,37 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         )
     }
 
-    // TODO: 2021/4/25  Review BotOfflineEventMonitor
-    private suspend fun onEvent(event: BotOfflineEvent) {
+    private suspend fun onEvent(event: BotOfflineEvent) = coroutineScope {
         val bot = event.bot.asQQAndroidBot()
         val network = bot.network
-        if (
-            !event.bot.isActive // bot closed
-        // || _isConnecting // bot 还在登入 // TODO: 2021/4/14 处理还在登入?
-        ) {
-            // Close network to avoid endless reconnection while network is ok
-            // https://github.com/mamoe/mirai/issues/894
-            kotlin.runCatching { network.close(null) }
-            return
+
+        fun closeNetwork() {
+            if (network.state == State.CLOSED) return // avoid recursive calls.
+            launch {
+                // suspend until state becomes CLOSED to hang [onEvent] for synchronization.
+                while (select { network.onStateChanged { it != State.CLOSED } }) yield()
+            }
+            bot.launch { network.close(BotClosedByEvent(event)) }
         }
-        /*
-        if (network.areYouOk() && event !is BotOfflineEvent.Force && event !is BotOfflineEvent.MsfOffline) {
-            // network 运行正常
-            return@subscribeAlways
-        }*/
+
         when (event) {
             is BotOfflineEvent.Active -> {
+                // This event might also be broadcast by the network handler by a state observer.
+                // In that case, `network.state` will be `CLOSED` then `closeNetwork` returns immediately.
+                // So there won't be recursive calls.
+
                 val cause = event.cause
                 val msg = if (cause == null) "" else " with exception: $cause"
                 bot.logger.info("Bot is closed manually $msg", cause)
-                network.close(null)
+
+                closeNetwork()
             }
             is BotOfflineEvent.Force -> {
                 bot.logger.info { "Connection occupied by another android device: ${event.message}" }
+                closeNetwork()
                 if (event.reconnect) {
                     bot.logger.info { "Reconnecting..." }
-                    // delay(3000)
                 } else {
-                    network.close(null)
                 }
             }
             is BotOfflineEvent.MsfOffline,
@@ -82,11 +93,6 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         }
 
         if (event.reconnect) {
-            if (!network.isOk()) {
-                // normally closed
-                return
-            }
-
             val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
             bot.logger.info { "Connection lost, retrying login ($causeMessage)." }
 
@@ -94,8 +100,8 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
                 val success: Boolean
                 val time = measureTime {
                     success = kotlin.runCatching {
-                        bot.login()
-                    }.isSuccess // resume connection
+                        bot.login() // selector will create new NH to replace the old, closed one, with some further comprehensive considerations. For example, limitation for attempts.
+                    }.isSuccess
                 }
 
                 if (success) {

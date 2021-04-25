@@ -36,6 +36,7 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -378,7 +379,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                 }
                 return null
             }
-            if (!bot.firstLoginSucceed) {
+            if (!bot.components[SsoProcessor].firstLoginSucceed) {
                 return null
             }
             val fromUin = if (fromSync) {
@@ -483,7 +484,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
         }
         141 -> {
 
-            if (!bot.firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
+            if (!bot.components[SsoProcessor].firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
                 return null
             }
             val tmpHead = msgHead.c2cTmpMsgHead ?: return null
