@@ -27,7 +27,7 @@ private val ServerListSerializer: KSerializer<Set<ServerAddress>> =
     SetSerializer(ServerAddress.serializer())
 
 internal interface BdhSessionSyncer {
-    var bdhSession: CompletableDeferred<BdhSession>
+    val bdhSession: CompletableDeferred<BdhSession>
     val hasSession: Boolean
 
     fun overrideSession(
@@ -47,8 +47,9 @@ internal interface BdhSessionSyncer {
 internal class BdhSessionSyncerImpl(
     private val configuration: BotConfiguration,
     private val logger: MiraiLogger,
-    private val componentStorage: ComponentStorage,
+    private val context: ComponentStorage,
 ) : BdhSessionSyncer {
+    @Volatile
     override var bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
     override val hasSession: Boolean
         get() = kotlin.runCatching { bdhSession.getCompleted() }.isSuccess
@@ -75,7 +76,7 @@ internal class BdhSessionSyncerImpl(
             logger.verbose("Loading server list from cache.")
             kotlin.runCatching {
                 val list = JsonForCache.decodeFromString(ServerListSerializer, serverListCacheFile.readText())
-                componentStorage[ServerList].setPreferred(list.map { ServerAddress(it.host, it.port) })
+                context[ServerList].setPreferred(list.map { ServerAddress(it.host, it.port) })
             }.onFailure {
                 logger.warning("Error in loading server list from cache", it)
             }
@@ -111,7 +112,7 @@ internal class BdhSessionSyncerImpl(
             serverListCacheFile.writeText(
                 JsonForCache.encodeToString(
                     ServerListSerializer,
-                    componentStorage[ServerList].getPreferred()
+                    context[ServerList].getPreferred()
                 )
             )
         }.onFailure {

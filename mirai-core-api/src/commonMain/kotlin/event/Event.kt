@@ -14,9 +14,13 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.internal.event.broadcastInternal
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.verbose
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -149,6 +153,14 @@ public suspend fun <E : Event> E.broadcast(): E = apply {
     }
     this.broadCastLock.withLock {
         this._intercepted = false
+        if (EventDisabled) return@withLock
+        if (this is Packet.NoEventLog) return@withLock
+        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandler]
+        if (this is BotEvent) {
+            this.bot.logger.verbose { "Event: $this" }
+        } else {
+            MiraiLogger.TopLevel.verbose { "Event: $this" }
+        }
         this.broadcastInternal() // inline, no extra cost
     }
 }

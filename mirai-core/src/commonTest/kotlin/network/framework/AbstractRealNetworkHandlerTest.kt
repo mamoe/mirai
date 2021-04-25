@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -109,13 +110,13 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger))
         set(BdhSessionSyncer, BdhSessionSyncerImpl(configuration, networkLogger, components))
         set(ServerList, ServerListImpl())
-        set(PacketHandler, LoggingPacketHandler(bot, components, networkLogger))
+        set(PacketHandler, LoggingPacketHandler(bot, networkLogger))
         set(PacketCodec, PacketCodecImpl())
         set(OtherClientUpdater, OtherClientUpdaterImpl(bot, components, bot.logger))
         set(ConfigPushSyncer, ConfigPushSyncerImpl())
 
         set(BotOfflineEventMonitor, object : BotOfflineEventMonitor {
-            override fun attachJob(bot: QQAndroidBot, scope: CoroutineScope) {
+            override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
             }
         })
         set(StateObserver, bot.run { stateObserverChain() })

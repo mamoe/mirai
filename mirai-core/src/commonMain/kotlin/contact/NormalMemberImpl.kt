@@ -13,16 +13,18 @@ package net.mamoe.mirai.internal.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.ExperimentalContracts
@@ -99,7 +101,7 @@ internal class NormalMemberImpl constructor(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcastWithBot(bot)
+                    MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcast()
                 }
             }
         }
@@ -119,7 +121,7 @@ internal class NormalMemberImpl constructor(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcastWithBot(bot)
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcast()
                 }
             }
         }
@@ -142,7 +144,7 @@ internal class NormalMemberImpl constructor(
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcastWithBot(bot)
+        (net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcast())
         this._muteTimestamp = currentTimeSeconds().toInt() + durationSeconds
     }
 
@@ -158,7 +160,7 @@ internal class NormalMemberImpl constructor(
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcastWithBot(bot)
+        (net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast())
         this._muteTimestamp = 0
     }
 
@@ -179,7 +181,7 @@ internal class NormalMemberImpl constructor(
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
             this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
-            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcastWithBot(bot)
+            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
         }
     }
 
@@ -208,7 +210,7 @@ internal class NormalMemberImpl constructor(
 
             this@NormalMemberImpl.permission = new
 
-            MemberPermissionChangeEvent(this@NormalMemberImpl, origin, new).broadcastWithBot(bot)
+            MemberPermissionChangeEvent(this@NormalMemberImpl, origin, new).broadcast()
         }
     }
 }

@@ -100,7 +100,6 @@ internal object GlobalEventListeners {
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
 internal suspend inline fun AbstractEvent.broadcastInternal() {
-    if (EventDisabled) return
     callAndRemoveIfRequired(this@broadcastInternal)
 }
 

@@ -15,6 +15,7 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
@@ -33,9 +34,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.MemberNick.Companion.generateMemberNickFromMember
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.MemberNick.Companion.generateMemberNickFromMember
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.MessageSourceKind.GROUP
 import net.mamoe.mirai.utils.*
@@ -162,14 +162,14 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 new.nick.let { name ->
                     if (currentNameCard != name) {
                         sender._nameCard = name
-                        MemberCardChangeEvent(currentNameCard, name, sender).broadcastWithBot(sender.bot)
+                        MemberCardChangeEvent(currentNameCard, name, sender).broadcast()
                     }
                 }
             } else {
                 // 说明删除了群名片
                 if (currentNameCard.isNotEmpty()) {
                     sender._nameCard = ""
-                    MemberCardChangeEvent(currentNameCard, "", sender).broadcastWithBot(sender.bot)
+                    MemberCardChangeEvent(currentNameCard, "", sender).broadcast()
                 }
             }
         }
