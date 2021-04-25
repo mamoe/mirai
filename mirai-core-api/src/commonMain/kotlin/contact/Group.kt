@@ -194,14 +194,6 @@ public interface Group : Contact, CoroutineScope, FileSupported {
     public suspend fun deleteAnnouncement(fid: String)
 
     /**
-     * 删除一条群公告
-     * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
-     */
-    @MiraiExperimentalApi
-    public suspend fun deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
-        deleteAnnouncement(receiveAnnouncement.fid)
-
-    /**
      * 获取一条群公告
      * @param fid 公告的id [ReceiveAnnouncement.fid]
      */
@@ -291,3 +283,11 @@ public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
  * @see Group.botMuteRemaining 剩余禁言时间
  */
 public inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
+
+/**
+ * 删除一条群公告
+ * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
+ */
+@MiraiExperimentalApi
+public suspend fun Group.deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
+    deleteAnnouncement(receiveAnnouncement.fid)
