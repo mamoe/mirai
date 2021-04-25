@@ -27,7 +27,7 @@ import java.util.*
  *
  * 示例:
  * ```log
- * 2020-05-21 19:51:09 V/Bot 1994701021: Send: OidbSvc.0x88d_7
+ * 2020-05-21 19:51:09 V/Bot 123456789: Send: OidbSvc.0x88d_7
  * ```
  *
  * 日期时间格式为 `yyyy-MM-dd HH:mm:ss`,

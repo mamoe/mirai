@@ -14,6 +14,7 @@ import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
@@ -58,4 +59,9 @@ internal fun MiraiLogger.asCoroutineExceptionHandler(
             e
         )
     }
+}
+
+
+internal suspend inline fun joinCompleted(job: Job) {
+    if (job.isCompleted) job.join()
 }

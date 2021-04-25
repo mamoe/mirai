@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -234,7 +234,7 @@ public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
  *
  * 示例:
  * ```log
- * 2020-05-21 19:51:09 V/Bot 1994701021: Send: OidbSvc.0x88d_7
+ * 2020-05-21 19:51:09 V/Bot 123456789: Send: OidbSvc.0x88d_7
  * ```
  *
  * 日期时间格式为 `yyyy-MM-dd HH:mm:ss`,

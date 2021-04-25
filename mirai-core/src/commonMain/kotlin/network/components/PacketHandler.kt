@@ -13,17 +13,13 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.logMessageReceived
-import net.mamoe.mirai.internal.contact.replaceMagicCodes
+import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.verbose
 
 internal interface PacketHandler {
     suspend fun handlePacket(incomingPacket: IncomingPacket)
@@ -53,29 +49,15 @@ internal data class ExceptionInPacketHandlerException(
     override val cause: Throwable,
 ) : IllegalStateException("Exception in PacketHandler '$packetHandler'.")
 
-internal class LoggingPacketHandler(
-    private val bot: QQAndroidBot,
+internal class LoggingPacketHandlerAdapter(
     private val logger: MiraiLogger,
+    private val strategy: PacketLoggingStrategy,
 ) : PacketHandler {
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
-        val packet = incomingPacket.data ?: return
-        if (!bot.logger.isEnabled && !logger.isEnabled) return
-        when {
-            packet is ParseErrorPacket -> {
-                packet.direction.getLogger(bot).error(packet.error)
-            }
-            packet is MessageEvent -> packet.logMessageReceived()
-            packet is Packet.NoLog -> {
-                // nothing to do
-            }
-            packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
-                "Event: $packet".replaceMagicCodes()
-            }
-            else -> logger.verbose { "Recv: ${incomingPacket.commandName} ${incomingPacket.data}".replaceMagicCodes() }
-        }
+        strategy.logReceived(logger, incomingPacket)
     }
 
-    override fun toString(): String = "LoggingPacketHandler"
+    override fun toString(): String = "LoggingPacketHandlerAdapter"
 }
 
 internal class EventBroadcasterPacketHandler(
@@ -83,7 +65,16 @@ internal class EventBroadcasterPacketHandler(
 ) : PacketHandler {
 
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
-        val packet = incomingPacket.data ?: return
+        val data = incomingPacket.data ?: return
+        impl(data)
+    }
+
+    private suspend fun impl(packet: Packet) {
+        if (packet is MultiPacket<*>) {
+            for (p in packet) {
+                impl(p)
+            }
+        }
         when {
             packet is CancellableEvent && packet.isCancelled -> return
             packet is BroadcastControllable && !packet.shouldBroadcast -> return
@@ -105,7 +96,7 @@ internal class EventBroadcasterPacketHandler(
         return qualified.substringAfter("net.mamoe.mirai.event.events.")
     }
 
-    override fun toString(): String = "LoggingPacketHandler"
+    override fun toString(): String = "EventBroadcasterPacketHandler"
 }
 
 internal class CallPacketFactoryPacketHandler(
