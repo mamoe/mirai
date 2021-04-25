@@ -63,6 +63,22 @@ public fun CoroutineScope.childScope(
 public fun CoroutineContext.childScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ): CoroutineScope {
+    return CoroutineScope(this.childScopeContext(coroutineContext))
+}
+
+/**
+ * Creates a child scope of the receiver context scope.
+ */
+public fun CoroutineContext.childScopeContext(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): CoroutineContext {
     val ctx = this + coroutineContext
-    return CoroutineScope(ctx + SupervisorJob(ctx.job))
+    return ctx + SupervisorJob(ctx.job)
+}
+
+public inline fun <E : U, U : CoroutineContext.Element> CoroutineContext.getOrElse(
+    key: CoroutineContext.Key<E>,
+    default: () -> U
+): U {
+    return this[key] ?: default()
 }
