@@ -98,9 +98,10 @@ internal interface NetworkHandler {
         OK,
 
         /**
-         * The terminal state. Cannot resume anymore. Both [resumeConnection] and [sendAndExpect] throw a [IllegalStateException].
+         * The terminal state. Both [resumeConnection] and [sendAndExpect] throw a [IllegalStateException].
          *
-         * When a handler reached [CLOSED] state, it is finalized and cannot be restored to any other states.
+         * **Important nodes**: if [NetworkHandler] is [SelectorNetworkHandler], it might return to a normal state e.g. [INITIALIZED] if new instance of [NetworkHandler] is created.
+         * However callers usually do not need to pay extra attention on this behavior. Everything will just work fine if you consider [CLOSED] as a final, non-recoverable state.
          *
          * At this state [resumeConnection] throws the exception caught from underlying socket implementation (i.e netty).
          * [sendAndExpect] throws [IllegalStateException].

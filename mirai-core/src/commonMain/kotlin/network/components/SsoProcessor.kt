@@ -45,6 +45,8 @@ internal interface SsoProcessor {
     val client: QQAndroidClient
     val ssoSession: SsoSession
 
+    var firstLoginSucceed: Boolean
+
     /**
      * The observers to launch jobs for states.
      *
@@ -77,6 +79,8 @@ internal class SsoProcessorImpl(
     ///////////////////////////////////////////////////////////////////////////
     // public
     ///////////////////////////////////////////////////////////////////////////
+
+    override var firstLoginSucceed: Boolean = false
 
     @Volatile
     override var client = createClient(ssoContext.bot)
@@ -111,6 +115,7 @@ internal class SsoProcessorImpl(
             SlowLoginImpl(handler).doLogin()
         }
         ssoContext.accountSecretsManager.saveSecrets(ssoContext.account, AccountSecretsImpl(client))
+        ssoContext.bot.logger.info { "Login successful." }
     }
 
     override suspend fun logout(handler: NetworkHandler) {

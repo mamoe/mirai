@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.supervisorJob
@@ -110,11 +111,18 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    val network: NetworkHandler by lazy { createNetworkHandler() }
+    val network: NetworkHandler by lazy { createNetworkHandler() } // the selector handles renewal of [NetworkHandler]
 
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
-        network.resumeConnection()
+        try {
+            network.resumeConnection()
+        } catch (e: Throwable) { // failed to init
+            if (!components[SsoProcessor].firstLoginSucceed) {
+                this.close() // failed to do first login.
+            }
+            throw e
+        }
     }
 
     protected abstract fun createNetworkHandler(): NetworkHandler
