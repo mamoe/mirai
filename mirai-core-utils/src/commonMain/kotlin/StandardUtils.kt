@@ -169,6 +169,10 @@ public fun systemProp(name: String, default: Boolean): Boolean =
     System.getProperty(name, default.toString())?.toBoolean() ?: default
 
 
+public fun systemProp(name: String, default: Long): Long =
+    System.getProperty(name, default.toString())?.toLongOrNull() ?: default
+
+
 public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
     var depth = 0
     var rootCause: Throwable? = this
