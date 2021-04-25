@@ -179,13 +179,18 @@ internal abstract class NetworkHandlerSupport(
      */
     override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedDeferred.onAwait
 
+    protected data class StateSwitchingException(
+        val old: BaseStateImpl,
+        val new: BaseStateImpl,
+    ) : CancellationException("State is switched from $old to $new")
+
     /**
-     * Calculate [new state][new] and set it as the current.
+     * Calculate [new state][new] and set it as the current, returning the new state, or `null` if state has concurrently been set to CLOSED.
      *
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
-    protected inline fun <S : BaseStateImpl> setState(crossinline new: () -> S): S = synchronized(this) {
-        if (_state.correspondingState == NetworkHandler.State.CLOSED) error("Cannot change state while it has already been CLOSED.")
+    protected fun <S : BaseStateImpl> setState(new: () -> S): S? = synchronized(this) {
+        if (_state.correspondingState == NetworkHandler.State.CLOSED) return null // error("Cannot change state while it has already been CLOSED.")
 
         val stateObserver = context.getOrNull(StateObserver)
 
@@ -208,7 +213,7 @@ internal abstract class NetworkHandlerSupport(
         // 2. Update state to [state]. This affects selectors.
         _state = impl // switch state first. selector may be busy selecting.
         // 3. Cleanup, cancel old states.
-        old.cancel(CancellationException("State is switched from $old to $impl"))
+        old.cancel(StateSwitchingException(old, impl))
 
         return impl
     }
