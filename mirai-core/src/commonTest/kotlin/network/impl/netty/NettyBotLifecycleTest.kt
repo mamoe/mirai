@@ -12,12 +12,14 @@ package net.mamoe.mirai.internal.network.impl.netty
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
@@ -55,5 +57,12 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
         }
         assertEquals(1, parentJob.children.count())
         assertEquals(bot.supervisorJob, parentJob.children.first())
+    }
+
+    @Test
+    fun `network scope closed on bot close`() = runBlockingUnit {
+        assertTrue { network.isActive }
+        bot.close()
+        assertFalse { network.isActive }
     }
 }
