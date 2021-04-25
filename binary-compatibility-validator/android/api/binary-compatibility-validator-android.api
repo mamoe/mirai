@@ -319,6 +319,9 @@ public final class net/mamoe/mirai/contact/ContactKt {
 
 public final class net/mamoe/mirai/contact/ContactList : java/util/Collection, kotlin/jvm/internal/markers/KMappedMarker {
 	public final field delegate Ljava/util/concurrent/ConcurrentLinkedQueue;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Collection;)V
+	public fun <init> (Ljava/util/concurrent/ConcurrentLinkedQueue;)V
 	public synthetic fun add (Ljava/lang/Object;)Z
 	public fun add (Lnet/mamoe/mirai/contact/Contact;)Z
 	public fun addAll (Ljava/util/Collection;)Z
@@ -2124,23 +2127,6 @@ public final class net/mamoe/mirai/event/events/BotOfflineEvent$MsfOffline : net
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public fun getCause ()Ljava/lang/Throwable;
 	public fun getReconnect ()Z
-	public fun hashCode ()I
-	public fun setReconnect (Z)V
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/event/events/BotOfflineEvent$PacketFactoryErrorCode : net/mamoe/mirai/event/events/BotOfflineEvent, net/mamoe/mirai/event/events/BotOfflineEvent$CauseAware, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/internal/network/Packet {
-	public fun <init> (ILnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)V
-	public final fun component1 ()I
-	public final fun component2 ()Lnet/mamoe/mirai/Bot;
-	public final fun component3 ()Ljava/lang/Throwable;
-	public final fun copy (ILnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$PacketFactoryErrorCode;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/BotOfflineEvent$PacketFactoryErrorCode;ILnet/mamoe/mirai/Bot;Ljava/lang/Throwable;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$PacketFactoryErrorCode;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getBot ()Lnet/mamoe/mirai/Bot;
-	public fun getCause ()Ljava/lang/Throwable;
-	public fun getReconnect ()Z
-	public final fun getReturnCode ()I
 	public fun hashCode ()I
 	public fun setReconnect (Z)V
 	public fun toString ()Ljava/lang/String;
