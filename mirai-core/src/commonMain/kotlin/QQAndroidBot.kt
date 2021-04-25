@@ -121,7 +121,7 @@ internal open class QQAndroidBot constructor(
 
 
     private val networkLogger: MiraiLogger by lazy { configuration.networkLoggerSupplier(this) }
-    internal val components: ConcurrentComponentStorage by lazy {
+    override val components: ConcurrentComponentStorage by lazy {
         ConcurrentComponentStorage().apply {
             val components = this // avoid mistakes
             set(SsoProcessorContext, SsoProcessorContextImpl(bot))
