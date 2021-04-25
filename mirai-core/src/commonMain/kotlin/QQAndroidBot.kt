@@ -112,6 +112,9 @@ internal open class QQAndroidBot constructor(
                     }
                 }
             },
+            StateChangedObserver(State.OK) { new ->
+                components[BotOfflineEventMonitor].attachJob(bot, new)
+            },
             debugConfiguration.stateObserver
         ).safe(logger)
     }
@@ -126,6 +129,7 @@ internal open class QQAndroidBot constructor(
             set(HeartbeatProcessor, HeartbeatProcessorImpl())
             set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger))
             set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger))
+            set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
 
             set(BotInitProcessor, BotInitProcessorImpl(bot, components, bot.logger))
             set(ContactCacheService, ContactCacheServiceImpl(bot))
