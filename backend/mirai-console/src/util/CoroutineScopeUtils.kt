@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.utils.currentTimeMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.seconds
 
 @ConsoleExperimentalApi
 public object CoroutineScopeUtils {
@@ -70,7 +69,7 @@ internal class TimedTask(
             val current = currentTimeMillis()
             if (last == UNCHANGED) {
                 runIgnoreException<CancellationException> {
-                    delay(3.seconds) // accuracy not necessary
+                    delay(3000) // accuracy not necessary
                 } ?: return@launch
             } else {
                 if (current - last > intervalMillis) {
@@ -78,7 +77,7 @@ internal class TimedTask(
                     action()
                 }
                 runIgnoreException<CancellationException> {
-                    delay(3.seconds) // accuracy not necessary
+                    delay(3000) // accuracy not necessary
                 } ?: return@launch
             }
         }
