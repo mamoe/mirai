@@ -41,7 +41,6 @@ import net.mamoe.mirai.utils.*
 import java.io.File
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.milliseconds
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -167,7 +166,7 @@ internal class QQAndroidBot constructor(
 
     private val friendListSaver: ScheduledJob? by lazy {
         if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis.milliseconds) {
+        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis) {
             runBIO { saveFriendCache() }
         }
     }
