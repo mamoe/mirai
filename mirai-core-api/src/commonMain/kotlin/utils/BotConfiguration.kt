@@ -194,9 +194,11 @@ public open class BotConfiguration { // open for Java
     public var heartbeatTimeoutMillis: Long = 5.secondsToMillis
 
     /** 心跳失败后的第一次重连前的等待时间. */
+    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
     public var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
     /** 重连失败后, 继续尝试的每次等待时间 */
+    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
     public var reconnectPeriodMillis: Long = 5.secondsToMillis
 
     /** 最多尝试多少次重连 */

@@ -12,21 +12,34 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
 internal interface HeartbeatProcessor {
 
     @Throws(Exception::class)
-    suspend fun doHeartbeatNow(networkHandler: NetworkHandler)
+    suspend fun doAliveHeartbeatNow(networkHandler: NetworkHandler)
+
+    @Throws(Exception::class)
+    suspend fun doStatHeartbeatNow(networkHandler: NetworkHandler)
 
     companion object : ComponentKey<HeartbeatProcessor>
 }
 
 internal class HeartbeatProcessorImpl : HeartbeatProcessor {
     @Throws(Exception::class)
-    override suspend fun doHeartbeatNow(networkHandler: NetworkHandler) {
+    override suspend fun doStatHeartbeatNow(networkHandler: NetworkHandler) {
         StatSvc.SimpleGet(networkHandler.context.bot.client).sendAndExpect(
+            networkHandler,
+            timeoutMillis = networkHandler.context[SsoProcessorContext].configuration.heartbeatTimeoutMillis,
+            retry = 2
+        )
+    }
+
+    @Throws(Exception::class)
+    override suspend fun doAliveHeartbeatNow(networkHandler: NetworkHandler) {
+        Heartbeat.Alive(networkHandler.context.bot.client).sendAndExpect(
             networkHandler,
             timeoutMillis = networkHandler.context[SsoProcessorContext].configuration.heartbeatTimeoutMillis,
             retry = 2
