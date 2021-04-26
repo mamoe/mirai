@@ -9,20 +9,21 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.warning
 
+/**
+ * Job: Switch server if ConfigPush not received.
+ */
 internal interface ConfigPushProcessor {
-    @Throws(RequireReconnectException::class)
     suspend fun syncConfigPush(network: NetworkHandler)
-
-    class RequireReconnectException : Exception("ConfigPushProcessor: server requires reconnection")
 
     companion object : ComponentKey<ConfigPushProcessor>
 }
@@ -30,35 +31,18 @@ internal interface ConfigPushProcessor {
 internal class ConfigPushProcessorImpl(
     private val logger: MiraiLogger,
 ) : ConfigPushProcessor {
-    @Throws(ConfigPushProcessor.RequireReconnectException::class)
     override suspend fun syncConfigPush(network: NetworkHandler) {
-        network.ConfigPushSyncer()
-    }
-
-    @Suppress("FunctionName", "UNUSED_VARIABLE")
-    private suspend fun NetworkHandler.ConfigPushSyncer() {
-        logger.info { "Awaiting ConfigPushSvc.PushReq." }
-        when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(30_000)) {
-            null -> {
-                val bdhSyncer = context[BdhSessionSyncer]
-                val hasSession = bdhSyncer.hasSession
-                kotlin.runCatching { bdhSyncer.bdhSession.completeExceptionally(CancellationException("Timeout waiting for ConfigPushSvc.PushReq")) }
-                if (!hasSession) {
-                    logger.warning { "Missing ConfigPushSvc.PushReq. Switching server..." }
-//                    bot.launch { BotOfflineEvent.RequireReconnect(bot).broadcast() }
-                    throw ConfigPushProcessor.RequireReconnectException()
-                } else {
-                    logger.warning { "Missing ConfigPushSvc.PushReq. Using the latest response. File uploading may be affected." }
+        if (nextEventOrNull<ConfigPushSvc.PushReq.PushReqResponse>(60_000) == null) {
+            val bdhSyncer = network.context[BdhSessionSyncer]
+            if (!bdhSyncer.hasSession) {
+                val e = IllegalStateException("Timeout waiting for ConfigPush.")
+                bdhSyncer.bdhSession.completeExceptionally(e)
+                logger.warning { "Missing ConfigPush. Switching server..." }
+                network.context.bot.launch {
+                    BotOfflineEvent.RequireReconnect(network.context.bot, e).broadcast()
                 }
-            }
-            is ConfigPushSvc.PushReq.PushReqResponse.ConfigPush -> {
-                logger.info { "ConfigPushSvc.PushReq: Config updated." }
-            }
-            is ConfigPushSvc.PushReq.PushReqResponse.ServerListPush -> {
-                logger.info { "ConfigPushSvc.PushReq: Server updated." }
-                // handled in ConfigPushSvc
-                return
             }
         }
     }
+
 }

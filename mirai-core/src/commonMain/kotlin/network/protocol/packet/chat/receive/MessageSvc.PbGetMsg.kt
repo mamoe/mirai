@@ -25,7 +25,6 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -97,12 +96,9 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         )
     }
 
-    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?, bot: QQAndroidBot) : Response(
-        MsgSvc.SyncFlag.STOP, delegate,
-        syncCookie,
-        bot
-    ), Event,
-        Packet.NoLog {
+    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?, bot: QQAndroidBot) :
+        Response(MsgSvc.SyncFlag.STOP, delegate, syncCookie, bot) {
+
         override fun toString(): String = "MessageSvcPbGetMsg.GetMsgSuccess"
     }
 
@@ -117,7 +113,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         AbstractEvent(),
         MultiPacket<Packet>,
         Iterable<Packet> by (delegate),
-        Packet.NoLog,
+        Packet.NoEventLog,
         BotEvent {
 
         override fun toString(): String =

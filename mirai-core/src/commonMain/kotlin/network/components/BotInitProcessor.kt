@@ -13,7 +13,6 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -21,8 +20,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.state.JobAttachStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.MiraiLogger
@@ -64,10 +61,6 @@ internal class BotInitProcessorImpl(
         val registerResp =
             context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
 
-        bot.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
-            context[ConfigPushSyncer].awaitSync()
-        } // TODO: 2021/4/17 should we launch here?
-
         // do them parallel.
         supervisorScope {
             launch { syncMessageSvc() }
@@ -87,13 +80,9 @@ internal class BotInitProcessorImpl(
                     it.bot == this@BotInitProcessorImpl.bot
                 }
             }
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect()
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect(bot)
         } ?: error("timeout syncing friend message history.")
         logger.info { "Syncing friend message history: Success." }
     }
-
-    private suspend inline fun <T : Packet> OutgoingPacket.sendAndExpect() = this.sendAndExpect<T>(bot.network)
-    private suspend inline fun <T : Packet> OutgoingPacketWithRespType<T>.sendAndExpect() =
-        this.sendAndExpect(bot.network)
 }
 
