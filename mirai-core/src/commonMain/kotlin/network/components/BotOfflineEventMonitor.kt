@@ -25,8 +25,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.toHumanReadableString
-import kotlin.time.measureTime
+import net.mamoe.mirai.utils.millisToHumanReadableString
+import kotlin.system.measureTimeMillis
 
 /**
  * Handles [BotOfflineEvent]
@@ -92,14 +92,14 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         if (event.reconnect) {
             bot.launch {
                 val success: Boolean
-                val time = measureTime {
+                val time = measureTimeMillis {
                     success = kotlin.runCatching {
                         bot.login() // selector will create new NH to replace the old, closed one, with some further comprehensive considerations. For example, limitation for attempts.
                     }.isSuccess
                 }
 
                 if (success) {
-                    bot.logger.info { "Reconnected successfully in ${time.toHumanReadableString()}." }
+                    bot.logger.info { "Reconnected successfully in ${time.millisToHumanReadableString()}." }
                 }
             }
         }
