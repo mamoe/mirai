@@ -23,9 +23,14 @@ import kotlin.coroutines.CoroutineContext
 /**
  * A proxy to [NetworkHandler] that delegates calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
  *
+ * This is useful to implement a delegation of [NetworkHandler]. The functionality of *selection* is provided by the strategy [selector][NetworkHandlerSelector].
+ *
+ * ### Important notes
+ *
  * [NetworkHandlerSelector.awaitResumeInstance] is called everytime when an operation in [NetworkHandler] is called.
  *
- * This is useful to implement a delegation of [NetworkHandler]. The functionality of *selection* is provided by the strategy [selector][NetworkHandlerSelector].
+ * Before every [sendAndExpect] call, [resumeConnection] is invoked.
+ *
  * @see NetworkHandlerSelector
  */
 internal class SelectorNetworkHandler(

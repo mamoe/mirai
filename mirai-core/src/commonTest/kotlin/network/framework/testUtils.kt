@@ -54,9 +54,17 @@ internal open class TestNetworkHandler(
         val resumeCount = AtomicInteger(0)
         val onResume get() = resumeDeferred.onJoin
 
+        @Synchronized
         override suspend fun resumeConnection0() {
             resumeCount.incrementAndGet()
             resumeDeferred.complete(Unit)
+            when (this.correspondingState) {
+                NetworkHandler.State.INITIALIZED -> {
+                    setState(NetworkHandler.State.CONNECTING)
+                }
+                else -> {
+                }
+            }
         }
     }
 
