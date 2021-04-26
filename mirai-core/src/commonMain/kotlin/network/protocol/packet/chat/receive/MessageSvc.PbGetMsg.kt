@@ -37,6 +37,7 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
@@ -251,7 +252,7 @@ private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
 
 internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean = false): Packet? {
     when (msgHead.msgType) {
-        33 -> bot.groupListModifyLock.withLock {
+        33 -> bot.components[ContactUpdater].groupListModifyLock.withLock {
             msgBody.msgContent.read {
                 val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
                 val group = bot.getGroupByUinOrNull(groupUin) ?: bot.createGroupForBot(groupUin) ?: return null
@@ -308,12 +309,12 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             return null
         }
 
-        38 -> bot.groupListModifyLock.withLock { // 建群
+        38 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 建群
             return bot.createGroupForBot(msgHead.fromUin)
                 ?.let { BotJoinGroupEvent.Active(it) }
         }
 
-        85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
+        85 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 其他客户端入群
             // msgHead.authUin: 处理人
 
             return if (msgHead.toUin == bot.id) {

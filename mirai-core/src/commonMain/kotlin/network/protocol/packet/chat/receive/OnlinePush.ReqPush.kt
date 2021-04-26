@@ -19,7 +19,10 @@ import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -29,22 +32,27 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.network.MultiPacketBySequence
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.data.proto.*
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x115
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0xb3
+import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.utils.*
 
 
@@ -619,7 +627,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         if (msg.msgGroupMsgSync != null) {
             when (msg.msgGroupMsgSync.msgType) {
                 1, 2 -> {
-                    bot.groupListModifyLock.withLock {
+                    bot.components[ContactUpdater].groupListModifyLock.withLock {
                         bot.createGroupForBot(Mirai.calculateGroupUinByGroupCode(msg.msgGroupMsgSync.grpCode))?.let {
                             packetList.add(BotJoinGroupEvent.Active(it))
                         }
