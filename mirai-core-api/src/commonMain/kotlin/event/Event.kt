@@ -145,31 +145,35 @@ public interface CancellableEvent : Event {
  */
 @JvmSynthetic
 public suspend fun <E : Event> E.broadcast(): E {
-    check(this is AbstractEvent) {
+    val event = this
+    check(event is AbstractEvent) {
         "Events must extend AbstractEvent"
     }
 
-    if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return this
+    if (event is BroadcastControllable && !event.shouldBroadcast) {
+        return event
     }
-    this.broadCastLock.withLock {
-        this._intercepted = false
+    event.broadCastLock.withLock {
+        event._intercepted = false
         if (EventDisabled) return@withLock
-        if (this is Packet.NoEventLog) return@withLock
-        if (this is Packet.NoLog) return@withLock
-        if (this is MessageEvent) return@withLock // specially handled in [LoggingPacketHandlerAdapter]
-//        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
-
-        if (this is BotEvent) {
-            this.bot.logger.verbose { "Event: $this" }
-        } else {
-            MiraiLogger.TopLevel.verbose { "Event: $this" }
-        }
-
-        callAndRemoveIfRequired(this)
+        logEvent(event)
+        callAndRemoveIfRequired(event)
     }
 
     return this
+}
+
+private fun logEvent(event: Event) {
+    if (event is Packet.NoEventLog) return
+    if (event is Packet.NoLog) return
+    if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
+//        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
+
+    if (event is BotEvent) {
+        event.bot.logger.verbose { "Event: $event" }
+    } else {
+        MiraiLogger.TopLevel.verbose { "Event: $event" }
+    }
 }
 
 /**

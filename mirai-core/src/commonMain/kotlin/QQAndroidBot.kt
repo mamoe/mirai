@@ -158,7 +158,7 @@ internal open class QQAndroidBot constructor(
             set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger))
             set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
 
-            set(BotInitProcessor, BotInitProcessorImpl(bot, components, bot.logger))
+            set(BotInitProcessor, BotInitProcessorImpl(bot, components, networkLogger))
             set(ContactCacheService, ContactCacheServiceImpl(bot))
             set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger))
             set(BdhSessionSyncer, BdhSessionSyncerImpl(configuration, networkLogger, components))

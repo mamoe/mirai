@@ -34,7 +34,7 @@ internal class RequestPushNotify(
     @TarsId(13) @JvmField val svrip: Int?
 ) : JceStruct, Packet {
     override fun toString(): String {
-        return "RequestPushNotify(uin=$uin, ctype=$ctype, strService=$strService, strCmd=$strCmd, usMsgType=$usMsgType, stMsgInfo=$stMsgInfo)"
+        return "RequestPushNotify(usMsgType=$usMsgType)"
     }
 }
 

@@ -318,7 +318,6 @@ internal open class NettyNetworkHandler(
 
                     try {
                         action()
-                        heartbeatProcessor.doAliveHeartbeatNow(this@NettyNetworkHandler)
                     } catch (e: Throwable) {
                         setState {
                             StateConnecting(ExceptionCollector(IllegalStateException("Exception in $name job", e)))
@@ -327,16 +326,15 @@ internal open class NettyNetworkHandler(
                 }
             }.apply {
                 invokeOnCompletion { e ->
-                    if (e != null) {
-                        logger.info { "$name failed: $e." }
-                    }
+                    if (e is CancellationException) return@invokeOnCompletion // normally closed
+                    if (e != null) logger.info { "$name failed: $e." }
                 }
             }
         }
 
         private val heartbeat = launchHeartbeatJob(
             "AliveHeartbeat",
-            { context[SsoProcessorContext].configuration.heartbeatTimeoutMillis },
+            { context[SsoProcessorContext].configuration.heartbeatPeriodMillis },
             { heartbeatProcessor.doAliveHeartbeatNow(this@NettyNetworkHandler) }
         )
 
@@ -360,6 +358,7 @@ internal open class NettyNetworkHandler(
         override suspend fun resumeConnection0() {
             joinCompleted(coroutineContext.job)
             joinCompleted(heartbeat)
+            joinCompleted(statHeartbeat)
             joinCompleted(configPush)
             joinCompleted(keyRefresh)
         } // noop
