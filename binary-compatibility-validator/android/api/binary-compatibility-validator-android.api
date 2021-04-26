@@ -2132,13 +2132,15 @@ public final class net/mamoe/mirai/event/events/BotOfflineEvent$MsfOffline : net
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect : net/mamoe/mirai/event/events/BotOfflineEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/internal/network/Packet {
-	public fun <init> (Lnet/mamoe/mirai/Bot;)V
+public final class net/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect : net/mamoe/mirai/event/events/BotOfflineEvent, net/mamoe/mirai/event/events/BotOfflineEvent$CauseAware, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)V
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
-	public final fun copy (Lnet/mamoe/mirai/Bot;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;Lnet/mamoe/mirai/Bot;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$RequireReconnect;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getCause ()Ljava/lang/Throwable;
 	public fun getReconnect ()Z
 	public fun hashCode ()I
 	public fun setReconnect (Z)V
