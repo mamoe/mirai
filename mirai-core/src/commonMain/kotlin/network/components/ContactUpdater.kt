@@ -53,6 +53,7 @@ import net.mamoe.mirai.utils.verbose
  */
 internal interface ContactUpdater {
     val otherClientsLock: Mutex
+    val groupListModifyLock: Mutex
 
     /**
      * Load all caches to the bot this [ContactUpdater] works for.
@@ -77,6 +78,7 @@ internal class ContactUpdaterImpl(
     private val logger: MiraiLogger,
 ) : ContactUpdater {
     override val otherClientsLock: Mutex = Mutex()
+    override val groupListModifyLock: Mutex = Mutex()
     private val cacheService get() = components[ContactCacheService]
     private val lock = Mutex()
 

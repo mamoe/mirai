@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
@@ -22,7 +21,6 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.*
@@ -35,15 +33,15 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.handler.state.*
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver.Companion.LOGGING
+import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.systemProp
 import kotlin.contracts.contract
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -54,28 +52,9 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
+// for tests
 internal class BotDebugConfiguration(
-    var stateObserver: StateObserver? = when (systemProp(
-        "mirai.debug.network.state.observer.logging",
-        "off"
-    ).toLowerCase()) {
-        "full" -> {
-            SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States"), true),
-                MiraiLogger.create("LoggingStateObserver errors")
-            )
-        }
-        "off", "false" -> {
-            null
-        }
-        "on", "true" -> {
-            SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States"), false),
-                MiraiLogger.create("LoggingStateObserver errors")
-            )
-        }
-        else -> null
-    }
+    var stateObserver: StateObserver? = LOGGING
 )
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
@@ -85,22 +64,11 @@ internal open class QQAndroidBot constructor(
     private val debugConfiguration: BotDebugConfiguration = BotDebugConfiguration(),
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
-
-
-    @Deprecated(
-        "",
-        replaceWith = ReplaceWith(
-            "this.components[SsoProcessor].firstLoginSucceed",
-            "net.mamoe.mirai.internal.network.components.SsoProcessor"
-        )
-    )
-    internal var firstLoginSucceed: Boolean = false
+    val client get() = components[SsoProcessor].client
 
     ///////////////////////////////////////////////////////////////////////////
     // network
     ///////////////////////////////////////////////////////////////////////////
-
-    // TODO: 2021/4/14         bdhSyncer.loadFromCache()  when login
 
     // also called by tests.
     fun ComponentStorage.stateObserverChain(): StateObserver {
@@ -183,14 +151,9 @@ internal open class QQAndroidBot constructor(
             set(ConfigPushSyncer, ConfigPushSyncerImpl())
 
             set(StateObserver, stateObserverChain())
-
-            // TODO: 2021/4/16 load server list from cache (add a provider)
-            // bot.bdhSyncer.loadServerListFromCache()
-
         }
     }
 
-    val client get() = components[SsoProcessor].client
 
     override fun createNetworkHandler(): NetworkHandler {
         val context = NetworkHandlerContextImpl(
@@ -208,18 +171,9 @@ internal open class QQAndroidBot constructor(
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 
-
-    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2
-    ): E = network.run { sendAndExpect(timeoutMillis, retry) }
-
-    suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E =
-        network.run { sendAndExpect(timeoutMillis, retry) }
-
     /**
      * 获取 获取群公告 所需的 bkn 参数
-     * */
+     * */ // TODO: 2021/4/26 extract it after #1141 merged
     val bkn: Int
         get() = client.wLoginSigInfo.sKey.data
             .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
@@ -230,9 +184,6 @@ internal open class QQAndroidBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     override lateinit var nick: String
-
-    @JvmField
-    val groupListModifyLock = Mutex()
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
