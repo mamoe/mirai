@@ -50,8 +50,8 @@ internal data class ExceptionInPacketHandlerException(
 ) : IllegalStateException("Exception in PacketHandler '$packetHandler'.")
 
 internal class LoggingPacketHandlerAdapter(
-    private val logger: MiraiLogger,
     private val strategy: PacketLoggingStrategy,
+    private val logger: MiraiLogger,
 ) : PacketHandler {
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
         strategy.logReceived(logger, incomingPacket)

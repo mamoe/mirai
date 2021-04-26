@@ -46,8 +46,8 @@ internal interface BdhSessionSyncer {
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class BdhSessionSyncerImpl(
     private val configuration: BotConfiguration,
-    private val logger: MiraiLogger,
     private val context: ComponentStorage,
+    private val logger: MiraiLogger,
 ) : BdhSessionSyncer {
     @Volatile
     override var bdhSession: CompletableDeferred<BdhSession> = CompletableDeferred()
