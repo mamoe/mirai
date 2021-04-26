@@ -188,16 +188,20 @@ internal abstract class NetworkHandlerSupport(
     ) : CancellationException("State is switched from $old to $new")
 
 
+    /**
+     * Attempts to change state. Returns null if new state has same [class][KClass] as current.
+     */
     protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? = setState(S::class, new)
 
     /**
-     * Calculate [new state][new] and set it as the current, returning the new state, or `null` if state has concurrently been set to CLOSED.
+     * Calculate [new state][new] and set it as the current, returning the new state,
+     * or `null` if state has concurrently been set to CLOSED, or has same [class][KClass] as current.
      *
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
-    protected fun <S : BaseStateImpl> setState(newType: KClass<S>, new: () -> S): S? = synchronized(this) {
-        if (_state::class == newType) return@synchronized null // already set to expected state by another thread.
-        if (_state.correspondingState == NetworkHandler.State.CLOSED) return null // error("Cannot change state while it has already been CLOSED.")
+    protected fun <S : BaseStateImpl> setState(newType: KClass<S>?, new: () -> S): S? = synchronized(this) {
+        if (newType != null && _state::class == newType) return@synchronized null // already set to expected state by another thread. Avoid replications.
+        if (_state.correspondingState == NetworkHandler.State.CLOSED) return null // CLOSED is final.
 
         val stateObserver = context.getOrNull(StateObserver)
 
