@@ -33,13 +33,15 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.handler.state.*
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver.Companion.LOGGING
+import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.systemProp
 import kotlin.contracts.contract
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -50,28 +52,9 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
+// for tests
 internal class BotDebugConfiguration(
-    var stateObserver: StateObserver? = when (systemProp(
-        "mirai.debug.network.state.observer.logging",
-        "off"
-    ).toLowerCase()) {
-        "full" -> {
-            SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States"), true),
-                MiraiLogger.create("LoggingStateObserver errors")
-            )
-        }
-        "off", "false" -> {
-            null
-        }
-        "on", "true" -> {
-            SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States"), false),
-                MiraiLogger.create("LoggingStateObserver errors")
-            )
-        }
-        else -> null
-    }
+    var stateObserver: StateObserver? = LOGGING
 )
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
