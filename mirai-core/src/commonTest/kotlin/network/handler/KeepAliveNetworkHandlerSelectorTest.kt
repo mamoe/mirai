@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.network.handler
 
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
-import net.mamoe.mirai.internal.network.framework.TestNetworkHandler
-import net.mamoe.mirai.internal.network.framework.TestNetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.AbstractKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.test.runBlockingUnit
@@ -31,8 +29,12 @@ private class TestSelector(val createInstance0: () -> NetworkHandler) :
 internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerTest() {
     @Test
     fun `can initialize instance`() {
-        val selector = TestSelector { createNetworkHandler().apply { setState(State.OK) } }
-        runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
+        val selector = TestSelector {
+            createNetworkHandler().apply {
+                setState(State.OK)
+            }
+        }
+        runBlockingUnit(timeout = 1.seconds) { selector.awaitResumeInstance() }
         assertNotNull(selector.getResumedInstance())
     }
 
