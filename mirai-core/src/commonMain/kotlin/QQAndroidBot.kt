@@ -115,7 +115,7 @@ internal open class QQAndroidBot constructor(
                 ) {
                     bot.launch(logger.asCoroutineExceptionHandler()) {
                         BotOnlineEvent(bot).broadcast()
-                        if (shouldBroadcastRelogin.compareAndSet(false, true)) {
+                        if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
                             BotReloginEvent(bot, new.getCause()).broadcast()
                         }
                     }
@@ -193,7 +193,11 @@ internal open class QQAndroidBot constructor(
         )
         return SelectorNetworkHandler(
             context,
-            FactoryKeepAliveNetworkHandlerSelector(NettyNetworkHandlerFactory, context)
+            FactoryKeepAliveNetworkHandlerSelector(
+                configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE),
+                NettyNetworkHandlerFactory,
+                context
+            )
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 
