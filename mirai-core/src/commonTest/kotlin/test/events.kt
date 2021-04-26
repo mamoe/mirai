@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.utils.cast
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -25,26 +26,30 @@ internal inline fun <reified T : Event, R> assertEventBroadcasts(times: Int = 1,
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal inline fun <reified T : Event> assertEventBroadcasts(times: Int = 1, block: () -> Unit) {
+internal inline fun <reified T : Event> assertEventBroadcasts(times: Int = 1, block: () -> Unit): List<T> {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     val receivedEvents = ConcurrentLinkedQueue<Event>()
     val listener = GlobalEventChannel.subscribeAlways<Event> { event ->
         receivedEvents.add(event)
     }
+
     try {
-        return block()
+        block()
     } finally {
-        val actual = receivedEvents.filterIsInstance<T>().count()
         listener.complete()
-        assertEquals(
-            times,
-            actual,
-            "Expected event ${T::class.simpleName} broadcast $times time(s). " +
-                    "But actual count is ${actual}. " +
-                    "\nAll received events: ${receivedEvents.joinToString(", ", "[", "]")}"
-        )
     }
+
+    val actual = receivedEvents.filterIsInstance<T>().count()
+    assertEquals(
+        times,
+        actual,
+        "Expected event ${T::class.simpleName} broadcast $times time(s). " +
+                "But actual count is ${actual}. " +
+                "\nAll received events: ${receivedEvents.joinToString(", ", "[", "]")}"
+    )
+
+    return receivedEvents.filterIsInstance<T>().cast()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

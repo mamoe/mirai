@@ -17,10 +17,24 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 /**
  * [AbstractKeepAliveNetworkHandlerSelector] implementation delegating [createInstance] to [factory]
  */
-internal class FactoryKeepAliveNetworkHandlerSelector<H : NetworkHandler>(
-    private val factory: NetworkHandlerFactory<H>,
-    private val context: NetworkHandlerContext,
-) : AbstractKeepAliveNetworkHandlerSelector<H>() {
+internal class FactoryKeepAliveNetworkHandlerSelector<H : NetworkHandler> : AbstractKeepAliveNetworkHandlerSelector<H> {
+    private val factory: NetworkHandlerFactory<H>
+    private val context: NetworkHandlerContext
+
+    constructor(factory: NetworkHandlerFactory<H>, context: NetworkHandlerContext) : super() {
+        this.factory = factory
+        this.context = context
+    }
+
+    constructor(
+        maxAttempts: Int,
+        factory: NetworkHandlerFactory<H>,
+        context: NetworkHandlerContext
+    ) : super(maxAttempts) {
+        this.factory = factory
+        this.context = context
+    }
+
     override fun createInstance(): H =
         factory.create(
             context,

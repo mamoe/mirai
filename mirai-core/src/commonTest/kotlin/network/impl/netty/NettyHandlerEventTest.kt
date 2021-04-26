@@ -9,12 +9,16 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.INITIALIZED
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.OK
@@ -79,25 +83,109 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     }
 
 
-    private fun noEventOn(setState: () -> Unit) = runBlockingUnit {
+    @Test
+    fun `from OK TO CONNECTING`() = runBlockingUnit {
+        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
+            override suspend fun login(handler: NetworkHandler) = awaitCancellation() // never ends
+        }
+        assertState(INITIALIZED)
+        network.setStateOK(channel)
+        delay(2.seconds) // ignore events
+        assertEventBroadcasts<Event>(1) {
+            network.setStateConnecting()
+            delay(2.seconds)
+        }.let { event ->
+            assertEquals(BotOfflineEvent.Dropped::class, event[0]::class)
+        }
+    }
+
+    @Test
+    fun `from CONNECTING TO OK the first time`() = runBlockingUnit {
+        val ok = CompletableDeferred<Unit>()
+        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
+            override suspend fun login(handler: NetworkHandler) = ok.join()
+        }
+        assertState(INITIALIZED)
+        network.setStateConnecting()
+        assertEventBroadcasts<Event>(1) {
+            ok.complete(Unit)
+            network.resumeConnection()
+            delay(2000)
+        }.let { event ->
+            assertEquals(BotOnlineEvent::class, event[0]::class)
+        }
+    }
+
+    @Test
+    fun `from CONNECTING TO OK the second time`() = runBlockingUnit {
+        var ok = CompletableDeferred<Unit>()
+        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
+            override suspend fun login(handler: NetworkHandler) = ok.join()
+        }
+
+        assertState(INITIALIZED)
+
+        network.setStateConnecting()
+        ok.complete(Unit)
+        network.resumeConnection()
+        assertState(OK)
+
+        ok = CompletableDeferred()
+        network.setStateConnecting()
+        delay(2000)
+        assertEventBroadcasts<Event>(2) {
+            ok.complete(Unit)
+            network.resumeConnection()
+            delay(2000)
+        }.let { event ->
+            assertEquals(BotOnlineEvent::class, event[0]::class)
+            assertEquals(BotReloginEvent::class, event[1]::class)
+        }
+    }
+
+
+    @Test
+    fun testPreconditions() = runBlockingUnit {
+        assertEventBroadcasts<Event>(1) { BotOfflineEvent.Active(bot, null).broadcast() }
+    }
+
+    @Test
+    fun `BotOffline from OK TO CLOSED`() = runBlockingUnit {
+        bot.login()
+        assertState(OK)
+        delay(3.seconds) // `login` launches a job which broadcasts the event
+        assertEventBroadcasts<Event>(1) {
+            network.close(null)
+            delay(3.seconds)
+        }.let { event ->
+            assertEquals(BotOfflineEvent.Active::class, event[0]::class)
+        }
+    }
+
+    @Test
+    fun `BotOffline from CONNECTING TO CLOSED`() = runBlockingUnit {
+        network.setStateConnecting()
+        delay(2.seconds) // `login` launches a job which broadcasts the event
+        assertEventBroadcasts<Event>(1) {
+            network.setStateClosed()
+            network.resumeConnection()
+            delay(2.seconds)
+        }.let { event ->
+            assertEquals(BotOfflineEvent.Active::class, event[0]::class)
+        }
+    }
+
+    @Test
+    fun `no event from INITIALIZED TO OK`() = runBlockingUnit {
         assertState(INITIALIZED)
         bot.login()
         bot.components[SsoProcessor].firstLoginSucceed = true
         assertState(OK)
         network.setStateConnecting()
-        delay(3.seconds) // `login` launches a job which broadcasts the event
+        delay(2.seconds) // `login` launches a job which broadcasts the event
         assertEventBroadcasts<Event>(0) {
-            setState()
-            delay(3.seconds)
+            network.resumeConnection()
+            delay(2.seconds)
         }
     }
-
-    @Test
-    fun `no event from CONNECTING TO CLOSED`() = noEventOn { network.setStateConnecting() }
-
-    @Test
-    fun `no event from CLOSED TO CLOSED`() = noEventOn { network.setStateClosed() }
-
-    @Test
-    fun `no event from INITIALIZED TO CLOSED`() = noEventOn { }
 }
