@@ -114,14 +114,17 @@ fun Project.configureKotlinTestSettings() {
     }
 }
 
+val testExperimentalAnnotations = arrayOf(
+    "kotlin.ExperimentalUnsignedTypes",
+    "kotlin.time.ExperimentalTime",
+    "io.ktor.util.KtorExperimentalAPI",
+    "kotlin.io.path.ExperimentalPathApi"
+)
+
 val experimentalAnnotations = arrayOf(
     "kotlin.RequiresOptIn",
     "kotlin.contracts.ExperimentalContracts",
     "kotlin.experimental.ExperimentalTypeInference",
-    "kotlin.ExperimentalUnsignedTypes",
-    "kotlin.time.ExperimentalTime",
-    "kotlin.io.path.ExperimentalPathApi",
-    "io.ktor.util.KtorExperimentalAPI",
 
     "kotlinx.serialization.ExperimentalSerializationApi",
 
@@ -149,6 +152,11 @@ fun KotlinSourceSet.configureKotlinExperimentalUsages() {
     languageSettings.enableLanguageFeature("InlineClasses")
     experimentalAnnotations.forEach { a ->
         languageSettings.useExperimentalAnnotation(a)
+    }
+    if (name.contains("test", ignoreCase = true)) {
+        testExperimentalAnnotations.forEach { a ->
+            languageSettings.useExperimentalAnnotation(a)
+        }
     }
 }
 
