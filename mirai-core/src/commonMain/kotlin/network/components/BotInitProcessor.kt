@@ -61,10 +61,6 @@ internal class BotInitProcessorImpl(
         val registerResp =
             context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
 
-        bot.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
-            context[ConfigPushSyncer].awaitSync()
-        } // TODO: 2021/4/17 should we launch here?
-
         // do them parallel.
         supervisorScope {
             launch { syncMessageSvc() }

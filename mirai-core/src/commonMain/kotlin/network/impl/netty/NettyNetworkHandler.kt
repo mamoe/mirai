@@ -271,11 +271,7 @@ internal open class NettyNetworkHandler(
         }
 
         private val configPush = this@NettyNetworkHandler.launch(CoroutineName("ConfigPush sync")) {
-            try {
-                context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
-            } catch (e: ConfigPushProcessor.RequireReconnectException) {
-                setState { StateConnecting(ExceptionCollector(e), false) }
-            }
+            context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
         }
 
         override suspend fun resumeConnection0() {
