@@ -29,8 +29,12 @@ private class TestSelector(val createInstance0: () -> NetworkHandler) :
 internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerTest() {
     @Test
     fun `can initialize instance`() {
-        val selector = TestSelector { createNetworkHandler().apply { setState(State.OK) } }
-        runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
+        val selector = TestSelector {
+            createNetworkHandler().apply {
+                setState(State.OK)
+            }
+        }
+        runBlockingUnit(timeout = 1.seconds) { selector.awaitResumeInstance() }
         assertNotNull(selector.getResumedInstance())
     }
 
