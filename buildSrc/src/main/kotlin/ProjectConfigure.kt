@@ -125,6 +125,7 @@ val experimentalAnnotations = arrayOf(
     "kotlin.RequiresOptIn",
     "kotlin.contracts.ExperimentalContracts",
     "kotlin.experimental.ExperimentalTypeInference",
+    "kotlin.ExperimentalUnsignedTypes",
 
     "kotlinx.serialization.ExperimentalSerializationApi",
 
