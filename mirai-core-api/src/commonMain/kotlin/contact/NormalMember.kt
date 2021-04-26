@@ -186,7 +186,7 @@ public val UserOrBot.nameCardOrNick: String
 public suspend inline fun NormalMember.mute(duration: Duration) {
     require(duration.toDouble(DurationUnit.DAYS) <= 30) { "duration must be at most 1 month" }
     require(duration.toDouble(DurationUnit.SECONDS) > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.toLong(DurationUnit.SECONDS).toInt())
+    this.mute(duration.toDouble(DurationUnit.SECONDS).toInt())
 }
 
 @OptIn(ExperimentalTime::class)
