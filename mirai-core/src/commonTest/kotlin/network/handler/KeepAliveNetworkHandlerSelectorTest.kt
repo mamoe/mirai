@@ -17,9 +17,21 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
 import kotlin.time.seconds
 
-private class TestSelector(val createInstance0: () -> NetworkHandler) :
-    AbstractKeepAliveNetworkHandlerSelector<NetworkHandler>() {
-    val createInstanceCount = AtomicInteger(0)
+private class TestSelector :
+    AbstractKeepAliveNetworkHandlerSelector<NetworkHandler> {
+
+    val createInstance0: () -> NetworkHandler
+
+    constructor(createInstance0: () -> NetworkHandler) : super() {
+        this.createInstance0 = createInstance0
+    }
+
+    constructor(maxAttempts: Int, createInstance0: () -> NetworkHandler) : super(maxAttempts) {
+        this.createInstance0 = createInstance0
+    }
+
+    val createInstanceCount: AtomicInteger = AtomicInteger(0)
+
     override fun createInstance(): NetworkHandler {
         createInstanceCount.incrementAndGet()
         return this.createInstance0()
@@ -59,5 +71,16 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         handler.setState(State.CLOSED)
         runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
         assertEquals(1, selector.createInstanceCount.get())
+    }
+
+    @Test
+    fun `limited attempts`() = runBlockingUnit {
+        val selector = TestSelector(3) {
+            createNetworkHandler().apply { setState(State.CLOSED) }
+        }
+        assertFailsWith<IllegalStateException> {
+            selector.awaitResumeInstance()
+        }
+        assertEquals(3, selector.createInstanceCount.get())
     }
 }
