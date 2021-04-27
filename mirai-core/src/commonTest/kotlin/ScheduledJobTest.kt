@@ -16,7 +16,6 @@ import net.mamoe.mirai.internal.utils.ScheduledJob
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
-import kotlin.time.seconds
 
 internal class ScheduledJobTest {
     @Test
@@ -26,7 +25,7 @@ internal class ScheduledJobTest {
                 throwable.printStackTrace()
             })
             val invoked = AtomicInteger(0)
-            val job = ScheduledJob(scope.coroutineContext, 1.seconds) {
+            val job = ScheduledJob(scope.coroutineContext, 1 * 1000) {
                 invoked.incrementAndGet()
             }
             delay(100)

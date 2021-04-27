@@ -48,8 +48,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.minutes
-import kotlin.time.seconds
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
@@ -215,8 +213,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     while (isActive) {
                         bot.client.wLoginSigInfo.vKey.run {
                             //由过期时间最短的且不会被skey更换更新的vkey计算重新登录的时间
-                            val delay = (expireTime - creationTime).seconds - 5.minutes
-                            logger.info { "Scheduled refresh login session in ${delay.toHumanReadableString()}." }
+                            val delay = (expireTime - creationTime - 5).times(1000)
+                            logger.info { "Scheduled refresh login session in ${delay.millisToHumanReadableString()}." }
                             delay(delay)
                         }
                         runCatching {
@@ -230,8 +228,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 launch {
                     while (isActive) {
                         bot.client.wLoginSigInfo.sKey.run {
-                            val delay = (expireTime - creationTime).seconds - 5.minutes
-                            logger.info { "Scheduled key refresh in ${delay.toHumanReadableString()}." }
+                            val delay = (expireTime - creationTime - 5).times(1000)
+                            logger.info { "Scheduled key refresh in ${delay.millisToHumanReadableString()}." }
                             delay(delay)
                         }
                         runCatching {

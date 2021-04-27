@@ -24,7 +24,6 @@ import net.mamoe.mirai.utils.runBIO
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.time.milliseconds
 
 internal val JsonForCache = Json {
     encodeDefaults = true
@@ -71,7 +70,7 @@ internal class GroupMemberListCaches(
 
     private val changedGroups: MutableCollection<Long> = ConcurrentLinkedQueue()
     private val groupListSaver: ScheduledJob by lazy {
-        ScheduledJob(bot.coroutineContext, bot.configuration.contactListCache.saveIntervalMillis.milliseconds) {
+        ScheduledJob(bot.coroutineContext, bot.configuration.contactListCache.saveIntervalMillis) {
             runBIO { saveGroupCaches() }
         }
     }
