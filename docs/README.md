@@ -69,6 +69,7 @@
 |:--------------------------|:--------------------------------------------|
 | `Python`                  | [Graia Framework][GraiaProject/Application] |
 | `Python`                  | [NoneBot]                                   |
+| `Python`                  | [jerrita/saaya](https://github.com/jerrita/saaya)|
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
