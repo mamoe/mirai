@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
 import kotlin.time.Duration
+import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 /**
@@ -183,11 +184,12 @@ public val UserOrBot.nameCardOrNick: String
  */
 @ExperimentalTime
 public suspend inline fun NormalMember.mute(duration: Duration) {
-    require(duration.inDays <= 30) { "duration must be at most 1 month" }
-    require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.inSeconds.toInt())
+    require(duration.toDouble(DurationUnit.DAYS) <= 30) { "duration must be at most 1 month" }
+    require(duration.toDouble(DurationUnit.SECONDS) > 0) { "duration must be greater than 0 second" }
+    this.mute(duration.toLong(DurationUnit.SECONDS).toInt())
 }
 
+@OptIn(ExperimentalTime::class)
 @Suppress("unused")
 @JvmName("mute-fcu0wV4")
 @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)

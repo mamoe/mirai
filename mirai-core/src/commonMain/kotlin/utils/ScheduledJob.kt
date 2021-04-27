@@ -15,12 +15,11 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.sample
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
 
 @OptIn(FlowPreview::class)
 internal class ScheduledJob(
     coroutineContext: CoroutineContext,
-    val interval: Duration,
+    private val intervalMillis: Long,
     private val task: suspend () -> Unit
 ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext[Job])) {
     private val coroutineExceptionHandler =
@@ -33,7 +32,7 @@ internal class ScheduledJob(
     private val channel = Channel<Unit>(Channel.CONFLATED)
 
     fun notice() {
-        if (interval == Duration.ZERO) {
+        if (intervalMillis == 0L) {
             launch { task() }
         } else channel.offer(Unit)
     }
@@ -47,11 +46,11 @@ internal class ScheduledJob(
     }
 
     init {
-        if (interval != Duration.ZERO) {
+        if (intervalMillis != 0L) {
             launch {
                 channel.receiveAsFlow()
                     .runCatching {
-                        sample(interval.toLongMilliseconds())
+                        sample(intervalMillis)
                     }
                     .fold(
                         onSuccess = { flow ->
@@ -60,7 +59,7 @@ internal class ScheduledJob(
                         onFailure = {
                             // binary change
                             while (isActive) {
-                                delay(interval)
+                                delay(intervalMillis)
                                 task()
                             }
                         }

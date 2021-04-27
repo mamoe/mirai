@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -83,6 +83,7 @@ public inline val Int.monthsToSeconds: Long
     get() = this * 30.daysToSeconds
 
 // @MiraiExperimentalApi
+@Deprecated("Do not use unstable API", level = DeprecationLevel.ERROR)
 @ExperimentalTime
 public fun Duration.toHumanReadableString(): String {
     val days = toInt(DurationUnit.DAYS)
@@ -93,6 +94,23 @@ public fun Duration.toHumanReadableString(): String {
         if (days != 0) append("${days}d ")
         if (hours != 0) append("${hours}h ")
         if (minutes != 0) append("${minutes}min ")
+        append("${s}s")
+    }
+}
+
+// since 2.7
+
+public fun Int.millisToHumanReadableString(): String = toLongUnsigned().millisToHumanReadableString()
+
+public fun Long.millisToHumanReadableString(): String {
+    val days = this / 1000 / 3600 / 24
+    val hours = this / 1000 / 3600 % 24
+    val minutes = this / 1000 / 60 % 60
+    val s = floor(this.toDouble() / 1000 % 60 * 1000) / 1000
+    return buildString {
+        if (days != 0L) append("${days}d ")
+        if (hours != 0L) append("${hours}h ")
+        if (minutes != 0L) append("${minutes}min ")
         append("${s}s")
     }
 }
