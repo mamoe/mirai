@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.contact.logMessageReceived
@@ -64,14 +63,14 @@ internal class PacketLoggingStrategyImpl(
     }
 
     private fun logReceivedImpl(packet: Packet, incomingPacket: IncomingPacket, logger: MiraiLogger) {
-        when {
-            packet is MessageEvent -> packet.logMessageReceived()
-            packet is Packet.NoLog -> {
+        when (packet) {
+            is MessageEvent -> packet.logMessageReceived()
+            is Packet.NoLog -> {
                 // nothing to do
             }
-            packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
-                "Event: $packet".replaceMagicCodes()
-            }
+            // packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
+            //     "Event: $packet".replaceMagicCodes()
+            // } // processed in global `Event.broadcast`
             else -> {
                 if (SHOW_PACKET_DETAILS) {
                     logger.verbose { "Recv: ${incomingPacket.commandName} ${incomingPacket.data}".replaceMagicCodes() }
