@@ -15,8 +15,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.data.Announcement
+import net.mamoe.mirai.data.AnnouncementParameters
 import net.mamoe.mirai.data.ReceiveAnnouncement
+import net.mamoe.mirai.data.covertToGroupAnnouncement
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -213,6 +216,29 @@ public interface Group : Contact, CoroutineScope, FileSupported {
         @JvmBlockingBridge
         @JvmStatic
         public suspend fun Group.setEssenceMessage(chain: MessageChain): Boolean = setEssenceMessage(chain.source)
+
+        /**
+         * 发送一个 [Announcement]
+         *
+         * @param title 公告标题
+         * @param msg 公告内容
+         * @param announcementParameters 公告设置
+         */
+        @MiraiExperimentalApi
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend fun Group.sendAnnouncement(
+            title: String,
+            msg: String,
+            announcementParameters: AnnouncementParameters = AnnouncementParameters()
+        ) {
+            checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
+            Mirai.sendGroupAnnouncement(
+                bot,
+                id,
+                Announcement(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
+            )
+        }
     }
 }
 

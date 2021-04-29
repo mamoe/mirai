@@ -14,6 +14,8 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.http.*
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
@@ -56,6 +58,7 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -565,6 +568,47 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @LowLevelApi
     @MiraiExperimentalApi
+    override suspend fun uploadGroupAnnouncementImage(
+        bot: Bot,
+        groupId: Long,
+        resource: ExternalResource
+    ): GroupAnnouncementImage = bot.asQQAndroidBot().run {
+        //https://youtrack.jetbrains.com/issue/KTOR-455
+        val rep = Mirai.Http.post<String> {
+            url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
+            body = MultiPartFormDataContent(formData {
+                append("\"bkn\"", bkn)
+                append("\"source\"", "troopNotice")
+                append("m", "0")
+                append(
+                    "\"pic_up\"",
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, ContentType.Image.PNG)
+                        append(HttpHeaders.ContentDisposition, "filename=\"temp_uploadFile.png\"")
+                    }
+                ) {
+                    writeFully(resource.inputStream().withUse { readBytes() })
+                }
+            })
+            headers {
+                append(
+                    "cookie",
+                    " p_uin=o${id};" +
+                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()?:error("cookie parse p_skey error")}; "
+                )
+            }
+        }
+        val jsonObj = json.parseToJsonElement(rep)
+        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int != 0) {
+            throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
+        }
+        val id = jsonObj.jsonObject["id"]?.jsonPrimitive?.content
+            ?: throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
+        return json.decodeFromString(GroupAnnouncementImage.serializer(), id)
+    }
+
+    @LowLevelApi
+    @MiraiExperimentalApi
     override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
         bot.asQQAndroidBot().run {
             val rep = withContext(network.coroutineContext) {
@@ -599,6 +643,49 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
                 ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
         }
+
+    @LowLevelApi
+    @MiraiExperimentalApi
+    override suspend fun sendGroupAnnouncementWithImage(
+        bot: Bot,
+        groupId: Long,
+        image: GroupAnnouncementImage,
+        announcement: GroupAnnouncement
+    ): String = bot.asQQAndroidBot().run {
+        val rep = withContext(network.coroutineContext) {
+            Mirai.Http.post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", bkn)
+                    append("text", announcement.msg.text)
+                    append("pinned", announcement.pinned)
+                    append("pic", image.id)
+                    append("imgWidth", image.width)
+                    append("imgHeight", image.height)
+                    append(
+                        "settings",
+                        json.encodeToString(
+                            GroupAnnouncementSettings.serializer(),
+                            announcement.settings ?: GroupAnnouncementSettings()
+                        )
+                    )
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        " p_uin=o${id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()?:error("parse error")}; "
+                    )
+                }
+
+            }
+        }
+        val jsonObj = json.parseToJsonElement(rep)
+        return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
+            ?: throw throw IllegalStateException("Send Announcement with image fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
+    }
 
     @LowLevelApi
     @MiraiExperimentalApi

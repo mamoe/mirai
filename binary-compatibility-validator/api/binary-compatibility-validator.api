@@ -401,6 +401,9 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)V
+	public static fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;ILjava/lang/Object;)V
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -415,6 +418,11 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 }
 
 public final class net/mamoe/mirai/contact/Group$Companion {
+	public final synthetic fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)Lkotlin/Unit;
+	public final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)V
+	public final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;ILjava/lang/Object;)V
+	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun setEssenceMessage (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;)Z
 	public final fun setEssenceMessage (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -637,8 +645,6 @@ public final class net/mamoe/mirai/data/Announcement$Companion {
 
 public final class net/mamoe/mirai/data/AnnouncementKt {
 	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/data/AnnouncementParameters;
-	public static final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/data/AnnouncementParameters {

@@ -20,7 +20,6 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.containsGroup
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import java.time.Instant
 
 /**
@@ -63,9 +62,11 @@ public open class Announcement internal constructor(
         if (parameters.image == null)
             Mirai.sendGroupAnnouncement(bot, group.id, covertToGroupAnnouncement())
         else {
-            val image =
-                Mirai.uploadGroupAnnouncementImage(bot, group.id, parameters.image.toExternalResource())
-            Mirai.sendGroupAnnouncementWithImage(bot, group.id, image, covertToGroupAnnouncement())
+            parameters.image.toExternalResource().use {
+                val image =
+                    Mirai.uploadGroupAnnouncementImage(bot, group.id, it)
+                Mirai.sendGroupAnnouncementWithImage(bot, group.id, image, covertToGroupAnnouncement())
+            }
         }
     }
 
@@ -262,27 +263,6 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
 public inline fun buildAnnouncementParameters(
     builderAction: AnnouncementParametersBuilder.() -> Unit
 ): AnnouncementParameters = AnnouncementParametersBuilder().apply(builderAction).build()
-
-/**
- * 发送一个 [Announcement]
- *
- * @param title 公告标题
- * @param msg 公告内容
- * @param announcementParameters 公告设置
- */
-@MiraiExperimentalApi
-public suspend fun Group.sendAnnouncement(
-    title: String,
-    msg: String,
-    announcementParameters: AnnouncementParameters = AnnouncementParameters()
-) {
-    checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
-    Mirai.sendGroupAnnouncement(
-        bot,
-        id,
-        Announcement(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
-    )
-}
 
 internal fun GroupAnnouncement.covertToAnnouncement(botId: Long): ReceiveAnnouncement {
     check(this.fid != null) { "GroupAnnouncement don't have id" }
