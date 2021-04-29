@@ -12,6 +12,8 @@ package net.mamoe.mirai.internal.network.impl.netty
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFutureListener
+import io.netty.channel.ChannelOutboundInvoker
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Job
@@ -55,6 +57,12 @@ internal fun MiraiLogger.asCoroutineExceptionHandler(
             e
         )
     }
+}
+
+internal fun ChannelOutboundInvoker.writeAndFlushOrCloseAsync(msg: Any?): ChannelFuture? {
+    return writeAndFlush(msg)
+        .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
+        .addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
 }
 
 
