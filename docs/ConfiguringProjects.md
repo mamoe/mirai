@@ -58,7 +58,7 @@ plugins {
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '2.6.2')
+    implementation 'net.mamoe:mirai-core:2.6.2'
 }
 ```
 
