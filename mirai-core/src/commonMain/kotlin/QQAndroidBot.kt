@@ -134,7 +134,7 @@ internal open class QQAndroidBot constructor(
                 BdhSessionSyncer,
                 BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
             )
-            set(ServerList, ServerListImpl())
+            set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
             set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
             set(
                 PacketHandler, PacketHandlerChain(
@@ -146,7 +146,7 @@ internal open class QQAndroidBot constructor(
             set(PacketCodec, PacketCodecImpl())
             set(
                 OtherClientUpdater,
-                OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("BotSessionSyncer"))
+                OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
             )
             set(ConfigPushSyncer, ConfigPushSyncerImpl())
 

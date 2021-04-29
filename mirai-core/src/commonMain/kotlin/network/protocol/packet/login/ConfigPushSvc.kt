@@ -23,7 +23,6 @@ import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
 import net.mamoe.mirai.internal.network.components.ServerAddress
 import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.context.BdhSession
-import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.networkType
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushResp
@@ -139,7 +138,6 @@ internal class ConfigPushSvc {
             }
 
             fun handleServerListPush(resp: PushReqResponse.ServerListPush) {
-                bot.network.logger.info { "Server list updated." }
                 val serverListPush = kotlin.runCatching {
                     resp.struct.jcebuf.loadAs(ServerListPush.serializer())
                 }.getOrElse {
@@ -153,8 +151,6 @@ internal class ConfigPushSvc {
                 } else {
                     serverListPush.mobileSSOServerList
                 }
-
-                bot.network.logger.info { "Server list: ${pushServerList.joinToString()}." }
 
                 if (pushServerList.isNotEmpty()) {
                     bot.components[ServerList].setPreferred(

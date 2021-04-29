@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.components.createAccountsSecretsManager
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 
@@ -45,6 +46,9 @@ internal class SsoProcessorContextImpl(
     override val account: BotAccount get() = bot.account
     override val device: DeviceInfo = configuration.deviceInfo?.invoke(bot) ?: DeviceInfo.random()
     override val protocol: BotConfiguration.MiraiProtocol get() = configuration.protocol
-    override val accountSecretsManager: AccountSecretsManager get() = configuration.createAccountsSecretsManager(bot.logger)
+    override val accountSecretsManager: AccountSecretsManager
+        get() = configuration.createAccountsSecretsManager(
+            bot.logger.subLogger("AccountSecretsManager")
+        )
     override val configuration: BotConfiguration get() = bot.configuration
 }
