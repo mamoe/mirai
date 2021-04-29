@@ -43,6 +43,7 @@ import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
