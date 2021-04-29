@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.internal.network.components
 
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.Event
@@ -61,6 +64,7 @@ internal class LoggingPacketHandlerAdapter(
 }
 
 internal class EventBroadcasterPacketHandler(
+    private val targetScope: CoroutineScope,
     private val logger: MiraiLogger,
 ) : PacketHandler {
 
@@ -69,6 +73,7 @@ internal class EventBroadcasterPacketHandler(
         impl(data)
     }
 
+    private val coroutineName = CoroutineName("Mirai-EventDispatcher-${logger.identity}")
     private suspend fun impl(packet: Packet) {
         if (packet is MultiPacket<*>) {
             for (p in packet) {
@@ -79,12 +84,14 @@ internal class EventBroadcasterPacketHandler(
             packet is CancellableEvent && packet.isCancelled -> return
             packet is BroadcastControllable && !packet.shouldBroadcast -> return
             packet is Event -> {
-                try {
-                    packet.broadcast()
-                } catch (e: Throwable) {
-                    if (logger.isEnabled) {
-                        val msg = optimizeEventToString(packet)
-                        logger.error(IllegalStateException("Exception while broadcasting event '$msg'", e))
+                targetScope.launch(coroutineName) {
+                    try {
+                        packet.broadcast()
+                    } catch (e: Throwable) {
+                        if (logger.isEnabled) {
+                            val msg = optimizeEventToString(packet)
+                            logger.error(IllegalStateException("Exception while broadcasting event '$msg'", e))
+                        }
                     }
                 }
             }

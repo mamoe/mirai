@@ -139,7 +139,7 @@ internal open class QQAndroidBot constructor(
             set(
                 PacketHandler, PacketHandlerChain(
                     LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
-                    EventBroadcasterPacketHandler(networkLogger),
+                    EventBroadcasterPacketHandler(bot, networkLogger),
                     CallPacketFactoryPacketHandler(bot)
                 )
             )
