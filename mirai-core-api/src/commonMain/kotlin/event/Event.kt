@@ -172,9 +172,11 @@ private fun logEvent(event: Event) {
     if (event is BotEvent) {
         event.bot.logger.verbose { "Event: $event" }
     } else {
-        MiraiLogger.TopLevel.verbose { "Event: $event" }
+        topLevelEventLogger.verbose { "Event: $event" }
     }
 }
+
+private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
 
 /**
  * 在 Java 广播一个事件的唯一途径.
