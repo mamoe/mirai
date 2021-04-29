@@ -50,26 +50,29 @@ internal class ConfigPushSvc {
     ) {
         override val canBeCached: Boolean get() = false
 
-        sealed class PushReqResponse(val struct: PushReqJceStruct) : Packet, Event, AbstractEvent(), Packet.NoEventLog {
-            class Unknown(struct: PushReqJceStruct) : PushReqResponse(struct) {
+        sealed class PushReqResponse(
+            val struct: PushReqJceStruct,
+            val bot: QQAndroidBot,
+        ) : Packet, Event, AbstractEvent(), Packet.NoEventLog {
+            class Unknown(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.Unknown"
                 }
             }
 
-            class LogAction(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class LogAction(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.LogAction"
                 }
             }
 
-            class ServerListPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class ServerListPush(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.ServerListPush"
                 }
             }
 
-            class ConfigPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class ConfigPush(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.ConfigPush"
                 }
@@ -81,10 +84,10 @@ internal class ConfigPushSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse {
             val pushReq = readUniPacket(PushReqJceStruct.serializer(), "PushReq")
             return when (pushReq.type) {
-                1 -> PushReqResponse.ServerListPush(pushReq)
-                2 -> PushReqResponse.ConfigPush(pushReq)
-                3 -> PushReqResponse.LogAction(pushReq)
-                else -> PushReqResponse.Unknown(pushReq)
+                1 -> PushReqResponse.ServerListPush(pushReq, bot)
+                2 -> PushReqResponse.ConfigPush(pushReq, bot)
+                3 -> PushReqResponse.LogAction(pushReq, bot)
+                else -> PushReqResponse.Unknown(pushReq, bot)
             }
         }
 
