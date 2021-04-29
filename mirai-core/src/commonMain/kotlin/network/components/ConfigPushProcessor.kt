@@ -32,7 +32,7 @@ internal class ConfigPushProcessorImpl(
     private val logger: MiraiLogger,
 ) : ConfigPushProcessor {
     override suspend fun syncConfigPush(network: NetworkHandler) {
-        if (nextEventOrNull<ConfigPushSvc.PushReq.PushReqResponse>(60_000) == null) {
+        if (nextEventOrNull<ConfigPushSvc.PushReq.PushReqResponse>(60_000) { it.bot == network.context.bot } == null) {
             val bdhSyncer = network.context[BdhSessionSyncer]
             if (!bdhSyncer.hasSession) {
                 val e = IllegalStateException("Timeout waiting for ConfigPush.")
