@@ -18,7 +18,6 @@ import net.mamoe.mirai.utils.MiraiLogger
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
 
@@ -49,14 +48,16 @@ internal class Handler<in E : Event> internal constructor(
             withContext(subscriberContext) { handler.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
         } catch (e: Throwable) {
             subscriberContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
-                ?: coroutineContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
+                ?: currentCoroutineContext()[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: kotlin.run {
-                    @Suppress("DEPRECATION")
-                    (if (event is BotEvent) event.bot.logger else MiraiLogger.TopLevel)
-                        .warning(
-                            """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
-                        either in coroutineContext from Handler job, or in subscriberContext""".trimIndent(), e
-                        )
+                    val logger = if (event is BotEvent) event.bot.logger else MiraiLogger.TopLevel
+                    val subscriberName = subscriberContext[CoroutineName]?.name ?: "<unnamed>"
+                    val broadcasterName = currentCoroutineContext()[CoroutineName]?.name ?: "<unnamed>"
+                    val message =
+                        "An exception occurred when processing event. " +
+                                "Subscriber scope: '$subscriberName'. " +
+                                "Broadcaster scope: '$broadcasterName'"
+                    logger.warning(message, e)
                 }
             // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
             // ListeningStatus.STOPPED
