@@ -43,6 +43,7 @@ import net.mamoe.mirai.internal.utils.SocketException
 import net.mamoe.mirai.internal.utils.UnknownHostException
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration.HeartbeatStrategy
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -201,7 +202,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
-        startStatHeartbeatJobOrKill()
+        if (bot.configuration.heartbeatStrategy != HeartbeatStrategy.NONE) {
+            startStatHeartbeatJobOrKill()
+        }
         startHeartbeatJobOrKill()
         bot.eventChannel.subscribeOnce<BotOnlineEvent>(this.coroutineContext) {
             val bot = (bot as QQAndroidBot)
@@ -506,11 +509,20 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private suspend fun doStatHeartbeat(): Throwable? {
         return retryCatching(2) {
-            StatSvc.SimpleGet(bot.client)
-                .sendAndExpect<StatSvc.SimpleGet.Response>(
-                    timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-                    retry = 2
-                )
+            when (bot.configuration.heartbeatStrategy) {
+                HeartbeatStrategy.STAT_HB -> {
+                    StatSvc.SimpleGet(bot.client)
+                        .sendAndExpect<StatSvc.SimpleGet.Response>(
+                            timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                            retry = 2
+                        )
+                }
+                HeartbeatStrategy.REGISTER -> {
+                    registerClientOnline()
+                }
+                HeartbeatStrategy.NONE -> {
+                }
+            }
             return null
         }.exceptionOrNull()
     }
