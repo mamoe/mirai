@@ -5575,6 +5575,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
 	public final fun getFirstReconnectDelayMillis ()J
 	public final fun getHeartbeatPeriodMillis ()J
+	public final fun getHeartbeatStrategy ()Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
 	public final fun getHeartbeatTimeoutMillis ()J
 	public final fun getHighwayUploadCoroutineCount ()I
 	public final fun getJson ()Lkotlinx/serialization/json/Json;
@@ -5619,6 +5620,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
 	public final fun setFirstReconnectDelayMillis (J)V
 	public final fun setHeartbeatPeriodMillis (J)V
+	public final fun setHeartbeatStrategy (Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;)V
 	public final fun setHeartbeatTimeoutMillis (J)V
 	public final fun setHighwayUploadCoroutineCount (I)V
 	public final fun setJson (Lkotlinx/serialization/json/Json;)V
@@ -5650,6 +5652,14 @@ public final class net/mamoe/mirai/utils/BotConfiguration$ContactListCache {
 	public final fun setGroupMemberListCacheEnabled (Z)V
 	public final synthetic fun setSaveInterval-LRDsOJo (D)V
 	public final fun setSaveIntervalMillis (J)V
+}
+
+public final class net/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy : java/lang/Enum {
+	public static final field NONE Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
+	public static final field REGISTER Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
+	public static final field STAT_HB Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
+	public static fun values ()[Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
 }
 
 public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/lang/Enum {
