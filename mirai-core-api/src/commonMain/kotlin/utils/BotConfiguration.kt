@@ -512,6 +512,7 @@ public open class BotConfiguration { // open for Java
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
+            new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
             new.firstReconnectDelayMillis = firstReconnectDelayMillis
             new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
