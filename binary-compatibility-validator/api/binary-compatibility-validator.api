@@ -4843,6 +4843,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 }
 
 public final class net/mamoe/mirai/message/data/MusicKind : java/lang/Enum {
+	public static final field KugouMusic Lnet/mamoe/mirai/message/data/MusicKind;
+	public static final field KuwoMusic Lnet/mamoe/mirai/message/data/MusicKind;
 	public static final field MiguMusic Lnet/mamoe/mirai/message/data/MusicKind;
 	public static final field NeteaseCloudMusic Lnet/mamoe/mirai/message/data/MusicKind;
 	public static final field QQMusic Lnet/mamoe/mirai/message/data/MusicKind;
