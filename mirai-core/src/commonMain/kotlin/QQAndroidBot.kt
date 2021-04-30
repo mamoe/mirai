@@ -73,7 +73,7 @@ internal class QQAndroidBot constructor(
     private val cacheDir: File by lazy {
         configuration.workingDir.resolve(bot.configuration.cacheDir).apply { mkdirs() }
     }
-    private val accountSecretsFile: File by lazy {
+    internal val accountSecretsFile: File by lazy {
         cacheDir.resolve("account.secrets")
     }
 
