@@ -43,7 +43,6 @@ import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -135,7 +134,7 @@ internal open class QQAndroidBot constructor(
                 BdhSessionSyncer,
                 BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
             )
-            set(ServerList, ServerListImpl())
+            set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
             set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
             set(
                 PacketHandler, PacketHandlerChain(

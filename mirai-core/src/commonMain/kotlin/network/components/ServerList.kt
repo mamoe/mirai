@@ -12,6 +12,9 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ServerList.Companion.DEFAULT_SERVER_LIST
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.info
+import org.jetbrains.annotations.TestOnly
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -23,6 +26,10 @@ internal data class ServerAddress(
     init {
         require(port >= 0) { "port must be positive: '$port'" }
         require(host.isNotBlank()) { "host is invalid: '$host'" }
+    }
+
+    override fun toString(): String {
+        return "$host:$port"
     }
 
     fun toSocketAddress(): InetSocketAddress = InetSocketAddress.createUnresolved(host, port)
@@ -78,8 +85,15 @@ internal interface ServerList {
 }
 
 internal class ServerListImpl(
+    private val logger: MiraiLogger,
     initial: Collection<ServerAddress> = emptyList()
 ) : ServerList {
+    @TestOnly
+    constructor(initial: Collection<ServerAddress>) : this(MiraiLogger.TopLevel, initial)
+
+    @TestOnly
+    constructor() : this(MiraiLogger.TopLevel)
+
     @Volatile
     private var preferred: Set<ServerAddress> = DEFAULT_SERVER_LIST
 
@@ -88,6 +102,7 @@ internal class ServerListImpl(
 
     @Synchronized
     override fun setPreferred(list: Collection<ServerAddress>) {
+        logger.info { "Server list: ${list.joinToString()}." }
         require(list.isNotEmpty()) { "list cannot be empty." }
         preferred = list.toSet()
     }
