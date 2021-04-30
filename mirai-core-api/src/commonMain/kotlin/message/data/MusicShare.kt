@@ -176,6 +176,26 @@ public enum class MusicKind constructor(
         "0.0.0",
         "cmccwm.mobilemusic",
         "6cdc72a439cef99a3418d2a78aa28c73"
+    ),
+    /**
+     * @since 2.7
+     */
+    KugouMusic(
+        205141,
+        1,
+        "0.0.0",
+        "com.kugou.android",
+        "fe4a24d80fcf253a00676a808f62c2c6"
+    ),
+    /**
+     * @since 2.7
+     */
+    KuwoMusic(
+        100243533,
+        1,
+        "0.0.0",
+        "cn.kuwo.player",
+        "bf9ff4ffb4c558a34ee3fd52c223ebf5"
     )
 
     // add more?  https://github.com/mamoe/mirai/issues/new/choose
