@@ -105,8 +105,8 @@ internal open class QQAndroidClient(
 
 
     private val sequenceId: AtomicInt = atomic(getRandomUnsignedInt())
-    internal fun atomicNextMessageSequenceId(): Int = synchronized(sequenceId) { sequenceId.getAndIncrement() }
-    internal fun nextRequestPacketRequestId(): Int = synchronized(sequenceId) { sequenceId.getAndIncrement() }
+    internal fun atomicNextMessageSequenceId(): Int = sequenceId.incrementAndGet()
+    internal fun nextRequestPacketRequestId(): Int = sequenceId.incrementAndGet()
 
     private val highwayDataTransSequenceId: AtomicInt = atomic(Random.nextInt(100000))
     internal fun nextHighwayDataTransSequenceId(): Int = highwayDataTransSequenceId.incrementAndGet()
