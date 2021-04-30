@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.utils.BotConfiguration.HeartbeatStrategy
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toReadPacket
@@ -126,7 +127,9 @@ internal class StatSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val packet = readUniPacket(SvcRespRegister.serializer())
             packet.iHelloInterval.let {
-                bot.configuration.statHeartbeatPeriodMillis = it.times(1000).toLong()
+                if (bot.configuration.heartbeatStrategy == HeartbeatStrategy.STAT_HB) {
+                    bot.configuration.statHeartbeatPeriodMillis = it.times(1000).toLong()
+                }
             }
 
             return Response(packet)
