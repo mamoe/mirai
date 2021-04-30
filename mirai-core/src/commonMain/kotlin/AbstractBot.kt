@@ -17,7 +17,6 @@
 
 package net.mamoe.mirai.internal
 
-import io.ktor.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
@@ -129,6 +128,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 }
                 is BotOfflineEvent.Force -> {
                     bot.logger.info { "Connection occupied by another android device: ${event.message}" }
+                    bot.asQQAndroidBot().accountSecretsFile.delete()
                     if (event.reconnect) {
                         bot.logger.info { "Reconnecting..." }
                         // delay(3000)
