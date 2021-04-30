@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -29,6 +28,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.MemberNick.Companion.generateMemberNickFromMember
 import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -50,6 +50,16 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         companion object {
             val EMPTY = SendGroupMessageReceipt(0, 0, 0)
+        }
+    }
+
+    internal data class MemberNick(val nick: String, val isNameCard: Boolean = false) {
+        companion object {
+            fun Member.generateMemberNickFromMember(): MemberNick {
+                return nameCard.takeIf { nameCard.isNotEmpty() }?.let {
+                    MemberNick(nameCard, true)
+                } ?: MemberNick(nick, false)
+            }
         }
     }
 
@@ -101,17 +111,17 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
 
         val sender: Member  // null if sync from other client
-        val name: String
+        val nameCard: MemberNick
 
         if (anonymous != null) { // anonymous member
             sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeBase64())
-            name = sender.nameCard
+            nameCard = sender.generateMemberNickFromMember()
         } else { // normal member chat
             sender = group[msgHead.fromUin] as NormalMemberImpl? ?: kotlin.run {
                 bot.network.logger.warning { "Failed to find member ${msgHead.fromUin} in group ${group.id}" }
                 return null
             }
-            name = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.nameCardOrNick
+            nameCard = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.generateMemberNickFromMember()
         }
 
         sender.info?.castOrNull<MemberInfoImpl>()?.run {
@@ -124,14 +134,14 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 time = msgHead.msgTime,
                 group = group,
                 sender = sender,
-                senderName = name,
+                senderName = nameCard.nick,
             )
         } else {
 
-            broadcastNameCardChangedEventIfNecessary(sender, name)
+            broadcastNameCardChangedEventIfNecessary(sender, nameCard)
 
             return GroupMessageEvent(
-                senderName = name,
+                senderName = nameCard.nick,
                 sender = sender,
                 message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, GROUP),
                 permission = sender.permission,
@@ -140,19 +150,34 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         }
     }
 
-    private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, name: String) {
-        val currentNameCard = sender.nameCard
-        if (sender is NormalMemberImpl && name != currentNameCard) {
-            sender._nameCard = name
-            MemberCardChangeEvent(currentNameCard, name, sender).broadcastWithBot(sender.bot)
+    private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, memberNick: MemberNick) {
+        if (sender is NormalMemberImpl) {
+            val currentNameCard = sender.nameCard
+            if (memberNick.isNameCard) {
+                memberNick.nick.let { name ->
+                    if (currentNameCard != name) {
+                        sender._nameCard = name
+                        MemberCardChangeEvent(currentNameCard, name, sender).broadcastWithBot(sender.bot)
+                    }
+                }
+            } else {
+                //说明未设置群名片
+                if (currentNameCard.isNotEmpty()) {
+                    sender._nameCard = ""
+                    MemberCardChangeEvent(currentNameCard, "", sender).broadcastWithBot(sender.bot)
+                }
+            }
         }
     }
 
     private fun findSenderName(
         extraInfo: ImMsgBody.ExtraInfo?,
         groupInfo: MsgComm.GroupInfo
-    ) = extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.decodeCommCardNameBuf()
-        ?: groupInfo.groupCard.takeIf { it.isNotEmpty() }
+    ): MemberNick? = extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.decodeCommCardNameBuf()?.let {
+        MemberNick(it, true)
+    } ?: groupInfo.takeIf { it.groupCard.isNotEmpty() }?.let {
+        MemberNick(it.groupCard, it.groupCardType != 2)
+    }
 
     private fun ByteArray.decodeCommCardNameBuf() = kotlin.runCatching {
         if (this[0] == 0x0A.toByte()) {
