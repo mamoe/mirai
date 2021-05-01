@@ -86,17 +86,20 @@ internal open class QQAndroidClient(
     internal val miscBitMap: Int get() = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
     internal val mainSigMap: Int get() = protocol.mainSigMap
 
-    private val _ssoSequenceId: AtomicInt = atomic(Random.nextInt(100000))
+    @Volatile
+    private var _ssoSequenceId: Int = Random.nextInt(100000)
 
     var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
 
+    @Synchronized
     @MiraiInternalApi("Do not use directly. Get from the lambda param of buildSsoPacket")
-    internal fun nextSsoSequenceId(): Int = _ssoSequenceId.addAndGet(2).also { sequence ->
-        synchronized(_ssoSequenceId) {
-            if (sequence > 100000) {
-                _ssoSequenceId.getAndSet(Random.nextInt(100000) + 60000)
-            }
+    internal fun nextSsoSequenceId(): Int {
+        _ssoSequenceId += 2
+        val new = _ssoSequenceId
+        if (new > 100000) {
+            _ssoSequenceId = Random.nextInt(Random.nextInt(100000) + 60000)
         }
+        return new
     }
 
 
@@ -108,15 +111,18 @@ internal open class QQAndroidClient(
     internal fun atomicNextMessageSequenceId(): Int = sequenceId.incrementAndGet()
     internal fun nextRequestPacketRequestId(): Int = sequenceId.incrementAndGet()
 
-    private val highwayDataTransSequenceId: AtomicInt = atomic(Random.nextInt(100000))
-    internal fun nextHighwayDataTransSequenceId(): Int = highwayDataTransSequenceId.incrementAndGet()
-        .also { sequence ->
-            synchronized(highwayDataTransSequenceId) {
-                if (sequence > 1000000) {
-                    highwayDataTransSequenceId.getAndSet(Random.nextInt(1060000))
-                }
-            }
+    @Volatile
+    private var highwayDataTransSequenceId: Int = Random.nextInt(100000)
+
+    @Synchronized
+    internal fun nextHighwayDataTransSequenceId(): Int {
+        highwayDataTransSequenceId += 1
+        val new = highwayDataTransSequenceId
+        if (new > 1000000) {
+            highwayDataTransSequenceId = Random.nextInt(1060000)
         }
+        return new
+    }
 
     private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
     internal fun getFriendSeq(): Int = friendSeq.value
