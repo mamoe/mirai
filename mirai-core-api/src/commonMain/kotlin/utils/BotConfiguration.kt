@@ -119,7 +119,7 @@ public open class BotConfiguration { // open for Java
      *   val bot = Bot() {
      *     inheritCoroutineContext()
      *   }
-     *   bot.subscribe { ... }
+     *   bot.eventChannel.subscribe { ... }
      *
      *   // 主线程不会退出, 直到 Bot 离线.
      * }
