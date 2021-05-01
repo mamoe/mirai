@@ -501,7 +501,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             member.checkIsMemberImpl()
 
             member.lastMessageSequence.loop { instant ->
-                if (msgHead.msgSeq > instant) {
+                if (member.lastMessageSequence.value != msgHead.msgSeq && contentHead?.autoReply != 1) {
                     if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
                         return if (fromSync) {
                             GroupTempMessageSyncEvent(
