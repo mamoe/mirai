@@ -97,7 +97,7 @@ internal open class QQAndroidClient(
         _ssoSequenceId += 2
         val new = _ssoSequenceId
         if (new > 100000) {
-            _ssoSequenceId = Random.nextInt(Random.nextInt(100000) + 60000)
+            _ssoSequenceId = Random.nextInt(100000) + 60000
         }
         return new
     }
