@@ -249,7 +249,7 @@ internal open class NettyNetworkHandler(
         }
 
         override suspend fun resumeConnection0() {
-            connectResult.await() // propagates exceptions
+            connectResult.join() // propagates exceptions
             val connection = connection.await()
             setState(this) { StateLoading(connection) }
                 ?.resumeConnection()
