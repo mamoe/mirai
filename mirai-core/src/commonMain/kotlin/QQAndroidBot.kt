@@ -30,6 +30,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespTy
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.ScheduledJob
+import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKeyUpdater
+import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.friendCacheFile
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -197,6 +199,8 @@ internal class QQAndroidBot constructor(
     @Throws(LoginFailedException::class) // only
     override suspend fun relogin(cause: Throwable?) {
         bdhSyncer.loadFromCache()
+        client.ecdhWithPublicKey =
+            ECDHWithPublicKey(ECDHInitialPublicKeyUpdater.getLatestPublicKey(client.uin, client.ecdhInitialPublicKey))
         client.useNextServers { host, port ->
             // net error in login
             // network is dead therefore can't send any packet

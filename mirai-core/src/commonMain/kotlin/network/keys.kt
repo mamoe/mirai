@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.network.LoginFailedException
@@ -230,7 +229,7 @@ internal fun QQAndroidClient.allKeys() = mapOf(
     "tgtgtKey" to tgtgtKey,
     "tgtKey" to wLoginSigInfo.tgtKey,
     "deviceToken" to wLoginSigInfo.deviceToken,
-    "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey
+    "shareKeyCalculatedByConstPubKey" to ecdhWithPublicKey.keyPair.mockedShareKey
     //"t108" to wLoginSigInfo.t1,
     //"t10c" to t10c,
     //"t163" to t163

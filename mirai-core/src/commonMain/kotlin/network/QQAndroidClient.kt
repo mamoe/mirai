@@ -28,7 +28,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.random.Random
@@ -68,13 +68,13 @@ internal val DefaultServerList: MutableSet<Pair<String, Int>> =
 @PublishedApi
 internal open class QQAndroidClient(
     val account: BotAccount,
-    val ecdh: ECDH = ECDH(),
     val device: DeviceInfo,
-    accountSecrets: AccountSecrets
+    accountSecrets: AccountSecrets,
 ) : AccountSecrets by accountSecrets {
     lateinit var _bot: QQAndroidBot
     val bot: QQAndroidBot get() = _bot
 
+    internal lateinit var ecdhWithPublicKey: ECDHWithPublicKey
 
     internal var strangerSeq: Int = 0
 

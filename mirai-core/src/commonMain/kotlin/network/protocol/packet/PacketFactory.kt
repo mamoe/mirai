@@ -399,10 +399,14 @@ internal object KnownPacketFactories {
         val packet = when (encryptionMethod) {
             4 -> {
                 var data =
-                    TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, length = (this.remaining - 1).toInt())
+                    TEA.decrypt(
+                        this,
+                        bot.client.ecdhWithPublicKey.keyPair.mockedShareKey,
+                        length = (this.remaining - 1).toInt()
+                    )
 
                 val peerShareKey =
-                    bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
+                    bot.client.ecdhWithPublicKey.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                 data = TEA.decrypt(data, peerShareKey)
 
                 packetFactory.decode(bot, data)
@@ -423,7 +427,7 @@ internal object KnownPacketFactories {
                     val byteArrayBuffer = this.readBytes(size)
 
                     runCatching {
-                        TEA.decrypt(byteArrayBuffer, bot.client.ecdh.keyPair.initialShareKey, size)
+                        TEA.decrypt(byteArrayBuffer, bot.client.ecdhWithPublicKey.keyPair.mockedShareKey, size)
                     }.getOrElse {
                         TEA.decrypt(byteArrayBuffer, bot.client.randomKey, size)
                     }.toReadPacket()

@@ -22,7 +22,7 @@ internal object WtLogin2 : WtLoginExt {
         ticket: String
     ): OutgoingPacket = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
-            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
+            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdhWithPublicKey), 0x0810) {
                 writeShort(2) // subCommand
                 writeShort(4) // count of TLVs
                 t193(ticket)
@@ -39,7 +39,7 @@ internal object WtLogin2 : WtLoginExt {
         captchaAnswer: String
     ): OutgoingPacket = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
-            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
+            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdhWithPublicKey), 0x0810) {
                 writeShort(2) // subCommand
                 writeShort(4) // count of TLVs
                 t2(captchaAnswer, captchaSign, 0)

@@ -14,6 +14,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
+import java.util.*
 import javax.crypto.KeyAgreement
 
 
@@ -23,19 +24,18 @@ internal actual typealias ECDHPrivateKey = PrivateKey
 internal actual typealias ECDHPublicKey = PublicKey
 
 internal actual class ECDHKeyPairImpl(
-    private val delegate: KeyPair
+    private val delegate: KeyPair,
+    initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key
 ) : ECDHKeyPair {
     override val privateKey: ECDHPrivateKey get() = delegate.private
     override val publicKey: ECDHPublicKey get() = delegate.public
-
-    override val initialShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
+    override val mockedShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
+    override val mockedPublicKey: ByteArray by lazy { publicKey.encoded.copyOfRange(26, 91) }
 }
-
-internal actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        private const val curveName = "secp192k1" // p-256
+        private const val curveName = "prime256v1" // p-256
 
         actual val isECDHAvailable: Boolean
 
@@ -64,14 +64,24 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             }.isSuccess
         }
 
-        actual fun generateKeyPair(): ECDHKeyPair {
+        actual fun generateKeyPair(initialPublicKey: ECDHPublicKey): ECDHKeyPair {
             if (!isECDHAvailable) {
                 return ECDHKeyPair.DefaultStub
             }
             return ECDHKeyPairImpl(
                 KeyPairGenerator.getInstance("ECDH")
                     .also { it.initialize(ECGenParameterSpec(curveName)) }
-                    .genKeyPair())
+                    .genKeyPair(), initialPublicKey)
+        }
+
+        actual fun verifyPublicKey(version: Int, rsaKey: String, publicKey: String, publicKeySign: String): Boolean {
+            val arrayForVerify = "305$version$publicKey".toByteArray()
+            val publicKeyForVerify =
+                KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(rsaKey)))
+            val signInstance = Signature.getInstance("SHA256WithRSA")
+            signInstance.initVerify(publicKeyForVerify)
+            signInstance.update(arrayForVerify)
+            return signInstance.verify(Base64.getDecoder().decode(publicKeySign))
         }
 
         actual fun calculateShareKey(
@@ -81,7 +91,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)
             instance.doPhase(publicKey, true)
-            return instance.generateSecret().md5()
+            return instance.generateSecret().copyOf(16).md5()
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {
