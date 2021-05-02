@@ -26,6 +26,13 @@ jobs:
 
       - name: mirai-core Tests
         run: ./gradlew check -Pmirai.pkc.check.enable --scan
+      - name: Upload failed project classes
+        if: ${{ failure() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: failed-project
+          path: "**.class"
 
   build-all:
     runs-on: ubuntu-latest
@@ -52,3 +59,11 @@ jobs:
 
       - name: All Tests
         run: ./gradlew check -Pmirai.pkc.check.enable --scan
+
+      - name: Upload failed project classes
+        if: ${{ failure() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: failed-project-all
+          path: "**.class"
