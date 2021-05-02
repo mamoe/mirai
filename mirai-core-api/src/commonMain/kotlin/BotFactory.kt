@@ -118,5 +118,46 @@ public interface BotFactory {
         override fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot {
             return Mirai.BotFactory.newBot(qq, passwordMd5, configuration)
         }
+
+        /**
+         * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+         *
+         * ```
+         * newBot(123, "") {
+         *     // this: BotConfiguration
+         *     fileBasedDeviceInfo()
+         * }
+         * ```
+         *
+         * @since 2.7
+         */
+        @JvmSynthetic
+        public inline fun newBot(
+            qq: Long,
+            password: String,
+            configuration: BotConfiguration.() -> Unit /* = BotConfiguration.() -> Unit */
+        ): Bot = newBot(qq, password, configuration.run { BotConfiguration().apply(configuration) })
+
+        // implementation notes: this is inline for `inheritCoroutineContext()`
+        // see https://github.com/mamoe/mirai/commit/0dbb448cad1ed4773d48ccb8c0b497841bc9fa4c#r50249446
+
+        /**
+         * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+         *
+         * ```
+         * newBot(123, password) {
+         *     // this: BotConfiguration
+         *     fileBasedDeviceInfo()
+         * }
+         * ```
+         *
+         * @since 2.7
+         */
+        @JvmSynthetic
+        public inline fun newBot(
+            qq: Long,
+            passwordMd5: ByteArray,
+            configuration: BotConfiguration.() -> Unit /* = BotConfiguration.() -> Unit */
+        ): Bot = newBot(qq, passwordMd5, configuration.run { BotConfiguration().apply(configuration) })
     }
 }

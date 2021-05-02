@@ -64,7 +64,9 @@ public abstract interface class net/mamoe/mirai/BotFactory$BotConfigurationLambd
 }
 
 public final class net/mamoe/mirai/BotFactory$INSTANCE : net/mamoe/mirai/BotFactory {
+	public final synthetic fun newBot (JLjava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (JLjava/lang/String;Lnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
+	public final synthetic fun newBot (J[BLkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (J[BLnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
 }
 
