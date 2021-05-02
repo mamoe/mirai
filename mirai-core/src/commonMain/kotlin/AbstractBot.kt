@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.components.BotReinitActions
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
@@ -79,6 +80,7 @@ internal abstract class AbstractBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     abstract val components: ConcurrentComponentStorage
+    abstract val botReinitActions: BotReinitActions
 
     final override val isOnline: Boolean get() = network.isOk()
     final override val eventChannel: EventChannel<BotEvent> =

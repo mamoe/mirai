@@ -42,7 +42,7 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractTest() {
     init {
-        System.setProperty("mirai.debug.network.state.observer.logging", "true")
+        System.setProperty("mirai.debug.network.state.observer.logging", "full")
         System.setProperty("mirai.debug.network.show.all.components", "true")
     }
 
@@ -51,6 +51,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     protected open var bot: QQAndroidBot by lateinitMutableProperty {
         MockBot {
+            debugConf { allowReinitActions = true }
             networkHandlerProvider { createHandler() }
         }
     }
@@ -65,27 +66,62 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     }
 
     protected val nhEvents = ConcurrentLinkedQueue<NHEvent>()
+    protected open val defaultSsoProcessor: SsoProcessor get() = _defaultSsoProcessor
+    private val _defaultSsoProcessor = object : SsoProcessor {
+        override val client: QQAndroidClient get() = bot.client
+        override val ssoSession: SsoSession get() = bot.client
+        override var firstLoginSucceed: Boolean = false
+        override var registerResp: StatSvc.Register.Response? = null
+        override fun createObserverChain(): StateObserver = defaultComponents[StateObserver]
+        var onLogin: (suspend NetworkHandler.() -> Unit)? = null
+        var onLogout: (suspend NetworkHandler.() -> Unit)? = null
+
+        override suspend fun login(handler: NetworkHandler) {
+            onLogin?.invoke(handler) ?: kotlin.run {
+                nhEvents.add(NHEvent.Login)
+            }
+            networkLogger.debug { "SsoProcessor.login" }
+        }
+
+        override suspend fun logout(handler: NetworkHandler) {
+            onLogout?.invoke(handler) ?: kotlin.run {
+                nhEvents.add(NHEvent.Logout)
+            }
+            networkLogger.debug { "SsoProcessor.logout" }
+        }
+    }
+
+    protected open fun withSsoProcessor(
+        login: (suspend NetworkHandler.() -> Unit)? = null
+    ) = withSsoProcessor(login = login, logout = null)
+
+    protected open fun withSsoProcessor(
+        login: (suspend NetworkHandler.() -> Unit)? = null,
+        logout: (suspend NetworkHandler.() -> Unit)? = null,
+    ) {
+        defaultSsoProcessor.firstLoginSucceed = false
+        if (defaultSsoProcessor !== _defaultSsoProcessor) {
+            throw UnsupportedOperationException()
+        }
+        _defaultSsoProcessor.onLogin = login
+        _defaultSsoProcessor.onLogout = login
+    }
+
+    protected open fun resetSsoProcessor() {
+        defaultComponents[SsoProcessor] = defaultSsoProcessor
+        bot.components[BotReinitActions].invokeActions()
+        _defaultSsoProcessor.onLogin = null
+        _defaultSsoProcessor.onLogout = null
+        _defaultSsoProcessor.registerResp = null
+        nhEvents.clear()
+    }
 
     protected open val defaultComponents = ConcurrentComponentStorage().apply {
         val components = this
         val configuration = bot.configuration
+        set(BotReinitActions, BotReinitActions.byDelegate { bot.components[BotReinitActions] })
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
-        set(SsoProcessor, object : SsoProcessor {
-            override val client: QQAndroidClient get() = bot.client
-            override val ssoSession: SsoSession get() = bot.client
-            override var firstLoginSucceed: Boolean = false
-            override var registerResp: StatSvc.Register.Response? = null
-            override fun createObserverChain(): StateObserver = get(StateObserver)
-            override suspend fun login(handler: NetworkHandler) {
-                nhEvents.add(NHEvent.Login)
-                networkLogger.debug { "SsoProcessor.login" }
-            }
-
-            override suspend fun logout(handler: NetworkHandler) {
-                nhEvents.add(NHEvent.Logout)
-                networkLogger.debug { "SsoProcessor.logout" }
-            }
-        })
+        set(SsoProcessor, defaultSsoProcessor)
         set(HeartbeatProcessor, object : HeartbeatProcessor {
             override suspend fun doAliveHeartbeatNow(networkHandler: NetworkHandler) {
                 nhEvents.add(NHEvent.DoHeartbeatNow)

@@ -54,7 +54,8 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 
 // for tests
 internal class BotDebugConfiguration(
-    var stateObserver: StateObserver? = LOGGING
+    var stateObserver: StateObserver? = LOGGING,
+    var allowReinitActions: Boolean = false,
 )
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
@@ -65,6 +66,21 @@ internal open class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
     val client get() = components[SsoProcessor].client
+
+    /*
+     * Can't place this component into `components` field
+     *
+     * [ComponentStorage.stateObserverChain()] or more need register reinit actions into it.
+     *
+     * By calling `components`, it will enter a death looping.
+     * At that time `components` were still initializing
+     *
+     */
+    override val botReinitActions = if (debugConfiguration.allowReinitActions) {
+        BotReinitActionsImpl()
+    } else {
+        BotReinitActions.EMPTY
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // network
@@ -77,6 +93,11 @@ internal open class QQAndroidBot constructor(
             components[BotInitProcessor].asObserver(),
             object : StateChangedObserver(State.OK) {
                 private val shouldBroadcastRelogin = atomic(false)
+
+                init {
+                    botReinitActions.addAction { shouldBroadcastRelogin.value = false }
+                }
+
                 override fun stateChanged0(
                     networkHandler: NetworkHandlerSupport,
                     previous: BaseStateImpl,
@@ -120,6 +141,7 @@ internal open class QQAndroidBot constructor(
     override val components: ConcurrentComponentStorage by lazy {
         ConcurrentComponentStorage().apply {
             val components = this // avoid mistakes
+            set(BotReinitActions, botReinitActions)
             set(SsoProcessorContext, SsoProcessorContextImpl(bot))
             set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
             set(HeartbeatProcessor, HeartbeatProcessorImpl())
