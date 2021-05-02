@@ -386,13 +386,7 @@ internal fun highwayPacketSession(
                 version = 1,
                 uin = client.uin.toString(),
                 command = command,
-                seq = when (commandId) {
-                    2 -> client.nextHighwayDataTransSequenceIdForGroup()
-                    1 -> client.nextHighwayDataTransSequenceIdForFriend()
-                    27 -> client.nextHighwayDataTransSequenceIdForApplyUp()
-                    29 -> client.nextHighwayDataTransSequenceIdForGroup()
-                    else -> client.nextHighwayDataTransSequenceIdForGroup()
-                },
+                seq = client.nextHighwayDataTransSequenceId(),
                 retryTimes = 0,
                 appid = appId,
                 dataflag = dataFlag,
