@@ -7,14 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress(
-    "EXPOSED_SUPER_CLASS",
-    "NOTHING_TO_INLINE",
-    "unused",
-    "WRONG_MODIFIER_TARGET", "CANNOT_WEAKEN_ACCESS_PRIVILEGE",
-    "WRONG_MODIFIER_CONTAINING_DECLARATION", "RedundantVisibilityModifier"
-)
-
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.descriptor.*
