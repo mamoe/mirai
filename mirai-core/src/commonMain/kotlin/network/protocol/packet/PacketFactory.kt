@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.network.tryDecryptOrNull
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
+import network.protocol.packet.chat.receive.OnlinePushSidExpired
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
@@ -169,6 +170,7 @@ internal object KnownPacketFactories {
         OnlinePushPbPushGroupMsg,
         OnlinePushReqPush,
         OnlinePushPbPushTransMsg,
+        OnlinePushSidExpired,
         MessageSvcPushNotify,
         MessageSvcPushReaded,
         MessageSvcRequestPushStatus,
