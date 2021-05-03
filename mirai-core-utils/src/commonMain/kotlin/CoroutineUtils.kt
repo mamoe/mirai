@@ -76,3 +76,16 @@ public inline fun <E : U, U : CoroutineContext.Element> CoroutineContext.getOrEl
     key: CoroutineContext.Key<E>,
     default: () -> U
 ): U = this[key] ?: default()
+
+public inline fun <E : CoroutineContext.Element> CoroutineContext.addIfAbsent(
+    key: CoroutineContext.Key<E>,
+    default: () -> CoroutineContext.Element
+): CoroutineContext = if (this[key] == null) this + default() else this
+
+public inline fun CoroutineContext.addNameIfAbsent(
+    name: () -> String
+): CoroutineContext = addIfAbsent(CoroutineName) { CoroutineName(name()) }
+
+public fun CoroutineContext.addNameHierarchically(
+    name: String
+): CoroutineContext = this + CoroutineName(this[CoroutineName]?.name?.plus('.')?.plus(name) ?: name)
