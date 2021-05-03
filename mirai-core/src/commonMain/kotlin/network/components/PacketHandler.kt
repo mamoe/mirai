@@ -11,15 +11,14 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
@@ -65,6 +64,7 @@ internal class LoggingPacketHandlerAdapter(
 
 internal class EventBroadcasterPacketHandler(
     private val targetScope: CoroutineScope,
+    private val components: ComponentStorage,
     private val logger: MiraiLogger,
 ) : PacketHandler {
 
@@ -74,7 +74,7 @@ internal class EventBroadcasterPacketHandler(
     }
 
     private val coroutineName = CoroutineName("Mirai-EventDispatcher-${logger.identity}")
-    private suspend fun impl(packet: Packet) {
+    private fun impl(packet: Packet) {
         if (packet is MultiPacket<*>) {
             for (p in packet) {
                 impl(p)
@@ -84,23 +84,9 @@ internal class EventBroadcasterPacketHandler(
             packet is CancellableEvent && packet.isCancelled -> return
             packet is BroadcastControllable && !packet.shouldBroadcast -> return
             packet is Event -> {
-                targetScope.launch(coroutineName) {
-                    try {
-                        packet.broadcast()
-                    } catch (e: Throwable) {
-                        if (logger.isEnabled) {
-                            val msg = optimizeEventToString(packet)
-                            logger.error(IllegalStateException("Exception while broadcasting event '$msg'", e))
-                        }
-                    }
-                }
+                components[EventDispatcher].broadcastAsync(packet)
             }
         }
-    }
-
-    private fun optimizeEventToString(event: Event): String {
-        val qualified = event::class.java.canonicalName ?: return this.toString()
-        return qualified.substringAfter("net.mamoe.mirai.event.events.")
     }
 
     override fun toString(): String = "EventBroadcasterPacketHandler"
