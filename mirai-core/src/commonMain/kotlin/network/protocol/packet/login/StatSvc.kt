@@ -39,6 +39,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.internal.utils.toIpV4Long
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toReadPacket
@@ -160,6 +161,10 @@ internal class StatSvc {
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
             client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
+                uOldSSOIp = client.lastDisconnectedIp.toIpV4Long()
+                uNewSSOIp = client.lastConnectedIp.toIpV4Long()
+                strVendorName = "MIUI"
+                strVendorOSName = "?ONEPLUS A5000_23_17"
                 //  timeStamp = friendListCache.timeStamp
             }
         }
@@ -167,7 +172,7 @@ internal class StatSvc {
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 1L or 2 or 4, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
             name: String,
@@ -221,10 +226,6 @@ internal class StatSvc {
                                 strDevName = client.device.model.encodeToString(),
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
-                                uOldSSOIp = 0,
-                                uNewSSOIp = 0,
-                                strVendorName = "MIUI",
-                                strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
                                 /*
                                 var44.uNewSSOIp = field_127445;

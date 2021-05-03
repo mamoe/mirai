@@ -27,6 +27,18 @@ internal fun Int.toIpV4AddressString(): String {
     }
 }
 
+internal fun String.toIpV4Long(): Long {
+    return if (isEmpty()) {
+        0
+    } else {
+        split(".").map { it.toLongOrNull() }
+            .takeIf { length == 4 && it.all { longVal -> longVal != null } }
+            ?.let {
+                it[0]!! + it[1]!!.shl(24) + it[2]!!.shl(16) + it[3]!!.shl(8)
+            } ?: -2
+    }
+}
+
 internal fun String.chineseLength(upTo: Int): Int {
     return this.sumUpTo(upTo) {
         when (it) {

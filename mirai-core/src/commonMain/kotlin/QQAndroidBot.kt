@@ -102,6 +102,16 @@ internal open class QQAndroidBot constructor(
 
                 override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
             },
+            StateChangedObserver(to = State.OK) { new ->
+                bot.launch(logger.asCoroutineExceptionHandler()) {
+                    client.lastConnectedIp = components[ServerList].getLastPolledIP()
+                }
+            },
+            StateChangedObserver(to = State.CLOSED) { new ->
+                bot.launch(logger.asCoroutineExceptionHandler()) {
+                    client.lastDisconnectedIp = client.lastConnectedIp
+                }
+            },
             StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->
                 // logging performed by BotOfflineEventMonitor
                 val cause = new.getCause()

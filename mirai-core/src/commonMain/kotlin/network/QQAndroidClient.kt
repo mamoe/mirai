@@ -207,6 +207,15 @@ internal open class QQAndroidClient(
      */
     var timeDifference: Long = 0
 
+    /**
+     * StatSvc.Register 使用
+     */
+    @Transient
+    var lastDisconnectedIp = ""
+
+    @Transient
+    var lastConnectedIp = ""
+
     @Suppress("PropertyName")
     internal var _uin: Long = account.id
 
