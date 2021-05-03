@@ -217,11 +217,15 @@ internal open class NettyNetworkHandler(
             createConnection(decodePipeline)
         }
 
-        private val connectResult = async {
-            connection.join()
-            context[SsoProcessor].login(this@NettyNetworkHandler)
-        }.apply {
-            invokeOnCompletion { error ->
+        @Suppress("JoinDeclarationAndAssignment")
+        private val connectResult: Deferred<Unit>
+
+        init {
+            connectResult = async {
+                connection.join()
+                context[SsoProcessor].login(this@NettyNetworkHandler)
+            }
+            connectResult.invokeOnCompletion { error ->
                 if (error == null) {
                     this@NettyNetworkHandler.launch { resumeConnection() }
                 } else {
@@ -238,6 +242,7 @@ internal open class NettyNetworkHandler(
                 }
                 // and this error will also be thrown by `StateConnecting.resumeConnection`
             }
+
         }
 
         override fun getCause(): Throwable? = collectiveExceptions.getLast()
