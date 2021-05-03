@@ -33,10 +33,12 @@ import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
 /**
  * 简单的, 支持参数自动解析的指令.
  *
- * 要查看指令解析流程, 参考 [CommandManager.executeCommand]
- * 要查看参数解析方式, 参考 [CommandValueArgumentParser]
+ * 要查看指令解析流程, 参考 [CommandManager.executeCommand].
+ * 要查看参数解析方式, 参考 [CommandValueArgumentParser].
  *
- * Kotlin 实现:
+ * Java 示例查看 [JSimpleCommand].
+ *
+ * Kotlin 示例:
  * ```
  * object MySimpleCommand : SimpleCommand(
  *     MyPlugin, "tell",

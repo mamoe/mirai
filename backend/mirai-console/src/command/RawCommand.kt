@@ -76,7 +76,7 @@ public abstract class RawCommand(
      *
      * @param args 指令参数.
      *
-     * @see CommandManager.execute 查看更多信息
+     * @see CommandManager.executeCommand 查看更多信息
      */
     public abstract suspend fun CommandSender.onCommand(args: MessageChain)
 }
