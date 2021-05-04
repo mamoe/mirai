@@ -123,7 +123,6 @@ internal class QQAndroidBot constructor(
     /////////////////////////// accounts secrets end
 
     var client: QQAndroidClient = initClient()
-        private set
 
     fun initClient(): QQAndroidClient {
         val device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
