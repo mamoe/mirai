@@ -161,7 +161,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                     }
                 }
             } else {
-                //说明未设置群名片
+                // 说明删除了群名片
                 if (currentNameCard.isNotEmpty()) {
                     sender._nameCard = ""
                     MemberCardChangeEvent(currentNameCard, "", sender).broadcastWithBot(sender.bot)
