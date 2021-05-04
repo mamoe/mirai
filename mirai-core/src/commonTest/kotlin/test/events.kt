@@ -40,6 +40,8 @@ internal inline fun <reified T : Event> assertEventBroadcasts(times: Int = 1, bl
         listener.complete()
     }
 
+    if (times < 0) return receivedEvents.filterIsInstance<T>().cast()
+
     val actual = receivedEvents.filterIsInstance<T>().count()
     assertEquals(
         times,

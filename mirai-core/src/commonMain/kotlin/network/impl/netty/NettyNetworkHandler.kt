@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
+import java.io.EOFException
 import java.net.SocketAddress
 import kotlin.coroutines.CoroutineContext
 import io.netty.channel.Channel as NettyChannel
@@ -58,6 +59,29 @@ internal open class NettyNetworkHandler(
         return "NettyNetworkHandler(context=$context, address=$address)"
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    // exception handling
+    ///////////////////////////////////////////////////////////////////////////
+    protected open fun handleExceptionInDecoding(error: Throwable) {
+        if (error is OicqDecodingException) {
+            if (error.targetException is EOFException) return
+            throw error.targetException
+        }
+        throw error
+    }
+
+    protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
+        context.bot.logger.error(error)
+        synchronized(this) {
+            if (_state !is StateConnecting) {
+                setState { StateConnecting(ExceptionCollector(error)) }
+            } else {
+                close(error)
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // netty conn.
     ///////////////////////////////////////////////////////////////////////////
@@ -67,9 +91,13 @@ internal open class NettyNetworkHandler(
         private val ssoProcessor: SsoProcessor by lazy { context[SsoProcessor] }
 
         override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
-            ctx.fireChannelRead(msg.toReadPacket().use { packet ->
-                packetCodec.decodeRaw(ssoProcessor.ssoSession, packet)
-            })
+            kotlin.runCatching {
+                ctx.fireChannelRead(msg.toReadPacket().use { packet ->
+                    packetCodec.decodeRaw(ssoProcessor.ssoSession, packet)
+                })
+            }.onFailure { error ->
+                handleExceptionInDecoding(error)
+            }
         }
     }
 
@@ -90,6 +118,11 @@ internal open class NettyNetworkHandler(
 
     protected open fun setupChannelPipeline(pipeline: ChannelPipeline, decodePipeline: PacketDecodePipeline) {
         pipeline
+            .addLast(object : ChannelInboundHandlerAdapter() {
+                override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+                    handlePipelineException(ctx, cause)
+                }
+            })
             .addLast(OutgoingPacketEncoder())
             .addLast(LengthFieldBasedFrameDecoder(Int.MAX_VALUE, 0, 4, -4, 4))
             .addLast(ByteBufToIncomingPacketDecoder())
