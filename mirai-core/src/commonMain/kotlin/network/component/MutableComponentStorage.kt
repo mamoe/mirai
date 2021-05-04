@@ -9,9 +9,6 @@
 
 package net.mamoe.mirai.internal.network.component
 
-/**
- * Facade for [component][ComponentKey]s.
- */
 internal interface MutableComponentStorage : ComponentStorage {
     override operator fun <T : Any> get(key: ComponentKey<T>): T
     operator fun <T : Any> set(key: ComponentKey<T>, value: T)
