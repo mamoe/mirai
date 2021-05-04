@@ -153,8 +153,8 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
     private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, new: MemberNick) {
         if (sender is NormalMemberImpl) {
             val currentNameCard = sender.nameCard
-            if (memberNick.isNameCard) {
-                memberNick.nick.let { name ->
+            if (new.isNameCard) {
+                new.nick.let { name ->
                     if (currentNameCard != name) {
                         sender._nameCard = name
                         MemberCardChangeEvent(currentNameCard, name, sender).broadcastWithBot(sender.bot)
