@@ -169,6 +169,7 @@ internal object KnownPacketFactories {
         OnlinePushPbPushGroupMsg,
         OnlinePushReqPush,
         OnlinePushPbPushTransMsg,
+        OnlinePushSidExpired,
         MessageSvcPushNotify,
         MessageSvcPushReaded,
         MessageSvcRequestPushStatus,
