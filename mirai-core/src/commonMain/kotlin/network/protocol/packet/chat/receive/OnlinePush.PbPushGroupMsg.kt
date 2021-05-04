@@ -150,7 +150,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         }
     }
 
-    private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, memberNick: MemberNick) {
+    private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, new: MemberNick) {
         if (sender is NormalMemberImpl) {
             val currentNameCard = sender.nameCard
             if (memberNick.isNameCard) {
