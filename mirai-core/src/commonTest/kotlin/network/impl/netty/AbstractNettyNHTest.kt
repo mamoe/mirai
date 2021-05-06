@@ -13,7 +13,9 @@ import io.netty.channel.Channel
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
+import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.utils.ExceptionCollector
@@ -81,4 +83,10 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
                 }
             }
         }
+}
+
+internal fun AbstractNettyNHTest.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
+    defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
+        override suspend fun login(handler: NetworkHandler) = action(handler)
+    }
 }

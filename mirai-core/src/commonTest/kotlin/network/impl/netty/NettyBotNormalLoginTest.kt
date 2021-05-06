@@ -20,24 +20,22 @@ import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.firstIsInstanceOrNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.io.IOException
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     class CusLoginException(message: String?) : RuntimeException(message)
 
     @Test
     fun `test login fail`() = runBlockingUnit {
-        withSsoProcessor { throw CusLoginException("A") }
+        setSsoProcessor { throw CusLoginException("A") }
         assertFailsWith<CusLoginException>("A") { bot.login() }
     }
 
     @Test
     fun `test network broken`() = runBlockingUnit {
-        withSsoProcessor {
+        setSsoProcessor {
             delay(1000)
             channel.pipeline().fireExceptionCaught(IOException("TestNetworkBroken"))
             delay(100000) // receive bits from "network"

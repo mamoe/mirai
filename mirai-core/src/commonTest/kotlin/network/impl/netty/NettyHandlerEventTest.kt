@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.INITIALIZED
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.OK
@@ -88,8 +87,8 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
 
     @Test
     fun `from OK TO CONNECTING`() = runBlockingUnit {
-        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
-            override suspend fun login(handler: NetworkHandler) = awaitCancellation() // never ends
+        setSsoProcessor {
+            awaitCancellation()
         }
         assertState(INITIALIZED)
         network.setStateOK(channel)
@@ -105,8 +104,8 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     @Test
     fun `from CONNECTING TO OK the first time`() = runBlockingUnit {
         val ok = CompletableDeferred<Unit>()
-        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
-            override suspend fun login(handler: NetworkHandler) = ok.join()
+        setSsoProcessor {
+            ok.join()
         }
         assertState(INITIALIZED)
         network.setStateConnecting()
@@ -122,8 +121,8 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     @Test
     fun `from CONNECTING TO OK the second time`() = runBlockingUnit {
         val ok = AtomicReference(CompletableDeferred<Unit>())
-        defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
-            override suspend fun login(handler: NetworkHandler) = ok.get().join()
+        setSsoProcessor {
+            ok.get().join()
         }
 
         assertState(INITIALIZED)
