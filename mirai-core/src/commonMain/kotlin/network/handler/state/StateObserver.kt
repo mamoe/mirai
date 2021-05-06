@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
 
 /**
- * Stateless observer of state changes.
+ * Observer of state changes.
  *
  * @see SafeStateObserver
  * @see LoggingStateObserver
