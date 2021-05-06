@@ -42,7 +42,7 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractTest() {
     init {
-        System.setProperty("mirai.debug.network.state.observer.logging", "true")
+        System.setProperty("mirai.debug.network.state.observer.logging", "full")
         System.setProperty("mirai.debug.network.show.all.components", "true")
     }
 

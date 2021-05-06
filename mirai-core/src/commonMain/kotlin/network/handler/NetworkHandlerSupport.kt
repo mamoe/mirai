@@ -192,6 +192,15 @@ internal abstract class NetworkHandlerSupport(
      * Attempts to change state. Returns null if new state has same [class][KClass] as current.
      */
     protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? = setState(S::class, new)
+    protected inline fun <reified S : BaseStateImpl> setState(
+        old: BaseStateImpl, noinline new: () -> S
+    ): S? = synchronized(this) {
+        if (_state === old) {
+            setState(new)
+        } else {
+            null
+        }
+    }
 
     /**
      * Calculate [new state][new] and set it as the current, returning the new state,
