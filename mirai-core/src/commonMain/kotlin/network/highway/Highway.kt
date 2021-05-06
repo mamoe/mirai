@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.highway
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.receiveOrNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.produceIn
@@ -323,7 +322,7 @@ internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendConcurrently(
         launch(CoroutineName("Worker $it")) {
             val socket = createConnection()
             while (isActive) {
-                val next = channel.tryReceive() ?: break // concurrent-safe receive
+                val next = channel.receiveCatching().getOrNull() ?: return@launch // concurrent-safe receive
                 val result = next.withUse {
                     socket.sendReceiveHighway(next, resultChecker)
                 }
@@ -333,15 +332,6 @@ internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendConcurrently(
     }
 }
 
-private suspend fun <E : Any> ReceiveChannel<E>.tryReceive(): E? {
-    return kotlin.runCatching {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        receiveOrNull() // this is experimental api
-    }.recoverCatching {
-        // in case binary changes
-        receive()
-    }.getOrNull()
-}
 
 private suspend fun HighwayProtocolChannel.sendReceiveHighway(
     it: ByteReadPacket,

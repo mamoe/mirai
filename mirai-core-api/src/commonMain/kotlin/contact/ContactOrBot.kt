@@ -21,7 +21,7 @@ import net.mamoe.mirai.Bot
  * @see Contact
  * @see Bot
  */
-public interface ContactOrBot : CoroutineScope { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface ContactOrBot : CoroutineScope {
     /**
      * QQ 号或群号.
      */

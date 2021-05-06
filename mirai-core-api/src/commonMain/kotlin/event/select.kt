@@ -492,8 +492,9 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     protected abstract fun obtainCurrentDeferred(): CompletableDeferred<R>?
 }
 
+@JvmInline
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-public inline class MessageSelectionTimeoutChecker internal constructor(public val timeoutMillis: Long)
+public value class MessageSelectionTimeoutChecker internal constructor(public val timeoutMillis: Long)
 
 public class MessageSelectionTimeoutException : RuntimeException()
 

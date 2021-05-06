@@ -34,7 +34,7 @@ internal class ScheduledJob(
     fun notice() {
         if (intervalMillis == 0L) {
             launch { task() }
-        } else channel.offer(Unit)
+        } else channel.trySend(Unit)
     }
 
     private suspend fun doTask() {

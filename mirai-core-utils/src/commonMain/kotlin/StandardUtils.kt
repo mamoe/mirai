@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.utils
 
+import java.util.*
 import kotlin.reflect.KClass
 
 public inline fun <reified T> Any?.cast(): T = this as T
@@ -167,3 +168,7 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
 
 public fun systemProp(name: String, default: Boolean): Boolean =
     System.getProperty(name, default.toString())?.toBoolean() ?: default
+
+public fun String.capitalize(): String {
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+}

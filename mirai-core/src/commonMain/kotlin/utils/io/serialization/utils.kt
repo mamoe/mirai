@@ -179,7 +179,8 @@ internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
 ): T = KtProtoBuf.decodeFromByteArray(serializer, this.readBytes(length))
 
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-internal inline class OidbBodyOrFailure<T : ProtoBuf> private constructor(
+@JvmInline
+internal value class OidbBodyOrFailure<T : ProtoBuf> private constructor(
     private val v: Any
 ) {
     internal class Failure(

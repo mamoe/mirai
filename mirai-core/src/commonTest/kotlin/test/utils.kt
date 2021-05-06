@@ -12,12 +12,18 @@ package net.mamoe.mirai.internal.test
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.Duration
 
-internal fun runBlockingUnit(
+fun runBlockingUnit(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit
-): Unit {
-    return runBlocking(context, block)
+) {
+    return runBlocking(context) {
+        withTimeout(Duration.seconds(60)) { // always checks for infinite runs.
+            block()
+        }
+    }
 }

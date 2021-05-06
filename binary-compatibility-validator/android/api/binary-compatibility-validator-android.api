@@ -502,8 +502,8 @@ public final class net/mamoe/mirai/contact/NormalMemberKt {
 	public static final fun getNameCardOrNick (Lnet/mamoe/mirai/contact/User;)Ljava/lang/String;
 	public static final fun getNameCardOrNick (Lnet/mamoe/mirai/contact/UserOrBot;)Ljava/lang/String;
 	public static final fun isMuted (Lnet/mamoe/mirai/contact/NormalMember;)Z
-	public static final fun mute-8Mi8wO0 (Lnet/mamoe/mirai/contact/NormalMember;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final synthetic fun mute-fcu0wV4 (Lnet/mamoe/mirai/contact/NormalMember;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun mute-8Mi8wO0 (Lnet/mamoe/mirai/contact/NormalMember;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final synthetic fun mute-fcu0wV4 (Lnet/mamoe/mirai/contact/NormalMember;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/OtherClient : net/mamoe/mirai/contact/Contact {
@@ -5524,6 +5524,7 @@ public final class net/mamoe/mirai/network/ForceOfflineException : java/util/con
 }
 
 public abstract class net/mamoe/mirai/network/LoginFailedException : java/lang/RuntimeException {
+	public synthetic fun <init> (ZLjava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (ZLjava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getKillBot ()Z
 }
@@ -5646,11 +5647,11 @@ public final class net/mamoe/mirai/utils/BotConfiguration$ContactListCache {
 	public fun <init> ()V
 	public final fun getFriendListCacheEnabled ()Z
 	public final fun getGroupMemberListCacheEnabled ()Z
-	public final synthetic fun getSaveInterval-UwyO8pc ()D
+	public final synthetic fun getSaveInterval-UwyO8pc ()J
 	public final fun getSaveIntervalMillis ()J
 	public final fun setFriendListCacheEnabled (Z)V
 	public final fun setGroupMemberListCacheEnabled (Z)V
-	public final synthetic fun setSaveInterval-LRDsOJo (D)V
+	public final synthetic fun setSaveInterval-LRDsOJo (J)V
 	public final fun setSaveIntervalMillis (J)V
 }
 
