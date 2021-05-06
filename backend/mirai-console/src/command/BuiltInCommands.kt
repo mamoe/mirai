@@ -42,10 +42,7 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.plugin.version
-import net.mamoe.mirai.console.util.AnsiMessageBuilder
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.sendAnsiMessage
+import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
@@ -185,9 +182,9 @@ public object BuiltInCommands {
                     }
                 }.doLogin()
             }.fold(
-                onSuccess = { sendMessage("${it.nick} ($id) Login successful") },
+                onSuccess = { scopeWith(ConsoleCommandSender).sendMessage("${it.nick} ($id) Login successful") },
                 onFailure = { throwable ->
-                    sendMessage(
+                    scopeWith(ConsoleCommandSender).sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
                             if (this is CommandSenderOnMessage<*>) {
                                 CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
