@@ -3,9 +3,27 @@ name: Build
 on: [ push, pull_request ]
 
 jobs:
+  check_duplicate_workflows:
+    name: Check for duplicate workflows
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          skip_after_successful_duplicate: 'false'
+          concurrent_skipping: 'same_content'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+          paths_ignore: '["**/*.md"]'
+
   build-mirai-core:
 
     runs-on: ${{ matrix.platform }}
+    needs: [ check_duplicate_workflows ]
+    if: ${{ needs.check_duplicate_workflows.outputs.should_skip != 'true' }}
     strategy:
       matrix:
         java: [ '8', '11', '15' ]
@@ -42,6 +60,8 @@ jobs:
   build-all:
 
     runs-on: ${{ matrix.platform }}
+    needs: [ check_duplicate_workflows ]
+    if: ${{ needs.check_duplicate_workflows.outputs.should_skip != 'true' }}
     strategy:
       matrix:
         java: [ '8', '11', '15' ]
