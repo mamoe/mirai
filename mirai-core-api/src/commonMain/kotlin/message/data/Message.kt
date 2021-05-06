@@ -130,7 +130,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @suppress **注意:** [Message] 类型大多有隐藏的协议实现, 不能被第三方应用继承.
  */
-public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface Message {
 
     /**
      * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`.

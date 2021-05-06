@@ -10,9 +10,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
 import kotlinx.coroutines.io.jvm.nio.copyTo
@@ -20,7 +18,6 @@ import kotlinx.coroutines.io.reader
 import kotlinx.coroutines.io.writeFully
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
 import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
@@ -224,6 +221,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 }
 
 // Copied from Ktor CIO
+@OptIn(DelicateCoroutinesApi::class)
 private fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO
 ): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {

@@ -15,7 +15,6 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.ByteReadPacket
-import java.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -69,8 +68,8 @@ public operator fun ByteArray.get(rangeStart: Int, rangeEnd: Int): String = buil
 
 private fun Byte.fixToString(): String {
     return when (val b = this.toInt() and 0xff) {
-        in 0..15 -> "0${this.toString(16).toUpperCase()}"
-        else -> b.toString(16).toUpperCase()
+        in 0..15 -> "0${this.toString(16).uppercase()}"
+        else -> b.toString(16).uppercase()
     }
 }
 
@@ -90,7 +89,7 @@ public fun ByteArray.toUHexString(
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
             if (index in offset until lastIndex) {
-                var ret = it.toUByte().toString(16).toUpperCase()
+                var ret = it.toUByte().toString(16).uppercase()
                 if (ret.length == 1) ret = "0$ret"
                 append(ret)
                 if (index < lastIndex - 1) append(separator)
@@ -120,7 +119,7 @@ public fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, len
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
             if (index in offset until lastIndex) {
-                var ret = it.toUByte().toString(16).toUpperCase()
+                var ret = it.toUByte().toString(16).uppercase()
                 if (ret.length == 1) ret = "0$ret"
                 append(ret)
                 if (index < lastIndex - 1) append(separator)
@@ -140,7 +139,7 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
             if (index in offset until lastIndex) {
-                var ret = it.toByte().toUByte().toString(16).toUpperCase()
+                var ret = it.toByte().toUByte().toString(16).uppercase()
                 if (ret.length == 1) ret = "0$ret"
                 append(ret)
                 if (index < lastIndex - 1) append(separator)

@@ -37,8 +37,10 @@ public class AsyncRecallResult internal constructor(
      * 撤回是否成功. Kotlin [Deferred] API.
      */
     public val isSuccess: Deferred<Boolean> by lazy {
-        GlobalScope.async {
-            kotlin.runCatching { exception.await() == null }.getOrElse { false }
+        CompletableDeferred<Boolean>().apply {
+            exception.invokeOnCompletion {
+                complete(it == null)
+            }
         }
     }
 

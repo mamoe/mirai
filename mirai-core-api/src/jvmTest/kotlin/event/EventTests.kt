@@ -10,7 +10,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.internal.event.GlobalEventListeners
 import net.mamoe.mirai.utils.StepUtil
 import org.junit.jupiter.api.AfterEach
 import java.util.concurrent.Executor
@@ -47,7 +46,7 @@ class EventTests {
     fun testSubscribeGlobalScope() {
         resetEventListeners()
         runBlocking {
-            val listener = GlobalScope.globalEventChannel().subscribeAlways<TestEvent> {
+            val listener = globalEventChannel().subscribeAlways<TestEvent> {
                 triggered = true
             }
 

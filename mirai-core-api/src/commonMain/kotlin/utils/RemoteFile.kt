@@ -391,7 +391,7 @@ public interface RemoteFile {
             public fun SendChannel<Long>.asProgressionCallback(closeOnFinish: Boolean = true): ProgressionCallback {
                 return object : ProgressionCallback {
                     override fun onProgression(file: RemoteFile, resource: ExternalResource, downloadedSize: Long) {
-                        offer(downloadedSize)
+                        trySend(downloadedSize)
                     }
 
                     override fun onSuccess(file: RemoteFile, resource: ExternalResource) {
