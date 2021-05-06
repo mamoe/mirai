@@ -112,7 +112,7 @@ dependencies {
 </dependencies>
 ```
 
-> 可以在 [Kotlin 官方文档](https://www.kotlincn=.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
+> 可以在 [Kotlin 官方文档](https://www.kotlincn.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
 
 
 > 依赖配置完成，[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
