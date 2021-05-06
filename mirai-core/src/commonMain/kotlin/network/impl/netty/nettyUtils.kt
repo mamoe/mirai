@@ -17,10 +17,14 @@ import io.netty.channel.ChannelOutboundInvoker
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.streams.outputStream
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority.ERROR
+import net.mamoe.mirai.utils.withUse
 
 
 internal suspend fun ChannelFuture.awaitKt(): ChannelFuture {
