@@ -270,6 +270,15 @@ public interface RemoteFile {
      *
      * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
      *
+     * **注意**: 与 [java.io.File] 类似, 这是将当前 [RemoteFile] 移动到作为 [target], 而不是移动成为 [target] 的子文件或目录. 例如:
+     * ```
+     * val root = group.filesRoot
+     * root.resolve("test.txt").moveTo(root) // 错误! 这是在把文件 "test.txt" 移动成为根目录, 而不是移动成为 "/test.txt".
+     * root.resolve("test.txt").moveTo(root.resolve("/")) // 错误! 与上一行相同.
+
+     * root.resolve("test.txt").moveTo(root.resolve("/test2.txt")) // 正确. 把文件 "test.txt" 移动成为根目录下的 "test2.txt".
+     * ```
+     *
      * @param target 目标文件位置.
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
@@ -415,6 +424,18 @@ public interface RemoteFile {
      * 若 [RemoteFile.id] 存在且旧文件存在, 将会覆盖旧文件.
      * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
+     *
+     *
+     * **注意**: [resource] 仅表示资源数据而不带有文件名属性.
+     * 与 [java.io.File] 类似, 这是将 [resource] 上传成为当前 [RemoteFile], 而不是上传成为 [RemoteFile] 的子文件或子目录. 示例:
+     * ```
+     * group.filesRoot.upload(resource) // 错误! 这是在把资源上传成为根目录.
+     * group.filesRoot.resolve("/").upload(resource) // 错误! 与上一句相同, 这是在把资源上传成为根目录.
+     *
+     * val root = group.filesRoot
+     * root.resolve("test.txt").upload(resource) // 正确. 把资源上传成为根目录下的 "test2.txt".
+     * root.resolve("/test.txt").upload(resource) // 正确. 与上一句相同, 把资源上传成为根目录下的 "test2.txt".
+     * ```
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
      * @param callback 进度回调
