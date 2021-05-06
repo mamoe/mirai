@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.utils
 
+import java.util.*
 import kotlin.reflect.KClass
 
 public inline fun <reified T> Any?.cast(): T = this as T
@@ -194,4 +195,8 @@ public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence 
         rootCause = rootCause.cause
         if (depth++ >= maxDepth) break
     }
+}
+
+public fun String.capitalize(): String {
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }

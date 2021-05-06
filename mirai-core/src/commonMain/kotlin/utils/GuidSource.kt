@@ -18,7 +18,8 @@ package net.mamoe.mirai.internal.utils
  * 17: 以前没保存但现在生成成功;
  */
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-internal inline class GuidSource private constructor(val id: Long) { // uint actually
+@JvmInline
+internal value class GuidSource private constructor(val id: Long) { // uint actually
     companion object {
         /**
          * 初始值
