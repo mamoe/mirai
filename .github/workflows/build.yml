@@ -5,15 +5,20 @@ on: [ push, pull_request ]
 jobs:
   build-mirai-core:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        java: [ '8', '11', '15' ]
+        platform: [ 'windows-latest', 'ubuntu-latest' ]
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
 
       - name: Cache Gradle packages
         uses: actions/cache@v2.1.5
@@ -35,7 +40,13 @@ jobs:
         run: ./gradlew check -Pmirai.pkc.check.enable --scan
 
   build-all:
-    runs-on: ubuntu-latest
+
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        java: [ '8', '11', '15' ]
+        platform: [ 'windows-latest', 'ubuntu-latest' ]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -43,10 +54,11 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
 
       - name: Cache Gradle packages
         uses: actions/cache@v2.1.5
