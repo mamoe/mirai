@@ -273,7 +273,7 @@ public interface RemoteFile {
      * **注意**: 与 [java.io.File] 类似, 这是将当前 [RemoteFile] 移动到作为 [target], 而不是移动成为 [target] 的子文件或目录. 例如:
      * ```
      * val root = group.filesRoot
-     * root.resolve("test.txt").moveTo(root) // 错误! 这是在把文件 "test.txt" 移动成为根目录, 而不是移动成为 "/test.txt".
+     * root.resolve("test.txt").moveTo(root) // 错误! 这是在将该文件的路径 "test.txt" 修改为 “/” , 而不是修改为 "/test.txt"
      * root.resolve("test.txt").moveTo(root.resolve("/")) // 错误! 与上一行相同.
 
      * root.resolve("/test.txt").moveTo(root.resolve("/test2.txt")) // 正确. 将该文件的路径 "/test.txt" 修改为 “/test2.txt”，相当于重命名文件
