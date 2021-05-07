@@ -276,7 +276,7 @@ public interface RemoteFile {
      * root.resolve("test.txt").moveTo(root) // 错误! 这是在把文件 "test.txt" 移动成为根目录, 而不是移动成为 "/test.txt".
      * root.resolve("test.txt").moveTo(root.resolve("/")) // 错误! 与上一行相同.
 
-     * root.resolve("test.txt").moveTo(root.resolve("/test2.txt")) // 正确. 把文件 "test.txt" 移动成为根目录下的 "test2.txt".
+     * root.resolve("/test.txt").moveTo(root.resolve("/test2.txt")) // 正确. 将该文件的路径 "/test.txt" 修改为 “/test2.txt”，相当于重命名文件
      * ```
      *
      * @param target 目标文件位置.
