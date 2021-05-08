@@ -13,7 +13,7 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             2.6.2              |
+|  稳定   |             2.6.4              |
 |  预览   |               -                |
 |  开发   | [![Version]][Bintray Download] |
 
@@ -38,7 +38,7 @@ plugins {
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "2.6.2")
+    api("net.mamoe", "mirai-core", "2.6.4")
 }
 ```
 
@@ -58,7 +58,7 @@ plugins {
 }
 
 dependencies {
-    api('net.mamoe', 'mirai-core', '2.6.2')
+    implementation 'net.mamoe:mirai-core:2.6.4'
 }
 ```
 
@@ -71,7 +71,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.6.2"
+    val miraiVersion = "2.6.4"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -87,7 +87,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.4</version>
     </dependency>
 </dependencies>
 ```
@@ -112,7 +112,7 @@ dependencies {
 </dependencies>
 ```
 
-> 可以在 [Kotlin 官方文档](https://www.kotlincn=.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
+> 可以在 [Kotlin 官方文档](https://www.kotlincn.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
 
 
 > 依赖配置完成，[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

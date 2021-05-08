@@ -72,7 +72,7 @@ internal class QQAndroidBot constructor(
     private val cacheDir: File by lazy {
         configuration.workingDir.resolve(bot.configuration.cacheDir).apply { mkdirs() }
     }
-    private val accountSecretsFile: File by lazy {
+    internal val accountSecretsFile: File by lazy {
         cacheDir.resolve("account.secrets")
     }
 
@@ -122,7 +122,6 @@ internal class QQAndroidBot constructor(
     /////////////////////////// accounts secrets end
 
     var client: QQAndroidClient = initClient()
-        private set
 
     fun initClient(): QQAndroidClient {
         val device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()

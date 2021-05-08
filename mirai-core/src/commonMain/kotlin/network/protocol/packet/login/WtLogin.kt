@@ -433,6 +433,8 @@ internal class WtLogin {
                             } ?: encryptedDownloadSession
                             encryptA1 = tlvMap119.getOrDefault(0x106, encryptA1)
                             noPicSig = tlvMap119.getOrDefault(0x16a, noPicSig)
+                            psKeyMap.putAll(outPSKeyMap.orEmpty().toMutableMap())
+                            pt4TokenMap.putAll(outPt4TokenMap.orEmpty().toMutableMap())
                         }
                     } else {
                         var a1: ByteArray? = tlvMap119.getOrFail(0x106)
