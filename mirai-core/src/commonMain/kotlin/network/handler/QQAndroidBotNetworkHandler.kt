@@ -405,7 +405,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val contactUpdater: ContactUpdater by lazy { ContactUpdaterImpl(bot) }
     private lateinit var lastRegisterResp: StatSvc.Register.Response
 
-    override suspend fun init(): Unit = coroutineScope {
+    override suspend fun init() {
         check(bot.isActive) { "bot is dead therefore network can't init." }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init." }
 
@@ -421,13 +421,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             block = ConfigPushSyncer()
         )
 
-        launch {
-            syncMessageSvc()
-        }
+        supervisorScope {
+            launch { syncMessageSvc() }
 
-        launch {
-            bot.otherClientsLock.withLock {
-                updateOtherClientsList()
+            launch {
+                bot.otherClientsLock.withLock {
+                    updateOtherClientsList()
+                }
             }
         }
 
