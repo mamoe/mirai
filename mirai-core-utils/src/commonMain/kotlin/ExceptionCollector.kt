@@ -64,6 +64,11 @@ public class ExceptionCollector : Sequence<Throwable> {
         throw getLast()!!
     }
 
+    @TerminalOperation
+    public fun throwLast(): Nothing {
+        throw getLast() ?: error("Internal error: expected at least one exception collected.")
+    }
+
     @DslMarker
     private annotation class TerminalOperation
 
