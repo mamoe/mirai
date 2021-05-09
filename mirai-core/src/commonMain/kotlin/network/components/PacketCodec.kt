@@ -205,12 +205,12 @@ internal class PacketCodecImpl : PacketCodec {
                 val data =
                     TEA.decrypt(
                         this.readBytes(),
-                        client.ecdh.keyPair.initialShareKey,
+                        client.ecdhWithPublicKey.keyPair.maskedShareKey,
                         length = (this.remaining - 1).toInt()
                     )
 
                 val peerShareKey =
-                    client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
+                    client.ecdhWithPublicKey.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
@@ -227,7 +227,7 @@ internal class PacketCodecImpl : PacketCodec {
                     val byteArrayBuffer = this.readBytes(size)
 
                     runCatching {
-                        TEA.decrypt(byteArrayBuffer, client.ecdh.keyPair.initialShareKey, length = size)
+                        TEA.decrypt(byteArrayBuffer, client.ecdhWithPublicKey.keyPair.maskedShareKey, length = size)
                     }.getOrElse {
                         TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
                     }

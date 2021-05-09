@@ -142,6 +142,10 @@ internal open class QQAndroidBot constructor(
                 MessageSvcSyncer,
                 MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
             )
+            set(
+                EcdhInitialPublicKeyUpdater,
+                EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater"))
+            )
             set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
             set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
             set(
