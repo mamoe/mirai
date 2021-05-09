@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.daysToSeconds
 
 internal class TroopManagement {
+
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             //屁用没有
@@ -66,7 +67,6 @@ internal class TroopManagement {
             override fun toString(): String = "Response(Mute)"
         }
     }
-
 
     internal object GetGroupInfo : OutgoingPacketFactory<GroupInfoImpl>("OidbSvc.0x88d_7") {
         @Deprecated("")
@@ -418,5 +418,53 @@ internal class TroopManagement {
             }
         }
 
+    }
+
+    internal object GetAdmin : OutgoingPacketFactory<GetAdmin.Response>("OidbSvc.0x899_9") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(),
+                OidbSso.OIDBSSOPkg(
+                    command = 2201,
+                    serviceType = 1,
+                    result = 0,
+                    bodybuffer = Oidb0x899.ReqBody(
+                        identifyFlag = 2,
+                        groupCode = groupCode,
+                        startUin = 0,
+                        memberListOpt = Oidb0x899.MemberList(
+                            memberUin = 0,
+                            privilege = 1
+                        )
+                    ).toByteArray(Oidb0x899.ReqBody.serializer())
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            return readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { oidbssoPkg ->
+                if (oidbssoPkg.result == 0) {
+                    oidbssoPkg.bodybuffer.loadAs(Oidb0x899.RspBody.serializer()).let { resp ->
+                        Response.Success(resp.memberList)
+                    }
+                } else {
+                    Response.Failed(oidbssoPkg.result, oidbssoPkg.errorMsg)
+                }
+            }
+
+        }
+
+        sealed class Response : Packet {
+            class Failed(val code: Int, val msg: String) : Response() {
+                override fun toString(): String = "GetAdmin.Response.Failed(code=$code,msg=$msg)"
+            }
+
+            class Success(val memberList: List<Oidb0x899.MemberList>) : Response() {
+                override fun toString(): String = "GetAdmin.Response.Success"
+            }
+        }
     }
 }

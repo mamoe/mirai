@@ -481,6 +481,61 @@ internal class Oidb0x88d : ProtoBuf {
     ) : ProtoBuf
 }
 
+internal class Oidb0x899 : ProtoBuf {
+    @Serializable
+    internal class ReqBody(
+        @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
+        @JvmField @ProtoNumber(2) val startUin: Long = 0L,
+        @JvmField @ProtoNumber(3) val identifyFlag: Int = 0,
+        @JvmField @ProtoNumber(4) val uinList: List<Long> = emptyList(),
+        @JvmField @ProtoNumber(5) val memberListOpt: MemberList? = null,
+        @JvmField @ProtoNumber(6) val memberNum: Int = 0,
+        @JvmField @ProtoNumber(7) val filterMethod: Int = 0,
+        @JvmField @ProtoNumber(8) val onlineFlag: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspBody(
+        @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
+        @JvmField @ProtoNumber(2) val startUin: Long = 0L,
+        @JvmField @ProtoNumber(3) val identifyFlag: Int = 0,
+        @JvmField @ProtoNumber(4) val memberList: List<MemberList> = emptyList(),
+        @JvmField @ProtoNumber(5) val errorInfo: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class MemberList(
+        @JvmField @ProtoNumber(1) val memberUin: Long = 0L,
+        @JvmField @ProtoNumber(2) val uinFlag: Int = 0,
+        @JvmField @ProtoNumber(3) val uinFlagExt: Int = 0,
+        @JvmField @ProtoNumber(4) val uinMobileFlag: Int = 0,
+        @JvmField @ProtoNumber(5) val uinArchFlag: Int = 0,
+        @JvmField @ProtoNumber(6) val joinTime: Int = 0,
+        @JvmField @ProtoNumber(7) val oldMsgSeq: Int = 0,
+        @JvmField @ProtoNumber(8) val newMsgSeq: Int = 0,
+        @JvmField @ProtoNumber(9) val lastSpeakTime: Int = 0,
+        @JvmField @ProtoNumber(10) val level: Int = 0,
+        @JvmField @ProtoNumber(11) val point: Int = 0,
+        @JvmField @ProtoNumber(12) val muteTimestamp: Int = 0,
+        @JvmField @ProtoNumber(13) val flagExt2: Int = 0,
+        @JvmField @ProtoNumber(14) val specialTitle: ByteArray = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(15) val specialTitleExpireTime: Int = 0,
+        @JvmField @ProtoNumber(16) val activeDay: Int = 0,
+        @JvmField @ProtoNumber(17) val uinKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(18) val privilege: Int = 0,
+        @JvmField @ProtoNumber(19) val richInfo: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class UinKey(
+        @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
+        @JvmField @ProtoNumber(2) val memberUin: Long = 0L,
+        @JvmField @ProtoNumber(3) val genTime: Long = 0L,
+        @JvmField @ProtoNumber(4) val validTime: Int = 0,
+        @JvmField @ProtoNumber(5) val randNum: Int = 0
+    ) : ProtoBuf
+}
+
 @Serializable
 internal class Oidb0x89a : ProtoBuf {
     @Serializable

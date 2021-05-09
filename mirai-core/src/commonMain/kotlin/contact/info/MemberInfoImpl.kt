@@ -37,9 +37,10 @@ internal data class MemberInfoImpl(
     ) : this(
         uin = jceInfo.memberUin,
         nick = jceInfo.nick,
-        permission = when {
-            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+        // 管理员将在 MiraiImpl.kt:359
+        // TroopManagement.GetAdmin 处理
+        permission = when (jceInfo.memberUin) {
+            groupOwnerId -> MemberPermission.OWNER
             else -> MemberPermission.MEMBER
         },
         remark = jceInfo.autoRemark.orEmpty(),
