@@ -102,10 +102,10 @@ internal open class QQAndroidBot constructor(
 
                 override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
             },
-            StateChangedObserver(to = State.OK) { new ->
+            StateChangedObserver(to = State.OK) {
                 client.lastConnectedIp = components[ServerList].getLastPolledIP()
             },
-            StateChangedObserver(to = State.CLOSED) { new ->
+            StateChangedObserver(to = State.CLOSED) {
                 client.lastDisconnectedIp = client.lastConnectedIp
             },
             StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->

@@ -66,34 +66,18 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
         assert(lastConnectedIpOld.isEmpty()) { "Assuming lastConnectedIp is empty" }
         assert(lastDisconnectedIpOld.isEmpty()) { "Assuming lastDisconnectedIp is empty" }
 
-        networkLogger.debug("do login, Assuming lastConnectedIp is NOT empty")
-
+        networkLogger.debug("Do login, Assuming lastConnectedIp is NOT empty")
         bot.login()
-        networkLogger.debug("lastConnectedIp = ${bot.components[ServerList].getLastPolledIP()}")
+        assertState(NetworkHandler.State.OK)
         assertNotEquals(lastConnectedIpOld, bot.client.lastConnectedIp, "Assuming lastConnectedIp is NOT empty")
 
-        networkLogger.debug("close the bot, Assuming lastConnectedIp is equals lastDisconnectedIp")
-        bot.close(null)
+        networkLogger.debug("Offline the bot, Assuming lastConnectedIp is equals lastDisconnectedIp")
+        (bot.network as TestNettyNH).setStateClosed()
+        assertState(NetworkHandler.State.CLOSED)
         assertEquals(
             bot.client.lastConnectedIp,
             bot.client.lastDisconnectedIp,
             "Assuming lastConnectedIp is equals lastDisconnectedIp"
-        )
-
-        networkLogger.debug("do login, Assuming lastConnectedIp is NOT equals lastDisconnectedIp")
-        bot.login()
-        assertNotEquals(
-            bot.client.lastConnectedIp,
-            bot.client.lastDisconnectedIp,
-            "Assuming lastConnectedIp is NOT equals lastDisconnectedIp"
-        )
-
-        networkLogger.debug("close the bot, Assuming lastConnectedIp is equals lastDisconnectedIp")
-        bot.close(null)
-        assertEquals(
-            bot.client.lastConnectedIp,
-            bot.client.lastDisconnectedIp,
-            "Assuming lastConnectedIp is NOT equals lastDisconnectedIp"
         )
     }
 }
