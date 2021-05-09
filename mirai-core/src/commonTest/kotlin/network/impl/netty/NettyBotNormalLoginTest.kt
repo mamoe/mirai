@@ -21,8 +21,11 @@ import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.network.CustomLoginFailedException
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     val selector = KeepAliveNetworkHandlerSelector(selectorLogger) {
@@ -54,5 +57,43 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
             awaitCancellation() // receive exception from "network"
         }
         bot.login()
+    }
+    @Test
+    fun `test login ip change`() = runBlockingUnit {
+        networkLogger.debug("before login, Assuming both ip is empty")
+        val lastConnectedIpOld = bot.client.lastConnectedIp
+        val lastDisconnectedIpOld = bot.client.lastDisconnectedIp
+        assert(lastConnectedIpOld.isEmpty()) { "Assuming lastConnectedIp is empty" }
+        assert(lastDisconnectedIpOld.isEmpty()) { "Assuming lastDisconnectedIp is empty" }
+
+        networkLogger.debug("do login, Assuming lastConnectedIp is NOT empty")
+
+        bot.login()
+        networkLogger.debug("lastConnectedIp = ${bot.components[ServerList].getLastPolledIP()}")
+        assertNotEquals(lastConnectedIpOld, bot.client.lastConnectedIp, "Assuming lastConnectedIp is NOT empty")
+
+        networkLogger.debug("close the bot, Assuming lastConnectedIp is equals lastDisconnectedIp")
+        bot.close(null)
+        assertEquals(
+            bot.client.lastConnectedIp,
+            bot.client.lastDisconnectedIp,
+            "Assuming lastConnectedIp is equals lastDisconnectedIp"
+        )
+
+        networkLogger.debug("do login, Assuming lastConnectedIp is NOT equals lastDisconnectedIp")
+        bot.login()
+        assertNotEquals(
+            bot.client.lastConnectedIp,
+            bot.client.lastDisconnectedIp,
+            "Assuming lastConnectedIp is NOT equals lastDisconnectedIp"
+        )
+
+        networkLogger.debug("close the bot, Assuming lastConnectedIp is equals lastDisconnectedIp")
+        bot.close(null)
+        assertEquals(
+            bot.client.lastConnectedIp,
+            bot.client.lastDisconnectedIp,
+            "Assuming lastConnectedIp is NOT equals lastDisconnectedIp"
+        )
     }
 }

@@ -129,6 +129,7 @@ internal class ServerListImpl(
         }
     }
 
+    @Synchronized
     override fun getLastPolledIP(): String = lastPolledAddress?.host ?: ""
 
     /**
@@ -136,9 +137,11 @@ internal class ServerListImpl(
      */
     @Synchronized
     override fun pollCurrent(): ServerAddress? {
-        return current.poll()?.also {
-            lastPolledAddress = it
+        val address = current.poll()
+        if (address != null) {
+            lastPolledAddress = address
         }
+        return address
     }
 
     /**
@@ -147,7 +150,9 @@ internal class ServerListImpl(
     @Synchronized
     override fun pollAny(): ServerAddress {
         if (current.isEmpty()) refresh()
-        return current.remove()
+        val address = current.remove()
+        lastPolledAddress = address
+        return address
     }
 
     override fun toString(): String {
