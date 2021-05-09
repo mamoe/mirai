@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmBlockingBridge
+
 package net.mamoe.mirai
 
 import kotlinx.coroutines.Job
@@ -36,7 +38,6 @@ public annotation class LowLevelApi
  * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
 @LowLevelApi
-@JvmBlockingBridge
 public interface LowLevelApiAccessor {
     /**
      * 主动刷新 keys, 如 SKey, PSKey 等.

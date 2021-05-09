@@ -33,7 +33,9 @@ import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 /**
- * 通用处理器
+ * 处理 mirai 消息系统 `Message` 到协议数据结构的转换.
+ *
+ * 外部调用 [sendMessageImpl]
  */
 internal abstract class SendMessageHandler<C : Contact> {
     abstract val contact: C
@@ -109,7 +111,7 @@ internal abstract class SendMessageHandler<C : Contact> {
     }
 
     /**
-     * Final process
+     * Final process. Convert transformed message to protocol internals and transfer to server
      */
     suspend fun sendMessagePacket(
         originalMessage: Message,
@@ -311,7 +313,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
 /**
  * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed (sendMessagePacket)
  */
-internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
+private suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: MessageChain,
     step: SendMessageStep,

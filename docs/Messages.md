@@ -89,7 +89,8 @@ Mirai 支持多种消息类型。
 [`Voice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
 [`ForwardMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ForwardMessage.kt
 [`ShowImageFlag`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ShowImageFlag.kt
-[`RichMessageOrigin`]: ../mirai-core-api/src/commonMain/kotlin/message/data/RichMessageOrigin.kt
+[`RichMessageOrigin`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageOrigin.kt
+[`MessageOrigin`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageOrigin.kt
 
 
 |  [`MessageContent`] 类型  | 解释                 | `contentToString()`     |      最低支持的版本      |
@@ -112,16 +113,18 @@ Mirai 支持多种消息类型。
 |     [`FileMessage`]      | 文件消息              | `[文件]文件名称`          |          2.5          |
 
 
-> *(1)*: [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收
 
 
+| [`MessageMetadata`] 类型 | 解释         |     最低支持的版本     |
+|:-----------------------:|:------------|:-------------------:|
+|    [`MessageSource`]    | 消息来源元数据 |         2.0         |
+|     [`QuoteReply`]      | 引用回复      |         2.0         |
+|    [`ShowImageFlag`]    | 秀图标识      |         2.2         |
+|  [`RichMessageOrigin`]  | 富文本消息源   | 2.3*<sup>(2)</sup>* |
+|    [`MessageOrigin`]    | 富文本消息源   |         2.6         |
 
-| [`MessageMetadata`] 类型 | 解释         | 最低支持的版本 |
-|:-----------------------:|:------------|:------------:|
-|    [`MessageSource`]    | 消息来源元数据 |     2.0     |
-|     [`QuoteReply`]      | 引用回复      |     2.0     |
-|    [`ShowImageFlag`]    | 秀图标识      |     2.2     |
-|  [`RichMessageOrigin`]  | 富文本消息源   |     2.3     |
+> *(1):* [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收  
+> *(2):* [`RichMessageOrigin`] 在 2.3 增加, 在 2.6 弃用并以 [`MessageOrigin`] 替换
 
 
 ### 用法

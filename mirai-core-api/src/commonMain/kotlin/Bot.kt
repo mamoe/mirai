@@ -6,11 +6,9 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress(
-    "EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
-    "EXPERIMENTAL_OVERRIDE", "CanBeParameter", "MemberVisibilityCanBePrivate", "INAPPLICABLE_JVM_NAME",
-    "EXPOSED_SUPER_CLASS"
-)
+
+@file:Suppress("NOTHING_TO_INLINE")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai
 
@@ -43,7 +41,6 @@ public suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
-@JvmBlockingBridge
 public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * Bot 配置
