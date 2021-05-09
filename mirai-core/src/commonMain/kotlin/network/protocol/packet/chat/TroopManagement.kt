@@ -459,7 +459,7 @@ internal class TroopManagement {
 
         sealed class Response : Packet {
             class Failed(val code: Int, val msg: String) : Response() {
-                override fun toString(): String = "GetAdmin.Response.Failed(code=$code,msg=$msg)"
+                override fun toString(): String = "GetAdmin.Response.Failed(code=$code, msg=$msg)"
             }
 
             class Success(val memberList: List<Oidb0x899.MemberList>) : Response() {
