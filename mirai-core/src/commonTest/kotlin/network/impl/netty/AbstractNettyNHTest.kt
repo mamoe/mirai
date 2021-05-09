@@ -31,10 +31,11 @@ internal open class TestNettyNH(
     }
 
     fun setStateConnecting(exception: Throwable? = null) {
-        setState { StateConnecting(ExceptionCollector(exception), false) }
+        setState { StateConnecting(ExceptionCollector(exception)) }
     }
 
     fun setStateOK(channel: Channel, exception: Throwable? = null) {
+        exception?.printStackTrace()
         setState { StateOK(channel, CompletableDeferred(Unit)) }
     }
 

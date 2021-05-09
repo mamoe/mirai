@@ -63,8 +63,9 @@ internal interface NetworkHandler : CoroutineScope {
      *
      * The state after finish of [State.LOADING] is [State.OK]. This state lasts for the majority of time.
      *
-     * When connection is lost (e.g. due to Internet unavailability), it returns to [State.CONNECTING] and repeatedly attempts to reconnect.
-     * Immediately after successful recovery, [State.OK] will be set.
+     * When connection is lost (e.g. due to Internet unavailability), it does NOT return to [State.CONNECTING] but to [State.CLOSED]. No attempts is allowed.
+     *
+     * Retrial may only be performed in [SelectorNetworkHandler].
      *
      * @see state
      */
@@ -101,7 +102,7 @@ internal interface NetworkHandler : CoroutineScope {
         /**
          * The terminal state. Both [resumeConnection] and [sendAndExpect] throw a [IllegalStateException].
          *
-         * **Important nodes**: if [NetworkHandler] is [SelectorNetworkHandler], it might return to a normal state e.g. [INITIALIZED] if new instance of [NetworkHandler] is created.
+         * **Important nodes**: iff [NetworkHandler] is [SelectorNetworkHandler], it might return to a normal state e.g. [INITIALIZED] if new instance of [NetworkHandler] is created.
          * However callers usually do not need to pay extra attention on this behavior. Everything will just work fine if you consider [CLOSED] as a final, non-recoverable state.
          *
          * At this state [resumeConnection] throws the exception caught from underlying socket implementation (i.e netty).

@@ -218,7 +218,7 @@ internal open class NettyNetworkHandler(
         }
 
         override suspend fun resumeConnection0() {
-            setState(this) { StateConnecting(ExceptionCollector()) }
+            this.setState { StateConnecting(ExceptionCollector()) }
                 ?.resumeConnection()
                 ?: this@NettyNetworkHandler.resumeConnection() // concurrently closed by other thread.
         }
@@ -240,13 +240,8 @@ internal open class NettyNetworkHandler(
          * Dropped when state becomes [StateOK].
          */
         private val collectiveExceptions: ExceptionCollector,
-        /**
-         * If `true`, [delay] 5 seconds before connecting.
-         */
-        wait: Boolean = false
     ) : NettyState(State.CONNECTING) {
         private val connection = async {
-            if (wait) delay(RECONNECT_DELAY)
             createConnection(decodePipeline)
         }
 
@@ -263,17 +258,15 @@ internal open class NettyNetworkHandler(
                     this@NettyNetworkHandler.launch { resumeConnection() }
                 } else {
                     if (error is StateSwitchingException && error.new is StateConnecting) {
-                        return@invokeOnCompletion // already been switching to CONNECTING
+                        return@invokeOnCompletion // state already switched, so do not do it again.
                     }
-                    setState(null) { // ignore replication check
-//                        StateConnecting(
-//                            collectiveExceptions.apply { collect(error) },
-//                            wait = true
-//                        )
+                    setState {
+                        // logon failure closes the network handler.
                         StateClosed(collectiveExceptions.collectGet(error))
-                    } // logon failure closes the network handler.
+                        // The exception will be ignored unless all further attempts recovering connection have failed.
+                        // This is to reduce useless logs for the user----there is nothing to worry about if we can recover the connection.
+                    }
                 }
-                // and this error will also be thrown by `StateConnecting.resumeConnection`
             }
 
         }
@@ -289,7 +282,7 @@ internal open class NettyNetworkHandler(
         override suspend fun resumeConnection0() {
             connectResult.await() // propagates exceptions
             val connection = connection.await()
-            setState(this) { StateLoading(connection) }
+            this.setState { StateLoading(connection) }
                 ?.resumeConnection()
                 ?: this@NettyNetworkHandler.resumeConnection() // concurrently closed by other thread.
         }
@@ -328,7 +321,7 @@ internal open class NettyNetworkHandler(
                 join()
             }
             joinCompleted(configPush) // throw exception
-            setState(this) { StateOK(connection, configPush) }
+            setState { StateOK(connection, configPush) }
         } // noop
 
         override fun toString(): String = "StateLoading"
@@ -363,9 +356,7 @@ internal open class NettyNetworkHandler(
                     try {
                         action()
                     } catch (e: Throwable) {
-                        setState {
-                            StateConnecting(ExceptionCollector(IllegalStateException("Exception in $name job", e)))
-                        }
+                        setState { StateClosed(IllegalStateException("Exception in $name job", e)) }
                     }
                 }
             }.apply {

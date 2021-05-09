@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -68,8 +69,10 @@ internal open class TestNetworkHandler(
         }
     }
 
+    @OptIn(TestOnly::class)
     fun setState(correspondingState: NetworkHandler.State) {
-        setState(null) { TestState(correspondingState) }
+        // `null` means ignore checks. All test states have same type TestState.
+        setStateImpl(null) { TestState(correspondingState) }
     }
 
     private val initialState = TestState(NetworkHandler.State.INITIALIZED)

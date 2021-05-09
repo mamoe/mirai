@@ -163,6 +163,8 @@ internal abstract class NetworkHandlerSupport(
 
     /**
      * State is *lazy*, initialized only if requested.
+     *
+     * You need to call setter inside `synchronized(this) { }`.
      */
     @Suppress("PropertyName")
     protected var _state: BaseStateImpl by lateinitMutableProperty { initialState() }
@@ -185,14 +187,24 @@ internal abstract class NetworkHandlerSupport(
 
 
     /**
-     * Attempts to change state. Returns null if new state has same [class][KClass] as current.
+     * Attempts to change state.
+     *
+     * Returns null if new state has same [class][KClass] as current (meaning already set by another thread).
      */
     protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? = setState(S::class, new)
-    protected inline fun <reified S : BaseStateImpl> setState(
-        old: BaseStateImpl, noinline new: () -> S
-    ): S? = synchronized(this) {
-        if (_state === old) {
-            setState(new)
+
+    /**
+     * Attempts to change state if current state is [this].
+     *
+     * Returns null if new state has same [class][KClass] as current or when current state is already set to another state concurrently by another thread.
+     *
+     * This is designed to be used inside [BaseStateImpl].
+     */
+    protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
+        noinline new: () -> S
+    ): S? = synchronized(this@NetworkHandlerSupport) {
+        if (_state === this) {
+            this@NetworkHandlerSupport.setState(new)
         } else {
             null
         }
@@ -204,20 +216,27 @@ internal abstract class NetworkHandlerSupport(
      *
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
-    protected fun <S : BaseStateImpl> setState(newType: KClass<S>?, new: () -> S): S? = synchronized(this) {
-        if (newType != null && _state::class == newType) return@synchronized null // already set to expected state by another thread. Avoid replications.
-        if (_state.correspondingState == NetworkHandler.State.CLOSED) return null // CLOSED is final.
+    @JvmName("setState1")
+    protected fun <S : BaseStateImpl> setState(newType: KClass<S>, new: () -> S): S? =
+        @OptIn(TestOnly::class)
+        setStateImpl(newType as KClass<S>?, new)
+
+    // newType can be null iff in tests, to ignore checks.
+    @TestOnly
+    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? = synchronized(this) {
+        val old = _state
+        if (newType != null && old::class == newType) return@synchronized null // already set to expected state by another thread. Avoid replications.
+        if (old.correspondingState == NetworkHandler.State.CLOSED) return null // CLOSED is final.
 
         val stateObserver = context.getOrNull(StateObserver)
 
         val impl = try {
             new() // inline only once
         } catch (e: Throwable) {
-            stateObserver?.exceptionOnCreatingNewState(this, _state, e)
+            stateObserver?.exceptionOnCreatingNewState(this, old, e)
             throw e
         }
 
-        val old = _state
         check(old !== impl) { "Old and new states cannot be the same." }
 
 
