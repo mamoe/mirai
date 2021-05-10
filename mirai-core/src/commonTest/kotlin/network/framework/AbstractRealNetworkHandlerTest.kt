@@ -44,6 +44,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     init {
         System.setProperty("mirai.debug.network.state.observer.logging", "full")
         System.setProperty("mirai.debug.network.show.all.components", "true")
+        System.setProperty("mirai.debug.network.show.components.creation.stacktrace", "true")
     }
 
     protected abstract val factory: NetworkHandlerFactory<H>

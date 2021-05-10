@@ -17,7 +17,9 @@ import kotlin.LazyThreadSafetyMode.NONE
  * A thread-safe implementation of [MutableComponentStorage]
  */
 internal class ConcurrentComponentStorage(
-    private val showAllComponents: Boolean = SHOW_ALL_COMPONENTS
+    private val showAllComponents: Boolean = SHOW_ALL_COMPONENTS,
+    private val creationStacktrace: Exception? =
+        if (SHOW_COMPONENTS_CREATION_STACKTRACE) Exception("Creation stacktrace") else null,
 ) : ComponentStorage, MutableComponentStorage {
     private val map = ConcurrentHashMap<ComponentKey<*>, Any?>()
 
@@ -25,7 +27,8 @@ internal class ConcurrentComponentStorage(
     override val size: Int get() = map.size
 
     override operator fun <T : Any> get(key: ComponentKey<T>): T {
-        return getOrNull(key) ?: throw NoSuchComponentException(key, this)
+        return getOrNull(key)
+            ?: throw NoSuchComponentException(key, this).apply { creationStacktrace?.let(::initCause) }
     }
 
     override fun <T : Any> getOrNull(key: ComponentKey<T>): T? {
@@ -57,3 +60,9 @@ internal class ConcurrentComponentStorage(
 }
 
 private val SHOW_ALL_COMPONENTS: Boolean by lazy(NONE) { systemProp("mirai.debug.network.show.all.components", false) }
+private val SHOW_COMPONENTS_CREATION_STACKTRACE: Boolean by lazy(NONE) {
+    systemProp(
+        "mirai.debug.network.show.components.creation.stacktrace",
+        false
+    )
+}
