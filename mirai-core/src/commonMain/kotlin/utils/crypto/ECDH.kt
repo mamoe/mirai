@@ -119,7 +119,7 @@ internal data class ECDHWithPublicKey(private val initialPublicKey: ECDHInitialP
 * */
 
 @Serializable
-public data class ECDHInitialPublicKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
+internal data class ECDHInitialPublicKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
     @Transient
     internal val key: ECDHPublicKey = keyStr.adjustToPublicKey()
 }
