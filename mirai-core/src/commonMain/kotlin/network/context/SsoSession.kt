@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.context
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 
 /**
  * Contains secrets for encryption and decryption during a session created by [SsoProcessor] and [PacketCodec].
@@ -26,7 +25,6 @@ internal interface SsoSession {
      * always 0 for now.
      */
     var loginState: Int
-    val ecdhWithPublicKey: ECDHWithPublicKey
 
     // also present in AccountSecrets
     var wLoginSigInfo: WLoginSigInfo

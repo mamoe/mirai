@@ -48,7 +48,7 @@ internal class WtLogin {
                     sequenceId = sequenceId,
                     unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
                 ) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdhWithPublicKey), 0x0810) {
+                    writeOicqRequestPacket(client, commandId = 0x0810) {
                         writeShort(8) // subCommand
                         writeShort(6) // count of TLVs, probably ignored by server?TODO
                         t8(2052)
@@ -78,7 +78,7 @@ internal class WtLogin {
                     sequenceId = sequenceId,
                     unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
                 ) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdhWithPublicKey), 0x0810) {
+                    writeOicqRequestPacket(client, commandId = 0x0810) {
                         writeShort(17) // subCommand
                         writeShort(12)
                         t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)

@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcLi
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.utils.*
 import kotlin.random.Random
 
@@ -72,8 +71,6 @@ internal open class QQAndroidClient(
 ) : AccountSecrets by accountSecrets, SsoSession {
     lateinit var _bot: QQAndroidBot
     val bot: QQAndroidBot get() = _bot
-
-    override lateinit var ecdhWithPublicKey: ECDHWithPublicKey
 
     /**
      * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.

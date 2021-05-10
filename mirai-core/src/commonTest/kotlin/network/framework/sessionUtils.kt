@@ -16,7 +16,6 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.context.AccountSecrets
 import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.context.SsoSession
-import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
@@ -31,7 +30,6 @@ internal class TestSsoSession(
 ) : SsoSession {
     override var wLoginSigInfo: WLoginSigInfo by accountSecrets::wLoginSigInfo
     override val randomKey: ByteArray by accountSecrets::randomKey
-    override var ecdhWithPublicKey: ECDHWithPublicKey = ECDHWithPublicKey(accountSecrets.ecdhInitialPublicKey)
 }
 
 internal fun loadSession(

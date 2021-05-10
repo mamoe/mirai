@@ -33,6 +33,8 @@ internal interface EcdhInitialPublicKeyUpdater {
      */
     suspend fun refreshInitialPublicKeyAndApplyECDH()
 
+    fun getECDHWithPublicKey(): ECDHWithPublicKey
+
     companion object : ComponentKey<EcdhInitialPublicKeyUpdater>
 }
 
@@ -67,6 +69,14 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
         val json = Json {}
     }
 
+    var ecdhWithPublicKey: ECDHWithPublicKey? = null
+    override fun getECDHWithPublicKey(): ECDHWithPublicKey {
+        if (ecdhWithPublicKey == null) {
+            error("Calling getECDHWithPublicKey without calling refreshInitialPublicKeyAndApplyECDH")
+        }
+        return ecdhWithPublicKey!!
+    }
+
     override suspend fun refreshInitialPublicKeyAndApplyECDH() {
 
         val initialPublicKey = kotlin.runCatching {
@@ -96,7 +106,7 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
             defaultInitialPublicKey
         }
         bot.client.ecdhInitialPublicKey = initialPublicKey
-        bot.client.ecdhWithPublicKey = ECDHWithPublicKey(initialPublicKey)
+        ecdhWithPublicKey = ECDHWithPublicKey(initialPublicKey)
     }
 
 
