@@ -239,6 +239,16 @@ public interface Group : Contact, CoroutineScope, FileSupported {
                 Announcement(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
             )
         }
+
+        /**
+         * 删除一条群公告
+         * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
+         */
+        @MiraiExperimentalApi
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend fun Group.deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
+            deleteAnnouncement(receiveAnnouncement.fid)
     }
 }
 
@@ -310,10 +320,3 @@ public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
  */
 public inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
 
-/**
- * 删除一条群公告
- * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
- */
-@MiraiExperimentalApi
-public suspend fun Group.deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
-    deleteAnnouncement(receiveAnnouncement.fid)

@@ -386,6 +386,8 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public synthetic fun deleteAnnouncement (Ljava/lang/String;)Lkotlin/Unit;
 	public fun deleteAnnouncement (Ljava/lang/String;)V
 	public abstract fun deleteAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;)V
+	public static fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getAnnouncement (Ljava/lang/String;)Lnet/mamoe/mirai/data/ReceiveAnnouncement;
 	public abstract fun getAnnouncement (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -420,6 +422,9 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 }
 
 public final class net/mamoe/mirai/contact/Group$Companion {
+	public final synthetic fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;)Lkotlin/Unit;
+	public final fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;)V
+	public final fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final synthetic fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)Lkotlin/Unit;
 	public final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;)V
 	public final fun sendAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -430,7 +435,6 @@ public final class net/mamoe/mirai/contact/Group$Companion {
 }
 
 public final class net/mamoe/mirai/contact/GroupKt {
-	public static final fun deleteAnnouncement (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/data/ReceiveAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final synthetic fun getMember (Lnet/mamoe/mirai/contact/Group;J)Lnet/mamoe/mirai/contact/NormalMember;
 	public static final synthetic fun getMemberOrFail (Lnet/mamoe/mirai/contact/Group;J)Lnet/mamoe/mirai/contact/NormalMember;
 	public static final fun isBotMuted (Lnet/mamoe/mirai/contact/Group;)Z
