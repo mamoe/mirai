@@ -101,7 +101,7 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
                 }
             }
         }.getOrElse {
-            logger.error("Failed to fetch ecdh public key from server, use default key instead", it)
+            logger.error("Failed to fetch ECDH public key from server, using default key instead", it)
             defaultInitialPublicKey
         }
         bot.client.ecdhInitialPublicKey = initialPublicKey
