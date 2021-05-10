@@ -81,7 +81,6 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
 
         val initialPublicKey = kotlin.runCatching {
             val currentPublicKey = bot.client.ecdhInitialPublicKey
-            logger.info("Start to check if the ecdh key still valid.")
             if (currentPublicKey.expireTime > currentTimeSeconds()) {
                 logger.info("ECDH key is valid.")
                 currentPublicKey
