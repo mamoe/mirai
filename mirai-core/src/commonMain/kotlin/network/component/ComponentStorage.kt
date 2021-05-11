@@ -31,10 +31,17 @@ internal interface ComponentStorage {
     val keys: Set<ComponentKey<*>>
 
     override fun toString(): String
+
+    companion object {
+        val EMPTY: ComponentStorage by lazy { ConcurrentComponentStorage() }
+    }
 }
 
-internal operator fun ComponentStorage.plus(fallback: ComponentStorage): ComponentStorage =
-    CombinedComponentStorage(this, fallback)
+internal operator fun ComponentStorage?.plus(fallback: ComponentStorage?): ComponentStorage {
+    if (this == null) return fallback ?: return ComponentStorage.EMPTY
+    if (fallback == null) return this
+    return CombinedComponentStorage(this, fallback)
+}
 
 private class CombinedComponentStorage(
     val main: ComponentStorage,
