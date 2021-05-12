@@ -45,6 +45,9 @@ internal class NettyEndlessReconnectionTest : AbstractNettyNHTest() {
         val state = network::_state.javaGetter!!.apply { isAccessible = true }
             .invoke(network) as NetworkHandlerSupport.BaseStateImpl
 
+        println(state)
+        println(state.getCause())
+
         assertTrue(state.toString()) { state.getCause()!!.suppressed.size <= 1 } // might be zero if just created since at this time network is still running.
         // size <= 1 means duplicates are dropped.
 

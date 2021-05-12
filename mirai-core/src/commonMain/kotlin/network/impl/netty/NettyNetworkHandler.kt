@@ -242,7 +242,12 @@ internal open class NettyNetworkHandler(
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
         private val connection = async(SupervisorJob(coroutineContext.job)) {
+            logger.info("[StateConnecting] [connection] invoking.....")
             createConnection(decodePipeline)
+        }.also {
+            it.invokeOnCompletion { e ->
+                logger.info("[StateConnecting] [connection] Completed ($e)", e)
+            }
         }
 
         @Suppress("JoinDeclarationAndAssignment")
@@ -250,10 +255,14 @@ internal open class NettyNetworkHandler(
 
         init {
             connectResult = async(SupervisorJob(coroutineContext.job)) {
+                logger.info("[StateConnecting] [connectResult] Pre invoking")
                 connection.await()
+                logger.info("[StateConnecting] [connectResult] waited connection, do login")
                 context[SsoProcessor].login(this@NettyNetworkHandler)
+                logger.info("[StateConnecting] [connectResult] Login complete.")
             }
             connectResult.invokeOnCompletion { error ->
+                logger.info("[StateConnecting] [connectResult] Completed ($error)", error)
                 if (error == null) {
                     this@NettyNetworkHandler.launch { resumeConnection() }
                 } else {
