@@ -528,10 +528,35 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 谢红包: Int = XIE_HONG_BAO
         public const val XIN_NIAN_YAN_HUA: Int = 310
         public const val 新年烟花: Int = XIN_NIAN_YAN_HUA
-
+        public const val DA_CALL: Int = 311
+        public const val 打call: Int = DA_CALL
+        public const val BIAN_XING: Int = 312
+        public const val 变形: Int = BIAN_XING
+        public const val KE_DAO_LE: Int = 313
+        public const val 嗑到了: Int = KE_DAO_LE
+        public const val ZI_XI_FEN_XI: Int = 314
+        public const val 仔细分析: Int = ZI_XI_FEN_XI
+        public const val JIA_YOU: Int = 315
+        public const val 加油: Int = JIA_YOU
+        public const val WO_MEI_SHI: Int = 316
+        public const val 我没事: Int = WO_MEI_SHI
+        public const val CAI_GOU: Int = 317
+        public const val 菜狗: Int = CAI_GOU
+        public const val CHONG_BAI: Int = 318
+        public const val 崇拜: Int = CHONG_BAI
+        public const val BI_XIN: Int = 319
+        public const val 比心: Int = BI_XIN
+        public const val QING_ZHU: Int = 320
+        public const val 庆祝: Int = QING_ZHU
+        public const val LAO_SE_PI: Int = 321
+        public const val 老色痞: Int = LAO_SE_PI
+        public const val JU_JUE: Int = 322
+        public const val 拒绝: Int = JU_JUE
+        public const val XIAN_QI: Int = 323
+        public const val 嫌弃: Int = XIAN_QI
 
         @JvmField
-        public val names: Array<String> = Array(311) { "[表情]" }
+        public val names: Array<String> = Array(324) { "[表情]" }
 
         init {
             names[JING_YA] = "[惊讶]"
@@ -772,7 +797,19 @@ public data class Face(public val id: Int) : // used in delegation
             names[QIU_HONG_BAO] = "[求红包]"
             names[XIE_HONG_BAO] = "[谢红包]"
             names[XIN_NIAN_YAN_HUA] = "[新年烟花]"
+            names[DA_CALL] = "[打call]"
+            names[BIAN_XING] = "[变形]"
+            names[KE_DAO_LE] = "[嗑到了]"
+            names[ZI_XI_FEN_XI] = "[仔细分析]"
+            names[JIA_YOU] = "[加油]"
+            names[WO_MEI_SHI] = "[我没事]"
+            names[CAI_GOU] = "[菜狗]"
+            names[CHONG_BAI] = "[崇拜]"
+            names[BI_XIN] = "[比心]"
+            names[QING_ZHU] = "[庆祝]"
+            names[LAO_SE_PI] = "[老色痞]"
+            names[JU_JUE] = "[拒绝]"
+            names[XIAN_QI] = "[嫌弃]"
         }
-
     }
 }
