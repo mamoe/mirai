@@ -3198,14 +3198,17 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field BAO_QUAN I
 	public static final field BIAN_BIAN I
 	public static final field BIAN_PAO I
+	public static final field BIAN_XING I
 	public static final field BIAO_LEI I
 	public static final field BI_SHI I
+	public static final field BI_XIN I
 	public static final field BI_ZUI I
 	public static final field BO_BO I
 	public static final field BU I
 	public static final field BU_KAI_XIN I
 	public static final field CAI I
 	public static final field CAI_DAO I
+	public static final field CAI_GOU I
 	public static final field CANG_SANG I
 	public static final field CA_HAN I
 	public static final field CENG_YI_CENG I
@@ -3217,10 +3220,12 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field CHE_YI_CHE I
 	public static final field CHI I
 	public static final field CHI_GUA I
+	public static final field CHONG_BAI I
 	public static final field Companion Lnet/mamoe/mirai/message/data/Face$Companion;
 	public static final field DAN I
 	public static final field DAN_GAO I
 	public static final field DAO I
+	public static final field DA_CALL I
 	public static final field DA_KU I
 	public static final field DA_LIAN I
 	public static final field DA_XIAO I
@@ -3263,6 +3268,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field HUI_SHOU I
 	public static final field HUI_TOU I
 	public static final field HU_LIAN I
+	public static final field JIA_YOU I
 	public static final field JIA_YOU_BAO_BAO I
 	public static final field JIA_YOU_BI_SHENG I
 	public static final field JIE_WU I
@@ -3275,10 +3281,12 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field JI_E I
 	public static final field JI_ZHANG I
 	public static final field JU_HUA I
+	public static final field JU_JUE I
 	public static final field KAI_QIANG I
 	public static final field KA_FEI I
 	public static final field KEN_TOU I
 	public static final field KE_AI I
+	public static final field KE_DAO_LE I
 	public static final field KE_LIAN I
 	public static final field KE_TOU I
 	public static final field KOU_BI I
@@ -3291,6 +3299,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field K_GE I
 	public static final field K歌 I
 	public static final field LAN_QIU I
+	public static final field LAO_SE_PI I
 	public static final field LA_JIAO_JIANG I
 	public static final field LA_YAN_JING I
 	public static final field LEI_BEN I
@@ -3332,6 +3341,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field QIAO_KAI_XIN I
 	public static final field QIA_YI_QIA I
 	public static final field QING I
+	public static final field QING_ZHU I
 	public static final field QIN_QIN I
 	public static final field QIU_DA_LE I
 	public static final field QIU_HONG_BAO I
@@ -3372,6 +3382,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field WEI_XIAO I
 	public static final field WEN_HAO_LIAN I
 	public static final field WO_BU_KAN I
+	public static final field WO_MEI_SHI I
 	public static final field WO_SHOU I
 	public static final field WO_SUAN_LE I
 	public static final field WO_ZUI_MEI I
@@ -3380,6 +3391,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field WU_NAI I
 	public static final field WU_YAN_XIAO I
 	public static final field XIA I
+	public static final field XIAN_QI I
 	public static final field XIAN_WEN I
 	public static final field XIAO_JIU_JIE I
 	public static final field XIAO_KU I
@@ -3418,6 +3430,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field ZHUAN_QUAN I
 	public static final field ZHUA_KUANG I
 	public static final field ZHU_TOU I
+	public static final field ZI_XI_FEN_XI I
 	public static final field ZI_YA I
 	public static final field ZUO_BAI_NIAN I
 	public static final field ZUO_HENG_HENG I
@@ -3431,6 +3444,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 不开心 I
 	public static final field 乒乓 I
 	public static final field 亲亲 I
+	public static final field 仔细分析 I
 	public static final field 佛系 I
 	public static final field 便便 I
 	public static final field 偷看 I
@@ -3443,6 +3457,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 凋谢 I
 	public static final field 击掌 I
 	public static final field 刀 I
+	public static final field 加油 I
 	public static final field 加油必胜 I
 	public static final field 加油抱抱 I
 	public static final field 勾引 I
@@ -3452,6 +3467,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 发呆 I
 	public static final field 发怒 I
 	public static final field 发抖 I
+	public static final field 变形 I
 	public static final field 口罩护体 I
 	public static final field 可怜 I
 	public static final field 可爱 I
@@ -3480,6 +3496,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 喵喵 I
 	public static final field 喷脸 I
 	public static final field 喷血 I
+	public static final field 嗑到了 I
 	public static final field 嘘 I
 	public static final field 嘲讽 I
 	public static final field 回头 I
@@ -3496,11 +3513,13 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 好棒 I
 	public static final field 好闪 I
 	public static final field 委屈 I
+	public static final field 嫌弃 I
 	public static final field 害怕 I
 	public static final field 害羞 I
 	public static final field 小样儿 I
 	public static final field 小纠结 I
 	public static final field 尴尬 I
+	public static final field 崇拜 I
 	public static final field 左亲亲 I
 	public static final field 左哼哼 I
 	public static final field 左太极 I
@@ -3508,6 +3527,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 差劲 I
 	public static final field 干杯 I
 	public static final field 幽灵 I
+	public static final field 庆祝 I
 	public static final field 开枪 I
 	public static final field 得意 I
 	public static final field 微笑 I
@@ -3524,9 +3544,11 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 憨笑 I
 	public static final field 我不看 I
 	public static final field 我最美 I
+	public static final field 我没事 I
 	public static final field 我酸了 I
 	public static final field 扇脸 I
 	public static final field 手枪 I
+	public static final field 打call I
 	public static final field 打脸 I
 	public static final field 扔狗 I
 	public static final field 托脸 I
@@ -3540,6 +3562,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 拍头 I
 	public static final field 拍手 I
 	public static final field 拍桌 I
+	public static final field 拒绝 I
 	public static final field 拜托 I
 	public static final field 拜谢 I
 	public static final field 拥抱 I
@@ -3570,6 +3593,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 月亮 I
 	public static final field 期待 I
 	public static final field 棒棒糖 I
+	public static final field 比心 I
 	public static final field 求红包 I
 	public static final field 汗 I
 	public static final field 汪汪 I
@@ -3612,6 +3636,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 红包 I
 	public static final field 红包包 I
 	public static final field 羊驼 I
+	public static final field 老色痞 I
 	public static final field 胖三斤 I
 	public static final field 胜利 I
 	public static final field 脑阔疼 I
@@ -3622,6 +3647,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 药 I
 	public static final field 菊花 I
 	public static final field 菜刀 I
+	public static final field 菜狗 I
 	public static final field 蛋 I
 	public static final field 蛋糕 I
 	public static final field 街舞 I
