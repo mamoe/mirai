@@ -241,7 +241,7 @@ internal open class NettyNetworkHandler(
          */
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
-        private val connection = async {
+        private val connection = async(SupervisorJob(coroutineContext.job)) {
             createConnection(decodePipeline)
         }
 
@@ -249,8 +249,8 @@ internal open class NettyNetworkHandler(
         private val connectResult: Deferred<Unit>
 
         init {
-            connectResult = async {
-                connection.join()
+            connectResult = async(SupervisorJob(coroutineContext.job)) {
+                connection.await()
                 context[SsoProcessor].login(this@NettyNetworkHandler)
             }
             connectResult.invokeOnCompletion { error ->
