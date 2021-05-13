@@ -48,7 +48,7 @@ private class CombinedComponentStorage(
     val fallback: ComponentStorage,
 ) : ComponentStorage {
     override val keys: Set<ComponentKey<*>> get() = main.keys + fallback.keys
-    override val size: Int get() = keys.size
+    override val size: Int get() = main.size + fallback.size
 
     override fun <T : Any> get(key: ComponentKey<T>): T {
         return main.getOrNull(key) ?: fallback.getOrNull(key) ?: main[key] // let `main` throw exception
