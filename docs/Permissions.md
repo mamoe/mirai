@@ -74,6 +74,8 @@ data class PermissionId(
 
 [`RootPermission`] 是所有权限的父权限。其 ID 为 `*:*`
 
+> 如果 [`Permittee`] (见下文) 拥有根权限, 相当于 [`Permittee`] 拥有全部权限 (内置实现)
+
 ## 被许可人
 
 ```kotlin
@@ -151,9 +153,9 @@ interface PermitteeId {
 
 在整个运行时 Console 只会使用同一个权限服务，如果安装多个提供权限服务的插件很有可能导致崩溃。
 
-> 如果运行于 JVM,
-> 推荐使用 [Karlatemp/LuckPerms-Mirai](https://github.com/Karlatemp/LuckPerms-Mirai)
-> 以得到更好的使用体验 (支持权限组, 权限检查状态 verbose 等)
+> 如果运行于 JVM 平台,
+> 可以使用 [Karlatemp/LuckPerms-Mirai](https://github.com/Karlatemp/LuckPerms-Mirai)
+> 以得到更好的使用体验 (支持权限组, 权限检查状态详细输出等)
 
 ### 判断权限
 
