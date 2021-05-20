@@ -10,12 +10,15 @@
 package net.mamoe.mirai.internal.test
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 
 internal expect fun initPlatform()
 
 /**
  * All test classes should inherit from [AbstractTest]
  */
+@Timeout(value = 7, unit = TimeUnit.MINUTES)
 abstract class AbstractTest {
     init {
         initPlatform()
