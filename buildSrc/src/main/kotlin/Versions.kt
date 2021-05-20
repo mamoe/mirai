@@ -45,7 +45,7 @@ object Versions {
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
 
-    const val junit = "5.4.2"
+    const val junit = "5.7.2"
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
