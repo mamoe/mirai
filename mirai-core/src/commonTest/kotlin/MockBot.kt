@@ -54,8 +54,9 @@ internal class MockBotBuilder(
 internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}) =
     MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
         object : QQAndroidBot(MockAccount, this.conf, debugConf) {
-            override val components: ComponentStorage =
+            override val components: ComponentStorage by lazy {
                 componentsProvider?.invoke(this, this) ?: EMPTY_COMPONENT_STORAGE
+            }
 
             override fun createNetworkHandler(): NetworkHandler =
                 nhProvider?.invoke(this, this) ?: super.createNetworkHandler()
