@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.Event
@@ -23,7 +24,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 internal interface EventDispatcher {
     suspend fun broadcast(event: Event)
-    fun broadcastAsync(event: Event, additionalContext: CoroutineContext = EmptyCoroutineContext)
+    fun broadcastAsync(event: Event, additionalContext: CoroutineContext = EmptyCoroutineContext): EventBroadcastJob
 
     /**
      * Join all jobs. Joins also jobs launched during this call.
@@ -31,6 +32,16 @@ internal interface EventDispatcher {
     suspend fun joinBroadcast()
 
     companion object : ComponentKey<EventDispatcher>
+}
+
+internal inline class EventBroadcastJob(
+    private val job: Job
+) {
+    inline fun successThen(crossinline action: () -> Unit) {
+        job.invokeOnCompletion {
+            if (it == null) action()
+        }
+    }
 }
 
 
@@ -53,8 +64,9 @@ internal class EventDispatcherImpl(
         }
     }
 
-    override fun broadcastAsync(event: Event, additionalContext: CoroutineContext) {
-        launch(additionalContext) { broadcast(event) }
+    override fun broadcastAsync(event: Event, additionalContext: CoroutineContext): EventBroadcastJob {
+        val job = launch(additionalContext) { broadcast(event) }
+        return EventBroadcastJob(job)
     }
 
     private fun optimizeEventToString(event: Event): String {

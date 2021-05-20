@@ -27,7 +27,7 @@ internal class NettyEndlessReconnectionTest : AbstractNettyNHTest() {
 
     override val factory: NetworkHandlerFactory<TestNettyNH> = object : NetworkHandlerFactory<TestNettyNH> {
         override fun create(context: NetworkHandlerContext, address: SocketAddress): TestNettyNH {
-            return object : TestNettyNH(context, address) {
+            return object : TestNettyNH(bot, context, address) {
                 override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
                     error("fail")
             }

@@ -12,26 +12,36 @@
 package net.mamoe.mirai.internal.network.framework
 
 import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.components.EventDispatcher
+import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
+import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.internal.utils.subLogger
+import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.MiraiLogger
 import org.junit.jupiter.api.TestInstance
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal abstract class AbstractMockNetworkHandlerTest : AbstractTest() {
     protected open fun createNetworkHandlerContext() = TestNetworkHandlerContext(bot, logger, components)
-    protected open fun createNetworkHandler() = TestNetworkHandler(createNetworkHandlerContext())
+    protected open fun createNetworkHandler() = TestNetworkHandler(bot, createNetworkHandlerContext())
 
-    protected val bot = MockBot()
+    protected val bot: QQAndroidBot = MockBot {
+        nhProvider = { createNetworkHandler() }
+        componentsProvider = { components }
+    }
     protected val logger = MiraiLogger.create("test")
     protected val components = ConcurrentComponentStorage().apply {
-        set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
+        set(SsoProcessor, TestSsoProcessor(bot))
+        set(EventDispatcher, EventDispatcherImpl(bot.supervisorJob, bot.logger.subLogger("ED")))
         set(
             StateObserver,
             SafeStateObserver(
@@ -39,5 +49,9 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractTest() {
                 MiraiLogger.create("StateObserver errors")
             )
         )
+    }
+
+    fun NetworkHandler.assertState(state: NetworkHandler.State) {
+        assertEquals(state, state)
     }
 }

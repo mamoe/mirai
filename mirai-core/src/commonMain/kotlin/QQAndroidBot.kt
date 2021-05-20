@@ -11,12 +11,10 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -38,7 +36,6 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver.Companion.LOGGING
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
-import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -71,6 +68,8 @@ internal open class QQAndroidBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
+    private val ComponentStorage.eventDispatcher get() = this[EventDispatcher]
+
     // also called by tests.
     fun ComponentStorage.stateObserverChain(): StateObserver {
         val components = this
@@ -84,23 +83,18 @@ internal open class QQAndroidBot constructor(
                     previous: BaseStateImpl,
                     new: BaseStateImpl
                 ) {
-                    bot.launch(logger.asCoroutineExceptionHandler()) {
-                        BotOnlineEvent(bot).broadcast()
+                    components.eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).successThen {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
-                            BotReloginEvent(bot, new.getCause()).broadcast()
+                            components.eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
                         }
                     }
                 }
             },
             StateChangedObserver(State.OK, State.CONNECTING) { new ->
-                bot.launch(logger.asCoroutineExceptionHandler()) {
-                    BotOfflineEvent.Dropped(bot, new.getCause()).broadcast()
-                }
+                components.eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
             },
             StateChangedObserver(State.OK, State.CLOSED) { new ->
-                bot.launch(logger.asCoroutineExceptionHandler()) {
-                    BotOfflineEvent.Active(bot, new.getCause()).broadcast()
-                }
+                components.eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
             },
             StateChangedObserver(to = State.OK) { new ->
                 components[BotOfflineEventMonitor].attachJob(bot, new)
@@ -119,8 +113,12 @@ internal open class QQAndroidBot constructor(
 
 
     private val networkLogger: MiraiLogger by lazy { configuration.networkLoggerSupplier(this) }
-    override val components: ConcurrentComponentStorage by lazy {
-        ConcurrentComponentStorage().apply {
+    override val components: ComponentStorage by lazy {
+        createDefaultComponents()
+    }
+
+    fun createDefaultComponents(): ConcurrentComponentStorage {
+        return ConcurrentComponentStorage().apply {
             val components = this // avoid mistakes
 
             // There's no need to interrupt a broadcasting event when network handler closed.

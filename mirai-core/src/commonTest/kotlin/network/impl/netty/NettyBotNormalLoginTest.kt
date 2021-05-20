@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -36,9 +36,9 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     @Test
     fun `test network broken`() = runBlockingUnit {
         setSsoProcessor {
-            delay(1000)
+            eventDispatcher.joinBroadcast()
             channel.pipeline().fireExceptionCaught(IOException("TestNetworkBroken"))
-            delay(100000) // receive bits from "network"
+            awaitCancellation() // receive exception from "network"
         }
         assertFailsWith<IOException>("TestNetworkBroken") {
             bot.login()
@@ -48,10 +48,10 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     @Test
     fun `test errors after logon`() = runBlockingUnit {
         bot.login()
-        delay(1000)
+        eventDispatcher.joinBroadcast()
         assertEventBroadcasts<BotEvent>(-1) {
             launch {
-                delay(1000)
+                eventDispatcher.joinBroadcast()
                 channel.pipeline().fireExceptionCaught(CusLoginException("Net error"))
             }
             assertNotNull(

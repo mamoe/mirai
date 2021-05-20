@@ -9,17 +9,15 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.ServerAddress
 import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.context.BdhSession
@@ -160,11 +158,9 @@ internal class ConfigPushSvc {
                 bdhSyncer.saveServerListToCache()
                 if (serverListPush.reconnectNeeded == 1) {
                     bot.logger.info { "Server request to change server." }
-                    bot.launch {
-                        delay(1000)
+                    bot.components[EventDispatcher].broadcastAsync(
                         BotOfflineEvent.RequireReconnect(bot, IllegalStateException("Server request to change server."))
-                            .broadcast()
-                    }
+                    )
                 }
             }
 

@@ -9,44 +9,21 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import io.netty.channel.Channel
 import kotlinx.coroutines.CompletableDeferred
-import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.component.ComponentStorage
-import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
-import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
-import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
-internal class TestNetworkHandlerContext(
-    override val bot: QQAndroidBot = MockBot(),
-    override val logger: MiraiLogger = MiraiLogger.create("Test"),
-    components: ComponentStorage = ConcurrentComponentStorage().apply {
-        set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
-        set(
-            StateObserver,
-            SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States")),
-                MiraiLogger.create("StateObserver errors")
-            )
-        )
-    }
-) : NetworkHandlerContext, ComponentStorage by components
-
 internal open class TestNetworkHandler(
+    override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
-) : NetworkHandlerSupport(context) {
+) : NetworkHandlerSupport(context), ITestNetworkHandler {
     @Suppress("EXPOSED_SUPER_CLASS")
     internal open inner class TestState(
         correspondingState: NetworkHandler.State
@@ -82,5 +59,20 @@ internal open class TestNetworkHandler(
 
     override suspend fun sendPacketImpl(packet: OutgoingPacket) {
         sendPacket.add(packet)
+    }
+
+
+    override fun setStateClosed(exception: Throwable?) {
+
+    }
+
+    override fun setStateConnecting(exception: Throwable?) {
+    }
+
+    override fun setStateOK(channel: Channel, exception: Throwable?) {
+        exception?.printStackTrace()
+    }
+
+    override fun setStateLoading(channel: Channel) {
     }
 }

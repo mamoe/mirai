@@ -27,7 +27,7 @@ internal interface NetworkHandlerContext : ComponentStorage {
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
     override val logger: MiraiLogger,
-    storage: ComponentStorage
+    storage: ComponentStorage // should be the same as bot.components
 ) : NetworkHandlerContext, ComponentStorage by storage {
     override fun toString(): String {
         return "NetworkHandlerContextImpl(storage=$)"
