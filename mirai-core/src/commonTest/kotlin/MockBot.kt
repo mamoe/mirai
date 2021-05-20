@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.contracts.InvocationKind
@@ -28,6 +30,7 @@ internal class MockBotBuilder(
     val debugConf: BotDebugConfiguration = BotDebugConfiguration(),
 ) {
     var nhProvider: (QQAndroidBot.(bot: QQAndroidBot) -> NetworkHandler)? = null
+    var componentsProvider: (QQAndroidBot.(bot: QQAndroidBot) -> ComponentStorage)? = null
 
     fun conf(action: BotConfiguration.() -> Unit): MockBotBuilder {
         contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
@@ -51,7 +54,12 @@ internal class MockBotBuilder(
 internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}) =
     MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
         object : QQAndroidBot(MockAccount, this.conf, debugConf) {
+            override val components: ComponentStorage =
+                componentsProvider?.invoke(this, this) ?: EMPTY_COMPONENT_STORAGE
+
             override fun createNetworkHandler(): NetworkHandler =
                 nhProvider?.invoke(this, this) ?: super.createNetworkHandler()
         }
     }
+
+private val EMPTY_COMPONENT_STORAGE = ConcurrentComponentStorage()

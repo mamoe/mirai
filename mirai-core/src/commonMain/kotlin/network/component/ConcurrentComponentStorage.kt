@@ -19,7 +19,7 @@ import kotlin.LazyThreadSafetyMode.NONE
 internal class ConcurrentComponentStorage(
     private val showAllComponents: Boolean = SHOW_ALL_COMPONENTS,
     private val creationStacktrace: Exception? =
-        if (SHOW_COMPONENTS_CREATION_STACKTRACE) Exception("Creation stacktrace") else null,
+        if (SHOW_COMPONENTS_CREATION_STACKTRACE) Exception("ConcurrentComponentStorage Creation stacktrace") else null,
 ) : ComponentStorage, MutableComponentStorage {
     private val map = ConcurrentHashMap<ComponentKey<*>, Any?>()
 
@@ -28,7 +28,7 @@ internal class ConcurrentComponentStorage(
 
     override operator fun <T : Any> get(key: ComponentKey<T>): T {
         return getOrNull(key)
-            ?: throw NoSuchComponentException(key, this).apply { creationStacktrace?.let(::initCause) }
+            ?: throw NoSuchComponentException(key, this).apply { creationStacktrace?.let(this::initCause) }
     }
 
     override fun <T : Any> getOrNull(key: ComponentKey<T>): T? {

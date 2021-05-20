@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.PacketCodec
@@ -172,13 +173,12 @@ internal abstract class NetworkHandlerSupport(
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
 
-    protected var _stateChangedDeferred = CompletableDeferred<NetworkHandler.State>()
-        private set
+    private val _stateChangedChannel = Channel<NetworkHandler.State>(Channel.RENDEZVOUS)
 
     /**
      * For suspension until a state. e.g login.
      */
-    override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedDeferred.onAwait
+    override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedChannel.onReceive
 
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
@@ -242,9 +242,8 @@ internal abstract class NetworkHandlerSupport(
 
         // Order notes:
         // 1. Notify observers to attach jobs to [impl] (if so)
-        _stateChangedDeferred.complete(impl.correspondingState)
+        _stateChangedChannel.offer(impl.correspondingState)
         stateObserver?.stateChanged(this, old, impl)
-        _stateChangedDeferred = CompletableDeferred()
         // 2. Update state to [state]. This affects selectors.
         _state = impl // switch state first. selector may be busy selecting.
         // 3. Cleanup, cancel old states.

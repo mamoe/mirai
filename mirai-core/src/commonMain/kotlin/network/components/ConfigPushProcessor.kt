@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.coroutines.launch
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -38,9 +36,12 @@ internal class ConfigPushProcessorImpl(
                 val e = IllegalStateException("Timeout waiting for ConfigPush.")
                 bdhSyncer.bdhSession.completeExceptionally(e)
                 logger.warning { "Missing ConfigPush. Switching server..." }
-                network.context.bot.launch {
-                    BotOfflineEvent.RequireReconnect(network.context.bot, e).broadcast()
-                }
+                network.context.bot.components[EventDispatcher].broadcastAsync(
+                    BotOfflineEvent.RequireReconnect(
+                        network.context.bot,
+                        e
+                    )
+                )
             }
         }
     }

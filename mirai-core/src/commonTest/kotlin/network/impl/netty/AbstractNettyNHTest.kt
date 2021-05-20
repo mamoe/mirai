@@ -13,8 +13,11 @@ import io.netty.channel.Channel
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
+import net.mamoe.mirai.internal.network.framework.ITestNetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
@@ -22,24 +25,25 @@ import net.mamoe.mirai.utils.ExceptionCollector
 import java.net.SocketAddress
 
 internal open class TestNettyNH(
+    override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
-    address: SocketAddress
-) : NettyNetworkHandler(context, address) {
+    address: SocketAddress,
+) : NettyNetworkHandler(context, address), ITestNetworkHandler {
 
-    fun setStateClosed(exception: Throwable? = null) {
+    override fun setStateClosed(exception: Throwable?) {
         setState { StateClosed(exception) }
     }
 
-    fun setStateConnecting(exception: Throwable? = null) {
+    override fun setStateConnecting(exception: Throwable?) {
         setState { StateConnecting(ExceptionCollector(exception)) }
     }
 
-    fun setStateOK(channel: Channel, exception: Throwable? = null) {
+    override fun setStateOK(channel: Channel, exception: Throwable?) {
         exception?.printStackTrace()
         setState { StateOK(channel, CompletableDeferred(Unit)) }
     }
 
-    fun setStateLoading(channel: Channel) {
+    override fun setStateLoading(channel: Channel) {
         setState { StateLoading(channel) }
     }
 
@@ -75,7 +79,7 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
     override val factory: NetworkHandlerFactory<TestNettyNH> =
         object : NetworkHandlerFactory<TestNettyNH> {
             override fun create(context: NetworkHandlerContext, address: SocketAddress): TestNettyNH {
-                return object : TestNettyNH(context, address) {
+                return object : TestNettyNH(bot, context, address) {
                     override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
                         channel.apply {
                             doRegister() // restart channel
@@ -91,3 +95,5 @@ internal fun AbstractNettyNHTest.setSsoProcessor(action: suspend SsoProcessor.(h
         override suspend fun login(handler: NetworkHandler) = action(handler)
     }
 }
+
+internal val AbstractNettyNHTest.eventDispatcher get() = bot.components[EventDispatcher]

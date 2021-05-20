@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -57,7 +56,7 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
         bot.login()
         assertState(OK)
         bot.close() // send logout blocking
-        delay(1000)
+        eventDispatcher.joinBroadcast()
         assertState(CLOSED)
         assertTrue { nhEvents.any { it is NHEvent.Logout } }
     }

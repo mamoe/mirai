@@ -22,6 +22,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.selects.select
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
@@ -51,7 +52,8 @@ internal open class NettyNetworkHandler(
     final override tailrec suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
         if (state.sendPacketImpl(packet)) return
-        _stateChangedDeferred.join() // wait for next state
+        yield()
+        select<Unit> { onStateChanged {} }// wait for next state
         return sendPacketImpl(packet)
     }
 

@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.component
 import net.mamoe.mirai.internal.test.AbstractTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 
 internal class CombinedStorageTest : AbstractTest() {
 
@@ -55,5 +56,23 @@ internal class CombinedStorageTest : AbstractTest() {
             set(TestComponent2, TestComponent2(2))
         }
         assertEquals(TestComponent2(1), storage[TestComponent2])
+    }
+
+    @Test
+    fun `returns empty if both are null`() {
+        val x: ComponentStorage = null + null
+        assertEquals(ComponentStorage.EMPTY, x)
+    }
+
+    @Test
+    fun `returns first if second if null`() {
+        val x = ConcurrentComponentStorage().apply { set(TestComponent2, TestComponent2(1)) }
+        assertSame(x, x + null)
+    }
+
+    @Test
+    fun `returns second if first if null`() {
+        val x = ConcurrentComponentStorage().apply { set(TestComponent2, TestComponent2(1)) }
+        assertSame(x, null + x)
     }
 }
