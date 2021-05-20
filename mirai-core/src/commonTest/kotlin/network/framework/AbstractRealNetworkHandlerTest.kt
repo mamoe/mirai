@@ -109,18 +109,29 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
             }
         })
-        set(StateObserver, bot.run { stateObserverChain() })
+        // set(StateObserver, bot.run { stateObserverChain() })
     }
 
     /**
      * [additionalComponents] overrides [defaultComponents] and [QQAndroidBot.components]
      */
     open fun createHandler(additionalComponents: ComponentStorage? = null): H {
+        // StateObserver
+        val components = additionalComponents + defaultComponents + bot.createDefaultComponents()
+        val observerComponents = if (
+            additionalComponents?.getOrNull(StateObserver)
+            ?: defaultComponents.getOrNull(StateObserver)
+            == null
+        ) {
+            ConcurrentComponentStorage().apply {
+                set(StateObserver, bot.run { components.stateObserverChain() })
+            }
+        } else null
         return factory.create(
             NetworkHandlerContextImpl(
                 bot,
                 networkLogger,
-                additionalComponents + defaultComponents + bot.createDefaultComponents()
+                observerComponents + components
             ),
             InetSocketAddress.createUnresolved("localhost", 123)
         )

@@ -9,17 +9,13 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
-import net.mamoe.mirai.internal.network.framework.eventDispatcher
-import net.mamoe.mirai.internal.network.framework.ssoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.AbstractKeepAliveNetworkHandlerSelector
-import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
-import kotlin.time.seconds
+import kotlin.time.Duration
 
 private class TestSelector :
     AbstractKeepAliveNetworkHandlerSelector<NetworkHandler> {
@@ -50,7 +46,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
                 setState(State.OK)
             }
         }
-        runBlockingUnit(timeout = 1.seconds) { selector.awaitResumeInstance() }
+        runBlockingUnit(timeout = Duration.seconds(1)) { selector.awaitResumeInstance() }
         assertNotNull(selector.getResumedInstance())
     }
 
@@ -73,7 +69,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         selector.setCurrent(handler)
         assertSame(handler, selector.getResumedInstance())
         handler.setState(State.CLOSED)
-        runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
+        runBlockingUnit(timeout = Duration.seconds(3)) { selector.awaitResumeInstance() }
         assertEquals(1, selector.createInstanceCount.get())
     }
 
@@ -86,21 +82,5 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
             selector.awaitResumeInstance()
         }
         assertEquals(3, selector.createInstanceCount.get())
-    }
-
-
-    @Test
-    fun `BotReloginEvent after successful reconnection`() = runBlockingUnit {
-        val network = createNetworkHandler()
-
-        assertEventBroadcasts<BotReloginEvent> {
-            assertEquals(State.INITIALIZED, network.state)
-            bot.login()
-            network.ssoProcessor.firstLoginSucceed = true
-            network.setStateConnecting()
-            network.resumeConnection()
-            network.eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
-            assertEquals(State.OK, network.state)
-        }
     }
 }

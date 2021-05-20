@@ -20,6 +20,9 @@ import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * States are manually set.
+ */
 internal open class TestNetworkHandler(
     override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
@@ -63,16 +66,19 @@ internal open class TestNetworkHandler(
 
 
     override fun setStateClosed(exception: Throwable?) {
-
+        setState(NetworkHandler.State.CLOSED)
     }
 
     override fun setStateConnecting(exception: Throwable?) {
+        setState(NetworkHandler.State.CONNECTING)
     }
 
     override fun setStateOK(channel: Channel, exception: Throwable?) {
+        setState(NetworkHandler.State.OK)
         exception?.printStackTrace()
     }
 
     override fun setStateLoading(channel: Channel) {
+        setState(NetworkHandler.State.LOADING)
     }
 }

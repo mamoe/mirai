@@ -55,6 +55,6 @@ internal inline fun <reified T : Event> assertEventBroadcasts(times: Int = 1, bl
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal inline fun <reified T : Event, R> assertEventNotBroadcast(block: () -> R): R {
-    return assertEventBroadcasts<T, R>(0, block)
+internal inline fun <R> assertEventNotBroadcast(block: () -> R): R {
+    return assertEventBroadcasts<Event, R>(0, block)
 }

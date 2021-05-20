@@ -36,7 +36,7 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractTest() {
 
     protected val bot: QQAndroidBot = MockBot {
         nhProvider = { createNetworkHandler() }
-        componentsProvider = { components }
+        componentsProvider = { this@AbstractMockNetworkHandlerTest.components }
     }
     protected val logger = MiraiLogger.create("test")
     protected val components = ConcurrentComponentStorage().apply {
