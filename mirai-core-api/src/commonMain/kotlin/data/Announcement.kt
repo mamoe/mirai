@@ -56,8 +56,7 @@ public open class Announcement internal constructor(
      * 发送该公告到群
      */
     public suspend fun publish(group: Group) {
-        val bot = Bot.getInstance(botId)
-        require(bot.containsGroup(group.id)) { "Bot don't have such group" }
+        val bot = group.bot
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
         if (parameters.image == null)
             Mirai.sendGroupAnnouncement(bot, group.id, covertToGroupAnnouncement())
