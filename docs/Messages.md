@@ -14,6 +14,7 @@
   - [消息链的 mirai 码](#消息链的-mirai-码)
   - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
   - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
+  - [`serializeToString` 与 `toString` 的区别](#serializeToString-与-toString-的区别)
 
 ## 消息系统
 
@@ -120,7 +121,7 @@ Mirai 支持多种消息类型。
 |    [`MessageSource`]    | 消息来源元数据 |         2.0         |
 |     [`QuoteReply`]      | 引用回复      |         2.0         |
 |    [`ShowImageFlag`]    | 秀图标识      |         2.2         |
-|  [`RichMessageOrigin`]  | 富文本消息源   | 2.3*<sup>(2)</sup>* |
+|  [`RichMessageOrigin`]  | 富文本消息源   | 2.3 *<sup>(2)</sup>* |
 |    [`MessageOrigin`]    | 富文本消息源   |         2.6         |
 
 > *(1):* [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收  
@@ -174,6 +175,9 @@ contact.sendMessage(PlainText("你要的图片是") + Image("{f8f1ab55-bf8e-4236
 contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))); // 一个纯文本加一个图片
 ```
 
+注: 当需要拼接的消息较多的时候, 建议使用 [构造消息链](#构造消息链) 而不是 `plus`
+  - `plus` 在需要拼接的元素较多的时候运行效率较慢
+
 ### 构造消息链
 
 更复杂的消息则需要构造为消息链。
@@ -190,7 +194,7 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("{f
 | `fun Message.plus(tail: Message): MessageChain`         |
 
 可以使用如上表格所示的方法构造，或使用 DSL builder。
-```
+```kotlin
 class MessageChainBuilder : MutableList<SingleMessage>, Appendable {
     operator fun Message.unaryPlus()
     operator fun String.unaryPlus()
@@ -208,6 +212,8 @@ val chain = buildMessageChain {
 
 // chain 结果是包含 PlainText, AtAll, Image, At 的 MessageChain
 ```
+
+该示例中 `+` 是位于 `MessageChainBuilder` 的 `Message.unaryPlus` 扩展。使用 `+` 和使用 `add` 是相等的。
 
 #### 在 Java 构造消息链
 
@@ -233,8 +239,6 @@ MessageChain chain = new MessageChainBuilder()
     .append(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))
     .build();
 ```
-
-该示例中 `+` 是位于 `MessageChainBuilder` 的 `Message.unaryPlus` 扩展。使用 `+` 和使用 `add` 是相等的。
 
 ### 作为字符串处理消息
 
@@ -421,6 +425,15 @@ PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 ```java
 new PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 ```
+
+### `serializeToString` 与 `toString` 的区别
+
+
+- 如 [消息元素](#消息元素) 所示, `toString()` 会尽可能包含多的信息用于调试作用，**行为可能不确定**
+- `toString()` 偏人类可读, `serializeToString()` 偏机器可读
+- `toString()` **没有转义**, `serializeToString()` 有正确转义
+- `serializeToString()` 会跳过 `不支持 mirai 码处理` 的元素
+- `toString()` 基本不可用于 `deserializeMiraiCode`/`MiraiCode.deserializeFromMiraiCode`
 
 
 ---------
