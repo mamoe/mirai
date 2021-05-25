@@ -15,7 +15,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
-import upload.Bintray
 import java.util.*
 import kotlin.reflect.KProperty
 
