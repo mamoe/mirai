@@ -12,7 +12,7 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.7-M1-dev-3"
+    const val project = "2.6.4-dev-kt15"
 
     const val core = project
     const val console = project
