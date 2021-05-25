@@ -75,8 +75,6 @@ PluginManager.INSTANCE.enablePlugin(Plugin.INSTANCE)
 
 #### 从 JCenter 下载模块
 
-mirai 在版本发布时会将发布的构建存放于 [mirai-bintray-repo]。
-
 - mirai-core 会提供 [mirai-core-all]
 - mirai-console 与其各个模块都会提供 `-all` 的 Shadowed 构建
 
@@ -134,5 +132,4 @@ java -cp "./libs/*" net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader 
 使用 `./start-mirai-console --help` 查看 mirai-console-terminal 支持的启动参数。
 
 [mirai-repo]: https://github.com/project-mirai/mirai-repo/tree/master/shadow
-[mirai-bintray-repo]: https://bintray.com/him188moe/mirai
-[mirai-core-all]: https://bintray.com/him188moe/mirai/mirai-core-all
+[mirai-core-all]: https://repo.maven.apache.org/maven2/net/mamoe/mirai-core-all/

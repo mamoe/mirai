@@ -13,7 +13,6 @@ plugins {
     kotlin("jvm")
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
 }
 
 version = Versions.console

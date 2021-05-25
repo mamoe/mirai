@@ -31,8 +31,6 @@ object Versions {
 
     const val androidGradle = "3.6.2"
 
-    const val bintray = "1.8.5"
-
     const val blockingBridge = "1.6.0"
 
     const val junit = "5.4.2"

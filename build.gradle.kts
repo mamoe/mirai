@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
-    id("com.jfrog.bintray") version Versions.bintray apply false
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge apply false
     id("com.gradle.plugin-publish") version "0.12.0" apply false
     //id("com.bmuschko.nexus") version "2.3.1" apply false
@@ -32,7 +31,6 @@ allprojects {
 
     repositories {
         mavenLocal()
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
         mavenCentral()
     }

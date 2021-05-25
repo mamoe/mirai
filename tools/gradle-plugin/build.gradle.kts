@@ -17,7 +17,6 @@ plugins {
     id("java")
     //signing
     `maven-publish`
-    id("com.jfrog.bintray")
 
     id("com.github.johnrengelman.shadow")
 }
@@ -40,7 +39,7 @@ dependencies {
 
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
-    api("com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintray}")
+    api("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
 
 
     testApi(kotlin("test-junit5"))

@@ -28,13 +28,6 @@ import kotlin.reflect.KProperty
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-/**
- * Configures the [bintray][com.jfrog.bintray.gradle.BintrayExtension] extension.
- */
-@PublishedApi
-internal fun Project.`bintray`(configure: com.jfrog.bintray.gradle.BintrayExtension.() -> Unit): Unit =
-    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("bintray", configure)
-
 @PublishedApi
 internal operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,
@@ -62,78 +55,7 @@ internal fun Project.`publishing`(configure: org.gradle.api.publish.PublishingEx
 
 inline fun Project.configurePublishing(
     artifactId: String,
-    bintrayRepo: String = "mirai",
-    bintrayPkgName: String = artifactId,
     vcs: String = "https://github.com/mamoe/mirai-console"
 ) {
-
-    tasks.register("ensureBintrayAvailable") {
-        doLast {
-            if (!Bintray.isBintrayAvailable(project)) {
-                error("bintray isn't available. ")
-            }
-        }
-    }
-
-    if (Bintray.isBintrayAvailable(project)) {
-        bintray {
-            val keyProps = Properties()
-            val keyFile = file("../keys.properties")
-            if (keyFile.exists()) keyFile.inputStream().use { keyProps.load(it) }
-            if (keyFile.exists()) keyFile.inputStream().use { keyProps.load(it) }
-
-            user = Bintray.getUser(project)
-            key = Bintray.getKey(project)
-
-            publish = true
-            override = true
-
-            setPublications("mavenJava")
-            setConfigurations("archives")
-
-            pkg.apply {
-                repo = bintrayRepo
-                name = bintrayPkgName
-                setLicenses("AGPLv3")
-                publicDownloadNumbers = true
-                vcsUrl = vcs
-            }
-        }
-
-        @Suppress("DEPRECATION")
-        val sourcesJar by tasks.registering(Jar::class) {
-            classifier = "sources"
-            from(sourceSets["main"].allSource)
-        }
-
-        publishing {
-            /*
-            repositories {
-                maven {
-                    // change to point to your repo, e.g. http://my.org/repo
-                    url = uri("$buildDir/repo")
-                }
-            }*/
-            publications {
-                register("mavenJava", MavenPublication::class) {
-                    from(components["java"])
-
-                    groupId = rootProject.group.toString()
-                    this.artifactId = artifactId
-                    version = version
-
-                    pom.withXml {
-                        val root = asNode()
-                        root.appendNode("description", description)
-                        root.appendNode("name", project.name)
-                        root.appendNode("url", vcs)
-                        root.children().last()
-                    }
-
-                    artifact(sourcesJar.get())
-                }
-            }
-        }
-    } else println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
-
+// stub
 }

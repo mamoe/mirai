@@ -13,7 +13,6 @@ pluginManagement {
         mavenLocal()
         gradlePluginPortal()
         jcenter()
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         mavenCentral()
     }
 }

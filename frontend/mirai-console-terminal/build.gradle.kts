@@ -12,7 +12,6 @@ plugins {
     kotlin("plugin.serialization")
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
 }
 
 dependencies {
@@ -31,6 +30,6 @@ version = Versions.consoleTerminal
 
 description = "Console Terminal CLI frontend for mirai"
 
-configurePublishing("mirai-console-terminal", bintrayPkgName = "mirai-console-terminal")
+configurePublishing("mirai-console-terminal")
 
 // endregion

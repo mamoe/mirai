@@ -13,7 +13,6 @@ plugins {
     kotlin("jvm")
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
 
     id("org.jetbrains.intellij") version Versions.intellijGradlePlugin
 }
