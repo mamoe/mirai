@@ -14,10 +14,6 @@ pluginManagement {
         mavenCentral()
         jcenter()
         google()
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-dev")
-        maven(url = "https://dl.bintray.com/jetbrains/kotlin-native-dependencies")
-        maven(url = "https://kotlin.bintray.com/kotlinx")
     }
 }
 

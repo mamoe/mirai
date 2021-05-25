@@ -22,16 +22,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registering
 
-fun Project.configureRemoteRepos(
-    bintrayPkgName: String = "mirai-core"
-) {
-    tasks.register("ensureBintrayAvailable") {
-        doLast {
-            if (!project.isBintrayAvailable()) {
-                error("bintray isn't available. ")
-            }
-        }
-    }
+fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
         doLast {
             if (GpgSigner.signer == GpgSigner.NoopSigner) {
@@ -63,22 +54,6 @@ fun Project.configureRemoteRepos(
             } else {
                 println("SonaType is not available")
             }
-
-
-            if (isBintrayAvailable()) {
-                maven {
-                    name = "Bintray"
-                    setUrl("https://api.bintray.com/maven/him188moe/mirai/$bintrayPkgName/;publish=1;override=1")
-
-                    credentials {
-                        username = Bintray.getUser(project)
-                        password = Bintray.getKey(project)
-                    }
-                }
-            } else {
-                println("bintray isn't available.")
-            }
-
         }
     }
 }
@@ -86,35 +61,10 @@ fun Project.configureRemoteRepos(
 @Suppress("NOTHING_TO_INLINE")
 inline fun Project.configurePublishing(
     artifactId: String,
-    bintrayRepo: String = "mirai",
-    bintrayPkgName: String = artifactId,
     vcs: String = "https://github.com/mamoe/mirai"
 ) {
-    configureRemoteRepos(
-        bintrayPkgName = bintrayPkgName
-    )
+    configureRemoteRepos()
     apply<ShadowPlugin>()
-
-    if (project.isBintrayAvailable()) {
-        bintray {
-            user = Bintray.getUser(project)
-            key = Bintray.getKey(project)
-
-            setPublications("mavenJava")
-            setConfigurations("archives")
-
-            publish = true
-            override = true
-
-            pkg.apply {
-                repo = bintrayRepo
-                name = bintrayPkgName
-                setLicenses("AGPLv3")
-                publicDownloadNumbers = true
-                vcsUrl = vcs
-            }
-        }
-    }
 
     val sourcesJar by tasks.registering(Jar::class) {
         archiveClassifier.set("sources")

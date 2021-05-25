@@ -14,7 +14,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.withType
 
 fun logPublishing(message: String) {
     println("[Publishing] Configuring $message")
@@ -33,25 +32,6 @@ fun Project.configureMppPublishing() {
 
         // TODO: 2021/1/30 如果添加 JVM 到 root module, 这个 task 会失败因 root module artifacts 有变化
         //  tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21
-    }
-
-    tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
-        doFirst {
-            publications
-                .filterIsInstance<MavenPublication>()
-                .forEach { publication ->
-                    val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
-                    if (moduleFile.exists()) {
-                        val artifact = (object :
-                            org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
-                            override fun getDefaultExtension() = "module"
-                        })
-                        publication.artifact(artifact)
-                        GpgSigner.signer.doSign(moduleFile)
-                        publication.artifact(GPGSignMavenArtifact(artifact))
-                    }
-                }
-        }
     }
 
     val stubJavadoc = tasks.register("javadocJar", Jar::class) {
@@ -134,6 +114,6 @@ val publishPlatformArtifactsInRootModule: Project.(MavenPublication) -> Unit = {
     }
 }
 
-public fun MavenArtifact.smartToString(): String {
+fun MavenArtifact.smartToString(): String {
     return "${file.path}, classifier=${classifier}, ext=${extension}"
 }
