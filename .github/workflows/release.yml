@@ -50,7 +50,7 @@ jobs:
         run: ./gradlew clean --scan
 
       - name: Check keys
-        run: ./gradlew ensureBintrayAvailable ensureMavenCentralAvailable
+        run: ./gradlew ensureMavenCentralAvailable
 
       - name: fillBuildConstants
         run: >
