@@ -14,12 +14,10 @@ package net.mamoe.mirai.utils
  */
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.*
-import java.awt.BorderLayout
-import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
 import java.net.URI
@@ -29,29 +27,40 @@ import javax.swing.*
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
     public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String {
-        return openWindow("Mirai PicCaptcha(${bot.id})") {
-            val image = ImageIO.read(data.inputStream())
-            JLabel(ImageIcon(image)).append()
-        }
+        val image = runInterruptible(Dispatchers.IO) { ImageIO.read(data.inputStream()) }
+        return SwingLoginSolver(
+            "Mirai PicCaptcha(${bot.id})",
+            "Pic Captcha",
+            null,
+            topComponent = JLabel(ImageIcon(image)),
+        ).openAndWait()
     }
 
     public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        return openWindow("Mirai SliderCaptcha(${bot.id})") {
-            JLabel(
+        return SwingLoginSolver(
+            "Mirai SliderCaptcha(${bot.id})",
+            "ticket",
+            arrayOf("URL", JTextField(url)),
+            topComponent = JLabel(
                 """
                 <html>
                 需要滑动验证码, 完成后请输入ticket<br/>
                 @see: https://github.com/project-mirai/mirai-login-solver-selenium
                 """.trimIndent()
-            ).append()
-            JTextField(url).last()
-        }.takeIf { it.isNotEmpty() }
+            ),
+        ).openAndWait().takeIf { it.isNotEmpty() }
     }
 
     public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String {
         val title = "Mirai UnsafeDeviceLoginVerify(${bot.id})"
-        return openWindow(title) {
-            JLabel(
+        return SwingLoginSolver(
+            title, "",
+            arrayOf(
+                "", HyperLinkLabel(url, "设备锁验证", title),
+                "URL", JTextField(url),
+            ),
+            hiddenInput = true,
+            topComponent = JLabel(
                 """
                 <html>
                 需要进行账户安全认证<br>
@@ -59,9 +68,8 @@ public object SwingSolver : LoginSolver() {
                 完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次<br>
                 成功后请关闭该窗口
             """.trimIndent()
-            ).append()
-            HyperLinkLabel(url, "设备锁验证", title).last()
-        }
+            )
+        ).openAndWait()
     }
 }
 
@@ -109,22 +117,6 @@ internal object WindowHelperJvm {
     }
 }
 
-internal class WindowInitializer(private val initializer: WindowInitializer.(JFrame) -> Unit) {
-    private lateinit var frame0: JFrame
-    val frame: JFrame get() = frame0
-    fun java.awt.Component.append() {
-        frame.add(this, BorderLayout.NORTH)
-    }
-
-    fun java.awt.Component.last() {
-        frame.add(this)
-    }
-
-    internal fun init(frame: JFrame) {
-        this.frame0 = frame
-        initializer(frame)
-    }
-}
 
 internal val windowImage: BufferedImage? by lazy {
     WindowHelperJvm::class.java.getResourceAsStream("project-mirai.png")?.use {
@@ -134,53 +126,6 @@ internal val windowImage: BufferedImage? by lazy {
 
 internal val windowIcon: Icon? by lazy {
     windowImage?.let(::ImageIcon)
-}
-
-internal suspend fun openWindow(title: String = "", initializer: WindowInitializer.(JFrame) -> Unit = {}): String {
-    return openWindow(title, WindowInitializer(initializer))
-}
-
-internal suspend fun openWindow(title: String = "", initializer: WindowInitializer = WindowInitializer {}): String {
-    val frame = JFrame()
-    frame.iconImage = windowImage
-    frame.minimumSize = Dimension(228, 62) // From Windows 10
-    val value = JTextField()
-    val def = CompletableDeferred<String>()
-    value.addKeyListener(object : KeyListener {
-        override fun keyTyped(e: KeyEvent?) {
-        }
-
-        override fun keyPressed(e: KeyEvent?) {
-            when (e!!.keyCode) {
-                27, 10 -> {
-                    def.complete(value.text)
-                }
-            }
-        }
-
-        override fun keyReleased(e: KeyEvent?) {
-        }
-    })
-    frame.layout = BorderLayout(10, 5)
-    frame.add(value, BorderLayout.SOUTH)
-    initializer.init(frame)
-
-    frame.pack()
-    frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
-    frame.addWindowListener(object : WindowAdapter() {
-        override fun windowClosing(e: WindowEvent?) {
-            def.complete(value.text)
-        }
-    })
-    frame.setLocationRelativeTo(null)
-    frame.title = title
-    frame.isVisible = true
-
-    return def.await().trim().also {
-        SwingUtilities.invokeLater {
-            frame.dispose()
-        }
-    }
 }
 
 /**
@@ -214,5 +159,117 @@ internal class HyperLinkLabel constructor(
                 }
             }
         })
+    }
+}
+
+internal class SwingLoginSolver(
+    title: String?,
+    inputType: String?,
+    // Array<[inlined] Pair<String, Component>>
+    additionInputs: Array<Any>?,
+    hiddenInput: Boolean = false,
+    topComponent: Component? = null,
+) : JFrame() {
+    val value = JTextField("", 15)
+    val def = CompletableDeferred<String>()
+
+    init {
+        iconImage = windowImage
+        minimumSize = Dimension(228, 62)
+        defaultCloseOperation = DISPOSE_ON_CLOSE
+        this.title = title
+        layout = BorderLayout(5, 5)
+        kotlin.run {
+            val contentPane = JPanel()
+            // contentPane.background = Color.cyan
+            add(contentPane, BorderLayout.PAGE_END)
+            val label = JLabel(inputType)
+            label.labelFor = value
+            val layout = GroupLayout(contentPane)
+            contentPane.layout = layout
+            layout.autoCreateGaps = true
+            layout.autoCreateContainerGaps = true
+            kotlin.run {
+                val lining = layout.createSequentialGroup()
+                val left = layout.createParallelGroup()
+                val right = layout.createParallelGroup()
+                if (topComponent != null) lining.addComponent(topComponent)
+                if (additionInputs != null) {
+                    var i = 0
+                    while (i < additionInputs.size) {
+                        val left0 = JLabel(additionInputs[i].toString())
+                        val right0 = additionInputs[i + 1] as Component
+                        left0.labelFor = right0
+                        left.addComponent(left0)
+                        right.addComponent(right0)
+                        lining.addGroup(
+                            layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(left0)
+                                .addComponent(right0)
+                        )
+                        i += 2
+                    }
+                }
+                if (!hiddenInput) {
+                    left.addComponent(label)
+                    right.addComponent(value)
+                }
+                layout.setHorizontalGroup(
+                    layout.createParallelGroup()
+                        .also { group ->
+                            if (topComponent != null) {
+                                group.addComponent(topComponent)
+                            }
+                        }
+                        .addGroup(
+                            layout.createSequentialGroup()
+                                .addGroup(left)
+                                .addGroup(right)
+                        )
+                )
+                if (hiddenInput) {
+                    layout.setVerticalGroup(lining)
+                } else {
+                    layout.setVerticalGroup(
+                        lining.addGroup(
+                            layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(label)
+                                .addComponent(value)
+                        )
+                    )
+                }
+            }
+        }
+        value.addKeyListener(object : KeyListener {
+            override fun keyTyped(e: KeyEvent?) {
+            }
+
+            override fun keyPressed(e: KeyEvent?) {
+                when (e!!.keyCode) {
+                    27, 10 -> {
+                        def.complete(value.text)
+                    }
+                }
+            }
+
+            override fun keyReleased(e: KeyEvent?) {
+            }
+        })
+        addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                def.complete(value.text)
+            }
+        })
+    }
+
+    suspend fun openAndWait(): String {
+        this.pack()
+        this.setLocationRelativeTo(null)
+        this.isVisible = true
+        return def.await().also {
+            SwingUtilities.invokeLater {
+                dispose()
+            }
+        }
     }
 }
