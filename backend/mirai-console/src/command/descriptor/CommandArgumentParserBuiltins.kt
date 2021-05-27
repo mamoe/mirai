@@ -421,10 +421,10 @@ public class EnumValueArgumentParser<T : Enum<T>>(
     private val delegate: (String) -> T = kotlin.run {
         val enums = type.enumConstants.asSequence()
         // step 1: 分析是否能够忽略大小写
-        if (enums.map { it.name.toLowerCase() }.hasDuplicates()) {
+        if (enums.map { it.name.lowercase() }.hasDuplicates()) {
             ({ java.lang.Enum.valueOf(type, it) })
         } else { // step 2: 分析是否能使用小驼峰命名
-            val lowerCaseEnumDirection = enums.map { it.name.toLowerCase() to it }.toList().toMap()
+            val lowerCaseEnumDirection = enums.map { it.name.lowercase() to it }.toList().toMap()
 
             val camelCase = enums.mapNotNull { elm ->
                 val name = elm.name.split('_')
@@ -433,18 +433,18 @@ public class EnumValueArgumentParser<T : Enum<T>>(
                 } else {
                     buildString {
                         val iterator = name.iterator()
-                        append(iterator.next().toLowerCase())
+                        append(iterator.next().lowercase())
                         for (v in iterator) {
                             if (v.isEmpty()) continue
-                            append(v[0].toUpperCase())
-                            append(v.substring(1, v.length).toLowerCase())
+                            append(v[0].uppercase())
+                            append(v.substring(1, v.length).lowercase())
                         }
                     } to elm
                 }
             }
 
             val camelCaseDirection = if ((
-                    enums.map { it.name.toLowerCase() } + camelCase.map { it.first.toLowerCase() }
+                    enums.map { it.name.lowercase() } + camelCase.map { it.first.lowercase() }
                     ).hasDuplicates()
             ) { // 确认驼峰命名与源没有冲突
                 emptyMap()
@@ -454,7 +454,7 @@ public class EnumValueArgumentParser<T : Enum<T>>(
 
             ({
                 camelCaseDirection[it]
-                    ?: lowerCaseEnumDirection[it.toLowerCase()]
+                    ?: lowerCaseEnumDirection[it.lowercase()]
                     ?: noConstant()
             })
         }

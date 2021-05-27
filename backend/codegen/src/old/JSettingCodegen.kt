@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("PRE_RELEASE_CLASS")
@@ -21,7 +21,7 @@ open class JClazz(val primitiveName: String, val packageName: String) {
 }
 
 class JListClazz(item: JClazz) : JClazz("List<${item.packageName}>", "List<${item.packageName}>") {
-    override val funName = item.primitiveName.toLowerCase() + "List"
+    override val funName = item.primitiveName.lowercase() + "List"
 }
 
 class JArrayClazz(item: JClazz) : JClazz(item.primitiveName + "[]", item.primitiveName + "[]")

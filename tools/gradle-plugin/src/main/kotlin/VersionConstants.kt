@@ -10,6 +10,6 @@
 package net.mamoe.mirai.console.gradle
 
 internal object VersionConstants {
-    const val CONSOLE_VERSION = "2.6.4" // value is written here automatically during build
-    const val CORE_VERSION = "2.6.4" // value is written here automatically during build
+    const val CONSOLE_VERSION = "2.7-M1-dev-2" // value is written here automatically during build
+    const val CORE_VERSION = "2.7-M1-dev-2" // value is written here automatically during build
 }

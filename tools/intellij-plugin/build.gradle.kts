@@ -60,6 +60,13 @@ fun File.resolveMkdir(relative: String): File {
     return this.resolve(relative).apply { mkdirs() }
 }
 
+kotlin.target.compilations.all {
+    kotlinOptions {
+        apiVersion = "1.4"
+        languageVersion = "1.4"
+    }
+}
+
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild("201.*")
     untilBuild("215.*")

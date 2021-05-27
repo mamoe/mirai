@@ -69,7 +69,7 @@ internal interface BuiltInCommandInternal : Command, BuiltInCommand
  *
  * [查看文档](https://github.com/mamoe/mirai-console/docs/BuiltInCommands.md)
  */
-@Suppress("unused")
+@Suppress("unused", "RESTRICTED_CONSOLE_COMMAND_OWNER")
 public object BuiltInCommands {
     @ConsoleExperimentalApi
     public val parentPermission: Permission by lazy {
@@ -121,6 +121,7 @@ public object BuiltInCommands {
 
         private val closingLock = Mutex()
 
+        @OptIn(DelicateCoroutinesApi::class)
         @Handler
         public suspend fun CommandSender.handle() {
             GlobalScope.launch {

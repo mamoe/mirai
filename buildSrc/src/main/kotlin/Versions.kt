@@ -12,26 +12,26 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val core = "2.2.2"  // WARNING: This might not be up-to-date since included in mirai build.
-    const val console = "2.2.2"
+    const val core = "2.6.4-dev-kt15"  // WARNING: This might not be up-to-date since included in mirai build.
+    const val console = "2.6.4-dev-kt15"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
-    const val kotlinCompiler = "1.4.21"
-    const val kotlinStdlib = "1.4.21"
+    const val kotlinCompiler = "1.5.10"
+    const val kotlinStdlib = "1.5.10"
 
     const val kotlinIntellijPlugin = "211-1.4.32-release-IJ6693.72" // keep to newest as kotlinCompiler
     const val intellij = "2021.1" // don't update easily unless you want your disk space -= 500MB
 
 
-    const val coroutines = "1.4.0"
-    const val serialization = "1.0.1"
-    const val ktor = "1.5.0"
-    const val atomicFU = "0.14.4"
+    const val coroutines = "1.5.0"
+    const val atomicFU = "0.16.1"
+    const val serialization = "1.1.0"
+    const val ktor = "1.5.4"
 
     const val androidGradle = "3.6.2"
 
-    const val blockingBridge = "1.6.0"
+    const val blockingBridge = "1.10.3"
 
     const val junit = "5.4.2"
 

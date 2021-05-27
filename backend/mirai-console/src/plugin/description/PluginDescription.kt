@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found through the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.console.plugin.description
@@ -159,7 +159,7 @@ public interface PluginDescription {
             if (id.isBlank()) throw IllegalPluginDescriptionException("Plugin id cannot be blank")
             if (id.none { it == '.' }) throw IllegalPluginDescriptionException("'$id' is illegal. Plugin id must consist of both domain and name. ")
 
-            val lowercaseId = id.toLowerCase()
+            val lowercaseId = id.lowercase()
 
             if (ID_REGEX.matchEntire(id) == null) {
                 throw IllegalPluginDescriptionException("Plugin does not match regex '${ID_REGEX.pattern}'.")
@@ -178,7 +178,7 @@ public interface PluginDescription {
         @Throws(IllegalPluginDescriptionException::class)
         public fun checkPluginName(name: String) {
             if (name.isBlank()) throw IllegalPluginDescriptionException("Plugin name cannot be blank")
-            val lowercaseName = name.toLowerCase()
+            val lowercaseName = name.lowercase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
                 throw IllegalPluginDescriptionException("Plugin name is illegal: '$illegal'.")
             }
@@ -191,8 +191,8 @@ public interface PluginDescription {
          */
         @Throws(IllegalPluginDescriptionException::class)
         public fun checkDependencies(pluginId: String, dependencies: Set<PluginDependency>) {
-            val lowercaseId = pluginId.toLowerCase()
-            val lowercaseDependencies = dependencies.mapTo(LinkedHashSet(dependencies.size)) { it.id.toLowerCase() }
+            val lowercaseId = pluginId.lowercase()
+            val lowercaseDependencies = dependencies.mapTo(LinkedHashSet(dependencies.size)) { it.id.lowercase() }
 
             if (lowercaseDependencies.size != dependencies.size)
                 throw IllegalPluginDescriptionException("Duplicated dependency detected: A plugin cannot depend on different versions of dependencies of the same id")
