@@ -12,20 +12,20 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.6.4"
+    const val project = "2.7-M1-dev-3"
 
     const val core = project
     const val console = project
     const val consoleTerminal = project
 
-    const val kotlinCompiler = "1.4.30"
-    const val kotlinStdlib = "1.4.30"
-    const val dokka = "1.4.20"
+    const val kotlinCompiler = "1.5.10"
+    const val kotlinStdlib = "1.5.10"
+    const val dokka = "1.4.32"
 
-    const val coroutines = "1.4.2"
-    const val atomicFU = "0.15.1"
+    const val coroutines = "1.5.0"
+    const val atomicFU = "0.16.1"
     const val serialization = "1.1.0"
-    const val ktor = "1.5.1"
+    const val ktor = "1.5.4"
 
     const val binaryValidator = "0.4.0"
 

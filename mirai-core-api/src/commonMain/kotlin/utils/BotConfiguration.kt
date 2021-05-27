@@ -28,7 +28,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.milliseconds
 
 /**
  * [Bot] 配置. 用于 [BotFactory.newBot]
@@ -471,9 +470,9 @@ public open class BotConfiguration { // open for Java
          */
         @ExperimentalTime
         public inline var saveInterval: Duration
-            @JvmSynthetic inline get() = saveIntervalMillis.milliseconds
+            @JvmSynthetic inline get() = Duration.milliseconds(saveIntervalMillis)
             @JvmSynthetic inline set(v) {
-                saveIntervalMillis = v.toLongMilliseconds()
+                saveIntervalMillis = v.inWholeMilliseconds
             }
 
         /**

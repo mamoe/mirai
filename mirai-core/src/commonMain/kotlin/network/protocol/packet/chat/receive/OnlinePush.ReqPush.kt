@@ -19,10 +19,7 @@ import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -49,7 +46,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
@@ -445,7 +442,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
             else -> {
                 /*
                 bot.network.logger.debug("unknown Transformer732 0xunknown type: ${dataBytes[0].toString(16)
-                    .toUpperCase()}")
+                    .uppercase()}")
                 bot.network.logger.debug("unknown Transformer732 0xdata= ${readBytes().toUHexString()}")
                 */
                 return@lambda732 emptySequence()
@@ -818,7 +815,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         return@mapNotNull MemberCardChangeEvent(old, new, member)
                     }
                     2 -> {
-                        if (info.value.singleOrNull()?.toInt() != 0) {
+                        if (info.value.singleOrNull()?.code != 0) {
                             bot.logger.debug {
                                 "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
                             }

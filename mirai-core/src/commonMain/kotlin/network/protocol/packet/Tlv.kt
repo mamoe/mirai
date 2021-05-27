@@ -45,7 +45,8 @@ internal fun TlvMap.smartToString(leadingLineBreak: Boolean = true, sorted: Bool
 /**
  * 显式表示一个 [ByteArray] 是一个 tlv 的 body
  */
-internal inline class Tlv(val value: ByteArray)
+@JvmInline
+internal value class Tlv(val value: ByteArray)
 
 internal fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
     require(ip.size == 4) { "ip.size must == 4" }

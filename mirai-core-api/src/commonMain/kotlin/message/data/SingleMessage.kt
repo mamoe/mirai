@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.safeCast
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
 // @Serializable(SingleMessage.Serializer::class)
-public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface SingleMessage : Message {
 
     /**
      * @suppress deprecated since 2.4.0
@@ -59,7 +59,7 @@ public interface SingleMessage : Message { // TODO: 2021/1/10 Make sealed interf
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-public interface MessageMetadata : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
@@ -82,7 +82,7 @@ public interface MessageMetadata : SingleMessage { // TODO: 2021/1/10 Make seale
  * @see MarketFace 商城表情
  * @see MusicShare 音乐分享
  */
-public interface MessageContent : SingleMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface MessageContent : SingleMessage {
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
 }
 

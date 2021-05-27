@@ -38,11 +38,11 @@ internal class TimeTest {
         val time0 = (1.toDuration(DurationUnit.DAYS) +
                 20.toDuration(DurationUnit.HOURS) +
                 15.toDuration(DurationUnit.MINUTES) +
-                2057.toDuration(DurationUnit.MILLISECONDS)).toLongMilliseconds()
+                2057.toDuration(DurationUnit.MILLISECONDS)).inWholeMilliseconds
 
         println(time0.millisToHumanReadableString())
         assertTrue { time0.millisToHumanReadableString() == "1d 20h 15min 2.057s" }
-        val time1 = (1.toDuration(DurationUnit.DAYS) + 59.toDuration(DurationUnit.MINUTES)).toLongMilliseconds()
+        val time1 = (1.toDuration(DurationUnit.DAYS) + 59.toDuration(DurationUnit.MINUTES)).inWholeMilliseconds
         println(time1.millisToHumanReadableString())
         assertTrue { time1.millisToHumanReadableString() == "1d 59min 0.0s" }
     }

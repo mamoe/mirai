@@ -31,9 +31,11 @@ fun Project.configureJvmTarget() {
     val defaultVer = JavaVersion.VERSION_1_8
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.languageVersion = "1.4"
+        kotlinOptions.languageVersion = "1.5"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+        kotlinOptions.freeCompilerArgs += "-XXLanguage:-JvmIrEnabledByDefault"
+        // TODO: 2021/5/6 We are still using legacy JVM backend since kotlinx.serialization is not yet supported in Kotlin 1.5.0
     }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
