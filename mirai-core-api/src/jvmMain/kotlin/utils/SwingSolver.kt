@@ -6,6 +6,7 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.utils
 
@@ -13,10 +14,12 @@ package net.mamoe.mirai.utils
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -36,11 +39,15 @@ public object SwingSolver : LoginSolver() {
         ).openAndWait()
     }
 
-    public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        return SwingLoginSolver(
+    public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? = coroutineScope {
+        val openWithTxCaptchaHelper = JButton("Open with TxCaptchaHelper")
+        val solver = SwingLoginSolver(
             "Mirai SliderCaptcha(${bot.id})",
             "ticket",
-            arrayOf("URL", JTextField(url)),
+            arrayOf(
+                "URL", JTextField(url),
+                "", openWithTxCaptchaHelper,
+            ),
             topComponent = JLabel(
                 """
                 <html>
@@ -48,7 +55,66 @@ public object SwingSolver : LoginSolver() {
                 @see: https://github.com/project-mirai/mirai-login-solver-selenium
                 """.trimIndent()
             ),
-        ).openAndWait().takeIf { it.isNotEmpty() }
+        )
+
+        fun JButton.doClickEvent() = launch {
+            val status = JTextField("Requesting")
+            val uri = url.replace("ssl.captcha.qq.com", "txhelper.glitch.me")
+            var isNewClient = false
+            val client = try {
+                Mirai.Http
+            } catch (e: Throwable) {
+                isNewClient = true
+                HttpClient()
+            }
+            val timerQueue = launch {
+                while (isActive) {
+                    val resp = try {
+                        @Suppress("RemoveExplicitTypeArguments")
+                        client.get<String> {
+                            this.url.takeFrom(uri)
+                        }
+                    } catch (error: Throwable) {
+                        error.toString()
+                    }
+                    if (status.text != resp) {
+                        status.text = resp
+                    }
+                    delay(1000)
+                }
+            }
+            if (isNewClient) {
+                timerQueue.invokeOnCompletion { client.close() }
+            }
+            val txhelperSolverConfirmButton = JButton("确定")
+            val txhelperSolver = SwingLoginSolver(
+                "Mirai SliderCaptcha(${bot.id}) (TxCaptchaHelper)",
+                "",
+                arrayOf(
+                    "", status,
+                    "",
+                    JButton("Open TxHelperSolver site").onClick {
+                        openBrowserOrAlert(
+                            "https://github.com/mzdluo123/TxCaptchaHelper",
+                            "TxCaptchaHelper",
+                            "TxCaptchaHelper",
+                            getWindowForComponent(this),
+                        )
+                    },
+                    "", txhelperSolverConfirmButton,
+                ),
+                hiddenInput = true,
+                parentComponent = this@doClickEvent,
+                value = status,
+            )
+            txhelperSolverConfirmButton.onClick {
+                txhelperSolver.def.complete(status.text.trim())
+            }
+            solver.def.complete(txhelperSolver.openAndWait().trim())
+            timerQueue.cancel()
+        }
+        openWithTxCaptchaHelper.onClick { doClickEvent() }
+        return@coroutineScope solver.openAndWait().takeIf { it.isNotEmpty() }
     }
 
     public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String {
@@ -143,20 +209,12 @@ internal class HyperLinkLabel constructor(
         addMouseListener(object : MouseAdapter() {
 
             override fun mouseClicked(e: MouseEvent) {
-                // Try to open browser safely. #694
-                try {
-                    Desktop.getDesktop().browse(URI(url))
-                } catch (ex: Exception) {
-                    JOptionPane.showInputDialog(
-                        this@HyperLinkLabel,
-                        "Mirai 无法直接打开浏览器, 请手动复制以下 URL 打开",
-                        fallbackTitle,
-                        JOptionPane.WARNING_MESSAGE,
-                        windowIcon,
-                        null,
-                        url
-                    )
-                }
+                openBrowserOrAlert(
+                    url,
+                    "Mirai 无法直接打开浏览器, 请手动复制以下 URL 打开",
+                    fallbackTitle,
+                    this@HyperLinkLabel
+                )
             }
         })
     }
@@ -169,20 +227,27 @@ internal class SwingLoginSolver(
     additionInputs: Array<Any>?,
     hiddenInput: Boolean = false,
     topComponent: Component? = null,
-) : JFrame() {
-    val value = JTextField("", 15)
+    parentComponent: Component? = null,
+    val value: JTextField = JTextField("", 15),
+) {
     val def = CompletableDeferred<String>()
+    val frame: Window = if (parentComponent == null) {
+        JFrame(title)
+    } else {
+        JDialog(JOptionPane.getFrameForComponent(parentComponent), title, true)
+    }
 
     init {
-        iconImage = windowImage
-        minimumSize = Dimension(228, 62)
-        defaultCloseOperation = DISPOSE_ON_CLOSE
-        this.title = title
-        layout = BorderLayout(5, 5)
+        if (frame is JFrame) {
+            frame.iconImage = windowImage
+            frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        }
+        frame.minimumSize = Dimension(228, 62)
+        frame.layout = BorderLayout(5, 5)
         kotlin.run {
             val contentPane = JPanel()
             // contentPane.background = Color.cyan
-            add(contentPane, BorderLayout.PAGE_END)
+            frame.add(contentPane, BorderLayout.PAGE_END)
             val label = JLabel(inputType)
             label.labelFor = value
             val layout = GroupLayout(contentPane)
@@ -255,7 +320,7 @@ internal class SwingLoginSolver(
             override fun keyReleased(e: KeyEvent?) {
             }
         })
-        addWindowListener(object : WindowAdapter() {
+        frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
                 def.complete(value.text)
             }
@@ -263,13 +328,51 @@ internal class SwingLoginSolver(
     }
 
     suspend fun openAndWait(): String {
-        this.pack()
-        this.setLocationRelativeTo(null)
-        this.isVisible = true
-        return def.await().also {
-            SwingUtilities.invokeLater {
-                dispose()
+        frame.pack()
+        frame.setLocationRelativeTo(null)
+        runInterruptible(Dispatchers.IO) {
+            def.invokeOnCompletion {
+                SwingUtilities.invokeLater {
+                    frame.dispose()
+                }
             }
+            frame.isVisible = true
         }
+        return def.await()
     }
+}
+
+private fun openBrowserOrAlert(
+    url: String,
+    msg: String,
+    title: String,
+    component: Component? = null,
+) {
+    // Try to open browser safely. #694
+    try {
+        Desktop.getDesktop().browse(URI(url))
+    } catch (ex: Exception) {
+        JOptionPane.showInputDialog(
+            component,
+            msg,
+            title,
+            JOptionPane.WARNING_MESSAGE,
+            windowIcon,
+            null,
+            url
+        )
+    }
+}
+
+private fun <T : Component> T.onClick(onclick: T.(MouseEvent) -> Unit): T = apply {
+    addMouseListener(object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            onclick(this@onClick, e)
+        }
+    })
+}
+
+private tailrec fun getWindowForComponent(component: Component): Window {
+    if (component is Window) return component
+    return getWindowForComponent(component.parent ?: error("Component not attached"))
 }
