@@ -18,7 +18,14 @@ Mirai Console 内置一些指令。
 
 ## LoginCommand
 
-`/<login|登录> [qq] [password]`
+`/<login|登录> [qq] [password] [protocol]?`
+
+| 参数        | 可选值          | 描述                                                                  |
+|:----       | :----           | :-------------------------------------------------------------------  |
+| protocol   | ANDROID_PHONE   | Android 手机.  所有功能都支持.                                         |
+| protocol   | ANDROID_PAD     | Android 平板.  注意: 不支持戳一戳事件解析                               |
+| protocol   | ANDROID_WATCH   | Android 手表.                                                         |
+
 
 临时登录一个账号
 
