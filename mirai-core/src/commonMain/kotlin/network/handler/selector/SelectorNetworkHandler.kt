@@ -34,9 +34,12 @@ internal class SelectorNetworkHandler(
     override val context: NetworkHandlerContext, // impl notes: may consider to move into function member.
     private val selector: NetworkHandlerSelector<*>,
 ) : NetworkHandler {
+    @Volatile
+    private var lastCancellationCause: Throwable? = null
+
     private val scope = CoroutineScope(SupervisorJob(context.bot.coroutineContext[Job]))
     private suspend inline fun instance(): NetworkHandler {
-        if (!scope.isActive) scope.coroutineContext.job.join()
+        if (!scope.isActive) throw lastCancellationCause ?: error("SelectorNetworkHandler is already closed")
         return selector.awaitResumeInstance()
     }
 
@@ -56,8 +59,12 @@ internal class SelectorNetworkHandler(
     override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
     override fun close(cause: Throwable?) {
         synchronized(scope) {
-            if (scope.isActive) scope.cancel()
-            else return
+            if (scope.isActive) {
+                lastCancellationCause = cause
+                scope.cancel()
+            } else {
+                return
+            }
         }
         selector.getResumedInstance()?.close(cause)
     }

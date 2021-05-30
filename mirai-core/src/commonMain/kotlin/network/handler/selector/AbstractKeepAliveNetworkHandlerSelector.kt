@@ -15,7 +15,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.toLongUnsigned
-import org.jetbrains.annotations.TestOnly
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -38,7 +37,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     private val current = atomic<H?>(null)
 
-    @TestOnly
+    @net.mamoe.mirai.utils.TestOnly
     internal fun setCurrent(h: H) {
         current.value = h
     }

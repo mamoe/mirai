@@ -7,17 +7,20 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.handler
 
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.AbstractKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
 import kotlin.time.Duration
 
-private class TestSelector :
+internal class TestSelector :
     AbstractKeepAliveNetworkHandlerSelector<NetworkHandler> {
 
     val createInstance0: () -> NetworkHandler

@@ -24,6 +24,9 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.utils.ExceptionCollector
 import java.net.SocketAddress
 
+/**
+ * You may need to override [createConnection]
+ */
 internal open class TestNettyNH(
     override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
@@ -50,9 +53,10 @@ internal open class TestNettyNH(
 }
 
 internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<TestNettyNH>() {
-    var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null
 
-    internal inner class NettyNHTestChannel : EmbeddedChannel() {
+    class NettyNHTestChannel(
+        var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null
+    ) : EmbeddedChannel() {
         public /*internal*/ override fun doRegister() {
             super.doRegister() // Set channel state to ACTIVE
             // Drop old handlers

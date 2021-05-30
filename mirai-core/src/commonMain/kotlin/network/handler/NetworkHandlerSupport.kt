@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.components.PacketHandler
 import net.mamoe.mirai.internal.network.components.PacketLoggingStrategy
 import net.mamoe.mirai.internal.network.components.RawIncomingPacket
+import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -136,6 +137,15 @@ internal abstract class NetworkHandlerSupport(
      * CoroutineScope is cancelled when switched to another state.
      *
      * State can only be changed inside [setState].
+     *
+     * **IMPORTANT notes to lifecycle:**
+     *
+     * Normally if the state is set to [NetworkHandler.State.CLOSED] by [setState], [selector][NetworkHandlerSelector] may reinitialize an instance.
+     *
+     * Any exception caught by the scope (supervisor job) is considered as _fatal failure_ that will set state to CLOSE and **propagate the exception to user of [selector][NetworkHandlerSelector]**.
+     *
+     *
+     * You must catch all the exceptions and change states by [setState] manually.
      */
     abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,

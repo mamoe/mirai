@@ -116,6 +116,15 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
      * [additionalComponents] overrides [defaultComponents] and [QQAndroidBot.components]
      */
     open fun createHandler(additionalComponents: ComponentStorage? = null): H {
+        return factory.create(
+            createContext(additionalComponents),
+            address
+        )
+    }
+
+    val address = InetSocketAddress.createUnresolved("localhost", 123)
+
+    open fun createContext(additionalComponents: ComponentStorage? = null): NetworkHandlerContextImpl {
         // StateObserver
         val components = additionalComponents + defaultComponents + bot.createDefaultComponents()
         val observerComponents = if (
@@ -127,13 +136,11 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
                 set(StateObserver, bot.run { components.stateObserverChain() })
             }
         } else null
-        return factory.create(
-            NetworkHandlerContextImpl(
-                bot,
-                networkLogger,
-                observerComponents + components
-            ),
-            InetSocketAddress.createUnresolved("localhost", 123)
+
+        return NetworkHandlerContextImpl(
+            bot,
+            networkLogger,
+            observerComponents + components
         )
     }
 
