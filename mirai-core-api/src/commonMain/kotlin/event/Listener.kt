@@ -45,6 +45,11 @@ public enum class ListeningStatus {
  */
 public interface Listener<in E : Event> : CompletableJob {
 
+    // Impl notes:
+    // Inheriting CompletableJob is a bad idea. See #1224.
+    // However we cannot change it as it leads to binary changes.
+    // We can do it in 3.0 or when we found incompatibility with kotlinx.serialization.
+
     /**
      * 并发类型
      */
