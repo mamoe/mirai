@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.impl.netty
 
 import io.netty.channel.DefaultChannelPromise
 import io.netty.channel.embedded.EmbeddedChannel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.test.runBlockingUnit
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlin.time.seconds
+import kotlin.time.Duration
 
 /**
  * @see awaitKt
@@ -36,17 +36,16 @@ internal class NettyUtilsTest : AbstractTest() {
     }
 
     @Test
-    fun canAwait() = runBlockingUnit(timeout = 5.seconds) {
+    fun canAwait() = runBlockingUnit(timeout = Duration.seconds(5)) {
         val future = DefaultChannelPromise(channel)
+        launch(start = CoroutineStart.UNDISPATCHED) { future.awaitKt() }
         launch {
-            delay(2000)
             future.setSuccess()
         }
-        future.awaitKt()
     }
 
     @Test
-    fun returnsImmediatelyIfCompleted() = runBlockingUnit(timeout = 5.seconds) {
+    fun returnsImmediatelyIfCompleted() = runBlockingUnit(timeout = Duration.seconds(5)) {
         val future = DefaultChannelPromise(channel)
         future.setSuccess()
         future.awaitKt()
@@ -56,16 +55,17 @@ internal class NettyUtilsTest : AbstractTest() {
     fun testAwait() {
         class MyError : AssertionError("My") // coroutine debugger will modify the exception if inside coroutine
 
-        runBlockingUnit(timeout = 5.seconds) {
+        runBlockingUnit(timeout = Duration.seconds(5)) {
             val future = DefaultChannelPromise(channel)
-            launch {
-                delay(2000)
-                future.setFailure(MyError())
+            launch(start = CoroutineStart.UNDISPATCHED) {
+                assertFailsWith<AssertionError> {
+                    future.awaitKt()
+                }.let { actual ->
+                    assertTrue { actual is MyError }
+                }
             }
-            assertFailsWith<AssertionError> {
-                future.awaitKt()
-            }.let { actual ->
-                assertTrue { actual is MyError }
+            launch {
+                future.setFailure(MyError())
             }
         }
     }
