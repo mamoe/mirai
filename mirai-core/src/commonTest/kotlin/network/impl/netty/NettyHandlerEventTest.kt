@@ -127,8 +127,6 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
             ok.get().complete(Unit)
             network.resumeConnection()
             eventDispatcher.joinBroadcast()
-            delay(5000) // BotReloginEvent broadcast not started now
-            eventDispatcher.joinBroadcast()
         }.let { event ->
             assertEquals(BotOnlineEvent::class, event[0]::class)
             assertEquals(BotReloginEvent::class, event[1]::class)

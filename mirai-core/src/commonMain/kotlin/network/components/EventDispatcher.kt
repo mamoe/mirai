@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -65,7 +62,9 @@ internal class EventDispatcherImpl(
     }
 
     override fun broadcastAsync(event: Event, additionalContext: CoroutineContext): EventBroadcastJob {
-        val job = launch(additionalContext) { broadcast(event) }
+        val job = launch(additionalContext, start = CoroutineStart.UNDISPATCHED) { broadcast(event) }
+        // UNDISPATCHED: starts the coroutine NOW in the current thread until its first suspension point,
+        // so that after `broadcastAsync` the job is always already started and `joinBroadcast` will work normally.
         return EventBroadcastJob(job)
     }
 

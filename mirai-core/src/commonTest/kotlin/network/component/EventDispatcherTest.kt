@@ -52,4 +52,22 @@ internal class EventDispatcherTest : AbstractTest() {
             dispatcher.joinBroadcast()
         }
     }
+
+    @Test
+    fun `broadcastAsync starts job immediately`() = runBlockingUnit {
+        assertEventBroadcasts<Ev>(1) {
+            dispatcher.broadcastAsync(Ev())
+            dispatcher.joinBroadcast()
+        }
+    }
+
+    @Test
+    fun `broadcastAsync starts job immediately parallel`() = runBlockingUnit {
+        assertEventBroadcasts<Ev>(20) {
+            repeat(20) {
+                dispatcher.broadcastAsync(Ev())
+            }
+            dispatcher.joinBroadcast()
+        }
+    }
 }
