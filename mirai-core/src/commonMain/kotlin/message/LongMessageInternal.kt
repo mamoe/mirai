@@ -38,6 +38,10 @@ internal data class LongMessageInternal internal constructor(override val conten
 internal data class ForwardMessageInternal(
     override val content: String,
     val resId: String?,
+    /**
+     * null means top-level.
+     * not null means nested and need [ForwardMessageInternal.MsgTransmits] in [RefineContext]
+     */
     val fileName: String?,
 ) : AbstractServiceMessage(),
     RefinableMessage {

@@ -121,7 +121,7 @@ internal object EmptyRefineContext : RefineContext {
 
 @Suppress("UNCHECKED_CAST")
 internal class SimpleRefineContext(
-    private val delegate: MutableMap<RefineContextKey<*>, Any>
+    private val delegate: MutableMap<RefineContextKey<*>, Any> = mutableMapOf()
 ) : MutableRefineContext {
 
     override fun contains(key: RefineContextKey<*>): Boolean = delegate.containsKey(key)
