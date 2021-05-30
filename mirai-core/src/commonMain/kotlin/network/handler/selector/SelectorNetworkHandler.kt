@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.SelectClause1
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
@@ -38,7 +35,10 @@ internal class SelectorNetworkHandler(
     private val selector: NetworkHandlerSelector<*>,
 ) : NetworkHandler {
     private val scope = CoroutineScope(SupervisorJob(context.bot.coroutineContext[Job]))
-    private suspend inline fun instance(): NetworkHandler = selector.awaitResumeInstance()
+    private suspend inline fun instance(): NetworkHandler {
+        if (!scope.isActive) scope.coroutineContext.job.join()
+        return selector.awaitResumeInstance()
+    }
 
     override val state: State
         get() = selector.getResumedInstance()?.state ?: State.INITIALIZED
@@ -55,6 +55,10 @@ internal class SelectorNetworkHandler(
 
     override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
     override fun close(cause: Throwable?) {
+        synchronized(scope) {
+            if (scope.isActive) scope.cancel()
+            else return
+        }
         selector.getResumedInstance()?.close(cause)
     }
 
