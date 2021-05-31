@@ -61,7 +61,11 @@ jobs:
         run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
 
       - name: Check
-        run: ./gradlew check -Pmirai.pkc.check.enable --scan
+        run: >
+        ./gradlew check -Pmirai.pkc.check.enable --scan
+        -Dmirai.debug.network.show.all.components=true
+        -Dkotlinx.coroutines.debug=on
+        -Dmirai.debug.network.show.packet.details=true
 
       - name: Gradle :mirai-core-utils:publish
         run: >
