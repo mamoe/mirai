@@ -416,10 +416,15 @@ public interface RemoteFile {
      * 即使用 [resolve] 或 [resolveSibling] 获取到的 [RemoteFile] 的 [upload] 总是上传一个新文件,
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
+     * ## 已弃用
+     * 阅读 [uploadFile] 获取更多信息
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
      * @param callback 进度回调
      * @throws IllegalStateException 该文件上传失败或权限不足时抛出
      */
+    @Deprecated(
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.WARNING
+    ) // since 2.7-M1
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null
@@ -427,14 +432,26 @@ public interface RemoteFile {
 
     /**
      * 上传文件到 [RemoteFile.path] 表示的路径.
+     * ## 已弃用
+     * 阅读 [uploadFile] 获取更多信息
      * @see upload
      */
+    @Suppress("DEPRECATION")
+    @Deprecated(
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource)"), DeprecationLevel.WARNING
+    )  // since 2.7-M1
     public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
      * 上传文件.
+     * ## 已弃用
+     * 阅读 [uploadFile] 获取更多信息
      * @see upload
      */
+    @Suppress("DEPRECATION")
+    @Deprecated(
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(file, callback)"), DeprecationLevel.WARNING
+    ) // since 2.7-M1
     public suspend fun upload(
         file: File,
         callback: ProgressionCallback? = null
@@ -444,6 +461,10 @@ public interface RemoteFile {
      * 上传文件.
      * @see upload
      */
+    @Suppress("DEPRECATION")
+    @Deprecated(
+        "Use sendFile instead.", ReplaceWith("this.uploadAndSend(file)"), DeprecationLevel.WARNING
+    ) // since 2.7-M1
     public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
@@ -503,12 +524,29 @@ public interface RemoteFile {
 
         /**
          * 上传文件并获取文件消息, 但不发送.
+         *
+         * ## 已弃用
+         *
+         * 使用 [sendFile] 代替. 本函数会上传文件但不会发送文件消息.
+         * 不发送文件消息就导致其他操作都几乎不能完成, 而且经反馈, 用户通常会忘记后续的 [RemoteFile.toMessage] 操作.
+         * 本函数造成了很大的不必要的迷惑, 故以既上传又发送消息的, 与官方客户端行为相同的 [sendFile] 代替.
+         *
+         * 相关问题: [#1250: 群文件在上传后 toRemoteFile 返回 null](https://github.com/mamoe/mirai/issues/1250)
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
          * @see RemoteFile.upload
          */
         @JvmStatic
         @JvmOverloads
+        @Deprecated(
+            "Use sendFile instead.",
+            ReplaceWith(
+                "this.sendFile(path, resource, callback)",
+                "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
+            ),
+            level = DeprecationLevel.WARNING
+        ) // since 2.7-M1
         public suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
@@ -517,11 +555,22 @@ public interface RemoteFile {
 
         /**
          * 上传文件并获取文件消息, 但不发送.
+         * ## 已弃用
+         * 阅读 [uploadFile] 获取更多信息.
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @see RemoteFile.upload
          */
         @JvmStatic
         @JvmOverloads
+        @Deprecated(
+            "Use sendFile instead.",
+            ReplaceWith(
+                "this.sendFile(path, file, callback)",
+                "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
+            ),
+            level = DeprecationLevel.WARNING
+        ) // since 2.7-M1
         public suspend fun FileSupported.uploadFile(
             path: String,
             file: File,
