@@ -16,10 +16,7 @@ import net.mamoe.mirai.internal.network.JsonForCache
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.utils.ScheduledJob
 import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.utils.createFileIfNotExists
-import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.loadNotBlankAs
-import net.mamoe.mirai.utils.runBIO
+import net.mamoe.mirai.utils.*
 
 /**
  * Strategy of caching contacts. Used by [ContactUpdater].
@@ -37,7 +34,8 @@ internal interface ContactCacheService {
 }
 
 internal class ContactCacheServiceImpl(
-    private val bot: QQAndroidBot
+    private val bot: QQAndroidBot,
+    private val logger: MiraiLogger,
 ) : ContactCacheService {
     private val configuration get() = bot.configuration
 
@@ -64,7 +62,7 @@ internal class ContactCacheServiceImpl(
         if (!configuration.contactListCache.groupMemberListCacheEnabled) {
             return@lazy null
         }
-        GroupMemberListCaches(bot)
+        GroupMemberListCaches(bot, logger)
     }
 
     private val friendListSaver: ScheduledJob? by lazy {
@@ -80,7 +78,7 @@ internal class ContactCacheServiceImpl(
         configuration.friendCacheFile().run {
             createFileIfNotExists()
             writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
-            bot.network.context.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
+            logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
         }
     }
 
