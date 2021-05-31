@@ -6,13 +6,13 @@
 - 在 IntelliJ 平台双击 shift 可输入类名进行全局搜索
 - 在 IntelliJ 平台, 按 alt + 7 可打开文件的结构, [效果图](/.github/EZSLAB`K@YFFOW47{090W8B.png)
 
-注释:
-- 此列表自 mirai `2.0.0` 起开始维护, 故在 `2.0.0` 前的变更将不做记录.
-- 支持某事件的 mirai 版本号将会显式标注, 通过数学区间形式表示, 如 `[1.1.0, 1.3.0)`, 但有简便表示方法:
-  - (`1.1.0+`) 等注释表示在 `1.1.0` 及更新版本才支持, 区间表示为 `[1.1.0, +∞)`
-  - (`1.1.0-`) 等注释表示在早于 `1.1.0` 的版本才支持, 区间表示为 `[1.0.0, 1.1.0)`
+<!--注释:--> <!--目前还没有这些修改, 因此不展示注释-->
+<!--- 此列表自 mirai `2.0.0` 起开始维护, 故在 `2.0.0` 前的变更将不做记录.-->
+<!--- 支持某事件的 mirai 版本号将会显式标注, 通过数学区间形式表示, 如 `[1.1.0, 1.3.0)`, 但有简便表示方法:-->
+<!--  - (`1.1.0+`) 等注释表示在 `1.1.0` 及更新版本才支持, 区间表示为 `[1.1.0, +∞)`-->
+<!--  - (`1.1.0-`) 等注释表示在早于 `1.1.0` 的版本才支持, 区间表示为 `[1.0.0, 1.1.0)`-->
 
-### [Bot](bot.kt)
+### Bot
 - Bot 登录完成: BotOnlineEvent
 - Bot 离线: BotOfflineEvent
   - 主动: Active
@@ -25,35 +25,35 @@
 - Bot 被戳: BotNudgedEvent
 
 ### 消息
-- 被动收到消息：[MessageEvent](MessageEvent.kt)
+- 被动收到消息：MessageEvent
   - 群消息：GroupMessageEvent
   - 好友消息：FriendMessageEvent
   - 群临时会话消息：GroupTempMessageEvent
   - 陌生人消息：StrangerMessageEvent
   - 其他客户端消息：OtherClientMessageEvent
-- 主动发送消息前: [MessagePreSendEvent](MessagePreSendEvent.kt)
+- 主动发送消息前: MessagePreSendEvent
   - 群消息: GroupMessagePreSendEvent
   - 好友消息: FriendMessagePreSendEvent
   - 群临时会话消息: GroupTempMessagePreSendEvent
   - 陌生人消息：StrangerMessagePreSendEvent
   - 其他客户端消息：OtherClientMessagePreSendEvent
-- 主动发送消息后: [MessagePostSendEvent](MessagePostSendEvent.kt)
+- 主动发送消息后: MessagePostSendEvent
   - 群消息: GroupMessagePostSendEvent
   - 好友消息: FriendMessagePostSendEvent
   - 群临时会话消息: GroupTempMessagePostSendEvent
   - 陌生人消息：StrangerMessagePostSendEvent
   - 其他客户端消息：OtherClientMessagePostSendEvent
-- 消息撤回: [MessageRecallEvent](MessageRecallEvent.kt)
+- 消息撤回: MessageRecallEvent
   - 好友撤回: FriendRecall
   - 群撤回: GroupRecall
   - 群临时会话撤回: TempRecall
-- 图片上传前: [BeforeImageUploadEvent](ImageUploadEvent.kt)
-- 图片上传完成: [ImageUploadEvent](ImageUploadEvent.kt)
+- 图片上传前: BeforeImageUploadEvent
+- 图片上传完成: ImageUploadEvent
   - 图片上传成功: Succeed
   - 图片上传失败: Failed
-- 戳一戳: [NudgeEvent](NudgeEvent.kt)
+- 戳一戳: NudgeEvent
 
-### [群](group.kt)
+### 群
 - 机器人被踢出群或在其他客户端主动退出一个群: BotLeaveEvent
   - 机器人主动退出一个群: Active
   - 机器人被管理员或群主踢出群: Kick
@@ -94,7 +94,7 @@
 - 群成员被禁言: MemberMuteEvent
 - 群成员被取消禁言: MemberUnmuteEvent
 
-### [好友](friend.kt)
+### 好友
 - 好友昵称改变: FriendRemarkChangeEvent
 - 成功添加了一个新好友: FriendAddEvent
 - 好友已被删除: FriendDeleteEvent

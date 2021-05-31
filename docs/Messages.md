@@ -9,12 +9,14 @@
   - [构造消息链](#构造消息链)
   - [元素唯一性](#元素唯一性)
   - [获取消息链中的消息元素](#获取消息链中的消息元素)
+  - [序列化](#序列化)
+  - [消息的其他常用功能](#消息的其他常用功能)
 - [Mirai 码](#mirai-码)
   - [转义规则](#转义规则)
   - [消息链的 mirai 码](#消息链的-mirai-码)
   - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
   - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
-  - [`serializeToString` 与 `toString` 的区别](#serializeToString-与-toString-的区别)
+  - [`serializeToString` 与 `toString` 的区别](#serializetostring-与-tostring-的区别)
 
 ## 消息系统
 
@@ -38,18 +40,19 @@ Mirai 支持富文本消息。
 
 ### 内容
 
-*内容（`MessageContent`）* 即为 *纯文本*、*提及某人*、*图片*、*语音* 和 *音乐分享* 等**有内容**的数据，一条消息中必须包含内容才能发送。  
+*内容（`MessageContent`）* 即为 *纯文本*、*提及某人*、*图片*、*语音* 和 *音乐分享* 等**有内容**的数据，一条消息中必须包含内容才能发送。
 
 ### 元数据
 
 *元数据（`MessageMetadata`）* 包含 *来源*、*引用回复* 和 *秀图标识* 等。
 
-- *消息来源*（`MessageSource`）存在于每条消息中，包含唯一识别信息，用于撤回和引用回复的定位。  
-- *引用回复*（`QuoteReply`）若存在，则会在客户端中解析为本条消息引用了另一条消息。  
+- *消息来源*（`MessageSource`）存在于每条消息中，包含唯一识别信息，用于撤回和引用回复的定位。
+- *引用回复*（`QuoteReply`）若存在，则会在客户端中解析为本条消息引用了另一条消息。
 - *秀图标识*（`ShowImageFlag`）若存在，则表明这条消息中的图片是以秀图发送（QQ 的一个功能）。
 
 元数据与内容的区分就在于，一条消息没有元数据也能显示，但一条消息不能没有内容。**元数据是消息的属性**。
 
+后文会介绍如何获取元数据。
 
 > 回到 [目录](#目录)
 
@@ -110,7 +113,7 @@ Mirai 支持多种消息类型。
 |    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
 |      [`MusicShare`]      | 音乐分享              | `[分享]曲名`             |          2.1          |
-|         [`Dice`]         | 骰子                 | `[骰子:$value]`          |          2.5          |
+|         [`Dice`]         | 魔法表情骰子           | `[骰子:$value]`         |          2.5          |
 |     [`FileMessage`]      | 文件消息              | `[文件]文件名称`          |          2.5          |
 
 
@@ -207,7 +210,7 @@ val chain = buildMessageChain {
     +PlainText("a")
     +AtAll
     +Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
-    add(At(123456))
+    add(At(123456)) // `+` 和 `add` 作用相同
 }
 
 // chain 结果是包含 PlainText, AtAll, Image, At 的 MessageChain
@@ -244,7 +247,25 @@ MessageChain chain = new MessageChainBuilder()
 
 通常要把消息作为字符串处理，在 Kotlin 使用 `message.content` 或在 Java 使用 `message.contentToString()`。
 
-获取到的字符串表示只包含各 [`MessageContent`] 以官方风格显示的消息内容。如 `"你本次测试的成绩是[图片]"`、`[语音]`、`[微笑]`
+获取到的字符串表示只包含各 [`MessageContent`] 以官方风格显示的消息内容。如 `"你本次测试的成绩是[图片]"`、`[语音]`、`[微笑]`。
+
+### 处理富文本消息
+
+Mirai 不内置富文本消息的处理工具类。`MessageChain` 实现接口 `List<SingleMessage>`，一个思路是遍历 list 并判断类型处理：
+```java
+for (element : messageChain) {
+    if (element instanceof Image) {
+        // 处理一个 Image
+    }
+}
+```
+也可以像数组一样按下标随机访问：
+```java
+SingleMessage element = messageChain.get(0);
+if (element instanceof Image) {
+    // 处理一个 Image
+}
+```
 
 
 ### 元素唯一性
@@ -264,7 +285,7 @@ val chain: MessageChain = source1 + source2
 // 结果 chain 只包含一个元素，即右侧的 source2。
 ```
 
-元素唯一性的识别基于 [`MessageKey`]。[`MessageKey`] 拥有多态机制。元素替换时会替换。如 [`HummerMessage`] 的继承关系
+元素唯一性的识别基于 [`MessageKey`]。有些 [`MessageKey`] 拥有多态机制。例如 [`HummerMessage`] 的继承关系
 ```
               MessageContent
                     ↑
@@ -275,20 +296,34 @@ val chain: MessageChain = source1 + source2
  PokeMessage     VipFace      FlashImage      ...
 ```
 
-当连接一个 [`VipFace`] 到一个 [`MessageChain`] 时，由于 [`VipFace`] 最上层为 `MessageContent`，消息链中第一个 `MessageContent` 会被（保留顺序地）替换为 [`VipFace`]，其他所有 `MessageContent` 都会被删除。
-```kotlin
-val chain = messageChainOf(quoteReply, plainText, at, atAll) // quoteReply 是 MessageMetadata, 其他三个都是 MessageContent
-val result = chain + VipFace(VipFace.AiXin, 1) // VipFace 是 ConstrainSingle，最上层键为 MessageContent，因此替换所有的 MessageContent
-// 结果为 [quoteReply, VipFace]
+当连接一个 [`VipFace`] 到一个 [`MessageChain`] 时，由于 [`VipFace`] 最远父类为 `MessageContent`，消息链中第一个 `MessageContent` 会被（保留顺序地）替换为 [`VipFace`]，其他所有 `MessageContent` 都会被删除。
+```
+// Kotlin
+
+val face = VipFace(VipFace.AiXin, 1) // VipFace 是 ConstrainSingle
+val chain = messageChainOf(plainText, quoteReply, at, atAll) // quoteReply 是 MessageMetadata, 其他三个都是 MessageContent
+val result = chain + face // 右侧的 VipFace 替换掉所有的 MessageContent. 它会存在于第一个 MessageContent 位置.
+// 结果为 [VipFace, QuoteReply]
 ```
 
+```
+// Java
+
+VipFace face = new VipFace(VipFace.AiXin, 1); // VipFace 是 ConstrainSingle
+MessageChain chain = MessageChain.newChain(plainText, quoteReply, at, atAll); // quoteReply 是 MessageMetadata, 其他三个都是 MessageContent
+MessageChain result = chain.plus(); // 右侧的 VipFace 替换掉所有的 MessageContent. 它会存在于第一个 MessageContent 位置.
+// 结果为 [VipFace, QuoteReply]
+```
+
+简单来说，这符合现实的逻辑：一条消息如果包含了语音，就不能同时包含群文件、提及全体成员、文字内容等元素。进行 `chain.plus(voice)` 时，如果消息内容冲突则会发生替换，且总是右侧元素替换左侧元素。  
+而如果消息可以同时存在，比如一个纯文本和一个或多个图片相连 `plainText.plus(image1).plus(image2)` 时没有冲突，不会发生替换。结果将会是 `[PlainText, Image, Image]` 的 `MessageChain`。
 
 ### 获取消息链中的消息元素
 
 #### A. 筛选 List
 [`MessageChain`] 继承接口 `List<SingleMessage>`。
 ```kotlin
-val image: Image? = chain.filterIsInstance<Image>().firstOrNull()
+val image: Image? = chain.findIsInstance<Image>()
 ```
 ```java
 Image image = (Image) chain.stream().filter(Image.class::isInstance).findFirst().orElse(null);
@@ -300,7 +335,7 @@ val image: Image? = chain.findIsInstance<Image>()
 val image: Image = chain.firstIsInstance<Image>() // 不存在时 NoSuchElementException
 ```
 
-#### B. 获取唯一消息
+#### B. 获取唯一元素
 如果要获取 `ConstrainSingle` 的消息元素，可以快速通过键获得。
 
 ```kotlin
@@ -310,6 +345,8 @@ val quote: QuoteReply = chain.getOrFail(QuoteReply) // 不存在时 NoSuchElemen
 ```java
 QuoteReply quote = chain.get(QuoteReply.Key);
 ```
+
+一些元数据就可以通过这个方法获得。如上述示例就是在获取引用回复（`QuoteReply`）。如果获取不为 `null` 则表明这条消息包含对其他某条消息的引用。
 
 > 这是因为 `MessageKey` 一般都以消息元素的 `companion object` 实现
 
@@ -323,13 +360,125 @@ val image: Image? by chain.orNull()
 val image: Image? by chain.orElse { /* 返回一个 Image */ }
 ```
 
+#### D. 遍历 List
+```java
+for (SingleMessage message : messageChain) {
+    // ...    
+}
+```
+
+也可以使用 `messageChain.iterator()`。
+
 ### 序列化
+
+> 简单地讲，序列化指的是将内存中的对象转换为其他易于存储等的表示方式。如对象变 JSON 字符串、对象变 MiraiCode 字符串。
 
 消息可以序列化为 JSON 字符串，使用 `MessageChain.serializeToJsonString` 和 `MessageChain.deserializeFromJsonString`。
 
+```java
+
+String json = MessageChain.serializeToJsonString(message);
+
+MessageChain chain = MessageChain.deserializeFromJsonString(message);
+
+```
+
+#### 使用 kotlinx.serialization
+
+若要将消息类型使用在其他类型中，如
+```kotlin
+data class Foo(
+    val image: Image
+)
+```
+
+则需要在序列化时为 format 添加 `serializersModule`：
+```kotlin
+val json = Json {
+    serializersModule = MessageSerializers.serializersModule
+}
+```
+
+如果遇到 [`Encountered unknown key 'type'.`](https://github.com/mamoe/mirai/issues/1273#issuecomment-850997979) 等序列化错误，请添加：
+```kotlin
+Json {
+    serializersModule = MessageSerializers.serializersModule
+    ignoreUnknownKeys = true // 添加这一行
+}
+```
+
+#### 元素类型不一定被保留
+
+如 _消息源 `MessageSource`_ 有 _在线消息源 `OnlineMessageSource`_ 和 _离线消息源 `OfflineMessageSource`_ 之分。`OnlineMessageSource` 在序列化并反序列化后会变为 `OfflineMessageSource`，因为在线消息源只能从消息回执和消息事件中的 `MessageChain` 得到。
+
+但在 API 使用上不会有区别（共有属性获取到的值不会变化）。只是可能需要注意 `equals` 等方法的使用。
+
+所有 `Message` 反序列化的结果都是 `MessageChain`，即使原消息可能是 `SingleMessage`。如果原消息是 `SingleMessage`，可在反序列化后通过 `chian.get(0)` 下标访问并强转类型（或者其他更好的方法）。
+
+#### 序列化稳定性
+
+在旧版本产生的 JSON 字符串在绝大多数情况下可以由新版本 Mirai 读取并反序列化成原 `MessageChain`。如果更新时放弃了对某个旧版本消息元素的支持，将会在更新日志中说明。
+
+但这个规则不适用于 _实验性特性_（带有 `@MiraiExperimentalApi` 注解）。任何使用了实验性特性的消息元素都随时可变。
+
+### 消息的其他常用功能
+
+#### 撤回自己或群员的消息
+
+撤回的核心操作是 `MessageSource.recall`。 如果操作目标 `MessageSource` 指代的是自己的消息，那么就撤回该消息，操作群员消息同理。
+
+来自 `GroupMessageEvent` 等消息事件的属性 `message` 的 `MessageChain` 都包含 `MessageSource` 元素，指代这条消息本身。那么就可以用来撤回这条消息。
+
+```kotlin
+// Kotlin
+messageSource.recall()
+messageChain.recall() // 获取其中 MessageSource 元素并操作 recall 
+
+messageSource.recallIn(3000) // 启动协程, 3 秒后撤回消息. 返回的 AsyncRecallResult 可以获取结果
+messageChain.recallIn(3000)
+```
+
+```java
+// Java
+MessageSource.recall(messageSource);
+MessageSource.recall(messageChain); // 获取其中 MessageSource 元素并操作 recall 
+
+MessageSource.recallIn(messageSource, 3000) // 启动异步任务, 3 秒后撤回消息. 返回的 AsyncRecallResult 可以获取结果
+MessageSource.recallIn(messageChain, 3000)
+```
+
+#### 发送带有引用回复的消息
+
+引用回复 `QuoteReply` 是一个元数据 `MessageMetadata`。将 `QuoteReply` 实例连接到消息链中，发送后的消息就会引用一条其他消息。
+
+例如监听事件并回复一条群消息：
+
+```kotlin
+// Kotlin
+bot.eventChannel.subscribeAlways<GroupMessageEvent> { // this: GroupMessageEvent
+    subject.sendMessage(message.quote() + "Hi!") // 引用收到的消息并回复 "Hi!", 也可以添加图片等更多元素.
+}
+```
+
+```java
+// Java
+bot.getEventChannel().subscribeAlways<GroupMessageEvent>(event -> {
+    MessageChain chain = new MessageChainBuilder() // 引用收到的消息并回复 "Hi!", 也可以添加图片等更多元素.
+        .append(new QuoteReply(event.getMessage()))
+        .append("Hi!")
+        .build();
+    event.getSubject().sendMessage(chain);
+});
+```
+
+#### 更多消息类型
+
+在 [消息元素](#消息元素) 表格中找到你需要的消息元素，然后到源码内注释查看相应的用法说明。
+
+
 ## Mirai 码
 
-实现了接口 `CodableMessage` 的消息类型支持 mirai 码表示。
+实现了接口 `CodableMessage` 的消息类型支持 mirai 码表示。可以在[下文](#由-codablemessage-取得-mirai-码字符串)找到这些消息类型的列表。
 
 ### 转义规则
 
@@ -369,7 +518,7 @@ mirai 码内的属性字符串会被转义。
 如果不进行转义直接进行 mirai 码拼接 (如: `[mirai:msg:{"msg": [1, 2, 3]}]`), 那么 mirai 码会被错误解析
 
 > 解析结果如下:
-> 
+>
 > - mirai 码 `[mirai:msg:{"msg": [1, 2, 3]`
 > - 纯文本 `}]`
 
@@ -419,11 +568,13 @@ MessageChain chain = MiraiCode.deserializeFromMiraiCode("[mirai:atall]");
 
 ### 转义字符串
 
+若要执行转义（一般没有必要手动这么做）：
+
 ```kotlin
 PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 ```
 ```java
-new PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
+MiraiCode.serializeToMiraiCode(new PlainText("[mirai:atall]")) // \[mirai\:atall\]
 ```
 
 ### `serializeToString` 与 `toString` 的区别
