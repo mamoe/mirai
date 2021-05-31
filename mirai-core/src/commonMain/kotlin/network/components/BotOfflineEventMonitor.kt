@@ -59,7 +59,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
             launch {
                 network.awaitState(State.CLOSED)
             }
-            bot.launch { network.close(BotClosedByEvent(event)) }
+            network.close(BotClosedByEvent(event))
         }
 
         when (event) {
