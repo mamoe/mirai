@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause1
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.yield
@@ -187,9 +185,5 @@ internal val NetworkHandler.logger: MiraiLogger get() = context.logger
  */
 internal suspend fun NetworkHandler.awaitState(suspendUntil: NetworkHandler.State) {
     if (this.state == suspendUntil) return
-    coroutineScope {
-        launch {
-            while (select { onStateChanged { it != suspendUntil } }) yield()
-        }
-    }
+    while (select { onStateChanged { it != suspendUntil } }) yield()
 }
