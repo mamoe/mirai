@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.test
 
+import net.mamoe.mirai.IMirai
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit
@@ -27,6 +28,13 @@ abstract class AbstractTest {
         System.setProperty("mirai.debug.network.show.all.components", "true")
         System.setProperty("mirai.debug.network.show.components.creation.stacktrace", "true")
 
+    }
+
+    companion object {
+        init {
+            Exception() // create a exception to load relevant classes to estimate invocation time of test cases more accurately.
+            IMirai::class.simpleName // similarly, load classes.
+        }
     }
 }
 
