@@ -323,12 +323,12 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
         }
 
     @MessageDsl
-    public inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
+    public inline fun <reified N : SingleMessage> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
         content { message.any { it is N } }.invoke { onEvent.invoke(this, message.firstIsInstance()) }
 
     /** [消息内容][Message.contentToString]包含 [N] 类型的 [Message] */
     @MessageDsl
-    public inline fun <reified N : Message> has(): ListeningFilter = content { message.any { it is N } }
+    public inline fun <reified N : SingleMessage> has(): ListeningFilter = content { message.any { it is N } }
 
     /** 如果 [mapper] 返回值非空, 就执行 [onEvent] */
     @MessageDsl
