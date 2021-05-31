@@ -426,15 +426,15 @@ public interface RemoteFile {
      * 而使用 [resolveById] 或 [listFiles] 获取到的总是覆盖旧文件, 当旧文件已在远程删除时上传一个新文件.
      *
      *
-     * **注意**: [resource] 仅表示资源数据而不带有文件名属性.
-     * 与 [java.io.File] 类似, 这是将 [resource] 上传成为当前 [RemoteFile], 而不是上传成为 [RemoteFile] 的子文件或子目录. 示例:
+     * **注意**: [resource] 仅表示资源数据, 而不带有文件名属性.
+     * 与 [java.io.File] 类似, [upload] 是将 [resource] 上传成为 [this][RemoteFile], 而不是上传成为 [this][RemoteFile] 的子文件. 示例:
      * ```
      * group.filesRoot.upload(resource) // 错误! 这是在把资源上传成为根目录.
      * group.filesRoot.resolve("/").upload(resource) // 错误! 与上一句相同, 这是在把资源上传成为根目录.
      *
      * val root = group.filesRoot
-     * root.resolve("test.txt").upload(resource) // 正确. 把资源上传成为根目录下的 "test2.txt".
-     * root.resolve("/test.txt").upload(resource) // 正确. 与上一句相同, 把资源上传成为根目录下的 "test2.txt".
+     * root.resolve("test.txt").upload(resource) // 正确. 把资源上传成为根目录下的 "test.txt".
+     * root.resolve("/test.txt").upload(resource) // 正确. 与上一句相同, 把资源上传成为根目录下的 "test.txt".
      * ```
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
