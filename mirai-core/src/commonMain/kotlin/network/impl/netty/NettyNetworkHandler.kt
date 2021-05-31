@@ -19,10 +19,9 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder
 import io.netty.handler.codec.MessageToByteEncoder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.selects.select
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
@@ -52,9 +51,10 @@ internal open class NettyNetworkHandler(
     final override tailrec suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
         if (state.sendPacketImpl(packet)) return
-        yield()
-        select<Unit> { onStateChanged {} }// wait for next state
-        return sendPacketImpl(packet)
+
+        // now the state it not yet ready for sending packet ...
+        stateChannel.receive() // [SUSPENSION POINT] so we wait for next state ...
+        return sendPacketImpl(packet) // and try again.
     }
 
     override fun toString(): String {
@@ -188,7 +188,7 @@ internal open class NettyNetworkHandler(
             }
         }
 
-        fun send(raw: RawIncomingPacket) = channel.sendBlocking(raw)
+        fun send(raw: RawIncomingPacket) = channel.trySendBlocking(raw)
     }
 
 

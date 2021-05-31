@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.selects.SelectClause1
+import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.components.PacketHandler
@@ -42,7 +42,7 @@ internal abstract class NetworkHandlerSupport(
     /**
      * Called when a packet is received.
      */
-    protected open fun collectReceived(packet: IncomingPacket) {
+    internal open fun collectReceived(packet: IncomingPacket) {
         for (listener in packetListeners) {
             if (!listener.isExpected(packet)) continue
             if (packetListeners.remove(listener)) {
@@ -71,20 +71,22 @@ internal abstract class NetworkHandlerSupport(
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
         val listener = PacketListener(packet.commandName, packet.sequenceId)
         withExceptionCollector {
-            context[PacketLoggingStrategy].logSent(logger, packet)
-            try {
-                packetListeners.add(listener)
-                sendPacketImpl(packet)
+            repeat(attempts) {
+                context[PacketLoggingStrategy].logSent(logger, packet)
                 try {
-                    return withTimeout(timeout) {
-                        listener.result.await()
+                    packetListeners.add(listener)
+                    sendPacketImpl(packet)
+                    try {
+                        return withTimeout(timeout) {
+                            listener.result.await()
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        collectException(e)
                     }
-                } catch (e: TimeoutCancellationException) {
-                    collectException(e)
+                } finally {
+                    listener.result.completeExceptionally(getLast() ?: IllegalStateException("No response"))
+                    packetListeners.remove(listener)
                 }
-            } finally {
-                listener.result.completeExceptionally(getLast() ?: IllegalStateException("No response"))
-                packetListeners.remove(listener)
             }
             throwLast()
         }
@@ -182,13 +184,8 @@ internal abstract class NetworkHandlerSupport(
         private set
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
-
-    private val _stateChangedChannel = Channel<NetworkHandler.State>(Channel.RENDEZVOUS)
-
-    /**
-     * For suspension until a state. e.g login.
-     */
-    override val onStateChanged: SelectClause1<NetworkHandler.State> get() = _stateChangedChannel.onReceive
+    private val _stateChannel = Channel<NetworkHandler.State>(0)
+    final override val stateChannel: ReceiveChannel<NetworkHandler.State> get() = _stateChannel
 
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
@@ -252,12 +249,12 @@ internal abstract class NetworkHandlerSupport(
 
         // Order notes:
         // 1. Notify observers to attach jobs to [impl] (if so)
-        _stateChangedChannel.offer(impl.correspondingState)
         stateObserver?.stateChanged(this, old, impl)
         // 2. Update state to [state]. This affects selectors.
         _state = impl // switch state first. selector may be busy selecting.
         // 3. Cleanup, cancel old states.
         old.cancel(StateSwitchingException(old, impl))
+        _stateChannel.trySend(impl.correspondingState)
 
         return impl
     }

@@ -10,8 +10,9 @@
 package net.mamoe.mirai.internal.network
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.selects.whileSelect
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
@@ -20,8 +21,10 @@ import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
@@ -32,16 +35,12 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
             assertState(INITIALIZED)
             val queue = ConcurrentLinkedQueue<NetworkHandler.State>()
             launch(start = CoroutineStart.UNDISPATCHED) {
-                select<Unit> {
-                    onStateChanged {
-                        queue.add(it)
-                    }
-                }
+                select<Unit> { stateChannel.onReceive { queue.add(it) } }
                 assertEquals(1, queue.size)
                 assertEquals(OK, queue.first())
             }
             launch {
-                setState(OK)
+                assertNotNull(setState(OK))
             }
 
         }
@@ -49,33 +48,25 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `test whileSelect onStateChanged on demand`() = runBlockingUnit(singleThreadDispatcher) {
+    fun `test whileSelect onStateChanged on demand`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
             assertState(INITIALIZED)
             val queue = ConcurrentLinkedQueue<NetworkHandler.State>()
             val selector = launch(
-                CoroutineExceptionHandler { _, throwable ->
+                singleThreadDispatcher + CoroutineExceptionHandler { _, throwable ->
                     if (throwable !is CancellationException) throwable.printStackTrace()
                 },
                 start = CoroutineStart.UNDISPATCHED
             ) {
-                while (isActive) {
-                    whileSelect {
-                        onStateChanged {
-                            queue.add(it)
-                            isActive
-                        }
-                    }
-                }
-                throw AssertionError("Terminated too early")
+                assertSame(singleThreadDispatcher, coroutineContext[ContinuationInterceptor])
+                stateChannel.consumeAsFlow().collect { queue.add(it) }
             }
-            launch {
-                setState(OK)
-                yield()
-                setState(CLOSED)
-                yield()
-                selector.cancel()
-            }
+
+            setState(OK)
+            yield()
+            setState(CLOSED)
+            yield()
+            selector.cancel()
 
             runCatching { selector.join() }
 
@@ -90,37 +81,29 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `test whileSelect onStateChanged drop if not listening`() = runBlockingUnit(singleThreadDispatcher) {
+    fun `test whileSelect onStateChanged drop if not listening`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
             assertState(INITIALIZED)
             val queue = ConcurrentLinkedQueue<NetworkHandler.State>()
 
-            setState(CONNECTING)
-            setState(LOADING)
+            assertNotNull(setState(CONNECTING))
+            assertNotNull(setState(LOADING))
 
             val selector = launch(
-                CoroutineExceptionHandler { _, throwable ->
+                singleThreadDispatcher + CoroutineExceptionHandler { _, throwable ->
                     if (throwable !is CancellationException) throwable.printStackTrace()
                 },
                 start = CoroutineStart.UNDISPATCHED
             ) {
-                while (isActive) {
-                    whileSelect {
-                        onStateChanged {
-                            queue.add(it)
-                            true
-                        }
-                    }
-                }
+//                while (select { stateChannel.onReceive { queue.add(it); true } });
+                stateChannel.consumeAsFlow().collect { queue.add(it) }
             }
 
-            launch {
-                setState(OK)
-                yield() // yields the thread to run coroutine of select
-                setState(CLOSED)
-                yield()
-                selector.cancel()
-            }
+            assertNotNull(setState(OK))
+            yield() // yields the thread to run coroutine of select
+            assertNotNull(setState(CLOSED))
+            yield()
+            selector.cancel()
 
             runCatching { selector.join() }
 
@@ -131,7 +114,7 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
     }
 
     @Test
-    fun `can await`() = runBlockingUnit(singleThreadDispatcher) {
+    fun `can await`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
             assertState(INITIALIZED)
             val job = launch(start = CoroutineStart.UNDISPATCHED) {
@@ -147,7 +130,6 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
 
             setState(CLOSED)
             yield()
-            assertFalse { job.isActive }
         }
     }
 }

@@ -10,9 +10,10 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.selects.SelectClause1
-import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.takeWhile
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.BotInitProcessor
@@ -43,10 +44,7 @@ internal interface NetworkHandler : CoroutineScope {
      */
     val state: State
 
-    /**
-     * For suspension until a state. e.g login.
-     */
-    val onStateChanged: SelectClause1<State>
+    val stateChannel: ReceiveChannel<State>
 
     /**
      * State of this handler.
@@ -185,5 +183,5 @@ internal val NetworkHandler.logger: MiraiLogger get() = context.logger
  */
 internal suspend fun NetworkHandler.awaitState(suspendUntil: NetworkHandler.State) {
     if (this.state == suspendUntil) return
-    while (select { onStateChanged { it != suspendUntil } }) yield()
+    stateChannel.consumeAsFlow().takeWhile { it != suspendUntil }.collect()
 }

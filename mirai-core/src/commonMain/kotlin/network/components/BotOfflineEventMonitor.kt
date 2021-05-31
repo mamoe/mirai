@@ -12,8 +12,6 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.yield
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -23,6 +21,7 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.awaitState
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.millisToHumanReadableString
@@ -58,8 +57,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         fun closeNetwork() {
             if (network.state == State.CLOSED) return // avoid recursive calls.
             launch {
-                // suspend until state becomes CLOSED to hang [onEvent] for synchronization.
-                while (select { network.onStateChanged { it != State.CLOSED } }) yield()
+                network.awaitState(State.CLOSED)
             }
             bot.launch { network.close(BotClosedByEvent(event)) }
         }
