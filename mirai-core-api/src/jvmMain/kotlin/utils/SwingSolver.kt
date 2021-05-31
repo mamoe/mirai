@@ -14,12 +14,8 @@ package net.mamoe.mirai.utils
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -30,7 +26,7 @@ import javax.swing.*
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
     public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String {
-        val image = runInterruptible(Dispatchers.IO) { ImageIO.read(data.inputStream()) }
+        val image = runBIO { ImageIO.read(data.inputStream()) }
         return SwingLoginSolver(
             "Mirai PicCaptcha(${bot.id})",
             "Pic Captcha",
@@ -58,34 +54,7 @@ public object SwingSolver : LoginSolver() {
         )
 
         fun JButton.doClickEvent() = launch {
-            val status = JTextField("Requesting")
-            val uri = url.replace("ssl.captcha.qq.com", "txhelper.glitch.me")
-            var isNewClient = false
-            val client = try {
-                Mirai.Http
-            } catch (e: Throwable) {
-                isNewClient = true
-                HttpClient()
-            }
-            val timerQueue = launch {
-                while (isActive) {
-                    val resp = try {
-                        @Suppress("RemoveExplicitTypeArguments")
-                        client.get<String> {
-                            this.url.takeFrom(uri)
-                        }
-                    } catch (error: Throwable) {
-                        error.toString()
-                    }
-                    if (status.text != resp) {
-                        status.text = resp
-                    }
-                    delay(1000)
-                }
-            }
-            if (isNewClient) {
-                timerQueue.invokeOnCompletion { client.close() }
-            }
+            val status = JTextField("Requesting...")
             val txhelperSolverConfirmButton = JButton("确定")
             val txhelperSolver = SwingLoginSolver(
                 "Mirai SliderCaptcha(${bot.id}) (TxCaptchaHelper)",
@@ -107,11 +76,17 @@ public object SwingSolver : LoginSolver() {
                 parentComponent = this@doClickEvent,
                 value = status,
             )
-            txhelperSolverConfirmButton.onClick {
-                txhelperSolver.def.complete(status.text.trim())
+            val helper = object : TxCaptchaHelper() {
+                override fun onComplete(ticket: String) {
+                    txhelperSolver.def.complete(ticket)
+                }
+
+                override fun updateDisplay(msg: String) {
+                    status.text = msg
+                }
             }
+            helper.start(this, url)
             solver.def.complete(txhelperSolver.openAndWait().trim())
-            timerQueue.cancel()
         }
         openWithTxCaptchaHelper.onClick { doClickEvent() }
         return@coroutineScope solver.openAndWait().takeIf { it.isNotEmpty() }
@@ -330,7 +305,7 @@ internal class SwingLoginSolver(
     suspend fun openAndWait(): String {
         frame.pack()
         frame.setLocationRelativeTo(null)
-        runInterruptible(Dispatchers.IO) {
+        runBIO {
             def.invokeOnCompletion {
                 SwingUtilities.invokeLater {
                     frame.dispose()

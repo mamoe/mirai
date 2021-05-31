@@ -11,8 +11,6 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
@@ -192,45 +190,18 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 
         suspend fun runTxCaptchaHelper(): String {
             logger.info { "[SliderCaptcha] @see https://github.com/mzdluo123/TxCaptchaHelper" }
-            var newClient = false
-            val client = try {
-                Mirai.Http
-            } catch (ignore: Throwable) {
-                newClient = true
-                HttpClient()
-            }
-            val uri = url.replace("ssl.captcha.qq.com", "txhelper.glitch.me")
             return coroutineScope {
-                suspendCoroutine<String> { coroutine ->
-                    val timerQueue = launch {
-                        logger.info { "[SliderCaptcha] Requesting remote service.... please wait...." }
-                        var latestDisplay = ""
-                        while (isActive) {
-                            val resp: String = try {
-                                @Suppress("RemoveExplicitTypeArguments")
-                                client.get<String> {
-                                    this.url.takeFrom(uri)
-                                }
-                            } catch (e: Throwable) {
-                                logger.warning(e.toString())
-                                delay(1000)
-                                continue
-                            }
-                            if (resp.startsWith("请在")) {
-                                if (latestDisplay != resp) {
-                                    latestDisplay = resp
-                                    logger.info(resp)
-                                }
-                            } else {
-                                coroutine.resume(resp)
-                                return@launch
-                            }
-                            delay(1000)
+                suspendCoroutine { coroutine ->
+                    val helper = object : TxCaptchaHelper() {
+                        override fun onComplete(ticket: String) {
+                            coroutine.resume(ticket)
+                        }
+
+                        override fun updateDisplay(msg: String) {
+                            logger.info(msg)
                         }
                     }
-                    if (newClient) {
-                        timerQueue.invokeOnCompletion { client.close() }
-                    }
+                    helper.start(this, url)
                 }
             }
         }
