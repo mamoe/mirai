@@ -47,12 +47,16 @@ internal open class TestNetworkHandler(
                 }
             }
         }
+
+        override fun toString(): String {
+            return "TestState($correspondingState)"
+        }
     }
 
     @OptIn(TestOnly::class)
-    fun setState(correspondingState: NetworkHandler.State) {
+    fun setState(correspondingState: NetworkHandler.State): TestState? {
         // `null` means ignore checks. All test states have same type TestState.
-        setStateImpl(null) { TestState(correspondingState) }
+        return setStateImpl(null) { TestState(correspondingState) }
     }
 
     private val initialState = TestState(NetworkHandler.State.INITIALIZED)

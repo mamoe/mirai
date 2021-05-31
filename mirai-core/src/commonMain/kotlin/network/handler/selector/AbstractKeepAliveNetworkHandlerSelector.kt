@@ -46,6 +46,12 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     final override fun getResumedInstance(): H? = current.value
 
+    final override tailrec fun tryResumeInstanceOrCreate(): H {
+        getResumedInstance()?.let { return it }
+        refreshInstance()
+        return tryResumeInstanceOrCreate()
+    }
+
     final override suspend fun awaitResumeInstance(): H = awaitResumeInstanceImpl(0)
 
     private tailrec suspend fun awaitResumeInstanceImpl(attempted: Int): H {
@@ -73,10 +79,14 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                 }
             }
         } else {
-            synchronized(this) { // avoid concurrent `createInstance()`
-                if (getResumedInstance() == null) this.current.compareAndSet(null, createInstance())
-            }
+            refreshInstance()
             awaitResumeInstanceImpl(attempted) // directly retry, does not count for attempts.
+        }
+    }
+
+    protected open fun refreshInstance() {
+        synchronized(this) { // avoid concurrent `createInstance()`
+            if (getResumedInstance() == null) this.current.compareAndSet(null, createInstance())
         }
     }
 

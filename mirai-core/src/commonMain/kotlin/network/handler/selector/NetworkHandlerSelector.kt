@@ -24,6 +24,11 @@ internal interface NetworkHandlerSelector<H : NetworkHandler> {
     fun getResumedInstance(): H?
 
     /**
+     * Returns the currently alive [NetworkHandler] or creates a new one.
+     */
+    fun tryResumeInstanceOrCreate(): H
+
+    /**
      * Returns an alive [NetworkHandler], or suspends the coroutine until the connection has been made again.
      *
      * This function may throw exceptions, which would be propagated to the original caller of [SelectorNetworkHandler.resumeConnection].

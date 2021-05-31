@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.selects.SelectClause1
+import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
@@ -44,10 +44,9 @@ internal class SelectorNetworkHandler(
     }
 
     override val state: State
-        get() = selector.getResumedInstance()?.state ?: State.INITIALIZED
-    override val onStateChanged: SelectClause1<State>
-        get() = selector.getResumedInstance()?.onStateChanged
-            ?: scope.async { instance().state }.onAwait
+        get() = selector.tryResumeInstanceOrCreate().state
+    override val stateChannel: ReceiveChannel<State>
+        get() = selector.tryResumeInstanceOrCreate().stateChannel
 
     override suspend fun resumeConnection() {
         instance() // the selector will resume connection for us.
