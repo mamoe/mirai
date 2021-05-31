@@ -62,10 +62,10 @@ jobs:
 
       - name: Check
         run: >
-        ./gradlew check -Pmirai.pkc.check.enable --scan
-        -Dmirai.debug.network.show.all.components=true
-        -Dkotlinx.coroutines.debug=on
-        -Dmirai.debug.network.show.packet.details=true
+          ./gradlew check -Pmirai.pkc.check.enable --scan
+          -Dmirai.debug.network.show.all.components=true
+          -Dkotlinx.coroutines.debug=on
+          -Dmirai.debug.network.show.packet.details=true
 
       - name: Gradle :mirai-core-utils:publish
         run: >
