@@ -120,7 +120,7 @@ listener.complete(); // 停止监听
 ### 过滤
 
 `GlobalEventChannel` 包含任何 `Event`，可以通过 `EventChannel.filter` 过滤得到一个只包含期望的事件的 `EventChannel`。
-
+`
 ```kotlin
 var channel = GlobalEventChannel.filter { it is BotEvent && it.bot.id == 123456L } // 筛选来自某一个 Bot 的事件
 ```
@@ -194,7 +194,7 @@ object MyPluginMain : KotlinPlugin() { // KotlinPlugin 实现了 CoroutineScope
 }
 ```
 
-> 有关限制作用域的实现细节，可在使用时阅读源码内文 档。
+> 有关限制作用域的实现细节，可在使用时阅读源码内文档。
 
 ### 链式调用
 
