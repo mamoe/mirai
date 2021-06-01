@@ -290,7 +290,7 @@ public interface ExternalResource : Closeable {
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendTo"
             ),
             level = DeprecationLevel.WARNING
-        ) // since 2.7-M1
+        ) // deprecated since 2.7-M1
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
@@ -324,7 +324,7 @@ public interface ExternalResource : Closeable {
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsFileTo"
             ),
             level = DeprecationLevel.WARNING
-        ) // since 2.7-M1
+        ) // deprecated since 2.7-M1
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,

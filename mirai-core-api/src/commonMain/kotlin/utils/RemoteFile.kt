@@ -424,7 +424,7 @@ public interface RemoteFile {
      */
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.WARNING
-    ) // since 2.7-M1
+    ) // deprecated since 2.7-M1
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null
@@ -439,7 +439,7 @@ public interface RemoteFile {
     @Suppress("DEPRECATION")
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource)"), DeprecationLevel.WARNING
-    )  // since 2.7-M1
+    )  // deprecated since 2.7-M1
     public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
@@ -451,7 +451,7 @@ public interface RemoteFile {
     @Suppress("DEPRECATION")
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(file, callback)"), DeprecationLevel.WARNING
-    ) // since 2.7-M1
+    ) // deprecated since 2.7-M1
     public suspend fun upload(
         file: File,
         callback: ProgressionCallback? = null
@@ -464,7 +464,7 @@ public interface RemoteFile {
     @Suppress("DEPRECATION")
     @Deprecated(
         "Use sendFile instead.", ReplaceWith("this.uploadAndSend(file)"), DeprecationLevel.WARNING
-    ) // since 2.7-M1
+    ) // deprecated since 2.7-M1
     public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
@@ -546,7 +546,7 @@ public interface RemoteFile {
                 "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
             ),
             level = DeprecationLevel.WARNING
-        ) // since 2.7-M1
+        ) // deprecated since 2.7-M1
         public suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
@@ -570,7 +570,7 @@ public interface RemoteFile {
                 "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
             ),
             level = DeprecationLevel.WARNING
-        ) // since 2.7-M1
+        ) // deprecated since 2.7-M1
         public suspend fun FileSupported.uploadFile(
             path: String,
             file: File,
