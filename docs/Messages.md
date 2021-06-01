@@ -16,7 +16,7 @@
   - [消息链的 mirai 码](#消息链的-mirai-码)
   - [由 `CodableMessage` 取得 mirai 码字符串](#由-codablemessage-取得-mirai-码字符串)
   - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
-  - [`serializeToString` 与 `toString` 的区别](#serializetostring-与-tostring-的区别)
+  - [`serializeToMiraiCode` 与 `toString` 的区别](#serializetomiraicode-与-tostring-的区别)
 
 ## 消息系统
 
@@ -577,13 +577,13 @@ PlainText("[mirai:atall]").serializeToMiraiCode() // \[mirai\:atall\]
 MiraiCode.serializeToMiraiCode(new PlainText("[mirai:atall]")) // \[mirai\:atall\]
 ```
 
-### `serializeToString` 与 `toString` 的区别
+### `serializeToMiraiCode` 与 `toString` 的区别
 
 
 - 如 [消息元素](#消息元素) 所示, `toString()` 会尽可能包含多的信息用于调试作用，**行为可能不确定**
-- `toString()` 偏人类可读, `serializeToString()` 偏机器可读
-- `toString()` **没有转义**, `serializeToString()` 有正确转义
-- `serializeToString()` 会跳过 `不支持 mirai 码处理` 的元素
+- `toString()` 偏人类可读, `serializeToMiraiCode()` 偏机器可读
+- `toString()` **没有转义**, `serializeToMiraiCode()` 有正确转义
+- `serializeToMiraiCode()` 会跳过 `不支持 mirai 码处理` 的元素
 - `toString()` 基本不可用于 `deserializeMiraiCode`/`MiraiCode.deserializeFromMiraiCode`
 
 
