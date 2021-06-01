@@ -297,7 +297,7 @@ val chain: MessageChain = source1 + source2
 ```
 
 当连接一个 [`VipFace`] 到一个 [`MessageChain`] 时，由于 [`VipFace`] 最远父类为 `MessageContent`，消息链中第一个 `MessageContent` 会被（保留顺序地）替换为 [`VipFace`]，其他所有 `MessageContent` 都会被删除。
-```
+```kotlin
 // Kotlin
 
 val face = VipFace(VipFace.AiXin, 1) // VipFace 是 ConstrainSingle
@@ -306,7 +306,7 @@ val result = chain + face // 右侧的 VipFace 替换掉所有的 MessageContent
 // 结果为 [VipFace, QuoteReply]
 ```
 
-```
+```java
 // Java
 
 VipFace face = new VipFace(VipFace.AiXin, 1); // VipFace 是 ConstrainSingle
