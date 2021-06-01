@@ -10,6 +10,7 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.client.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
@@ -19,6 +20,7 @@ import kotlinx.coroutines.io.writeFully
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
 import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.LoginFailedException
@@ -31,6 +33,8 @@ import java.io.File
 import java.io.RandomAccessFile
 import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -177,11 +181,35 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)
-        logger.info { "[SliderCaptcha] 需要滑动验证码, 请在浏览器中打开以下链接并完成验证码, 完成后请输入提示 ticket." }
-        logger.info { "[SliderCaptcha] Slider captcha required, please open the following link in any browser and solve the captcha. Type ticket here after completion." }
+        logger.info { "[SliderCaptcha] 需要滑动验证码, 请按照以下链接的步骤完成滑动验证码, 然后输入获取到的 ticket" }
+        logger.info { "[SliderCaptcha] Slider captcha required. Please solve the captcha with following link. Type ticket here after completion." }
         logger.info { "[SliderCaptcha] @see https://github.com/project-mirai/mirai-login-solver-selenium#%E4%B8%8B%E8%BD%BD-chrome-%E6%89%A9%E5%B1%95%E6%8F%92%E4%BB%B6" }
-        logger.info(url)
+        logger.info { "[SliderCaptcha] 或者输入 TxCaptchaHelper 来使用 TxCaptchaHelper 完成滑动验证码" }
+        logger.info { "[SliderCaptcha] Or type `TxCaptchaHelper` to resolve slider captcha with TxCaptchaHelper.apk" }
+        logger.info { "[SliderCaptcha] Captcha link: $url" }
+
+        suspend fun runTxCaptchaHelper(): String {
+            logger.info { "[SliderCaptcha] @see https://github.com/mzdluo123/TxCaptchaHelper" }
+            return coroutineScope {
+                suspendCoroutine { coroutine ->
+                    val helper = object : TxCaptchaHelper() {
+                        override fun onComplete(ticket: String) {
+                            coroutine.resume(ticket)
+                        }
+
+                        override fun updateDisplay(msg: String) {
+                            logger.info(msg)
+                        }
+                    }
+                    helper.start(this, url)
+                }
+            }
+        }
+
         return input().also {
+            if (it == "TxCaptchaHelper" || it == "`TxCaptchaHelper`") {
+                return runTxCaptchaHelper()
+            }
             logger.info { "[SliderCaptcha] 正在提交中..." }
             logger.info { "[SliderCaptcha] Submitting..." }
         }
