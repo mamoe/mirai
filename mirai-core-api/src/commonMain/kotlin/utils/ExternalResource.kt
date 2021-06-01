@@ -272,7 +272,7 @@ public interface ExternalResource : Closeable {
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
          * ## 已弃用
-         * 查看 [RemoteFile.uploadFile] 获取更多信息.
+         * 查看 [RemoteFile.upload] 获取更多信息.
          *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
@@ -305,7 +305,7 @@ public interface ExternalResource : Closeable {
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
          * ## 已弃用
-         * 查看 [RemoteFile.uploadFile] 获取更多信息.
+         * 查看 [RemoteFile.upload] 获取更多信息.
          *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
@@ -339,7 +339,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.upload
+         * @see RemoteFile.uploadAndSend
          */
         @JvmStatic
         @JvmBlockingBridge
@@ -358,7 +358,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.upload
+         * @see RemoteFile.uploadAndSend
          */
         @JvmStatic
         @JvmBlockingBridge
