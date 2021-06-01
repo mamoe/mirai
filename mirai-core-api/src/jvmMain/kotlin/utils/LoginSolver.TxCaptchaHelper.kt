@@ -11,15 +11,13 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.*
 import io.ktor.client.request.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Mirai
 
 internal abstract class TxCaptchaHelper {
     private val newClient: Boolean
     val client: HttpClient
+    private lateinit var queue: Job
 
     init {
         var newClient = false
@@ -62,5 +60,10 @@ internal abstract class TxCaptchaHelper {
         if (newClient) {
             queue.invokeOnCompletion { client.close() }
         }
+        this.queue = queue
+    }
+
+    fun dispose() {
+        queue.cancel()
     }
 }

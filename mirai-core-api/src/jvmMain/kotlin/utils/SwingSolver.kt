@@ -86,6 +86,7 @@ public object SwingSolver : LoginSolver() {
                 }
             }
             helper.start(this, url)
+            txhelperSolver.def.invokeOnCompletion { helper.dispose() }
             solver.def.complete(txhelperSolver.openAndWait().trim())
         }
         openWithTxCaptchaHelper.onClick { doClickEvent() }
