@@ -235,7 +235,7 @@ contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保�
 
 #### 更多配置
 
-参阅 `BotConfiguration`。
+参阅 `BotConfiguration` 源码内注释。
 
 ### 获取当前所有 `Bot` 实例
 
