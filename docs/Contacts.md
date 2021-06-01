@@ -2,17 +2,19 @@
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIEJvdCB7XG4gICAgK2ZyaWVuZHM6IENvbnRhY3RMaXN0XG4gICAgK2dyb3VwczogQ29udGFjdExpc3RcbiAgICArZ2V0RnJpZW5kKExvbmcpIEZyaWVuZD9cbiAgICArZ2V0RnJpZW5kT3JOdWxsKExvbmcpIEZyaWVuZFxuICAgICtnZXRHcm91cChMb25nKSBHcm91cD9cbiAgICArZ2V0R3JvdXBPckZhaWwoTG9uZykgR3JvdXBcbiAgICArbG9naW4oKVxuICAgICtjbG9zZSgpXG59XG5cbmNsYXNzIENvbnRhY3RPckJvdCB7XG4gICAgK2lkOiBJbnRcbiAgICArYXZhdGFyVXJsOiBTdHJpbmdcbn1cblxuY2xhc3MgVXNlck9yQm90IHtcbiAgICArbnVkZ2UoKSBOdWRnZVxufVxuXG5jbGFzcyBDb250YWN0IHtcbiAgICArYm90OiBCb3RcbiAgICArc2VuZE1lc3NhZ2UoTWVzc2FnZSkgTWVzc2FnZVJlY2VpcHRcbiAgICArc2VuZE1lc3NhZ2UoU3RyaW5nKSBNZXNzYWdlUmVjZWlwdFxuICAgICt1cGxvYWRJbWFnZShFeHRlcm5hbEltYWdlKSBJbWFnZVxufVxuXG5jbGFzcyBVc2VyIHtcbiAgICArbmljazogU3RyaW5nXG4gICAgK3JlbWFyazogU3RyaW5nXG4gICAgK3F1ZXJ5UHJvZmlsZSgpIFVzZXJQcm9maWxlXG59XG5cbmNsYXNzIEdyb3VwIHtcbiAgICArbWVtYmVyczogQ29udGFjdExpc3RcbiAgICArbmFtZTogU3RyaW5nXG4gICAgK3NldHRpbmdzOiBHcm91cFNldHRpbmdzXG4gICAgK293bmVyOiBOb3JtYWxNZW1iZXJcbiAgICArYm90TXV0ZVJlbWFpbmluZzogTG9uZ1xuICAgICtib3RQZXJtaXNzaW9uOiBNZW1iZXJQZXJtaXNzaW9uXG4gICAgK3F1aXQoKSBCb29sZWFuXG4gICAgK3VwbG9hZFZvaWNlKCkgVm9pY2Vcbn1cblxuY2xhc3MgTm9ybWFsTWVtYmVyIHtcbiAgICArbXV0ZSgpXG4gICAgK2tpY2soKVxufVxuXG5jbGFzcyBBbm9ueW1vdXNNZW1iZXIge1xuICAgICthbm9ueW1vdXNJZDogU3RyaW5nXG59XG5cbmNsYXNzIE1lbWJlciB7XG4gICAgK2dyb3VwOiBHcm91cFxufVxuXG5jbGFzcyBPdGhlckNsaWVudCB7XG4gICAgK2luZm9cbn1cblxuQ29udGFjdE9yQm90PHwtLUNvbnRhY3RcbkNvbnRhY3RPckJvdDx8LS1Vc2VyT3JCb3RcblxuVXNlck9yQm90PHwtLUJvdFxuVXNlck9yQm90PHwtLVVzZXJcblxuQ29udGFjdDx8LS1Vc2VyXG5Db250YWN0PHwtLUdyb3VwXG5Db250YWN0PHwtLU90aGVyQ2xpZW50XG5cblVzZXI8fC0tTWVtYmVyXG5Vc2VyPHwtLUZyaWVuZFxuXG5NZW1iZXI8fC0tTm9ybWFsTWVtYmVyXG5NZW1iZXI8fC0tQW5vbnltb3VzTWVtYmVyIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIEJvdCB7XG4gICAgK2ZyaWVuZHM6IENvbnRhY3RMaXN0XG4gICAgK2dyb3VwczogQ29udGFjdExpc3RcbiAgICArZ2V0RnJpZW5kKExvbmcpIEZyaWVuZD9cbiAgICArZ2V0RnJpZW5kT3JOdWxsKExvbmcpIEZyaWVuZFxuICAgICtnZXRHcm91cChMb25nKSBHcm91cD9cbiAgICArZ2V0R3JvdXBPckZhaWwoTG9uZykgR3JvdXBcbiAgICArbG9naW4oKVxuICAgICtjbG9zZSgpXG59XG5cbmNsYXNzIENvbnRhY3RPckJvdCB7XG4gICAgK2lkOiBJbnRcbiAgICArYXZhdGFyVXJsOiBTdHJpbmdcbn1cblxuY2xhc3MgVXNlck9yQm90IHtcbiAgICArbnVkZ2UoKSBOdWRnZVxufVxuXG5jbGFzcyBDb250YWN0IHtcbiAgICArYm90OiBCb3RcbiAgICArc2VuZE1lc3NhZ2UoTWVzc2FnZSkgTWVzc2FnZVJlY2VpcHRcbiAgICArc2VuZE1lc3NhZ2UoU3RyaW5nKSBNZXNzYWdlUmVjZWlwdFxuICAgICt1cGxvYWRJbWFnZShFeHRlcm5hbEltYWdlKSBJbWFnZVxufVxuXG5jbGFzcyBVc2VyIHtcbiAgICArbmljazogU3RyaW5nXG4gICAgK3JlbWFyazogU3RyaW5nXG4gICAgK3F1ZXJ5UHJvZmlsZSgpIFVzZXJQcm9maWxlXG59XG5cbmNsYXNzIEdyb3VwIHtcbiAgICArbWVtYmVyczogQ29udGFjdExpc3RcbiAgICArbmFtZTogU3RyaW5nXG4gICAgK3NldHRpbmdzOiBHcm91cFNldHRpbmdzXG4gICAgK293bmVyOiBOb3JtYWxNZW1iZXJcbiAgICArYm90TXV0ZVJlbWFpbmluZzogTG9uZ1xuICAgICtib3RQZXJtaXNzaW9uOiBNZW1iZXJQZXJtaXNzaW9uXG4gICAgK3F1aXQoKSBCb29sZWFuXG4gICAgK3VwbG9hZFZvaWNlKCkgVm9pY2Vcbn1cblxuY2xhc3MgTm9ybWFsTWVtYmVyIHtcbiAgICArbXV0ZSgpXG4gICAgK2tpY2soKVxufVxuXG5jbGFzcyBBbm9ueW1vdXNNZW1iZXIge1xuICAgICthbm9ueW1vdXNJZDogU3RyaW5nXG59XG5cbmNsYXNzIE1lbWJlciB7XG4gICAgK2dyb3VwOiBHcm91cFxufVxuXG5jbGFzcyBPdGhlckNsaWVudCB7XG4gICAgK2luZm9cbn1cblxuQ29udGFjdE9yQm90PHwtLUNvbnRhY3RcbkNvbnRhY3RPckJvdDx8LS1Vc2VyT3JCb3RcblxuVXNlck9yQm90PHwtLUJvdFxuVXNlck9yQm90PHwtLVVzZXJcblxuQ29udGFjdDx8LS1Vc2VyXG5Db250YWN0PHwtLUdyb3VwXG5Db250YWN0PHwtLU90aGVyQ2xpZW50XG5cblVzZXI8fC0tTWVtYmVyXG5Vc2VyPHwtLUZyaWVuZFxuXG5NZW1iZXI8fC0tTm9ybWFsTWVtYmVyXG5NZW1iZXI8fC0tQW5vbnltb3VzTWVtYmVyIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0)
 
-|      类型       | 描述                                              | 最低支持的版本 |
-|:--------------:|:-------------------------------------------------|:-----------:|
-| `ContactOrBot` | `Contact` 和 `Bot` 的公共接口                       |     2.0     |
-| `OtherClient`  | Bot 的*其他客户端*，如 "我的 iPad"，"我的电脑"         |     2.0     |
-|     `Bot`      | 机器人对象                                         |     2.0     |
-|   `Contact`    | 联系人对象，即所有的群，好友，陌生人，群成员等            |     2.0      |
-|    `Group`     | 群对象                                            |     2.0      |
-|     `User`     | 用户对象，即 "个人". 包含好友，陌生人，群成员，临时会话用户 |     2.0     |
-|    `Friend`    | 好友对象                                           |     2.0     |
-|   `Stranger`   | 陌生人对象                                         |     2.0     |
-|    `Member`    | 群成员对象，属于一个 `Group`.                        |     2.0     |
+|        类型        | 描述                                              | 最低支持的版本 |
+|:-----------------:|:-------------------------------------------------|:-----------:|
+|  `ContactOrBot`   | `Contact` 和 `Bot` 的公共接口                       |     2.0     |
+|   `OtherClient`   | Bot 的*其他客户端*，如 "我的 iPad"，"我的电脑"         |     2.0     |
+|       `Bot`       | 机器人对象                                         |     2.0     |
+|     `Contact`     | 联系人对象，即所有的群，好友，陌生人，群成员等            |     2.0      |
+|      `Group`      | 群对象                                            |     2.0      |
+|      `User`       | 用户对象，即 "个人". 包含好友，陌生人，群成员，临时会话用户 |     2.0     |
+|     `Friend`      | 好友对象                                           |     2.0     |
+|    `Stranger`     | 陌生人对象                                         |     2.0     |
+|     `Member`      | 群成员对象，属于一个 `Group`.                        |     2.0     |
+|  `NormalMember`   | 普通群成员对象.                                     |     2.0     |
+| `AnonymousMember` | 匿名群成员对象.                                     |     2.0     |
 
 
 我们称 `Contact` 为 _联系人_，它表示一个 `Bot` 可以联系的对象。如上图所示，`Contact` 的子类不仅有好友和群成员，还包括群和其他客户端。因此请不要因“联系人”中的“人”就认为它只代表一个用户。
@@ -45,7 +47,7 @@
 
 获取到目标对象并调用 `Contact.sendMessage(message)`。如要向某个群发送消息，则需要对应的 `Group` 对象，并调用 `Group.sendMessage(message)`。
 
-注意，由于对象代表意义不同，发送的消息类型也可能不同。`NormalMember.sendMessage` 是对群成员发送临时会话消息，而 `Friend.sendMessage` 是发送好友消息。（备注：在实际情况下，如果机器人与群成员有好友关系，`NormalMember.sendMessage` 也会自动转换为发送好友消息，以保证消息送达）
+注意，由于对象代表意义不同，发送的消息类型也可能不同。`NormalMember` 是普通群成员，`NormalMember.sendMessage` 是对群成员发送临时会话消息，而 `Friend.sendMessage` 是发送好友消息。（备注：在实际情况下，如果机器人与群成员有好友关系，`NormalMember.sendMessage` 也会自动转换为发送好友消息，以保证消息送达）
 
 ### 联系其他客户端
 
