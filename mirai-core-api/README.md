@@ -64,7 +64,7 @@ mirai 核心 API 模块。本文档帮助读者了解该模块的主要架构。
 
 ## `net.mamoe.mirai.event.events`
 
-事件列表。[README](src/commonMain/kotlin/event/events/README.md#事件)
+事件列表。[README](src/commonMain/kotlin/event/events/EventList.md#事件)
 
 ## `net.mamoe.mirai.message`
 

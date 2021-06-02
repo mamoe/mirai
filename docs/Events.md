@@ -23,14 +23,14 @@
 
 ## 事件系统
 
-Mirai 以事件驱动。
+Mirai 许多功能都依赖事件。
 
 [`Event`]: ../mirai-core-api/src/commonMain/kotlin/event/Event.kt#L21-L62
 
 每个事件都实现接口 [`Event`]，且继承 `AbstractEvent`。  
 实现 `CancellableEvent` 的事件可以被取消（`CancellableEvent.cancel`）。
 
-**[事件列表](../mirai-core-api/src/commonMain/kotlin/event/events/README.md#事件)**
+**[事件列表](EventList.md)**
 
 > 回到 [目录](#目录)
 
@@ -39,6 +39,10 @@ Mirai 以事件驱动。
 
 如果你了解事件且不希望详细阅读，可以立即仿照下面示例创建事件监听并跳过本章节。
 
+注意，**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个 `Bot` 的事件，请使用 `bot.eventChannel`。**
+
+有关消息 `Message`、`MessageChain` 将会在后文 _消息系统_ 章节解释。
+
 ### Kotlin
 
 ```kotlin
@@ -46,6 +50,9 @@ Mirai 以事件驱动。
 GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent> { event ->
     // this: GroupMessageEvent
     // event: GroupMessageEvent
+    
+    // `event.message` 是接收到的消息内容, 可自行处理. 由于 `this` 也是 `GroupMessageEvent`, 可以通过 `message` 直接获取. 详细查阅 `GroupMessageEvent`.
+    
     subject.sendMessage("Hello!")
 }
 // `GlobalEventChannel.parentScope(coroutineScope)` 也可以替换为使用扩展 `coroutineScope.globalEventChannel()`, 根据个人习惯选择
@@ -58,32 +65,33 @@ val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEv
 listener.complete() // 停止监听
 ```
 
+异常默认会被相关 `Bot` 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
+```
+.exceptionHandler { e -> e.printStackTrace() }
+```
+
 ### Java
 
 ```java
 // 创建监听
 Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
-    event.getSubject().sendMessage("Hello!");
+    MessageChain chain = event.getMessage(); // 可获取到消息内容等, 详细查阅 `GroupMessageEvent`
+    
+    event.getSubject().sendMessage("Hello!"); // 回复消息
 })
 
 listener.complete(); // 停止监听 
 ```
 
-异常默认会被相关 Bot 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
-```
-// Kotlin
-.exceptionHandler { e -> e.printStackTrace() }
-
-// Java
+异常默认会被相关 `Bot` 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
+```java
 .exceptionHandler(e -> e.printStackTrace())
 ```
-
-**`GlobalEventChannel` 会监听到来自所有 `Bot` 的事件，如果只希望监听某一个 bot，请使用 `bot.eventChannel`。**
 
 > 你已经了解了基本事件操作。现在你可以继续阅读通道处理和扩展等内容，或：
 >
 > - 跳到下一章 [Messages](Messages.md)
-> - [查看事件列表](../mirai-core-api/src/commonMain/kotlin/event/events/README.md#事件)
+> - [查看事件列表](EventList.md)
 > - [回到事件文档目录](#目录)
 > - [回到 Mirai 文档索引](CoreAPI.md)
 
@@ -477,7 +485,7 @@ MyCoroutineScope.subscribeAlways<GroupMessageEvent> {
 ```
 val image = when (下一条消息) {
    包含图片 { 查询图片链接() } 
-   包含纯文本 { 下载图片() }
+   包含纯文本URL { 下载图片() }
    其他情况 { 引用回复() }
    超时 { 引用回复() }
 }
@@ -499,7 +507,7 @@ whileSelectMessages {
         subject.sendMessage("已关闭复读")
         false // 停止循环
     }
-    // 也可以使用 startsWith("") { true } 等 DSL
+    // 也可以使用 startsWith("") { ... } 等 DSL
     default {
         subject.sendMessage(message)
         true // 继续循环
