@@ -10,8 +10,10 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
-import net.mamoe.mirai.event.nextEvent
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
@@ -19,11 +21,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.state.JobAttachStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.info
 
 
 /**
@@ -62,8 +60,8 @@ internal class BotInitProcessorImpl(
             context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
 
         // do them parallel.
+        context[MessageSvcSyncer].startSync()
         supervisorScope {
-            launch { syncMessageSvc() }
             launch { context[BdhSessionSyncer].loadFromCache() }
             launch { context[OtherClientUpdater].update() }
             launch { context[ContactUpdater].loadAll(registerResp.origin) }
@@ -72,17 +70,5 @@ internal class BotInitProcessorImpl(
         bot.components[SsoProcessor].firstLoginSucceed = true
     }
 
-    private suspend fun syncMessageSvc() {
-        logger.info { "Syncing friend message history..." }
-        withTimeoutOrNull(30000) {
-            launch(CoroutineName("Syncing friend message history")) {
-                nextEvent<MessageSvcPbGetMsg.GetMsgSuccess> {
-                    it.bot == this@BotInitProcessorImpl.bot
-                }
-            }
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect(bot)
-        } ?: error("timeout syncing friend message history.")
-        logger.info { "Syncing friend message history: Success." }
-    }
 }
 

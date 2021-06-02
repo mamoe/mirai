@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -119,6 +120,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         finalMessage: MessageChain,
         step: SendMessageStep,
     ): MessageReceipt<C> {
+        bot.components[MessageSvcSyncer].joinSync()
 
         val group = contact
 

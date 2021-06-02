@@ -138,6 +138,10 @@ internal open class QQAndroidBot constructor(
                 BdhSessionSyncer,
                 BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
             )
+            set(
+                MessageSvcSyncer,
+                MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
+            )
             set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
             set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
             set(
