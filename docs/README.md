@@ -35,6 +35,7 @@
 [Nambers/MiraiCP]:https://github.com/Nambers/MiraiCP
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
 [Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
+[Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
@@ -76,6 +77,7 @@
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
+| `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
