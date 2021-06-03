@@ -6,6 +6,8 @@
 
 [Mirai 生态概览](mirai-ecology.md)
 
+[Mirai VuePress 文档](https://docs.mirai.mamoe.net/)
+
 ## 社区 SDK
 
 **mirai 官方提供 [Kotlin/Java 等 JVM 平台语言开发支持](#jvm-平台-mirai-开发)。如果不熟悉这些语言，请使用以下社区 SDK：**
