@@ -89,3 +89,12 @@ public inline fun CoroutineContext.addNameIfAbsent(
 public fun CoroutineContext.addNameHierarchically(
     name: String
 ): CoroutineContext = this + CoroutineName(this[CoroutineName]?.name?.plus('.')?.plus(name) ?: name)
+
+public fun CoroutineContext.hierarchicalName(
+    name: String
+): CoroutineName = CoroutineName(this[CoroutineName]?.name?.plus('.')?.plus(name) ?: name)
+
+public fun CoroutineScope.hierarchicalName(
+    name: String
+): CoroutineName = this.coroutineContext.hierarchicalName(name)
+

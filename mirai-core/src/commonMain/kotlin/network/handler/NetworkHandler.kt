@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.Packet
@@ -44,6 +45,11 @@ internal interface NetworkHandler : CoroutineScope {
      */
     val state: State
 
+    fun getLastFailure(): Throwable?
+
+    /**
+     * The channel that is sent with a [State] when changed.
+     */
     val stateChannel: ReceiveChannel<State>
 
     /**
@@ -184,4 +190,8 @@ internal val NetworkHandler.logger: MiraiLogger get() = context.logger
 internal suspend fun NetworkHandler.awaitState(suspendUntil: NetworkHandler.State) {
     if (this.state == suspendUntil) return
     stateChannel.consumeAsFlow().takeWhile { it != suspendUntil }.collect()
+}
+
+internal suspend fun NetworkHandler.awaitStateChange() {
+    stateChannel.consumeAsFlow().first()
 }

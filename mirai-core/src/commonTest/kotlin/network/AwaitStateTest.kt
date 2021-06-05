@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.network.handler.awaitState
+import net.mamoe.mirai.internal.network.handler.awaitStateChange
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -125,6 +126,21 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
             assertTrue { job.isActive }
 
             setState(OK)
+            yield()
+            assertTrue { job.isActive }
+
+            setState(CLOSED)
+            yield()
+        }
+    }
+
+    @Test
+    fun `can await change`() = runBlockingUnit(singleThreadDispatcher + Job()) {
+        createNetworkHandler().run {
+            assertState(INITIALIZED)
+            val job = launch(start = CoroutineStart.UNDISPATCHED) {
+                awaitStateChange()
+            }
             yield()
             assertTrue { job.isActive }
 
