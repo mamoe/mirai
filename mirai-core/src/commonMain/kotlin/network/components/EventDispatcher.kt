@@ -31,10 +31,11 @@ internal interface EventDispatcher {
     companion object : ComponentKey<EventDispatcher>
 }
 
-internal inline class EventBroadcastJob(
+@JvmInline
+internal value class EventBroadcastJob(
     private val job: Job
 ) {
-    inline fun successThen(crossinline action: () -> Unit) {
+    inline fun onSuccess(crossinline action: () -> Unit) {
         job.invokeOnCompletion {
             if (it == null) action()
         }
