@@ -23,14 +23,15 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import net.mamoe.mirai.internal.network.components.*
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExceptionCollector
+import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.systemProp
 import java.io.EOFException
 import java.net.SocketAddress
 import kotlin.coroutines.CoroutineContext
@@ -339,47 +340,10 @@ internal open class NettyNetworkHandler(
             }
         }
 
-        private val heartbeatProcessor = context[HeartbeatProcessor]
-
-        @Suppress("DeferredIsResult")
-        private inline fun launchHeartbeatJob(
-            name: String,
-            crossinline timeout: () -> Long,
-            crossinline action: suspend () -> Unit
-        ): Deferred<Unit> {
-            return async(CoroutineName("$name Scheduler")) {
-                while (isActive) {
-                    try {
-                        delay(timeout())
-                    } catch (e: CancellationException) {
-                        return@async // considered normally cancel
-                    }
-
-                    try {
-                        action()
-                    } catch (e: Throwable) {
-                        setState { StateClosed(IllegalStateException("Exception in $name job", e)) }
-                    }
-                }
-            }.apply {
-                invokeOnCompletion { e ->
-                    if (e is CancellationException) return@invokeOnCompletion // normally closed
-                    if (e != null) logger.info { "$name failed: $e." }
-                }
+        private val heartbeatJobs =
+            context[HeartbeatScheduler].launchJobsIn(this@NettyNetworkHandler, this) { name, e ->
+                setState { StateClosed(HeartbeatFailedException("Exception in $name job", e)) }
             }
-        }
-
-        private val heartbeat = launchHeartbeatJob(
-            "AliveHeartbeat",
-            { context[SsoProcessorContext].configuration.heartbeatPeriodMillis },
-            { heartbeatProcessor.doAliveHeartbeatNow(this@NettyNetworkHandler) }
-        )
-
-        private val statHeartbeat = launchHeartbeatJob(
-            "StatHeartbeat",
-            { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
-            { heartbeatProcessor.doStatHeartbeatNow(this@NettyNetworkHandler) }
-        )
 
         // we can also move them as observers if needed.
 
@@ -394,8 +358,7 @@ internal open class NettyNetworkHandler(
 
         override suspend fun resumeConnection0() {
             joinCompleted(coroutineContext.job)
-            joinCompleted(heartbeat)
-            joinCompleted(statHeartbeat)
+            for (job in heartbeatJobs) joinCompleted(job)
             joinCompleted(configPush)
             joinCompleted(keyRefresh)
         } // noop

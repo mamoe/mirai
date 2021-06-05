@@ -127,6 +127,7 @@ internal open class QQAndroidBot constructor(
             set(SsoProcessorContext, SsoProcessorContextImpl(bot))
             set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
             set(HeartbeatProcessor, HeartbeatProcessorImpl())
+            set(HeartbeatScheduler, TimeBasedHeartbeatSchedulerImpl(networkLogger.subLogger("HeartbeatScheduler")))
             set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger.subLogger("KeyRefreshProcessor")))
             set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger.subLogger("ConfigPushProcessor")))
             set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
