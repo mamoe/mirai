@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -24,6 +25,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
 /**
@@ -31,7 +33,7 @@ import kotlin.reflect.KClass
  */
 internal abstract class NetworkHandlerSupport(
     override val context: NetworkHandlerContext,
-    final override val coroutineContext: CoroutineContext = SupervisorJob(),
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : NetworkHandler, CoroutineScope by coroutineContext.childScope(SupervisorJob()) {
 
     protected abstract fun initialState(): BaseStateImpl
@@ -151,7 +153,9 @@ internal abstract class NetworkHandlerSupport(
      */
     abstract inner class BaseStateImpl(
         val correspondingState: NetworkHandler.State,
-    ) : CoroutineScope by CoroutineScope(coroutineContext + Job(coroutineContext.job)) {
+    ) : CoroutineScope {
+        final override val coroutineContext: CoroutineContext =
+            this@NetworkHandlerSupport.coroutineContext + Job(this@NetworkHandlerSupport.coroutineContext.job)
 
         open fun getCause(): Throwable? = null
 
@@ -184,14 +188,18 @@ internal abstract class NetworkHandlerSupport(
         private set
 
     final override val state: NetworkHandler.State get() = _state.correspondingState
+
+    override fun getLastFailure(): Throwable? = _state.getCause()
+
     private val _stateChannel = Channel<NetworkHandler.State>(0)
     final override val stateChannel: ReceiveChannel<NetworkHandler.State> get() = _stateChannel
+
+    private val setStateLock = SynchronizedObject()
 
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
         val new: BaseStateImpl,
     ) : CancellationException("State is switched from $old to $new")
-
 
     /**
      * Attempts to change state.
@@ -209,7 +217,7 @@ internal abstract class NetworkHandlerSupport(
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
         noinline new: () -> S
-    ): S? = synchronized(this@NetworkHandlerSupport) {
+    ): S? = synchronized(setStateLock) {
         if (_state === this) {
             this@NetworkHandlerSupport.setState(new)
         } else {
@@ -235,9 +243,9 @@ internal abstract class NetworkHandlerSupport(
      */
     //
     @TestOnly
-    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? = synchronized(this) {
+    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? = synchronized(setStateLock) {
         val old = _state
-        if (newType != null && old::class == newType) return@synchronized null // already set to expected state by another thread. Avoid replications.
+        if (newType != null && old::class == newType) return null // already set to expected state by another thread. Avoid replications.
         if (old.correspondingState == NetworkHandler.State.CLOSED) return null // CLOSED is final.
 
         val stateObserver = context.getOrNull(StateObserver)

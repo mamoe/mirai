@@ -10,9 +10,15 @@
 package net.mamoe.mirai.internal.network.handler
 
 import io.netty.channel.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import net.mamoe.mirai.internal.network.components.EventDispatcher
+import net.mamoe.mirai.internal.network.components.HeartbeatFailureHandler
+import net.mamoe.mirai.internal.network.components.HeartbeatScheduler
 import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.impl.netty.TestNettyNH
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.cast
@@ -45,5 +51,36 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
         network.resumeConnection()
         network.close(IllegalStateException("Closed by test"))
         assertFails { network.resumeConnection() }
+    }
+
+
+    /**
+     * Emulates system hibernation and network failure.
+     * @see HeartbeatFailedException
+     */
+    @Test
+    fun `can recover on heartbeat failure`() = runBlockingUnit {
+        val heartbeatScheduler = object : HeartbeatScheduler {
+            lateinit var onHeartFailure: HeartbeatFailureHandler
+            override fun launchJobsIn(
+                network: NetworkHandlerSupport,
+                scope: CoroutineScope,
+                onHeartFailure: HeartbeatFailureHandler
+            ): List<Job> {
+                this.onHeartFailure = onHeartFailure
+                return listOf(Job())
+            }
+        }
+        defaultComponents[HeartbeatScheduler] = heartbeatScheduler
+
+        bot.login()
+        bot.network.context[EventDispatcher].joinBroadcast()
+        assertState(NetworkHandler.State.OK)
+
+        heartbeatScheduler.onHeartFailure("Test", HeartbeatFailedException("test", null))
+        assertState(NetworkHandler.State.CLOSED)
+
+        bot.network.resumeConnection() // in real, this is called by BotOnlineWatchdog in SelectorNetworkHandler
+        assertState(NetworkHandler.State.OK)
     }
 }

@@ -13,7 +13,9 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 
 /**
- * A director([selector][SelectorNetworkHandler.selector]) of [NetworkHandler].
+ * A **lazy** director([selector][SelectorNetworkHandler.selector]) of [NetworkHandler].
+ *
+ * *lazy* means that no action is taken at any time until member functions are invoked.
  *
  * It can produce [H] instances (maybe by calling [NetworkHandlerFactory]), to be used by [SelectorNetworkHandler]
  *
@@ -21,20 +23,21 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
  */
 internal interface NetworkHandlerSelector<H : NetworkHandler> {
     /**
-     * Returns an instance immediately without suspension, or `null` if instance not ready.
+     * Returns an instance immediately without suspension, or `null` if instance not ready. Returned [H] can be in any states.
      *
      * This function should not throw any exception.
      * @see awaitResumeInstance
      */
-    fun getResumedInstance(): H?
+    fun getCurrentInstanceOrNull(): H?
 
     /**
-     * Returns the currently alive [NetworkHandler] or creates a new one.
+     * Returns the current [NetworkHandler] or creates a new one if it is `null`. Returned [H] can be in any states.
      */
-    fun tryResumeInstanceOrCreate(): H
+    fun getCurrentInstanceOrCreate(): H
 
     /**
      * Returns an alive [NetworkHandler], or suspends the coroutine until the connection has been made again.
+     * Returned [H] can be in [NetworkHandler.State.OK] only (but it may happen that the state changed just after returning from this function).
      *
      * This function may throw exceptions, which would be propagated to the original caller of [SelectorNetworkHandler.resumeConnection].
      */

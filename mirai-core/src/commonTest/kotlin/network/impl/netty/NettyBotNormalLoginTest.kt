@@ -15,7 +15,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.event.nextEvent
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.OK
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.firstIsInstanceOrNull
@@ -62,6 +62,6 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
                 throw events.firstIsInstanceOrNull<BotOfflineEvent.Dropped>()!!.cause!!
             }
         }
-        assertState(NetworkHandler.State.OK)
+        assertState(OK)
     }
 }

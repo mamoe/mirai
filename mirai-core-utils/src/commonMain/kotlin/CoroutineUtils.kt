@@ -98,3 +98,19 @@ public fun CoroutineScope.hierarchicalName(
     name: String
 ): CoroutineName = this.coroutineContext.hierarchicalName(name)
 
+public inline fun <R> runUnwrapCancellationException(block: () -> R): R {
+    try {
+        return block()
+    } catch (e: CancellationException) {
+        // e is like `Exception in thread "main" kotlinx.coroutines.JobCancellationException: Parent job is Cancelling; job=JobImpl{Cancelled}@f252f300`
+        // and this is useless.
+        if (e.suppressedExceptions.isNotEmpty()) throw e // preserve details.
+        throw e.findCause { it !is CancellationException } ?: e
+    }
+}
+
+public fun Throwable.unwrapCancellationException(): Throwable {
+    if (this !is CancellationException) return this
+    if (suppressedExceptions.isNotEmpty()) return this
+    return this.findCause { it !is CancellationException } ?: this
+}

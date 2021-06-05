@@ -187,6 +187,10 @@ public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
     return rootCause ?: this
 }
 
+/**
+ * Use [findCause] instead for better performance.
+ */
+@TestOnly
 public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence {
     var depth = 0
     var rootCause: Throwable? = this@causes
@@ -196,6 +200,20 @@ public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence 
         if (depth++ >= maxDepth) break
     }
 }
+
+public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable? {
+    var depth = 0
+    var rootCause: Throwable? = this
+    while (true) {
+        val current = rootCause?.cause ?: return null
+        if (filter(current)) return current
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) return null
+    }
+}
+
+public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable =
+    findCause(maxDepth, filter) ?: this
 
 public fun String.capitalize(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }

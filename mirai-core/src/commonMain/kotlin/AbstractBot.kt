@@ -25,7 +25,10 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.supervisorJob
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.childScopeContext
+import net.mamoe.mirai.utils.info
 import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 
@@ -118,7 +121,7 @@ internal abstract class AbstractBot constructor(
             if (!components[SsoProcessor].firstLoginSucceed) {
                 this.close() // failed to do first login.
             }
-            throw e.causes().find { it !is CancellationException } ?: e // emit internal errors
+            throw e
         }
         logger.info { "Bot login successful." }
     }

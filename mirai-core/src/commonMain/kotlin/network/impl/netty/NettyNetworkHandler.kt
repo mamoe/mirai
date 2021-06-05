@@ -28,10 +28,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.ExceptionCollector
-import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.systemProp
+import net.mamoe.mirai.utils.*
 import java.io.EOFException
 import java.net.SocketAddress
 import kotlin.coroutines.CoroutineContext
@@ -77,6 +74,7 @@ internal open class NettyNetworkHandler(
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
         context.bot.logger.error(error)
         synchronized(this) {
+            setState { StateClosed(NettyChannelException(cause = error)) }
             if (_state !is StateConnecting) {
                 setState { StateConnecting(ExceptionCollector(error)) }
             } else {
@@ -134,6 +132,8 @@ internal open class NettyNetworkHandler(
 
     // can be overridden for tests
     protected open suspend fun createConnection(decodePipeline: PacketDecodePipeline): NettyChannel {
+        packetLogger.debug { "Connecting to $address" }
+
         val contextResult = CompletableDeferred<NettyChannel>()
         val eventLoopGroup = NioEventLoopGroup()
 
@@ -142,6 +142,7 @@ internal open class NettyNetworkHandler(
             .option(ChannelOption.SO_KEEPALIVE, true)
             .handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
+                    setupChannelPipeline(ch.pipeline(), decodePipeline)
                     ch.pipeline()
                         .addLast(object : ChannelInboundHandlerAdapter() {
                             override fun channelInactive(ctx: ChannelHandlerContext?) {
@@ -149,7 +150,6 @@ internal open class NettyNetworkHandler(
                             }
                         })
 
-                    setupChannelPipeline(ch.pipeline(), decodePipeline)
                 }
             })
             .connect(address)
@@ -164,7 +164,7 @@ internal open class NettyNetworkHandler(
 
         future.channel().closeFuture().addListener {
             if (_state.correspondingState == State.CLOSED) return@addListener
-            setState { StateConnecting(ExceptionCollector(it.cause())) }
+            setState { StateClosed(it.cause()) }
         }
 
         return contextResult.await()
@@ -207,6 +207,14 @@ internal open class NettyNetworkHandler(
     protected abstract inner class NettyState(
         correspondingState: State
     ) : BaseStateImpl(correspondingState) {
+        init {
+            coroutineContext.job.invokeOnCompletion { e ->
+                if (correspondingState != State.CLOSED) {
+                    if (e != null) setState { StateClosed(e.unwrapCancellationException()) }
+                }
+            }
+        }
+
         /**
          * @return `true` if packet has been sent, `false` if state is not ready for send.
          * @throws IllegalStateException if is [StateClosed].
@@ -276,13 +284,13 @@ internal open class NettyNetworkHandler(
 
         override fun getCause(): Throwable? = collectiveExceptions.getLast()
 
-        override suspend fun sendPacketImpl(packet: OutgoingPacket): Boolean {
+        override suspend fun sendPacketImpl(packet: OutgoingPacket): Boolean = runUnwrapCancellationException {
             connection.await() // split line number
                 .writeAndFlushOrCloseAsync(packet)
             return true
         }
 
-        override suspend fun resumeConnection0() {
+        override suspend fun resumeConnection0() = runUnwrapCancellationException {
             connectResult.await() // propagates exceptions
             val connection = connection.await()
             this.setState { StateLoading(connection) }
@@ -318,7 +326,7 @@ internal open class NettyNetworkHandler(
             context[ConfigPushProcessor].syncConfigPush(this@NettyNetworkHandler)
         }
 
-        override suspend fun resumeConnection0() {
+        override suspend fun resumeConnection0(): Unit = runUnwrapCancellationException {
             (coroutineContext.job as CompletableJob).run {
                 complete()
                 join()
@@ -356,7 +364,7 @@ internal open class NettyNetworkHandler(
             return true
         }
 
-        override suspend fun resumeConnection0() {
+        override suspend fun resumeConnection0(): Unit = runUnwrapCancellationException {
             joinCompleted(coroutineContext.job)
             for (job in heartbeatJobs) joinCompleted(job)
             joinCompleted(configPush)

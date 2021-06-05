@@ -38,6 +38,7 @@ internal class FactoryKeepAliveNetworkHandlerSelector<H : NetworkHandler> : Abst
     override fun createInstance(): H =
         factory.create(
             context,
-            context[ServerList].pollCurrent()?.toSocketAddress() ?: throw NoServerAvailableException()
+//            context[ServerList].pollCurrent()?.toSocketAddress() ?: throw NoServerAvailableException()
+            context[ServerList].pollAny().toSocketAddress()
         )
 }

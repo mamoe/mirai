@@ -50,7 +50,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
             }
         }
         runBlockingUnit(timeout = Duration.seconds(1)) { selector.awaitResumeInstance() }
-        assertNotNull(selector.getResumedInstance())
+        assertNotNull(selector.getCurrentInstanceOrNull())
     }
 
     @Test
@@ -60,7 +60,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         }
         val handler = createNetworkHandler()
         selector.setCurrent(handler)
-        assertSame(handler, selector.getResumedInstance())
+        assertSame(handler, selector.getCurrentInstanceOrNull())
     }
 
     @Test
@@ -70,7 +70,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         }
         val handler = createNetworkHandler()
         selector.setCurrent(handler)
-        assertSame(handler, selector.getResumedInstance())
+        assertSame(handler, selector.getCurrentInstanceOrNull())
         handler.setState(State.CLOSED)
         runBlockingUnit(timeout = Duration.seconds(3)) { selector.awaitResumeInstance() }
         assertEquals(1, selector.createInstanceCount.get())

@@ -21,7 +21,6 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.awaitState
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.millisToHumanReadableString
@@ -43,6 +42,7 @@ private data class BotClosedByEvent(val event: BotOfflineEvent) : RuntimeExcepti
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
+        return
         bot.eventChannel.parentScope(scope).subscribeAlways(
             ::onEvent,
             priority = EventPriority.MONITOR,
@@ -56,9 +56,6 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
 
         fun closeNetwork() {
             if (network.state == State.CLOSED) return // avoid recursive calls.
-            launch {
-                network.awaitState(State.CLOSED)
-            }
             network.close(BotClosedByEvent(event))
         }
 
@@ -84,6 +81,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
             -> {
                 val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
                 bot.logger.info { "Connection lost, retrying login ($causeMessage)." }
+                closeNetwork()
             }
         }
 

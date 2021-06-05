@@ -14,7 +14,10 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.awaitState
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.findCauseOrSelf
+import net.mamoe.mirai.utils.hierarchicalName
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -34,6 +37,12 @@ import kotlin.coroutines.CoroutineContext
 internal class SelectorNetworkHandler(
     override val context: NetworkHandlerContext, // impl notes: may consider to move into function member.
     private val selector: NetworkHandlerSelector<*>,
+    /**
+     * If `true`, a watcher job will be started to call [resumeConnection] when network is closed by [NetworkException] and [NetworkException.recoverable] is `true`.
+     *
+     * This is required for automatic reconnecting after network failure or system hibernation, since [NetworkHandler] is lazy and will reconnect iff [resumeConnection] is called.
+     */
+    allowActiveMaintenance: Boolean = true,
 ) : NetworkHandler {
     @Volatile
     private var lastCancellationCause: Throwable? = null
@@ -44,10 +53,39 @@ internal class SelectorNetworkHandler(
         return selector.awaitResumeInstance()
     }
 
+    init {
+        if (allowActiveMaintenance) {
+            val bot = context.bot
+            scope.launch(scope.hierarchicalName("BotOnlineWatchdog ${bot.id}")) {
+                while (isActive) {
+                    val instance = selector.getCurrentInstanceOrCreate()
+
+                    awaitState(State.CLOSED) // suspend until next CLOSED
+
+                    if (!bot.isActive || !isActive) return@launch
+                    if (selector.getCurrentInstanceOrNull() != instance) continue // instance already changed by other threads.
+
+                    delay(3000) // make it slower to avoid massive reconnection on network failure.
+
+                    val failure = getLastFailure()
+                    if (failure?.findCauseOrSelf { it is NetworkException && it.recoverable } != null) {
+                        try {
+                            resumeConnection() // notify selector to actively resume now.
+                        } catch (ignored: Exception) {
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override val state: State
-        get() = selector.tryResumeInstanceOrCreate().state
+        get() = selector.getCurrentInstanceOrCreate().state
+
+    override fun getLastFailure(): Throwable? = selector.getCurrentInstanceOrCreate().getLastFailure()
+
     override val stateChannel: ReceiveChannel<State>
-        get() = selector.tryResumeInstanceOrCreate().stateChannel
+        get() = selector.getCurrentInstanceOrCreate().stateChannel
 
     override suspend fun resumeConnection() {
         instance() // the selector will resume connection for us.
@@ -66,12 +104,12 @@ internal class SelectorNetworkHandler(
                 return
             }
         }
-        selector.getResumedInstance()?.close(cause)
+        selector.getCurrentInstanceOrNull()?.close(cause)
     }
 
     override val coroutineContext: CoroutineContext
-        get() = selector.getResumedInstance()?.coroutineContext ?: scope.coroutineContext // merely use fallback
+        get() = selector.getCurrentInstanceOrNull()?.coroutineContext ?: scope.coroutineContext // merely use fallback
 
-    override fun toString(): String = "SelectorNetworkHandler(currentInstance=${selector.getResumedInstance()})"
+    override fun toString(): String = "SelectorNetworkHandler(currentInstance=${selector.getCurrentInstanceOrNull()})"
 }
 

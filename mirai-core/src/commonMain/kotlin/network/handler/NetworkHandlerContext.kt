@@ -30,6 +30,6 @@ internal class NetworkHandlerContextImpl(
     storage: ComponentStorage // should be the same as bot.components
 ) : NetworkHandlerContext, ComponentStorage by storage {
     override fun toString(): String {
-        return "NetworkHandlerContextImpl(storage=$)"
+        return "NetworkHandlerContextImpl"
     }
 }

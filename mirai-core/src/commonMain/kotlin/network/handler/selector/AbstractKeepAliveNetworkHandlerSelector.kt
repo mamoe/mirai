@@ -13,6 +13,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.toLongUnsigned
 
@@ -23,8 +24,8 @@ import net.mamoe.mirai.utils.toLongUnsigned
  * - Re-initialize [NetworkHandler] instances if the old one is dead.
  * - Suspends requests when connection is not available.
  *
- * No connection is created until first invocation of [getResumedInstance],
- * and new connections are created only when calling [getResumedInstance] if the old connection was dead.
+ * No connection is created until first invocation of [getCurrentInstanceOrNull],
+ * and new connections are created only when calling [getCurrentInstanceOrNull] if the old connection was dead.
  */
 // may be replaced with a better name.
 internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandler>(
@@ -44,56 +45,71 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     protected abstract fun createInstance(): H
 
-    final override fun getResumedInstance(): H? = current.value
+    final override fun getCurrentInstanceOrNull(): H? = current.value
 
-    final override tailrec fun tryResumeInstanceOrCreate(): H {
-        getResumedInstance()?.let { return it }
+    final override tailrec fun getCurrentInstanceOrCreate(): H {
+        getCurrentInstanceOrNull()?.let { return it }
         refreshInstance()
-        return tryResumeInstanceOrCreate()
+        return getCurrentInstanceOrCreate()
     }
 
-    final override suspend fun awaitResumeInstance(): H = awaitResumeInstanceImpl(0)
+    final override suspend fun awaitResumeInstance(): H = AwaitResumeInstance().run()
 
-    private tailrec suspend fun awaitResumeInstanceImpl(attempted: Int): H {
-        if (attempted >= maxAttempts) error("Failed to resume instance. Maximum attempts reached.")
-        yield()
-        val current = getResumedInstance()
-        return if (current != null) {
-            when (val thisState = current.state) {
-                NetworkHandler.State.CLOSED -> {
-                    this.current.compareAndSet(current, null) // invalidate the instance and try again.
-                    awaitResumeInstanceImpl(attempted + 1) // will create new instance.
-                }
-                NetworkHandler.State.CONNECTING,
-                NetworkHandler.State.INITIALIZED -> {
-                    current.resumeConnection() // once finished, it should has been LOADING or OK
-                    check(current.state != thisState) { "Internal error: State is still $thisState after successful resumeConnection." } // this should not happen.
-                    return awaitResumeInstanceImpl(attempted) // does not count for an attempt.
-                }
-                NetworkHandler.State.LOADING -> {
-                    return current
-                }
-                NetworkHandler.State.OK -> {
-                    current.resumeConnection()
-                    return current
-                }
+    private inner class AwaitResumeInstance {
+        private var attempted: Int = 0
+        private val exceptionCollector: ExceptionCollector = ExceptionCollector()
+
+        tailrec suspend fun run(): H {
+            if (attempted >= maxAttempts) {
+                throw IllegalStateException(
+                    "Failed to resume instance. Maximum attempts reached.",
+                    exceptionCollector.getLast()
+                )
             }
-        } else {
-            refreshInstance()
-            awaitResumeInstanceImpl(attempted) // directly retry, does not count for attempts.
+            yield() // Avoid endless recursion.
+            val current = getCurrentInstanceOrNull()
+            return if (current != null) {
+                when (val thisState = current.state) {
+                    NetworkHandler.State.CLOSED -> {
+                        if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
+                            // invalidate the instance and try again.
+
+                            exceptionCollector.collectException(current.getLastFailure())
+                        }
+                        attempted += 1
+                        run() // will create new instance.
+                    }
+                    NetworkHandler.State.CONNECTING,
+                    NetworkHandler.State.INITIALIZED -> {
+                        current.resumeConnection() // once finished, it should has been LOADING or OK
+                        check(current.state != thisState) { "Internal error: State is still $thisState after successful resumeConnection." } // this should not happen.
+                        return run() // does not count for an attempt.
+                    }
+                    NetworkHandler.State.LOADING -> {
+                        return current
+                    }
+                    NetworkHandler.State.OK -> {
+                        current.resumeConnection()
+                        return current
+                    }
+                }
+            } else {
+                refreshInstance()
+                run() // directly retry, does not count for attempts.
+            }
         }
     }
 
     protected open fun refreshInstance() {
         synchronized(this) { // avoid concurrent `createInstance()`
-            if (getResumedInstance() == null) this.current.compareAndSet(null, createInstance())
+            if (getCurrentInstanceOrNull() == null) this.current.compareAndSet(null, createInstance())
         }
     }
 
     companion object {
         @JvmField
         var DEFAULT_MAX_ATTEMPTS =
-            systemProp("mirai.network.handler.selector.max.attempts", 3)
+            systemProp("mirai.network.handler.selector.max.attempts", Long.MAX_VALUE)
                 .coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
     }
 }
