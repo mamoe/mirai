@@ -311,7 +311,7 @@ val result = chain + face // 右侧的 VipFace 替换掉所有的 MessageContent
 
 VipFace face = new VipFace(VipFace.AiXin, 1); // VipFace 是 ConstrainSingle
 MessageChain chain = MessageChain.newChain(plainText, quoteReply, at, atAll); // quoteReply 是 MessageMetadata, 其他三个都是 MessageContent
-MessageChain result = chain.plus(); // 右侧的 VipFace 替换掉所有的 MessageContent. 它会存在于第一个 MessageContent 位置.
+MessageChain result = chain.plus(face); // 右侧的 VipFace 替换掉所有的 MessageContent. 它会存在于第一个 MessageContent 位置.
 // 结果为 [VipFace, QuoteReply]
 ```
 
