@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
@@ -83,18 +84,20 @@ internal open class QQAndroidBot constructor(
                     previous: BaseStateImpl,
                     new: BaseStateImpl
                 ) {
-                    components.eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).successThen {
+                    components.eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
                             components.eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
                         }
                     }
                 }
             },
-            StateChangedObserver(State.OK, State.CONNECTING) { new ->
-                components.eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
-            },
             StateChangedObserver(State.OK, State.CLOSED) { new ->
-                components.eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
+                val cause = new.getCause()
+                if (cause is NetworkException && cause.recoverable) {
+                    components.eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
+                } else {
+                    components.eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
+                }
             },
             StateChangedObserver(to = State.OK) { new ->
                 components[BotOfflineEventMonitor].attachJob(bot, new)
