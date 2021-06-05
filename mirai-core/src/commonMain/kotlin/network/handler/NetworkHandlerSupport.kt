@@ -37,6 +37,28 @@ internal abstract class NetworkHandlerSupport(
     protected abstract fun initialState(): BaseStateImpl
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
 
+    protected fun collectUnknownPacket(raw: RawIncomingPacket) {
+        packetLogger.debug { "Unknown packet: commandName=${raw.commandName}, body=${raw.body.toUHexString()}" }
+        // may add hooks here (to context)
+    }
+
+    override fun close(cause: Throwable?) {
+//        if (cause == null) {
+//            logger.info { "NetworkHandler '$this' closed" }
+//        } else {
+//            logger.info { "NetworkHandler '$this' closed: $cause" }
+//        }
+        coroutineContext.job.cancel("NetworkHandler closed", cause)
+    }
+
+    protected val packetLogger: MiraiLogger by lazy {
+        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PacketCodec.PACKET_DEBUG)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // packets synchronization impl
+    ///////////////////////////////////////////////////////////////////////////
+
     private val packetHandler: PacketHandler by lazy { context[PacketHandler] }
 
     /**
@@ -61,11 +83,6 @@ internal abstract class NetworkHandlerSupport(
                 logger.error(e)
             }
         }
-    }
-
-    protected fun collectUnknownPacket(raw: RawIncomingPacket) {
-        packetLogger.debug { "Unknown packet: commandName=${raw.commandName}, body=${raw.body.toUHexString()}" }
-        // may add hooks here (to context)
     }
 
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
@@ -96,23 +113,6 @@ internal abstract class NetworkHandlerSupport(
         context[PacketLoggingStrategy].logSent(logger, packet)
         sendPacketImpl(packet)
     }
-
-    override fun close(cause: Throwable?) {
-//        if (cause == null) {
-//            logger.info { "NetworkHandler '$this' closed" }
-//        } else {
-//            logger.info { "NetworkHandler '$this' closed: $cause" }
-//        }
-        coroutineContext.job.cancel("NetworkHandler closed", cause)
-    }
-
-    protected val packetLogger: MiraiLogger by lazy {
-        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PacketCodec.PACKET_DEBUG)
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // packets synchronization impl
-    ///////////////////////////////////////////////////////////////////////////
 
     protected class PacketListener(
         val commandName: String,
@@ -228,7 +228,12 @@ internal abstract class NetworkHandlerSupport(
         @OptIn(TestOnly::class)
         setStateImpl(newType as KClass<S>?, new)
 
-    // newType can be null iff in tests, to ignore checks.
+    /**
+     * This can only be called by [setState] or in tests.
+     *
+     * [newType] can be `null` **iff in tests**, to ignore checks.
+     */
+    //
     @TestOnly
     internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? = synchronized(this) {
         val old = _state
