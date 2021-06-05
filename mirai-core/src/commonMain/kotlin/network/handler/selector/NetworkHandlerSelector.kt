@@ -10,9 +10,14 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 
 /**
- * A lazy stateful selector of [NetworkHandler]. This is used as a director([selector][SelectorNetworkHandler.selector]) to [SelectorNetworkHandler].
+ * A director([selector][SelectorNetworkHandler.selector]) of [NetworkHandler].
+ *
+ * It can produce [H] instances (maybe by calling [NetworkHandlerFactory]), to be used by [SelectorNetworkHandler]
+ *
+ * @see SelectorNetworkHandler
  */
 internal interface NetworkHandlerSelector<H : NetworkHandler> {
     /**

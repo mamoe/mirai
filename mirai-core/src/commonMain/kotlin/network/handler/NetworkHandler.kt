@@ -57,14 +57,12 @@ internal interface NetworkHandler : CoroutineScope {
      * On [State.CONNECTING], [NetworkHandler] establishes a connection with the server while [SsoProcessor] takes responsibility in the single-sign-on process.
      *
      * Successful logon turns state to [State.LOADING], an **open state**, which does nothing by default. Jobs can be *attached* by [StateObserver]s.
-     * For example, attaching a [BotInitProcessor] to handle session-relevant jobs to the [Bot].
+     * For example, attaching a [BotInitProcessor] to handle account-relevant jobs to the [Bot].
      *
-     * Failure during [State.CONNECTING] and [State.LOADING] switches state to [State.CLOSED], on which [NetworkHandler] is considered permanently dead.
+     * Failure during [State.CONNECTING] and [State.LOADING] switches state to [State.CLOSED], on which [NetworkHandler] is considered **permanently dead**.
+     * The state after finishing of [State.LOADING] is [State.OK]. This state lasts for the majority of time.
      *
-     * The state after finish of [State.LOADING] is [State.OK]. This state lasts for the majority of time.
-     *
-     * When connection is lost (e.g. due to Internet unavailability), it does NOT return to [State.CONNECTING] but to [State.CLOSED]. No attempts is allowed.
-     *
+     * When connection is lost (e.g. due to Internet unavailability), it does NOT return to [State.CONNECTING] but to [State.CLOSED]. No reconnection is allowed.
      * Retrial may only be performed in [SelectorNetworkHandler].
      *
      * @see state
@@ -124,9 +122,10 @@ internal interface NetworkHandler : CoroutineScope {
 
 
     /**
-     * Sends [packet] and expects to receive a response from the server.
+     * Sends [packet], suspends and expects to receive a response from the server.
      *
-     * Coroutine suspension may happen if connection if not yet available however, [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED]
+     * Coroutine suspension may happen if connection is not yet available however,
+     * [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
      *
      * @param attempts ranges `1..INFINITY`
      */
@@ -135,8 +134,9 @@ internal interface NetworkHandler : CoroutineScope {
     /**
      * Sends [packet] and does not expect any response.
      *
-     * Response is still being processed but not passed as a return value of this function, so it does not suspends this function.
-     * However, coroutine is still suspended if connection if not yet available, and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED]
+     * Response is still being processed but not passed as a return value of this function, so it does not suspends this function (due to awaiting for the response).
+     * However, coroutine is still suspended if connection is not yet available,
+     * and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 

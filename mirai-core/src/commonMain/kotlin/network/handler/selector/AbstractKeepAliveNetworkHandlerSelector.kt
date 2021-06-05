@@ -67,7 +67,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                 NetworkHandler.State.CONNECTING,
                 NetworkHandler.State.INITIALIZED -> {
                     current.resumeConnection() // once finished, it should has been LOADING or OK
-                    check(current.state != thisState) { "State is still $thisState after successful resumeConnection." }
+                    check(current.state != thisState) { "Internal error: State is still $thisState after successful resumeConnection." } // this should not happen.
                     return awaitResumeInstanceImpl(attempted) // does not count for an attempt.
                 }
                 NetworkHandler.State.LOADING -> {

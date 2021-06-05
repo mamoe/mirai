@@ -19,6 +19,7 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * A proxy to [NetworkHandler] that delegates calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
+ * Selection logic is implemented in [NetworkHandlerSelector].
  *
  * This is useful to implement a delegation of [NetworkHandler]. The functionality of *selection* is provided by the strategy [selector][NetworkHandlerSelector].
  *
