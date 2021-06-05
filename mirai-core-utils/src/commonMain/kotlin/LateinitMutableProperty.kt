@@ -39,7 +39,7 @@ private class LateinitMutableProperty<T>(
                     this.value.compareAndSet(UNINITIALIZED, value) // setValue prevails
                     this.initializer = null
                     value
-                } else v as T
+                } else this.value.value as T
             }
             else -> v as T
         }
