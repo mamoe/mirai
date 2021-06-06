@@ -60,15 +60,15 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
      */
     @Test
     fun `can recover on heartbeat failure`() = runBlockingUnit {
-        testReceiver { HeartbeatFailedException("test", null) } // NetworkException
+        testRecover { HeartbeatFailedException("test", null) } // NetworkException
     }
 
     @Test
     fun `cannot recover on other failures`() = runBlockingUnit {
-        testReceiver { IllegalStateException() }
+        testRecover { IllegalStateException() }
     }
 
-    private suspend fun testReceiver(exception: () -> Exception) {
+    private suspend fun testRecover(exception: () -> Exception) {
         val heartbeatScheduler = object : HeartbeatScheduler {
             lateinit var onHeartFailure: HeartbeatFailureHandler
             override fun launchJobsIn(
