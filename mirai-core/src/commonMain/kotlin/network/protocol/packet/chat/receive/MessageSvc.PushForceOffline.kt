@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.impl.netty.ServerClosedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
@@ -29,6 +30,6 @@ internal object MessageSvcPushForceOffline :
     }
 
     override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.Force) {
-        network.close(IllegalStateException("Closed by MessageSvc.PushForceOffline: $packet"))
+        network.close(ServerClosedException("Closed by MessageSvc.PushForceOffline: $packet"))
     }
 }
