@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.awaitCancellation
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -71,22 +70,6 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
         }
     }
 
-
-    @Test
-    fun `from OK TO CONNECTING`() = runBlockingUnit {
-        setSsoProcessor {
-            awaitCancellation()
-        }
-        assertState(INITIALIZED)
-        network.setStateOK(channel)
-        eventDispatcher.joinBroadcast() // ignore events
-        assertEventBroadcasts<Event>(1) {
-            network.setStateConnecting()
-            eventDispatcher.joinBroadcast()
-        }.let { event ->
-            assertEquals(BotOfflineEvent.Dropped::class, event[0]::class)
-        }
-    }
 
     @Test
     fun `from CONNECTING TO OK the first time`() = runBlockingUnit {

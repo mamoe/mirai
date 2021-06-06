@@ -60,6 +60,15 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
      */
     @Test
     fun `can recover on heartbeat failure`() = runBlockingUnit {
+        testReceiver { HeartbeatFailedException("test", null) } // NetworkException
+    }
+
+    @Test
+    fun `cannot recover on other failures`() = runBlockingUnit {
+        testReceiver { IllegalStateException() }
+    }
+
+    private suspend fun testReceiver(exception: () -> Exception) {
         val heartbeatScheduler = object : HeartbeatScheduler {
             lateinit var onHeartFailure: HeartbeatFailureHandler
             override fun launchJobsIn(
@@ -77,7 +86,7 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
         bot.network.context[EventDispatcher].joinBroadcast()
         assertState(NetworkHandler.State.OK)
 
-        heartbeatScheduler.onHeartFailure("Test", HeartbeatFailedException("test", null))
+        heartbeatScheduler.onHeartFailure("Test", exception())
         assertState(NetworkHandler.State.CLOSED)
 
         bot.network.resumeConnection() // in real, this is called by BotOnlineWatchdog in SelectorNetworkHandler

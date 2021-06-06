@@ -10,19 +10,10 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
-import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.BotOfflineEvent
-import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.event.nextEvent
-import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.OK
-import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.utils.firstIsInstanceOrNull
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
 
 internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     class CusLoginException(message: String?) : RuntimeException(message)
@@ -43,25 +34,5 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
         assertFailsWith<IOException>("TestNetworkBroken") {
             bot.login()
         }
-    }
-
-    @Test
-    fun `test errors after logon`() = runBlockingUnit {
-        bot.login()
-        eventDispatcher.joinBroadcast()
-        assertEventBroadcasts<BotEvent>(-1) {
-            launch {
-                eventDispatcher.joinBroadcast()
-                channel.pipeline().fireExceptionCaught(CusLoginException("Net error"))
-            }
-            assertNotNull(
-                nextEvent<BotReloginEvent>(5000) { it.bot === bot }
-            )
-        }.let { events ->
-            assertFailsWith<CusLoginException>("Net error") {
-                throw events.firstIsInstanceOrNull<BotOfflineEvent.Dropped>()!!.cause!!
-            }
-        }
-        assertState(OK)
     }
 }

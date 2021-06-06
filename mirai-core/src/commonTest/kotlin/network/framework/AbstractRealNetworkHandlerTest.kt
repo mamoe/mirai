@@ -152,4 +152,5 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         assertEquals(state, network.state)
     }
 
+    val eventDispatcher get() = bot.components[EventDispatcher]
 }
