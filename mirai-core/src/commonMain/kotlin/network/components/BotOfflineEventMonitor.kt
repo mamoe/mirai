@@ -42,7 +42,7 @@ private data class BotClosedByEvent(val event: BotOfflineEvent) : RuntimeExcepti
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
-        return
+        return // leave it until 2.7-RC
         bot.eventChannel.parentScope(scope).subscribeAlways(
             ::onEvent,
             priority = EventPriority.MONITOR,
