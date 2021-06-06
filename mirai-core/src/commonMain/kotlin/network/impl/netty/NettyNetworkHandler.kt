@@ -39,6 +39,7 @@ internal open class NettyNetworkHandler(
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
     override fun close(cause: Throwable?) {
+        if (state == State.CLOSED) return // already
         setState { StateClosed(CancellationException("Closed manually.", cause)) }
         super.close(cause)
         // wrap an exception, more stacktrace information
@@ -310,9 +311,8 @@ internal open class NettyNetworkHandler(
     ) : NettyState(State.LOADING) {
         init {
             coroutineContext.job.invokeOnCompletion {
-                if (it != null && it !is CancellationException && it !is StateSwitchingException) {
+                if (it != null) {
                     connection.close()
-                    setState { StateClosed(it) }
                 }
             }
         }
