@@ -109,8 +109,10 @@ public inline fun <R> runUnwrapCancellationException(block: () -> R): R {
     }
 }
 
-public fun Throwable.unwrapCancellationException(): Throwable {
-    if (this !is CancellationException) return this
+public fun Throwable.unwrapCancellationException(): Throwable = unwrap<CancellationException>()
+
+public inline fun <reified E> Throwable.unwrap(): Throwable {
+    if (this !is E) return this
     if (suppressedExceptions.isNotEmpty()) return this
-    return this.findCause { it !is CancellationException } ?: this
+    return this.findCause { it !is E } ?: this
 }

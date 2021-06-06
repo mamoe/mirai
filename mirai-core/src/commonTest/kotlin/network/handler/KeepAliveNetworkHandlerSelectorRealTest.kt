@@ -12,16 +12,13 @@
 package net.mamoe.mirai.internal.network.handler
 
 import io.netty.channel.Channel
-import kotlinx.coroutines.CancellationException
 import net.mamoe.mirai.internal.network.impl.netty.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.impl.netty.TestNettyNH
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
-import net.mamoe.mirai.utils.getRootCause
 import org.junit.jupiter.api.assertThrows
 import java.net.SocketAddress
 import kotlin.test.Test
-import kotlin.test.assertIs
 
 internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
 
@@ -42,9 +39,13 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
             // selector should not tolerant any exception during state initialization, or in the Jobs launched in states.
 
             val selector = TestSelector(3) { createHandler() }
-            assertThrows<CancellationException> { selector.awaitResumeInstance() }.run {
-                assertIs<MyException>(getRootCause())
-            }
+            assertThrows<Throwable> { selector.awaitResumeInstance() }
+        }
+
+        @Test
+        fun `should unwrap exception`() = runBlockingUnit {
+            val selector = TestSelector(3) { createHandler() }
+            assertThrows<MyException> { selector.awaitResumeInstance() }
         }
     }
 

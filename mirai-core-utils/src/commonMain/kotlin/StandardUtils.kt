@@ -205,6 +205,7 @@ public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) ->
     var depth = 0
     var rootCause: Throwable? = this
     while (true) {
+        if (rootCause?.cause === rootCause) return rootCause
         val current = rootCause?.cause ?: return null
         if (filter(current)) return current
         rootCause = rootCause.cause
