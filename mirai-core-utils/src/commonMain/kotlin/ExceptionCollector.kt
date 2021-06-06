@@ -12,9 +12,7 @@ package net.mamoe.mirai.utils
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-public class ExceptionCollector : Sequence<Throwable> {
-
-    // TODO: 2021/4/20 drop last
+public class ExceptionCollector {
 
     public constructor()
     public constructor(initial: Throwable?) {
@@ -29,20 +27,14 @@ public class ExceptionCollector : Sequence<Throwable> {
 
     @Volatile
     private var last: Throwable? = null
+    private val hashCodes = mutableSetOf<Int>()
 
     @Synchronized
     public fun collect(e: Throwable?) {
         if (e == null) return
-        val last = last
-        if (last != null) {
-            last.itr().forEach { suppressed ->
-                if (suppressed.stackTrace.contentEquals(e.stackTrace)) {
-                    // filter out useless duplicates.
-                    return
-                }
-            }
-            e.addSuppressed(last)
-        }
+        val hashCode = e.stackTrace.contentHashCode()
+        if (!hashCodes.add(hashCode)) return // filter out duplications
+        // we can also check suppressed exceptions of [e] but actual influence would be slight.
         this.last = e
     }
 
@@ -72,14 +64,18 @@ public class ExceptionCollector : Sequence<Throwable> {
     @DslMarker
     private annotation class TerminalOperation
 
-    private fun Throwable.itr(): Iterator<Throwable> {
-        return (sequenceOf(this) + this.suppressed.asSequence().flatMap { it.itr().asSequence() }).iterator()
+    @TestOnly
+    public fun asSequence(): Sequence<Throwable> {
+        fun Throwable.itr(): Iterator<Throwable> {
+            return (sequenceOf(this) + this.suppressed.asSequence().flatMap { it.itr().asSequence() }).iterator()
+        }
+
+        return Sequence {
+            val last = getLast() ?: return@Sequence emptyList<Throwable>().iterator()
+            last.itr()
+        }
     }
 
-    override fun iterator(): Iterator<Throwable> {
-        val last = getLast() ?: return emptyList<Throwable>().iterator()
-        return last.itr()
-    }
 }
 
 /**

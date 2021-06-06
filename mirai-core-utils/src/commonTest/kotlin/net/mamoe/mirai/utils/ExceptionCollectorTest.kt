@@ -14,6 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
+@OptIn(TestOnly::class)
 internal class ExceptionCollectorTest {
 
     @Test
@@ -23,7 +24,7 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalArgumentException())
 
         assertTrue { collector.getLast() is IllegalArgumentException }
-        assertEquals(1, collector.count())
+        assertEquals(1, collector.asSequence().count())
     }
 
     @Test
@@ -35,7 +36,7 @@ internal class ExceptionCollectorTest {
 
         assertTrue { collector.getLast() is IllegalStateException }
         assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
-        assertEquals(2, collector.count())
+        assertEquals(2, collector.asSequence().count())
     }
 
     @Test
@@ -49,7 +50,7 @@ internal class ExceptionCollectorTest {
         assertTrue { collector.getLast() is IllegalStateException }
         assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
         assertTrue { collector.getLast()!!.suppressed.single()!!.suppressed.single() is StackOverflowError }
-        assertEquals(3, collector.count())
+        assertEquals(3, collector.asSequence().count())
     }
 
     @Test
@@ -62,9 +63,9 @@ internal class ExceptionCollectorTest {
         collector.collect(exception)
         collector.collect(exception)
 
-        assertSame(exception, collector.last())
+        assertSame(exception, collector.asSequence().last())
         assertEquals(0, collector.getLast()!!.suppressed.size)
-        assertEquals(1, collector.count())
+        assertEquals(1, collector.asSequence().count())
     }
 
     @Test
@@ -82,7 +83,7 @@ internal class ExceptionCollectorTest {
         }
 
         assertEquals(0, collector.getLast()!!.suppressed.size)
-        assertEquals(1, collector.count())
+        assertEquals(1, collector.asSequence().count())
         assertSame(exceptions.first(), collector.getLast())
         assertEquals("#0", collector.getLast()!!.message)
     }
