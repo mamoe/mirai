@@ -229,7 +229,7 @@ internal class SsoProcessorImpl(
                             val ticket = try {
                                 loginSolverNotNull().onSolveSliderCaptcha(bot, response.url)?.takeIf { it.isNotEmpty() }
                             } catch (e: LoginFailedException) {
-                                throw e
+                                collectThrow(e)
                             } catch (error: Throwable) {
                                 if (allowSlider) {
                                     collectException(error)
@@ -237,7 +237,7 @@ internal class SsoProcessorImpl(
                                     response = WtLogin9(client, allowSlider).sendAndExpect()
                                     continue@mainloop
                                 }
-                                throw error
+                                collectThrow(error)
                             }
                             response = if (ticket == null) {
                                 WtLogin9(client, allowSlider).sendAndExpect()
@@ -246,7 +246,7 @@ internal class SsoProcessorImpl(
                             }
                         } else {
                             // retry once
-                            if (!allowSlider) throw createUnsupportedSliderCaptchaException(allowSlider)
+                            if (!allowSlider) collectThrow(createUnsupportedSliderCaptchaException(allowSlider))
                             allowSlider = false
                             response = WtLogin9(client, allowSlider).sendAndExpect()
                         }
@@ -254,21 +254,21 @@ internal class SsoProcessorImpl(
 
                     is LoginPacketResponse.Error -> {
                         if (response.message.contains("0x9a")) { //Error(title=登录失败, message=请你稍后重试。(0x9a), errorInfo=)
-                            throw RetryLaterException().initCause(IllegalStateException("Login failed: $response"))
+                            collectThrow(RetryLaterException().initCause(IllegalStateException("Login failed: $response")))
                         }
                         val msg = response.toString()
-                        throw WrongPasswordException(buildString(capacity = msg.length) {
+                        collectThrow(WrongPasswordException(buildString(capacity = msg.length) {
                             append(msg)
                             if (msg.contains("当前上网环境异常")) { // Error(title=禁止登录, message=当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。, errorInfo=)
                                 append(", tips=若频繁出现, 请尝试开启设备锁")
                             }
-                        })
+                        }))
                     }
 
                     is LoginPacketResponse.SMSVerifyCodeNeeded -> {
                         val message = "SMS required: $response, which isn't yet supported"
                         logger.error(message)
-                        throw UnsupportedSMSLoginException(message)
+                        collectThrow(UnsupportedSMSLoginException(message))
                     }
                 }
             }
