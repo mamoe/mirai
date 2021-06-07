@@ -2870,9 +2870,6 @@ public abstract class net/mamoe/mirai/event/events/UserMessagePreSendEvent : net
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/User;
 }
 
-public final class net/mamoe/mirai/kar/SwingxLoaderKt {
-}
-
 public final class net/mamoe/mirai/message/MessageEventKt {
 	public static final fun isContextIdenticalWith (Lnet/mamoe/mirai/event/events/MessageEvent;Lnet/mamoe/mirai/event/events/MessageEvent;)Z
 }
