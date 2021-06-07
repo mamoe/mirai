@@ -22,8 +22,9 @@ class TestEvent : AbstractEvent() {
     var triggered = false
 }
 
-class EventTests {
+internal class EventTests : AbstractEventTest() {
     var scope = CoroutineScope(EmptyCoroutineContext)
+
     @AfterEach
     fun finiallyReset() {
         resetEventListeners()

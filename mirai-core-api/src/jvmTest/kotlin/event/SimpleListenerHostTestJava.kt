@@ -10,15 +10,15 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.EventListenerLikeJava
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.EmptyCoroutineContext
 
 @JavaFriendlyAPI
 @EventListenerLikeJava
-class SimpleListenerHostTestJava {
+internal class SimpleListenerHostTestJava : AbstractEventTest() {
     @Test
     fun testJavaSimpleListenerHostWork() {
         val called = AtomicBoolean()

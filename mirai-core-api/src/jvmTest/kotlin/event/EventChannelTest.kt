@@ -30,7 +30,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-internal class EventChannelTest {
+internal class EventChannelTest : AbstractEventTest() {
     suspend fun suspendCall() {
 
     }

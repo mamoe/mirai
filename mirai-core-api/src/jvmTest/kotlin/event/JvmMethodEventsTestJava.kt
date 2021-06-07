@@ -10,18 +10,31 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.cancel
-import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.EventListenerLikeJava
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 
-@EventListenerLikeJava
-@JavaFriendlyAPI
-@Suppress("UNUSED_PARAMETER")
-internal class JvmMethodEventsTestJava : SimpleListenerHost() {
+internal class JvmMethodEventsTestJava : AbstractEventTest() {
     private val called = AtomicInteger(0)
 
+    @OptIn(JavaFriendlyAPI::class)
+    @Test
+    fun test() {
+        val host = TestHost(called)
+        GlobalEventChannel.registerListenerHost(host)
+        TestEvent().__broadcastJava()
+        assertEquals(3, called.get(), null)
+        host.cancel() // reset listeners
+    }
+}
+
+@EventListenerLikeJava
+@Suppress("UNUSED_PARAMETER", "RedundantVisibilityModifier", "RedundantNullableReturnType")
+internal class TestHost(
+    private val called: AtomicInteger
+) : SimpleListenerHost() {
     @EventHandler
     public fun ev(event: TestEvent?) {
         called.incrementAndGet()
@@ -39,11 +52,4 @@ internal class JvmMethodEventsTestJava : SimpleListenerHost() {
         return ListeningStatus.LISTENING
     }
 
-    @Test
-    fun test() {
-        this.globalEventChannel().registerListenerHost(this)
-        TestEvent().__broadcastJava()
-        assertEquals(3, called.get(), null)
-        cancel() // reset listeners
-    }
 }

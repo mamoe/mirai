@@ -13,7 +13,6 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.internal.event.GlobalEventListeners
 import org.jetbrains.annotations.NotNull
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,7 +21,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 
 
-internal class JvmMethodEventsTest {
+internal class JvmMethodEventsTest : AbstractEventTest() {
 
     @Test
     fun testMethodListener() {
