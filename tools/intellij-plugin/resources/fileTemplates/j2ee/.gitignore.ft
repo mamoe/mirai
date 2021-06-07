@@ -121,3 +121,6 @@ run/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+
+# Local Test Launch point
+src/test/kotlin/RunTerminal.kt
