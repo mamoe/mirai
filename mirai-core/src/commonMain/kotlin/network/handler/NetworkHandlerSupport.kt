@@ -259,15 +259,10 @@ internal abstract class NetworkHandlerSupport(
 
         check(old !== impl) { "Old and new states cannot be the same." }
 
-
-        // Order notes:
-        // 1. Notify observers to attach jobs to [impl] (if so)
-        stateObserver?.stateChanged(this, old, impl)
-        // 2. Update state to [state]. This affects selectors.
-        _state = impl // switch state first. selector may be busy selecting.
-        // 3. Cleanup, cancel old states.
-        old.cancel(StateSwitchingException(old, impl))
-        _stateChannel.trySend(impl.correspondingState)
+        _state = impl // update current state
+        old.cancel(StateSwitchingException(old, impl)) // close old
+        stateObserver?.stateChanged(this, old, impl) // notify observer
+        _stateChannel.trySend(impl.correspondingState) // notify selector
 
         return impl
     }
