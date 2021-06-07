@@ -393,7 +393,7 @@ public interface ExternalResource : Closeable {
         // Note of [contact]: 历史遗留原因, 此方法以前的参数类型为 [Contact]
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
             if (contact is VoiceSupported) return contact.uploadVoice(this)
-            else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
+            else throw UnsupportedOperationException("Contact `$contact` is not supported uploading voice")
         }
 
         /**
