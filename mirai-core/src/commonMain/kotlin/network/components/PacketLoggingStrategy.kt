@@ -90,6 +90,7 @@ internal class PacketLoggingStrategyImpl(
                     "OnlinePush.RespPush",
                     "Heartbeat.Alive",
                     "MessageSvc.PushNotify",
+                    "StatSvc.SimpleGet",
                 )
             }
 
