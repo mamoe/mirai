@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -34,7 +35,7 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalArgumentException())
         collector.collect(IllegalStateException())
 
-        assertTrue { collector.getLast() is IllegalStateException }
+        assertIs<IllegalStateException>(collector.getLast())
         assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
         assertEquals(2, collector.asSequence().count())
     }
@@ -47,7 +48,7 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalArgumentException())
         collector.collect(IllegalStateException())
 
-        assertTrue { collector.getLast() is IllegalStateException }
+        assertIs<IllegalStateException>(collector.getLast())
         assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
         assertTrue { collector.getLast()!!.suppressed.single()!!.suppressed.single() is StackOverflowError }
         assertEquals(3, collector.asSequence().count())

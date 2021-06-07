@@ -27,15 +27,25 @@ public class ExceptionCollector {
 
     @Volatile
     private var last: Throwable? = null
-    private val hashCodes = mutableSetOf<Int>()
+    private val hashCodes = mutableSetOf<Long>()
 
     @Synchronized
     public fun collect(e: Throwable?) {
         if (e == null) return
-        val hashCode = e.stackTrace.contentHashCode()
-        if (!hashCodes.add(hashCode)) return // filter out duplications
+        if (!hashCodes.add(hash(e))) return // filter out duplications
         // we can also check suppressed exceptions of [e] but actual influence would be slight.
+        this.last?.let { e.addSuppressed(it) }
         this.last = e
+    }
+
+    private fun hash(e: Throwable): Long {
+        return e.stackTrace.fold(0L) { acc, stackTraceElement ->
+            acc * 31 + hash(stackTraceElement).toLongUnsigned()
+        }
+    }
+
+    private fun hash(element: StackTraceElement): Int {
+        return element.lineNumber.hashCode() xor element.className.hashCode() xor element.methodName.hashCode()
     }
 
     public fun collectGet(e: Throwable?): Throwable {
@@ -64,18 +74,21 @@ public class ExceptionCollector {
     @DslMarker
     private annotation class TerminalOperation
 
-    @TestOnly
+    @TestOnly // very slow
     public fun asSequence(): Sequence<Throwable> {
         fun Throwable.itr(): Iterator<Throwable> {
             return (sequenceOf(this) + this.suppressed.asSequence().flatMap { it.itr().asSequence() }).iterator()
         }
 
-        return Sequence {
-            val last = getLast() ?: return@Sequence emptyList<Throwable>().iterator()
-            last.itr()
-        }
+        val last = getLast() ?: return emptySequence()
+        return Sequence { last.itr() }
     }
 
+    @Synchronized
+    public fun dispose() { // help gc
+        this.last = null
+        this.hashCodes.clear()
+    }
 }
 
 /**
@@ -83,7 +96,9 @@ public class ExceptionCollector {
  */
 public inline fun <R> withExceptionCollector(action: ExceptionCollector.() -> R): R {
     contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
-    return ExceptionCollector().withExceptionCollector(action)
+    return ExceptionCollector().run {
+        withExceptionCollector(action).also { dispose() }
+    }
 }
 
 /**
