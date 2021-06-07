@@ -51,10 +51,10 @@ configure<kotlinx.validation.ApiValidationExtension> {
 
     ignoredPackages.add("net.mamoe.mirai.internal")
     ignoredPackages.add("net.mamoe.mirai.console.internal")
-    nonPublicMarkers.add("net.mamoe.mirai.MiraiInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiInternalApi")
     nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleInternalApi")
     nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleExperimentalApi")
-    nonPublicMarkers.add("net.mamoe.mirai.MiraiExperimentalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiExperimentalApi")
 }
 
 GpgSigner.setup(project)
