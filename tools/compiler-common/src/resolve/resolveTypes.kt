@@ -68,6 +68,10 @@ fun ResolveContext.Kind.Companion.valueOfOrNull(string: String) = ResolveContext
 val Annotated.resolveContextKinds: List<ResolveContextKind>?
     get() {
         val ann = this.findAnnotation(RESOLVE_CONTEXT_FQ_NAME) ?: return null
+
+        // https://github.com/mamoe/mirai-console/issues/363
+        if (ann.allValueArguments.isEmpty()) return null
+
         return ann.allValueArguments
             .firstValue()
             .castOrNull<ArrayValue>()?.value
