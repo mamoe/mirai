@@ -145,43 +145,53 @@ public interface CancellableEvent : Event {
  * @see __broadcastJava Java 使用
  */
 @JvmSynthetic
-public suspend fun <E : Event> E.broadcast(): E = apply { Mirai.broadcastEvent(this) }
+public suspend fun <E : Event> E.broadcast(): E = _EventBroadcast.implementation.broadcastPublic(this)
 
-
-@JvmName("broadcastImpl") // avoid mangling
-internal suspend fun <E : Event> E.broadcastImpl(): E {
-    val event = this
-    check(event is AbstractEvent) {
-        "Events must extend AbstractEvent"
+/**
+ * @since 2.7-M1
+ */
+@Suppress("ClassName")
+internal open class _EventBroadcast {
+    companion object {
+        @Volatile
+        @JvmStatic
+        var implementation: _EventBroadcast = _EventBroadcast()
     }
 
-    if (event is BroadcastControllable && !event.shouldBroadcast) {
+    open suspend fun <E : Event> broadcastPublic(event: E): E = event.apply { Mirai.broadcastEvent(this) }
+
+    @JvmName("broadcastImpl") // avoid mangling
+    internal suspend fun <E : Event> broadcastImpl(event: E): E {
+        check(event is AbstractEvent) { "Events must extend AbstractEvent" }
+
+        if (event is BroadcastControllable && !event.shouldBroadcast) {
+            return event
+        }
+        event.broadCastLock.withLock {
+            event._intercepted = false
+            if (EventDisabled) return@withLock
+            logEvent(event)
+            callAndRemoveIfRequired(event)
+        }
+
         return event
     }
-    event.broadCastLock.withLock {
-        event._intercepted = false
-        if (EventDisabled) return@withLock
-        logEvent(event)
-        callAndRemoveIfRequired(event)
-    }
 
-    return this
-}
-
-private fun logEvent(event: Event) {
-    if (event is Packet.NoEventLog) return
-    if (event is Packet.NoLog) return
-    if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
+    private fun logEvent(event: Event) {
+        if (event is Packet.NoEventLog) return
+        if (event is Packet.NoLog) return
+        if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
 //        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
 
-    if (event is BotEvent) {
-        event.bot.logger.verbose { "Event: $event" }
-    } else {
-        topLevelEventLogger.verbose { "Event: $event" }
+        if (event is BotEvent) {
+            event.bot.logger.verbose { "Event: $event" }
+        } else {
+            topLevelEventLogger.verbose { "Event: $event" }
+        }
     }
-}
 
-private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
+    private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
+}
 
 /**
  * 在 Java 广播一个事件的唯一途径.

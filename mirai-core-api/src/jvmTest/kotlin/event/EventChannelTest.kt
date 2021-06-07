@@ -44,12 +44,17 @@ internal class EventChannelTest {
     @BeforeEach
     fun x() {
         runBlocking { semaphore.acquire() }
+        _EventBroadcast.implementation = object : _EventBroadcast() {
+            override suspend fun <E : Event> broadcastPublic(event: E): E =
+                broadcastImpl(event) // do not call MiraiImpl
+        }
     }
 
     @AfterEach
     fun s() {
         GlobalEventListeners.clear()
         runBlocking { semaphore.release() }
+        _EventBroadcast.implementation = _EventBroadcast() // restore
     }
 
     @Test

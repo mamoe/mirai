@@ -20,8 +20,8 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event._EventBroadcast
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.broadcastImpl
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -307,7 +307,7 @@ public interface IMirai : LowLevelApiAccessor {
      * 广播一个事件. 由 [Event.broadcast] 调用.
      */
     public suspend fun broadcastEvent(event: Event) {
-        event.broadcastImpl()
+        _EventBroadcast.implementation.broadcastImpl(event)
     }
 }
 
