@@ -24,10 +24,12 @@ import net.mamoe.mirai.internal.test.assertEventNotBroadcast
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.TestInstance
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
+@Ignore
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     @Test
@@ -58,7 +60,6 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
 
     @Test
     fun `BotOfflineEvent after successful reconnection`() = runBlockingUnit {
-        return@runBlockingUnit
         assertEquals(INITIALIZED, network.state)
         bot.login()
         bot.components[SsoProcessor].firstLoginSucceed = true
@@ -125,7 +126,6 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
 
     @Test
     fun `BotOffline from OK TO CLOSED`() = runBlockingUnit {
-        return@runBlockingUnit
         bot.login()
         assertState(OK)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
