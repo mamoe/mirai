@@ -88,6 +88,7 @@ internal abstract class NetworkHandlerSupport(
     }
 
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
+        require(attempts >= 1) { "attempts must be at least 1." }
         val listener = PacketListener(packet.commandName, packet.sequenceId)
         withExceptionCollector {
             repeat(attempts) {
