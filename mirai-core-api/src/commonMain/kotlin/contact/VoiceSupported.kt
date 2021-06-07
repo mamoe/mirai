@@ -10,7 +10,6 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
@@ -18,6 +17,8 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
 
 /**
  * 支持发送语音的 [Contact]
+ *
+ * @since 2.7
  */
 public interface VoiceSupported : Contact {
     /**
@@ -26,9 +27,8 @@ public interface VoiceSupported : Contact {
      * - **请手动关闭 [resource]**
      * - 请使用 amr 或 silk 格式
      *
+     * @since 2.7
      * @see ExternalResource.uploadAsVoice
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmBlockingBridge

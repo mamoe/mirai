@@ -384,15 +384,45 @@ public interface ExternalResource : Closeable {
          *
          * **服务器仅支持音频格式 `silk` 或 `amr`**. 需要调用方手动[关闭资源][ExternalResource.close].
          *
-         * 目前仅支持发送给群.
-         *
          * @throws OverFileSizeMaxException
+         * @throws UnsupportedOperationException 当 [contact] 不是 [VoiceSupported] 的时候抛出
+         * @see VoiceSupported.uploadVoice
          */
         @JvmBlockingBridge
         @JvmStatic
+        // Note of [contact]: 历史遗留原因, 此方法以前的参数类型为 [Contact]
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
             if (contact is VoiceSupported) return contact.uploadVoice(this)
             else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
         }
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为语音上传至 [contact] 后构造 [Voice],
+         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
+         *
+         * 注意：本函数不会关闭流.
+         *
+         * @since 2.7
+         * @throws OverFileSizeMaxException
+         * @see VoiceSupported.uploadVoice
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun InputStream.uploadAsVoice(contact: VoiceSupported): Voice =
+            runBIO { toExternalResource() }.withUse { uploadAsVoice(contact) }
+
+        /**
+         * 将文件作为语音上传后构造 [Voice].
+         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
+         *
+         * @since 2.7
+         * @throws OverFileSizeMaxException
+         * @see VoiceSupported.uploadVoice
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun File.uploadAsVoice(contact: VoiceSupported): Voice =
+            toExternalResource().withUse { uploadAsVoice(contact) }
+
     }
 }
