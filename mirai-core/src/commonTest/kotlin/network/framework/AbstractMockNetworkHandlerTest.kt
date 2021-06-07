@@ -15,7 +15,6 @@ import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.EventDispatcher
-import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -24,8 +23,8 @@ import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.MiraiLogger
+import network.framework.components.TestEventDispatcherImpl
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
 
@@ -41,7 +40,10 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractTest() {
     protected val logger = MiraiLogger.create("test")
     protected val components = ConcurrentComponentStorage().apply {
         set(SsoProcessor, TestSsoProcessor(bot))
-        set(EventDispatcher, EventDispatcherImpl(bot.supervisorJob, bot.logger.subLogger("ED")))
+        set(
+            EventDispatcher,
+            TestEventDispatcherImpl(bot.coroutineContext, bot.logger.subLogger("TestEventDispatcherImpl"))
+        )
         set(
             StateObserver,
             SafeStateObserver(

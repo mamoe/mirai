@@ -14,6 +14,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.addNameHierarchically
 import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.CoroutineContext
@@ -36,7 +37,10 @@ internal interface EventDispatcher {
     /**
      * Join all jobs. Joins also jobs launched during this call.
      */
-    suspend fun joinBroadcast()
+    @TestOnly
+    suspend fun joinBroadcast() {
+        throw UnsupportedOperationException("joinBroadcast is only supported in TestEventDispatcherImpl")
+    }
 
     companion object : ComponentKey<EventDispatcher>
 }
@@ -47,7 +51,7 @@ internal object EventDispatcherScopeFlag : CoroutineContext.Element, CoroutineCo
 
 @JvmInline
 internal value class EventBroadcastJob(
-    private val job: Job
+    val job: Job
 ) {
     inline fun onSuccess(crossinline action: () -> Unit) {
         job.invokeOnCompletion {
@@ -57,9 +61,9 @@ internal value class EventBroadcastJob(
 }
 
 
-internal class EventDispatcherImpl(
-    private val lifecycleContext: CoroutineContext,
-    private val logger: MiraiLogger,
+internal open class EventDispatcherImpl(
+    lifecycleContext: CoroutineContext,
+    protected val logger: MiraiLogger,
 ) : EventDispatcher,
     CoroutineScope by lifecycleContext
         .addNameHierarchically("EventDispatcher")
@@ -88,14 +92,8 @@ internal class EventDispatcherImpl(
         return EventBroadcastJob(job)
     }
 
-    private fun optimizeEventToString(event: Event): String {
+    protected fun optimizeEventToString(event: Event): String {
         val qualified = event::class.java.canonicalName ?: return event.toString()
         return qualified.substringAfter("net.mamoe.mirai.event.events.", "").ifEmpty { event.toString() }
-    }
-
-    override suspend fun joinBroadcast() {
-        for (child in coroutineContext.job.children) {
-            child.join()
-        }
     }
 }

@@ -7,23 +7,26 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.job
 import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TestOnly
+import network.framework.components.TestEventDispatcherImpl
 import org.junit.jupiter.api.Test
 
 internal class EventDispatcherTest : AbstractTest() {
     private class Ev : AbstractEvent()
 
-    val dispatcher = EventDispatcherImpl(SupervisorJob(), MiraiLogger.TopLevel)
+    private val dispatcher = TestEventDispatcherImpl(SupervisorJob(), MiraiLogger.TopLevel)
 
     @Test
     fun `can broadcast`() = runBlockingUnit {

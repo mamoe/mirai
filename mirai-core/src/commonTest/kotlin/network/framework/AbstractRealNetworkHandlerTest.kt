@@ -26,9 +26,11 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
+import network.framework.components.TestEventDispatcherImpl
 import org.junit.jupiter.api.TestInstance
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -107,6 +109,11 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
             }
         })
+
+        set(
+            EventDispatcher,
+            TestEventDispatcherImpl(bot.coroutineContext, bot.logger.subLogger("TestEventDispatcherImpl"))
+        )
         // set(StateObserver, bot.run { stateObserverChain() })
     }
 
