@@ -87,6 +87,9 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public synthetic fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)Lkotlin/Unit;
 	public fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)V
 	public abstract fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun broadcastEvent (Lnet/mamoe/mirai/event/Event;)Lkotlin/Unit;
+	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;)V
+	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun calculateGroupCodeByGroupUin (J)J
 	public fun calculateGroupUinByGroupCode (J)J
 	public abstract fun constructMessageSource (JLnet/mamoe/mirai/message/data/MessageSourceKind;JJ[II[ILnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
