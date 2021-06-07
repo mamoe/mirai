@@ -89,6 +89,7 @@ internal class PacketLoggingStrategyImpl(
                     "MessageSvc.PbGetMsg", // they are too verbose.
                     "OnlinePush.RespPush",
                     "Heartbeat.Alive",
+                    "MessageSvc.PushNotify",
                 )
             }
 
