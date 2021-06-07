@@ -32,4 +32,6 @@ object FT { // file template
     const val PluginMainJava = "Plugin main class Java.java"
 
     const val Gitignore = ".gitignore"
+
+    const val RunTerminal = "RunTerminal.kt"
 }

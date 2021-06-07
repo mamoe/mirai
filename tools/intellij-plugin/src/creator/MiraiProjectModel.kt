@@ -94,6 +94,8 @@ val MiraiProjectModel.templateProperties: Map<String, String?>
 
             "PACKAGE_NAME" to packageName,
             "CLASS_NAME" to mainClassSimpleName,
+
+            "LANGUAGE_TYPE" to languageType.toString(),
         )
     }
 

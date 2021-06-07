@@ -72,6 +72,7 @@ sealed class GradleProjectCreator(
             addFileChanged(root.writeChild(model.languageType.pluginMainClassFile(this)))
             addFileChanged(root.writeChild("src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", model.mainClassQualifiedName))
             addFileChanged(root.writeChild("gradle.properties", getTemplate(FT.GradleProperties)))
+            addFileChanged(root.writeChild("src/test/kotlin/RunTerminal.kt", getTemplate(FT.RunTerminal)))
         }
     }
 }
