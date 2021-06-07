@@ -34,7 +34,6 @@ import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
-import net.mamoe.mirai.internal.network.handler.state.StateObserver.Companion.LOGGING
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.utils.subLogger
@@ -50,16 +49,10 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
-// for tests
-internal class BotDebugConfiguration(
-    var stateObserver: StateObserver? = LOGGING,
-)
-
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal open class QQAndroidBot constructor(
     internal val account: BotAccount,
     configuration: BotConfiguration,
-    private val debugConfiguration: BotDebugConfiguration = BotDebugConfiguration(),
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
     val client get() = components[SsoProcessor].client
@@ -69,11 +62,10 @@ internal open class QQAndroidBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    private val ComponentStorage.eventDispatcher get() = this[EventDispatcher]
-
     // also called by tests.
     fun ComponentStorage.stateObserverChain(): StateObserver {
         val components = this
+        val eventDispatcher = this[EventDispatcher]
         return StateObserver.chainOfNotNull(
             components[BotInitProcessor].asObserver(),
             object : StateChangedObserver(State.OK) {
@@ -84,9 +76,9 @@ internal open class QQAndroidBot constructor(
                     previous: BaseStateImpl,
                     new: BaseStateImpl
                 ) {
-                    components.eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
+                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
-                            components.eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
+                            eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
                         }
                     }
                 }
@@ -94,9 +86,9 @@ internal open class QQAndroidBot constructor(
             StateChangedObserver(State.OK, State.CLOSED) { new ->
                 val cause = new.getCause()
                 if (cause is NetworkException && cause.recoverable) {
-                    components.eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
+                    eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
                 } else {
-                    components.eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
+                    eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
                 }
             },
             StateChangedObserver(to = State.OK) { new ->
@@ -110,7 +102,6 @@ internal open class QQAndroidBot constructor(
                     }
                 }
             },
-            debugConfiguration.stateObserver
         ).safe(logger.subLogger("StateObserver"))
     }
 

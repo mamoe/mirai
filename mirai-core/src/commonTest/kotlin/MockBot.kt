@@ -27,7 +27,6 @@ internal val MockConfiguration = BotConfiguration {
 
 internal class MockBotBuilder(
     val conf: BotConfiguration = BotConfiguration(),
-    val debugConf: BotDebugConfiguration = BotDebugConfiguration(),
 ) {
     var nhProvider: (QQAndroidBot.(bot: QQAndroidBot) -> NetworkHandler)? = null
     var componentsProvider: (QQAndroidBot.(bot: QQAndroidBot) -> ComponentStorage)? = null
@@ -35,12 +34,6 @@ internal class MockBotBuilder(
     fun conf(action: BotConfiguration.() -> Unit): MockBotBuilder {
         contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
         conf.apply(action)
-        return this
-    }
-
-    fun debugConf(action: BotDebugConfiguration.() -> Unit): MockBotBuilder {
-        contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
-        debugConf.apply(action)
         return this
     }
 
@@ -53,7 +46,7 @@ internal class MockBotBuilder(
 @Suppress("TestFunctionName")
 internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}) =
     MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
-        object : QQAndroidBot(MockAccount, this.conf, debugConf) {
+        object : QQAndroidBot(MockAccount, this.conf) {
             override val components: ComponentStorage by lazy {
                 componentsProvider?.invoke(this, this) ?: EMPTY_COMPONENT_STORAGE
             }
