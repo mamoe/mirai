@@ -69,20 +69,20 @@ internal open class TestNetworkHandler(
     }
 
 
-    override fun setStateClosed(exception: Throwable?) {
-        setState(NetworkHandler.State.CLOSED)
+    override fun setStateClosed(exception: Throwable?): TestState? {
+        return setState(NetworkHandler.State.CLOSED)
     }
 
-    override fun setStateConnecting(exception: Throwable?) {
-        setState(NetworkHandler.State.CONNECTING)
+    override fun setStateConnecting(exception: Throwable?): TestState? {
+        return setState(NetworkHandler.State.CONNECTING)
     }
 
-    override fun setStateOK(channel: Channel, exception: Throwable?) {
-        setState(NetworkHandler.State.OK)
+    override fun setStateOK(channel: Channel, exception: Throwable?): TestState? {
         exception?.printStackTrace()
+        return setState(NetworkHandler.State.OK)
     }
 
-    override fun setStateLoading(channel: Channel) {
-        setState(NetworkHandler.State.LOADING)
+    override fun setStateLoading(channel: Channel): TestState? {
+        return setState(NetworkHandler.State.LOADING)
     }
 }

@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.framework.ITestNetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.utils.ExceptionCollector
 import java.net.SocketAddress
 
@@ -32,21 +33,21 @@ internal open class TestNettyNH(
     address: SocketAddress,
 ) : NettyNetworkHandler(context, address), ITestNetworkHandler {
 
-    override fun setStateClosed(exception: Throwable?) {
-        setState { StateClosed(exception) }
+    override fun setStateClosed(exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
+        return setState { StateClosed(exception) }
     }
 
-    override fun setStateConnecting(exception: Throwable?) {
-        setState { StateConnecting(ExceptionCollector(exception)) }
+    override fun setStateConnecting(exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
+        return setState { StateConnecting(ExceptionCollector(exception)) }
     }
 
-    override fun setStateOK(channel: Channel, exception: Throwable?) {
+    override fun setStateOK(channel: Channel, exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
         exception?.printStackTrace()
-        setState { StateOK(channel, CompletableDeferred(Unit)) }
+        return setState { StateOK(channel, CompletableDeferred(Unit)) }
     }
 
-    override fun setStateLoading(channel: Channel) {
-        setState { StateLoading(channel) }
+    override fun setStateLoading(channel: Channel): NetworkHandlerSupport.BaseStateImpl? {
+        return setState { StateLoading(channel) }
     }
 
 }

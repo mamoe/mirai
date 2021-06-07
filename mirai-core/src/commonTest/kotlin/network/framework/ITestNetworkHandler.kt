@@ -14,14 +14,15 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 
 internal interface ITestNetworkHandler : NetworkHandler {
     val bot: QQAndroidBot
 
-    fun setStateClosed(exception: Throwable? = null)
-    fun setStateConnecting(exception: Throwable? = null)
-    fun setStateOK(channel: Channel, exception: Throwable? = null)
-    fun setStateLoading(channel: Channel)
+    fun setStateClosed(exception: Throwable? = null): NetworkHandlerSupport.BaseStateImpl?
+    fun setStateConnecting(exception: Throwable? = null): NetworkHandlerSupport.BaseStateImpl?
+    fun setStateOK(channel: Channel, exception: Throwable? = null): NetworkHandlerSupport.BaseStateImpl?
+    fun setStateLoading(channel: Channel): NetworkHandlerSupport.BaseStateImpl?
 }
 
 internal val ITestNetworkHandler.eventDispatcher get() = bot.components[EventDispatcher]
