@@ -519,5 +519,5 @@ internal object ReceiveMessageTransformer {
         fileSize.toLong(),
         format,
         kotlinx.io.core.String(downPara)
-    ).also { it.pptInternalInstance = this }
+    ).also { it.pttInternalInstance = this }
 }

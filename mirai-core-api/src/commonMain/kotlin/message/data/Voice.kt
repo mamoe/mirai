@@ -43,7 +43,7 @@ public abstract class PttMessage : MessageContent {
 
     @MiraiInternalApi
     @Transient
-    public var pptInternalInstance: Any? = null
+    public var pttInternalInstance: Any? = null
 }
 
 /**

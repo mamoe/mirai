@@ -146,7 +146,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     }
 
     internal fun PttMessage.toPtt() = run {
-        (this.pptInternalInstance as? ImMsgBody.Ptt)?.let { return it }
+        (this.pttInternalInstance as? ImMsgBody.Ptt)?.let { return it }
         ImMsgBody.Ptt(
             fileName = fileName.toByteArray(),
             fileMd5 = md5,

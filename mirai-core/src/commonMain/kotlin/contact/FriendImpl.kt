@@ -117,7 +117,7 @@ internal class FriendImpl(
             if (c346resp.msgApplyUploadRsp == null) {
                 error("Upload failed")
             }
-            voice.pptInternalInstance = ImMsgBody.Ptt(
+            voice.pttInternalInstance = ImMsgBody.Ptt(
                 fileType = 4,
                 srcUin = bot.uin,
                 fileUuid = c346resp.msgApplyUploadRsp.uuid,
@@ -138,7 +138,7 @@ internal class FriendImpl(
                     ) { ip, port ->
                         Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
                     }
-                    voice.pptInternalInstance = ImMsgBody.Ptt(
+                    voice.pttInternalInstance = ImMsgBody.Ptt(
                         fileType = 4,
                         srcUin = bot.uin,
                         fileUuid = resp.fileId.toByteArray(),
