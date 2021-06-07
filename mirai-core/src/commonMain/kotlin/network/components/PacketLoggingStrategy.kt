@@ -52,14 +52,13 @@ internal class PacketLoggingStrategyImpl(
         if (packet is ParseErrorPacket) {
             packet.direction.getLogger(bot).error(packet.error)
         }
+        if (incomingPacket.commandName in blacklist) return
         if (incomingPacket.data is MultiPacket<*>) {
             for (d in incomingPacket.data) {
                 logReceivedImpl(d, incomingPacket, logger)
             }
         }
-        if (incomingPacket.commandName !in blacklist) {
-            logReceivedImpl(packet, incomingPacket, logger)
-        }
+        logReceivedImpl(packet, incomingPacket, logger)
     }
 
     private fun logReceivedImpl(packet: Packet, incomingPacket: IncomingPacket, logger: MiraiLogger) {
