@@ -38,6 +38,12 @@ fun Project.configureJvmTarget() {
         // TODO: 2021/5/6 We are still using legacy JVM backend since kotlinx.serialization is not yet supported in Kotlin 1.5.0
     }
 
+    tasks.withType(KotlinJvmCompile::class)
+        .filter { it.name.startsWith("compileTestKotlin") }
+        .forEach { task ->
+            task.kotlinOptions.freeCompilerArgs += "-Xopt-in=net.mamoe.mirai.utils.TestOnly"
+        }
+
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
