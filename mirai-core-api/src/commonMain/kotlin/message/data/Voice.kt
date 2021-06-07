@@ -11,6 +11,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
@@ -39,6 +40,10 @@ public abstract class PttMessage : MessageContent {
 
     @MiraiExperimentalApi
     public abstract val fileSize: Long
+
+    @MiraiInternalApi
+    @Transient
+    public var pptInternalInstance: Any? = null
 }
 
 /**

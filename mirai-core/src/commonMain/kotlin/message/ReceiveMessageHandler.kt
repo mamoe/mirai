@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.message
 
-import io.ktor.util.*
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.readUShort
@@ -520,5 +519,5 @@ internal object ReceiveMessageTransformer {
         fileSize.toLong(),
         format,
         kotlinx.io.core.String(downPara)
-    )
+    ).also { it.pptInternalInstance = this }
 }

@@ -19,7 +19,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.FileSupported
-import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.VoiceSupported
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
@@ -391,7 +391,7 @@ public interface ExternalResource : Closeable {
         @JvmBlockingBridge
         @JvmStatic
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
-            if (contact is Group) return contact.uploadVoice(this)
+            if (contact is VoiceSupported) return contact.uploadVoice(this)
             else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
         }
     }

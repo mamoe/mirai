@@ -32,7 +32,7 @@ import net.mamoe.mirai.message.data.toPlainText
  * @see FriendMessageEvent
  */
 @JvmBlockingBridge
-public interface Friend : User, CoroutineScope {
+public interface Friend : User, CoroutineScope, VoiceSupported {
     /**
      * QQ 号码
      */

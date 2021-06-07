@@ -145,6 +145,25 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         return response
     }
 
+    internal fun PttMessage.toPtt() = run {
+        (this.pptInternalInstance as? ImMsgBody.Ptt)?.let { return it }
+        ImMsgBody.Ptt(
+            fileName = fileName.toByteArray(),
+            fileMd5 = md5,
+            boolValid = true,
+            fileSize = fileSize.toInt(),
+            fileType = 4,
+            pbReserve = byteArrayOf(0),
+            format = let {
+                if (it is Voice) {
+                    it.codec
+                } else {
+                    0
+                }
+            }
+        )
+    }
+
     /**
      * 发送陌生人消息
      */
@@ -221,10 +240,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         return buildOutgoingMessageCommon(
             client = client,
             message = message,
-            fragmentTranslator = {
+            fragmentTranslator = { subChain ->
                 ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = it.toRichTextElems(messageTarget = targetFriend, withGeneralFlags = true)
+                        elems = subChain.toRichTextElems(messageTarget = targetFriend, withGeneralFlags = true),
+                        ptt = subChain[PttMessage]?.toPtt(),
                     )
                 )
             },
@@ -341,23 +361,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
                         elems = subChain.toRichTextElems(messageTarget = targetGroup, withGeneralFlags = true),
-                        ptt = subChain[PttMessage]?.run {
-                            ImMsgBody.Ptt(
-                                fileName = fileName.toByteArray(),
-                                fileMd5 = md5,
-                                boolValid = true,
-                                fileSize = fileSize.toInt(),
-                                fileType = 4,
-                                pbReserve = byteArrayOf(0),
-                                format = let {
-                                    if (it is Voice) {
-                                        it.codec
-                                    } else {
-                                        0
-                                    }
-                                }
-                            )
-                        }
+                        ptt = subChain[PttMessage]?.toPtt()
 
                     )
                 )
