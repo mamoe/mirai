@@ -550,7 +550,9 @@ public open class BotConfiguration { // open for Java
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
             new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
             new.heartbeatStrategy = heartbeatStrategy
+            @Suppress("DEPRECATION")
             new.firstReconnectDelayMillis = firstReconnectDelayMillis
+            @Suppress("DEPRECATION")
             new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.autoReconnectOnForceOffline = autoReconnectOnForceOffline

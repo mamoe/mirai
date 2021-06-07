@@ -524,6 +524,7 @@ internal class RemoteFileImpl(
     }
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
+        @Suppress("DEPRECATION")
         return upload(resource).sendTo(contact)
     }
 

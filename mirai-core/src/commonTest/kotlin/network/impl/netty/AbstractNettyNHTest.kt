@@ -14,7 +14,6 @@ import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
 import net.mamoe.mirai.internal.network.framework.ITestNetworkHandler
@@ -99,5 +98,3 @@ internal fun AbstractNettyNHTest.setSsoProcessor(action: suspend SsoProcessor.(h
         override suspend fun login(handler: NetworkHandler) = action(handler)
     }
 }
-
-internal val AbstractNettyNHTest.eventDispatcher get() = bot.components[EventDispatcher]

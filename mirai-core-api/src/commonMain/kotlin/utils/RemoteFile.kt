@@ -555,7 +555,7 @@ public interface RemoteFile {
             path: String,
             resource: ExternalResource,
             callback: ProgressionCallback? = null
-        ): FileMessage = this.filesRoot.resolve(path).upload(resource, callback)
+        ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(resource, callback)
 
         /**
          * 上传文件并获取文件消息, 但不发送.
@@ -579,7 +579,7 @@ public interface RemoteFile {
             path: String,
             file: File,
             callback: ProgressionCallback? = null
-        ): FileMessage = this.filesRoot.resolve(path).upload(file, callback)
+        ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(file, callback)
 
         /**
          * 上传文件并发送文件消息到相关 [FileSupported].
@@ -592,7 +592,9 @@ public interface RemoteFile {
             path: String,
             resource: ExternalResource,
             callback: ProgressionCallback? = null
-        ): MessageReceipt<C> = this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
+        ): MessageReceipt<C> =
+            @Suppress("DEPRECATION")
+            this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
 
         /**
          * 上传文件并发送文件消息到相关 [FileSupported].
@@ -604,6 +606,8 @@ public interface RemoteFile {
             path: String,
             file: File,
             callback: ProgressionCallback? = null
-        ): MessageReceipt<C> = this.filesRoot.resolve(path).upload(file, callback).sendTo(this)
+        ): MessageReceipt<C> =
+            @Suppress("DEPRECATION")
+            this.filesRoot.resolve(path).upload(file, callback).sendTo(this)
     }
 }

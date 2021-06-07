@@ -64,8 +64,6 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
      * This overrides [QQAndroidBot.components]
      */
     open val defaultComponents = ConcurrentComponentStorage().apply {
-        val components = this
-        val configuration = bot.configuration
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {

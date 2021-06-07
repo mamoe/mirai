@@ -71,7 +71,7 @@ internal interface StateObserver {
         val LOGGING: StateObserver? = when (systemProp(
             "mirai.debug.network.state.observer.logging",
             "off"
-        ).toLowerCase()) {
+        ).lowercase()) {
             "full" -> {
                 SafeStateObserver(
                     LoggingStateObserver(MiraiLogger.create("States"), true),
