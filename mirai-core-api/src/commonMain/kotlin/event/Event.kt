@@ -14,6 +14,7 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
@@ -144,7 +145,11 @@ public interface CancellableEvent : Event {
  * @see __broadcastJava Java 使用
  */
 @JvmSynthetic
-public suspend fun <E : Event> E.broadcast(): E {
+public suspend fun <E : Event> E.broadcast(): E = apply { Mirai.broadcastEvent(this) }
+
+
+@JvmName("broadcastImpl") // avoid mangling
+internal suspend fun <E : Event> E.broadcastImpl(): E {
     val event = this
     check(event is AbstractEvent) {
         "Events must extend AbstractEvent"

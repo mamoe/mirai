@@ -19,8 +19,18 @@ import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+/**
+ * All events will be caught and forwarded to [EventDispatcher]. Invocation of [Event.broadcast] and [EventDispatcher.broadcast] are effectively equal.
+ */
 internal interface EventDispatcher {
+    /**
+     * Implementor must call `event.broadcast()` within a coroutine with [EventDispatcherScopeFlag]
+     */
     suspend fun broadcast(event: Event)
+
+    /**
+     * Implementor must call `event.broadcast()` within a coroutine with [EventDispatcherScopeFlag]
+     */
     fun broadcastAsync(event: Event, additionalContext: CoroutineContext = EmptyCoroutineContext): EventBroadcastJob
 
     /**
@@ -29,6 +39,10 @@ internal interface EventDispatcher {
     suspend fun joinBroadcast()
 
     companion object : ComponentKey<EventDispatcher>
+}
+
+internal object EventDispatcherScopeFlag : CoroutineContext.Element, CoroutineContext.Key<EventDispatcherScopeFlag> {
+    override val key: CoroutineContext.Key<*> get() = this
 }
 
 @JvmInline
@@ -53,7 +67,9 @@ internal class EventDispatcherImpl(
 
     override suspend fun broadcast(event: Event) {
         try {
-            event.broadcast()
+            withContext(EventDispatcherScopeFlag) {
+                event.broadcast()
+            }
         } catch (e: Exception) {
             if (logger.isEnabled) {
                 val msg = optimizeEventToString(event)
@@ -63,7 +79,10 @@ internal class EventDispatcherImpl(
     }
 
     override fun broadcastAsync(event: Event, additionalContext: CoroutineContext): EventBroadcastJob {
-        val job = launch(additionalContext, start = CoroutineStart.UNDISPATCHED) { broadcast(event) }
+        val job = launch(
+            additionalContext + EventDispatcherScopeFlag,
+            start = CoroutineStart.UNDISPATCHED
+        ) { broadcast(event) }
         // UNDISPATCHED: starts the coroutine NOW in the current thread until its first suspension point,
         // so that after `broadcastAsync` the job is always already started and `joinBroadcast` will work normally.
         return EventBroadcastJob(job)
