@@ -75,6 +75,7 @@ internal open class EventDispatcherImpl(
                 event.broadcast()
             }
         } catch (e: Exception) {
+            if (e is CancellationException) return
             if (logger.isEnabled) {
                 val msg = optimizeEventToString(event)
                 logger.error(IllegalStateException("Exception while broadcasting event '$msg'", e))

@@ -39,6 +39,7 @@ import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.warning
 import kotlin.contracts.contract
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -87,6 +88,7 @@ internal open class QQAndroidBot constructor(
                 val cause = new.getCause()
                 if (cause is NetworkException && cause.recoverable) {
                     eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, new.getCause()))
+                    logger.warning { "Connection lost. Attempting to reconnect..." }
                 } else {
                     eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, new.getCause()))
                 }

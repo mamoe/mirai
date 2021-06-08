@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
+import kotlin.coroutines.cancellation.CancellationException
 
 internal interface PacketHandler {
     suspend fun handlePacket(incomingPacket: IncomingPacket)
@@ -38,7 +39,8 @@ internal class PacketHandlerChain(
             try {
                 instance.handlePacket(incomingPacket)
             } catch (e: Throwable) {
-                throw ExceptionInPacketHandlerException(instance, e)
+                if (e is CancellationException) return
+                throw ExceptionInPacketHandlerException(instance, incomingPacket, e)
             }
         }
     }
@@ -46,8 +48,9 @@ internal class PacketHandlerChain(
 
 internal data class ExceptionInPacketHandlerException(
     val packetHandler: PacketHandler,
+    val incomingPacket: IncomingPacket,
     override val cause: Throwable,
-) : IllegalStateException("Exception in PacketHandler '$packetHandler'.")
+) : IllegalStateException("Exception in PacketHandler '$packetHandler' for command '${incomingPacket.commandName}'.")
 
 internal class LoggingPacketHandlerAdapter(
     private val strategy: PacketLoggingStrategy,

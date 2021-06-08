@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.verbose
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implementation must be fast and non-blocking, throwing no exception.
@@ -44,13 +45,14 @@ internal class PacketLoggingStrategyImpl(
 
     override fun logReceived(logger: MiraiLogger, incomingPacket: IncomingPacket) {
         incomingPacket.exception?.let {
-            logger.error(it)
+            if (it is CancellationException) return
+            logger.error("Exception in decoding packet.", it)
             return
         }
         val packet = incomingPacket.data ?: return
         if (!bot.logger.isEnabled && !logger.isEnabled) return
         if (packet is ParseErrorPacket) {
-            packet.direction.getLogger(bot).error(packet.error)
+            packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
         }
         if (incomingPacket.data is MultiPacket<*>) {
             for (d in incomingPacket.data) {

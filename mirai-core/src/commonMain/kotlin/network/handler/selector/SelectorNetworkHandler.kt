@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.findCauseOrSelf
 import net.mamoe.mirai.utils.hierarchicalName
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * A proxy to [NetworkHandler] that delegates calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
@@ -49,7 +50,10 @@ internal class SelectorNetworkHandler(
 
     private val scope = CoroutineScope(SupervisorJob(context.bot.coroutineContext[Job]))
     private suspend inline fun instance(): NetworkHandler {
-        if (!scope.isActive) throw lastCancellationCause ?: error("SelectorNetworkHandler is already closed")
+        if (!scope.isActive) {
+            throw lastCancellationCause?.let(::CancellationException)
+                ?: CancellationException("SelectorNetworkHandler is already closed")
+        }
         return selector.awaitResumeInstance()
     }
 
