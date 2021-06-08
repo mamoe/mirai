@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
@@ -48,15 +49,26 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
 //        assertTrue { bot.isActive }
 //    }
 
+    @Test
+    fun `state is CLOSED after Bot close`() = runBlockingUnit {
+        bot.network.assertState(INITIALIZED)
+        bot.login()
+        bot.network.assertState(OK)
+        bot.closeAndJoin()
+        bot.network.assertState(CLOSED)
+        bot.components[EventDispatcher].joinBroadcast()
+        bot.network.assertState(CLOSED)
+    }
+
 
     @Test
     fun `send logout on exit`() = runBlockingUnit {
-        assertState(INITIALIZED)
+        bot.network.assertState(INITIALIZED)
         bot.login()
-        assertState(OK)
-        bot.close() // send logout blocking
+        bot.network.assertState(OK)
+        bot.closeAndJoin() // send logout blocking
         eventDispatcher.joinBroadcast()
-        assertState(CLOSED)
+        bot.network.assertState(CLOSED)
         assertTrue { nhEvents.any { it is NHEvent.Logout } }
     }
 
@@ -87,7 +99,7 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
     @Test
     fun `network scope closed on bot close`() = runBlockingUnit {
         assertTrue { network.isActive }
-        bot.close()
+        bot.closeAndJoin()
         assertFalse { network.isActive }
     }
 }
