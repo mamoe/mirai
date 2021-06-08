@@ -38,6 +38,7 @@
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
 [Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
+[Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
@@ -80,6 +81,7 @@
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
+| `Ruby                     | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
