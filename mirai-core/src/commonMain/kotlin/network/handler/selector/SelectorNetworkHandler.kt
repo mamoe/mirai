@@ -16,6 +16,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.awaitState
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.addNameHierarchically
+import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.findCauseOrSelf
 import net.mamoe.mirai.utils.hierarchicalName
 import kotlin.coroutines.CoroutineContext
@@ -48,7 +50,12 @@ internal class SelectorNetworkHandler(
     @Volatile
     private var lastCancellationCause: Throwable? = null
 
-    private val scope = CoroutineScope(SupervisorJob(context.bot.coroutineContext[Job]))
+    private val scope: CoroutineScope by lazy {
+        context.bot.coroutineContext
+            .addNameHierarchically("SelectorNetworkHandler")
+            .childScope()
+    }
+
     private suspend inline fun instance(): NetworkHandler {
         if (!scope.isActive) {
             throw lastCancellationCause?.let(::CancellationException)
@@ -61,15 +68,19 @@ internal class SelectorNetworkHandler(
         if (allowActiveMaintenance) {
             val bot = context.bot
             scope.launch(scope.hierarchicalName("BotOnlineWatchdog ${bot.id}")) {
-                while (isActive && bot.isActive) {
+                fun isActive(): Boolean {
+                    return isActive && bot.isActive
+                }
+                while (isActive()) {
                     val instance = selector.getCurrentInstanceOrCreate()
 
                     awaitState(State.CLOSED) // suspend until next CLOSED
 
-                    if (!bot.isActive || !isActive) return@launch
+                    if (!isActive()) return@launch
                     if (selector.getCurrentInstanceOrNull() != instance) continue // instance already changed by other threads.
 
                     delay(3000) // make it slower to avoid massive reconnection on network failure.
+                    if (!isActive()) return@launch
 
                     val failure = getLastFailure()
                     if (failure?.findCauseOrSelf { it is NetworkException && it.recoverable } != null) {
