@@ -85,13 +85,18 @@ internal class PacketLoggingStrategyImpl(
             get() {
                 if (systemProp("mirai.debug.network.show.verbose.packets", false)) return emptySet()
                 return setOf(
-                    "MessageSvc.PbDeleteMsg",
-                    "MessageSvc.PbGetMsg", // they are too verbose.
-                    "OnlinePush.RespPush",
-                    "Heartbeat.Alive",
+                    // C2C event sync, too verbose to show.
                     "MessageSvc.PushNotify",
-                    "StatSvc.SimpleGet",
+                    "MessageSvc.PbGetMsg",
+                    "MessageSvc.PbDeleteMsg",
+
+                    // Group event sync, decoded as specific events, to optimize logs.
                     "OnlinePush.ReqPush",
+                    "OnlinePush.RespPush",
+
+                    // Periodic heartbeat, showing them does not help anything.
+                    "Heartbeat.Alive",
+                    "StatSvc.SimpleGet",
                 )
             }
 
