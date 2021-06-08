@@ -179,6 +179,12 @@ internal open class NettyNetworkHandler(
         private val packetCodec: PacketCodec by lazy { context[PacketCodec] }
 
         init {
+            coroutineContext.job.invokeOnCompletion {
+                channel.close() // normally close
+            }
+        }
+
+        init {
             launch(CoroutineName("PacketDecodePipeline processor")) {
                 // 'single thread' processor
                 channel.consumeAsFlow().collect { raw ->
