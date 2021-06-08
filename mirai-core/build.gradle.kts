@@ -110,6 +110,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
+                api1(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }
