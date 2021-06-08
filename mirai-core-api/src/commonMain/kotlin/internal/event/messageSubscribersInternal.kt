@@ -33,7 +33,7 @@ internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Re
     onEvent: @MessageDsl suspend M.(String) -> R
 ): Ret {
     return if (trim) {
-        val toCheck = suffix.trim()
+        val toCheck = suffix.trimEnd()
         content({ it.trimEnd().endsWith(toCheck) }) {
             if (removeSuffix) this.onEvent(this.message.contentToString().removeSuffix(toCheck).trim())
             else onEvent(this, this.message.contentToString().trim())
@@ -53,7 +53,7 @@ internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Re
     onEvent: @MessageDsl suspend M.(String) -> R
 ): Ret {
     return if (trim) {
-        val toCheck = prefix.trim()
+        val toCheck = prefix.trimStart()
         content({ it.trimStart().startsWith(toCheck) }) {
             if (removePrefix) this.onEvent(this.message.contentToString().substringAfter(toCheck).trim())
             else onEvent(this, this.message.contentToString().trim())
