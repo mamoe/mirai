@@ -80,7 +80,7 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
                 return listOf(Job())
             }
         }
-        defaultComponents[HeartbeatScheduler] = heartbeatScheduler
+        overrideComponents[HeartbeatScheduler] = heartbeatScheduler
 
         bot.login()
         bot.network.context[EventDispatcher].joinBroadcast()

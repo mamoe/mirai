@@ -95,7 +95,7 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
 }
 
 internal fun AbstractNettyNHTest.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
-    defaultComponents[SsoProcessor] = object : SsoProcessor by defaultComponents[SsoProcessor] {
+    overrideComponents[SsoProcessor] = object : SsoProcessor by overrideComponents[SsoProcessor] {
         override suspend fun login(handler: NetworkHandler) = action(handler)
     }
 }

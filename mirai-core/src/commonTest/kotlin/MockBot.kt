@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.contracts.InvocationKind
@@ -29,7 +30,7 @@ internal class MockBotBuilder(
     val conf: BotConfiguration = BotConfiguration(),
 ) {
     var nhProvider: (QQAndroidBot.(bot: QQAndroidBot) -> NetworkHandler)? = null
-    var componentsProvider: (QQAndroidBot.(bot: QQAndroidBot) -> ComponentStorage)? = null
+    var additionalComponentsProvider: (QQAndroidBot.(bot: QQAndroidBot) -> ComponentStorage)? = null
 
     fun conf(action: BotConfiguration.() -> Unit): MockBotBuilder {
         contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
@@ -44,16 +45,20 @@ internal class MockBotBuilder(
 }
 
 @Suppress("TestFunctionName")
-internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}) =
-    MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
+internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}): QQAndroidBot {
+    return MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
         object : QQAndroidBot(MockAccount, this.conf) {
-            override val components: ComponentStorage by lazy {
-                componentsProvider?.invoke(this, this) ?: EMPTY_COMPONENT_STORAGE
+            override fun createDefaultComponents(): ConcurrentComponentStorage {
+                return super.createDefaultComponents().apply {
+                    val componentsProvider = additionalComponentsProvider
+                    if (componentsProvider != null) {
+                        setAll(componentsProvider(bot, bot))
+                    }
+                }
             }
 
             override fun createNetworkHandler(): NetworkHandler =
                 nhProvider?.invoke(this, this) ?: super.createNetworkHandler()
         }
     }
-
-private val EMPTY_COMPONENT_STORAGE = ConcurrentComponentStorage()
+}

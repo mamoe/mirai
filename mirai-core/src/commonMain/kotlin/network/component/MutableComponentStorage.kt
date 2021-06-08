@@ -9,10 +9,21 @@
 
 package net.mamoe.mirai.internal.network.component
 
+import net.mamoe.mirai.utils.TestOnly
+import net.mamoe.mirai.utils.cast
+
 internal interface MutableComponentStorage : ComponentStorage {
     override operator fun <T : Any> get(key: ComponentKey<T>): T
     operator fun <T : Any> set(key: ComponentKey<T>, value: T)
     fun <T : Any> remove(key: ComponentKey<T>): T?
+
+}
+
+@TestOnly
+internal fun MutableComponentStorage.setAll(other: ComponentStorage) {
+    for (key in other.keys) {
+        set(key.cast(), other[key])
+    }
 }
 
 internal operator fun <T : Any> MutableComponentStorage.set(key: ComponentKey<T>, value: T?) {

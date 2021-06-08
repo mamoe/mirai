@@ -11,11 +11,11 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.internal.AbstractBot
-import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.MockAccount
+import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
-import net.mamoe.mirai.internal.network.component.withFallback
+import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
@@ -24,7 +24,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
@@ -45,9 +44,12 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     abstract val network: NetworkHandler
 
     var bot: QQAndroidBot by lateinitMutableProperty {
-        MockBot {
-            networkHandlerProvider { createHandler() }
-            componentsProvider = { network.context } // initialized in [createHandler]
+        object : QQAndroidBot(MockAccount, MockConfiguration.copy()) {
+            override fun createDefaultComponents(): ConcurrentComponentStorage =
+                super.createDefaultComponents().apply { setAll(overrideComponents) }
+
+            override fun createNetworkHandler(): NetworkHandler =
+                this@AbstractRealNetworkHandlerTest.createHandler()
         }
     }
 
@@ -65,7 +67,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     /**
      * This overrides [QQAndroidBot.components]
      */
-    open val defaultComponents = ConcurrentComponentStorage().apply {
+    open val overrideComponents = ConcurrentComponentStorage().apply {
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {
@@ -117,38 +119,9 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         // set(StateObserver, bot.run { stateObserverChain() })
     }
 
-    /**
-     * [additionalComponents] overrides [defaultComponents] and [QQAndroidBot.components]
-     */
-    open fun createHandler(additionalComponents: ComponentStorage? = null): H {
-        return factory.create(
-            createContext(additionalComponents),
-            address
-        )
-    }
-
-    val address = InetSocketAddress.createUnresolved("localhost", 123)
-
-    open fun createContext(additionalComponents: ComponentStorage? = null): NetworkHandlerContextImpl {
-        // StateObserver
-        val components =
-            additionalComponents.withFallback(defaultComponents).withFallback(bot.createDefaultComponents())
-        val observerComponents = if (
-            additionalComponents?.getOrNull(StateObserver)
-            ?: defaultComponents.getOrNull(StateObserver)
-            == null
-        ) {
-            ConcurrentComponentStorage().apply {
-                set(StateObserver, bot.run { components.stateObserverChain() })
-            }
-        } else null
-
-        return NetworkHandlerContextImpl(
-            bot,
-            networkLogger,
-            observerComponents.withFallback(components)
-        )
-    }
+    open fun createHandler(): H = factory.create(createContext(), address)
+    open fun createContext(): NetworkHandlerContextImpl = NetworkHandlerContextImpl(bot, networkLogger, bot.components)
+    val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions

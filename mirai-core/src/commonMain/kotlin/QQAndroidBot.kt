@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
@@ -109,13 +110,15 @@ internal open class QQAndroidBot constructor(
 
 
     private val networkLogger: MiraiLogger by lazy { configuration.networkLoggerSupplier(this) }
-    override val components: ComponentStorage by lazy {
-        createDefaultComponents()
+    final override val components: ComponentStorage by lazy {
+        createDefaultComponents().apply {
+            set(StateObserver, stateObserverChain())
+        }
     }
 
-    fun createDefaultComponents(): ConcurrentComponentStorage {
+    open fun createDefaultComponents(): ConcurrentComponentStorage {
         return ConcurrentComponentStorage().apply {
-            val components = this // avoid mistakes
+            val components = ComponentStorageDelegate { this@QQAndroidBot.components }
 
             // There's no need to interrupt a broadcasting event when network handler closed.
             set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
@@ -154,8 +157,6 @@ internal open class QQAndroidBot constructor(
                 OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
             )
             set(ConfigPushSyncer, ConfigPushSyncerImpl())
-
-            set(StateObserver, stateObserverChain())
         }
     }
 
