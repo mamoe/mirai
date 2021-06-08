@@ -92,6 +92,7 @@ internal class CallPacketFactoryPacketHandler(
 ) : PacketHandler {
 
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
+        if (incomingPacket.exception != null) return // failure
         val factory = KnownPacketFactories.findPacketFactory(incomingPacket.commandName) ?: return
         factory.cast<PacketFactory<Packet?>>().run {
             when (this) {
