@@ -36,7 +36,7 @@ internal interface PacketLoggingStrategy {
 
 internal class PacketLoggingStrategyImpl(
     private val bot: AbstractBot,
-    private val blacklist: Set<String> = DEFAULT_BLACKLIST,
+    private val blacklist: Set<String> = getDefaultBlacklist(),
 ) : PacketLoggingStrategy {
     override fun logSent(logger: MiraiLogger, outgoingPacket: OutgoingPacket) {
         if (outgoingPacket.commandName in blacklist) return
@@ -83,24 +83,27 @@ internal class PacketLoggingStrategyImpl(
     }
 
     companion object {
-        val DEFAULT_BLACKLIST: Set<String>
-            get() {
-                if (systemProp("mirai.debug.network.show.verbose.packets", false)) return emptySet()
-                return setOf(
-                    // C2C event sync, too verbose to show.
-                    "MessageSvc.PushNotify",
-                    "MessageSvc.PbGetMsg",
-                    "MessageSvc.PbDeleteMsg",
+        fun getDefaultBlacklist(): Set<String> {
+            if (systemProp("mirai.debug.network.show.verbose.packets", false)) return emptySet()
+            return DEFAULT_BLACKLIST
+        }
 
-                    // Group event sync, decoded as specific events, to optimize logs.
-                    "OnlinePush.ReqPush",
-                    "OnlinePush.RespPush",
+        private val DEFAULT_BLACKLIST: Set<String> by lazy {
+            setOf(
+                // C2C event sync, too verbose to show.
+                "MessageSvc.PushNotify",
+                "MessageSvc.PbGetMsg",
+                "MessageSvc.PbDeleteMsg",
 
-                    // Periodic heartbeat, showing them does not help anything.
-                    "Heartbeat.Alive",
-                    "StatSvc.SimpleGet",
-                )
-            }
+                // Group event sync, decoded as specific events, to optimize logs.
+                "OnlinePush.ReqPush",
+                "OnlinePush.RespPush",
+
+                // Periodic heartbeat, showing them does not help anything.
+                "Heartbeat.Alive",
+                "StatSvc.SimpleGet",
+            )
+        }
 
         @JvmField
         var SHOW_PACKET_DETAILS = systemProp("mirai.debug.network.show.packet.details", false)
