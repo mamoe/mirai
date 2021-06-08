@@ -61,7 +61,7 @@ internal class SelectorNetworkHandler(
         if (allowActiveMaintenance) {
             val bot = context.bot
             scope.launch(scope.hierarchicalName("BotOnlineWatchdog ${bot.id}")) {
-                while (isActive) {
+                while (isActive && bot.isActive) {
                     val instance = selector.getCurrentInstanceOrCreate()
 
                     awaitState(State.CLOSED) // suspend until next CLOSED
