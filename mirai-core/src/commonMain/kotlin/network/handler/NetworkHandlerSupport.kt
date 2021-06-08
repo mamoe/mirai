@@ -32,9 +32,11 @@ import kotlin.reflect.KClass
  * Implements basic logics of [NetworkHandler]
  */
 internal abstract class NetworkHandlerSupport(
-    override val context: NetworkHandlerContext,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-) : NetworkHandler, CoroutineScope by coroutineContext.childScope(SupervisorJob()) {
+    final override val context: NetworkHandlerContext,
+    additionalCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+) : NetworkHandler, CoroutineScope {
+    final override val coroutineContext: CoroutineContext =
+        additionalCoroutineContext.childScopeContext(SupervisorJob(context.bot.coroutineContext.job))
 
     protected abstract fun initialState(): BaseStateImpl
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
