@@ -270,6 +270,15 @@ public interface RemoteFile {
      *
      * [moveTo] 只会操作远程文件, 而不会修改当前 [RemoteFile.path].
      *
+     * **注意**: 与 [java.io.File] 类似, 这是将当前 [RemoteFile] 移动到作为 [target], 而不是移动成为 [target] 的子文件或目录. 例如:
+     * ```
+     * val root = group.filesRoot
+     * root.resolve("test.txt").moveTo(root) // 错误! 这是在将该文件的路径 "test.txt" 修改为 “/” , 而不是修改为 "/test.txt"
+     * root.resolve("test.txt").moveTo(root.resolve("/")) // 错误! 与上一行相同.
+
+     * root.resolve("/test.txt").moveTo(root.resolve("/test2.txt")) // 正确. 将该文件的路径 "/test.txt" 修改为 “/test2.txt”，相当于重命名文件
+     * ```
+     *
      * @param target 目标文件位置.
      */
     public suspend fun moveTo(target: RemoteFile): Boolean
@@ -419,6 +428,18 @@ public interface RemoteFile {
      * 本函数造成了很大的不必要的迷惑, 故以既上传又发送消息的, 与官方客户端行为相同的 [sendFile] 代替.
      *
      * 相关问题: [#1250: 群文件在上传后 toRemoteFile 返回 null](https://github.com/mamoe/mirai/issues/1250)
+     *
+     *
+     * **注意**: [resource] 仅表示资源数据, 而不带有文件名属性.
+     * 与 [java.io.File] 类似, [upload] 是将 [resource] 上传成为 [this][RemoteFile], 而不是上传成为 [this][RemoteFile] 的子文件. 示例:
+     * ```
+     * group.filesRoot.upload(resource) // 错误! 这是在把资源上传成为根目录.
+     * group.filesRoot.resolve("/").upload(resource) // 错误! 与上一句相同, 这是在把资源上传成为根目录.
+     *
+     * val root = group.filesRoot
+     * root.resolve("test.txt").upload(resource) // 正确. 把资源上传成为根目录下的 "test.txt".
+     * root.resolve("/test.txt").upload(resource) // 正确. 与上一句相同, 把资源上传成为根目录下的 "test.txt".
+     * ```
      *
      * @param resource 需要上传的文件资源. 无论上传是否成功, 本函数都不会关闭 [resource].
      * @param callback 进度回调
