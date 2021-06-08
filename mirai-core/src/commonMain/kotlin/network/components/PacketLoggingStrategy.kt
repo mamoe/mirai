@@ -52,7 +52,6 @@ internal class PacketLoggingStrategyImpl(
         if (packet is ParseErrorPacket) {
             packet.direction.getLogger(bot).error(packet.error)
         }
-        if (incomingPacket.commandName in blacklist) return
         if (incomingPacket.data is MultiPacket<*>) {
             for (d in incomingPacket.data) {
                 logReceivedImpl(d, incomingPacket, logger)
@@ -71,6 +70,7 @@ internal class PacketLoggingStrategyImpl(
             //     "Event: $packet".replaceMagicCodes()
             // } // processed in global `Event.broadcast`
             else -> {
+                if (incomingPacket.commandName in blacklist) return
                 if (SHOW_PACKET_DETAILS) {
                     logger.verbose { "Recv: ${incomingPacket.commandName} ${incomingPacket.data}".replaceMagicCodes() }
                 } else {
