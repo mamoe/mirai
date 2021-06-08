@@ -210,8 +210,8 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 如果消息的前缀是 [prefix] */
     @MessageDsl
     public fun startsWith(prefix: String, trim: Boolean = true): ListeningFilter {
-        val toCheck = if (trim) prefix.trim() else prefix
-        return content { (if (trim) it.trim() else it).startsWith(toCheck) }
+        val toCheck = if (trim) prefix.trimStart() else prefix
+        return content { (if (trim) it.trimStart() else it).startsWith(toCheck) }
     }
 
     /** 如果消息的前缀是 [prefix] */
@@ -224,8 +224,10 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 如果消息的结尾是 [suffix] */
     @MessageDsl
     @JvmOverloads // for binary compatibility
-    public fun endsWith(suffix: String, trim: Boolean = true): ListeningFilter =
-        content { if (trim) it.trimEnd().endsWith(suffix) else it.endsWith(suffix) }
+    public fun endsWith(suffix: String, trim: Boolean = true): ListeningFilter {
+        val toCheck = if (trim) suffix.trimEnd() else suffix
+        return content { (if (trim) it.trimEnd() else it).endsWith(toCheck) }
+    }
 
     /** 如果消息的结尾是 [suffix] */
     @MessageDsl
