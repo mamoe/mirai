@@ -81,7 +81,7 @@
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
-| `Ruby                     | [Shimogawa/rubirai]                         |
+| `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
