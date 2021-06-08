@@ -15,7 +15,7 @@ import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
-import net.mamoe.mirai.internal.network.component.plus
+import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
@@ -131,7 +131,8 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     open fun createContext(additionalComponents: ComponentStorage? = null): NetworkHandlerContextImpl {
         // StateObserver
-        val components = additionalComponents + defaultComponents + bot.createDefaultComponents()
+        val components =
+            additionalComponents.withFallback(defaultComponents).withFallback(bot.createDefaultComponents())
         val observerComponents = if (
             additionalComponents?.getOrNull(StateObserver)
             ?: defaultComponents.getOrNull(StateObserver)
@@ -145,7 +146,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         return NetworkHandlerContextImpl(
             bot,
             networkLogger,
-            observerComponents + components
+            observerComponents.withFallback(components)
         )
     }
 
@@ -155,6 +156,10 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     fun assertState(state: State) {
         assertEquals(state, network.state)
+    }
+
+    fun NetworkHandler.assertState(state: State) {
+        assertEquals(state, this.state)
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]

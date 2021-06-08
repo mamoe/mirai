@@ -18,7 +18,7 @@ import org.jetbrains.annotations.TestOnly
  *
  * @see MutableComponentStorage
  * @see ConcurrentComponentStorage
- * @see plus
+ * @see withFallback
  */
 internal interface ComponentStorage {
     @get:TestOnly
@@ -37,7 +37,7 @@ internal interface ComponentStorage {
     }
 }
 
-internal operator fun ComponentStorage?.plus(fallback: ComponentStorage?): ComponentStorage {
+internal fun ComponentStorage?.withFallback(fallback: ComponentStorage?): ComponentStorage {
     if (this == null) return fallback ?: return ComponentStorage.EMPTY
     if (fallback == null) return this
     return CombinedComponentStorage(this, fallback)

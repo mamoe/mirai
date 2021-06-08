@@ -20,15 +20,15 @@ internal class CombinedStorageTest : AbstractTest() {
     fun `can get from main`() {
         val storage = ConcurrentComponentStorage().apply {
             set(TestComponent2, TestComponent2(1))
-        } + ConcurrentComponentStorage()
+        }.withFallback(ConcurrentComponentStorage())
         assertEquals(TestComponent2(1), storage[TestComponent2])
     }
 
     @Test
     fun `can get from fallback`() {
-        val storage = ConcurrentComponentStorage() + ConcurrentComponentStorage().apply {
+        val storage = ConcurrentComponentStorage().withFallback(ConcurrentComponentStorage().apply {
             set(TestComponent2, TestComponent2(1))
-        }
+        })
         assertEquals(TestComponent2(1), storage[TestComponent2])
     }
 
@@ -36,15 +36,15 @@ internal class CombinedStorageTest : AbstractTest() {
     fun `size is sum of sizes of two storages`() {
         val storage = ConcurrentComponentStorage().apply {
             set(TestComponent3, TestComponent3(1))
-        } + ConcurrentComponentStorage().apply {
+        }.withFallback(ConcurrentComponentStorage().apply {
             set(TestComponent2, TestComponent2(1))
-        }
+        })
         assertEquals(2, storage.size)
     }
 
     @Test
     fun `size can be zero`() {
-        val storage = ConcurrentComponentStorage() + ConcurrentComponentStorage()
+        val storage = ConcurrentComponentStorage().withFallback(ConcurrentComponentStorage())
         assertEquals(0, storage.size)
     }
 
@@ -52,27 +52,27 @@ internal class CombinedStorageTest : AbstractTest() {
     fun `main prevails than fallback`() {
         val storage = ConcurrentComponentStorage().apply {
             set(TestComponent2, TestComponent2(1))
-        } + ConcurrentComponentStorage().apply {
+        }.withFallback(ConcurrentComponentStorage().apply {
             set(TestComponent2, TestComponent2(2))
-        }
+        })
         assertEquals(TestComponent2(1), storage[TestComponent2])
     }
 
     @Test
     fun `returns empty if both are null`() {
-        val x: ComponentStorage = null + null
+        val x: ComponentStorage = null.withFallback(null)
         assertEquals(ComponentStorage.EMPTY, x)
     }
 
     @Test
     fun `returns first if second if null`() {
         val x = ConcurrentComponentStorage().apply { set(TestComponent2, TestComponent2(1)) }
-        assertSame(x, x + null)
+        assertSame(x, x.withFallback(null))
     }
 
     @Test
     fun `returns second if first if null`() {
         val x = ConcurrentComponentStorage().apply { set(TestComponent2, TestComponent2(1)) }
-        assertSame(x, null + x)
+        assertSame(x, null.withFallback(x))
     }
 }

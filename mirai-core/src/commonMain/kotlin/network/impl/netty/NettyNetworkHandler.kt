@@ -204,6 +204,12 @@ internal open class NettyNetworkHandler(
     // states
     ///////////////////////////////////////////////////////////////////////////
 
+    init {
+        coroutineContext.job.invokeOnCompletion { e ->
+            setState { StateClosed(e?.unwrapCancellationException()) }
+        }
+    }
+
     /**
      * When state is initialized, it must be set to [_state]. (inside [setState])
      *
@@ -214,14 +220,6 @@ internal open class NettyNetworkHandler(
     protected abstract inner class NettyState(
         correspondingState: State
     ) : BaseStateImpl(correspondingState) {
-        init {
-            coroutineContext.job.invokeOnCompletion { e ->
-                if (correspondingState != State.CLOSED) {
-                    if (e != null) setState { StateClosed(e.unwrapCancellationException()) }
-                }
-            }
-        }
-
         /**
          * @return `true` if packet has been sent, `false` if state is not ready for send.
          * @throws IllegalStateException if is [StateClosed].
