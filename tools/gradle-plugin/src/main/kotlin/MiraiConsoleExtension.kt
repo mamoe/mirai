@@ -277,6 +277,8 @@ public open class MiraiConsoleExtension {
         /**
          * 自定义配置 [BintrayExtension]，覆盖
          */
+        @Suppress("DeprecatedCallableAddReplaceWith")
+        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.WARNING)
         public fun bintray(configure: BintrayExtension.() -> Unit) {
             bintrayConfigs.add(configure)
         }
@@ -284,6 +286,8 @@ public open class MiraiConsoleExtension {
         /**
          * 自定义配置 [BintrayExtension.PackageConfig]
          */
+        @Suppress("DeprecatedCallableAddReplaceWith")
+        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.WARNING)
         public fun packageConfig(configure: BintrayExtension.PackageConfig.() -> Unit) {
             bintrayPackageConfigConfigs.add(configure)
         }
