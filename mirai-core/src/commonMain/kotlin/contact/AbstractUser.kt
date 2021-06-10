@@ -59,13 +59,13 @@ internal abstract class AbstractUser(
         val resp = bot.network.run {
             LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
-                    srcUin = bot.id.toInt(),
-                    dstUin = id.toInt(),
-                    fileId = 0,
+                    buType = 1,
+                    srcUin = bot.id,
+                    dstUin = this@AbstractUser.id,
                     fileMd5 = resource.md5,
-                    fileSize = resource.size.toInt(),
+                    fileSize = resource.size,
                     fileName = resource.md5.toUHexString("") + "." + resource.formatName,
-                    imgOriginal = 1
+                    imgOriginal = 1,
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }
