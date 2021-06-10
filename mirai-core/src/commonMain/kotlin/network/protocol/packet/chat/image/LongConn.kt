@@ -29,7 +29,13 @@ internal class LongConn {
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(
                     Cmd0x352.ReqBody.serializer(),
-                    Cmd0x352.ReqBody(1, msgTryupImgReq = listOf(req))
+                    Cmd0x352.ReqBody(
+                        subcmd = 1,
+                        netType = 3,
+                        msgTryupImgReq = listOf(req),
+                        msgDelImgReq = listOf(),
+                        msgGetimgUrlReq = listOf(),
+                    )
                 )
             }
         }
