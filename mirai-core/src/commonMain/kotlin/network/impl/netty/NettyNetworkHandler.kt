@@ -20,8 +20,6 @@ import io.netty.handler.codec.MessageToByteEncoder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
@@ -185,13 +183,16 @@ internal open class NettyNetworkHandler(
         }
 
         init {
-            launch(CoroutineName("PacketDecodePipeline processor")) {
-                // 'single thread' processor
-                channel.consumeAsFlow().collect { raw ->
-                    val result = packetCodec.processBody(context.bot, raw)
-                    if (result == null) {
-                        collectUnknownPacket(raw)
-                    } else collectReceived(result)
+            repeat(4) { processorId ->
+                launch(CoroutineName("PacketDecodePipeline processor #$processorId")) {
+                    while (isActive) {
+                        val raw = channel.receiveCatching().getOrNull() ?: return@launch
+                        packetLogger.debug { "Packet Handling Processor #$processorId: receive packet ${raw.commandName}" }
+                        val result = packetCodec.processBody(context.bot, raw)
+                        if (result == null) {
+                            collectUnknownPacket(raw)
+                        } else collectReceived(result)
+                    }
                 }
             }
         }

@@ -92,11 +92,11 @@ internal abstract class NetworkHandlerSupport(
     final override suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long, attempts: Int): Packet? {
         require(attempts >= 1) { "attempts must be at least 1." }
         val listener = PacketListener(packet.commandName, packet.sequenceId)
+        packetListeners.add(listener)
         withExceptionCollector {
-            repeat(attempts) {
-                context[PacketLoggingStrategy].logSent(logger, packet)
-                try {
-                    packetListeners.add(listener)
+            try {
+                repeat(attempts) {
+                    context[PacketLoggingStrategy].logSent(logger, packet)
                     sendPacketImpl(packet)
                     try {
                         return withTimeout(timeout) {
@@ -105,12 +105,12 @@ internal abstract class NetworkHandlerSupport(
                     } catch (e: TimeoutCancellationException) {
                         collectException(e)
                     }
-                } finally {
-                    listener.result.completeExceptionally(getLast() ?: IllegalStateException("No response"))
-                    packetListeners.remove(listener)
                 }
+                throwLast()
+            } finally {
+                packetListeners.remove(listener)
+                listener.result.completeExceptionally(getLast() ?: IllegalStateException("No response"))
             }
-            throwLast()
         }
     }
 
