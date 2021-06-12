@@ -1,12 +1,20 @@
 package $PACKAGE_NAME
 
+import java.io.File
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 
+fun setupWorkingDir() {
+    // see: net.mamoe.mirai.console.terminal.MiraiConsoleImplementationTerminal
+    System.setProperty("user.dir", File("debug-sandbox").absolutePath)
+}
+
 suspend fun main() {
+    setupWorkingDir()
+
     MiraiConsoleTerminalLoader.startAsDaemon()
 
     val pluginInstance = ${CLASS_NAME}#if (${LANGUAGE_TYPE} != "Kotlin").INSTANCE #end

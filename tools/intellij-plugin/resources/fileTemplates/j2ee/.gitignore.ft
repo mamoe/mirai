@@ -122,5 +122,16 @@ run/
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
+### Mirai Console Files ###
+
 # Local Test Launch point
 src/test/kotlin/RunTerminal.kt
+
+# Mirai console files with direct bootstrap
+/config
+/data
+/plugins
+/bots
+
+# Local Test Launch Point working directory
+/debug-sandbox
