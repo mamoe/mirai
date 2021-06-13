@@ -117,14 +117,14 @@ internal class Cmd0x352 : ProtoBuf {
     internal class TryUpImgReq(
         @ProtoNumber(1) @JvmField val srcUin: Long,
         @ProtoNumber(2) @JvmField val dstUin: Long,
-        @ProtoNumber(3) @JvmField val fileId: Long = 0L,
+        @ProtoNumber(3) @JvmField val fileId: Long = 0L,//从0开始的自增数？貌似有一个连接就要自增1, 但是又会重置回0
         @ProtoNumber(4) @JvmField val fileMd5: ByteArray,
-        @ProtoNumber(5) @JvmField val fileSize: Long,
+        @ProtoNumber(5) @JvmField val fileSize: Long,//默认为md5+".jpg"
         @ProtoNumber(6) @JvmField val fileName: String,
         @ProtoNumber(7) @JvmField val srcTerm: Int = 5,
         @ProtoNumber(8) @JvmField val platformType: Int = 9,
         @ProtoNumber(9) @JvmField val innerIP: Int = 0,
-        @ProtoNumber(10) @JvmField val addressBook: Boolean = false,
+        @ProtoNumber(10) @JvmField val addressBook: Boolean = false,//chatType == 1006为true 我觉得发false没问题
         @ProtoNumber(11) @JvmField val retry: Int = 0,//default
         @ProtoNumber(12) @JvmField val buType: Int = 1,//1或96 不确定
         @ProtoNumber(13) @JvmField val imgOriginal: Boolean = false,//是否为原图
@@ -141,7 +141,7 @@ internal class Cmd0x352 : ProtoBuf {
          *  SHARPP: 1004
          */
         @ProtoNumber(16) @JvmField val imgType: Int = 1000,
-        @ProtoNumber(17) @JvmField val buildVer: String = "8.2.7.4410",//版本号,
+        @ProtoNumber(17) @JvmField val buildVer: String = "8.2.7.4410",//版本号
         @ProtoNumber(18) @JvmField val fileIndex: ByteArray = EMPTY_BYTE_ARRAY,//default
         @ProtoNumber(19) @JvmField val fileStoreDays: Int = 0,//default
         @ProtoNumber(20) @JvmField val stepFlag: Int = 0,//default
