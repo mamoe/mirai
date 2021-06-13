@@ -24,6 +24,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
@@ -89,6 +91,12 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override suspend fun doStatHeartbeatNow(networkHandler: NetworkHandler) {
                 nhEvents.add(NHEvent.DoHeartbeatNow)
                 networkLogger.debug { "HeartbeatProcessor.doStatHeartbeatNow" }
+            }
+
+            override suspend fun doRegisterNow(networkHandler: NetworkHandler): StatSvc.Register.Response {
+                nhEvents.add(NHEvent.DoHeartbeatNow)
+                networkLogger.debug { "HeartbeatProcessor.doRegisterNow" }
+                return StatSvc.Register.Response(SvcRespRegister())
             }
         })
         set(KeyRefreshProcessor, object : KeyRefreshProcessor {

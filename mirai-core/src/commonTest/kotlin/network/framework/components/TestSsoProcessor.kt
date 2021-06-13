@@ -16,6 +16,7 @@ import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.debug
 
@@ -32,5 +33,10 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
 
     override suspend fun logout(handler: NetworkHandler) {
         bot.network.logger.debug { "SsoProcessor.logout" }
+    }
+
+    override suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response {
+        bot.network.logger.debug { "SsoProcessor.sendRegister" }
+        return StatSvc.Register.Response(SvcRespRegister())
     }
 }
