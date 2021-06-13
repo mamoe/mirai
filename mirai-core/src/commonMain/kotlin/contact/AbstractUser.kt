@@ -64,7 +64,8 @@ internal abstract class AbstractUser(
                     fileMd5 = resource.md5,
                     fileSize = resource.size,
                     fileName = resource.md5.toUHexString("") + "." + resource.formatName,
-                    imgOriginal = 1,
+                    imgOriginal = true,
+                    buildVer = bot.client.buildVer
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }

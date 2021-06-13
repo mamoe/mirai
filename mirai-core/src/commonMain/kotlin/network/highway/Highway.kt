@@ -398,7 +398,11 @@ internal fun highwayPacketSession(
                 flag = 0,
                 rtcode = 0
             ),
-            reqExtendinfo = extendInfo,
+            reqExtendinfo = if (extendInfo.isEmpty()) {
+                null
+            } else {
+                extendInfo
+            },
             msgLoginSigHead = null
         ).toByteArray(CSDataHighwayHead.ReqDataHighwayHead.serializer())
 
