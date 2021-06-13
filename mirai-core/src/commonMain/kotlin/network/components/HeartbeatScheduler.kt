@@ -44,13 +44,17 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         val context: ComponentStorage = network.context
         val heartbeatProcessor = context[HeartbeatProcessor]
 
+        val configuration = context[SsoProcessorContext].configuration
+        val timeout = configuration.heartbeatTimeoutMillis
+
         val list = mutableListOf<Job>()
         when (context[SsoProcessorContext].configuration.heartbeatStrategy) {
             STAT_HB -> {
                 list += launchHeartbeatJobAsync(
                     scope = scope,
                     name = "StatHeartbeat",
-                    timeout = { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
+                    delay = { configuration.statHeartbeatPeriodMillis },
+                    timeout = { timeout },
                     action = { heartbeatProcessor.doStatHeartbeatNow(network) },
                     onHeartFailure = onHeartFailure
                 )
@@ -59,7 +63,8 @@ internal class TimeBasedHeartbeatSchedulerImpl(
                 list += launchHeartbeatJobAsync(
                     scope = scope,
                     name = "RegisterHeartbeat",
-                    timeout = { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
+                    delay = { configuration.statHeartbeatPeriodMillis },
+                    timeout = { timeout },
                     action = { heartbeatProcessor.doRegisterNow(network) },
                     onHeartFailure = onHeartFailure
                 )
@@ -71,7 +76,8 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         list += launchHeartbeatJobAsync(
             scope = scope,
             name = "AliveHeartbeat",
-            timeout = { context[SsoProcessorContext].configuration.heartbeatPeriodMillis },
+            delay = { configuration.heartbeatPeriodMillis },
+            timeout = { timeout },
             action = { heartbeatProcessor.doAliveHeartbeatNow(network) },
             onHeartFailure = onHeartFailure
         )
@@ -81,6 +87,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
     private fun launchHeartbeatJobAsync(
         scope: CoroutineScope,
         name: String,
+        delay: () -> Long,
         timeout: () -> Long,
         action: suspend () -> Unit,
         onHeartFailure: HeartbeatFailureHandler,
@@ -88,13 +95,15 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         return scope.async(CoroutineName("$name Scheduler")) {
             while (isActive) {
                 try {
-                    delay(timeout())
+                    delay(delay())
                 } catch (e: CancellationException) {
                     return@async // considered normally cancel
                 }
 
                 try {
-                    action()
+                    withTimeoutOrNull(timeout()) {
+                        action()
+                    } ?: error("Timeout $name.")
                 } catch (e: Throwable) {
                     onHeartFailure(name, e)
                 }
