@@ -280,26 +280,14 @@ public interface ExternalResource : Closeable {
          *
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
-         * ## 已弃用
-         * 查看 [RemoteFile.upload] 获取更多信息.
-         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
-        @Suppress("DEPRECATION")
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
-        @Deprecated(
-            "Use sendTo instead.",
-            ReplaceWith(
-                "this.sendTo(contact, path, callback)",
-                "net.mamoe.mirai.utils.ExternalResource.Companion.sendTo"
-            ),
-            level = DeprecationLevel.WARNING
-        ) // deprecated since 2.7-M1
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
@@ -313,27 +301,15 @@ public interface ExternalResource : Closeable {
          *
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
-         * ## 已弃用
-         * 查看 [RemoteFile.upload] 获取更多信息.
-         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
-        @Suppress("DEPRECATION")
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("uploadAsFile")
         @JvmOverloads
-        @Deprecated(
-            "Use sendAsFileTo instead.",
-            ReplaceWith(
-                "this.sendAsFileTo(contact, path, callback)",
-                "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsFileTo"
-            ),
-            level = DeprecationLevel.WARNING
-        ) // deprecated since 2.7-M1
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
@@ -348,7 +324,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.uploadAndSend
+         * @see RemoteFile.upload
          */
         @JvmStatic
         @JvmBlockingBridge
@@ -367,7 +343,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.uploadAndSend
+         * @see RemoteFile.upload
          */
         @JvmStatic
         @JvmBlockingBridge
