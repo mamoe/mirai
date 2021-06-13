@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.utils.BotConfiguration.HeartbeatStrategy.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 
@@ -44,13 +45,29 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         val heartbeatProcessor = context[HeartbeatProcessor]
 
         val list = mutableListOf<Job>()
-        list += launchHeartbeatJobAsync(
-            scope = scope,
-            name = "StatHeartbeat",
-            timeout = { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
-            action = { heartbeatProcessor.doStatHeartbeatNow(network) },
-            onHeartFailure = onHeartFailure
-        )
+        when (context[SsoProcessorContext].configuration.heartbeatStrategy) {
+            STAT_HB -> {
+                list += launchHeartbeatJobAsync(
+                    scope = scope,
+                    name = "StatHeartbeat",
+                    timeout = { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
+                    action = { heartbeatProcessor.doStatHeartbeatNow(network) },
+                    onHeartFailure = onHeartFailure
+                )
+            }
+            REGISTER -> {
+                list += launchHeartbeatJobAsync(
+                    scope = scope,
+                    name = "RegisterHeartbeat",
+                    timeout = { context[SsoProcessorContext].configuration.statHeartbeatPeriodMillis },
+                    action = { heartbeatProcessor.doRegisterNow(network) },
+                    onHeartFailure = onHeartFailure
+                )
+            }
+            NONE -> {
+            }
+        }
+
         list += launchHeartbeatJobAsync(
             scope = scope,
             name = "AliveHeartbeat",

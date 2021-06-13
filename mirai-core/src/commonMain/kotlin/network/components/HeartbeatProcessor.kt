@@ -24,6 +24,9 @@ internal interface HeartbeatProcessor {
     @Throws(Exception::class)
     suspend fun doStatHeartbeatNow(networkHandler: NetworkHandler)
 
+    @Throws(Exception::class)
+    suspend fun doRegisterNow(networkHandler: NetworkHandler): StatSvc.Register.Response
+
     companion object : ComponentKey<HeartbeatProcessor>
 }
 
@@ -44,5 +47,10 @@ internal class HeartbeatProcessorImpl : HeartbeatProcessor {
             timeoutMillis = networkHandler.context[SsoProcessorContext].configuration.heartbeatTimeoutMillis,
             retry = 2
         )
+    }
+
+    @Throws(Exception::class)
+    override suspend fun doRegisterNow(networkHandler: NetworkHandler): StatSvc.Register.Response {
+        return networkHandler.context[SsoProcessor].sendRegister(networkHandler)
     }
 }

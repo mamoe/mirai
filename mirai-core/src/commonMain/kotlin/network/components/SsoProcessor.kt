@@ -63,6 +63,8 @@ internal interface SsoProcessor {
 
     suspend fun logout(handler: NetworkHandler)
 
+    suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response
+
     companion object : ComponentKey<SsoProcessor>
 }
 
@@ -123,6 +125,10 @@ internal class SsoProcessorImpl(
         ssoContext.accountSecretsManager.saveSecrets(ssoContext.account, AccountSecretsImpl(client))
         registerClientOnline(handler)
         ssoContext.bot.logger.info { "Login successful." }
+    }
+
+    override suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response {
+        return registerClientOnline(handler).also { registerResp = it }
     }
 
     private suspend fun registerClientOnline(handler: NetworkHandler): StatSvc.Register.Response {
