@@ -554,9 +554,11 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 拒绝: Int = JU_JUE
         public const val XIAN_QI: Int = 323
         public const val 嫌弃: Int = XIAN_QI
+        public const val CHI_TANG: Int = 324
+        public const val 吃糖: Int = CHI_TANG
 
         @JvmField
-        public val names: Array<String> = Array(324) { "[表情]" }
+        public val names: Array<String> = Array(325) { "[表情]" }
 
         init {
             names[JING_YA] = "[惊讶]"
@@ -810,6 +812,7 @@ public data class Face(public val id: Int) : // used in delegation
             names[LAO_SE_PI] = "[老色痞]"
             names[JU_JUE] = "[拒绝]"
             names[XIAN_QI] = "[嫌弃]"
+            names[CHI_TANG] = "[吃糖]"
         }
     }
 }
