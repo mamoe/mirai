@@ -3220,6 +3220,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field CHE_YI_CHE I
 	public static final field CHI I
 	public static final field CHI_GUA I
+	public static final field CHI_TANG I
 	public static final field CHONG_BAI I
 	public static final field Companion Lnet/mamoe/mirai/message/data/Face$Companion;
 	public static final field DAN I
@@ -3477,6 +3478,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 右拜年 I
 	public static final field 吃 I
 	public static final field 吃瓜 I
+	public static final field 吃糖 I
 	public static final field 吐 I
 	public static final field 吓 I
 	public static final field 呃 I
