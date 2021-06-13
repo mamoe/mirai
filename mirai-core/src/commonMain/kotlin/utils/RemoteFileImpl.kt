@@ -557,7 +557,15 @@ internal class RemoteFileImpl(
         return upload(resource).sendTo(contact)
     }
 
-    // compiler bug
+    override suspend fun uploadAndSend(
+        resource: ExternalResource,
+        callback: RemoteFile.ProgressionCallback?
+    ): MessageReceipt<Contact> {
+        @Suppress("DEPRECATION")
+        return upload(resource, callback).sendTo(contact)
+    }
+
+// compiler bug
     override suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
         file.toExternalResource().use { uploadAndSend(it) }
 
