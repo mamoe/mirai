@@ -59,6 +59,10 @@ internal class ConcurrentComponentStorage(
     }
 }
 
+internal inline fun ConcurrentComponentStorage(builderAction: ConcurrentComponentStorage.() -> Unit): ConcurrentComponentStorage {
+    return ConcurrentComponentStorage().apply(builderAction)
+}
+
 private val SHOW_ALL_COMPONENTS: Boolean by lazy(NONE) { systemProp("mirai.debug.network.show.all.components", false) }
 private val SHOW_COMPONENTS_CREATION_STACKTRACE: Boolean by lazy(NONE) {
     systemProp(
