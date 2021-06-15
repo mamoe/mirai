@@ -47,6 +47,25 @@ internal fun StateChangedObserver(
     }
 }
 
+@Suppress("FunctionName")
+internal fun BeforeStateChangedObserver(
+    from: State,
+    to: State,
+    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
+): StateObserver {
+    return object : StateObserver {
+        override fun beforeStateChanged(
+            networkHandler: NetworkHandlerSupport,
+            previous: NetworkHandlerSupport.BaseStateImpl,
+            new: NetworkHandlerSupport.BaseStateImpl
+        ) {
+            if (previous.correspondingState == from && new.correspondingState == to) {
+                action(new)
+            }
+        }
+    }
+}
+
 internal abstract class StateChangedObserver(
     val state: State,
 ) : StateObserver {
