@@ -108,7 +108,7 @@ internal class FriendImpl(
                 bot = bot,
                 resource = resource,
                 kind = ResourceKind.PRIVATE_VOICE,
-                commandId = 29,
+                commandId = 26,
                 extendInfo = PttStore.C2C.createC2CPttStoreBDHExt(bot, this@FriendImpl.uin, resource)
                     .toByteArray(Cmd0x346.ReqBody.serializer())
             )
