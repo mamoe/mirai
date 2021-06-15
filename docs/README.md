@@ -79,14 +79,14 @@
 | `C++`                     | [Chlorie/miraipp]                           |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
-| `C#`                      | [Coloryr/ColorMirai]                        |
+| `Java`                    | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
 | `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
 | `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
-| `Go`                      | [Logiase/gomirai]                           |
+| `Go`                      | [Mrs4s/MiraiGo]                             |
 | `易语言`                   | [only52607/e-mirai]                         |
 
 
