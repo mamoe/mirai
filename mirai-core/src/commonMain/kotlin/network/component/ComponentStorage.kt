@@ -43,6 +43,8 @@ internal fun ComponentStorage?.withFallback(fallback: ComponentStorage?): Compon
     return CombinedComponentStorage(this, fallback)
 }
 
+internal fun ComponentStorage?.withPrimary(primary: ComponentStorage?): ComponentStorage = primary.withFallback(this)
+
 private class CombinedComponentStorage(
     val main: ComponentStorage,
     val fallback: ComponentStorage,
