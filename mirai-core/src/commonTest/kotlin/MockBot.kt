@@ -48,8 +48,8 @@ internal class MockBotBuilder(
 internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}): QQAndroidBot {
     return MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
         object : QQAndroidBot(MockAccount, this.conf) {
-            override fun createDefaultComponents(): ConcurrentComponentStorage {
-                return super.createDefaultComponents().apply {
+            override fun createBotLevelComponents(): ConcurrentComponentStorage {
+                return super.createBotLevelComponents().apply {
                     val componentsProvider = additionalComponentsProvider
                     if (componentsProvider != null) {
                         setAll(componentsProvider(bot, bot))

@@ -11,6 +11,7 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
@@ -22,6 +23,7 @@ import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
@@ -30,7 +32,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
-import net.mamoe.mirai.internal.network.handler.selector.FactoryKeepAliveNetworkHandlerSelector
+import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
@@ -40,6 +42,7 @@ import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import net.mamoe.mirai.utils.warning
 import kotlin.contracts.contract
 
@@ -59,6 +62,16 @@ internal open class QQAndroidBot constructor(
     override val bot: QQAndroidBot get() = this
     val client get() = components[SsoProcessor].client
 
+    override fun close(cause: Throwable?) {
+        if (!this.isActive) return
+        runBlocking {
+            try { // this may not be very good but
+                components[SsoProcessor].logout(network)
+            } catch (ignored: Exception) {
+            }
+        }
+        super.close(cause)
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // network
@@ -97,83 +110,90 @@ internal open class QQAndroidBot constructor(
             StateChangedObserver(to = State.OK) { new ->
                 components[BotOfflineEventMonitor].attachJob(bot, new)
             },
-            StateChangedObserver(State.OK, State.CLOSED) {
-                runBlocking {
-                    try {
-                        components[SsoProcessor].logout(network)
-                    } catch (ignored: Exception) {
-                    }
-                }
-            },
         ).safe(logger.subLogger("StateObserver"))
     }
 
 
     private val networkLogger: MiraiLogger by lazy { configuration.networkLoggerSupplier(this) }
-    final override val components: ComponentStorage by lazy {
-        createDefaultComponents().apply {
+    final override val components: ComponentStorage get() = network.context
+
+    private val defaultBotLevelComponents: ComponentStorage by lateinitMutableProperty {
+        createBotLevelComponents().apply {
             set(StateObserver, stateObserverChain())
         }
     }
 
-    open fun createDefaultComponents(): ConcurrentComponentStorage {
-        return ConcurrentComponentStorage().apply {
-            val components = ComponentStorageDelegate { this@QQAndroidBot.components }
+    open fun createBotLevelComponents(): ConcurrentComponentStorage = ConcurrentComponentStorage {
+        val components = ComponentStorageDelegate { this@QQAndroidBot.components }
 
-            // There's no need to interrupt a broadcasting event when network handler closed.
-            set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
+        // There's no need to interrupt a broadcasting event when network handler closed.
+        set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
 
-            set(SsoProcessorContext, SsoProcessorContextImpl(bot))
-            set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
-            set(HeartbeatProcessor, HeartbeatProcessorImpl())
-            set(HeartbeatScheduler, TimeBasedHeartbeatSchedulerImpl(networkLogger.subLogger("HeartbeatScheduler")))
-            set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger.subLogger("KeyRefreshProcessor")))
-            set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger.subLogger("ConfigPushProcessor")))
-            set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
+        set(SsoProcessorContext, SsoProcessorContextImpl(bot))
+        set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
+        set(HeartbeatProcessor, HeartbeatProcessorImpl())
+        set(HeartbeatScheduler, TimeBasedHeartbeatSchedulerImpl(networkLogger.subLogger("HeartbeatScheduler")))
+        set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger.subLogger("KeyRefreshProcessor")))
+        set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger.subLogger("ConfigPushProcessor")))
+        set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
 
-            set(BotInitProcessor, BotInitProcessorImpl(bot, components, networkLogger.subLogger("BotInitProcessor")))
-            set(ContactCacheService, ContactCacheServiceImpl(bot, networkLogger.subLogger("ContactCacheService")))
-            set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger.subLogger("ContactUpdater")))
-            set(
-                BdhSessionSyncer,
-                BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
+        set(BotInitProcessor, BotInitProcessorImpl(bot, components, networkLogger.subLogger("BotInitProcessor")))
+        set(ContactCacheService, ContactCacheServiceImpl(bot, networkLogger.subLogger("ContactCacheService")))
+        set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger.subLogger("ContactUpdater")))
+        set(
+            BdhSessionSyncer,
+            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
+        )
+        set(
+            MessageSvcSyncer,
+            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
+        )
+        set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
+        set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
+        set(
+            PacketHandler, PacketHandlerChain(
+                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
+                EventBroadcasterPacketHandler(components),
+                CallPacketFactoryPacketHandler(bot)
             )
-            set(
-                MessageSvcSyncer,
-                MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
-            )
-            set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
-            set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
-            set(
-                PacketHandler, PacketHandlerChain(
-                    LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
-                    EventBroadcasterPacketHandler(components),
-                    CallPacketFactoryPacketHandler(bot)
-                )
-            )
-            set(PacketCodec, PacketCodecImpl())
-            set(
-                OtherClientUpdater,
-                OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
-            )
-            set(ConfigPushSyncer, ConfigPushSyncerImpl())
-        }
+        )
+        set(PacketCodec, PacketCodecImpl())
+        set(
+            OtherClientUpdater,
+            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
+        )
+        set(ConfigPushSyncer, ConfigPushSyncerImpl())
+        set(
+            AccountSecretsManager,
+            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager"))
+        )
     }
 
+    /**
+     * This would overrides those from [createBotLevelComponents]
+     */
+    open fun createNetworkLevelComponents(): ComponentStorage {
+        return ConcurrentComponentStorage {
+            set(BotClientHolder, BotClientHolderImpl(bot, networkLogger.subLogger("BotClientHolder")))
+        }.withFallback(defaultBotLevelComponents)
+    }
 
     override fun createNetworkHandler(): NetworkHandler {
-        val context = NetworkHandlerContextImpl(
-            this,
-            networkLogger,
-            components
-        )
         return SelectorNetworkHandler(
-            context,
-            FactoryKeepAliveNetworkHandlerSelector(
-                configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE),
-                NettyNetworkHandlerFactory,
-                context
-            )
+            bot,
+            KeepAliveNetworkHandlerSelector(
+                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE)
+            ) {
+                val context = NetworkHandlerContextImpl(
+                    bot,
+                    networkLogger,
+                    createNetworkLevelComponents()
+                )
+                NettyNetworkHandlerFactory.create(
+                    context,
+                    context[ServerList].pollAny().toSocketAddress()
+                )
+            }
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 

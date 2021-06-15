@@ -11,14 +11,15 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.state.JobAttachStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.utils.MiraiLogger
@@ -61,13 +62,35 @@ internal class BotInitProcessorImpl(
 
         // do them parallel.
         context[MessageSvcSyncer].startSync()
-        supervisorScope {
-            launch { context[BdhSessionSyncer].loadFromCache() }
-            launch { context[OtherClientUpdater].update() }
-            launch { context[ContactUpdater].loadAll(registerResp.origin) }
+        context[BdhSessionSyncer].loadFromCache()
+
+
+        coroutineScope {
+            launch { runWithCoverage { context[OtherClientUpdater].update() } }
+            launch { runWithCoverage { context[ContactUpdater].loadAll(registerResp.origin) } }
         }
 
         bot.components[SsoProcessor].firstLoginSucceed = true
+    }
+
+    private inline fun runWithCoverage(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: NetworkException) {
+            logger.warning(
+                "An NetworkException was thrown during initialization process of Bot ${bot.id}. " +
+                        "This means your network is unstable at this moment, " +
+                        "or the server has closed the connection due to some reason (you will see the cause if further trials are all failed). " +
+                        "Halting the log-in process to wait for a while to reconnect..."
+            )
+            throw e
+        } catch (e: Throwable) {
+            logger.warning(
+                "An exception was thrown during initialization process of Bot ${bot.id}. " +
+                        "Trying to ignore the error and continue logging in...",
+                e
+            )
+        }
     }
 
 }

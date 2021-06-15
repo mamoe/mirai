@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -65,6 +66,7 @@ internal open class TestNetworkHandler(
     val sendPacket get() = ConcurrentLinkedQueue<OutgoingPacket>()
 
     override suspend fun sendPacketImpl(packet: OutgoingPacket) {
+        logger.info("sendPacketImpl: ${packet.displayName}")
         sendPacket.add(packet)
     }
 

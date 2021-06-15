@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
@@ -38,7 +39,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * @see NetworkHandlerSelector
  */
 internal class SelectorNetworkHandler(
-    override val context: NetworkHandlerContext, // impl notes: may consider to move into function member.
+    private val bot: Bot,
     private val selector: NetworkHandlerSelector<*>,
     /**
      * If `true`, a watcher job will be started to call [resumeConnection] when network is closed by [NetworkException] and [NetworkException.recoverable] is `true`.
@@ -49,6 +50,8 @@ internal class SelectorNetworkHandler(
 ) : NetworkHandler {
     @Volatile
     private var lastCancellationCause: Throwable? = null
+
+    override val context: NetworkHandlerContext get() = selector.getCurrentInstanceOrCreate().context
 
     private val scope: CoroutineScope by lazy {
         context.bot.coroutineContext
@@ -66,7 +69,6 @@ internal class SelectorNetworkHandler(
 
     init {
         if (allowActiveMaintenance) {
-            val bot = context.bot
             scope.launch(scope.hierarchicalName("BotOnlineWatchdog ${bot.id}")) {
                 fun isActive(): Boolean {
                     return isActive && bot.isActive
@@ -111,6 +113,10 @@ internal class SelectorNetworkHandler(
 
     override suspend fun sendWithoutExpect(packet: OutgoingPacket) = instance().sendWithoutExpect(packet)
     override fun close(cause: Throwable?) {
+        if (cause is NetworkException && cause.recoverable) {
+            selector.getCurrentInstanceOrNull()?.close(cause)
+            return
+        }
         synchronized(scope) {
             if (scope.isActive) {
                 lastCancellationCause = cause

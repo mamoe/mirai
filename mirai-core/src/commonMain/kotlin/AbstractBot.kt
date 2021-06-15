@@ -79,6 +79,9 @@ internal abstract class AbstractBot constructor(
     // overrides
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Bot level components plus network level components.
+     */
     abstract val components: ComponentStorage
 
     final override val isOnline: Boolean get() = network.isOk()

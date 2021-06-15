@@ -34,8 +34,9 @@ import java.io.File
 internal interface AccountSecretsManager {
     fun saveSecrets(account: BotAccount, secrets: AccountSecrets)
     fun getSecrets(account: BotAccount): AccountSecrets?
+    fun invalidate()
 
-    companion object : ComponentKey<BdhSessionSyncer>
+    companion object : ComponentKey<AccountSecretsManager>
 }
 
 internal fun AccountSecretsManager.getSecretsOrCreate(account: BotAccount, device: DeviceInfo): AccountSecrets {
@@ -58,6 +59,11 @@ internal class MemoryAccountSecretsManager : AccountSecretsManager {
 
     @Synchronized
     override fun getSecrets(account: BotAccount): AccountSecrets? = this.instance
+
+    @Synchronized
+    override fun invalidate() {
+        instance = null
+    }
 }
 
 
@@ -65,6 +71,7 @@ internal class FileCacheAccountSecretsManager(
     val file: File,
     val logger: MiraiLogger,
 ) : AccountSecretsManager {
+    @Synchronized
     override fun saveSecrets(account: BotAccount, secrets: AccountSecrets) {
         if (secrets.wLoginSigInfoField == null) return
 
@@ -78,6 +85,7 @@ internal class FileCacheAccountSecretsManager(
         logger.info { "Saved account secrets to local cache for fast login." }
     }
 
+    @Synchronized
     override fun getSecrets(account: BotAccount): AccountSecrets? {
         return getSecretsImpl(account)
     }
@@ -95,6 +103,11 @@ internal class FileCacheAccountSecretsManager(
         logger.info { "Loaded account secrets from local cache." }
         return loaded
     }
+
+    @Synchronized
+    override fun invalidate() {
+        file.delete()
+    }
 }
 
 internal class CombinedAccountSecretsManager(
@@ -108,6 +121,11 @@ internal class CombinedAccountSecretsManager(
 
     override fun getSecrets(account: BotAccount): AccountSecrets? {
         return primary.getSecrets(account) ?: alternative.getSecrets(account)
+    }
+
+    override fun invalidate() {
+        primary.invalidate()
+        alternative.invalidate()
     }
 }
 

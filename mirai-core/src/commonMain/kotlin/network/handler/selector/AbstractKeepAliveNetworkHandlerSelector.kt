@@ -113,3 +113,20 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                 .coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
     }
 }
+
+@Suppress("FunctionName")
+internal fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(
+    maxAttempts: Int,
+    createInstance: () -> H
+): AbstractKeepAliveNetworkHandlerSelector<H> {
+    return object : AbstractKeepAliveNetworkHandlerSelector<H>(maxAttempts) {
+        override fun createInstance(): H = createInstance()
+    }
+}
+
+@Suppress("FunctionName")
+internal inline fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(crossinline createInstance: () -> H): AbstractKeepAliveNetworkHandlerSelector<H> {
+    return object : AbstractKeepAliveNetworkHandlerSelector<H>() {
+        override fun createInstance(): H = createInstance()
+    }
+}

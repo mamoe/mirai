@@ -47,8 +47,8 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     var bot: QQAndroidBot by lateinitMutableProperty {
         object : QQAndroidBot(MockAccount, MockConfiguration.copy()) {
-            override fun createDefaultComponents(): ConcurrentComponentStorage =
-                super.createDefaultComponents().apply { setAll(overrideComponents) }
+            override fun createBotLevelComponents(): ConcurrentComponentStorage =
+                super.createBotLevelComponents().apply { setAll(overrideComponents) }
 
             override fun createNetworkHandler(): NetworkHandler =
                 this@AbstractRealNetworkHandlerTest.createHandler()
@@ -128,7 +128,8 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     }
 
     open fun createHandler(): H = factory.create(createContext(), address)
-    open fun createContext(): NetworkHandlerContextImpl = NetworkHandlerContextImpl(bot, networkLogger, bot.components)
+    open fun createContext(): NetworkHandlerContextImpl =
+        NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
     val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
 
     ///////////////////////////////////////////////////////////////////////////
