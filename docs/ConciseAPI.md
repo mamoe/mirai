@@ -34,13 +34,39 @@ Mirai 全部的日志都通过 `MiraiLogger` 输出, 查看 `MiraiLogger` 源码
 构造 `ExternalResource` 可以通过以下方法构造
 
 ```kotlin
+// kotlin
 File("foo.txt").toExternalResource()
 
+// java
 ExternalResource.create(new File("foo.txt"))
 ```
 
-内置支持的数据类型有 `java.io.File`, `java.io.RandomAccessFile`,
+`ExternalResource` 内置支持的数据类型有 `java.io.File`, `java.io.RandomAccessFile`,
 `byte[]`, `java.io.InputStream`
+
+> 注: 
+> - `ExternalResource` 和 `java.io.InputStream` 等资源一样, 需要手动关闭 `close()`
+> - 使用 `java.io.InputStream`, `java.io.RandomAccessFile` 构造 `ExternalResource`
+>   时, 需要关闭 `java.io.InputStream` 或 `java.io.RandomAccessFile`
+
+
+```kotlin
+// Example
+
+// kotlin
+val inputStream: InputStream = TODO()
+val resource = inputStream.use { it.toExternalResource() }
+
+// java
+ExternalResource resource;
+try (InputStream inputStream = TODO()) {
+    resource = ExternalResource.create(inputStream);
+} catch (IOException exception) {
+    // on Exception catch
+    throw new RuntimeException("Can't create a new external resource", exception);
+}
+
+```
 
 # Contact & Message
 
@@ -56,7 +82,7 @@ Kotlin 可以使用自动补全得到相关方法
 
 Java 可以使用 `contact.uploadImage(ExternalResource)` 来得到一个图片对象
 (~~这也是为啥 ExternalResource 在前面~~)
-也可以使用在 Kotlin 定义的扩展方法
+也可以使用 `Contact` 定义的扩展方法
 
 ```java
 Image i = Contact.uploadImage(/*....*/);
@@ -65,14 +91,13 @@ Image i = ExternalResource.uploadAsImage(/*...*/);
 
 ### sendImage
 
-`sendImage` 相当于一次性把 `uploadImage` 和 `sendMessage` 做完了,
-在效率上两者没有区别
+`sendImage` 相当于先进行 `uploadImage` 然后再 `sendMessage`
 
 Kotlin 可以使用自动补全得到相关方法
 
 > `contact.sendImage // IDEA 补全`
 
-由于 `sendImage` 是 Kotlin 定义的扩展方法, 所以 Java 只能使用下述方法调用
+由于 `sendImage` 是 `Contact` 和 `ExternalResource` 定义的扩展方法, 所以 Java 只能使用下述方法调用
 ```java
 Contact.sendImage(/**/);
 ExternalResource.sendAsImage(/*...*/);
@@ -84,7 +109,7 @@ ExternalResource.sendAsImage(/*...*/);
 
 > - 在 2.7.0 之前，只有群聊 (`Group`) 支持语音, 2.7.0 之后支持私聊语音
 > - 每次发送新语言都重新 `upload`, 避免复用 `Voice` 对象
-> - 只支持 `amr` 和 `silk` 格式
+> - **只支持 `amr` 和 `silk` 格式**
 
 要得到一个语音对象, 需要先 `uploadVoice`
 
@@ -94,7 +119,7 @@ Kotlin 可以使用自动补全得到相关方法
 
 Java 可以使用 `contact.uploadVoice(ExternalResource)` 来得到一个语音对象
 (~~这也是为啥 ExternalResource 在前面~~)
-也可以使用在 Kotlin 定义的扩展方法
+也可以使用 `ExternalResource` 定义的扩展方法
 
 ```java
 contact.sendMessage(ExternalResource.uploadAsVoice(/*...*/));
@@ -107,8 +132,11 @@ contact.sendMessage(ExternalResource.uploadAsVoice(/*...*/));
 对 `Member` 操作时需要具体操作时应该先判断是否为 `NormalMember` 然后强转
 
 ```kotlin
+// kotlin
 if (member is NormalMember) { // kotlin smart cast
 }
+
+// java
 if (member instanceof NormalMember) {
     NormalMember nMember = (NormalMember) member;
 }
