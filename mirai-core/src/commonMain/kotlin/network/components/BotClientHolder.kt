@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
 
 internal interface BotClientHolder {
@@ -29,10 +28,7 @@ internal class BotClientHolderImpl(
 ) : BotClientHolder {
     override var client: QQAndroidClient by lateinitMutableProperty { createClient(bot) }
 
-
     private fun createClient(bot: QQAndroidBot): QQAndroidClient {
-        logger.debug { "Creating new QQAndroidClient." }
-
         val ssoContext = bot.components[SsoProcessorContext]
         val device = ssoContext.device
         return QQAndroidClient(
