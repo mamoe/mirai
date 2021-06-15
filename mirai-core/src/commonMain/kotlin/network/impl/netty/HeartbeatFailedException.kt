@@ -12,6 +12,9 @@ package net.mamoe.mirai.internal.network.impl.netty
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 
 internal class HeartbeatFailedException(
-    override val message: String?,
+    private val name: String, // kind of HB
     override val cause: Throwable? = null
-) : NetworkException(true)
+) : NetworkException(true) {
+    override val message: String = "Exception in $name job"
+    override fun toString(): String = "HeartbeatFailedException: $name, cause=$cause"
+}
