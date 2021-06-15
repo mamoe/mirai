@@ -390,7 +390,14 @@ public interface ExternalResource : Closeable {
          */
         @JvmBlockingBridge
         @JvmStatic
-        // Note of [contact]: 历史遗留原因, 此方法以前的参数类型为 [Contact]
+        public suspend fun ExternalResource.uploadAsVoice(contact: VoiceSupported): Voice {
+            return contact.uploadVoice(this)
+        }
+
+        @JvmBlockingBridge
+        @JvmStatic
+        @Deprecated("For binary compatibility", level = DeprecationLevel.WARNING)
+        @JvmName("uploadAsVoice")
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
             if (contact is VoiceSupported) return contact.uploadVoice(this)
             else throw UnsupportedOperationException("Contact `$contact` is not supported uploading voice")

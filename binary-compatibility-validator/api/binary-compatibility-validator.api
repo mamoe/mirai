@@ -5401,6 +5401,8 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
@@ -5470,6 +5472,8 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
