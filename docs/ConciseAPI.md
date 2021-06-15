@@ -41,7 +41,7 @@ File("foo.txt").toExternalResource()
 ExternalResource.create(new File("foo.txt"))
 ```
 
-`ExternalResource` 内置支持的数据类型有 `java.io.File`, `java.io.RandomAccessFile`,
+`ExternalResource.create()` 内置支持的数据类型有 `java.io.File`, `java.io.RandomAccessFile`,
 `byte[]`, `java.io.InputStream`
 
 > 注: 
@@ -97,7 +97,9 @@ Kotlin 可以使用自动补全得到相关方法
 
 > `contact.sendImage // IDEA 补全`
 
-由于 `sendImage` 是 `Contact` 和 `ExternalResource` 定义的扩展方法, 所以 Java 只能使用下述方法调用
+由于 `sendImage` 是 `Contact` 和 `ExternalResource` 内的静态方法,
+Java 可以使用下述方法调用
+
 ```java
 Contact.sendImage(/**/);
 ExternalResource.sendAsImage(/*...*/);
@@ -135,7 +137,8 @@ contact.sendMessage(ExternalResource.uploadAsVoice(/*...*/));
 // kotlin
 if (member is NormalMember) { // kotlin smart cast
 }
-
+```
+```java
 // java
 if (member instanceof NormalMember) {
     NormalMember nMember = (NormalMember) member;
@@ -144,7 +147,7 @@ if (member instanceof NormalMember) {
 
 ## Recall Message
 
-撤回信息可以通过 `MessageChain` 或者 `MessageSource` 撤回
+撤回信息可以通过 `MessageChain` 或者 `MessageSource` 撤回。
 
 ```kotlin
 subscribeAlways<MessageEvent> {// this: MessageEvent
@@ -174,20 +177,24 @@ subscribeAlways<MessageEvent> {// this: MessageEvent
 
 ### MessageEvent
 
-当直接监听 `MessageEvent` 时，应该排除 Bot 信息同步事件 `MessageSyncEvent`
+当直接监听 `MessageEvent` 时，可以考虑排除 Bot 信息同步事件 `MessageSyncEvent`
+
+`MessageSyncEvent` 是 `Bot` 账号在其他客户端发送消息时同步到 mirai 的事件
 
 ```kotlin
-subscribeAlways<MessageEvent> { // this: MessageEvent
+eventChannel.subscribeAlways<MessageEvent> { // this: MessageEvent
     if (this is MessageSyncEvent) return@subscribeAlways
 }
 ```
 
 # IMirai
 
-`IMirai` 对象是 mirai 底层访问接口(Low Level Api),
-如果不是只能使用 LowLevelApi 请避免使用 `IMirai` 相关的方法
+`Mirai API` 接口. 是 `Mirai API` 与 Mirai 协议实现对接的接口.
 
-`IMirai` 相关的方法可能会在任何时候进行修改 
+`IMirai` 内定义的接口都是较底层的 API, 如果无必要, 尽量避免使用 `IMirai` 相关的方法
 
-因错误使用 `IMirai` 方法导致的错乱请不要当成 bug, 不会受理因此导致的错误
+最底层的方法位于 `LowLevelApiAccessor` 内, 其方法都使用 `@LowLeveApi` 标注,
+`IMirai` 接口继承 `LowLevelApiAccessor`
+
+使用 `IMirai` 的标准 API 有稳定性保障, 但是由 `@LowLevelApi` 标注的方法无保障
 
