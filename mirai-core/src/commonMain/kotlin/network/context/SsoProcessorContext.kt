@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.context
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -44,7 +45,7 @@ internal class SsoProcessorContextImpl(
     override val bot: QQAndroidBot
 ) : SsoProcessorContext {
     override val account: BotAccount get() = bot.account
-    override val device: DeviceInfo = configuration.deviceInfo?.invoke(bot) ?: DeviceInfo.random()
+    override val device: DeviceInfo = configuration.createDeviceInfo(bot)
     override val protocol: BotConfiguration.MiraiProtocol get() = configuration.protocol
     override val accountSecretsManager: AccountSecretsManager
         get() = configuration.createAccountsSecretsManager(
@@ -52,3 +53,5 @@ internal class SsoProcessorContextImpl(
         )
     override val configuration: BotConfiguration get() = bot.configuration
 }
+
+internal fun BotConfiguration.createDeviceInfo(bot: Bot): DeviceInfo = deviceInfo?.invoke(bot) ?: DeviceInfo.random()
