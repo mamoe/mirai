@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit
@@ -63,12 +66,30 @@ internal class SetStateTest : AbstractNettyNHTest() {
 
     @Test
     fun `setState should ignore duplications 2 OK to CLOSED to CLOSED`() = runBlockingUnit {
+        overrideComponents[BotOfflineEventMonitor] = object : BotOfflineEventMonitor {
+            override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
+            }
+        }
         assertNotNull(network.setStateOK(channel))
         assertState(OK)
         assertEventBroadcasts<Event> {
             assertNotNull(network.setStateClosed(IllegalStateException("1")))
             assertState(CLOSED)
             assertNull(network.setStateClosed(IllegalStateException("2")))
+            assertState(CLOSED)
+            eventDispatcher.joinBroadcast()
+        }.let { list ->
+            assertEquals(1, list.size)
+            assertIs<BotOfflineEvent.Active>(list[0])
+        }
+    }
+
+    @Test
+    fun `Precondition - setState should ignore duplications 2 OK to CLOSED to CLOSED`() = runBlockingUnit {
+        assertNotNull(network.setStateOK(channel))
+        assertState(OK)
+        assertEventBroadcasts<Event> {
+            assertNotNull(network.setStateClosed(IllegalStateException("1")))
             assertState(CLOSED)
             eventDispatcher.joinBroadcast()
         }.let { list ->
