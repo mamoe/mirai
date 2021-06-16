@@ -385,7 +385,7 @@ public interface ExternalResource : Closeable {
          * **服务器仅支持音频格式 `silk` 或 `amr`**. 需要调用方手动[关闭资源][ExternalResource.close].
          *
          * @throws OverFileSizeMaxException
-         * @throws UnsupportedOperationException 当 [contact] 不是 [VoiceSupported] 时抛出
+         * @since 2.7
          * @see VoiceSupported.uploadVoice
          */
         @JvmBlockingBridge
