@@ -76,10 +76,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
         private tailrec suspend fun runImpl(): H {
             if (attempted >= maxAttempts) {
-                throw IllegalStateException(
-                    "Failed to resume instance. Maximum attempts reached.",
-                    exceptionCollector.getLast()
-                )
+                throw exceptionCollector.getLast() ?: MaxAttemptsReachedException(null)
             }
             yield() // Avoid endless recursion.
             val current = getCurrentInstanceOrNull()
