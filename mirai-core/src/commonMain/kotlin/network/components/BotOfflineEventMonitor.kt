@@ -21,9 +21,11 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.millisToHumanReadableString
+import net.mamoe.mirai.utils.warning
 import kotlin.system.measureTimeMillis
 
 /**
@@ -38,11 +40,13 @@ internal interface BotOfflineEventMonitor {
     fun attachJob(bot: AbstractBot, scope: CoroutineScope)
 }
 
-private data class BotClosedByEvent(val event: BotOfflineEvent) : RuntimeException("Bot is closed by event '$event'.")
+internal data class BotClosedByEvent(
+    val event: BotOfflineEvent,
+    override val message: String? = "Bot is closed by event '$event'."
+) : NetworkException(false)
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
-        return // leave it until 2.7-RC
         bot.eventChannel.parentScope(scope).subscribeAlways(
             ::onEvent,
             priority = EventPriority.MONITOR,
@@ -56,7 +60,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
 
         fun closeNetwork() {
             if (network.state == State.CLOSED) return // avoid recursive calls.
-            network.close(BotClosedByEvent(event))
+            network.close(if (event is BotOfflineEvent.CauseAware) event.cause else BotClosedByEvent(event))
         }
 
         when (event) {
@@ -67,12 +71,12 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
 
                 val cause = event.cause
                 val msg = if (cause == null) "" else " with exception: $cause"
-                bot.logger.info("Bot is closed manually $msg", cause)
+                bot.logger.info("Bot is closed manually$msg", cause)
 
                 closeNetwork()
             }
             is BotOfflineEvent.Force -> {
-                bot.logger.info { "Connection occupied by another android device: ${event.message}" }
+                bot.logger.warning { "Connection occupied by another android device: ${event.message}" }
                 closeNetwork()
             }
             is BotOfflineEvent.MsfOffline,
@@ -80,23 +84,27 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
             is BotOfflineEvent.RequireReconnect,
             -> {
                 val causeMessage = event.castOrNull<BotOfflineEvent.CauseAware>()?.cause?.toString() ?: event.toString()
-                bot.logger.info { "Connection lost, retrying login ($causeMessage)." }
+                bot.logger.warning { "Connection lost, reconnecting... ($causeMessage)" }
                 closeNetwork()
             }
         }
 
         if (event.reconnect) {
-            bot.launch {
-                val success: Boolean
-                val time = measureTimeMillis {
-                    success = kotlin.runCatching {
-                        bot.login() // selector will create new NH to replace the old, closed one, with some further comprehensive considerations. For example, limitation for attempts.
-                    }.isSuccess
-                }
+            launchRecovery(bot)
+        }
+    }
 
-                if (success) {
-                    bot.logger.info { "Reconnected successfully in ${time.millisToHumanReadableString()}." }
-                }
+    private fun launchRecovery(bot: AbstractBot) {
+        bot.launch {
+            val success: Boolean
+            val time = measureTimeMillis {
+                success = kotlin.runCatching {
+                    bot.network.resumeConnection()
+                }.isSuccess
+            }
+
+            if (success) {
+                bot.logger.info { "Reconnected successfully in ${time.millisToHumanReadableString()}." }
             }
         }
     }

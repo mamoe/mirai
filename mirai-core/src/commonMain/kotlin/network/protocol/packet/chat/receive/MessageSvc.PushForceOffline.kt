@@ -10,30 +10,26 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
-import net.mamoe.mirai.internal.network.impl.netty.ServerClosedException
+import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
-import net.mamoe.mirai.utils.warning
 
 
 /**
  * 被挤下线
  */
 internal object MessageSvcPushForceOffline :
-    OutgoingPacketFactory<BotOfflineEvent.Force>("MessageSvc.PushForceOffline") {
-    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): BotOfflineEvent.Force {
-        val struct = this.readUniPacket(RequestPushForceOffline.serializer())
-        @Suppress("INVISIBLE_MEMBER")
-        return BotOfflineEvent.Force(bot, title = struct.title ?: "", message = struct.tips ?: "")
+    OutgoingPacketFactory<RequestPushForceOffline>("MessageSvc.PushForceOffline") {
+
+    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushForceOffline {
+        return readUniPacket(RequestPushForceOffline.serializer())
     }
 
-    override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.Force) {
+    override suspend fun QQAndroidBot.handle(packet: RequestPushForceOffline) {
         components[AccountSecretsManager].invalidate() // otherwise you receive `MessageSvc.PushForceOffline` again just after logging in.
-        bot.logger.warning { "Received a ${packet.title}: ${packet.message}. " }
-        network.close(ServerClosedException("Closed by MessageSvc.PushForceOffline: $packet"))
+        network.close(ForceOfflineException(packet.title, "Closed by MessageSvc.PushForceOffline: $packet"))
     }
 }

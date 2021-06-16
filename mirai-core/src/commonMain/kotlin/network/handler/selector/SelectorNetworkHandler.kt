@@ -9,18 +9,16 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ReceiveChannel
-import net.mamoe.mirai.Bot
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.handler.awaitState
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.addNameHierarchically
 import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.findCauseOrSelf
-import net.mamoe.mirai.utils.hierarchicalName
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -39,14 +37,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * @see NetworkHandlerSelector
  */
 internal class SelectorNetworkHandler(
-    private val bot: Bot,
-    private val selector: NetworkHandlerSelector<*>,
-    /**
-     * If `true`, a watcher job will be started to call [resumeConnection] when network is closed by [NetworkException] and [NetworkException.recoverable] is `true`.
-     *
-     * This is required for automatic reconnecting after network failure or system hibernation, since [NetworkHandler] is lazy and will reconnect iff [resumeConnection] is called.
-     */
-    allowActiveMaintenance: Boolean = true,
+    val selector: NetworkHandlerSelector<*>,
 ) : NetworkHandler {
     @Volatile
     private var lastCancellationCause: Throwable? = null
@@ -65,35 +56,6 @@ internal class SelectorNetworkHandler(
                 ?: CancellationException("SelectorNetworkHandler is already closed")
         }
         return selector.awaitResumeInstance()
-    }
-
-    init {
-        if (allowActiveMaintenance) {
-            scope.launch(scope.hierarchicalName("BotOnlineWatchdog ${bot.id}")) {
-                fun isActive(): Boolean {
-                    return isActive && bot.isActive
-                }
-                while (isActive()) {
-                    val instance = selector.getCurrentInstanceOrCreate()
-
-                    awaitState(State.CLOSED) // suspend until next CLOSED
-
-                    if (!isActive()) return@launch
-                    if (selector.getCurrentInstanceOrNull() != instance) continue // instance already changed by other threads.
-
-                    delay(3000) // make it slower to avoid massive reconnection on network failure.
-                    if (!isActive()) return@launch
-
-                    val failure = getLastFailure()
-                    if (failure?.findCauseOrSelf { it is NetworkException && it.recoverable } != null) {
-                        try {
-                            resumeConnection() // notify selector to actively resume now.
-                        } catch (ignored: Exception) {
-                        }
-                    }
-                }
-            }
-        }
     }
 
     override val state: State

@@ -10,12 +10,15 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.unwrapCancellationException
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -57,9 +60,21 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     private inner class AwaitResumeInstance {
         private var attempted: Int = 0
-        private val exceptionCollector: ExceptionCollector = ExceptionCollector()
+        private var lastNetwork: H? = null
+        private val exceptionCollector: ExceptionCollector = object : ExceptionCollector() {
+            override fun beforeCollect(throwable: Throwable) {
+                lastNetwork?.logger?.warning(throwable)
+            }
+        }
 
-        tailrec suspend fun run(): H {
+        suspend fun run(): H {
+            return runImpl().also {
+                exceptionCollector.dispose()
+                lastNetwork = null // help gc
+            }
+        }
+
+        private tailrec suspend fun runImpl(): H {
             if (attempted >= maxAttempts) {
                 throw IllegalStateException(
                     "Failed to resume instance. Maximum attempts reached.",
@@ -68,34 +83,49 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             }
             yield() // Avoid endless recursion.
             val current = getCurrentInstanceOrNull()
+            lastNetwork = current
+
+            suspend fun H.resumeInstanceCatchingException() {
+                try {
+                    resumeConnection() // once finished, it should has been LOADING or OK
+                } catch (ignored: Exception) {
+                    // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
+                    // so that duplicated exceptions are ignored in logging
+                }
+            }
+
             return if (current != null) {
                 when (val thisState = current.state) {
                     NetworkHandler.State.CLOSED -> {
                         if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
                             // invalidate the instance and try again.
 
-                            exceptionCollector.collectException(current.getLastFailure())
+                            val lastFailure = current.getLastFailure()?.unwrapCancellationException()
+                            exceptionCollector.collectException(lastFailure)
+                        }
+                        if (attempted > 1) {
+                            delay(3000) // make it slower to avoid massive reconnection on network failure.
                         }
                         attempted += 1
-                        run() // will create new instance.
+                        runImpl() // will create new instance (see the `else` branch).
                     }
                     NetworkHandler.State.CONNECTING,
                     NetworkHandler.State.INITIALIZED -> {
-                        current.resumeConnection() // once finished, it should has been LOADING or OK
+                        current.resumeInstanceCatchingException()
                         check(current.state != thisState) { "Internal error: State is still $thisState after successful resumeConnection." } // this should not happen.
-                        return run() // does not count for an attempt.
+                        return runImpl() // does not count for an attempt.
                     }
                     NetworkHandler.State.LOADING -> {
                         return current
                     }
                     NetworkHandler.State.OK -> {
-                        current.resumeConnection()
+                        current.resumeInstanceCatchingException()
                         return current
                     }
                 }
             } else {
                 refreshInstance()
-                run() // directly retry, does not count for attempts.
+                runImpl() // directly retry, does not count for attempts.
             }
         }
     }

@@ -11,7 +11,13 @@ package net.mamoe.mirai.internal.network.impl.netty
 
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 
-internal data class ServerClosedException(
+internal sealed class ServerClosedException(
     override val message: String? = null,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : NetworkException(true)
+
+internal class ForceOfflineException(
+    val title: String,
+    override val message: String,
+    cause: Throwable? = null,
+) : ServerClosedException(message, cause)

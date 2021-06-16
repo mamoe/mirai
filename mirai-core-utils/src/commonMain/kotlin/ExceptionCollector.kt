@@ -12,7 +12,7 @@ package net.mamoe.mirai.utils
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-public class ExceptionCollector {
+public open class ExceptionCollector {
 
     public constructor()
     public constructor(initial: Throwable?) {
@@ -25,17 +25,25 @@ public class ExceptionCollector {
         }
     }
 
+    protected open fun beforeCollect(throwable: Throwable) {
+    }
+
     @Volatile
     private var last: Throwable? = null
     private val hashCodes = mutableSetOf<Long>()
 
+    /**
+     * @return `true` if [e] is new.
+     */
     @Synchronized
-    public fun collect(e: Throwable?) {
-        if (e == null) return
-        if (!hashCodes.add(hash(e))) return // filter out duplications
+    public fun collect(e: Throwable?): Boolean {
+        if (e == null) return false
+        if (!hashCodes.add(hash(e))) return false // filter out duplications
         // we can also check suppressed exceptions of [e] but actual influence would be slight.
+        beforeCollect(e)
         this.last?.let { e.addSuppressed(it) }
         this.last = e
+        return true
     }
 
     private fun hash(e: Throwable): Long {
@@ -55,8 +63,9 @@ public class ExceptionCollector {
 
     /**
      * Alias to [collect] to be used inside [withExceptionCollector]
+     * @return `true` if [e] is new.
      */
-    public fun collectException(e: Throwable?): Unit = collect(e)
+    public fun collectException(e: Throwable?): Boolean = collect(e)
 
     public fun getLast(): Throwable? = last
 

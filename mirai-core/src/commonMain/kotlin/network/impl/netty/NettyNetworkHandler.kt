@@ -38,7 +38,7 @@ internal open class NettyNetworkHandler(
 ) : NetworkHandlerSupport(context) {
     override fun close(cause: Throwable?) {
         if (state == State.CLOSED) return // already
-        setState { StateClosed(CancellationException("Closed manually.", cause)) }
+        setState { StateClosed(cause ?: CancellationException("Closed normally.")) }
         super.close(cause)
         // wrap an exception, more stacktrace information
     }
@@ -71,7 +71,7 @@ internal open class NettyNetworkHandler(
     }
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
-        context.bot.logger.error(error)
+//        context.bot.logger.error(error)
         synchronized(this) {
             setState { StateClosed(NettyChannelException(cause = error)) }
             if (_state !is StateConnecting) {
@@ -146,13 +146,19 @@ internal open class NettyNetworkHandler(
                         .addLast(object : ChannelInboundHandlerAdapter() {
                             override fun channelInactive(ctx: ChannelHandlerContext?) {
                                 eventLoopGroup.shutdownGracefully()
+                                contextResult.cancel()
                             }
                         })
 
                 }
             })
             .connect(address)
-            .awaitKt()
+            .runCatching {
+                awaitKt()
+            }.onFailure {
+                eventLoopGroup.shutdownGracefully()
+                contextResult.cancel()
+            }.getOrThrow()
 
         contextResult.complete(future.channel())
 

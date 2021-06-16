@@ -43,7 +43,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      *
      * 在调用 [Bot.close] 时, 如果 Bot 连接正常, 将会广播 [Active].
      *
-     * 注意, 在 2.7 以前主动广播这个事件也可以让 [Bot] 离线, 而在 2.7-M1 起不会.
+     * 主动广播这个事件也可以让 [Bot] 离线, 但不建议这么做. 建议调用 [Bot.close].
      */
     public data class Active(
         public override val bot: Bot,
