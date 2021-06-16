@@ -43,6 +43,8 @@ internal fun ComponentStorage?.withFallback(fallback: ComponentStorage?): Compon
     return CombinedComponentStorage(this, fallback)
 }
 
+internal fun ComponentStorage?.withPrimary(primary: ComponentStorage?): ComponentStorage = primary.withFallback(this)
+
 private class CombinedComponentStorage(
     val main: ComponentStorage,
     val fallback: ComponentStorage,
@@ -51,7 +53,12 @@ private class CombinedComponentStorage(
     override val size: Int get() = main.size + fallback.size
 
     override fun <T : Any> get(key: ComponentKey<T>): T {
-        return main.getOrNull(key) ?: fallback.getOrNull(key) ?: main[key] // let `main` throw exception
+        return main.getOrNull(key) ?: fallback.getOrNull(key) ?: throw NoSuchComponentException(key, this)
+            .apply {
+                //
+                kotlin.runCatching { main[key] }.exceptionOrNull()?.let(::addSuppressed)
+                kotlin.runCatching { fallback[key] }.exceptionOrNull()?.let(::addSuppressed)
+            }
     }
 
     override fun <T : Any> getOrNull(key: ComponentKey<T>): T? {

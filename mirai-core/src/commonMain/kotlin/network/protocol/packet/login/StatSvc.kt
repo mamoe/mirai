@@ -137,7 +137,7 @@ internal class StatSvc {
         fun online(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
+        ) = impl("online", client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
             client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
                 //  timeStamp = friendListCache.timeStamp
@@ -147,9 +147,10 @@ internal class StatSvc {
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl(client, 0, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
+            name: String,
             client: QQAndroidClient,
             bid: Long,
             status: OnlineStatus,
@@ -159,7 +160,8 @@ internal class StatSvc {
             client,
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
-            key = client.wLoginSigInfo.d2Key
+            key = client.wLoginSigInfo.d2Key,
+            name = name,
         ) { sequenceId ->
             writeSsoPacket(
                 client, subAppId = client.subAppId, commandName = commandName,

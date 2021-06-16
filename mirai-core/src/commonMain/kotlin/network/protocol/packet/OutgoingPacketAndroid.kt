@@ -39,7 +39,7 @@ internal open class OutgoingPacket constructor(
     delegate: ByteReadPacket
 ) {
     val delegate = delegate.readBytes()
-    val name: String = name ?: commandName
+    val displayName: String = if (name == null) commandName else "$commandName($name)"
 }
 
 internal class IncomingPacket constructor(

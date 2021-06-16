@@ -52,7 +52,9 @@ internal abstract class NetworkHandlerSupport(
 //        } else {
 //            logger.info { "NetworkHandler '$this' closed: $cause" }
 //        }
-        coroutineContext.job.cancel("NetworkHandler closed", cause)
+        if (coroutineContext.job.isActive) {
+            coroutineContext.job.cancel("NetworkHandler closed", cause)
+        }
     }
 
     protected val packetLogger: MiraiLogger by lazy {
@@ -262,6 +264,7 @@ internal abstract class NetworkHandlerSupport(
 
         check(old !== impl) { "Old and new states cannot be the same." }
 
+        stateObserver?.beforeStateChanged(this, old, impl)
         _state = impl // update current state
         old.cancel(StateSwitchingException(old, impl)) // close old
         stateObserver?.stateChanged(this, old, impl) // notify observer

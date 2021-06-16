@@ -89,8 +89,11 @@ internal class SsoProcessorImpl(
     @Volatile
     override var registerResp: StatSvc.Register.Response? = null
 
-    @Volatile
-    override var client = createClient(ssoContext.bot)
+    override var client
+        get() = ssoContext.bot.components[BotClientHolder].client
+        set(value) {
+            ssoContext.bot.components[BotClientHolder].client = value
+        }
 
     override val ssoSession: SsoSession get() = client
     override fun createObserverChain(): StateObserver = StateObserver.chainOfNotNull(
@@ -105,12 +108,14 @@ internal class SsoProcessorImpl(
         }
     )
 
+    private val components get() = ssoContext.bot.components
+
     /**
      * Do login. Throws [LoginFailedException] if failed
      */
     @Throws(LoginFailedException::class)
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
-        ssoContext.bot.components[BdhSessionSyncer].loadServerListFromCache()
+        components[BdhSessionSyncer].loadServerListFromCache()
         if (client.wLoginSigInfoInitialized) {
             ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
             kotlin.runCatching {
@@ -124,7 +129,7 @@ internal class SsoProcessorImpl(
             ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
             SlowLoginImpl(handler).doLogin()
         }
-        ssoContext.accountSecretsManager.saveSecrets(ssoContext.account, AccountSecretsImpl(client))
+        components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
         registerClientOnline(handler)
         ssoContext.bot.logger.info { "Login successful." }
     }
@@ -146,7 +151,7 @@ internal class SsoProcessorImpl(
         return QQAndroidClient(
             ssoContext.account,
             device = device,
-            accountSecrets = ssoContext.accountSecretsManager.getSecretsOrCreate(ssoContext.account, device)
+            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(ssoContext.account, device)
         ).apply {
             _bot = bot
         }

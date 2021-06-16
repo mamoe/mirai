@@ -49,7 +49,16 @@ internal class CombinedStateObserver(
     }
 
     override fun toString(): String {
-        return "CombinedStateObserver(first=$first, last=$last)"
+        return asSequence().joinToString(
+            prefix = "CombinedStateObserver[",
+            postfix = "]",
+            separator = " -> "
+        ) { it.toString() }
+    }
+
+    private fun asSequence(): Sequence<StateObserver> = sequence {
+        if (first is CombinedStateObserver) yieldAll(first.asSequence()) else yield(first)
+        if (last is CombinedStateObserver) yieldAll(last.asSequence()) else yield(last)
     }
 
     companion object {

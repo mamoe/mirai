@@ -355,7 +355,7 @@ internal open class NettyNetworkHandler(
 
         private val heartbeatJobs =
             context[HeartbeatScheduler].launchJobsIn(this@NettyNetworkHandler, this) { name, e ->
-                setState { StateClosed(HeartbeatFailedException("Exception in $name job", e)) }
+                setState { StateClosed(HeartbeatFailedException(name, e)) }
             }
 
         // we can also move them as observers if needed.

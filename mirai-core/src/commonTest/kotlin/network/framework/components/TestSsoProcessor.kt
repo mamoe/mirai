@@ -12,16 +12,22 @@ package net.mamoe.mirai.internal.network.framework.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.context.SsoSession
+import net.mamoe.mirai.internal.network.context.createDeviceInfo
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.lateinitMutableProperty
 
 internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcessor {
-    override val client: QQAndroidClient get() = bot.client
+    val deviceInfo = bot.configuration.createDeviceInfo(bot)
+    override var client: QQAndroidClient by lateinitMutableProperty {
+        QQAndroidClient(bot.account, device = deviceInfo, accountSecrets = AccountSecretsImpl(deviceInfo, bot.account))
+    }
     override val ssoSession: SsoSession get() = bot.client
     override var firstLoginSucceed: Boolean = false
     override var registerResp: StatSvc.Register.Response? = null

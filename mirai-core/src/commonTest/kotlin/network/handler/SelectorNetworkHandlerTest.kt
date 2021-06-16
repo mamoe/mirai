@@ -40,7 +40,7 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
     override val factory: NetworkHandlerFactory<SelectorNetworkHandler> =
         object : NetworkHandlerFactory<SelectorNetworkHandler> {
             override fun create(context: NetworkHandlerContext, address: SocketAddress): SelectorNetworkHandler {
-                return SelectorNetworkHandler(context, selector)
+                return SelectorNetworkHandler(context.bot, selector)
             }
         }
 

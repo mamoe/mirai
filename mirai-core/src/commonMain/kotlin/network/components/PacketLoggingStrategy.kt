@@ -40,7 +40,7 @@ internal class PacketLoggingStrategyImpl(
 ) : PacketLoggingStrategy {
     override fun logSent(logger: MiraiLogger, outgoingPacket: OutgoingPacket) {
         if (outgoingPacket.commandName in blacklist) return
-        logger.verbose { "Send: ${outgoingPacket.commandName}" }
+        logger.verbose { "Send: ${outgoingPacket.displayName}" }
     }
 
     override fun logReceived(logger: MiraiLogger, incomingPacket: IncomingPacket) {

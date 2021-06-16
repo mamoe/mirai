@@ -14,12 +14,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.components.EventDispatcher
+import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
@@ -63,6 +66,7 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
 
     @Test
     fun `send logout on exit`() = runBlockingUnit {
+        assertIs<TestSsoProcessor>(bot.components[SsoProcessor])
         bot.network.assertState(INITIALIZED)
         bot.login()
         bot.network.assertState(OK)

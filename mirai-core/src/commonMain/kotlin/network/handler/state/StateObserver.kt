@@ -24,6 +24,20 @@ import net.mamoe.mirai.utils.systemProp
  */
 internal interface StateObserver {
 
+    /**
+     * Called when _state is being changed_, where [NetworkHandlerSupport._state] is still [previous].
+     */
+    fun beforeStateChanged(
+        networkHandler: NetworkHandlerSupport,
+        previous: NetworkHandlerSupport.BaseStateImpl,
+        new: NetworkHandlerSupport.BaseStateImpl
+    ) {
+
+    }
+
+    /**
+     * Called when _state is fished changing_, where [NetworkHandlerSupport._state] had become [new].
+     */
     fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
