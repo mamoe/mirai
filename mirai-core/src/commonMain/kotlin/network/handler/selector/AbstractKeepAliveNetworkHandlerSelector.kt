@@ -85,7 +85,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             suspend fun H.resumeInstanceCatchingException() {
                 try {
                     resumeConnection() // once finished, it should has been LOADING or OK
-                } catch (ignored: Exception) {
+                } catch (e: Exception) {
+                    close(e)
                     // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
                     // so that duplicated exceptions are ignored in logging
                 }
@@ -109,7 +110,6 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     NetworkHandler.State.CONNECTING,
                     NetworkHandler.State.INITIALIZED -> {
                         current.resumeInstanceCatchingException()
-                        check(current.state != thisState) { "Internal error: State is still $thisState after successful resumeConnection." } // this should not happen.
                         return runImpl() // does not count for an attempt.
                     }
                     NetworkHandler.State.LOADING -> {
