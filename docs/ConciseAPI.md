@@ -82,7 +82,7 @@ Kotlin 可以使用自动补全得到相关方法
 
 Java 可以使用 `contact.uploadImage(ExternalResource)` 来得到一个图片对象
 (~~这也是为啥 ExternalResource 在前面~~)
-也可以使用 `Contact` 定义的扩展方法
+也可以使用 `Contact` 内的静态方法
 
 ```java
 Image i = Contact.uploadImage(/*....*/);
@@ -197,4 +197,3 @@ eventChannel.subscribeAlways<MessageEvent> { // this: MessageEvent
 `IMirai` 接口继承 `LowLevelApiAccessor`
 
 使用 `IMirai` 的标准 API 有稳定性保障, 但是由 `@LowLevelApi` 标注的方法无保障
-
