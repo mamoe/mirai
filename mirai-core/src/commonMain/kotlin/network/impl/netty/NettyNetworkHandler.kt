@@ -402,12 +402,4 @@ internal open class NettyNetworkHandler(
     }
 
     override fun initialState(): BaseStateImpl = StateInitialized()
-
-    companion object {
-        /**
-         * millis
-         */
-        @JvmField
-        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 5000)
-    }
 }

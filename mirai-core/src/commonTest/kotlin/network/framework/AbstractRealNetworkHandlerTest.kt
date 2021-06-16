@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
@@ -41,7 +40,7 @@ import kotlin.test.assertEquals
  * With real factory and components as in [QQAndroidBot.components].
  */
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractTest() {
+internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: NetworkHandler
 

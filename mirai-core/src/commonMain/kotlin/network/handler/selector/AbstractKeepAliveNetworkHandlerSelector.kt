@@ -102,7 +102,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                             exceptionCollector.collectException(lastFailure)
                         }
                         if (attempted > 1) {
-                            delay(3000) // make it slower to avoid massive reconnection on network failure.
+                            delay(RECONNECT_DELAY) // make it slower to avoid massive reconnection on network failure.
                         }
                         attempted += 1
                         runImpl() // will create new instance (see the `else` branch).
@@ -138,6 +138,12 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
         var DEFAULT_MAX_ATTEMPTS =
             systemProp("mirai.network.handler.selector.max.attempts", Long.MAX_VALUE)
                 .coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
+
+        /**
+         * millis
+         */
+        @JvmField
+        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000)
     }
 }
 
