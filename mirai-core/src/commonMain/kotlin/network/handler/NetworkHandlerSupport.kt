@@ -222,8 +222,8 @@ internal abstract class NetworkHandlerSupport(
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
         noinline new: () -> S
-    ): S? = synchronized(setStateLock) {
-        if (_state === this) {
+    ): S? {
+        return if (_state === this) {
             this@NetworkHandlerSupport.setState(new)
         } else {
             null
