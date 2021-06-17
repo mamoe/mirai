@@ -35,6 +35,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateI
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
+import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
@@ -116,7 +118,7 @@ internal open class QQAndroidBot constructor(
                     }
                 }
             },
-        ).safe(logger.subLogger("StateObserver"))
+        ).safe(logger.subLogger("StateObserver")) + LoggingStateObserver.createLoggingIfEnabled()
     }
 
 

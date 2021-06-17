@@ -12,8 +12,6 @@ package net.mamoe.mirai.internal.network.handler.state
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.systemProp
 
 /**
  * Observer of state changes.
@@ -76,27 +74,5 @@ internal interface StateObserver {
         fun chainOfNotNull(
             vararg observers: StateObserver?,
         ): StateObserver = CombinedStateObserver(observers.filterNotNull())
-
-        val LOGGING: StateObserver? = when (systemProp(
-            "mirai.debug.network.state.observer.logging",
-            "off"
-        ).lowercase()) {
-            "full" -> {
-                SafeStateObserver(
-                    LoggingStateObserver(MiraiLogger.create("States"), true),
-                    MiraiLogger.create("LoggingStateObserver errors")
-                )
-            }
-            "off", "false" -> {
-                null
-            }
-            "on", "true" -> {
-                SafeStateObserver(
-                    LoggingStateObserver(MiraiLogger.create("States"), false),
-                    MiraiLogger.create("LoggingStateObserver errors")
-                )
-            }
-            else -> null
-        }
     }
 }
