@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.context.createDeviceInfo
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.debug
@@ -31,7 +30,6 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
     override val ssoSession: SsoSession get() = bot.client
     override var firstLoginSucceed: Boolean = false
     override var registerResp: StatSvc.Register.Response? = null
-    override fun createObserverChain(): StateObserver = bot.components[StateObserver]
     override suspend fun login(handler: NetworkHandler) {
         firstLoginSucceed = true
         bot.network.logger.debug { "SsoProcessor.login" }

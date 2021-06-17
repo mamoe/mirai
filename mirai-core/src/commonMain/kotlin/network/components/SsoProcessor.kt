@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -18,10 +17,6 @@ import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -47,13 +42,6 @@ internal interface SsoProcessor {
 
     var firstLoginSucceed: Boolean
     val registerResp: StatSvc.Register.Response?
-
-    /**
-     * The observers to launch jobs for states.
-     *
-     * E.g. start heartbeat job for [NetworkHandler.State.OK].
-     */
-    fun createObserverChain(): StateObserver // todo not used
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -96,18 +84,6 @@ internal class SsoProcessorImpl(
         }
 
     override val ssoSession: SsoSession get() = client
-    override fun createObserverChain(): StateObserver = StateObserver.chainOfNotNull(
-        object : StateChangedObserver(State.OK) {
-            override fun stateChanged0(
-                networkHandler: NetworkHandlerSupport,
-                previous: NetworkHandlerSupport.BaseStateImpl,
-                new: NetworkHandlerSupport.BaseStateImpl
-            ) {
-                new.launch { }
-            }
-        }
-    )
-
     private val components get() = ssoContext.bot.components
 
     /**
