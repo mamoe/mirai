@@ -95,8 +95,10 @@ internal open class QQAndroidBot constructor(
                         }
                     }
                 }
+
+                override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
             },
-            StateChangedObserver(State.OK, State.CLOSED) { new ->
+            StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->
                 // logging performed by BotOfflineEventMonitor
                 val cause = new.getCause()
                 when {

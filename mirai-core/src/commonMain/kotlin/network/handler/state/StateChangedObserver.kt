@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 
 @Suppress("FunctionName")
 internal fun StateChangedObserver(
+    name: String,
     to: State,
     action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
 ): StateObserver {
@@ -25,11 +26,14 @@ internal fun StateChangedObserver(
         ) {
             action(new)
         }
+
+        override fun toString(): String = "StateChangedObserver($name)"
     }
 }
 
 @Suppress("FunctionName")
 internal fun StateChangedObserver(
+    name: String,
     from: State,
     to: State,
     action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
@@ -44,11 +48,14 @@ internal fun StateChangedObserver(
                 action(new)
             }
         }
+
+        override fun toString(): String = "StateObserver($name)"
     }
 }
 
 @Suppress("FunctionName")
 internal fun BeforeStateChangedObserver(
+    name: String,
     from: State,
     to: State,
     action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
@@ -63,6 +70,8 @@ internal fun BeforeStateChangedObserver(
                 action(new)
             }
         }
+
+        override fun toString(): String = "BeforeStateChangedObserver($name)"
     }
 }
 

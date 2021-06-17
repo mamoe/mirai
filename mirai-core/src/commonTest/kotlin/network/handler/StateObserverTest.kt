@@ -72,7 +72,7 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
     @Test
     fun `test StateChangedObserver2`() {
         val called = ArrayList<NetworkHandlerSupport.BaseStateImpl>()
-        components[StateObserver] = StateChangedObserver(INITIALIZED, CONNECTING) { new ->
+        components[StateObserver] = StateChangedObserver("test", INITIALIZED, CONNECTING) { new ->
             called.add(new)
         }
         val handler = createNetworkHandler()
