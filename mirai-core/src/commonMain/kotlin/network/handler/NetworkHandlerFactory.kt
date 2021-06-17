@@ -17,7 +17,7 @@ import java.net.SocketAddress
 /**
  * Factory for a specific [NetworkHandler] implementation.
  */
-internal interface NetworkHandlerFactory<out H : NetworkHandler> {
+internal fun interface NetworkHandlerFactory<out H : NetworkHandler> {
     fun create(context: NetworkHandlerContext, host: String, port: Int): H =
         create(context, InetSocketAddress.createUnresolved(host, port))
 
