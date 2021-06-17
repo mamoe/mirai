@@ -71,11 +71,17 @@ internal class LoggingStateObserver(
     }
 
     companion object {
+        /**
+         * - `on`/`true` for simple logging
+         * - `full` for logging with stacktrace
+         */
+        var ENABLED = systemProp(
+            "mirai.debug.network.state.observer.logging",
+            "off"
+        ).lowercase()
+
         fun createLoggingIfEnabled(): StateObserver? {
-            return when (systemProp(
-                "mirai.debug.network.state.observer.logging",
-                "off"
-            ).lowercase()) {
+            return when (ENABLED) {
                 "full" -> {
                     SafeStateObserver(
                         LoggingStateObserver(MiraiLogger.create("States"), true),
