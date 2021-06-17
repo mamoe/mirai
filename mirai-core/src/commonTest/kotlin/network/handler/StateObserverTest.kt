@@ -12,12 +12,14 @@ package net.mamoe.mirai.internal.network.handler
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.CONNECTING
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.INITIALIZED
+import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver
 import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
 import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
@@ -85,7 +87,7 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
     @Test
     fun `can combine`() {
         val called = ArrayList<Pair<NetworkHandlerSupport.BaseStateImpl, NetworkHandlerSupport.BaseStateImpl>>()
-        components[StateObserver] = object : StateChangedObserver(CONNECTING) {
+        val added = object : StateChangedObserver(CONNECTING) {
             override fun stateChanged0(
                 networkHandler: NetworkHandlerSupport,
                 previous: NetworkHandlerSupport.BaseStateImpl,
@@ -93,6 +95,8 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
             ) {
                 called.add(previous to new)
             }
+
+            override fun toString(): String = "1"
         } + object : StateChangedObserver(CONNECTING) {
             override fun stateChanged0(
                 networkHandler: NetworkHandlerSupport,
@@ -101,7 +105,13 @@ internal class StateObserverTest : AbstractMockNetworkHandlerTest() {
             ) {
                 called.add(previous to new)
             }
+
+            override fun toString(): String = "2"
         }
+        assertIs<CombinedStateObserver>(added)
+        assertEquals("CombinedStateObserver[1 -> 2]", added.toString())
+
+        components[StateObserver] = added
         val handler = createNetworkHandler()
         assertEquals(0, called.size)
         handler.setState(INITIALIZED)
