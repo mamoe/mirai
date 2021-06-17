@@ -15,6 +15,14 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 internal class CombinedStateObserver(
     private val list: List<StateObserver>
 ) : StateObserver {
+    override fun beforeStateChanged(
+        networkHandler: NetworkHandlerSupport,
+        previous: NetworkHandlerSupport.BaseStateImpl,
+        new: NetworkHandlerSupport.BaseStateImpl
+    ) {
+        list.forEach { it.beforeStateChanged(networkHandler, previous, new) }
+    }
+
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
