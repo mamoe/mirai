@@ -69,15 +69,7 @@ internal open class NettyNetworkHandler(
     }
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
-//        context.bot.logger.error(error)
-        synchronized(this) {
-            setState { StateClosed(NettyChannelException(cause = error)) }
-            if (_state !is StateConnecting) {
-                setState { StateConnecting(ExceptionCollector(error)) }
-            } else {
-                close(error)
-            }
-        }
+        setState { StateClosed(NettyChannelException(cause = error)) }
     }
 
     ///////////////////////////////////////////////////////////////////////////
