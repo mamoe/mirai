@@ -11,4 +11,8 @@
 - 事件  [Events](Events.md)
 - 消息  [Messages](Messages.md)
 
+*附录*
+
+- 常用 API [ConciseAPI](ConciseAPI.md)
+
 > 希望改进文档? 请在 [#848](https://github.com/mamoe/mirai/discussions/848) 提出建议
