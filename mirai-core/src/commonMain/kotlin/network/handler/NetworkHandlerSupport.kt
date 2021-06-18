@@ -220,8 +220,8 @@ internal abstract class NetworkHandlerSupport(
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
         noinline new: () -> S
-    ): S? {
-        return if (_state === this) {
+    ): S? = synchronized(lockForSetStateWithOldInstance) {
+        if (_state === this) {
             this@NetworkHandlerSupport.setState(new)
         } else {
             null
@@ -240,6 +240,7 @@ internal abstract class NetworkHandlerSupport(
         setStateImpl(newType as KClass<S>?, new)
 
     private val lock = SingleEntrantLock()
+    private val lockForSetStateWithOldInstance = Any()
 
     /**
      * This can only be called by [setState] or in tests.
