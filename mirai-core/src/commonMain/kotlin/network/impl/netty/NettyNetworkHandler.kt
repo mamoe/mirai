@@ -101,7 +101,7 @@ internal open class NettyNetworkHandler(
 
     private inner class OutgoingPacketEncoder : MessageToByteEncoder<OutgoingPacket>(OutgoingPacket::class.java) {
         override fun encode(ctx: ChannelHandlerContext, msg: OutgoingPacket, out: ByteBuf) {
-            packetLogger.debug { "encode: $msg" }
+            packetLogger.debug { "encode: ${msg.displayName}" }
             out.writeBytes(msg.delegate)
         }
     }
