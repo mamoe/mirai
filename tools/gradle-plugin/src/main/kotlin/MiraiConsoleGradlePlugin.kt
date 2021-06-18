@@ -145,7 +145,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 
         plugins.apply(JavaPlugin::class.java)
         plugins.apply("org.gradle.maven-publish")
-        plugins.apply("org.gradle.maven")
+        // plugins.apply("org.gradle.maven")
         plugins.apply(ShadowPlugin::class.java)
         plugins.apply(BintrayPlugin::class.java)
         repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
