@@ -159,7 +159,7 @@ internal open class NettyNetworkHandler(
 
         future.channel().closeFuture().addListener {
             if (_state.correspondingState == State.CLOSED) return@addListener
-            setState { StateClosed(it.cause()) }
+            close(it.cause())
         }
 
         return contextResult.await()
@@ -344,7 +344,12 @@ internal open class NettyNetworkHandler(
         private val configPush: Job,
     ) : NettyState(State.OK) {
         init {
-            coroutineContext.job.invokeOnCompletion {
+            coroutineContext.job.invokeOnCompletion { err ->
+                if (err is StateSwitchingException) {
+                    if (err.new.correspondingState == State.CLOSED) {
+                        return@invokeOnCompletion
+                    }
+                }
                 connection.close()
             }
         }
