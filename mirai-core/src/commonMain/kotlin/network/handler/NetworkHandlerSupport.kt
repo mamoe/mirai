@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -22,6 +21,7 @@ import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.utils.SingleEntrantLock
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
@@ -199,8 +199,6 @@ internal abstract class NetworkHandlerSupport(
     private val _stateChannel = Channel<NetworkHandler.State>(0)
     final override val stateChannel: ReceiveChannel<NetworkHandler.State> get() = _stateChannel
 
-    private val setStateLock = SynchronizedObject()
-
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
         val new: BaseStateImpl,
@@ -241,6 +239,8 @@ internal abstract class NetworkHandlerSupport(
         @OptIn(TestOnly::class)
         setStateImpl(newType as KClass<S>?, new)
 
+    private val lock = SingleEntrantLock()
+
     /**
      * This can only be called by [setState] or in tests.
      *
@@ -248,30 +248,31 @@ internal abstract class NetworkHandlerSupport(
      */
     //
     @TestOnly
-    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? = synchronized(setStateLock) {
-        val old = _state
-        if (newType != null && old::class == newType) return null // already set to expected state by another thread. Avoid replications.
-        if (old.correspondingState == NetworkHandler.State.CLOSED) return null // CLOSED is final.
+    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? =
+        lock.withLock(newType ?: lock) {
+            val old = _state
+            if (newType != null && old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
+            if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
 
-        val stateObserver = context.getOrNull(StateObserver)
+            val stateObserver = context.getOrNull(StateObserver)
 
-        val impl = try {
-            new() // inline only once
-        } catch (e: Throwable) {
-            stateObserver?.exceptionOnCreatingNewState(this, old, e)
-            throw e
+            val impl = try {
+                new() // inline only once
+            } catch (e: Throwable) {
+                stateObserver?.exceptionOnCreatingNewState(this, old, e)
+                throw e
+            }
+
+            check(old !== impl) { "Old and new states cannot be the same." }
+
+            stateObserver?.beforeStateChanged(this, old, impl)
+            _state = impl // update current state
+            old.cancel(StateSwitchingException(old, impl)) // close old
+            stateObserver?.stateChanged(this, old, impl) // notify observer
+            _stateChannel.trySend(impl.correspondingState) // notify selector
+
+            return@withLock impl
         }
-
-        check(old !== impl) { "Old and new states cannot be the same." }
-
-        stateObserver?.beforeStateChanged(this, old, impl)
-        _state = impl // update current state
-        old.cancel(StateSwitchingException(old, impl)) // close old
-        stateObserver?.stateChanged(this, old, impl) // notify observer
-        _stateChannel.trySend(impl.correspondingState) // notify selector
-
-        return impl
-    }
 
     final override suspend fun resumeConnection() {
         _state.resumeConnection()
