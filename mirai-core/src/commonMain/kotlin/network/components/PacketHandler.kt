@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
+import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.coroutines.cancellation.CancellationException
 
 internal interface PacketHandler {
@@ -29,15 +30,29 @@ internal interface PacketHandler {
 }
 
 internal class PacketHandlerChain(
+    private val components: ComponentStorage = ComponentStorage.EMPTY,
     private val instances: Collection<PacketHandler>
 ) : PacketHandler {
-    constructor(vararg instances: PacketHandler?) : this(instances.filterNotNull())
-    constructor(instances: Iterable<PacketHandler?>) : this(instances.filterNotNull())
+
+    constructor(
+        components: ComponentStorage = ComponentStorage.EMPTY,
+        vararg instances: PacketHandler?,
+    ) : this(components, instances.filterNotNull())
+
+    constructor(
+        components: ComponentStorage = ComponentStorage.EMPTY,
+        instances: Iterable<PacketHandler?>,
+    ) : this(components, instances.filterNotNull())
+
+    private val interceptor: PacketInterceptor by lazy {
+        components.getOrNull(PacketInterceptor) ?: PacketInterceptor.NO
+    }
 
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
+        val p = interceptor.interceptor(incomingPacket) ?: return
         for (instance in instances) {
             try {
-                instance.handlePacket(incomingPacket)
+                instance.handlePacket(p)
             } catch (e: Throwable) {
                 if (e is CancellationException) return
                 throw ExceptionInPacketHandlerException(instance, incomingPacket, e)
@@ -111,4 +126,72 @@ internal class CallPacketFactoryPacketHandler(
     }
 
     override fun toString(): String = "CallPacketFactoryPacketHandler"
+}
+
+
+internal interface PacketInterceptor {
+    /**
+     * Break packet handling chain if return `null`
+     */
+    suspend fun interceptor(incomingPacket: IncomingPacket): IncomingPacket?
+
+    fun registerTemporaryInterceptor(
+        block: suspend PacketTemporaryInterceptor.(
+            PacketTemporaryInterceptor.Context,
+            IncomingPacket,
+        ) -> Unit
+    ): PacketTemporaryInterceptor
+
+    companion object : ComponentKey<PacketInterceptor> {
+        val NO: PacketInterceptor = object : PacketInterceptor {
+            override suspend fun interceptor(incomingPacket: IncomingPacket): IncomingPacket? {
+                return incomingPacket
+            }
+
+            override fun registerTemporaryInterceptor(block: suspend PacketTemporaryInterceptor.(PacketTemporaryInterceptor.Context, IncomingPacket) -> Unit): PacketTemporaryInterceptor {
+                throw UnsupportedOperationException()
+            }
+        }
+    }
+}
+
+internal interface PacketTemporaryInterceptor {
+    interface Context {
+        suspend fun finished()
+    }
+
+    fun unregister()
+}
+
+internal class PacketInterceptorImpl : PacketInterceptor {
+    private val interceptors = ConcurrentLinkedDeque<PacketTemporaryInterceptorImpl>()
+
+    private inner class PacketTemporaryInterceptorImpl(
+        @JvmField val func: suspend PacketTemporaryInterceptor.(PacketTemporaryInterceptor.Context, IncomingPacket) -> Unit,
+    ) : PacketTemporaryInterceptor {
+        override fun unregister() {
+            interceptors.remove(this)
+        }
+    }
+
+    override suspend fun interceptor(incomingPacket: IncomingPacket): IncomingPacket? {
+        val context = object : PacketTemporaryInterceptor.Context {
+            var f = false
+            override suspend fun finished() {
+                f = true
+            }
+        }
+        interceptors.forEach { interceptor ->
+            if (context.f) return null
+            interceptor.func.invoke(interceptor, context, incomingPacket)
+        }
+        if (context.f) return null
+        return incomingPacket
+    }
+
+    override fun registerTemporaryInterceptor(block: suspend PacketTemporaryInterceptor.(PacketTemporaryInterceptor.Context, IncomingPacket) -> Unit): PacketTemporaryInterceptor {
+        val i = PacketTemporaryInterceptorImpl(block)
+        this.interceptors.add(i)
+        return i
+    }
 }

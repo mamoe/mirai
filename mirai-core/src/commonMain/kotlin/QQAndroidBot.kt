@@ -160,8 +160,10 @@ internal open class QQAndroidBot constructor(
         )
         set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
+        set(PacketInterceptor, PacketInterceptorImpl())
         set(
             PacketHandler, PacketHandlerChain(
+                components,
                 LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
                 EventBroadcasterPacketHandler(components),
                 CallPacketFactoryPacketHandler(bot)
