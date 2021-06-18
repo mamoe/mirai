@@ -249,7 +249,7 @@ internal class CSDataHighwayHead : ProtoBuf {
     internal class ReqDataHighwayHead(
         @JvmField @ProtoNumber(1) val msgBasehead: DataHighwayHead? = null,
         @JvmField @ProtoNumber(2) val msgSeghead: SegHead? = null,
-        @JvmField @ProtoNumber(3) val reqExtendinfo: ByteArray, // = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(3) val reqExtendinfo: ByteArray? = null, // = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(4) val timestamp: Long = 0L,
         @JvmField @ProtoNumber(5) val msgLoginSigHead: LoginSigHead? = null
     ) : ProtoBuf

@@ -56,7 +56,7 @@ internal object Highway {
         resource: ExternalResource,
         kind: ResourceKind,
         commandId: Int,  // group image=2, friend image=1, groupPtt=29
-        extendInfo: ByteArray = EMPTY_BYTE_ARRAY,
+        extendInfo: ByteArray? = null,
         encrypt: Boolean = false,
         initialTicket: ByteArray? = null, // null then use sig session
         tryOnce: Boolean = false,
@@ -98,7 +98,9 @@ internal object Highway {
                 dataFlag = dataFlag,
                 localeId = localeId,
                 fileMd5 = md5,
-                extendInfo = if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo,
+                extendInfo = extendInfo?.let {
+                    if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
+                },
                 callback = callback
             ).sendConcurrently(
                 createConnection = { createConnection(ip, port) },
@@ -374,7 +376,7 @@ internal fun highwayPacketSession(
     data: ExternalResource,
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE,
-    extendInfo: ByteArray = EMPTY_BYTE_ARRAY,
+    extendInfo: ByteArray? = null,
     callback: Highway.ProgressionCallback? = null,
 ): ChunkedFlowSession<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
