@@ -107,7 +107,10 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         })
 
         set(BotInitProcessor, object : BotInitProcessor {
-            override suspend fun init() {
+            override fun setLoginHalted() {
+            }
+
+            override suspend fun init(scope: CoroutineScope) {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
             }

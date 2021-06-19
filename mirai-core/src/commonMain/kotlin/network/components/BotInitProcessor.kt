@@ -10,10 +10,7 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
@@ -22,7 +19,10 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.state.JobAttachStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPushForceOffline
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.Symbol
+import net.mamoe.mirai.utils.hierarchicalName
 
 
 /**
@@ -32,13 +32,18 @@ import net.mamoe.mirai.utils.MiraiLogger
  * Attached to handler state [NetworkHandler.State.LOADING] [as state observer][asObserver] in [QQAndroidBot.stateObserverChain].
  */
 internal interface BotInitProcessor {
-    suspend fun init()
+    /**
+     * Called when login was potentially halted. see [MessageSvcPushForceOffline]
+     */
+    fun setLoginHalted()
+
+    suspend fun init(scope: CoroutineScope)
 
     companion object : ComponentKey<BotInitProcessor>
 }
 
 internal fun BotInitProcessor.asObserver(targetState: State = State.LOADING): StateObserver {
-    return JobAttachStateObserver("BotInitProcessor.init", targetState) { init() }
+    return JobAttachStateObserver("BotInitProcessor.init", targetState) { init(it) }
 }
 
 
@@ -47,30 +52,45 @@ internal class BotInitProcessorImpl(
     private val context: ComponentStorage,
     private val logger: MiraiLogger,
 ) : BotInitProcessor {
+    companion object {
+        private val UNINITIALIZED = Symbol("UNINITIALIZED")
+        private val INITIALIZING = Symbol("INITIALIZING")
+        private val INITIALIZED = Symbol("INITIALIZED")
+    }
 
-    private val initialized = atomic(false)
+    private val state = atomic(UNINITIALIZED)
 
-    override tailrec suspend fun init() {
-        if (initialized.value) return
-        if (!initialized.compareAndSet(expect = false, update = true)) return init()
+    override fun setLoginHalted() {
+        state.compareAndSet(expect = INITIALIZING, update = UNINITIALIZED)
+    }
 
-        check(bot.isActive) { "bot is dead therefore network can't init." }
-        context[ContactUpdater].closeAllContacts(CancellationException("re-init"))
+    override suspend fun init(scope: CoroutineScope) {
+        if (!state.compareAndSet(expect = UNINITIALIZED, update = INITIALIZING)) return
 
-        val registerResp =
-            context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
+        scope.launch(scope.hierarchicalName("BotInitProcessorImpl.init")) {
+            check(bot.isActive) { "bot is dead therefore network can't init." }
+            context[ContactUpdater].closeAllContacts(CancellationException("re-init"))
 
-        // do them parallel.
-        context[MessageSvcSyncer].startSync()
-        context[BdhSessionSyncer].loadFromCache()
+            val registerResp =
+                context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
+
+            // do them parallel.
+            context[MessageSvcSyncer].startSync()
+            context[BdhSessionSyncer].loadFromCache()
 
 
-        coroutineScope {
-            launch { runWithCoverage { context[OtherClientUpdater].update() } }
-            launch { runWithCoverage { context[ContactUpdater].loadAll(registerResp.origin) } }
-        }
+            coroutineScope {
+                launch { runWithCoverage { context[OtherClientUpdater].update() } }
+                launch { runWithCoverage { context[ContactUpdater].loadAll(registerResp.origin) } }
+            }
 
-        bot.components[SsoProcessor].firstLoginSucceed = true
+            state.value = INITIALIZED
+            bot.components[SsoProcessor].firstLoginSucceed = true
+        }.apply {
+            invokeOnCompletion { e ->
+                if (e != null) setLoginHalted()
+            }
+        }.join()
     }
 
     private inline fun runWithCoverage(block: () -> Unit) {
