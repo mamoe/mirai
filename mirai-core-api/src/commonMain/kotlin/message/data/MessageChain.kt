@@ -464,7 +464,7 @@ public fun Stream<Message>.toMessageChain(): MessageChain = this.asSequence().to
  */
 @JvmName("newChain")
 public suspend fun Flow<Message>.toMessageChain(): MessageChain =
-    buildMessageChain { collect(::add) }
+    buildMessageChain { collect { add(it) } }
 
 /**
  * 扁平化 [this] 并创建一个 [MessageChain].
