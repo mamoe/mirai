@@ -34,27 +34,6 @@ internal class SetStateTest : AbstractNettyNHTest() {
     }
 
     @Test
-    fun `setState should ignore duplications CONNECTIN to CLOSED to CLOSED`() {
-        assertNotNull(network.setStateConnecting())
-        assertState(CONNECTING)
-        assertNotNull(network.setStateClosed(IllegalStateException("1")))
-        assertState(CLOSED)
-        assertNull(network.setStateClosed(IllegalStateException("2")))
-        assertState(CLOSED)
-    }
-
-
-    @Test
-    fun `setState should ignore duplications LOADING to CLOSED to CLOSED`() {
-        assertNotNull(network.setStateLoading(channel))
-        assertState(LOADING)
-        assertNotNull(network.setStateClosed(IllegalStateException("1")))
-        assertState(CLOSED)
-        assertNull(network.setStateClosed(IllegalStateException("2")))
-        assertState(CLOSED)
-    }
-
-    @Test
     fun `setState should ignore duplications OK to CLOSED to CLOSED`() {
         assertNotNull(network.setStateOK(channel))
         assertState(OK)
