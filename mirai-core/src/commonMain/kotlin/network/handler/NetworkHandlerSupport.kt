@@ -205,11 +205,14 @@ internal abstract class NetworkHandlerSupport(
     ) : CancellationException("State is switched from $old to $new")
 
     /**
-     * Attempts to change state.
+     * Calculate [new state][new] and set it as the current, returning the new state,
+     * or `null` if state has concurrently been set to CLOSED, or has same [class][KClass] as current.
      *
-     * Returns null if new state has same [class][KClass] as current (meaning already set by another thread).
+     * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
-    protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? = setState(S::class, new)
+    protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? =
+        @OptIn(TestOnly::class)
+        setStateImpl(S::class as KClass<S>?, new)
 
     /**
      * Attempts to change state if current state is [this].
@@ -227,17 +230,6 @@ internal abstract class NetworkHandlerSupport(
             null
         }
     }
-
-    /**
-     * Calculate [new state][new] and set it as the current, returning the new state,
-     * or `null` if state has concurrently been set to CLOSED, or has same [class][KClass] as current.
-     *
-     * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
-     */
-    @JvmName("setState1")
-    protected fun <S : BaseStateImpl> setState(newType: KClass<S>, new: () -> S): S? =
-        @OptIn(TestOnly::class)
-        setStateImpl(newType as KClass<S>?, new)
 
     private val lock = SingleEntrantLock()
     private val lockForSetStateWithOldInstance = Any()
