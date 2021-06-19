@@ -49,7 +49,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
-import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.utils.*
 
 
@@ -517,6 +516,37 @@ internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroid
     }
 }
 
+@Serializable
+private class Wording(
+    @ProtoNumber(1) val itemID: Int = 0,
+    @ProtoNumber(2) val itemName: String = ""
+) : ProtoBuf
+
+@Serializable
+private class Sub8AMsgInfo(
+    @ProtoNumber(1) val fromUin: Long,
+    @ProtoNumber(2) val botUin: Long,
+    @ProtoNumber(3) val srcId: Int,
+    @ProtoNumber(4) val srcInternalId: Long,
+    @ProtoNumber(5) val time: Long,
+    @ProtoNumber(6) val random: Int,
+    @ProtoNumber(7) val pkgNum: Int, // 1
+    @ProtoNumber(8) val pkgIndex: Int, // 0
+    @ProtoNumber(9) val devSeq: Int, // 0
+    @ProtoNumber(12) val flag: Int, // 1
+    @ProtoNumber(13) val wording: Wording
+) : ProtoBuf
+
+@Serializable
+private class Sub8A(
+    @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
+    @ProtoNumber(2) val appId: Int, // 1
+    @ProtoNumber(3) val instId: Int, // 1
+    @ProtoNumber(4) val longMessageFlag: Int, // 0
+    @ProtoNumber(5) val reserved: ByteArray? = null // struct{ boolean(1), boolean(2) }
+) : ProtoBuf
+
+
 // uSubMsgType to vProtobuf
 // 138 or 139: top_package/akln.java:1568
 // 66: top_package/nhz.java:269
@@ -527,35 +557,6 @@ internal inline fun lambda528(crossinline block: suspend MsgType0x210.(QQAndroid
 internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
-        @Serializable
-        class Wording(
-            @ProtoNumber(1) val itemID: Int = 0,
-            @ProtoNumber(2) val itemName: String = ""
-        ) : ProtoBuf
-
-        @Serializable
-        class Sub8AMsgInfo(
-            @ProtoNumber(1) val fromUin: Long,
-            @ProtoNumber(2) val botUin: Long,
-            @ProtoNumber(3) val srcId: Int,
-            @ProtoNumber(4) val srcInternalId: Long,
-            @ProtoNumber(5) val time: Long,
-            @ProtoNumber(6) val random: Int,
-            @ProtoNumber(7) val pkgNum: Int, // 1
-            @ProtoNumber(8) val pkgIndex: Int, // 0
-            @ProtoNumber(9) val devSeq: Int, // 0
-            @ProtoNumber(12) val flag: Int, // 1
-            @ProtoNumber(13) val wording: Wording
-        ) : ProtoBuf
-
-        @Serializable
-        class Sub8A(
-            @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
-            @ProtoNumber(2) val appId: Int, // 1
-            @ProtoNumber(3) val instId: Int, // 1
-            @ProtoNumber(4) val longMessageFlag: Int, // 0
-            @ProtoNumber(5) val reserved: ByteArray? = null // struct{ boolean(1), boolean(2) }
-        ) : ProtoBuf
 
         return@lambda528 vProtobuf.loadAs(Sub8A.serializer()).msgInfo.asSequence()
             .filter { it.botUin == bot.id }.mapNotNull { info ->

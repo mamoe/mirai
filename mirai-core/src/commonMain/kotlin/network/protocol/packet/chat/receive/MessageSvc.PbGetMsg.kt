@@ -228,7 +228,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     }
 }
 
-private suspend fun QQAndroidBot.createGroupForBot(groupUin: Long): Group? {
+internal suspend fun QQAndroidBot.createGroupForBot(groupUin: Long): Group? {
     val group = getGroupByUinOrNull(groupUin)
     if (group != null) {
         return null

@@ -39,7 +39,7 @@ internal data class MarketFaceImpl internal constructor(
  * For refinement
  */
 internal class MarketFaceInternal(
-    @JvmField private val delegate: ImMsgBody.MarketFace,
+    private val delegate: ImMsgBody.MarketFace,
 ) : MarketFace, RefinableMessage {
     override val name: String get() = delegate.faceName.decodeToString()
     override val id: Int get() = delegate.tabId

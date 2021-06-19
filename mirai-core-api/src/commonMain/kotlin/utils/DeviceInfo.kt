@@ -107,20 +107,20 @@ public class DeviceInfo(
     }
 }
 
-public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
-    @Serializable
-    class DevInfo(
-        @ProtoNumber(1) val bootloader: ByteArray,
-        @ProtoNumber(2) val procVersion: ByteArray,
-        @ProtoNumber(3) val codename: ByteArray,
-        @ProtoNumber(4) val incremental: ByteArray,
-        @ProtoNumber(5) val fingerprint: ByteArray,
-        @ProtoNumber(6) val bootId: ByteArray,
-        @ProtoNumber(7) val androidId: ByteArray,
-        @ProtoNumber(8) val baseBand: ByteArray,
-        @ProtoNumber(9) val innerVersion: ByteArray
-    )
+@Serializable
+private class DevInfo(
+    @ProtoNumber(1) val bootloader: ByteArray,
+    @ProtoNumber(2) val procVersion: ByteArray,
+    @ProtoNumber(3) val codename: ByteArray,
+    @ProtoNumber(4) val incremental: ByteArray,
+    @ProtoNumber(5) val fingerprint: ByteArray,
+    @ProtoNumber(6) val bootId: ByteArray,
+    @ProtoNumber(7) val androidId: ByteArray,
+    @ProtoNumber(8) val baseBand: ByteArray,
+    @ProtoNumber(9) val innerVersion: ByteArray
+)
 
+public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
     return ProtoBuf.encodeToByteArray(
         DevInfo.serializer(), DevInfo(
             bootloader,

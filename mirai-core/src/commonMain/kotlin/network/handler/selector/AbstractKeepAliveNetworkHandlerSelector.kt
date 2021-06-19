@@ -93,7 +93,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             }
 
             return if (current != null) {
-                when (val thisState = current.state) {
+                when (current.state) {
                     NetworkHandler.State.CLOSED -> {
                         if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
                             // invalidate the instance and try again.

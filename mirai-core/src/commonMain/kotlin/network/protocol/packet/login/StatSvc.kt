@@ -137,7 +137,7 @@ internal class StatSvc {
         fun online(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl("online", client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
+        ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
             client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
                 //  timeStamp = friendListCache.timeStamp

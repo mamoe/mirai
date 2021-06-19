@@ -47,7 +47,7 @@ public annotation class MiraiInternalFile
  */
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR, TYPE)
 @MustBeDocumented
 public annotation class MiraiExperimentalApi(
     public val message: String = ""

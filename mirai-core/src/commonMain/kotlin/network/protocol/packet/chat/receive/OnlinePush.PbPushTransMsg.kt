@@ -7,9 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(JavaFriendlyAPI::class)
-
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.coroutines.CancellationException
@@ -22,8 +19,11 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.NormalMemberImpl
+import net.mamoe.mirai.internal.contact.checkIsMemberImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.newMember
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
@@ -34,7 +34,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.read
 
 
 internal object OnlinePushPbPushTransMsg :

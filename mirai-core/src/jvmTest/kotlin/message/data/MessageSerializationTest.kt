@@ -126,25 +126,25 @@ internal class MessageSerializationTest {
         }
     }
 
+    @Serializable
+    data class W(
+        val m: FileMessage
+    )
+
     @Test
     fun `test FileMessage serialization`() {
-        @Serializable
-        data class W(
-            val m: FileMessage
-        )
-
         val w = W(FileMessageImpl("id", 2, "name", 1))
         println(w.serialize(W.serializer()))
         assertEquals(w, w.serialize(W.serializer()).deserialize(W.serializer()))
     }
 
+    @Serializable
+    data class RichWrapper(
+        val richMessage: RichMessage
+    )
+
     @Test
     fun `test polymorphic serialization`() {
-        @Serializable
-        data class RichWrapper(
-            val richMessage: RichMessage
-        )
-
         val string = format.encodeToString(RichWrapper.serializer(), RichWrapper(SimpleServiceMessage(1, "content")))
         println(string)
         var element = format.parseToJsonElement(string)
@@ -155,13 +155,13 @@ internal class MessageSerializationTest {
         assertEquals(1, element["serviceId"]?.cast<JsonPrimitive>()?.content?.toInt())
     }
 
+    @Serializable
+    data class Wrapper(
+        val message: @Polymorphic SingleMessage
+    )
+
     @Test
     fun `test ShowImageFlag serialization`() {
-        @Serializable
-        data class Wrapper(
-            val message: @Polymorphic SingleMessage
-        )
-
         val string = format.encodeToString(Wrapper.serializer(), Wrapper(ShowImageFlag))
         println(string)
         var element = format.parseToJsonElement(string)
