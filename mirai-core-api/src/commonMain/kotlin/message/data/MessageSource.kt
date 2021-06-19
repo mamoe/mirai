@@ -90,11 +90,11 @@ import net.mamoe.mirai.utils.safeCast
  *
  * ### Java 示例
  * ```
- * val source: MessageSource = ...
- * source.recall() // 通过 MessageSource 撤回
+ * MessageSource source = ...
+ * MessageSource.recall(source); // 通过 MessageSource 撤回
  *
- * val event: MessageEvent = ...
- * event.message.recall() // 也可以通过来自服务器的 [MessageChain] 撤回, 因为这些 chain 包含 [MessageSource]
+ * MessageEvent event = ...
+ * MessageSource.recall(event.message); // 也可以通过来自服务器的 [MessageChain] 撤回, 因为这些 chain 包含 [MessageSource]
  * ```
  *
  *

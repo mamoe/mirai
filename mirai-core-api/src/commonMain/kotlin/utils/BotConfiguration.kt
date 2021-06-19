@@ -28,7 +28,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.milliseconds
 
 /**
  * [Bot] 配置. 用于 [BotFactory.newBot]
@@ -194,9 +193,11 @@ public open class BotConfiguration { // open for Java
     public var heartbeatTimeoutMillis: Long = 5.secondsToMillis
 
     /** 心跳失败后的第一次重连前的等待时间. */
+    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
     public var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
     /** 重连失败后, 继续尝试的每次等待时间 */
+    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
     public var reconnectPeriodMillis: Long = 5.secondsToMillis
 
     /** 最多尝试多少次重连 */
@@ -469,9 +470,9 @@ public open class BotConfiguration { // open for Java
          */
         @ExperimentalTime
         public inline var saveInterval: Duration
-            @JvmSynthetic inline get() = saveIntervalMillis.milliseconds
+            @JvmSynthetic inline get() = Duration.milliseconds(saveIntervalMillis)
             @JvmSynthetic inline set(v) {
-                saveIntervalMillis = v.toLongMilliseconds()
+                saveIntervalMillis = v.inWholeMilliseconds
             }
 
         /**
@@ -549,7 +550,9 @@ public open class BotConfiguration { // open for Java
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
             new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
             new.heartbeatStrategy = heartbeatStrategy
+            @Suppress("DEPRECATION")
             new.firstReconnectDelayMillis = firstReconnectDelayMillis
+            @Suppress("DEPRECATION")
             new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.autoReconnectOnForceOffline = autoReconnectOnForceOffline

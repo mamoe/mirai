@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,8 +11,8 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 @Serializable
 internal class Cmd0x352 : ProtoBuf {
@@ -100,7 +100,7 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(2) @JvmField val msgTryupImgReq: List<TryUpImgReq> = emptyList(),// optional
         @ProtoNumber(3) @JvmField val msgGetimgUrlReq: List<GetImgUrlReq> = emptyList(),// optional
         @ProtoNumber(4) @JvmField val msgDelImgReq: List<DelImgReq> = emptyList(),
-        @ProtoNumber(10) @JvmField val netType: Int = 3// 数据网络=5
+        @ProtoNumber(10) @JvmField val netType: Int = 0// 数据网络=5, wifi=3
     ) : ProtoBuf
 
     @Serializable
@@ -115,19 +115,19 @@ internal class Cmd0x352 : ProtoBuf {
 
     @Serializable
     internal class TryUpImgReq(
-        @ProtoNumber(1) @JvmField val srcUin: Int,
-        @ProtoNumber(2) @JvmField val dstUin: Int,
-        @ProtoNumber(3) @JvmField val fileId: Int = 0,//从0开始的自增数？貌似有一个连接就要自增1, 但是又会重置回0
+        @ProtoNumber(1) @JvmField val srcUin: Long,
+        @ProtoNumber(2) @JvmField val dstUin: Long,
+        @ProtoNumber(3) @JvmField val fileId: Long = 0L,//从0开始的自增数？貌似有一个连接就要自增1, 但是又会重置回0
         @ProtoNumber(4) @JvmField val fileMd5: ByteArray,
-        @ProtoNumber(5) @JvmField val fileSize: Int,
-        @ProtoNumber(6) @JvmField val fileName: String,//默认为md5+".jpg"
+        @ProtoNumber(5) @JvmField val fileSize: Long,//默认为md5+".jpg"
+        @ProtoNumber(6) @JvmField val fileName: String,
         @ProtoNumber(7) @JvmField val srcTerm: Int = 5,
         @ProtoNumber(8) @JvmField val platformType: Int = 9,
         @ProtoNumber(9) @JvmField val innerIP: Int = 0,
-        @ProtoNumber(10) @JvmField val addressBook: Int = 0,//chatType == 1006为1 我觉得发0没问题
+        @ProtoNumber(10) @JvmField val addressBook: Boolean = false,//chatType == 1006为true 我觉得发false没问题
         @ProtoNumber(11) @JvmField val retry: Int = 0,//default
         @ProtoNumber(12) @JvmField val buType: Int = 1,//1或96 不确定
-        @ProtoNumber(13) @JvmField val imgOriginal: Int,//是否为原图
+        @ProtoNumber(13) @JvmField val imgOriginal: Boolean = false,//是否为原图
         @ProtoNumber(14) @JvmField val imgWidth: Int = 0,
         @ProtoNumber(15) @JvmField val imgHeight: Int = 0,
         /**
@@ -145,7 +145,7 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(18) @JvmField val fileIndex: ByteArray = EMPTY_BYTE_ARRAY,//default
         @ProtoNumber(19) @JvmField val fileStoreDays: Int = 0,//default
         @ProtoNumber(20) @JvmField val stepFlag: Int = 0,//default
-        @ProtoNumber(21) @JvmField val rejectTryFast: Int = 0,//bool
+        @ProtoNumber(21) @JvmField val rejectTryFast: Boolean = false,//bool
         @ProtoNumber(22) @JvmField val srvUpload: Int = 1,//typeHotPic[1/2/3]
         @ProtoNumber(23) @JvmField val transferUrl: ByteArray = EMPTY_BYTE_ARRAY//rawDownloadUrl, 如果没有就是EMPTY_BYTE_ARRAY
     ) : ImgReq
@@ -155,7 +155,7 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(1) @JvmField val fileId: Long = 0L,
         @ProtoNumber(2) @JvmField val clientIp: Int = 0,
         @ProtoNumber(3) @JvmField val result: Int = 0,
-        @ProtoNumber(4) @JvmField val failMsg: String? = "",
+        @ProtoNumber(4) @JvmField val failMsg: String = "",
         @ProtoNumber(5) @JvmField val boolFileExit: Boolean = false,
         @ProtoNumber(6) @JvmField val msgImgInfo: ImgInfo? = null,
         @ProtoNumber(7) @JvmField val uint32UpIp: List<Int> = emptyList(),

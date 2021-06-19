@@ -96,12 +96,6 @@ private fun RefinableMessage0(
     }
 }
 
-private object MiraiImplForRefineTest : MiraiImpl() {
-    override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
-        return super.downloadForwardMessage(bot, resourceId)
-    }
-}
-
 internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
 
     @Test

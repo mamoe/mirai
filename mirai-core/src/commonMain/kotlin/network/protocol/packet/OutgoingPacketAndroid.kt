@@ -10,17 +10,17 @@
 package net.mamoe.mirai.internal.network.protocol.packet
 
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.writeFully
+import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.internal.network.appClientVersion
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.KEY_16_ZEROS
 
 @kotlin.Suppress("unused")
 internal class OutgoingPacketWithRespType<R : Packet?> constructor(
@@ -30,54 +30,70 @@ internal class OutgoingPacketWithRespType<R : Packet?> constructor(
     delegate: ByteReadPacket
 ) : OutgoingPacket(name, commandName, sequenceId, delegate)
 
+// TODO: 2021/4/12 generalize
 internal open class OutgoingPacket constructor(
     name: String?,
     val commandName: String,
     val sequenceId: Int,
-    val delegate: ByteReadPacket
+    delegate: ByteReadPacket
 ) {
-    val name: String = name ?: commandName
+    val delegate = delegate.readBytes()
+    val displayName: String = if (name == null) commandName else "$commandName($name)"
 }
 
+internal class IncomingPacket constructor(
+    val commandName: String,
+    val sequenceId: Int,
+
+    val data: Packet?,
+    /**
+     * If not `null`, [data] is `null`
+     */
+    val exception: Throwable?, // may complete with exception (thrown by decoders)
+) {
+    init {
+        if (exception != null) require(data == null) { "When exception is not null, data must be null." }
+        if (data != null) require(exception == null) { "When data is not null, exception must be null." }
+    }
+
+    override fun toString(): String {
+        return if (exception == null) {
+            "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$data)"
+        } else {
+            "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$exception)"
+        }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-    network: QQAndroidBotNetworkHandler,
+    network: NetworkHandler,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = network.run {
-    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
-}
+): E = network.sendAndExpect(this, timeoutMillis, retry) as E
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
 @kotlin.internal.LowPriorityInOverloadResolution
 internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
-    network: QQAndroidBotNetworkHandler,
+    network: NetworkHandler,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = network.run {
-    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
-}
+): E = network.sendAndExpect(this, timeoutMillis, retry) as E
 
 internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
     bot: QQAndroidBot,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = bot.network.run {
-    return (this@sendAndExpect as OutgoingPacket).sendAndExpect(timeoutMillis, retry)
-}
+): E = (this@sendAndExpect as OutgoingPacket).sendAndExpect(bot.network, timeoutMillis, retry)
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
 @kotlin.internal.LowPriorityInOverloadResolution
 internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
     bot: QQAndroidBot,
     timeoutMillis: Long = 5000,
     retry: Int = 2
-): E = bot.network.run {
-    return this@sendAndExpect.sendAndExpect(timeoutMillis, retry)
-}
+): E = bot.network.sendAndExpect(this, timeoutMillis, retry) as E
 
-
-internal val KEY_16_ZEROS = ByteArray(16)
-internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 @Suppress("DuplicatedCode")
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(

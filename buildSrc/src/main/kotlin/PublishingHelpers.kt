@@ -33,13 +33,6 @@ import kotlin.reflect.KProperty
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-/**
- * Configures the [bintray][com.jfrog.bintray.gradle.BintrayExtension] extension.
- */
-@PublishedApi
-internal fun Project.`bintray`(configure: com.jfrog.bintray.gradle.BintrayExtension.() -> Unit): Unit =
-    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("bintray", configure)
-
 @PublishedApi
 internal operator fun <U : Task> RegisteringDomainObjectDelegateProviderWithTypeAndAction<out TaskContainer, U>.provideDelegate(
     receiver: Any?,

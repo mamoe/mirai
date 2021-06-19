@@ -21,14 +21,16 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.BdhSession
-import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.message.OfflineGroupImage
+import net.mamoe.mirai.internal.network.context.BdhSession
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.highway.ChannelKind
+import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
+import net.mamoe.mirai.internal.network.highway.postPtt
+import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
@@ -36,7 +38,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.RemoteFileImpl
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -109,7 +110,7 @@ internal class GroupImpl(
                 }
             }
         }
-        BotLeaveEvent.Active(this).broadcastWithBot(bot)
+        BotLeaveEvent.Active(this).broadcast()
         return true
     }
 
@@ -146,7 +147,7 @@ internal class GroupImpl(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        bot.network.run<QQAndroidBotNetworkHandler, Image> {
+        bot.network.run<NetworkHandler, Image> {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
                 uin = bot.id,
@@ -204,7 +205,7 @@ internal class GroupImpl(
                         .toByteArray(Cmd0x388.ReqBody.serializer()),
                 )
             }.recoverCatchingSuppressed {
-                when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()) {
+                when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect<Any>()) {
                     is PttStore.GroupPttUp.Response.RequireUpload -> {
                         tryServersUpload(
                             bot,

@@ -14,9 +14,15 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.internal.event.broadcastInternal
+import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.verbose
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -139,18 +145,52 @@ public interface CancellableEvent : Event {
  * @see __broadcastJava Java 使用
  */
 @JvmSynthetic
-public suspend fun <E : Event> E.broadcast(): E = apply {
-    check(this is AbstractEvent) {
-        "Events must extend AbstractEvent"
+public suspend fun <E : Event> E.broadcast(): E = _EventBroadcast.implementation.broadcastPublic(this)
+
+/**
+ * @since 2.7-M1
+ */
+@Suppress("ClassName")
+internal open class _EventBroadcast {
+    companion object {
+        @Volatile
+        @JvmStatic
+        var implementation: _EventBroadcast = _EventBroadcast()
     }
 
-    if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return@apply
+    open suspend fun <E : Event> broadcastPublic(event: E): E = event.apply { Mirai.broadcastEvent(this) }
+
+    @JvmName("broadcastImpl") // avoid mangling
+    internal suspend fun <E : Event> broadcastImpl(event: E): E {
+        check(event is AbstractEvent) { "Events must extend AbstractEvent" }
+
+        if (event is BroadcastControllable && !event.shouldBroadcast) {
+            return event
+        }
+        event.broadCastLock.withLock {
+            event._intercepted = false
+            if (EventDisabled) return@withLock
+            logEvent(event)
+            callAndRemoveIfRequired(event)
+        }
+
+        return event
     }
-    this.broadCastLock.withLock {
-        this._intercepted = false
-        this.broadcastInternal() // inline, no extra cost
+
+    private fun logEvent(event: Event) {
+        if (event is Packet.NoEventLog) return
+        if (event is Packet.NoLog) return
+        if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
+//        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
+
+        if (event is BotEvent) {
+            event.bot.logger.verbose { "Event: $event" }
+        } else {
+            topLevelEventLogger.verbose { "Event: $event" }
+        }
     }
+
+    private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
 }
 
 /**

@@ -9,17 +9,19 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.network.BdhSession
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.components.EventDispatcher
+import net.mamoe.mirai.internal.network.components.ServerAddress
+import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.context.BdhSession
+import net.mamoe.mirai.internal.network.networkType
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushResp
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
@@ -45,26 +47,29 @@ internal class ConfigPushSvc {
     ) {
         override val canBeCached: Boolean get() = false
 
-        sealed class PushReqResponse(val struct: PushReqJceStruct) : Packet, Event, AbstractEvent(), Packet.NoEventLog {
-            class Unknown(struct: PushReqJceStruct) : PushReqResponse(struct) {
+        sealed class PushReqResponse(
+            val struct: PushReqJceStruct,
+            val bot: QQAndroidBot,
+        ) : Packet, Event, AbstractEvent(), Packet.NoEventLog {
+            class Unknown(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.Unknown"
                 }
             }
 
-            class LogAction(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class LogAction(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.LogAction"
                 }
             }
 
-            class ServerListPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class ServerListPush(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.ServerListPush"
                 }
             }
 
-            class ConfigPush(struct: PushReqJceStruct) : PushReqResponse(struct) {
+            class ConfigPush(struct: PushReqJceStruct, bot: QQAndroidBot) : PushReqResponse(struct, bot) {
                 override fun toString(): String {
                     return "ConfigPushSvc.PushReq.PushReqResponse.ConfigPush"
                 }
@@ -76,14 +81,16 @@ internal class ConfigPushSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse {
             val pushReq = readUniPacket(PushReqJceStruct.serializer(), "PushReq")
             return when (pushReq.type) {
-                1 -> PushReqResponse.ServerListPush(pushReq)
-                2 -> PushReqResponse.ConfigPush(pushReq)
-                3 -> PushReqResponse.LogAction(pushReq)
-                else -> PushReqResponse.Unknown(pushReq)
+                1 -> PushReqResponse.ServerListPush(pushReq, bot)
+                2 -> PushReqResponse.ConfigPush(pushReq, bot)
+                3 -> PushReqResponse.LogAction(pushReq, bot)
+                else -> PushReqResponse.Unknown(pushReq, bot)
             }
         }
 
         override suspend fun QQAndroidBot.handle(packet: PushReqResponse, sequenceId: Int): OutgoingPacket? {
+            val bdhSyncer = bot.components[BdhSessionSyncer]
+
             fun handleConfigPush(packet: PushReqResponse.ConfigPush) {
                 val pushReq = packet.struct
 
@@ -91,9 +98,10 @@ internal class ConfigPushSvc {
                 val fileStoragePushFSSvcList = pushReq.jcebuf.loadAs(FileStoragePushFSSvcList.serializer())
                 bot.client.fileStoragePushFSSvcList = fileStoragePushFSSvcList
 
+
                 val bigDataChannel = fileStoragePushFSSvcList.bigDataChannel
                 if (bigDataChannel?.vBigdataPbBuf == null) {
-                    bot.bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
+                    bdhSyncer.bdhSession.completeExceptionally(IllegalStateException("BdhSession not received."))
                     return
                 }
 
@@ -128,7 +136,6 @@ internal class ConfigPushSvc {
             }
 
             fun handleServerListPush(resp: PushReqResponse.ServerListPush) {
-                bot.network.logger.info { "Server list updated." }
                 val serverListPush = kotlin.runCatching {
                     resp.struct.jcebuf.loadAs(ServerListPush.serializer())
                 }.getOrElse {
@@ -143,22 +150,17 @@ internal class ConfigPushSvc {
                     serverListPush.mobileSSOServerList
                 }
 
-                bot.network.logger.info { "Server list: ${pushServerList.joinToString()}." }
-
                 if (pushServerList.isNotEmpty()) {
-                    bot.serverList.clear()
-                    pushServerList.shuffled().forEach {
-                        bot.serverList.add(it.host to it.port)
-                    }
+                    bot.components[ServerList].setPreferred(
+                        pushServerList.shuffled().map { ServerAddress(it.host, it.port) })
                 }
-                bot.bdhSyncer.saveToCache()
-                bot.bdhSyncer.saveServerListToCache()
+                bdhSyncer.saveToCache()
+                bdhSyncer.saveServerListToCache()
                 if (serverListPush.reconnectNeeded == 1) {
                     bot.logger.info { "Server request to change server." }
-                    bot.launch {
-                        delay(1000)
-                        BotOfflineEvent.RequireReconnect(bot).broadcast()
-                    }
+                    bot.components[EventDispatcher].broadcastAsync(
+                        BotOfflineEvent.RequireReconnect(bot, IllegalStateException("Server request to change server."))
+                    )
                 }
             }
 

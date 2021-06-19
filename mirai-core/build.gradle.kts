@@ -17,7 +17,6 @@ plugins {
     kotlin("plugin.serialization")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
-    id("com.jfrog.bintray")
 }
 
 description = "Mirai Protocol implementation for QQ Android"
@@ -72,12 +71,14 @@ kotlin {
 
                 api1(`kotlinx-io-jvm`)
                 implementation1(`kotlinx-coroutines-io`)
+                implementation(`netty-all`)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
+                runtimeOnly(`slf4j-simple`)
             }
         }
 
@@ -91,9 +92,10 @@ kotlin {
             val androidTest by getting {
                 dependencies {
                     implementation(kotlin("test", Versions.kotlinCompiler))
-                    implementation(kotlin("test-junit", Versions.kotlinCompiler))
+                    implementation(kotlin("test-junit5", Versions.kotlinCompiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
+                    implementation("org.bouncycastle:bcprov-jdk15on:1.64")
                 }
             }
         }
@@ -107,7 +109,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.pcap4j:pcap4j-distribution:1.8.2")
+                api1(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }

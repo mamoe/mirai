@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.utils
 
+import java.util.*
 import kotlin.reflect.KClass
 
 public inline fun <reified T> Any?.cast(): T = this as T
@@ -165,5 +166,56 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     }
 }
 
+public fun systemProp(name: String, default: String): String =
+    System.getProperty(name, default) ?: default
+
 public fun systemProp(name: String, default: Boolean): Boolean =
     System.getProperty(name, default.toString())?.toBoolean() ?: default
+
+
+public fun systemProp(name: String, default: Long): Long =
+    System.getProperty(name, default.toString())?.toLongOrNull() ?: default
+
+
+public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
+    var depth = 0
+    var rootCause: Throwable? = this
+    while (rootCause?.cause != null) {
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) break
+    }
+    return rootCause ?: this
+}
+
+/**
+ * Use [findCause] instead for better performance.
+ */
+@TestOnly
+public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence {
+    var depth = 0
+    var rootCause: Throwable? = this@causes
+    while (rootCause?.cause != null) {
+        yield(rootCause.cause!!)
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) break
+    }
+}
+
+public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable? {
+    var depth = 0
+    var rootCause: Throwable? = this
+    while (true) {
+        if (rootCause?.cause === rootCause) return rootCause
+        val current = rootCause?.cause ?: return null
+        if (filter(current)) return current
+        rootCause = rootCause.cause
+        if (depth++ >= maxDepth) return null
+    }
+}
+
+public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable =
+    findCause(maxDepth, filter) ?: this
+
+public fun String.capitalize(): String {
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+}

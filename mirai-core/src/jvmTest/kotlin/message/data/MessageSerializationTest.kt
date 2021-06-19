@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.internal.message.MarketFaceImpl
 import net.mamoe.mirai.internal.message.UnsupportedMessageImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
@@ -187,5 +188,33 @@ internal class MessageSerializationTest {
         println(chain.serialize()) // [["net.mamoe.mirai.message.data.PlainText",{"content":"test"}],["net.mamoe.mirai.message.data.At",{"target":123456,"display":""}],["net.mamoe.mirai.message.data.AtAll",{}],["net.mamoe.mirai.internal.message.OfflineGroupImage",{"imageId":"{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai"}]]
 
         testSerialization(chain)
+    }
+
+    @Test
+    fun `test MessageSource serializable from #1273`() {
+        // #1273
+
+        val a = """
+            {"kind":"GROUP","botId":692928873,"ids":[44],"internalIds":[-933057735],"time":1621607925,"fromId":1930893235,"targetId":1067474509,"originalMessage":[{"type":"Image","imageId":"{47B45B11-1491-3E85-E816-467029444C3F}.jpg"}]}
+        """.trimIndent()
+        val j = Json {
+            serializersModule = module
+            ignoreUnknownKeys = true
+        }
+        val source = j.decodeFromString(MessageSource.Serializer, a)
+        println(source._miraiContentToString())
+        assertEquals(
+            expected = Mirai.buildMessageSource(692928873, MessageSourceKind.GROUP) {
+                id(44)
+                internalId(-933057735)
+                time(1621607925)
+                sender(1930893235)
+                target(1067474509)
+                messages {
+                    +Image("{47B45B11-1491-3E85-E816-467029444C3F}.jpg")
+                }
+            },
+            actual = source
+        )
     }
 }

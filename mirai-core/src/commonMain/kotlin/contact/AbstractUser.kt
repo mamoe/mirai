@@ -18,14 +18,13 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.getImageType
-import net.mamoe.mirai.internal.network.BdhSession
+import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
 import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
@@ -59,13 +58,14 @@ internal abstract class AbstractUser(
         val resp = bot.network.run {
             LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
-                    srcUin = bot.id.toInt(),
-                    dstUin = id.toInt(),
-                    fileId = 0,
+                    buType = 1,
+                    srcUin = bot.id,
+                    dstUin = this@AbstractUser.id,
                     fileMd5 = resource.md5,
-                    fileSize = resource.size.toInt(),
+                    fileSize = resource.size,
                     fileName = resource.md5.toUHexString("") + "." + resource.formatName,
-                    imgOriginal = 1
+                    imgOriginal = true,
+                    buildVer = bot.client.buildVer
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }

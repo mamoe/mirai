@@ -12,20 +12,20 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val project = "2.6.4"
+    const val project = "2.7-M1-dev-6"
 
     const val core = project
     const val console = project
     const val consoleTerminal = project
 
-    const val kotlinCompiler = "1.4.30"
-    const val kotlinStdlib = "1.4.30"
-    const val dokka = "1.4.20"
+    const val kotlinCompiler = "1.5.10"
+    const val kotlinStdlib = "1.5.10"
+    const val dokka = "1.4.32"
 
-    const val coroutines = "1.4.2"
-    const val atomicFU = "0.15.1"
+    const val coroutines = "1.5.0"
+    const val atomicFU = "0.16.1"
     const val serialization = "1.1.0"
-    const val ktor = "1.5.1"
+    const val ktor = "1.5.4"
 
     const val binaryValidator = "0.4.0"
 
@@ -37,15 +37,15 @@ object Versions {
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
 
-    const val bintray = "1.8.5"
     const val shadow = "6.1.0"
 
     const val slf4j = "1.7.30"
     const val log4j = "2.13.3"
     const val asm = "9.1"
     const val difflib = "1.3.0"
+    const val netty = "4.1.63.Final"
 
-    const val junit = "5.4.2"
+    const val junit = "5.7.2"
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
@@ -66,6 +66,7 @@ fun ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$versi
 val `kotlinx-coroutines-core` = kotlinx("coroutines-core", Versions.coroutines)
 val `kotlinx-coroutines-jdk8` = kotlinx("coroutines-jdk8", Versions.coroutines)
 val `kotlinx-coroutines-swing` = kotlinx("coroutines-swing", Versions.coroutines)
+val `kotlinx-coroutines-debug` = kotlinx("coroutines-debug", Versions.coroutines)
 val `kotlinx-serialization-core` = kotlinx("serialization-core", Versions.serialization)
 val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serialization)
 val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
@@ -85,6 +86,7 @@ val `ktor-network` = ktor("network", Versions.ktor)
 val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
 
 const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
+const val `slf4j-simple` = "org.slf4j:slf4j-simple:" + Versions.slf4j
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
 
 val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)
@@ -111,3 +113,4 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
+const val `netty-all` = "io.netty:netty-all:${Versions.netty}"

@@ -10,6 +10,7 @@
 @file:Suppress("INTERFACE_NOT_SUPPORTED", "PropertyName")
 @file:JvmName("Mirai")
 @file:OptIn(LowLevelApi::class, MiraiExperimentalApi::class, MiraiInternalApi::class)
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai
 
@@ -18,6 +19,9 @@ import io.ktor.client.engine.okhttp.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event._EventBroadcast
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -31,18 +35,46 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
- * [IMirai] 实例
+ * [IMirai] 实例.
  */
 @get:JvmName("getInstance") // Java 调用: Mirai.getInstance()
 public val Mirai: IMirai
     get() = _MiraiInstance.get()
 
 /**
- * Mirai API 接口.
+ * Mirai API 接口. 是 Mirai API 与 Mirai 协议实现对接的接口.
+ *
+ * ## 获取实例
+ *
+ * 通常在引用 `net.mamoe:mirai-core` 模块后就可以通过 [Mirai] 获取到 [IMirai] 实例.
+ * 在 Kotlin 调用顶层定义 `Mirai`, 在 Java 调用 `Mirai.getInstance()`.
+ *
+ * ### 使用 [IMirai] 的接口
+ *
+ * [IMirai] 中的接口通常是稳定
+ *
+ * ### 手动提供实例
+ *
+ * 默认通过 [_MiraiInstance.get] 使用 [java.util.ServiceLoader] 寻找实例. 若某些环境下 [java.util.ServiceLoader] 不可用, 可在 Kotlin 手动设置实例:
+ * ```
+ * @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // 必要
+ * net.mamoe.mirai._MiraiInstance.set(net.mamoe.mirai.internal.MiraiImpl())
+ * ```
+ *
+ * 但通常都可用自动获取而不需要手动设置.
+ *
+ * ## 稳定性
+ *
+ * ### 使用稳定
+ *
+ * 所有接口默认是可以稳定使用的. 但 [LowLevelApiAccessor] 中的方法默认是非常不稳定的.
+ *
+ * ### 继承不稳定
+ *
+ * **[IMirai] 可能会增加新的抽象属性或函数. 因此不适合被继承或实现.**
  *
  * @see Mirai 获取实例
  */
-@JvmBlockingBridge
 public interface IMirai : LowLevelApiAccessor {
     /**
      * 请优先使用 [BotFactory.INSTANCE]
@@ -270,6 +302,13 @@ public interface IMirai : LowLevelApiAccessor {
      * @param event 邀请入群的事件对象
      */
     public suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
+
+    /**
+     * 广播一个事件. 由 [Event.broadcast] 调用.
+     */
+    public suspend fun broadcastEvent(event: Event) {
+        _EventBroadcast.implementation.broadcastImpl(event)
+    }
 }
 
 /**
@@ -298,6 +337,9 @@ internal object _MiraiInstance {
         this.instance = instance
     }
 
+    /**
+     * 获取通过 [set] 设置的实例, 或使用 [findMiraiInstance] 寻找一个实例.
+     */
     @JvmStatic
     fun get(): IMirai {
         return instance ?: findMiraiInstance().also { instance = it }

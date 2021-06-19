@@ -49,7 +49,6 @@ dependencies {
 
     // compileOnly(kotlin("gradle-plugin-api", "1.3.72")) // Gradle's Kotlin is 1.3.72
 
-    api("com.jfrog.bintray.gradle", "gradle-bintray-plugin", version("bintray"))
     api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
     api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
     api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))

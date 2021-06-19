@@ -15,8 +15,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoNumber
 import kotlinx.serialization.protobuf.ProtoType
-import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 
 /**
@@ -249,7 +249,7 @@ internal class CSDataHighwayHead : ProtoBuf {
     internal class ReqDataHighwayHead(
         @JvmField @ProtoNumber(1) val msgBasehead: DataHighwayHead? = null,
         @JvmField @ProtoNumber(2) val msgSeghead: SegHead? = null,
-        @JvmField @ProtoNumber(3) val reqExtendinfo: ByteArray, // = EMPTY_BYTE_ARRAY,
+        @JvmField @ProtoNumber(3) val reqExtendinfo: ByteArray? = null, // = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(4) val timestamp: Long = 0L,
         @JvmField @ProtoNumber(5) val msgLoginSigHead: LoginSigHead? = null
     ) : ProtoBuf

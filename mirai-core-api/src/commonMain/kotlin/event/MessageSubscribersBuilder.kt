@@ -210,8 +210,8 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 如果消息的前缀是 [prefix] */
     @MessageDsl
     public fun startsWith(prefix: String, trim: Boolean = true): ListeningFilter {
-        val toCheck = if (trim) prefix.trim() else prefix
-        return content { (if (trim) it.trim() else it).startsWith(toCheck) }
+        val toCheck = if (trim) prefix.trimStart() else prefix
+        return content { (if (trim) it.trimStart() else it).startsWith(toCheck) }
     }
 
     /** 如果消息的前缀是 [prefix] */
@@ -224,8 +224,10 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 如果消息的结尾是 [suffix] */
     @MessageDsl
     @JvmOverloads // for binary compatibility
-    public fun endsWith(suffix: String, trim: Boolean = true): ListeningFilter =
-        content { if (trim) it.trimEnd().endsWith(suffix) else it.endsWith(suffix) }
+    public fun endsWith(suffix: String, trim: Boolean = true): ListeningFilter {
+        val toCheck = if (trim) suffix.trimEnd() else suffix
+        return content { (if (trim) it.trimEnd() else it).endsWith(toCheck) }
+    }
 
     /** 如果消息的结尾是 [suffix] */
     @MessageDsl
@@ -323,12 +325,12 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
         }
 
     @MessageDsl
-    public inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
+    public inline fun <reified N : SingleMessage> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
         content { message.any { it is N } }.invoke { onEvent.invoke(this, message.firstIsInstance()) }
 
     /** [消息内容][Message.contentToString]包含 [N] 类型的 [Message] */
     @MessageDsl
-    public inline fun <reified N : Message> has(): ListeningFilter = content { message.any { it is N } }
+    public inline fun <reified N : SingleMessage> has(): ListeningFilter = content { message.any { it is N } }
 
     /** 如果 [mapper] 返回值非空, 就执行 [onEvent] */
     @MessageDsl

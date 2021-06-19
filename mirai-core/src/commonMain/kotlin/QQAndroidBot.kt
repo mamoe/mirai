@@ -10,37 +10,41 @@
 
 package net.mamoe.mirai.internal
 
-import kotlinx.coroutines.sync.Mutex
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.internal.contact.OtherClientImpl
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
-import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
-import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.message.ForwardMessageInternal
-import net.mamoe.mirai.internal.message.LongMessageInternal
-import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.handler.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.handler.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.utils.ScheduledJob
-import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.internal.utils.friendCacheFile
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.message.data.ForwardMessage
-import net.mamoe.mirai.message.data.RichMessage
-import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.component.withFallback
+import net.mamoe.mirai.internal.network.components.*
+import net.mamoe.mirai.internal.network.context.SsoProcessorContext
+import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
+import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
+import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.safe
+import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
+import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
-import java.io.File
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -50,172 +54,173 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
-internal fun QQAndroidBot.createOtherClient(
-    info: OtherClientInfo,
-): OtherClientImpl {
-    return OtherClientImpl(this, coroutineContext, info)
-}
-
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
-internal class QQAndroidBot constructor(
-    private val account: BotAccount,
-    configuration: BotConfiguration
-) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
-    val bdhSyncer: BdhSessionSyncer = BdhSessionSyncer(this)
+internal open class QQAndroidBot constructor(
+    internal val account: BotAccount,
+    configuration: BotConfiguration,
+) : AbstractBot(configuration, account.id) {
+    override val bot: QQAndroidBot get() = this
+    val client get() = components[SsoProcessor].client
+
+    override fun close(cause: Throwable?) {
+        if (!this.isActive) return
+        runBlocking {
+            try { // this may not be very good but
+                components[SsoProcessor].logout(network)
+            } catch (ignored: Exception) {
+            }
+        }
+        super.close(cause)
+    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Account secrets cache
+    // network
     ///////////////////////////////////////////////////////////////////////////
 
-    // We cannot extract these logics until we rewrite the network framework.
+    // also called by tests.
+    fun ComponentStorage.stateObserverChain(): StateObserver {
+        val components = this
+        val eventDispatcher = this[EventDispatcher]
+        return StateObserver.chainOfNotNull(
+            components[BotInitProcessor].asObserver(),
+            object : StateChangedObserver(State.OK) {
+                private val shouldBroadcastRelogin = atomic(false)
 
-    private val cacheDir: File by lazy {
-        configuration.workingDir.resolve(bot.configuration.cacheDir).apply { mkdirs() }
-    }
-    internal val accountSecretsFile: File by lazy {
-        cacheDir.resolve("account.secrets")
-    }
-
-    private fun saveSecrets(secrets: AccountSecretsImpl) {
-        if (secrets.wLoginSigInfoField == null) return
-
-        accountSecretsFile.writeBytes(
-            TEA.encrypt(
-                secrets.toByteArray(AccountSecretsImpl.serializer()),
-                account.passwordMd5
-            )
-        )
-
-        network.logger.info { "Saved account secrets to local cache for fast login." }
-    }
-
-    init {
-        if (configuration.loginCacheEnabled) {
-            eventChannel.parentScope(this).subscribeAlways<WtLogin.Login.LoginPacketResponse> { event ->
-                if (event is WtLogin.Login.LoginPacketResponse.Success) {
-                    if (client.wLoginSigInfoInitialized) {
-                        saveSecrets(AccountSecretsImpl(client))
+                override fun stateChanged0(
+                    networkHandler: NetworkHandlerSupport,
+                    previous: BaseStateImpl,
+                    new: BaseStateImpl
+                ) {
+                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
+                        if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
+                            eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
+                        }
                     }
                 }
-            }
+
+                override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
+            },
+            StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->
+                // logging performed by BotOfflineEventMonitor
+                val cause = new.getCause()
+                when {
+                    cause is ForceOfflineException -> {
+                        eventDispatcher.broadcastAsync(BotOfflineEvent.Force(bot, cause.title, cause.message))
+                    }
+                    cause is NetworkException && cause.recoverable -> {
+                        eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))
+                    }
+                    cause is BotClosedByEvent -> {
+                    }
+                    else -> {
+                        // any other unexpected exceptions considered as an error
+                        eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, cause))
+                    }
+                }
+            },
+        ).safe(logger.subLogger("StateObserver")) + LoggingStateObserver.createLoggingIfEnabled()
+    }
+
+
+    private val networkLogger: MiraiLogger by lazy { configuration.networkLoggerSupplier(this) }
+    final override val components: ComponentStorage get() = network.context
+
+    private val defaultBotLevelComponents: ComponentStorage by lateinitMutableProperty {
+        createBotLevelComponents().apply {
+            set(StateObserver, stateObserverChain())
+        }.also { components ->
+            components[BotOfflineEventMonitor].attachJob(bot, this)
         }
     }
 
-    private fun loadSecretsFromCacheOrCreate(deviceInfo: DeviceInfo): AccountSecrets {
-        val loaded = if (configuration.loginCacheEnabled && accountSecretsFile.exists()) {
-            kotlin.runCatching {
-                TEA.decrypt(accountSecretsFile.readBytes(), account.passwordMd5).loadAs(AccountSecretsImpl.serializer())
-            }.getOrElse { e ->
-                logger.error("Failed to load account secrets from local cache. Invalidating cache...", e)
-                accountSecretsFile.delete()
-                null
-            }
-        } else null
-        if (loaded != null) {
-            logger.info { "Loaded account secrets from local cache." }
-            return loaded
-        }
+    open fun createBotLevelComponents(): ConcurrentComponentStorage = ConcurrentComponentStorage {
+        val components = ComponentStorageDelegate { this@QQAndroidBot.components }
 
-        return AccountSecretsImpl(deviceInfo, account) // wLoginSigInfoField is null, no need to save.
-    }
+        // There's no need to interrupt a broadcasting event when network handler closed.
+        set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
 
-    /////////////////////////// accounts secrets end
+        set(SsoProcessorContext, SsoProcessorContextImpl(bot))
+        set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
+        set(HeartbeatProcessor, HeartbeatProcessorImpl())
+        set(HeartbeatScheduler, TimeBasedHeartbeatSchedulerImpl(networkLogger.subLogger("HeartbeatScheduler")))
+        set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger.subLogger("KeyRefreshProcessor")))
+        set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger.subLogger("ConfigPushProcessor")))
+        set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
 
-    var client: QQAndroidClient = initClient()
-
-    fun initClient(): QQAndroidClient {
-        val device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
-        client = QQAndroidClient(
-            account,
-            device = device,
-            accountSecrets = loadSecretsFromCacheOrCreate(device)
+        set(BotInitProcessor, BotInitProcessorImpl(bot, components, networkLogger.subLogger("BotInitProcessor")))
+        set(ContactCacheService, ContactCacheServiceImpl(bot, networkLogger.subLogger("ContactCacheService")))
+        set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger.subLogger("ContactUpdater")))
+        set(
+            BdhSessionSyncer,
+            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
         )
-        client._bot = this
-        return client
+        set(
+            MessageSvcSyncer,
+            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
+        )
+        set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
+        set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
+        set(PacketInterceptor, PacketInterceptorImpl())
+        set(
+            PacketHandler, PacketHandlerChain(
+                components,
+                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
+                EventBroadcasterPacketHandler(components),
+                CallPacketFactoryPacketHandler(bot)
+            )
+        )
+        set(PacketCodec, PacketCodecImpl())
+        set(
+            OtherClientUpdater,
+            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
+        )
+        set(ConfigPushSyncer, ConfigPushSyncerImpl())
+        set(
+            AccountSecretsManager,
+            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager"))
+        )
     }
-
-
-    override val bot: QQAndroidBot get() = this
-
-    internal var firstLoginSucceed: Boolean = false
-
-    inline val json get() = configuration.json
-
-    override val friends: ContactList<Friend> = ContactList()
-
-    val friendListCache: FriendListCache? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        val file = configuration.friendCacheFile()
-        val ret = file.loadNotBlankAs(FriendListCache.serializer(), JsonForCache) ?: FriendListCache()
-
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        bot.eventChannel.parentScope(this@QQAndroidBot)
-            .subscribeAlways<net.mamoe.mirai.event.events.FriendInfoChangeEvent> {
-                friendListSaver?.notice()
-            }
-        ret
-    }
-
-    val groupMemberListCaches: GroupMemberListCaches? by lazy {
-        if (!configuration.contactListCache.groupMemberListCacheEnabled) {
-            return@lazy null
-        }
-        GroupMemberListCaches(this)
-    }
-
-    private val friendListSaver: ScheduledJob? by lazy {
-        if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null
-        ScheduledJob(coroutineContext, configuration.contactListCache.saveIntervalMillis) {
-            runBIO { saveFriendCache() }
-        }
-    }
-
-    fun saveFriendCache() {
-        val friendListCache = friendListCache ?: return
-
-        configuration.friendCacheFile().run {
-            createFileIfNotExists()
-            writeText(JsonForCache.encodeToString(FriendListCache.serializer(), friendListCache))
-            bot.network.logger.info { "Saved ${friendListCache.list.size} friends to local cache." }
-        }
-    }
-
-    override lateinit var nick: String
-
-    override val asFriend: Friend by lazy {
-        @OptIn(LowLevelApi::class)
-        Mirai.newFriend(this, FriendInfoImpl(uin, nick, ""))
-    }
-
-    override val groups: ContactList<Group> = ContactList()
 
     /**
-     * Final process for 'login'
+     * This would overrides those from [createBotLevelComponents]
      */
-    @ThisApiMustBeUsedInWithConnectionLockBlock
-    @Throws(LoginFailedException::class) // only
-    override suspend fun relogin(cause: Throwable?) {
-        bdhSyncer.loadFromCache()
-        client.useNextServers { host, port ->
-            // net error in login
-            // network is dead therefore can't send any packet
-            reinitializeNetwork()
-            network.closeEverythingAndRelogin(host, port, cause, 0)
-        }
+    open fun createNetworkLevelComponents(): ComponentStorage {
+        return ConcurrentComponentStorage {
+            set(BotClientHolder, BotClientHolderImpl(bot, networkLogger.subLogger("BotClientHolder")))
+        }.withFallback(defaultBotLevelComponents)
     }
 
-    override suspend fun sendLogout() {
-        network.run {
-            StatSvc.Register.offline(client).sendWithoutExpect()
-        }
+    override fun createNetworkHandler(): NetworkHandler {
+        return SelectorNetworkHandler(
+            KeepAliveNetworkHandlerSelector(
+                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE)
+            ) {
+                val context = NetworkHandlerContextImpl(
+                    bot,
+                    networkLogger,
+                    createNetworkLevelComponents()
+                )
+                NettyNetworkHandlerFactory.create(
+                    context,
+                    context[ServerList].pollAny().toSocketAddress()
+                )
+            }
+        ) // We can move the factory to configuration but this is not necessary for now.
     }
 
-    override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
-        return QQAndroidBotNetworkHandler(coroutineContext, this)
-    }
+    /**
+     * 获取 获取群公告 所需的 bkn 参数
+     * */ // TODO: 2021/4/26 extract it after #1141 merged
+    val bkn: Int
+        get() = client.wLoginSigInfo.sKey.data
+            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
+            .and(Int.MAX_VALUE)
 
-    @JvmField
-    val groupListModifyLock = Mutex()
+    ///////////////////////////////////////////////////////////////////////////
+    // contacts
+    ///////////////////////////////////////////////////////////////////////////
+
+    override lateinit var nick: String
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
@@ -226,87 +231,4 @@ internal class QQAndroidBot constructor(
     fun getGroupByUinOrNull(uin: Long): Group? {
         return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
-
-
-    suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2
-    ): E = network.run { sendAndExpect(timeoutMillis, retry) }
-
-    suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E =
-        network.run { sendAndExpect(timeoutMillis, retry) }
-
-    /**
-     * 获取 获取群公告 所需的 bkn 参数
-     * */
-    val bkn: Int
-        get() = client.wLoginSigInfo.sKey.data
-            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
-            .and(Int.MAX_VALUE)
-    override val asStranger: Stranger by lazy { Mirai.newStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
-    override val strangers: ContactList<Stranger> = ContactList()
-}
-
-internal val EMPTY_BYTE_ARRAY = ByteArray(0)
-
-internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
-    val limited: String = if (brief.length > 30) {
-        brief.take(30) + "…"
-    } else {
-        brief
-    }
-
-    val template = """
-                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-                <msg serviceID="35" templateID="1" action="viewMultiMsg"
-                     brief="$limited"
-                     m_resid="$resId"
-                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
-                     flag="3" adverSign="0" multiMsgFlag="1">
-                    <item layout="1">
-                        <title>$limited</title>
-                        <hr hidden="false" style="0"/>
-                        <summary>点击查看完整消息</summary>
-                    </item>
-                    <source name="聊天记录" icon="" action="" appid="-1"/>
-                </msg>
-            """.trimIndent().trim()
-
-    return LongMessageInternal(template, resId)
-}
-
-
-internal fun RichMessage.Key.forwardMessage(
-    resId: String,
-    timeSeconds: Long,
-    forwardMessage: ForwardMessage,
-): ForwardMessageInternal = with(forwardMessage) {
-    val template = """
-        <?xml version="1.0" encoding="utf-8"?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30)}"
-             m_resid="$resId" m_fileName="$timeSeconds"
-             tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
-            <item layout="1" advertiser_id="0" aid="0">
-                <title size="34" maxLines="2" lineSpace="12">${title.take(50)}</title>
-                ${
-        when {
-            preview.size > 4 -> {
-                preview.take(3).joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
-                } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
-            }
-            else -> {
-                preview.joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
-                }
-            }
-        }
-    }
-                <hr hidden="false" style="0"/>
-                <summary size="26" color="#777777">${summary.take(50)}</summary>
-            </item>
-            <source name="${source.take(50)}" icon="" action="" appid="-1"/>
-        </msg>
-    """.trimIndent().replace("\n", " ").trim()
-    return ForwardMessageInternal(template, resId, null)
 }

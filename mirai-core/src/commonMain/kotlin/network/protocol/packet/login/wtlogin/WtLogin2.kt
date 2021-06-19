@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.miscBitMap
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId
@@ -20,7 +21,7 @@ internal object WtLogin2 : WtLoginExt {
     fun SubmitSliderCaptcha(
         client: QQAndroidClient,
         ticket: String
-    ): OutgoingPacket = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+    ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                 writeShort(2) // subCommand
@@ -37,7 +38,7 @@ internal object WtLogin2 : WtLoginExt {
         client: QQAndroidClient,
         captchaSign: ByteArray,
         captchaAnswer: String
-    ): OutgoingPacket = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+    ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                 writeShort(2) // subCommand

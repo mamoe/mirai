@@ -19,13 +19,12 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.data.proto.MultiMsg
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
-import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -118,7 +117,7 @@ internal class MultiMsg {
                 val proto: MultiMsg.MultiMsgApplyUpRsp
             ) : Response() {
                 override fun toString(): String {
-                    if (PacketLogger.isEnabled) {
+                    if (PacketCodec.PacketLogger.isEnabled) {
                         return _miraiContentToString()
                     }
                     return "MultiMsg.ApplyUp.Response.RequireUpload"
@@ -134,7 +133,7 @@ internal class MultiMsg {
             client: QQAndroidClient,
             messageData: MessageValidationData,
             dstUin: Long // group uin
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+        ) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 MultiMsg.ReqBody.serializer(),
                 MultiMsg.ReqBody(

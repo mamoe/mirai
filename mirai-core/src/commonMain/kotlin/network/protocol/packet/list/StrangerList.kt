@@ -19,10 +19,8 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x5d2
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x5d4
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils.broadcastWithBot
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -39,22 +37,20 @@ internal class StrangerList {
 
         operator fun invoke(
             client: QQAndroidClient,
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 1490,
-                        serviceType = 0,
-                        bodybuffer = Oidb0x5d2.ReqBody(
-                            subCmd = 1,
-                            reqGetList = Oidb0x5d2.ReqGetList(
-                                seq = client.strangerSeq
-                            )
-                        ).toByteArray(Oidb0x5d2.ReqBody.serializer())
-                    )
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(),
+                OidbSso.OIDBSSOPkg(
+                    command = 1490,
+                    serviceType = 0,
+                    bodybuffer = Oidb0x5d2.ReqBody(
+                        subCmd = 1,
+                        reqGetList = Oidb0x5d2.ReqGetList(
+                            seq = client.strangerSeq
+                        )
+                    ).toByteArray(Oidb0x5d2.ReqBody.serializer())
                 )
-            }
+            )
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -80,20 +76,18 @@ internal class StrangerList {
         operator fun invoke(
             client: QQAndroidClient,
             stranger: Stranger
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 1492,
-                        serviceType = 0,
-                        result = 0,
-                        bodybuffer = Oidb0x5d4.ReqBody(
-                            uinList = listOf(stranger.id)
-                        ).toByteArray(Oidb0x5d4.ReqBody.serializer())
-                    )
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(),
+                OidbSso.OIDBSSOPkg(
+                    command = 1492,
+                    serviceType = 0,
+                    result = 0,
+                    bodybuffer = Oidb0x5d4.ReqBody(
+                        uinList = listOf(stranger.id)
+                    ).toByteArray(Oidb0x5d4.ReqBody.serializer())
                 )
-            }
+            )
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -102,7 +96,7 @@ internal class StrangerList {
                     pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).result.forEach { delResult ->
                         bot.getStranger(delResult.uin)?.let {
                             bot.strangers.remove(delResult.uin)
-                            StrangerRelationChangeEvent.Deleted(it).broadcastWithBot(bot)
+                            StrangerRelationChangeEvent.Deleted(it).broadcast()
                         }
                     }
                 }

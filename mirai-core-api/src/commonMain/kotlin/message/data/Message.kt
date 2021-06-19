@@ -110,7 +110,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * if (!content.equals("#") && content.startsWith("#")) {
  *     String name = content.substring(content.indexOf('#') + 1); // `#` 之后的内容
  *     switch(name) {
- *         "mute": event.sender.mute(60000) // 发 #mute 就把自己禁言 1 分钟
+ *         case "mute": event.sender.mute(60000) // 发 #mute 就把自己禁言 1 分钟
  *     }
  * }
  * ```
@@ -130,7 +130,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @suppress **注意:** [Message] 类型大多有隐藏的协议实现, 不能被第三方应用继承.
  */
-public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public interface Message {
 
     /**
      * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`.
@@ -139,8 +139,7 @@ public interface Message { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.
      *
      * 各个消息类型的转换示例:
      * - [PlainText] : `"Hello"`
-     * - [GroupImage] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
-     * - [FriendImage] : `"[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"`
+     * - [Image] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
      * - [PokeMessage] : `"[mirai:poke:1,-1]"`
      * - [MessageChain] : 无间隔地连接所有元素 (`joinToString("")`)
      * - ...

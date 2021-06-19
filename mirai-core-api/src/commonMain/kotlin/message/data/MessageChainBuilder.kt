@@ -45,6 +45,15 @@ public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder
  *
  * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能。
  *
+ * ```java
+ * MessageChain chain = new MessageChainBuilder()
+ *     .append("Hello ")
+ *     .append("mirai!")
+ *     .build();
+ *
+ * // chain 将会只包含一个 [PlainText], 其内容为 "Hello mirai!".
+ * ```
+ *
  * ## Kotlin 示例
  *
  * ```

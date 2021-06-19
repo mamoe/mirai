@@ -18,13 +18,14 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -36,16 +37,17 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ContactUpdater
+import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
@@ -54,7 +56,10 @@ import net.mamoe.mirai.message.data.MessageSourceKind.STRANGER
 import net.mamoe.mirai.message.data.MessageSourceKind.TEMP
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.random.Random
 
 
@@ -69,9 +74,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
         syncCookie: ByteArray?, //PbPushMsg.msg.msgHead.msgTime
-    ): OutgoingPacket = buildOutgoingUniPacket(
-        client
-    ) {
+    ) = buildOutgoingUniPacket(client) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
         writeProtoBuf(
             MsgSvc.PbGetMsgReq.serializer(),
@@ -94,12 +97,10 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         )
     }
 
-    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?, val bot: QQAndroidBot) : Response(
-        MsgSvc.SyncFlag.STOP, delegate,
-        syncCookie
-    ), Event,
-        Packet.NoLog {
-        override fun toString(): String = "MessageSvcPbGetMsg.GetMsgSuccess(messages=<Iterable>))"
+    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?, bot: QQAndroidBot) :
+        Response(MsgSvc.SyncFlag.STOP, delegate, syncCookie, bot) {
+
+        override fun toString(): String = "MessageSvcPbGetMsg.GetMsgSuccess"
     }
 
     /**
@@ -108,15 +109,16 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     open class Response(
         internal val syncFlagFromServer: MsgSvc.SyncFlag,
         delegate: List<Packet>,
-        val syncCookie: ByteArray?
+        val syncCookie: ByteArray?, override val bot: Bot
     ) :
         AbstractEvent(),
         MultiPacket<Packet>,
         Iterable<Packet> by (delegate),
-        Packet.NoLog {
+        Packet.NoEventLog,
+        BotEvent {
 
         override fun toString(): String =
-            "MessageSvcPbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
+            "MessageSvcPbGetMsg.Response(flag=$syncFlagFromServer)"
     }
 
     class EmptyResponse(
@@ -129,8 +131,11 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
         if (resp.result != 0) {
-            bot.network.logger
-                .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
+            // this is normally recoverable, no need to log
+
+
+//            bot.network.logger
+//                .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
             bot.network.launch(CoroutineName("MessageSvcPushNotify.retry")) {
                 delay(500 + Random.nextLong(0, 1000))
                 bot.network.run {
@@ -189,7 +194,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
             return GetMsgSuccess(list, resp.syncCookie, bot)
         }
-        return Response(resp.syncFlag, list, resp.syncCookie)
+        return Response(resp.syncFlag, list, resp.syncCookie, bot)
     }
 
     override suspend fun QQAndroidBot.handle(packet: Response) {
@@ -204,7 +209,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.client.syncingController.syncCookie
-                    ).sendAndExpect<Packet>()
+                    ).sendAndExpect()
                 }
                 return
             }
@@ -215,7 +220,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.client.syncingController.syncCookie
-                    ).sendAndExpect<Packet>()
+                    ).sendAndExpect()
                 }
                 return
             }
@@ -247,7 +252,7 @@ private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
 
 internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean = false): Packet? {
     when (msgHead.msgType) {
-        33 -> bot.groupListModifyLock.withLock {
+        33 -> bot.components[ContactUpdater].groupListModifyLock.withLock {
             msgBody.msgContent.read {
                 val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
                 val group = bot.getGroupByUinOrNull(groupUin) ?: bot.createGroupForBot(groupUin) ?: return null
@@ -304,12 +309,12 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             return null
         }
 
-        38 -> bot.groupListModifyLock.withLock { // 建群
+        38 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 建群
             return bot.createGroupForBot(msgHead.fromUin)
                 ?.let { BotJoinGroupEvent.Active(it) }
         }
 
-        85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
+        85 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 其他客户端入群
             // msgHead.authUin: 处理人
 
             return if (msgHead.toUin == bot.id) {
@@ -380,7 +385,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
                 }
                 return null
             }
-            if (!bot.firstLoginSucceed) {
+            if (!bot.components[SsoProcessor].firstLoginSucceed) {
                 return null
             }
             val fromUin = if (fromSync) {
@@ -485,7 +490,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
         }
         141 -> {
 
-            if (!bot.firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
+            if (!bot.components[SsoProcessor].firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
                 return null
             }
             val tmpHead = msgHead.c2cTmpMsgHead ?: return null
@@ -569,7 +574,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
             Mirai.newStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
                 bot.getStranger(id)?.let { previous ->
                     bot.strangers.remove(id)
-                    StrangerRelationChangeEvent.Deleted(previous).broadcastWithBot(bot)
+                    StrangerRelationChangeEvent.Deleted(previous).broadcast()
                 }
                 bot.strangers.delegate.add(it)
 

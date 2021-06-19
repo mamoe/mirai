@@ -40,21 +40,17 @@ jobs:
           mkdir build-secret-keys
           echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
           echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
-          echo "$BINTRAY_USER" > build-secret-keys/bintray.key
-          echo "$BINTRAY_KEY" >> build-secret-keys/bintray.key
         env:
           GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
 
       - name: Init gradle project
         run: ./gradlew clean --scan
 
       - name: Check keys
-        run: ./gradlew ensureBintrayAvailable ensureMavenCentralAvailable
+        run: ./gradlew ensureMavenCentralAvailable
 
       - name: fillBuildConstants
         run: >
@@ -65,7 +61,11 @@ jobs:
         run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
 
       - name: Check
-        run: ./gradlew check -Pmirai.pkc.check.enable --scan
+        run: >
+          ./gradlew check -Pmirai.pkc.check.enable --scan
+          -Dmirai.debug.network.show.all.components=true
+          -Dkotlinx.coroutines.debug=on
+          -Dmirai.debug.network.show.packet.details=true
 
       - name: Gradle :mirai-core-utils:publish
         run: >

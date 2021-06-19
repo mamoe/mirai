@@ -15,10 +15,9 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    //id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
-    id("com.jfrog.bintray")
 }
 
 description = "mirai-core utilities"

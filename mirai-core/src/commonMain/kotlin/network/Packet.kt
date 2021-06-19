@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.internal.network
 
-import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.utils.MiraiLogger
 
 /*
@@ -51,12 +52,12 @@ internal class ParseErrorPacket(
 ) : Packet, Packet.NoLog {
     enum class Direction {
         TO_BOT_LOGGER {
-            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.logger
+            override fun getLogger(bot: AbstractBot): MiraiLogger = bot.logger
         },
         TO_NETWORK_LOGGER {
-            override fun getLogger(bot: QQAndroidBot): MiraiLogger = bot.network.logger
+            override fun getLogger(bot: AbstractBot): MiraiLogger = bot.network.logger
         };
 
-        abstract fun getLogger(bot: QQAndroidBot): MiraiLogger
+        abstract fun getLogger(bot: AbstractBot): MiraiLogger
     }
 }

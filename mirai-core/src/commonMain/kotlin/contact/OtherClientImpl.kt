@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.OtherClientInfo
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
@@ -20,6 +21,12 @@ import kotlin.coroutines.CoroutineContext
 
 internal inline val OtherClient.appId: Int
     get() = info.appId
+
+internal fun QQAndroidBot.createOtherClient(
+    info: OtherClientInfo,
+): OtherClientImpl {
+    return OtherClientImpl(this, coroutineContext, info)
+}
 
 internal class OtherClientImpl(
     bot: Bot,

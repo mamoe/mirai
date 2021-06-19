@@ -25,9 +25,11 @@ import net.mamoe.mirai.event.events.OtherClientOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.appId
-import net.mamoe.mirai.internal.createOtherClient
+import net.mamoe.mirai.internal.contact.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.components.ContactCacheService
+import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -73,7 +75,7 @@ internal class StatSvc {
 
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(client, 1) {
+        ) = buildLoginOutgoingPacket(client, 1) {
             writeProtoBuf(
                 StatSvcGetOnline.ReqBody.serializer(), StatSvcGetOnline.ReqBody(
                     uin = client.uin,
@@ -99,7 +101,7 @@ internal class StatSvc {
 
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(
+        ) = buildLoginOutgoingPacket(
             client,
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
@@ -135,8 +137,8 @@ internal class StatSvc {
         fun online(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl(client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
-            client.bot.friendListCache?.let { friendListCache: FriendListCache ->
+        ) = impl("online", client, 1 or 2 or 4, client.onlineStatus, regPushReason) {
+            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
                 iLargeSeq = friendListCache.friendListSeq
                 //  timeStamp = friendListCache.timeStamp
             }
@@ -145,9 +147,10 @@ internal class StatSvc {
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl(client, 0, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
+            name: String,
             client: QQAndroidClient,
             bid: Long,
             status: OnlineStatus,
@@ -157,7 +160,8 @@ internal class StatSvc {
             client,
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
-            key = client.wLoginSigInfo.d2Key
+            key = client.wLoginSigInfo.d2Key,
+            name = name,
         ) { sequenceId ->
             writeSsoPacket(
                 client, subAppId = client.subAppId, commandName = commandName,
@@ -231,11 +235,6 @@ internal class StatSvc {
         }
 
 
-        private fun String.ipToLong(): Long {
-            return split('.').foldIndexed(0L) { index: Int, acc: Long, s: String ->
-                acc or (((s.toLongOrNull() ?: 0) shl (index * 16)))
-            }
-        }
     }
 
     internal object ReqMSFOffline :
@@ -282,7 +281,7 @@ internal class StatSvc {
         IncomingPacketFactory<Packet?>("StatSvc.SvcReqMSFLoginNotify", "StatSvc.SvcReqMSFLoginNotify") {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? =
-            bot.otherClientsLock.withLock {
+            bot.components[ContactUpdater].otherClientsLock.withLock {
                 val notify = readUniPacket(SvcReqMSFLoginNotifyData.serializer())
 
                 val appId = notify.iAppId.toInt()

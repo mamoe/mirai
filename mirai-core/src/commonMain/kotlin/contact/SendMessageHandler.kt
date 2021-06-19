@@ -16,19 +16,17 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.forwardMessage
-import net.mamoe.mirai.internal.longMessage
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -36,7 +34,9 @@ import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 /**
- * 通用处理器
+ * 处理 mirai 消息系统 `Message` 到协议数据结构的转换.
+ *
+ * 外部调用 [sendMessageImpl]
  */
 internal abstract class SendMessageHandler<C : Contact> {
     abstract val contact: C
@@ -112,7 +112,7 @@ internal abstract class SendMessageHandler<C : Contact> {
     }
 
     /**
-     * Final process
+     * Final process. Convert transformed message to protocol internals and transfer to server
      */
     suspend fun sendMessagePacket(
         originalMessage: Message,
@@ -120,6 +120,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         finalMessage: MessageChain,
         step: SendMessageStep,
     ): MessageReceipt<C> {
+        bot.components[MessageSvcSyncer].joinSync()
 
         val group = contact
 
@@ -314,7 +315,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
 /**
  * Might be recalled with [transformedMessage] `is` [LongMessageInternal] if length estimation failed (sendMessagePacket)
  */
-internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
+private suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: MessageChain,
     step: SendMessageStep,

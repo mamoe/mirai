@@ -25,8 +25,11 @@ jobs:
         run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
 
       - name: mirai-core Tests
-        run: ./gradlew check -Pmirai.pkc.check.enable --scan
-
+        run: >
+          ./gradlew check -Pmirai.pkc.check.enable --scan
+          -Dmirai.debug.network.show.all.components=true
+          -Dkotlinx.coroutines.debug=on
+          -Dmirai.debug.network.show.packet.details=true
   build-all:
     runs-on: ubuntu-latest
     steps:
@@ -51,4 +54,8 @@ jobs:
         run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
 
       - name: All Tests
-        run: ./gradlew check -Pmirai.pkc.check.enable --scan
+        run: >
+          ./gradlew check -Pmirai.pkc.check.enable --scan
+          -Dmirai.debug.network.show.all.components=true
+          -Dkotlinx.coroutines.debug=on
+          -Dmirai.debug.network.show.packet.details=true

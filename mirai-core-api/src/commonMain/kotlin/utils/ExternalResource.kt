@@ -36,7 +36,7 @@ import java.io.*
 
 
 /**
- * 一个*不可变的*外部资源.
+ * 一个*不可变的*外部资源. 仅包含资源内容, 大小, 文件类型, 校验值而不包含文件名, 文件位置等. 外部资源有可能是一个文件, 也有可能只存在于内存, 或者以任意其他方式实现.
  *
  * [ExternalResource] 在创建之后就应该保持其属性的不变, 即任何时候获取其属性都应该得到相同结果, 任何时候打开流都得到的一样的数据.
  *
@@ -50,6 +50,12 @@ import java.io.*
  *
  * 当 [ExternalResource] 创建时就可能会打开一个文件 (如使用 [File.toExternalResource]).
  * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
+ *
+ * ## 实现 [ExternalResource]
+ *
+ * 可以自行实现 [ExternalResource]. 但通常上述创建方法已足够使用.
+ *
+ * 实现时需保持 [ExternalResource] 在构造后就不可变, 并且所有属性都总是返回一个固定值.
  *
  * @see ExternalResource.uploadAsImage 将资源作为图片上传, 得到 [Image]
  * @see ExternalResource.sendAsImageTo 将资源作为图片发送
@@ -72,6 +78,9 @@ public interface ExternalResource : Closeable {
     public val sha1: ByteArray
         get() =
             throw UnsupportedOperationException("ExternalResource.sha1 is not implemented by ${this::class.simpleName}")
+    // 如果你要实现 [ExternalResource], 你也应该实现 [sha1].
+    // 这里默认抛出 [UnsupportedOperationException] 是为了 (姑且) 兼容 2.5 以前的版本的实现.
+
 
     /**
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
@@ -271,14 +280,26 @@ public interface ExternalResource : Closeable {
          *
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
+         * ## 已弃用
+         * 查看 [RemoteFile.upload] 获取更多信息.
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
+        @Suppress("DEPRECATION")
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
+        @Deprecated(
+            "Use sendTo instead.",
+            ReplaceWith(
+                "this.sendTo(contact, path, callback)",
+                "net.mamoe.mirai.utils.ExternalResource.Companion.sendTo"
+            ),
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.7-M1
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
@@ -292,15 +313,27 @@ public interface ExternalResource : Closeable {
          *
          * 需要调用方手动[关闭资源][ExternalResource.close].
          *
+         * ## 已弃用
+         * 查看 [RemoteFile.upload] 获取更多信息.
+         *
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
+        @Suppress("DEPRECATION")
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("uploadAsFile")
         @JvmOverloads
+        @Deprecated(
+            "Use sendAsFileTo instead.",
+            ReplaceWith(
+                "this.sendAsFileTo(contact, path, callback)",
+                "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsFileTo"
+            ),
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.7-M1
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
@@ -315,7 +348,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.upload
+         * @see RemoteFile.uploadAndSend
          */
         @JvmStatic
         @JvmBlockingBridge
@@ -334,7 +367,7 @@ public interface ExternalResource : Closeable {
          * @param path 远程路径. 起始字符为 '/'. 如 '/foo/bar.txt'
          * @since 2.5
          * @see RemoteFile.path
-         * @see RemoteFile.upload
+         * @see RemoteFile.uploadAndSend
          */
         @JvmStatic
         @JvmBlockingBridge

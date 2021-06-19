@@ -184,8 +184,8 @@ import kotlin.streams.asSequence
  *
  */
 @Serializable(MessageChain.Serializer::class)
-public interface MessageChain :
-    Message, List<SingleMessage>, RandomAccess, CodableMessage { // TODO: 2021/1/10 Make sealed interface in Kotlin 1.5
+public sealed interface MessageChain :
+    Message, List<SingleMessage>, RandomAccess, CodableMessage {
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`.
@@ -519,8 +519,9 @@ public inline operator fun <reified T : SingleMessage> MessageChain.getValue(thi
  * 可空的委托
  * @see orNull
  */
+@JvmInline
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-public inline class OrNullDelegate<out R> @PublishedApi internal constructor(@JvmField @PublishedApi internal val value: Any?) {
+public value class OrNullDelegate<out R> @PublishedApi internal constructor(@JvmField @PublishedApi internal val value: Any?) {
     @Suppress("UNCHECKED_CAST") // don't inline, IC error
     public operator fun getValue(thisRef: Any?, property: KProperty<*>): R = value as R
 }

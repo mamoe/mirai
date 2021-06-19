@@ -29,6 +29,17 @@ public annotation class MiraiInternalApi(
 )
 
 /**
+ * 标记为一个仅供 Mirai 内部使用的 API.
+ *
+ * 这些 API 可能会在任意时刻更改, 且不会发布任何预警.
+ * 非常不建议在发行版本中使用这些 API.
+ */
+@Retention(AnnotationRetention.BINARY)
+@Target(FILE)
+@MiraiInternalApi
+public annotation class MiraiInternalFile
+
+/**
  * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为实验性的 API.
  *
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.

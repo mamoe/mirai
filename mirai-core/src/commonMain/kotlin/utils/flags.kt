@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.internal.utils
 
-internal inline class MacOrAndroidIdChangeFlag(val value: Long = 0) {
+@JvmInline
+internal value class MacOrAndroidIdChangeFlag(val value: Long = 0) {
     fun macChanged(): MacOrAndroidIdChangeFlag =
         MacOrAndroidIdChangeFlag(this.value or 0x1)
 
