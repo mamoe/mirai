@@ -54,22 +54,35 @@ object NoSuchMethodAnalyzer {
 
     fun check(classes: Sequence<File>, libs: Sequence<File>) = AsmUtil.run {
         val analyzer = AndroidApiLevelCheck.Analyzer(emptyMap())
-        val asmClasses: AsmClassesM = AsmClassesM(mutableListOf(), HashMap())
+        val asmClasses: AsmClassesM = mutableMapOf()
         libs.forEach { lib ->
-            asmClasses += lib.readLib()
+            if (lib.name.endsWith(".jar")) {
+                ZipFile(lib).use { zip ->
+                    zip.entries().iterator().forEach l@{ entry ->
+                        if (entry.isDirectory) return@l
+                        if (!entry.name.endsWith(".class")) return@l
+                        zip.getInputStream(entry).use { it.readClass() }.let {
+                            asmClasses[it.name] = it
+                        }
+                    }
+                }
+            } else if (lib.isDirectory) {
+                lib.walk().filter { it.isFile && it.extension == "class" }.forEach { f ->
+                    f.readClass().let { asmClasses[it.name] = it }
+                }
+            }
         }
         classes.map { it.walk() }.flatten().filter { it.isFile }
             .filter { it.extension == "class" }
             .map { it.readClass() to it }
             .onEach { (c, _) ->
-                asmClasses[c.name] = lazyOf(c)
+                asmClasses[c.name] = c
             }.toList().forEach { (classNode, file) ->
                 analyzer.file = file
                 classNode.methods?.forEach { method ->
                     analyzeMethod(analyzer, method, asmClasses)
                 }
             }
-        asmClasses.close()
         if (analyzer.reported) {
             error("Verify failed")
         }

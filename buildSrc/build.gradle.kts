@@ -58,5 +58,4 @@ dependencies {
     api(asm("commons"))
 
     api(gradleApi())
-    api("com.googlecode.java-diff-utils:diffutils:" + version("difflib"))
 }

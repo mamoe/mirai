@@ -58,11 +58,11 @@ jobs:
           fillBuildConstants --scan
 
       - name: Assemble
-        run: ./gradlew assemble -Pmirai.pkc.check.enable --scan
+        run: ./gradlew assemble --scan
 
       - name: Check
         run: >
-          ./gradlew check -Pmirai.pkc.check.enable --scan
+          ./gradlew check --scan
           -Dmirai.debug.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.debug.network.show.packet.details=true
