@@ -30,8 +30,6 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
     override val ssoSession: SsoSession get() = bot.client
     override var firstLoginSucceed: Boolean = false
     override var registerResp: StatSvc.Register.Response? = null
-    override val runningFastLogin: Boolean
-        get() = false
     override suspend fun login(handler: NetworkHandler) {
         firstLoginSucceed = true
         bot.network.logger.debug { "SsoProcessor.login" }

@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.coroutines.delay
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -18,9 +17,7 @@ import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
-import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
@@ -45,7 +42,6 @@ internal interface SsoProcessor {
 
     var firstLoginSucceed: Boolean
     val registerResp: StatSvc.Register.Response?
-    val runningFastLogin: Boolean
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -81,9 +77,6 @@ internal class SsoProcessorImpl(
     @Volatile
     override var registerResp: StatSvc.Register.Response? = null
 
-    @Volatile
-    override var runningFastLogin: Boolean = false
-
     override var client
         get() = ssoContext.bot.components[BotClientHolder].client
         set(value) {
@@ -101,11 +94,8 @@ internal class SsoProcessorImpl(
         components[BdhSessionSyncer].loadServerListFromCache()
         if (client.wLoginSigInfoInitialized) {
             kotlin.runCatching {
-                runningFastLogin = true
                 FastLoginImpl(handler).doLogin()
-                runningFastLogin = false
             }.onFailure { e ->
-                runningFastLogin = false
                 collectException(e)
                 SlowLoginImpl(handler).doLogin()
             }
@@ -275,28 +265,8 @@ internal class SsoProcessorImpl(
 
     private inner class FastLoginImpl(handler: NetworkHandler) : LoginStrategy(handler) {
         override suspend fun doLogin() {
-            var offline: RequestPushForceOffline? = null
-            val listener = components[PacketInterceptor].registerTemporaryInterceptor { context, incomingPacket ->
-                if (incomingPacket.data is RequestPushForceOffline) {
-                    offline = incomingPacket.data
-                }
-                if (offline != null) {
-                    context.finished()
-                }
-            }
-            try {
-
-                val login10 = WtLogin10(client).sendAndExpect(handler)
-                check(login10 is LoginPacketResponse.Success) { "Fast login failed: $login10" }
-                delay(3000) // wait MessageSvc.PushForceOffline
-                listener.unregister()
-                if (offline != null) {
-                    throw ForceOfflineException(offline!!.title, "Closed by MessageSvc.PushForceOffline: ${offline?.tips}")
-                }
-
-            } finally {
-                listener.unregister()
-            }
+            val login10 = WtLogin10(client).sendAndExpect(handler)
+            check(login10 is LoginPacketResponse.Success) { "Fast login failed: $login10" }
         }
     }
 }

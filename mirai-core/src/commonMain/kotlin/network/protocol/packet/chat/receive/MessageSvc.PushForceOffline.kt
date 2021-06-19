@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
-import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
@@ -31,7 +30,6 @@ internal object MessageSvcPushForceOffline :
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushForceOffline) {
         components[AccountSecretsManager].invalidate() // otherwise you receive `MessageSvc.PushForceOffline` again just after logging in.
-        if (components[SsoProcessor].runningFastLogin) return
         network.close(ForceOfflineException(packet.title, "Closed by MessageSvc.PushForceOffline: $packet"))
     }
 }
