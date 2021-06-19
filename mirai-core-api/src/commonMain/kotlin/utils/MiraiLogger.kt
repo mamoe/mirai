@@ -14,8 +14,6 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
-import kotlin.contracts.InvocationKind.AT_MOST_ONCE
-import kotlin.contracts.contract
 
 /**
  * 给这个 logger 添加一个开关, 用于控制是否记录 log
@@ -171,52 +169,42 @@ public interface MiraiLogger {
 
 
 public inline fun MiraiLogger.verbose(message: () -> String) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) verbose(message())
 }
 
 public inline fun MiraiLogger.verbose(message: () -> String, e: Throwable?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) verbose(message(), e)
 }
 
 public inline fun MiraiLogger.debug(message: () -> String?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) debug(message())
 }
 
 public inline fun MiraiLogger.debug(message: () -> String?, e: Throwable?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) debug(message(), e)
 }
 
 public inline fun MiraiLogger.info(message: () -> String?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) info(message())
 }
 
 public inline fun MiraiLogger.info(message: () -> String?, e: Throwable?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) info(message(), e)
 }
 
 public inline fun MiraiLogger.warning(message: () -> String?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) warning(message())
 }
 
 public inline fun MiraiLogger.warning(message: () -> String?, e: Throwable?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) warning(message(), e)
 }
 
 public inline fun MiraiLogger.error(message: () -> String?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) error(message())
 }
 
 public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
-    contract { callsInPlace(message, AT_MOST_ONCE) }
     if (isEnabled) error(message(), e)
 }
 
