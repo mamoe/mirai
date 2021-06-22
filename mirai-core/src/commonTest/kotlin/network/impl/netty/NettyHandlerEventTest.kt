@@ -17,6 +17,7 @@ import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.eventDispatcher
+import net.mamoe.mirai.internal.network.framework.setSsoProcessor
 import net.mamoe.mirai.internal.network.framework.ssoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.assertEventBroadcasts

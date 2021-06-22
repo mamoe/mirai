@@ -129,9 +129,10 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         // set(StateObserver, bot.run { stateObserverChain() })
     }
 
-    open fun createHandler(): H = factory.create(createContext(), address)
+    open fun createHandler(): NetworkHandler = factory.create(createContext(), address)
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
+
     val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
 
     ///////////////////////////////////////////////////////////////////////////
@@ -147,4 +148,10 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]
+}
+
+internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
+    overrideComponents[SsoProcessor] = object : SsoProcessor by overrideComponents[SsoProcessor] {
+        override suspend fun login(handler: NetworkHandler) = action(handler)
+    }
 }

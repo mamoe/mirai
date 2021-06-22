@@ -15,6 +15,8 @@ import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.toLongUnsigned
@@ -85,6 +87,13 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             suspend fun H.resumeInstanceCatchingException() {
                 try {
                     resumeConnection() // once finished, it should has been LOADING or OK
+                } catch (e: LoginFailedException) {
+                    if (e is RetryLaterException) {
+                        close(e)
+                        return
+                    }
+                    // LoginFailedException is not resumable
+                    exceptionCollector.collectThrow(e)
                 } catch (e: Exception) {
                     close(e)
                     // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
