@@ -101,6 +101,7 @@ allprojects {
         if (isKotlinJvmProject) {
             configureFlattenSourceSets()
         }
+        configureJarManifest()
     }
 }
 
