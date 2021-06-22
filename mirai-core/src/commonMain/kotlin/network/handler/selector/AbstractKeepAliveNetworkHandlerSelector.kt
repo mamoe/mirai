@@ -88,8 +88,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                 try {
                     resumeConnection() // once finished, it should has been LOADING or OK
                 } catch (e: LoginFailedException) {
+                    close(e)
                     if (e is RetryLaterException) {
-                        close(e)
                         return
                     }
                     // LoginFailedException is not resumable
