@@ -36,13 +36,6 @@ internal open class NettyNetworkHandler(
     context: NetworkHandlerContext,
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
-    override fun close(cause: Throwable?) {
-        if (state == State.CLOSED) return // already
-        super.close(cause) // see the `init` block at line 213, just above [NettyState]
-    }
-
-    private fun closeSuper(cause: Throwable?) = super.close(cause)
-
     final override tailrec suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
         if (state.sendPacketImpl(packet)) return
@@ -200,6 +193,13 @@ internal open class NettyNetworkHandler(
     ///////////////////////////////////////////////////////////////////////////
     // states
     ///////////////////////////////////////////////////////////////////////////
+
+    override fun close(cause: Throwable?) {
+        if (state == State.CLOSED) return // already
+        super.close(cause)
+        // when coroutine scope completed, state is already set to CLOSED,
+        // see the following `init` block.
+    }
 
     init {
         coroutineContext.job.invokeOnCompletion { e ->
@@ -384,7 +384,7 @@ internal open class NettyNetworkHandler(
         val exception: Throwable?
     ) : NettyState(State.CLOSED) {
         init {
-            closeSuper(exception)
+            close(exception)
         }
 
         override fun getCause(): Throwable? = exception
