@@ -195,15 +195,14 @@ internal open class NettyNetworkHandler(
     ///////////////////////////////////////////////////////////////////////////
 
     override fun close(cause: Throwable?) {
-        if (state == State.CLOSED) return // already
-        super.close(cause)
-        // when coroutine scope completed, state is already set to CLOSED,
-        // see the following `init` block.
+        if (state == State.CLOSED) return // quick check if already closed
+        if (setState { StateClosed(cause) } == null) return // atomic check
+        super.close(cause) // cancel coroutine scope
     }
 
     init {
         coroutineContext.job.invokeOnCompletion { e ->
-            setState { StateClosed(e?.unwrapCancellationException()) }
+            close(e?.unwrapCancellationException())
         }
     }
 

@@ -148,6 +148,8 @@ internal interface NetworkHandler : CoroutineScope {
 
     /**
      * Closes this handler gracefully (i.e. asynchronously).
+     *
+     * After invocation of [close], [state] will always be [State.CLOSED].
      */
     fun close(cause: Throwable?)
 

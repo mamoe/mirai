@@ -47,11 +47,6 @@ internal abstract class NetworkHandlerSupport(
     }
 
     override fun close(cause: Throwable?) {
-//        if (cause == null) {
-//            logger.info { "NetworkHandler '$this' closed" }
-//        } else {
-//            logger.info { "NetworkHandler '$this' closed: $cause" }
-//        }
         if (coroutineContext.job.isActive) {
             coroutineContext.job.cancel("NetworkHandler closed", cause)
         }
@@ -202,6 +197,7 @@ internal abstract class NetworkHandlerSupport(
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
         val new: BaseStateImpl,
+        override val cause: Throwable? = new.getCause(), // so it can be unwrapped
     ) : CancellationException("State is switched from $old to $new")
 
     /**
