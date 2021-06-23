@@ -46,5 +46,3 @@ if (!disableOldFrontEnds) {
         println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
     }
 }
-
-enableFeaturePreview("GRADLE_METADATA")
