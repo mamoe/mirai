@@ -43,7 +43,9 @@ import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.contracts.contract
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -91,10 +93,10 @@ internal open class QQAndroidBot constructor(
                     previous: BaseStateImpl,
                     new: BaseStateImpl
                 ) {
-                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
+                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).thenBroadcast(eventDispatcher) {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
-                            eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
-                        }
+                            BotReloginEvent(bot, new.getCause())
+                        } else null
                     }
                 }
 

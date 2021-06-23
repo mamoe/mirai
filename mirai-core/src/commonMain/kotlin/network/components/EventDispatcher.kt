@@ -35,6 +35,14 @@ internal interface EventDispatcher {
     fun broadcastAsync(event: Event, additionalContext: CoroutineContext = EmptyCoroutineContext): EventBroadcastJob
 
     /**
+     * Implementor must call `event.broadcast()` within a coroutine with [EventDispatcherScopeFlag]
+     */
+    fun broadcastAsync(
+        additionalContext: CoroutineContext = EmptyCoroutineContext,
+        event: suspend () -> Event?,
+    ): EventBroadcastJob
+
+    /**
      * Join all jobs. Joins also jobs launched during this call.
      */
     @TestOnly
@@ -56,6 +64,13 @@ internal value class EventBroadcastJob(
     inline fun onSuccess(crossinline action: () -> Unit) {
         job.invokeOnCompletion {
             if (it == null) action()
+        }
+    }
+
+    inline fun thenBroadcast(eventDispatcher: EventDispatcher, crossinline event: suspend () -> Event?) {
+        eventDispatcher.broadcastAsync {
+            job.join()
+            event()
         }
     }
 }
@@ -88,6 +103,18 @@ internal open class EventDispatcherImpl(
             additionalContext + EventDispatcherScopeFlag,
             start = CoroutineStart.UNDISPATCHED
         ) { broadcast(event) }
+        // UNDISPATCHED: starts the coroutine NOW in the current thread until its first suspension point,
+        // so that after `broadcastAsync` the job is always already started and `joinBroadcast` will work normally.
+        return EventBroadcastJob(job)
+    }
+
+    override fun broadcastAsync(additionalContext: CoroutineContext, event: suspend () -> Event?): EventBroadcastJob {
+        val job = launch(
+            additionalContext + EventDispatcherScopeFlag,
+            start = CoroutineStart.UNDISPATCHED
+        ) {
+            event()?.let { broadcast(it) }
+        }
         // UNDISPATCHED: starts the coroutine NOW in the current thread until its first suspension point,
         // so that after `broadcastAsync` the job is always already started and `joinBroadcast` will work normally.
         return EventBroadcastJob(job)
