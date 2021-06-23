@@ -26,6 +26,8 @@ import java.time.Instant
  * 可通过 [Announcement.create] 构造.
  *
  * @see Announcement
+ *
+ * @since 2.7
  */
 public open class Announcement internal constructor(
     /**
@@ -83,6 +85,8 @@ public open class Announcement internal constructor(
  * 群公告的扩展参数.
  *
  * 可通过 [AnnouncementParametersBuilder] 构建. [AnnouncementParameters] 用于 [创建公告][Announcement.create].
+ *
+ * @since 2.7
  */
 public class AnnouncementParameters internal constructor(
     /**
@@ -131,6 +135,8 @@ public class AnnouncementParameters internal constructor(
 
 /**
  * 表示一个收到的群公告. 只能由 mirai 构造.
+ *
+ * @since 2.7
  */
 public class ReceiveAnnouncement internal constructor(
     /**
@@ -205,6 +211,8 @@ public class ReceiveAnnouncement internal constructor(
  * ```
  *
  * @see buildAnnouncementParameters
+ *
+ * @since 2.7
  */
 public class AnnouncementParametersBuilder @JvmOverloads constructor(
     prototype: AnnouncementParameters = AnnouncementParameters()
@@ -256,6 +264,8 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
 /**
  * 使用 [AnnouncementParametersBuilder] 构建 [AnnouncementParameters].
  * @see AnnouncementParametersBuilder
+ *
+ * @since 2.7
  */
 public inline fun buildAnnouncementParameters(
     builderAction: AnnouncementParametersBuilder.() -> Unit
