@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.ConcurrencyKind
@@ -95,7 +96,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     }
 
     private fun launchRecovery(bot: AbstractBot) {
-        bot.launch {
+        bot.launch(start = CoroutineStart.UNDISPATCHED) {
             val success: Boolean
             val time = measureTimeMillis {
                 success = kotlin.runCatching {
