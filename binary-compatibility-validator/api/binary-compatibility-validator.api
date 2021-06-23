@@ -362,7 +362,6 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun sendAnnouncement$default (Lnet/mamoe/mirai/contact/Group$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/data/AnnouncementParameters;ILjava/lang/Object;)V
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -579,7 +578,6 @@ public class net/mamoe/mirai/data/Announcement {
 	public final fun getMsg ()Ljava/lang/String;
 	public final fun getParameters ()Lnet/mamoe/mirai/data/AnnouncementParameters;
 	public final fun getTitle ()Ljava/lang/String;
-	public synthetic fun publish (Lnet/mamoe/mirai/contact/Group;)Lkotlin/Unit;
 	public fun publish (Lnet/mamoe/mirai/contact/Group;)V
 	public final fun publish (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -931,6 +929,7 @@ public final class net/mamoe/mirai/data/GroupAnnouncement$Companion {
 
 public final class net/mamoe/mirai/data/GroupAnnouncementImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncementImage$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncementImage;
