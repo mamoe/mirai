@@ -16,7 +16,7 @@ plugins {
 }
 
 repositories {
-    maven("http://maven.aliyun.com/nexus/content/groups/public/")
+    maven("https://maven.aliyun.com/repository/public")
 }
 
 version = Versions.console
