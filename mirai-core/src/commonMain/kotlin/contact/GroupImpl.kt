@@ -12,11 +12,11 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -248,6 +248,29 @@ internal class GroupImpl(
         return result.success
     }
 
+    override suspend fun getAnnouncements(): Flow<ReceiveAnnouncement> =
+        flow {
+            var i = 1
+            while (true) {
+                val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
+                check(result.ec == 0) { "Get Group Announcement error at page $i" }
+
+                if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
+                    return@flow
+
+                result.inst?.let { emitAll(it.asFlow()) }
+                result.feeds?.let { emitAll(it.asFlow()) }
+            }
+        }.map { it.covertToAnnouncement(bot.id) }
+
+    override suspend fun deleteAnnouncement(fid: String) {
+        checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }
+        Mirai.deleteGroupAnnouncement(bot, id, fid)
+    }
+
+    override suspend fun getAnnouncement(fid: String): ReceiveAnnouncement =
+        Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement(bot.id)
+
     override fun toString(): String = "Group($id)"
 }
 
@@ -278,3 +301,4 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberIm
         anonymousId = id,
     )
 ) as AnonymousMemberImpl
+
