@@ -25,12 +25,10 @@ import net.mamoe.mirai.internal.test.assertEventNotBroadcast
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.TestInstance
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
-@Ignore
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     @Test
