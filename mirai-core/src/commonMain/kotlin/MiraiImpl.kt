@@ -18,6 +18,7 @@ import io.ktor.http.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
@@ -614,7 +615,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 append(
                     "cookie",
                     " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()?:error("cookie parse p_skey error")}; "
+                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error("cookie parse p_skey error")}; "
                 )
             }
         }
@@ -694,7 +695,11 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     append(
                         "cookie",
                         " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()?:error("parse error")}; "
+                                " p_skey=${
+                                    client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error(
+                                        "parse error"
+                                    )
+                                }; "
                     )
                 }
 
