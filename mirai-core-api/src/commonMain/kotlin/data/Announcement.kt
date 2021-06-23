@@ -13,12 +13,10 @@
 package net.mamoe.mirai.data
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
-import net.mamoe.mirai.containsGroup
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.time.Instant
 
