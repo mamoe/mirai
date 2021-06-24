@@ -209,8 +209,10 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? =
-        asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
+    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? {
+        @Suppress("UNCHECKED_CAST")
+        return firstOrNull { key.safeCast.invoke(it) != null } as M?
+    }
 
     /**
      * 当存在 [ConstrainSingle.key] 为 [key] 的 [SingleMessage] 实例时返回 `true`.
@@ -239,7 +241,7 @@ public sealed interface MessageChain :
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
     public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
-        asSequence().any { key.safeCast.invoke(it) != null }
+        any { key.safeCast.invoke(it) != null }
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
