@@ -99,15 +99,15 @@ public value class Either<out L : Any, out R : Any?> private constructor(
             @Suppress("RemoveExplicitTypeArguments")
             return this.fold(
                 onLeft = { invoke<T, R>(block(it)) },
-                onRight = { invoke<T, R>(right) }
+                onRight = { invoke<T, R>(it) }
             )
         }
 
         public inline fun <reified L : Any, reified R, reified T : Any> Either<L, R>.mapRight(block: (R) -> T): Either<L, T> {
             @Suppress("RemoveExplicitTypeArguments")
             return this.fold(
-                onLeft = { invoke<L, T>(left) },
-                onRight = { invoke<L, T>(right.let(block)) }
+                onLeft = { invoke<L, T>(it) },
+                onRight = { invoke<L, T>(it.let(block)) }
             )
         }
 
@@ -115,11 +115,7 @@ public value class Either<out L : Any, out R : Any?> private constructor(
         public inline fun <reified L : Any, reified R, T> Either<L, R>.fold(
             onLeft: (L) -> T,
             onRight: (R) -> T,
-        ): T {
-            this.leftOrNull?.let { return onLeft(it) }
-            this.rightOrNull?.let { return onRight(it) }
-            error("value(${getTypeHint(this.value)}) is neither left(${getTypeHint<L>()}) or right(${getTypeHint<R>()}).")
-        }
+        ): T = leftOrNull?.let { onLeft(it) } ?: value.cast<R>().let(onRight)
 
         public inline fun <reified T> Either<Throwable, T>.toResult(): Result<T> = this.fold(
             onLeft = { Result.failure(it) },
