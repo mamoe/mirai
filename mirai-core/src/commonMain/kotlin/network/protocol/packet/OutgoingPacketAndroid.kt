@@ -21,6 +21,8 @@ import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.Either
+import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.KEY_16_ZEROS
 
 @kotlin.Suppress("unused")
@@ -42,27 +44,29 @@ internal open class OutgoingPacket constructor(
     val displayName: String = if (name == null) commandName else "$commandName($name)"
 }
 
-internal class IncomingPacket constructor(
+internal class IncomingPacket private constructor(
     val commandName: String,
     val sequenceId: Int,
 
-    val data: Packet?,
-    /**
-     * If not `null`, [data] is `null`
-     */
-    val exception: Throwable?, // may complete with exception (thrown by decoders)
+    val result: Either<Throwable, Packet?>
 ) {
-    init {
-        if (exception != null) require(data == null) { "When exception is not null, data must be null." }
-        if (data != null) require(exception == null) { "When data is not null, exception must be null." }
+    companion object {
+        operator fun invoke(commandName: String, sequenceId: Int, data: Packet?) =
+            IncomingPacket(commandName, sequenceId, Either(data))
+
+        operator fun invoke(commandName: String, sequenceId: Int, throwable: Throwable) =
+            IncomingPacket(commandName, sequenceId, Either(throwable))
     }
 
     override fun toString(): String {
-        return if (exception == null) {
-            "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$data)"
-        } else {
-            "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$exception)"
-        }
+        return result.fold(
+            onLeft = {
+                "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$it)"
+            },
+            onRight = {
+                "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$it)"
+            }
+        )
     }
 }
 

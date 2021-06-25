@@ -259,10 +259,10 @@ internal class PacketCodecImpl : PacketCodec {
             }
         }.fold(
             onSuccess = { packet ->
-                IncomingPacket(input.commandName, input.sequenceId, packet, null)
+                IncomingPacket(input.commandName, input.sequenceId, packet)
             },
             onFailure = { exception: Throwable ->
-                IncomingPacket(input.commandName, input.sequenceId, null, exception)
+                IncomingPacket(input.commandName, input.sequenceId, exception)
             }
         )
     }

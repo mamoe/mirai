@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.verbose
@@ -44,22 +45,27 @@ internal class PacketLoggingStrategyImpl(
     }
 
     override fun logReceived(logger: MiraiLogger, incomingPacket: IncomingPacket) {
-        incomingPacket.exception?.let {
-            if (it is CancellationException) return
-            logger.error("Exception in decoding packet.", it)
-            return
-        }
-        val packet = incomingPacket.data ?: return
-        if (!bot.logger.isEnabled && !logger.isEnabled) return
-        if (packet is ParseErrorPacket) {
-            packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
-        }
-        if (incomingPacket.data is MultiPacket<*>) {
-            for (d in incomingPacket.data) {
-                logReceivedImpl(d, incomingPacket, logger)
+        incomingPacket.result.fold(
+            onLeft = { e ->
+                if (e is CancellationException) return
+                logger.error("Exception in decoding packet.", e)
+            },
+            onRight = { packet ->
+                packet ?: return
+                if (!bot.logger.isEnabled && !logger.isEnabled) return
+                if (packet is ParseErrorPacket) {
+                    packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
+                }
+
+                if (packet is MultiPacket<*>) {
+                    for (d in packet) {
+                        logReceivedImpl(d, incomingPacket, logger)
+                    }
+                }
+
+                logReceivedImpl(packet, incomingPacket, logger)
             }
-        }
-        logReceivedImpl(packet, incomingPacket, logger)
+        )
     }
 
     private fun logReceivedImpl(packet: Packet, incomingPacket: IncomingPacket, logger: MiraiLogger) {
@@ -74,7 +80,7 @@ internal class PacketLoggingStrategyImpl(
             else -> {
                 if (incomingPacket.commandName in blacklist) return
                 if (SHOW_PACKET_DETAILS) {
-                    logger.verbose { "Recv: ${incomingPacket.commandName} ${incomingPacket.data}".replaceMagicCodes() }
+                    logger.verbose { "Recv: ${incomingPacket.commandName} ${incomingPacket.result}".replaceMagicCodes() }
                 } else {
                     logger.verbose { "Recv: ${incomingPacket.commandName}".replaceMagicCodes() }
                 }
