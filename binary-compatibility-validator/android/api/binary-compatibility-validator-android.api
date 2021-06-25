@@ -330,7 +330,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
+public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/VoiceSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()J
@@ -345,7 +345,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
+public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported, net/mamoe/mirai/contact/VoiceSupported {
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
@@ -371,8 +371,6 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;)Z
 	public abstract fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setName (Ljava/lang/String;)V
-	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
-	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/Group$Companion {
@@ -569,6 +567,11 @@ public final class net/mamoe/mirai/contact/UserKt {
 public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mirai/contact/ContactOrBot {
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
+}
+
+public abstract interface class net/mamoe/mirai/contact/VoiceSupported : net/mamoe/mirai/contact/Contact {
+	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
+	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public class net/mamoe/mirai/data/Announcement {
@@ -5399,6 +5402,10 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun uploadAsImage (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
@@ -5470,6 +5477,10 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
