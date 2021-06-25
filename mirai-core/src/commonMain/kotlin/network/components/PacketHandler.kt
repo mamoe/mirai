@@ -18,6 +18,8 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.utils.Either.Companion.ifRight
+import net.mamoe.mirai.utils.Either.Companion.onRight
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.cancellation.CancellationException
@@ -68,11 +70,11 @@ internal class EventBroadcasterPacketHandler(
 ) : PacketHandler {
 
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
-        val data = incomingPacket.data ?: return
-        impl(data)
+        incomingPacket.result.ifRight(::impl)
     }
 
-    private fun impl(packet: Packet) {
+    private fun impl(packet: Packet?) {
+        if (packet == null) return
         if (packet is MultiPacket<*>) {
             for (p in packet) {
                 impl(p)
@@ -95,17 +97,18 @@ internal class CallPacketFactoryPacketHandler(
 ) : PacketHandler {
 
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
-        if (incomingPacket.exception != null) return // failure
-        val factory = KnownPacketFactories.findPacketFactory(incomingPacket.commandName) ?: return
-        factory.cast<PacketFactory<Packet?>>().run {
-            when (this) {
-                is IncomingPacketFactory -> {
-                    val r = bot.handle(incomingPacket.data, incomingPacket.sequenceId)
-                    if (r != null) {
-                        bot.network.sendWithoutExpect(r)
+        incomingPacket.result.onRight { data ->
+            val factory = KnownPacketFactories.findPacketFactory(incomingPacket.commandName) ?: return
+            factory.cast<PacketFactory<Packet?>>().run {
+                when (this) {
+                    is IncomingPacketFactory -> {
+                        val r = bot.handle(data, incomingPacket.sequenceId)
+                        if (r != null) {
+                            bot.network.sendWithoutExpect(r)
+                        }
                     }
+                    is OutgoingPacketFactory -> bot.handle(data)
                 }
-                is OutgoingPacketFactory -> bot.handle(incomingPacket.data)
             }
         }
     }

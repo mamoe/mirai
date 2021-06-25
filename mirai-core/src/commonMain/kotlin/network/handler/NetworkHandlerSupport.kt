@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.SingleEntrantLock
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.fold
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -69,12 +70,10 @@ internal abstract class NetworkHandlerSupport(
         for (listener in packetListeners) {
             if (!listener.isExpected(packet)) continue
             if (packetListeners.remove(listener)) {
-                val e = packet.exception
-                if (e != null) {
-                    listener.result.completeExceptionally(e)
-                } else {
-                    listener.result.complete(packet.data)
-                }
+                packet.result.fold(
+                    onLeft = { listener.result.completeExceptionally(it) },
+                    onRight = { listener.result.complete(it) }
+                )
             }
         }
         launch {

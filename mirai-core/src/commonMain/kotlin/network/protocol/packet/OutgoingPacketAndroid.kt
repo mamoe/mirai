@@ -60,12 +60,8 @@ internal class IncomingPacket private constructor(
 
     override fun toString(): String {
         return result.fold(
-            onLeft = {
-                "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$it)"
-            },
-            onRight = {
-                "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$it)"
-            }
+            onLeft = { "IncomingPacket(cmd=$commandName, seq=$sequenceId, FAILURE, e=$it)" },
+            onRight = { "IncomingPacket(cmd=$commandName, seq=$sequenceId, SUCCESS, r=$it)" }
         )
     }
 }

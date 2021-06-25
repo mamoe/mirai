@@ -57,7 +57,7 @@ internal class NettySendPacketTest : AbstractNettyNHTest() {
         yield() // yields the thread to run `sendAndExpect`
 
         // when we got thread here again, `sendAndExpect` is suspending for response [Packet].
-        network.collectReceived(IncomingPacket("cmd", 1, object : Packet {}, null))
+        network.collectReceived(IncomingPacket("cmd", 1, object : Packet {}))
         // now `sendAndExpect` should finish (asynchronously).
         expectStop.value = true
     }
@@ -72,7 +72,7 @@ internal class NettySendPacketTest : AbstractNettyNHTest() {
             assertTrue { expectStop.value } // ensures `sendAndExpect` does not finish immediately. (We expect one suspension.)
         }
         expectStop.value = true
-        network.collectReceived(IncomingPacket("cmd", 1, object : Packet {}, null))
+        network.collectReceived(IncomingPacket("cmd", 1, object : Packet {}))
         yield()
         assertTrue(job.isCompleted)
     }
