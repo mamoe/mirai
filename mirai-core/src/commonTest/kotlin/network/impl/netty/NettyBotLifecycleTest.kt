@@ -119,7 +119,6 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
                 commandName = StatSvc.SimpleGet.commandName,
                 sequenceId = 1,
                 data = StatSvc.SimpleGet.Response.Error(1, "test error"),
-                exception = null
             )
         )
         assertFalse { network.isActive }
