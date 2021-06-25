@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
+import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -96,13 +97,12 @@ internal class StatSvc {
     }
 
     internal object SimpleGet : OutgoingPacketFactory<SimpleGet.Response>("StatSvc.SimpleGet") {
-        internal interface Response : Packet {
+        internal sealed interface Response : Packet {
             object Success : Response {
                 override fun toString(): String = "SimpleGet.Response.Success"
             }
 
-            class Error(val code: Int, val msg: String) : Response,
-                IllegalStateException("Dropped by stat heartbeat failed") {
+            class Error(val code: Int, val msg: String) : Response {
                 override fun toString(): String = "SimpleGet.Response.Error(code=$code,msg=$msg)"
             }
         }
@@ -127,6 +127,12 @@ internal class StatSvc {
                 } else {
                     Response.Error(it.errorCode, it.errmsg)
                 }
+            }
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Response) {
+            if (packet is Response.Error) {
+                network.close(HeartbeatFailedException("StatSvc.SimpleGet", IllegalStateException(packet.toString())))
             }
         }
     }

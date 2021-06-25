@@ -76,7 +76,7 @@ internal abstract class NetworkHandlerSupport(
                 )
             }
         }
-        launch {
+        launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 packetHandler.handlePacket(packet)
             } catch (e: Throwable) { // do not pass it to CoroutineExceptionHandler for a more controllable behavior.
