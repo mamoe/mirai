@@ -13,13 +13,27 @@
 package net.mamoe.mirai.utils
 
 import java.util.*
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
-public inline fun <reified T> Any?.cast(): T = this as T
+public inline fun <reified T> Any?.cast(): T {
+    contract { returns() implies (this@cast is T) }
+    return this as T
+}
 
-public inline fun <reified T> Any?.safeCast(): T? = this as? T
+public inline fun <reified T> Any?.safeCast(): T? {
+    contract { returnsNotNull() implies (this@safeCast is T) }
+    return this as? T
+}
 
-public inline fun <reified T> Any?.castOrNull(): T? = this as? T
+public inline fun <reified T> Any?.castOrNull(): T? {
+    contract { returnsNotNull() implies (this@castOrNull is T) }
+    return this as? T
+}
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+public inline fun <T> Any?.uncheckedCast(): T = this as T
+
 
 public inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
     for (it in this) {
