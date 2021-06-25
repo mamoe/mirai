@@ -30,9 +30,11 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
+import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
+import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcSimpleGet
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
@@ -95,8 +97,14 @@ internal class StatSvc {
     }
 
     internal object SimpleGet : OutgoingPacketFactory<SimpleGet.Response>("StatSvc.SimpleGet") {
-        internal object Response : Packet {
-            override fun toString(): String = "Response(SimpleGet.Response)"
+        internal sealed interface Response : Packet {
+            object Success : Response {
+                override fun toString(): String = "SimpleGet.Response.Success"
+            }
+
+            class Error(val code: Int, val msg: String) : Response {
+                override fun toString(): String = "SimpleGet.Response.Error(code=$code,msg=$msg)"
+            }
         }
 
         operator fun invoke(
@@ -113,7 +121,19 @@ internal class StatSvc {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response
+            readProtoBuf(StatSvcSimpleGet.RspBody.serializer()).let {
+                return if (it.errorCode == 0) {
+                    Response.Success
+                } else {
+                    Response.Error(it.errorCode, it.errmsg)
+                }
+            }
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Response) {
+            if (packet is Response.Error) {
+                network.close(HeartbeatFailedException("StatSvc.SimpleGet", IllegalStateException(packet.toString())))
+            }
         }
     }
 

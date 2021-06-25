@@ -17,6 +17,8 @@ import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
+import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
 import org.junit.jupiter.api.Test
@@ -105,5 +107,21 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
         assertTrue { network.isActive }
         bot.closeAndJoin()
         assertFalse { network.isActive }
+    }
+
+    @Test
+    fun `network closed on SimpleGet Error`() = runBlockingUnit {
+        assertTrue { network.isActive }
+        bot.login()
+        assertTrue { network.isActive }
+        network.collectReceived(
+            IncomingPacket(
+                commandName = StatSvc.SimpleGet.commandName,
+                sequenceId = 1,
+                data = StatSvc.SimpleGet.Response.Error(1, "test error"),
+            )
+        )
+        assertFalse { network.isActive }
+        network.assertState(CLOSED) // we do not use selector in this test so it will be CLOSED. It will recover (reconnect) instead in real.
     }
 }
