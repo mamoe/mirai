@@ -9,12 +9,12 @@
 
 package net.mamoe.mirai.console.internal.data.builtins
 
-import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.logging.AbstractLoggerController
 
-internal object LoggerConfig : AutoSavePluginConfig("Logger") {
+internal object LoggerConfig : ReadOnlyPluginConfig("Logger") {
     @ValueDescription("""
         日志输出等级 可选值: ALL, VERBOSE, DEBUG, INFO, WARNING, ERROR, NONE
     """)

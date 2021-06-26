@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.internal.command
 
-import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.ValueName
 import net.mamoe.mirai.console.data.value
@@ -17,11 +17,7 @@ import net.mamoe.mirai.console.data.value
 @ValueDescription("""
     内置指令系统配置
 """)
-internal object CommandConfig : AutoSavePluginConfig("Command") {
-    override fun shouldPerformAutoSaveWheneverChanged(): Boolean {
-        return false
-    }
-
+internal object CommandConfig : ReadOnlyPluginConfig("Command") {
     @ValueDescription("""
         指令前缀, 默认 "/"
     """)
