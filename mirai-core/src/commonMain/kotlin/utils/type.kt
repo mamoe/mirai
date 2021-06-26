@@ -31,11 +31,13 @@ internal fun String.toIpV4Long(): Long {
     return if (isEmpty()) {
         0
     } else {
-        split(".").map { it.toLongOrNull() }
-            .takeIf { length == 4 && it.all { longVal -> longVal != null } }
-            ?.let {
-                it[0]!! + it[1]!!.shl(24) + it[2]!!.shl(16) + it[3]!!.shl(8)
-            } ?: -2
+        split(".").map { it.toLongOrNull() }.let { ipSequence ->
+            if (ipSequence.size == 4 && ipSequence.all { it != null }) {
+                ipSequence[0]!! + ipSequence[1]!!.shl(24) + ipSequence[2]!!.shl(16) + ipSequence[3]!!.shl(8)
+            } else {
+                -2
+            }
+        }
     }
 }
 
