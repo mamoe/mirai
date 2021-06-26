@@ -40,6 +40,7 @@ import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.toIpV4Long
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toReadPacket
@@ -160,9 +161,14 @@ internal class StatSvc {
             regPushReason: RegPushReason = RegPushReason.appRegister
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
             client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
+                if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+                    uOldSSOIp = client.lastDisconnectedIp.toIpV4Long()
+                    uNewSSOIp = client.lastConnectedIp.toIpV4Long()
+                } else {
+                    uOldSSOIp = 0
+                    uNewSSOIp = 0
+                }
                 iLargeSeq = friendListCache.friendListSeq
-                uOldSSOIp = client.lastDisconnectedIp.toIpV4Long()
-                uNewSSOIp = client.lastConnectedIp.toIpV4Long()
                 strVendorName = "MIUI"
                 strVendorOSName = "?ONEPLUS A5000_23_17"
                 //  timeStamp = friendListCache.timeStamp
