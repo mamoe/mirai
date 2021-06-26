@@ -55,5 +55,4 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
         }
         bot.login()
     }
-
 }
