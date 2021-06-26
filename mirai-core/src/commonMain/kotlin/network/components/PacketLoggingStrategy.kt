@@ -57,7 +57,7 @@ internal class PacketLoggingStrategyImpl(
                     packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
                 }
 
-                if (packet is MultiPacket<*>) {
+                if (packet is MultiPacket) {
                     for (d in packet) {
                         logReceivedImpl(d, incomingPacket, logger)
                     }

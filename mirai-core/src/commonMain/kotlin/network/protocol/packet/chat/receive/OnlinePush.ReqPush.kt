@@ -14,22 +14,21 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
-import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.network.MultiPacketBySequence
+import net.mamoe.mirai.internal.network.MultiPacketImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
@@ -46,7 +45,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.*
@@ -61,7 +60,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     private suspend fun List<MsgInfo>.deco(
         client: QQAndroidClient,
         mapper: suspend ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
-    ): Sequence<Packet> {
+    ): List<Packet> {
         return mapNotNull { msg ->
             val successful = client.syncingController.onlinePushReqPushCacheList.addCache(
                 QQAndroidClient.MessageSvcSyncData.OnlinePushReqPushSyncId(
@@ -70,7 +69,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
             )
             if (!successful) return@mapNotNull null
             msg.vMsg.read { mapper(msg) }
-        }.asSequence().flatten()
+        }.asSequence().flatten().toList()
     }
 
 
@@ -79,7 +78,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): ReqPushDecoded {
         val reqPushMsg = readUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
         //bot.network.logger.debug { reqPushMsg._miraiContentToString() }
-        val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
+        val packets = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
             when (msgInfo.shMsgType.toInt()) {
                 732 -> {
                     val group = bot.getGroup(readUInt().toLong())
@@ -123,8 +122,8 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     }
 
     @Suppress("SpellCheckingInspection")
-    internal data class ReqPushDecoded(val request: OnlinePushPack.SvcReqPushMsg, val sequence: Sequence<Packet>) :
-        MultiPacketBySequence<Packet>(sequence), Packet.NoLog {
+    internal data class ReqPushDecoded(val request: OnlinePushPack.SvcReqPushMsg, val sequence: Collection<Packet>) :
+        MultiPacketImpl(sequence), Packet.NoLog {
         override fun toString(): String {
             return "OnlinePush.ReqPush.ReqPushDecoded"
         }
@@ -321,46 +320,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     val message = tipsInfo.optBytesContent.decodeToString()
                     //机器人信息
                     if (tipsInfo.robotGroupOpt != 0) {
-                        when (tipsInfo.robotGroupOpt) {
-                            //添加
-                            1 -> {
-                                val dataList = message.parseToMessageDataList()
-                                val invitor = dataList.first().let { messageData ->
-                                    group.getOrFail(messageData.data.toLong())
-                                }
-                                val member = dataList.last().let { messageData ->
-                                    group.newMember(
-                                        MemberInfoImpl(
-                                            uin = messageData.data.toLong(),
-                                            nick = messageData.text,
-                                            permission = MemberPermission.MEMBER,
-                                            remark = "",
-                                            nameCard = "",
-                                            specialTitle = "",
-                                            muteTimestamp = 0,
-                                            anonymousId = null,
-                                            isOfficialBot = true
-                                        )
-                                    ).cast<NormalMember>().also {
-                                        group.members.delegate.add(it)
-                                    }
-                                }
-                                return@lambda732 sequenceOf(MemberJoinEvent.Invite(member, invitor))
-                            }
-                            //移除
-                            2 -> {
-                                message.parseToMessageDataList().first().let {
-                                    val member = group.getOrFail(it.data.toLong())
-                                    group.members.delegate.remove(member)
-                                    return@lambda732 sequenceOf(MemberLeaveEvent.Quit(member))
-                                }
-                            }
-
-                            else -> {
-                                bot.network.logger.debug { "Unknown robotGroupOpt ${tipsInfo.robotGroupOpt}, message=$message" }
-                                return@lambda732 emptySequence()
-                            }
-                        }
+                        TODO("removed")
                     } else when {
                         message.endsWith("群聊坦白说") -> {
                             val new = when (message) {
@@ -586,7 +546,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 nick = body.msgAddFrdNotify.fuinNick,
                 remark = "",
             )
-        )
+        ).checkIsFriendImpl()
         bot.friends.delegate.add(new)
         return@lambda528 bot.getStranger(new.id)?.let {
             bot.strangers.remove(new.id)
@@ -614,7 +574,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                 msg.msgFriendMsgSync.fuin
                             ).sendAndExpect(bot)
                         response.friendList.firstOrNull()?.let {
-                            val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo())
+                            val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo()).checkIsFriendImpl()
                             bot.friends.delegate.add(friend)
                             packetList.add(FriendAddEvent(friend))
                         }
@@ -625,11 +585,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         if (msg.msgGroupMsgSync != null) {
             when (msg.msgGroupMsgSync.msgType) {
                 1, 2 -> {
-                    bot.components[ContactUpdater].groupListModifyLock.withLock {
-                        bot.createGroupForBot(Mirai.calculateGroupUinByGroupCode(msg.msgGroupMsgSync.grpCode))?.let {
-                            packetList.add(BotJoinGroupEvent.Active(it))
-                        }
-                    }
+                    TODO("removed")
                 }
             }
         }

@@ -146,7 +146,7 @@ internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacke
     key: ByteArray = client.wLoginSigInfo.d2Key,
     extraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int = client.nextSsoSequenceId(),
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    body: BytePacketBuilder.(sequenceId: Int) -> Unit = {}
 ): OutgoingPacketWithRespType<R> {
     @Suppress("DuplicatedCode")
     return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {

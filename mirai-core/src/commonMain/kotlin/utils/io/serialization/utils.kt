@@ -158,7 +158,11 @@ internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>):
 /**
  * load
  */
-internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
+internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, offset: Int = 0): T {
+    if (offset != 0) {
+        require(this.size >= offset) { "size < offset" }
+        return this.copyOfRange(offset, this.lastIndex).loadAs(deserializer)
+    }
     return KtProtoBuf.decodeFromByteArray(deserializer, this)
 }
 

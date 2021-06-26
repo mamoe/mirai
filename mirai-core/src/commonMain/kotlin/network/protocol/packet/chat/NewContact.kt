@@ -13,20 +13,13 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.BotLeaveEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.network.MultiPacketByIterable
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.ParseErrorPacket
-import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import kotlin.math.max
@@ -86,7 +79,7 @@ internal class NewContact {
                     when {
                         packets.isEmpty() -> null
                         packets.size == 1 -> packets[0]
-                        else -> MultiPacketByIterable(packets)
+                        else -> MultiPacket(packets)
                     }
                 }.also {
                     bot.client.syncingController.run {
@@ -168,86 +161,6 @@ internal class NewContact {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            fun handleStruct(struct: Structmsg.StructMsg): Packet? {
-                return struct.msg?.run {
-                    when (subType) {
-                        1 -> { // 处理被邀请入群 或 处理成员入群申请
-                            when (groupMsgType) {
-                                1 -> {
-                                    // 成员申请入群
-                                    MemberJoinRequestEvent(
-                                        bot, struct.msgSeq, msgAdditional,
-                                        struct.reqUin, groupCode, groupName, reqUinNick
-                                    )
-                                }
-                                2 -> {
-                                    // Bot 被邀请入群
-                                    BotInvitedJoinGroupRequestEvent(
-                                        bot, struct.msgSeq, actionUin,
-                                        groupCode, groupName, actionUinNick
-                                    )
-                                }
-                                22 -> {
-                                    // 成员邀请入群
-                                    MemberJoinRequestEvent(
-                                        bot, struct.msgSeq, msgAdditional,
-                                        struct.reqUin, groupCode, groupName, reqUinNick, actionUin
-                                    )
-                                }
-                                else -> throw contextualBugReportException(
-                                    "parse SystemMsgNewGroup, subType=1",
-                                    this._miraiContentToString(),
-                                    additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
-                                )
-                            }
-                        }
-                        2 -> { // 被邀请入群, 自动同意, 不需处理
-
-//                            val group = bot.getNewGroup(groupCode) ?: return null
-//                            val invitor = group[actionUin]
-//
-//                            BotJoinGroupEvent.Invite(invitor)
-                            null
-                        }
-                        3 -> { // 已被请他管理员处理
-                            null
-                        }
-                        5 -> {
-                            val group = bot.getGroup(groupCode) ?: return null
-                            when (groupMsgType) {
-                                3 -> {
-                                    // https://github.com/mamoe/mirai/issues/651
-                                    // msgDescribe=将你设置为管理员
-                                    // msgTitle=管理员设置
-                                    null
-                                }
-                                13 -> { // 成员主动退出, 机器人是管理员, 接到通知
-                                    // 但无法获取是哪个成员.
-                                    null
-                                }
-                                7 -> { // 机器人被踢
-                                    val operator = group[actionUin] ?: return null
-                                    BotLeaveEvent.Kick(operator)
-                                }
-                                else -> {
-                                    throw contextualBugReportException(
-                                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
-                                        this._miraiContentToString(),
-                                        null,
-                                        "并描述此时机器人是否被踢出群等"
-                                    )
-                                }
-                            }
-                        }
-                        else -> throw contextualBugReportException(
-                            "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
-                            forDebug = this._miraiContentToString(),
-                            additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
-                        )
-                    }
-                }
-            }
-
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 groupmsgs.filter {
                     it.msgTime >= bot.client.syncingController.latestMsgNewGroupTime
@@ -262,17 +175,11 @@ internal class NewContact {
                         return@mapNotNull null
                     }
                     try {
-                        handleStruct(struct)
+                        bot.components.noticeProcessorPipeline.process(bot, struct).toPacket()
                     } catch (e: Throwable) {
                         ParseErrorPacket(e)
                     }
-                }.let { packets ->
-                    when {
-                        packets.isEmpty() -> null
-                        packets.size == 1 -> packets[0]
-                        else -> MultiPacketByIterable(packets)
-                    }
-                }.also {
+                }.toPacket().also {
                     bot.client.syncingController.run {
                         latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
