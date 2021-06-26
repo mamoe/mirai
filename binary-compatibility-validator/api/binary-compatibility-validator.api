@@ -5842,6 +5842,7 @@ public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver : net/mamo
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lnet/mamoe/mirai/utils/MiraiLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
 	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
+	public fun isSliderCaptchaSupported ()Z
 	public fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
