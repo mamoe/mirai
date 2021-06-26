@@ -11,6 +11,8 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.toInt
+import java.net.Inet4Address
 
 
 internal fun Int.toIpV4AddressString(): String {
@@ -31,12 +33,10 @@ internal fun String.toIpV4Long(): Long {
     return if (isEmpty()) {
         0
     } else {
-        split(".").map { it.toLongOrNull() }.let { ipSequence ->
-            if (ipSequence.size == 4 && ipSequence.all { it != null }) {
-                ipSequence[0]!! + ipSequence[1]!!.shl(24) + ipSequence[2]!!.shl(16) + ipSequence[3]!!.shl(8)
-            } else {
-                -2
-            }
+        try {
+            Inet4Address.getByName(this).address.toInt().toLong()
+        } catch (e: UnknownHostException) {
+            -2
         }
     }
 }
