@@ -221,25 +221,6 @@ internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
 }
 
 
-/**
- * 所有 [Image] 实现的基类.
- */
-internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
-    private var _stringValue: String? = null
-        get() = field ?: kotlin.run {
-            field = "[mirai:image:$imageId]"
-            field
-        }
-
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = "[图片]"
-
-    @MiraiExperimentalApi
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:image:").append(imageId).append("]")
-    }
-}
-
 internal interface ConstOriginUrlAware {
     val originUrl: String
 }
