@@ -9,15 +9,15 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.internal.message.map
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.safeCast
 
 
 /**
@@ -58,7 +58,7 @@ public abstract class PttMessage : MessageContent {
  *
  * [Voice] 实例可以通过序列化方式保存. 下次可以用它发送因而不需要上传. 但可能由于未来服务器更新, 这项功能就不稳定. 因此建议总是上传音频文件而不要保存 [Voice].
  */
-@Serializable // experimental
+@Serializable(Voice.Serializer::class) // experimental
 @SerialName(Voice.SERIAL_NAME)
 public class Voice @MiraiInternalApi constructor(
     @MiraiExperimentalApi public override val fileName: String,
@@ -92,4 +92,38 @@ public class Voice @MiraiInternalApi constructor(
     public override fun toString(): String = _stringValue!!
 
     public override fun contentToString(): String = "[语音消息]"
+
+    public object Serializer : KSerializer<Voice> by VoiceS.serializer().map(
+        resultantDescriptor = VoiceS.serializer().descriptor.copy(SERIAL_NAME),
+        deserialize = {
+            Voice(
+                fileName = it.fileName,
+                md5 = it.md5,
+                fileSize = it.fileSize,
+                codec = it.codec,
+                _url = it._url,
+            ).also { v -> v.pttInternalInstance = Mirai.deserializePttElem(it.ptt) }
+        },
+        serialize = {
+            VoiceS(
+                fileName = it.fileName,
+                md5 = it.md5,
+                fileSize = it.fileSize,
+                _url = it._url,
+                codec = it.codec,
+                ptt = Mirai.serializePttElem(it.pttInternalInstance)
+            )
+        }
+    ) {
+        @Serializable
+        @SerialName(SERIAL_NAME)
+        private class VoiceS(
+            val fileName: String,
+            val md5: ByteArray,
+            val fileSize: Long,
+            val codec: Int,
+            val _url: String,
+            val ptt: String = "",
+        )
+    }
 }

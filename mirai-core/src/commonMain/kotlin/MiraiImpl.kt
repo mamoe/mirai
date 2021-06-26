@@ -1182,4 +1182,14 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             }
         }
     }
+
+    override fun serializePttElem(ptt: Any?): String {
+        if (ptt !is ImMsgBody.Ptt) return ""
+        return ptt.toByteArray(ImMsgBody.Ptt.serializer()).toUHexString()
+    }
+
+    override fun deserializePttElem(ptt: String): Any? {
+        if (ptt.isBlank()) return null
+        return ptt.hexToBytes().loadAs(ImMsgBody.Ptt.serializer())
+    }
 }
