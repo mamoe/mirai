@@ -13,6 +13,7 @@
 package net.mamoe.mirai.utils
 
 import java.util.*
+import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
@@ -238,4 +239,9 @@ public fun String.truncated(length: Int, truncated: String = "..."): String {
     return if (this.length > length) {
         this.take(10) + truncated
     } else this
+}
+
+public inline fun <T> T.context(block: T.() -> Unit) {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return block()
 }

@@ -14,12 +14,9 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -152,6 +149,7 @@ internal open class QQAndroidBot constructor(
 
         // There's no need to interrupt a broadcasting event when network handler closed.
         set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
+        set(NoticeProcessorPipeline, NoticeProcessorPipelineImpl(networkLogger.subLogger("NoticeProcessorPipeline")))
 
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
@@ -238,14 +236,9 @@ internal open class QQAndroidBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     override lateinit var nick: String
-
-    // internally visible only
-    fun getGroupByUin(uin: Long): Group {
-        return getGroupByUinOrNull(uin)
-            ?: throw NoSuchElementException("Group ${Mirai.calculateGroupCodeByGroupUin(uin)} not found")
-    }
-
-    fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
-    }
 }
+
+internal fun QQAndroidBot.getGroupByUinOrFail(uin: Long) =
+    getGroupByUin(uin) ?: throw NoSuchElementException("group.uin=$uin")
+
+internal fun QQAndroidBot.getGroupByUin(uin: Long) = groups.firstOrNull { it.uin == uin }
