@@ -136,7 +136,8 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
 
-    val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
+    val address: InetSocketAddress
+        get() = overrideComponents[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions
