@@ -130,9 +130,7 @@ internal class GroupImpl(
     }
 
     override operator fun get(id: Long): NormalMemberImpl? {
-        if (id == bot.id) {
-            return botAsMember
-        }
+        if (id == bot.id) return botAsMember
         return members.firstOrNull { it.id == id }
     }
 
@@ -292,10 +290,10 @@ internal class GroupImpl(
 @Deprecated("use addNewNormalMember or newAnonymousMember")
 internal fun Group.newMember(memberInfo: MemberInfo): Member {
     this.checkIsGroupImpl()
-    memberInfo.anonymousId?.let { anId ->
+    memberInfo.anonymousId?.let {
         return AnonymousMemberImpl(
             this, this.coroutineContext,
-            memberInfo, anId
+            memberInfo
         )
     }
     return NormalMemberImpl(
@@ -322,25 +320,25 @@ internal fun Group.newNormalMember(memberInfo: MemberInfo): NormalMemberImpl {
 
 internal fun Group.newAnonymousMember(memberInfo: MemberInfo): AnonymousMemberImpl? {
     this.checkIsGroupImpl()
-    memberInfo.anonymousId?.let { anId ->
-        return AnonymousMemberImpl(
-            this, this.coroutineContext,
-            memberInfo, anId
-        )
+    memberInfo.anonymousId?.let {
+        return AnonymousMemberImpl(this, this.coroutineContext, memberInfo)
     }
     return null
 }
 
-internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl = newMember(
-    MemberInfoImpl(
-        uin = 80000000L,
-        nick = name,
-        permission = MemberPermission.MEMBER,
-        remark = "匿名",
-        nameCard = name,
-        specialTitle = "匿名",
-        muteTimestamp = 0,
-        anonymousId = id,
+internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl {
+    return AnonymousMemberImpl(
+        this, this.coroutineContext,
+        MemberInfoImpl(
+            uin = 80000000L,
+            nick = name,
+            permission = MemberPermission.MEMBER,
+            remark = "匿名",
+            nameCard = name,
+            specialTitle = "匿名",
+            muteTimestamp = 0,
+            anonymousId = id,
+        )
     )
-) as AnonymousMemberImpl
+}
 

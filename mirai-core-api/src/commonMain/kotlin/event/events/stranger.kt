@@ -14,12 +14,13 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 新增陌生人的事件
  *
  */
-public data class StrangerAddEvent internal constructor(
+public data class StrangerAddEvent @MiraiInternalApi public constructor(
     /**
      * 新的陌生人. 已经添加到 [Bot.strangers]
      */

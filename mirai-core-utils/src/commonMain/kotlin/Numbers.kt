@@ -13,3 +13,4 @@
 package net.mamoe.mirai.utils
 
 public fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
+public fun Short.toIntUnsigned(): Int = this.toUShort().toInt()
