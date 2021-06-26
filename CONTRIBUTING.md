@@ -44,6 +44,8 @@ git submodule update
 [mirai-compose]: https://github.com/sonder-joker/mirai-compose
 [plugin-center 服务端]: https://github.com/project-mirai/mirai-plugin-center
 [mirai-api-http]: https://github.com/project-mirai/mirai-api-http
+[project-mirai/docs]: https://github.com/project-mirai/docs
+[docs.mirai.mamoe.net]: https://docs.mirai.mamoe.net
 
 
 |           名称           |                                                   描述                                                   |
@@ -59,6 +61,7 @@ git submodule update
 |   mirai-console-loader   |                 console 启动器。对接插件中心的 API，支持下载和更新插件等。不确定之后是否会有人实现。                 |
 |         IDE 插件         |               IntelliJ IDEA 的插件的工作。可以为 mirai 框架添加检查等功能。这个部分目前基本满足需求。                |
 |   [mirai-api-http] v2    |                                                日常维护。                                                |
+|   [project-mirai/docs]   |  用户友好文档自动部署，使用 VuePress , 部署于 [docs.mirai.mamoe.net]，目前还有部分超链接错误的问题。               |
 
 
 ### 里程碑
