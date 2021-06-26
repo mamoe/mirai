@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.toLongUnsigned
 import java.net.Inet4Address
 
 
@@ -34,7 +35,7 @@ internal fun String.toIpV4Long(): Long {
         0
     } else {
         try {
-            Inet4Address.getByName(this).address.toInt().toLong()
+            Inet4Address.getByName(this).address.toInt().toLongUnsigned()
         } catch (e: UnknownHostException) {
             -2
         }
