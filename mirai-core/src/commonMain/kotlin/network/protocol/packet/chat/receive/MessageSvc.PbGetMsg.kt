@@ -51,11 +51,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.MessageSourceKind.STRANGER
-import net.mamoe.mirai.message.data.MessageSourceKind.TEMP
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSourceKind.*
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.read
@@ -447,7 +444,11 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot, fromSync: Boolean 
         }
         208 -> {
             // friend ptt
-            return null
+            val target = bot.getFriend(msgHead.fromUin)
+                ?: return null
+            val lsc = listOf(this).toMessageChainOnline(bot, 0, FRIEND)
+
+            return FriendMessageEvent(target, lsc, msgHead.msgTime)
         }
         529 -> {
 

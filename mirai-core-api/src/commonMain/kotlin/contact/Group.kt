@@ -32,7 +32,7 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  * 群.
  */
 @JvmBlockingBridge
-public interface Group : Contact, CoroutineScope, FileSupported {
+public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported {
     /**
      * 群名称.
      *
@@ -157,18 +157,6 @@ public interface Group : Contact, CoroutineScope, FileSupported {
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
         this.sendMessage(message.toPlainText())
 
-    /**
-     * 上传一个语音消息以备发送.
-     *
-     * - **请手动关闭 [resource]**
-     * - 请使用 amr 或 silk 格式
-     *
-     * @see ExternalResource.uploadAsVoice
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
-     */
-    public suspend fun uploadVoice(resource: ExternalResource): Voice
 
 
     /**

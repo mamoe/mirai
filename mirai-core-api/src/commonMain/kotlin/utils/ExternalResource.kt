@@ -19,7 +19,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.FileSupported
-import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.VoiceSupported
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
@@ -384,15 +384,52 @@ public interface ExternalResource : Closeable {
          *
          * **服务器仅支持音频格式 `silk` 或 `amr`**. 需要调用方手动[关闭资源][ExternalResource.close].
          *
-         * 目前仅支持发送给群.
-         *
          * @throws OverFileSizeMaxException
+         * @since 2.7
+         * @see VoiceSupported.uploadVoice
          */
         @JvmBlockingBridge
         @JvmStatic
-        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
-            if (contact is Group) return contact.uploadVoice(this)
-            else throw UnsupportedOperationException("Uploading Voice is only supported for Group yet.")
+        public suspend fun ExternalResource.uploadAsVoice(contact: VoiceSupported): Voice {
+            return contact.uploadVoice(this)
         }
+
+        @JvmBlockingBridge
+        @JvmStatic
+        @Deprecated("For binary compatibility", level = DeprecationLevel.WARNING)
+        @JvmName("uploadAsVoice")
+        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
+            if (contact is VoiceSupported) return contact.uploadVoice(this)
+            else throw UnsupportedOperationException("Contact `$contact` is not supported uploading voice")
+        }
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为语音上传至 [contact] 后构造 [Voice],
+         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
+         *
+         * 注意：本函数不会关闭流.
+         *
+         * @since 2.7
+         * @throws OverFileSizeMaxException
+         * @see VoiceSupported.uploadVoice
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun InputStream.uploadAsVoice(contact: VoiceSupported): Voice =
+            runBIO { toExternalResource() }.withUse { uploadAsVoice(contact) }
+
+        /**
+         * 将文件作为语音上传后构造 [Voice].
+         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
+         *
+         * @since 2.7
+         * @throws OverFileSizeMaxException
+         * @see VoiceSupported.uploadVoice
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun File.uploadAsVoice(contact: VoiceSupported): Voice =
+            toExternalResource().withUse { uploadAsVoice(contact) }
+
     }
 }
