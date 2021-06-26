@@ -13,13 +13,13 @@ package net.mamoe.mirai.internal
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
-import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -90,13 +90,15 @@ internal abstract class AbstractBot constructor(
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
-    final override val otherClients: ContactList<OtherClient> = ContactList()
-    final override val friends: ContactList<Friend> = ContactList()
-    final override val groups: ContactList<Group> = ContactList()
-    final override val strangers: ContactList<Stranger> = ContactList()
+    final override val otherClients: ContactList<OtherClientImpl> = ContactList()
+    final override val friends: ContactList<FriendImpl> = ContactList()
+    final override val groups: ContactList<GroupImpl> = ContactList()
+    final override val strangers: ContactList<StrangerImpl> = ContactList()
 
-    final override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
-    final override val asStranger: Stranger by lazy { Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)) }
+    final override val asFriend: FriendImpl by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")).cast() }
+    final override val asStranger: StrangerImpl by lazy {
+        Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)).cast()
+    }
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) return
