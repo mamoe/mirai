@@ -55,13 +55,6 @@ internal class OnlineGroupImageImpl(
             }/0?term=2"
         } else "http://gchat.qpic.cn" + delegate.origUrl
 
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineGroupImageImpl && other.imageId == this.imageId
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
 }
 
 @Serializable(with = OnlineFriendImageImpl.Serializer::class)
@@ -97,13 +90,6 @@ OnlineFriendImage() {
         }
     // TODO: 2020/4/24 动态获取图片下载链接的 host
 
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineFriendImageImpl && other.imageId == this.imageId
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
 }
 
 /*

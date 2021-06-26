@@ -219,6 +219,13 @@ public sealed class AbstractImage : Image {
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:image:").append(imageId).append("]")
     }
+
+    final override fun hashCode(): Int = imageId.hashCode()
+    final override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is Image) return false
+        return this.imageId == other.imageId
+    }
 }
 
 
