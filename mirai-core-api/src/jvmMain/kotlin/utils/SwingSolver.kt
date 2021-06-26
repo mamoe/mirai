@@ -25,6 +25,8 @@ import javax.swing.*
 
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
+    override val isSliderCaptchaSupported: Boolean get() = true
+
     public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String {
         val image = runBIO { ImageIO.read(data.inputStream()) }
         return SwingLoginSolver(

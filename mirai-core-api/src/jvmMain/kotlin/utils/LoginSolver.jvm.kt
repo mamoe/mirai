@@ -139,6 +139,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         withContext(Dispatchers.IO) { input() }
     }
 
+    override val isSliderCaptchaSupported: Boolean get() = true
+
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)
         @Suppress("BlockingMethodInNonBlockingContext")
