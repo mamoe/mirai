@@ -137,11 +137,9 @@ internal class ServerListImpl(
      */
     @Synchronized
     override fun pollCurrent(): ServerAddress? {
-        val address = current.poll()
-        if (address != null) {
+        return current.poll()?.also { address ->
             lastPolledAddress = address
         }
-        return address
     }
 
     /**
@@ -150,9 +148,9 @@ internal class ServerListImpl(
     @Synchronized
     override fun pollAny(): ServerAddress {
         if (current.isEmpty()) refresh()
-        val address = current.remove()
-        lastPolledAddress = address
-        return address
+        return current.remove().also { address ->
+            lastPolledAddress = address
+        }
     }
 
     override fun toString(): String {
