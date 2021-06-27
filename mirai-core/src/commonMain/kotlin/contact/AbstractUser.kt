@@ -41,9 +41,10 @@ internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
 
 internal abstract class AbstractUser(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     userInfo: UserInfo,
-) : User, AbstractContact(bot, coroutineContext) {
+) : User, AbstractContact(bot, parentCoroutineContext) {
+
     final override val id: Long = userInfo.uin
     final override var nick: String = userInfo.nick
     final override val remark: String = userInfo.remark
