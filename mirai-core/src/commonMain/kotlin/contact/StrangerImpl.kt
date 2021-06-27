@@ -49,9 +49,9 @@ internal inline fun Stranger.checkIsImpl(): StrangerImpl {
 
 internal class StrangerImpl(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     internal val strangerInfo: StrangerInfo,
-) : Stranger, AbstractUser(bot, coroutineContext, strangerInfo) {
+) : Stranger, AbstractUser(bot, parentCoroutineContext, strangerInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
     override suspend fun delete() {

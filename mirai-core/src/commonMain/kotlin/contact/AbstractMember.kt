@@ -18,9 +18,9 @@ import kotlin.coroutines.CoroutineContext
 
 internal abstract class AbstractMember(
     final override val group: GroupImpl,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
-) : AbstractUser(group.bot, coroutineContext, memberInfo), Member {
+) : AbstractUser(group.bot, parentCoroutineContext, memberInfo), Member {
     final override val info: MemberInfoImpl = memberInfo.cast()
 
     override val nameCard: String get() = info.nameCard

@@ -19,9 +19,9 @@ import kotlin.coroutines.CoroutineContext
 
 internal class AnonymousMemberImpl(
     group: GroupImpl,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
-) : AnonymousMember, AbstractMember(group, coroutineContext, memberInfo) {
+) : AnonymousMember, AbstractMember(group, parentCoroutineContext, memberInfo) {
     init {
         requireNotNull(memberInfo.anonymousId) { "anonymousId must not be null" }
     }
