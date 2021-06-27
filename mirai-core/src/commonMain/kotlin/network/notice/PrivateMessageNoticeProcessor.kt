@@ -15,9 +15,9 @@ import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUin
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.fromSync
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.notice.SystemMessageProcessor.Companion.fromSync
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.utils.context
 
@@ -35,6 +35,7 @@ import net.mamoe.mirai.utils.context
  */
 internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
     override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
+        markAsConsumed()
         if (msgHead.fromUin == bot.id && fromSync) {
             // Bot send message to himself? or from other client? I am not the implementer.
             bot.client.sendFriendMessageSeq.updateIfSmallerThan(msgHead.msgSeq)
@@ -47,7 +48,6 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
             208, // friend ptt, maybe also support stranger
             -> {
                 handlePrivateMessage(data, bot.getFriend(senderUin) ?: bot.getStranger(senderUin) ?: return)
-                markAsConsumed()
             }
 
             141, // group temp
@@ -55,7 +55,9 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
                 val tmpHead = msgHead.c2cTmpMsgHead ?: return
                 val group = bot.getGroupByUin(tmpHead.groupUin) ?: return
                 handlePrivateMessage(data, group[senderUin] ?: return)
-                markAsConsumed()
+            }
+            else -> {
+                markNotConsumed()
             }
         }
 
