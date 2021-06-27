@@ -14,7 +14,7 @@ import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 
 internal class MsgType0x210Decoder : SimpleNoticeProcessor<MsgType0x210>(type()) {
-    override suspend fun PipelineContext.process0(data: MsgType0x210) {
+    override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
         when (data.uSubMsgType) {
             0x8AL -> {
             }

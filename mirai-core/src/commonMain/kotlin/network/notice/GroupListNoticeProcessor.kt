@@ -39,6 +39,9 @@ import net.mamoe.mirai.utils.read
 
 
 /**
+ * Member/Bot invited/active join // force/active leave
+ * Member/Bot permission change
+ *
  * @see BotJoinGroupEvent
  * @see MemberJoinEvent
  *
@@ -47,10 +50,13 @@ import net.mamoe.mirai.utils.read
  *
  * @see MemberPermissionChangeEvent
  * @see BotGroupPermissionChangeEvent
+ *
+ * @see BotInvitedJoinGroupRequestEvent
+ * @see MemberJoinRequestEvent
  */
 internal class GroupListNoticeProcessor(
-    private val logger: MiraiLogger
-) : MixedNoticeProcessor(), GroupEventProcessorContext {
+    private val logger: MiraiLogger,
+) : MixedNoticeProcessor(), NewContactSupport {
 
     override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
         if (data.uSubMsgType != 0x44L) return
@@ -60,7 +66,7 @@ internal class GroupListNoticeProcessor(
         when (msg.msgGroupMsgSync.msgType) {
             1, 2 -> {
                 bot.components[ContactUpdater].groupListModifyLock.withLock {
-                    bot.createGroupForBot(Mirai.calculateGroupUinByGroupCode(msg.msgGroupMsgSync.grpCode))?.let {
+                    bot.addNewGroupByCode(msg.msgGroupMsgSync.grpCode)?.let {
                         collect(BotJoinGroupEvent.Active(it))
                     }
                 }
@@ -85,10 +91,10 @@ internal class GroupListNoticeProcessor(
             1 -> {
                 val dataList = message.parseToMessageDataList()
                 val invitor = dataList.first().let { messageData ->
-                    group.getOrFail(messageData.data.toLong())
+                    group[messageData.data.toLong()] ?: return
                 }
                 val member = dataList.last().let { messageData ->
-                    group.addNewNormalMember(messageData.toMemberInfo())
+                    group.addNewNormalMember(messageData.toMemberInfo()) ?: return
                 }
                 collect(MemberJoinEvent.Invite(member, invitor))
             }
@@ -116,50 +122,73 @@ internal class GroupListNoticeProcessor(
      * @see BotJoinGroupEvent.Active
      */
     override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
-        if (data.msgHead.msgType != 33) return
         bot.components[ContactUpdater].groupListModifyLock.withLock {
-            msgBody.msgContent.read {
-                val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
-                val group =
-                    bot.getGroupByUin(groupUin) ?: bot.createGroupForBot(groupUin) ?: return markAsConsumed()
-                discardExact(1)
-                val joinedMemberUin = readUInt().toLong()
-                val joinType = readByte().toInt()
-                val invitorUin = readUInt().toLong()
-                when (joinType) {
-                    // 邀请加入
-                    -125, 3 -> {
-                        val invitor = group[invitorUin] ?: return markAsConsumed()
-                        collected += if (joinedMemberUin == bot.id) {
-                            BotJoinGroupEvent.Invite(invitor)
-                        } else {
-                            MemberJoinEvent.Invite(group.addNewNormalMember(getNewMemberInfo()), invitor)
-                        }
-                    }
-                    // 通过群员分享的二维码/直接加入
-                    -126, 2 -> {
-                        collected += if (joinedMemberUin == bot.id) {
-                            BotJoinGroupEvent.Active(group)
-                        } else {
-                            MemberJoinEvent.Active(group.addNewNormalMember(getNewMemberInfo()))
-                        }
-                    }
-                    // 忽略
-                    else -> {
+            when (data.msgHead.msgType) {
+                33 -> processGroupJoin33(data)
+                34 -> Unit // 34 与 33 重复, 忽略 34
+                38 -> processGroupJoin38(data)
+                85 -> processGroupJoin85(data)
+                else -> return
+            }
+            markAsConsumed()
+        }
+    }
+
+    // 33
+    private suspend fun PipelineContext.processGroupJoin33(data: MsgComm.Msg) = data.context {
+        msgBody.msgContent.read {
+            val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
+            val group = bot.getGroupByUin(groupUin) ?: bot.addNewGroupByUin(groupUin) ?: return
+            discardExact(1)
+            val joinedMemberUin = readUInt().toLong()
+            val joinType = readByte().toInt()
+            val invitorUin = readUInt().toLong()
+            when (joinType) {
+                // 邀请加入
+                -125, 3 -> {
+                    val invitor = group[invitorUin] ?: return
+                    collected += if (joinedMemberUin == bot.id) {
+                        BotJoinGroupEvent.Invite(invitor)
+                    } else {
+                        MemberJoinEvent.Invite(group.addNewNormalMember(getNewMemberInfo()) ?: return, invitor)
                     }
                 }
+                // 通过群员分享的二维码/直接加入
+                -126, 2 -> {
+                    collected += if (joinedMemberUin == bot.id) {
+                        BotJoinGroupEvent.Active(group)
+                    } else {
+                        MemberJoinEvent.Active(group.addNewNormalMember(getNewMemberInfo()) ?: return)
+                    }
+                }
+                // 忽略
+                else -> {
+                }
             }
-            // 邀请入群
-            // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
-            // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
-
-
-            // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
-            // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
-
-            // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
-            // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
         }
+        // 邀请入群
+        // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
+        // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
+
+
+        // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
+        // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
+
+        // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
+        // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+    }
+
+    // 38
+    private suspend fun PipelineContext.processGroupJoin38(data: MsgComm.Msg) = data.context {
+        if (bot.getGroupByUin(msgHead.fromUin) != null) return
+        bot.addNewGroupByUin(msgHead.fromUin)?.let { collect(BotJoinGroupEvent.Active(it)) }
+    }
+
+    // 85
+    private suspend fun PipelineContext.processGroupJoin85(data: MsgComm.Msg) = data.context {
+        // msgHead.authUin: 处理人
+        if (msgHead.toUin != bot.id) return
+        processGroupJoin38(data)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -201,10 +230,10 @@ internal class GroupListNoticeProcessor(
             }
             2 -> { // 被邀请入群, 自动同意, 不需处理
 
-//                            val group = bot.getNewGroup(groupCode) ?: return null
-//                            val invitor = group[actionUin]
-//
-//                            BotJoinGroupEvent.Invite(invitor)
+                //                            val group = bot.getNewGroup(groupCode) ?: return null
+                //                            val invitor = group[actionUin]
+                //
+                //                            BotJoinGroupEvent.Invite(invitor)
             }
             3 -> { // 已被请他管理员处理
             }
@@ -250,6 +279,13 @@ internal class GroupListNoticeProcessor(
         markAsConsumed()
         when (data.msgType) {
             44 -> data.msgData.read {
+                //                  3D C4 33 DD 01 FF CD 76 F4 03 C3 7E 2E 34
+                //      群转让
+                //      start with  3D C4 33 DD 01 FF
+                //                  3D C4 33 DD 01 FF C3 7E 2E 34 CD 76 F4 03
+                // 权限变更
+                //                  3D C4 33 DD 01 00/01 .....
+                //                  3D C4 33 DD 01 01 C3 7E 2E 34 01
                 discardExact(5)
                 val kind = readUByte().toInt()
                 if (kind == 0xFF) {
@@ -327,7 +363,7 @@ toUin=0x0000000026BA1173(649728371)
         target: Long,
         kind: Int,
         operator: Long,
-        groupUin: Long
+        groupUin: Long,
     ) {
         when (kind) {
             2, 0x82 -> bot.getGroupByUin(groupUin)?.let { group ->
@@ -367,7 +403,7 @@ toUin=0x0000000026BA1173(649728371)
     private fun PipelineContext.handlePermissionChange(
         data: OnlinePushTrans.PbMsgInfo,
         target: Long,
-        newPermissionByte: Int
+        newPermissionByte: Int,
     ) {
         val group = bot.getGroupByUin(data.fromUin) ?: return
 
@@ -410,7 +446,7 @@ toUin=0x0000000026BA1173(649728371)
             // member Retrieve or permission changed to OWNER
             var newOwner = group[to]
             if (newOwner == null) {
-                newOwner = group.addNewNormalMember(MemberInfoImpl(uin = to, nick = "", permission = OWNER))
+                newOwner = group.addNewNormalMember(MemberInfoImpl(uin = to, nick = "", permission = OWNER)) ?: return
                 collect(MemberJoinEvent.Retrieve(newOwner))
             } else if (newOwner.permission != OWNER) {
                 collect(MemberPermissionChangeEvent(newOwner, newOwner.permission, OWNER))
@@ -421,7 +457,7 @@ toUin=0x0000000026BA1173(649728371)
 
             // bot Retrieve or permission changed to OWNER
             if (group == null) {
-                collect(BotJoinGroupEvent.Retrieve(bot.createGroupForBot(data.fromUin)!!))
+                collect(BotJoinGroupEvent.Retrieve(bot.addNewGroupByUin(data.fromUin) ?: return))
                 return
             }
 

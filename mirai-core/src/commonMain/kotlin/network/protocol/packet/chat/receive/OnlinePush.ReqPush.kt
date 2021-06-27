@@ -17,15 +17,15 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.checkIsGroupImpl
+import net.mamoe.mirai.internal.contact.checkIsMemberImpl
 import net.mamoe.mirai.internal.network.MultiPacketImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -34,17 +34,12 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x115
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0xb3
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.*
@@ -538,20 +533,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0x111L to ignoredLambda528,
     // 新好友
     0xB3L to lambda528 { bot ->
-        // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
-        val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
-        val new = Mirai.newFriend(
-            bot, FriendInfoImpl(
-                uin = body.msgAddFrdNotify.fuin,
-                nick = body.msgAddFrdNotify.fuinNick,
-                remark = "",
-            )
-        ).checkIsFriendImpl()
-        bot.friends.delegate.add(new)
-        return@lambda528 bot.getStranger(new.id)?.let {
-            bot.strangers.remove(new.id)
-            sequenceOf(StrangerRelationChangeEvent.Friended(it, new), FriendAddEvent(new))
-        } ?: sequenceOf(FriendAddEvent(new))
+        TODO("removed")
     },
     0xE2L to lambda528 { _ ->
         // TODO: unknown. maybe messages.
@@ -561,35 +543,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         return@lambda528 emptySequence()
     },
     0x44L to lambda528 { bot ->
-        val msg = vProtobuf.loadAs(Submsgtype0x44.MsgBody.serializer())
-
-        val packetList = mutableListOf<Packet>()
-        if (msg.msgFriendMsgSync != null) {
-            when (msg.msgFriendMsgSync.processtype) {
-                3, 9, 10 -> {
-                    if (bot.getFriend(msg.msgFriendMsgSync.fuin) == null) {
-                        val response: FriendList.GetFriendGroupList.Response =
-                            FriendList.GetFriendGroupList.forSingleFriend(
-                                bot.client,
-                                msg.msgFriendMsgSync.fuin
-                            ).sendAndExpect(bot)
-                        response.friendList.firstOrNull()?.let {
-                            val friend = Mirai.newFriend(bot, it.toMiraiFriendInfo()).checkIsFriendImpl()
-                            bot.friends.delegate.add(friend)
-                            packetList.add(FriendAddEvent(friend))
-                        }
-                    }
-                }
-            }
-        }
-        if (msg.msgGroupMsgSync != null) {
-            when (msg.msgGroupMsgSync.msgType) {
-                1, 2 -> {
-                    TODO("removed")
-                }
-            }
-        }
-        return@lambda528 packetList.asSequence()
+        TODO("removed")
     },
     // bot 在其他客户端被踢或主动退出而同步情况
     0xD4L to lambda528 { _ ->
@@ -666,39 +620,10 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     },
     //好友输入状态
     0x115L to lambda528 { bot ->
-        val body = vProtobuf.loadAs(Submsgtype0x115.SubMsgType0x115.MsgBody.serializer())
-        val friend = bot.getFriend(body.fromUin)
-        val item = body.msgNotifyItem
-        return@lambda528 if (friend != null && item != null) {
-            sequenceOf(FriendInputStatusChangedEvent(friend, item.eventType == 1))
-        } else {
-            emptySequence()
-        }
+        TODO("removed")
     },
     // 群相关,  ModFriendRemark, DelFriend, ModGroupProfile
     0x27L to lambda528 { bot ->
-        fun ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.msgFrdRmk.asSequence().mapNotNull {
-                val friend = bot.getFriend(it.fuin) ?: return@mapNotNull null
-                val old: String
-                friend.checkIsFriendImpl().friendInfo
-                    .also { info -> old = info.remark }
-                    .remark = it.rmkName
-                // TODO: 2020/4/10 ADD REMARK QUERY
-                FriendRemarkChangeEvent(friend, old, it.rmkName)
-            }
-        }
-
-        fun DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.uint64Uins.asSequence().mapNotNull {
-
-                val friend = bot.getFriend(it) ?: return@mapNotNull null
-                if (bot.friends.delegate.remove(friend)) {
-                    FriendDeleteEvent(friend)
-                } else null
-            }
-        }
-
         fun ModGroupProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
             return this.msgGroupProfileInfos.asSequence().mapNotNull { info ->
                 when (info.field) {
@@ -729,23 +654,23 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                            var85.troopface = var3;
                            var85.hasSetNewTroopHead = true;
                          */
-//                        bot.logger.debug(
-//                            contextualBugReportException(
-//                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
-//                                forDebug = "this=${this._miraiContentToString()}"
-//                            )
-//                        )
+                        //                        bot.logger.debug(
+                        //                            contextualBugReportException(
+                        //                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+                        //                                forDebug = "this=${this._miraiContentToString()}"
+                        //                            )
+                        //                        )
                         null
                     }
                     3 -> { // troop.credit.data
                         // top_package/akkz.java:3475
                         // top_package/akkz.java:3498
-//                        bot.logger.debug(
-//                            contextualBugReportException(
-//                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
-//                                forDebug = "this=${this._miraiContentToString()}"
-//                            )
-//                        )
+                        //                        bot.logger.debug(
+                        //                            contextualBugReportException(
+                        //                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+                        //                                forDebug = "this=${this._miraiContentToString()}"
+                        //                            )
+                        //                        )
                         null
                     }
 
@@ -789,64 +714,15 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
         }
 
-        fun ModCustomFace.transform(bot: QQAndroidBot): Sequence<Packet> {
-            if (uin == bot.id) {
-                return sequenceOf(BotAvatarChangedEvent(bot))
-            }
-            val friend = bot.getFriend(uin) ?: return emptySequence()
-            return sequenceOf(FriendAvatarChangedEvent(friend))
-        }
-
-        fun ModProfile.transform(bot: QQAndroidBot): Sequence<Packet> = buildList<Packet> {
-            var containsUnknown = false
-            msgProfileInfos.forEach { modified ->
-                when (modified.field) {
-                    20002 -> { // 昵称修改
-                        val value = modified.value
-                        val to = value.encodeToString()
-                        if (uin == bot.id) {
-                            val from = bot.nick
-                            if (from != to) {
-                                bot.nick = to
-                                bot.asFriend.checkIsFriendImpl().nick = to
-                                add(BotNickChangedEvent(bot, from, to))
-                            }
-                        } else {
-                            val friend = (bot.getFriend(uin) ?: return@forEach) as FriendImpl
-                            val info = friend.friendInfo
-                            val from = info.nick
-                            when (info) {
-                                is FriendInfoImpl -> info.nick = to
-                                else -> {
-                                    bot.network.logger.debug {
-                                        "Unknown how to update nick for $info"
-                                    }
-                                }
-                            }
-                            add(FriendNickChangedEvent(friend, from, to))
-                        }
-                    }
-                    else -> {
-                        containsUnknown = true
-                    }
-                }
-            }
-            if (msgProfileInfos.isEmpty() || containsUnknown) {
-                bot.network.logger.debug {
-                    "Transformers528 0x27L: new data: ${_miraiContentToString()}"
-                }
-            }
-        }.asSequence()
-
         return@lambda528 vProtobuf.loadAs(SubMsgType0x27MsgBody.serializer()).msgModInfos.asSequence()
             .flatMap {
                 when {
-                    it.msgModFriendRemark != null -> it.msgModFriendRemark.transform(bot)
-                    it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
+                    it.msgModFriendRemark != null -> TODO("removed")
+                    it.msgDelFriend != null -> TODO("removed")
                     it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
                     it.msgModGroupMemberProfile != null -> it.msgModGroupMemberProfile.transform(bot)
-                    it.msgModCustomFace != null -> it.msgModCustomFace.transform(bot)
-                    it.msgModProfile != null -> it.msgModProfile.transform(bot)
+                    it.msgModCustomFace != null -> TODO("removed")
+                    it.msgModProfile != null -> TODO("removed")
                     else -> {
                         bot.network.logger.debug {
                             "Transformers528 0x27L: new data: ${it._miraiContentToString()}"
@@ -856,5 +732,5 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 }
             }
         // 0A 1C 10 28 4A 18 0A 16 08 00 10 A2 FF 8C F0 03 1A 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B
-    }
+    },
 )

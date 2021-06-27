@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
+import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo
@@ -32,6 +33,19 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.reflect.KClass
 
+/**
+ * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
+ */
+internal interface NoticeProcessorPipeline {
+    fun registerProcessor(processor: NoticeProcessor)
+
+    suspend fun process(bot: QQAndroidBot, data: Any?, attributes: TypeSafeMap = TypeSafeMap()): Collection<Packet>
+
+    companion object : ComponentKey<NoticeProcessorPipeline> {
+        val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
+    }
+}
+
 internal interface PipelineContext {
     val bot: QQAndroidBot
     val attributes: TypeSafeMap
@@ -40,7 +54,7 @@ internal interface PipelineContext {
     val isConsumed: Boolean
 
     /**
-     * Mark the input as consumed so that there will not be warnings like 'Unknown type xxx'
+     * Mark the input as consumed so that there will not be warnings like 'Unknown type xxx'. This will not stop the pipeline.
      *
      * If this is executed, make sure you provided all information important for debugging.
      *
@@ -78,19 +92,6 @@ internal interface PipelineContext {
 }
 
 internal inline val PipelineContext.context get() = this
-
-/**
- * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
- */
-internal interface NoticeProcessorPipeline {
-    fun registerProcessor(processor: NoticeProcessor)
-
-    suspend fun process(bot: QQAndroidBot, data: Any?, attributes: TypeSafeMap = TypeSafeMap()): Collection<Packet>
-
-    companion object : ComponentKey<NoticeProcessorPipeline> {
-        val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
-    }
-}
 
 internal class NoticeProcessorPipelineImpl(
     private val logger: MiraiLogger,
@@ -142,6 +143,10 @@ internal class NoticeProcessorPipelineImpl(
 
 }
 
+///////////////////////////////////////////////////////////////////////////
+// NoticeProcessor
+///////////////////////////////////////////////////////////////////////////
+
 /**
  * A processor handling some specific type of message.
  */
@@ -157,11 +162,11 @@ internal abstract class SimpleNoticeProcessor<T : Any>(
 
     final override suspend fun process(context: PipelineContext, data: Any?) {
         if (type.isInstance(data)) {
-            context.process0(data.uncheckedCast())
+            context.processImpl(data.uncheckedCast())
         }
     }
 
-    protected abstract suspend fun PipelineContext.process0(data: T)
+    protected abstract suspend fun PipelineContext.processImpl(data: T)
 
     companion object {
         @JvmStatic
@@ -170,11 +175,11 @@ internal abstract class SimpleNoticeProcessor<T : Any>(
 }
 
 internal abstract class MsgCommonMsgProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
-    abstract override suspend fun PipelineContext.process0(data: MsgComm.Msg)
+    abstract override suspend fun PipelineContext.processImpl(data: MsgComm.Msg)
 }
 
 internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
-    final override suspend fun PipelineContext.process0(data: Any) {
+    final override suspend fun PipelineContext.processImpl(data: Any) {
         when (data) {
             is MsgInfo -> processImpl(data)
             is PbMsgInfo -> processImpl(data)
@@ -183,14 +188,16 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
             is MsgType0x210 -> processImpl(data)
             is MsgType0x2DC -> processImpl(data)
             is Structmsg.StructMsg -> processImpl(data)
+            is RequestPushStatus -> processImpl(data)
         }
     }
 
     protected open suspend fun PipelineContext.processImpl(data: MsgInfo) {}
-    protected open suspend fun PipelineContext.processImpl(data: MsgType0x210) {}
-    protected open suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {}
+    protected open suspend fun PipelineContext.processImpl(data: MsgType0x210) {} // 528
+    protected open suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {} // 732
     protected open suspend fun PipelineContext.processImpl(data: PbMsgInfo) {}
     protected open suspend fun PipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {}
     protected open suspend fun PipelineContext.processImpl(data: MsgComm.Msg) {}
     protected open suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) {}
+    protected open suspend fun PipelineContext.processImpl(data: RequestPushStatus) {}
 }

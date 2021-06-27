@@ -13,6 +13,7 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
 import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
@@ -27,7 +28,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
+import net.mamoe.mirai.utils.TypeSafeMap
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
@@ -36,6 +39,17 @@ internal sealed class PacketFactory<TPacket : Packet?> {
     abstract val receivingCommandName: String
 
     open val canBeCached: Boolean get() = true
+
+    protected companion object {
+
+        @JvmStatic
+        suspend fun QQAndroidBot.processPacketThroughPipeline(
+            data: Any?,
+            attributes: TypeSafeMap = TypeSafeMap(),
+        ): Packet {
+            return components.noticeProcessorPipeline.process(this, data, attributes).toPacket()
+        }
+    }
 }
 
 /**
