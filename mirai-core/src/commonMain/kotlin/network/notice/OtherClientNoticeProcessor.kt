@@ -109,8 +109,14 @@ internal class OtherClientNoticeProcessor : MixedNoticeProcessor() {
      */
     override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         if (msgHead.msgType != 529) return
+
+        // top_package/awbk.java:3765
         markAsConsumed() // todo check
-        if (msgHead.c2cCmd != 7) return
+        if (msgHead.c2cCmd != 7) {
+            // 各种垃圾
+            // 08 04 12 1E 08 E9 07 10 B7 F7 8B 80 02 18 E9 07 20 00 28 DD F1 92 B7 07 30 DD F1 92 B7 07 48 02 50 03 32 1E 08 88 80 F8 92 CD 84 80 80 10 10 01 18 00 20 01 2A 0C 0A 0A 08 01 12 06 E5 95 8A E5 95 8A
+            return
+        }
         val body = msgBody.msgContent.loadAs(SubMsgType0x7.MsgBody.serializer())
 
         val textMsg =

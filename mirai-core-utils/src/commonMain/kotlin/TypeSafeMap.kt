@@ -34,7 +34,7 @@ public value class TypeSafeMap(
         map[key] = value
     }
 
-    public fun <T> remove(key: TypeKey<T>): T? = map.remove(key).uncheckedCast()
+    public fun <T> remove(key: TypeKey<T>): T? = map.remove(key)?.uncheckedCast()
 }
 
 public inline fun buildTypeSafeMap(block: TypeSafeMap.() -> Unit): TypeSafeMap {

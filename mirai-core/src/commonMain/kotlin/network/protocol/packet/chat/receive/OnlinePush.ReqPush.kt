@@ -446,8 +446,6 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     }
 )
 
-internal val ignoredLambda528: Lambda528 = lambda528 { _, _ -> emptySequence() }
-
 internal interface Lambda528 {
     suspend operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
 }
@@ -526,44 +524,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
     },
 
-    // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
-    // VIP 进群提示
-    0x26L to ignoredLambda528,
-    // 提示共同好友
-    0x111L to ignoredLambda528,
-    // 新好友
-    0xB3L to lambda528 { bot ->
-        TODO("removed")
-    },
-    0xE2L to lambda528 { _ ->
-        // TODO: unknown. maybe messages.
-        // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
-        // vProtobuf.loadAs(Msgtype0x210.serializer())
-
-        return@lambda528 emptySequence()
-    },
-    0x44L to lambda528 { bot ->
-        TODO("removed")
-    },
-    // bot 在其他客户端被踢或主动退出而同步情况
-    0xD4L to lambda528 { _ ->
-        // this.soutv("0x210")
-        /* @Serializable
-         data class SubD4(
-             // ok
-             val uin: Long
-         ) : ProtoBuf
-
-         val uin = vProtobuf.loadAs(SubD4.serializer()).uin
-         val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
-         return@lambda528 if (group != null && bot.groups.delegate.remove(group)) {
-             group.cancel(CancellationException("Being kicked"))
-             sequenceOf(BotLeaveEvent.Active(group))
-         } else emptySequence()*/
-
-        //ignore
-        return@lambda528 emptySequence()
-    },
     //戳一戳信息等
     0x122L to lambda528 { bot, msgInfo ->
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
@@ -617,10 +577,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 return@lambda528 emptySequence()
             }
         }
-    },
-    //好友输入状态
-    0x115L to lambda528 { bot ->
-        TODO("removed")
     },
     // 群相关,  ModFriendRemark, DelFriend, ModGroupProfile
     0x27L to lambda528 { bot ->

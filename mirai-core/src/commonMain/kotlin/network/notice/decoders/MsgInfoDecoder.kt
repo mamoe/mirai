@@ -19,18 +19,14 @@ import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.toUHexString
 
 /**
  * Decodes [MsgInfo] and re-fire [MsgType0x210] or [MsgType0x2DC]
  */
-internal class MsgInfoDecoder(
-    private val logger: MiraiLogger,
-) : SimpleNoticeProcessor<MsgInfo>(type()) {
+internal class MsgInfoDecoder : SimpleNoticeProcessor<MsgInfo>(type()) {
     override suspend fun PipelineContext.processImpl(data: MsgInfo) {
+        markAsConsumed()
         when (data.shMsgType.toUShort().toInt()) {
             // 528
             0x210 -> fire(data.vMsg.loadAs(MsgType0x210.serializer()))
@@ -47,10 +43,7 @@ internal class MsgInfoDecoder(
                     fire(MsgType0x2DC(kind, group, this.readBytes()))
                 }
             }
-
-            else -> {
-                logger.debug { "Unknown kind ${data.shMsgType.toInt()}, data=${data.vMsg.toUHexString()}" }
-            }
+            else -> markNotConsumed()
         }
     }
 }
@@ -58,5 +51,5 @@ internal class MsgInfoDecoder(
 internal class MsgType0x2DC(
     val kind: Int, // inner kind, read from vMsg
     val group: GroupImpl,
-    val buf: ByteArray
+    val buf: ByteArray,
 )
