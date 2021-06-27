@@ -35,6 +35,9 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 
+/**
+ * Handles [GroupMessageEvent]. For private message events, see [PrivateMessageNoticeProcessor]
+ */
 internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPushMsg>(type()) {
     internal data class SendGroupMessageReceipt(
         val messageRandom: Int,
@@ -61,7 +64,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
     }
 
 
-    override suspend fun PipelineContext.process0(data: MsgOnlinePush.PbPushMsg) {
+    override suspend fun PipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
         val msgHead = data.msg.msgHead
 
         val isFromSelfAccount = msgHead.fromUin == bot.id
@@ -73,13 +76,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
                 // 3116=group music share
                 // 2021=group file
                 // message sent by bot
-                collect(
-                    SendGroupMessageReceipt(
-                        messageRandom,
-                        msgHead.msgSeq,
-                        msgHead.fromAppid
-                    )
-                )
+                collect(SendGroupMessageReceipt(messageRandom, msgHead.msgSeq, msgHead.fromAppid))
                 return
             }
             // else: sync form other device
@@ -132,7 +129,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
                     group = group,
                     sender = sender,
                     senderName = nameCard.nick,
-                )
+                ),
             )
             return
         } else {
@@ -145,8 +142,8 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
                     sender = sender,
                     message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP),
                     permission = sender.permission,
-                    time = msgHead.msgTime
-                )
+                    time = msgHead.msgTime,
+                ),
             )
             return
         }
@@ -154,7 +151,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
 
     private suspend inline fun broadcastNameCardChangedEventIfNecessary(
         sender: Member,
-        new: MemberNick
+        new: MemberNick,
     ) {
         if (sender is NormalMemberImpl) {
             val currentNameCard = sender.nameCard
@@ -177,7 +174,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
 
     private fun findSenderName(
         extraInfo: ImMsgBody.ExtraInfo?,
-        groupInfo: MsgComm.GroupInfo
+        groupInfo: MsgComm.GroupInfo,
     ): MemberNick? =
         extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.decodeCommCardNameBuf()?.let {
             MemberNick(it, true)

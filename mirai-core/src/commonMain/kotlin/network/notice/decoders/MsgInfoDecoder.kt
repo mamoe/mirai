@@ -30,7 +30,7 @@ import net.mamoe.mirai.utils.toUHexString
 internal class MsgInfoDecoder(
     private val logger: MiraiLogger,
 ) : SimpleNoticeProcessor<MsgInfo>(type()) {
-    override suspend fun PipelineContext.process0(data: MsgInfo) {
+    override suspend fun PipelineContext.processImpl(data: MsgInfo) {
         when (data.shMsgType.toUShort().toInt()) {
             // 528
             0x210 -> fire(data.vMsg.loadAs(MsgType0x210.serializer()))
