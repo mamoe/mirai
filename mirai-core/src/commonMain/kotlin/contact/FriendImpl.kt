@@ -63,13 +63,12 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 
 internal class FriendImpl(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     internal val friendInfo: FriendInfo,
-) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
+) : Friend, AbstractUser(bot, parentCoroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
     val friendPkgMsgParsingCache = C2CPkgMsgParsingCache()
-
     override suspend fun delete() {
         check(bot.friends[this.id] != null) {
             "Friend ${this.id} had already been deleted"

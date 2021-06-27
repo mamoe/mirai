@@ -336,8 +336,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun newFriend(bot: Bot, friendInfo: FriendInfo): FriendImpl {
         return FriendImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo
+            bot.coroutineContext,
+            friendInfo.impl(),
         )
     }
 
@@ -345,8 +345,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): StrangerImpl {
         return StrangerImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            strangerInfo
+            bot.coroutineContext,
+            strangerInfo.impl(),
         )
     }
 
