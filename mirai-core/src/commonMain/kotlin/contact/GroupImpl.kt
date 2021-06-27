@@ -303,7 +303,8 @@ internal fun Group.newMember(memberInfo: MemberInfo): Member {
     )
 }
 
-internal fun Group.addNewNormalMember(memberInfo: MemberInfo): NormalMemberImpl {
+internal fun Group.addNewNormalMember(memberInfo: MemberInfo): NormalMemberImpl? {
+    if (members.contains(memberInfo.uin)) return null
     return newNormalMember(memberInfo).also {
         members.delegate.add(it)
     }

@@ -10,6 +10,9 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
@@ -28,16 +31,31 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.internal.utils.AtomicIntSeq
+import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 internal val User.info: UserInfo? get() = this.castOrNull<AbstractUser>()?.info
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun User.impl(): AbstractUser {
+    contract { returns() implies (this@impl is AbstractUser) }
+    check(this is AbstractUser)
+    return this
+}
+
+internal val User.correspondingMessageSourceKind
+    get() = when (this) {
+        is Friend -> MessageSourceKind.FRIEND
+        is Member -> MessageSourceKind.TEMP
+        is Stranger -> MessageSourceKind.STRANGER
+        else -> error("Unknown user: ${this::class.qualifiedName}")
+    }
 
 internal abstract class AbstractUser(
     bot: QQAndroidBot,
@@ -49,6 +67,9 @@ internal abstract class AbstractUser(
     final override var nick: String = userInfo.nick
     final override val remark: String = userInfo.remark
 
+    val messageSeq = AtomicIntSeq.forMessageSeq()
+    val fragmentedMessageMerger = C2CPkgMsgParsingCache()
+
     open val info: UserInfo = userInfo
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -58,7 +79,8 @@ internal abstract class AbstractUser(
         }
         val resp = bot.network.run {
             LongConn.OffPicUp(
-                bot.client, Cmd0x352.TryUpImgReq(
+                bot.client,
+                Cmd0x352.TryUpImgReq(
                     buType = 1,
                     srcUin = bot.id,
                     dstUin = this@AbstractUser.id,
@@ -66,8 +88,8 @@ internal abstract class AbstractUser(
                     fileSize = resource.size,
                     fileName = resource.md5.toUHexString("") + "." + resource.formatName,
                     imgOriginal = true,
-                    buildVer = bot.client.buildVer
-                )
+                    buildVer = bot.client.buildVer,
+                ),
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }
 

@@ -10,39 +10,24 @@
 package net.mamoe.mirai.internal.network.notice
 
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUShort
-import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
-import net.mamoe.mirai.internal.getGroupByUin
-import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MsgCommonMsgProcessor
 import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.TypeKey
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.toUHexString
 
-internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProcessorContext {
+internal class SystemMessageProcessor : MsgCommonMsgProcessor(), NewContactSupport {
     companion object {
         val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
         val PipelineContext.fromSync get() = attributes[KEY_FROM_SYNC]
     }
 
-    override suspend fun PipelineContext.process0(data: MsgComm.Msg): Unit = data.run {
+    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg): Unit = data.run {
         // TODO: 2021/6/26 extract logic into multiple processors
         when (msgHead.msgType) {
             33 -> bot.components[ContactUpdater].groupListModifyLock.withLock {
@@ -53,19 +38,11 @@ internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProce
             }
 
             38 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 建群
-                bot.createGroupForBot(msgHead.fromUin)
-                    ?.let { collect(BotJoinGroupEvent.Active(it)) }
-                return
+                TODO("removed")
             }
 
             85 -> bot.components[ContactUpdater].groupListModifyLock.withLock { // 其他客户端入群
-                // msgHead.authUin: 处理人
-
-                if (msgHead.toUin == bot.id) {
-                    bot.createGroupForBot(msgHead.fromUin)
-                        ?.let { collect(BotJoinGroupEvent.Active(it)) }
-                }
-                return
+                TODO("removed")
             }
 
             /*
@@ -116,92 +93,11 @@ internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProce
 
             //167 单向好友
             166, 167 -> {
-                //我也不知道为什么要这样写，但它就是能跑
-                if (msgHead.fromUin == bot.id && fromSync) {
-                    loop@ while (true) {
-                        val instance = bot.client.getFriendSeq()
-                        if (instance < msgHead.msgSeq) {
-                            if (bot.client.setFriendSeq(instance, msgHead.msgSeq)) {
-                                break@loop
-                            }
-                        } else break@loop
-                    }
-                    return
-                }
-                if (!bot.components[SsoProcessor].firstLoginSucceed) {
-                    return
-                }
-                val fromUin = if (fromSync) {
-                    msgHead.toUin
-                } else {
-                    msgHead.fromUin
-                }
-                bot.getFriend(fromUin)?.let { friend ->
-                    friend.checkIsFriendImpl()
-                    friend.lastMessageSequence.loop {
-                        //我也不知道为什么要这样写，但它就是能跑
-                        if (friend.lastMessageSequence.value != msgHead.msgSeq
-                            && friend.lastMessageSequence.compareAndSet(it, msgHead.msgSeq)
-                            && contentHead?.autoReply != 1
-                        ) {
-                            val msgs = friend.friendPkgMsgParsingCache.tryMerge(this)
-                            if (msgs.isNotEmpty()) {
-                                collect(
-                                    if (fromSync) {
-                                        FriendMessageSyncEvent(
-                                            friend,
-                                            msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
-                                            msgHead.msgTime
-                                        )
-                                    } else {
-                                        FriendMessageEvent(
-                                            friend,
-                                            msgs.toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND),
-                                            msgHead.msgTime
-                                        )
-                                    }
-                                )
-                            } else return
-                        }
-                        return
-                    }
-                } ?: bot.getStranger(fromUin)?.let { stranger ->
-                    stranger.checkIsImpl()
-                    stranger.lastMessageSequence.loop {
-                        //我也不知道为什么要这样写，但它就是能跑
-                        if (stranger.lastMessageSequence.value != msgHead.msgSeq && stranger.lastMessageSequence.compareAndSet(
-                                it,
-                                msgHead.msgSeq
-                            ) && contentHead?.autoReply != 1
-                        ) {
-                            collect(
-                                if (fromSync) {
-                                    StrangerMessageSyncEvent(
-                                        stranger,
-                                        listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.STRANGER),
-                                        msgHead.msgTime
-                                    )
-                                } else {
-                                    StrangerMessageEvent(
-                                        stranger,
-                                        listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.STRANGER),
-                                        msgHead.msgTime
-                                    )
-                                }
-                            )
-                        }
-                        return
-                    }
-                }
-                return
+                TODO("removed")
             }
             208 -> {
                 // friend ptt
-                val target = bot.getFriend(msgHead.fromUin) ?: return
-                val lsc = listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.FRIEND)
-
-                collect(FriendMessageEvent(target, lsc, msgHead.msgTime))
-                return
+                TODO("removed")
             }
             529 -> {
 
@@ -210,30 +106,7 @@ internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProce
                 when (msgHead.c2cCmd) {
                     // other client sync
                     7 -> {
-                        val body = msgBody.msgContent.loadAs(SubMsgType0x7.MsgBody.serializer())
-
-                        val textMsg =
-                            body.msgSubcmd0x4Generic?.buf?.loadAs(SubMsgType0x7.MsgBody.QQDataTextMsg.serializer())
-                                ?: return
-
-                        with(body.msgHeader ?: return) {
-                            if (dstUin != bot.id) return
-                            val client = bot.otherClients.find { it.appId == srcInstId }
-                                ?: return// don't compare with dstAppId. diff.
-
-                            val chain = buildMessageChain {
-                                +OnlineMessageSourceFromFriendImpl(bot, listOf(data))
-                                for (msgItem in textMsg.msgItems) {
-                                    when (msgItem.type) {
-                                        1 -> +PlainText(msgItem.text)
-                                        else -> {
-                                        }
-                                    }
-                                }
-                            }
-
-                            collect(OtherClientMessageEvent(client, chain, msgHead.msgTime))
-                        }
+                        TODO("removed")
                     }
                 }
 
@@ -245,39 +118,7 @@ internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProce
                 if (!bot.components[SsoProcessor].firstLoginSucceed || msgHead.fromUin == bot.id && !fromSync) {
                     return
                 }
-                val tmpHead = msgHead.c2cTmpMsgHead ?: return
-                val member = bot.getGroupByUin(tmpHead.groupUin)?.get(
-                    if (fromSync) {
-                        msgHead.toUin
-                    } else {
-                        msgHead.fromUin
-                    }
-                )
-                    ?: return
-
-                member.checkIsMemberImpl()
-
-                member.lastMessageSequence.loop { instant ->
-                    if (member.lastMessageSequence.value != msgHead.msgSeq && contentHead?.autoReply != 1) {
-                        if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
-                            collect(
-                                if (fromSync) {
-                                    GroupTempMessageSyncEvent(
-                                        member,
-                                        listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
-                                        msgHead.msgTime
-                                    )
-                                } else {
-                                    GroupTempMessageEvent(
-                                        member,
-                                        listOf(this).toMessageChainOnline(bot, 0, MessageSourceKind.TEMP),
-                                        msgHead.msgTime
-                                    )
-                                }
-                            )
-                        }
-                    } else return
-                }
+                TODO("removed")
             }
             84, 87 -> { // 请求入群验证 和 被要求入群
                 bot.network.run {
@@ -298,45 +139,7 @@ internal class SystemMessageProcessor : MsgCommonMsgProcessor(), GroupEventProce
             }
             //陌生人添加信息
             191 -> {
-                var fromGroup = 0L
-                var pbNick = ""
-                msgBody.msgContent.read {
-                    readUByte()// version
-                    discardExact(readUByte().toInt())//skip
-                    readUShort()//source id
-                    readUShort()//SourceSubID
-                    discardExact(readUShort().toLong())//skip size
-                    if (readUShort().toInt() != 0) {//hasExtraInfo
-                        discardExact(readUShort().toInt())//mail address info, skip
-                    }
-                    discardExact(4 + readUShort().toInt())//skip
-                    for (i in 1..readUByte().toInt()) {//pb size
-                        val type = readUShort().toInt()
-                        val pbArray = ByteArray(readUShort().toInt() and 0xFF)
-                        readAvailable(pbArray)
-                        when (type) {
-                            1000 -> pbArray.loadAs(FrdSysMsg.GroupInfo.serializer()).let { fromGroup = it.groupUin }
-                            1002 -> pbArray.loadAs(FrdSysMsg.FriendMiscInfo.serializer())
-                                .let { pbNick = it.fromuinNick }
-                            else -> {
-                            }//ignore
-                        }
-                    }
-                }
-                val nick =
-                    sequenceOf(msgHead.fromNick, msgHead.authNick, pbNick).filter { it.isNotEmpty() }.firstOrNull()
-                        ?: return
-                val id =
-                    sequenceOf(msgHead.fromUin, msgHead.authUin).filter { it != 0L }.firstOrNull() ?: return//对方QQ
-                Mirai.newStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).checkIsImpl().let {
-                    bot.getStranger(id)?.let { previous ->
-                        bot.strangers.remove(id)
-                        StrangerRelationChangeEvent.Deleted(previous).broadcast()
-                    }
-                    bot.strangers.delegate.add(it)
-
-                    collect(StrangerAddEvent(it))
-                }
+                TODO("removed")
             }
             // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
             // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00

@@ -20,4 +20,8 @@ internal class StrangerInfoImpl(
     override val nick: String,
     override val fromGroup: Long = 0,
     override val remark: String = "",
-) : StrangerInfo
+) : StrangerInfo {
+    companion object {
+        fun StrangerInfo.impl() = if (this is StrangerInfoImpl) this else StrangerInfoImpl(uin, nick, fromGroup, remark)
+    }
+}

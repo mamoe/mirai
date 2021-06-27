@@ -95,10 +95,13 @@ internal abstract class AbstractBot constructor(
     final override val groups: ContactList<GroupImpl> = ContactList()
     final override val strangers: ContactList<StrangerImpl> = ContactList()
 
-    final override val asFriend: FriendImpl by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")).cast() }
+    final override val asFriend: FriendImpl by lazy {
+        Mirai.newFriend(this, FriendInfoImpl(uin, "", "")).cast()
+    } // nick is initialized later on login
     final override val asStranger: StrangerImpl by lazy {
         Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)).cast()
     }
+    final override var nick: String by asFriend.info::nick
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) return

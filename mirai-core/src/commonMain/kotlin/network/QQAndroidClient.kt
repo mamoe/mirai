@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
+import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.utils.*
@@ -124,13 +125,10 @@ internal open class QQAndroidClient(
 
     internal var strangerSeq: Int = 0
 
-    // TODO: 2021/4/14 investigate whether they can be minimized
-    private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
-    internal fun getFriendSeq(): Int = friendSeq.value
-
-    internal fun nextFriendSeq(): Int = friendSeq.incrementAndGet()
-
-    internal fun setFriendSeq(compare: Int, id: Int): Boolean = friendSeq.compareAndSet(compare, id % 65535)
+    /**
+     * for send
+     */
+    val sendFriendMessageSeq = AtomicIntSeq.forPrivateSync()
 
     internal val groupConfig: GroupConfig = GroupConfig()
 
