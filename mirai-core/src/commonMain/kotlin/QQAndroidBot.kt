@@ -38,6 +38,8 @@ import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.network.notice.*
+import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -149,7 +151,20 @@ internal open class QQAndroidBot constructor(
 
         // There's no need to interrupt a broadcasting event when network handler closed.
         set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
-        set(NoticeProcessorPipeline, NoticeProcessorPipelineImpl(networkLogger.subLogger("NoticeProcessorPipeline")))
+
+        val pipelineLogger = networkLogger.subLogger("NoticeProcessor") //  shorten name
+        set(
+            NoticeProcessorPipeline,
+            NoticeProcessorPipelineImpl().apply {
+                registerProcessor(MsgInfoDecoder())
+                registerProcessor(FriendNoticeProcessor(pipelineLogger))
+                registerProcessor(GroupListNoticeProcessor(pipelineLogger))
+                registerProcessor(GroupMessageProcessor())
+                registerProcessor(PrivateMessageNoticeProcessor())
+                registerProcessor(OtherClientNoticeProcessor())
+                registerProcessor(UnconsumedNoticesAlerter(pipelineLogger))
+            },
+        )
 
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
@@ -164,34 +179,35 @@ internal open class QQAndroidBot constructor(
         set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger.subLogger("ContactUpdater")))
         set(
             BdhSessionSyncer,
-            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
+            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer")),
         )
         set(
             MessageSvcSyncer,
-            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
+            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer")),
         )
         set(
             EcdhInitialPublicKeyUpdater,
-            EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater"))
+            EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater")),
         )
         set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
         set(
-            PacketHandler, PacketHandlerChain(
+            PacketHandler,
+            PacketHandlerChain(
                 LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
                 EventBroadcasterPacketHandler(components),
-                CallPacketFactoryPacketHandler(bot)
-            )
+                CallPacketFactoryPacketHandler(bot),
+            ),
         )
         set(PacketCodec, PacketCodecImpl())
         set(
             OtherClientUpdater,
-            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
+            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater")),
         )
         set(ConfigPushSyncer, ConfigPushSyncerImpl())
         set(
             AccountSecretsManager,
-            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager"))
+            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager")),
         )
     }
 
@@ -213,13 +229,13 @@ internal open class QQAndroidBot constructor(
                 val context = NetworkHandlerContextImpl(
                     bot,
                     networkLogger,
-                    createNetworkLevelComponents()
+                    createNetworkLevelComponents(),
                 )
                 NettyNetworkHandlerFactory.create(
                     context,
-                    context[ServerList].pollAny().toSocketAddress()
+                    context[ServerList].pollAny().toSocketAddress(),
                 )
-            }
+            },
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 

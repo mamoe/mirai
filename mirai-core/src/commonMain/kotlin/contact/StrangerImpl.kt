@@ -54,7 +54,7 @@ internal class StrangerImpl(
         }
         bot.network.run {
             StrangerList.DelStranger(bot.client, this@StrangerImpl)
-                .sendAndExpect<StrangerList.DelStranger.Response>().also {
+                .sendAndExpect().also {
                     check(it.isSuccess) { "delete Stranger failed: ${it.result}" }
                 }
         }

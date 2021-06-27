@@ -24,8 +24,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
-import net.mamoe.mirai.internal.network.notice.SystemMessageProcessor
+import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.KEY_FROM_SYNC
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
@@ -152,14 +151,12 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     QQAndroidClient.MessageSvcSyncData.PbGetMessageSyncId(
                         uid = msg.msgHead.msgUid,
                         sequence = msg.msgHead.msgSeq,
-                        time = msg.msgHead.msgTime
-                    )
+                        time = msg.msgHead.msgTime,
+                    ),
                 )
             }
-            .flatMapConcat { msg ->
-                bot.components.noticeProcessorPipeline
-                    .process(bot, msg, SystemMessageProcessor.KEY_FROM_SYNC to false)
-                    .asFlow()
+            .map { msg ->
+                bot.processPacketThroughPipeline(msg, KEY_FROM_SYNC to false)
             }
 
         val list: List<Packet> = messages.toList()

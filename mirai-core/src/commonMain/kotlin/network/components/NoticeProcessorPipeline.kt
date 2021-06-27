@@ -24,9 +24,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMs
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushTransMsg
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.TypeSafeMap
 import net.mamoe.mirai.utils.uncheckedCast
+import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -54,14 +55,24 @@ internal interface PipelineContext {
     val isConsumed: Boolean
 
     /**
-     * Mark the input as consumed so that there will not be warnings like 'Unknown type xxx'. This will not stop the pipeline.
+     * Marks the input as consumed so that there will not be warnings like 'Unknown type xxx'. This will not stop the pipeline.
      *
      * If this is executed, make sure you provided all information important for debugging.
      *
      * You need to invoke [markAsConsumed] if your implementation includes some `else` branch which covers all situations,
      * and throws a [contextualBugReportException] or logs something.
      */
-    fun markAsConsumed()
+    @ConsumptionMarker
+    fun NoticeProcessor.markAsConsumed()
+
+    /**
+     * Marks the input as not consumed, if it was marked by this [NoticeProcessor].
+     */
+    @ConsumptionMarker
+    fun NoticeProcessor.markNotConsumed()
+
+    @DslMarker
+    annotation class ConsumptionMarker // to give an explicit color.
 
 
     val collected: Collection<Packet>
@@ -89,13 +100,16 @@ internal interface PipelineContext {
      * @return result collected from processors. This would also have been collected to this context (where you call [fire]).
      */
     suspend fun fire(data: Any?): Collection<Packet>
+
+    companion object {
+        val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
+        val PipelineContext.fromSync get() = attributes[KEY_FROM_SYNC]
+    }
 }
 
 internal inline val PipelineContext.context get() = this
 
-internal class NoticeProcessorPipelineImpl(
-    private val logger: MiraiLogger,
-) : NoticeProcessorPipeline {
+internal class NoticeProcessorPipelineImpl : NoticeProcessorPipeline {
     private val processors = ArrayList<NoticeProcessor>()
     private val processorsLock = ReentrantReadWriteLock()
 
@@ -110,9 +124,17 @@ internal class NoticeProcessorPipelineImpl(
         override val bot: QQAndroidBot, override val attributes: TypeSafeMap,
     ) : PipelineContext {
 
-        override var isConsumed: Boolean = false
-        override fun markAsConsumed() {
-            isConsumed = true
+        private val consumers: Stack<NoticeProcessor> = Stack()
+
+        override val isConsumed: Boolean = consumers.isNotEmpty()
+        override fun NoticeProcessor.markAsConsumed() {
+            consumers.push(this)
+        }
+
+        override fun NoticeProcessor.markNotConsumed() {
+            if (consumers.peek() === this) {
+                consumers.pop()
+            }
         }
 
         override val collected = ConcurrentLinkedQueue<Packet>()

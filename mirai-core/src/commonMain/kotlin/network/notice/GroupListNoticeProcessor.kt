@@ -60,6 +60,7 @@ internal class GroupListNoticeProcessor(
 
     override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
         if (data.uSubMsgType != 0x44L) return
+        markAsConsumed()
         val msg = data.vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
         if (msg.msgGroupMsgSync == null) return
 
@@ -328,34 +329,7 @@ internal class GroupListNoticeProcessor(
                     handleLeave(target, kind, operator, groupUin)
                 }
             }
-            else -> {
-                when {
-                    data.msgType == 529 && data.msgSubtype == 9 -> {
-                        /*
-                        PbMsgInfo#1773430973 {
-fromUin=0x0000000026BA1173(649728371)
-generalFlag=0x00000001(1)
-msgData=0A 07 70 72 69 6E 74 65 72 10 02 1A CD 02 0A 1F 53 61 6D 73 75 6E 67 20 4D 4C 2D 31 38 36 30 20 53 65 72 69 65 73 20 28 55 53 42 30 30 31 29 0A 16 4F 6E 65 4E 6F 74 65 20 66 6F 72 20 57 69 6E 64 6F 77 73 20 31 30 0A 19 50 68 61 6E 74 6F 6D 20 50 72 69 6E 74 20 74 6F 20 45 76 65 72 6E 6F 74 65 0A 11 4F 6E 65 4E 6F 74 65 20 28 44 65 73 6B 74 6F 70 29 0A 1D 4D 69 63 72 6F 73 6F 66 74 20 58 50 53 20 44 6F 63 75 6D 65 6E 74 20 57 72 69 74 65 72 0A 16 4D 69 63 72 6F 73 6F 66 74 20 50 72 69 6E 74 20 74 6F 20 50 44 46 0A 15 46 6F 78 69 74 20 50 68 61 6E 74 6F 6D 20 50 72 69 6E 74 65 72 0A 03 46 61 78 32 09 0A 03 6A 70 67 10 01 18 00 32 0A 0A 04 6A 70 65 67 10 01 18 00 32 09 0A 03 70 6E 67 10 01 18 00 32 09 0A 03 67 69 66 10 01 18 00 32 09 0A 03 62 6D 70 10 01 18 00 32 09 0A 03 64 6F 63 10 01 18 01 32 0A 0A 04 64 6F 63 78 10 01 18 01 32 09 0A 03 74 78 74 10 00 18 00 32 09 0A 03 70 64 66 10 01 18 01 32 09 0A 03 70 70 74 10 01 18 01 32 0A 0A 04 70 70 74 78 10 01 18 01 32 09 0A 03 78 6C 73 10 01 18 01 32 0A 0A 04 78 6C 73 78 10 01 18 01
-msgSeq=0x00001AFF(6911)
-msgSubtype=0x00000009(9)
-msgTime=0x5FDF21A3(1608458659)
-msgType=0x00000211(529)
-msgUid=0x010000005FDEE04C(72057595646369868)
-realMsgTime=0x5FDF21A3(1608458659)
-svrIp=0x3E689409(1047041033)
-toUin=0x0000000026BA1173(649728371)
-}
-                         */
-                        return
-                    }
-                }
-                throw contextualBugReportException(
-                    "解析 OnlinePush.PbPushTransMsg, msgType=${data.msgType}",
-                    data._miraiContentToString(),
-                    null,
-                    "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
-                )
-            }
+            else -> markNotConsumed()
         }
     }
 
@@ -476,4 +450,52 @@ toUin=0x0000000026BA1173(649728371)
             }
         }
     }
+
+
+    // backup, copied from old code
+    /*
+    34 -> { // 主动入群
+
+        // 回答了问题, 还需要管理员审核
+        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 00 30 45 41 31 30 35 35 42 44 39 39 42 35 37 46 44 31 41 31 46 36 42 43 42 43 33 43 42 39 34 34 38 31 33 34 42 36 31 46 38 45 43 39 38 38 43 39 37 33
+        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 02 00 30 44 44 41 43 44 33 35 43 31 39 34 30 46 42 39 39 34 46 43 32 34 43 39 32 33 39 31 45 42 35 32 33 46 36 30 37 35 42 41 38 42 30 30 37 42 36 42 41
+        // 回答正确问题, 直接加入
+
+        //            27 0B 60 E7 01 76 E4 B8 DD 82 00 30 43 37 37 39 41 38 32 44 38 33 30 35 37 38 31 33 37 45 42 39 35 43 42 45 36 45 43 38 36 34 38 44 34 35 44 42 33 44 45 37 34 41 36 30 33 37 46 45
+        // 提交验证消息加入, 需要审核
+
+        // 被踢了??
+        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 46 46 32 33 36 39 35 33 31 37 42 44 46 37 43 36 39 34 37 41 45 38 39 43 45 43 42 46 33 41 37 35 39 34 39 45 36 37 33 37 31 41 39 44 33 33 45 33
+
+        /*
+        // 搜索后直接加入群
+
+        soutv 17:43:32 : 33类型的content = 27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+        soutv 17:43:32 : 主动入群content = 2A 3D F5 69 01 35 D7 10 EA 83 4C EF 4F DD 06 B9 DC C0 ED D4 B1 00 30 37 41 39 31 39 34 31 41 30 37 46 38 32 31 39 39 43 34 35 46 39 30 36 31 43 37 39 37 33 39 35 43 34 44 36 31 33 43 31 35 42 37 32 45 46 43 43 36
+         */
+
+        val group = bot.getGroupByUinOrNull(msgHead.fromUin)
+        group ?: return
+
+        msgBody.msgContent.soutv("主动入群content")
+
+        if (msgBody.msgContent.read {
+                discardExact(4) // group code
+                discardExact(1) // 1
+                discardExact(4) // requester uin
+                readByte().toInt().and(0xff)
+                // 0x02: 回答正确问题直接加入
+                // 0x82: 回答了问题, 或者有验证消息, 需要管理员审核
+                // 0x83: 回答正确问题直接加入
+            } != 0x82) {
+
+            if (group.members.contains(msgHead.authUin)) {
+                return
+            }
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+            return MemberJoinEvent.Active(group.newMember(getNewMemberInfo())
+                .also { group.members.delegate.addLast(it) })
+        } else return
+    }
+    */
 }
