@@ -582,7 +582,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 headers {
                     append(
                         "cookie",
-                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id}; p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()};"
                     )
                 }
             }
