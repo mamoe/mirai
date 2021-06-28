@@ -5066,11 +5066,13 @@ public final class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (Ljava/lang/String;[BJILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCodec ()I
 	public fun getFileName ()Ljava/lang/String;
 	public fun getFileSize ()J
 	public fun getMd5 ()[B
 	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 

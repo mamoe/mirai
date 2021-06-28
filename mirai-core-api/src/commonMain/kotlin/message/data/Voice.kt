@@ -44,6 +44,22 @@ public abstract class PttMessage : MessageContent {
     @MiraiInternalApi
     @Transient
     public var pttInternalInstance: Any? = null
+        set(value) {
+            field = value
+            _pttInternalInstanceSerializeCache = null
+        }
+
+    @MiraiInternalApi
+    protected val pttInternalInstanceSerializeCache: String
+        get() {
+            _pttInternalInstanceSerializeCache?.let { return it }
+            return Mirai.serializePttElem(pttInternalInstance).also {
+                _pttInternalInstanceSerializeCache = it
+            }
+        }
+
+    @Transient
+    private var _pttInternalInstanceSerializeCache: String? = null
 }
 
 /**
@@ -58,6 +74,7 @@ public abstract class PttMessage : MessageContent {
  *
  * [Voice] 实例可以通过序列化方式保存. 下次可以用它发送因而不需要上传. 但可能由于未来服务器更新, 这项功能就不稳定. 因此建议总是上传音频文件而不要保存 [Voice].
  */
+@Suppress("DuplicatedCode")
 @Serializable(Voice.Serializer::class) // experimental
 @SerialName(Voice.SERIAL_NAME)
 public class Voice @MiraiInternalApi constructor(
@@ -92,6 +109,38 @@ public class Voice @MiraiInternalApi constructor(
     public override fun toString(): String = _stringValue!!
 
     public override fun contentToString(): String = "[语音消息]"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Voice) return false
+
+        if (this.pttInternalInstance == other.pttInternalInstance)
+            return true
+        if (this.pttInternalInstance != null && other.pttInternalInstance != null) {
+            if (this.pttInternalInstanceSerializeCache == other.pttInternalInstanceSerializeCache)
+                return true
+        }
+
+        if (fileName != other.fileName) return false
+        if (!md5.contentEquals(other.md5)) return false
+        if (fileSize != other.fileSize) return false
+        if (codec != other.codec) return false
+        if (_url != other._url) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        if (pttInternalInstance != null)
+            return pttInternalInstanceSerializeCache.hashCode()
+
+        var result = fileName.hashCode()
+        result = 12 * result + md5.contentHashCode()
+        result = 54 * result + fileSize.hashCode()
+        result = 33 * result + codec
+        result = 15 * result + _url.hashCode()
+        return result
+    }
 
     public object Serializer : KSerializer<Voice> by VoiceS.serializer().map(
         resultantDescriptor = VoiceS.serializer().descriptor.copy(SERIAL_NAME),
