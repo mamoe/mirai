@@ -13,6 +13,7 @@ import kotlinx.atomicfu.loop
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushNotify
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
@@ -30,18 +31,17 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
     }
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket {
-
-        client.syncingController.firstNotify.loop { firstNotify ->
+        syncController.firstNotify.loop { firstNotify ->
             network.run {
                 return MessageSvcPbGetMsg(
                     client,
                     MsgSvc.SyncFlag.START,
                     if (firstNotify) {
-                        if (!client.syncingController.firstNotify.compareAndSet(firstNotify, false)) {
+                        if (!syncController.firstNotify.compareAndSet(firstNotify, false)) {
                             return@loop
                         }
                         null
-                    } else packet.vNotifyCookie
+                    } else packet.vNotifyCookie,
                 )
             }
         }

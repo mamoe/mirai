@@ -22,13 +22,17 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
 import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.KEY_FROM_SYNC
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
+import net.mamoe.mirai.internal.network.components.syncGetMessage
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.toLongUnsigned
 import kotlin.random.Random
 
 
@@ -57,7 +61,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 whisperSessionId = 0,
                 syncFlag = syncFlag,
                 //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
-                syncCookie = syncCookie ?: client.syncingController.syncCookie
+                syncCookie = syncCookie ?: client.bot.syncController.syncCookie
                 ?: byteArrayOf(), //.also { client.c2cMessageSync.syncCookie = it },
                 // syncFlag = client.c2cMessageSync.syncFlag,
                 //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
@@ -113,14 +117,14 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         }
         when (resp.msgRspType) {
             0 -> {
-                bot.client.syncingController.syncCookie = resp.syncCookie
-                bot.client.syncingController.pubAccountCookie = resp.pubAccountCookie
+                bot.syncController.syncCookie = resp.syncCookie
+                bot.syncController.pubAccountCookie = resp.pubAccountCookie
             }
             1 -> {
-                bot.client.syncingController.syncCookie = resp.syncCookie
+                bot.syncController.syncCookie = resp.syncCookie
             }
             2 -> {
-                bot.client.syncingController.pubAccountCookie = resp.pubAccountCookie
+                bot.syncController.pubAccountCookie = resp.pubAccountCookie
 
             }
         }
@@ -129,33 +133,20 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         // bot.logger.debug(resp.msgRspType._miraiContentToString())
         // bot.logger.debug(resp.syncCookie._miraiContentToString())
 
-        bot.client.syncingController.msgCtrlBuf = resp.msgCtrlBuf
+        bot.syncController.msgCtrlBuf = resp.msgCtrlBuf
 
         if (resp.uinPairMsgs.isEmpty()) return EmptyResponse(bot)
-
-        for (uinPairMsg in resp.uinPairMsgs) {
-            if (uinPairMsg.msg.isEmpty()) continue
-            for (msg in uinPairMsg.msg) {
-                if (msg.msgHead.msgTime <= uinPairMsg.lastReadTime.toLong() and 4294967295L) continue
-            }
-        }
 
         val messages = resp.uinPairMsgs.asSequence()
             .filterNot { it.msg.isEmpty() }
             .flatMap { pair ->
                 pair.msg.asSequence()
-                    .filter { msg: MsgComm.Msg -> msg.msgHead.msgTime > pair.lastReadTime.toLong() and 4294967295L }
+                    .filter { msg: MsgComm.Msg -> msg.msgHead.msgTime > pair.lastReadTime.toLongUnsigned() }
             }
             .toList()
             .also { MessageSvcPbDeleteMsg.delete(bot, it) } // 删除消息
             .filter { msg ->
-                bot.client.syncingController.pbGetMessageCacheList.addCache(
-                    QQAndroidClient.MessageSvcSyncData.PbGetMessageSyncId(
-                        uid = msg.msgHead.msgUid,
-                        sequence = msg.msgHead.msgSeq,
-                        time = msg.msgHead.msgTime,
-                    ),
-                )
+                bot.syncController.syncGetMessage(msg.msgHead)
             }
             .map { msg ->
                 bot.processPacketThroughPipeline(msg, KEY_FROM_SYNC to false)
@@ -179,7 +170,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        bot.client.syncingController.syncCookie,
+                        bot.syncController.syncCookie,
                     ).sendAndExpect()
                 }
                 return
@@ -190,7 +181,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        bot.client.syncingController.syncCookie,
+                        bot.syncController.syncCookie,
                     ).sendAndExpect()
                 }
                 return

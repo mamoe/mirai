@@ -15,19 +15,23 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import kotlin.math.max
 
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<Packet?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<Packet>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -39,30 +43,24 @@ internal class NewContact {
                         frdMsgGetBusiCard = 1,
                         frdMsgNeedWaitingMsg = 1,
                         frdMsgUint32NeedAllUnreadMsg = 1,
-                        grpMsgMaskInviteAutoJoin = 1
+                        grpMsgMaskInviteAutoJoin = 1,
                     ),
                     friendMsgTypeFlag = 1,
                     isGetFrdRibbon = false,
                     isGetGrpRibbon = false,
                     msgNum = 20,
-                    version = 1000
-                )
+                    version = 1000,
+                ),
             )
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
+            readProtoBuf(Structmsg.RspSystemMsgNew.serializer()).run {
                 return friendmsgs.filter {
-                    it.msgTime >= bot.client.syncingController.latestMsgNewFriendTime
+                    it.msgTime >= bot.syncController.latestMsgNewFriendTime
                 }.mapNotNull { struct ->
-                    if (!bot.client.syncingController.systemMsgNewFriendCacheList.addCache(
-                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
-                                struct.msgSeq,
-                                struct.msgTime
-                            )
-                        )
-                    ) { // duplicate
+                    if (!bot.syncController.syncNewFriend(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
                     }
                     struct.msg?.run {
@@ -72,17 +70,11 @@ internal class NewContact {
                             msgAdditional,
                             struct.reqUin,
                             groupCode,
-                            reqUinNick
+                            reqUinNick,
                         )
                     }
-                }.let { packets ->
-                    when {
-                        packets.isEmpty() -> null
-                        packets.size == 1 -> packets[0]
-                        else -> MultiPacket(packets)
-                    }
-                }.also {
-                    bot.client.syncingController.run {
+                }.toPacket().also {
+                    bot.syncController.run {
                         latestMsgNewFriendTime = max(latestMsgNewFriendTime, friendmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
                 }
@@ -96,7 +88,7 @@ internal class NewContact {
                 eventId: Long,
                 fromId: Long,
                 accept: Boolean,
-                blackList: Boolean = false
+                blackList: Boolean = false,
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -107,14 +99,14 @@ internal class NewContact {
                                 addFrdSNInfo = Structmsg.AddFrdSNInfo(),
                                 msg = "",
                                 remark = "",
-                                blacklist = !accept && blackList
+                                blacklist = !accept && blackList,
                             ),
                             msgSeq = eventId,
                             reqUin = fromId,
                             srcId = 6,
                             subSrcId = 7,
-                            subType = 1
-                        )
+                            subType = 1,
+                        ),
                     )
                 }
 
@@ -148,39 +140,29 @@ internal class NewContact {
                         grpMsgNeedAutoAdminWording = 1,
                         grpMsgNotAllowJoinGrpInviteNotFrd = 1,
                         grpMsgSupportInviteAutoJoin = 1,
-                        grpMsgWordingDown = 1
+                        grpMsgWordingDown = 1,
                     ),
                     friendMsgTypeFlag = 1,
                     isGetFrdRibbon = false,
                     isGetGrpRibbon = false,
                     msgNum = 5,
-                    version = 1000
-                )
+                    version = 1000,
+                ),
             )
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 groupmsgs.filter {
-                    it.msgTime >= bot.client.syncingController.latestMsgNewGroupTime
+                    it.msgTime >= bot.syncController.latestMsgNewGroupTime
                 }.mapNotNull { struct ->
-                    if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
-                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
-                                struct.msgSeq,
-                                struct.msgTime
-                            )
-                        )
-                    ) { // duplicate
+                    if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
                     }
-                    try {
-                        bot.components.noticeProcessorPipeline.process(bot, struct).toPacket()
-                    } catch (e: Throwable) {
-                        ParseErrorPacket(e)
-                    }
+                    bot.processPacketThroughPipeline(struct)
                 }.toPacket().also {
-                    bot.client.syncingController.run {
+                    bot.syncController.run {
                         latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
                 }
@@ -197,7 +179,7 @@ internal class NewContact {
                 isInvited: Boolean,
                 accept: Boolean?,
                 blackList: Boolean = false,
-                message: String = ""
+                message: String = "",
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -212,7 +194,7 @@ internal class NewContact {
                                 groupCode = groupId,
                                 msg = message,
                                 remark = "",
-                                blacklist = blackList
+                                blacklist = blackList,
                             ),
                             groupMsgType = if (isInvited) 2 else 1,
                             language = 1000,
@@ -220,8 +202,8 @@ internal class NewContact {
                             reqUin = fromId,
                             srcId = 3,
                             subSrcId = if (isInvited) 10016 else 31,
-                            subType = 1
-                        )
+                            subType = 1,
+                        ),
                     )
                 }
 

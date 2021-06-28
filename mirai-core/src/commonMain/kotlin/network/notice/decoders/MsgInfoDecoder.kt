@@ -16,17 +16,34 @@ import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
+import net.mamoe.mirai.internal.network.components.syncOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
+import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack.SvcReqPushMsg
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.toUHexString
 
 /**
- * Decodes [MsgInfo] and re-fire [MsgType0x210] or [MsgType0x2DC]
+ * Decodes [SvcReqPushMsg] to [MsgInfo] then re-fire [MsgType0x210] or [MsgType0x2DC]
  */
-internal class MsgInfoDecoder : SimpleNoticeProcessor<MsgInfo>(type()) {
-    override suspend fun PipelineContext.processImpl(data: MsgInfo) {
-        markAsConsumed()
+internal class MsgInfoDecoder(
+    private val logger: MiraiLogger,
+) : SimpleNoticeProcessor<SvcReqPushMsg>(type()) {
+    override suspend fun PipelineContext.processImpl(data: SvcReqPushMsg) {
+        // SvcReqPushMsg is fully handled here, no need to set consumed.
+
+        for (msgInfo in data.vMsgInfos) {
+            decodeMsgInfo(msgInfo)
+        }
+    }
+
+    private suspend fun PipelineContext.decodeMsgInfo(data: MsgInfo) {
+        if (!bot.syncController.syncOnlinePush(data)) return
         when (data.shMsgType.toUShort().toInt()) {
             // 528
             0x210 -> fire(data.vMsg.loadAs(MsgType0x210.serializer()))
@@ -43,7 +60,9 @@ internal class MsgInfoDecoder : SimpleNoticeProcessor<MsgInfo>(type()) {
                     fire(MsgType0x2DC(kind, group, this.readBytes()))
                 }
             }
-            else -> markNotConsumed()
+            else -> {
+                logger.debug { "Unknown MsgInfo kind ${data.shMsgType.toInt()}, data=${data.vMsg.toUHexString()}" }
+            }
         }
     }
 }
@@ -52,4 +71,4 @@ internal class MsgType0x2DC(
     val kind: Int, // inner kind, read from vMsg
     val group: GroupImpl,
     val buf: ByteArray,
-)
+) : ProtocolStruct
