@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network
 
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.MiraiLogger
 
 /*
@@ -42,9 +43,11 @@ internal fun Collection<Packet>.toPacket(): Packet {
 }
 
 internal fun MultiPacket(delegate: Collection<Packet>): MultiPacket = MultiPacketImpl(delegate)
+internal fun MultiPacket(delegate: Packet): MultiPacket =
+    if (delegate is MultiPacket) delegate else MultiPacket(listOf(delegate))
 
 internal open class MultiPacketImpl(
-    val delegate: Collection<Packet>
+    val delegate: Collection<Packet>,
 ) : MultiPacket, Collection<Packet> by delegate {
 
     override fun toString(): String = delegate.joinToString(
@@ -56,6 +59,7 @@ internal open class MultiPacketImpl(
 
 
 internal class ParseErrorPacket(
+    val data: ProtocolStruct,
     val error: Throwable,
     val direction: Direction = Direction.TO_BOT_LOGGER,
 ) : Packet, Packet.NoLog {

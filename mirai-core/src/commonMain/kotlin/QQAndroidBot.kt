@@ -156,7 +156,8 @@ internal open class QQAndroidBot constructor(
         set(
             NoticeProcessorPipeline,
             NoticeProcessorPipelineImpl().apply {
-                registerProcessor(MsgInfoDecoder())
+                registerProcessor(MsgInfoDecoder(pipelineLogger))
+
                 registerProcessor(FriendNoticeProcessor(pipelineLogger))
                 registerProcessor(GroupListNoticeProcessor(pipelineLogger))
                 registerProcessor(GroupMessageProcessor())
@@ -217,6 +218,7 @@ internal open class QQAndroidBot constructor(
     open fun createNetworkLevelComponents(): ComponentStorage {
         return ConcurrentComponentStorage {
             set(BotClientHolder, BotClientHolderImpl(bot, networkLogger.subLogger("BotClientHolder")))
+            set(SyncController, SyncControllerImpl())
         }.withFallback(defaultBotLevelComponents)
     }
 

@@ -241,6 +241,12 @@ public fun String.truncated(length: Int, truncated: String = "..."): String {
     } else this
 }
 
+/**
+ * Similar to [run] bot with [Unit] return type.
+ *
+ * You should not reference to [T] directly in the [block].
+ */
+// can convert to contextual receiver in the future, or there might be a stdlib function which we can delegate to.
 public inline fun <T> T.context(block: T.() -> Unit) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return block()

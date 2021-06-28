@@ -94,11 +94,7 @@ internal class OtherClientNoticeProcessor : MixedNoticeProcessor() {
                     collected += OtherClientOfflineEvent(client)
                 }
 
-                else -> throw contextualBugReportException(
-                    "decode SvcRequestPushStatus (PC Client status change)",
-                    data._miraiContentToString(),
-                    additional = "unknown status=${data.status}",
-                )
+                else -> markNotConsumed()
             }
         }
     }

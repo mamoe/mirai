@@ -22,14 +22,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 internal object OnlinePushSidExpired : IncomingPacketFactory<Packet?>("OnlinePush.SidTicketExpired") {
 
     override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket {
-        return buildResponseUniPacket(
-            client,
-            sequenceId = sequenceId,
-            key = client.wLoginSigInfo.d2Key
-        ) {}.also {
-            WtLogin10(client, mainSigMap = 3554528).sendAndExpect(bot)
-            StatSvc.Register.online(client).sendAndExpect(bot)
-        }
+        WtLogin10(client, mainSigMap = 3554528).sendAndExpect(bot)
+        StatSvc.Register.online(client).sendAndExpect(bot)
+        return buildResponseUniPacket(client, sequenceId = sequenceId)
     }
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
