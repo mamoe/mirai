@@ -233,6 +233,10 @@ internal class MessageSerializationTest {
                 .deserialize(V.serializer())
                 .serialize(V.serializer())
         )
+        assertEquals(
+            v,
+            v.serialize(V.serializer()).deserialize(V.serializer())
+        )
         v.msg.pttInternalInstance = ImMsgBody.Ptt(
             srcUin = 1234567890,
             fileMd5 = byteArrayOf(14, 81, 37, 14),
@@ -240,6 +244,12 @@ internal class MessageSerializationTest {
             format = 90,
         )
         println(v.serialize(V.serializer()))
+        assertEquals(
+            v.serialize(V.serializer()),
+            v.serialize(V.serializer())
+                .deserialize(V.serializer())
+                .serialize(V.serializer())
+        )
         assertEquals(
             v,
             v.serialize(V.serializer()).deserialize(V.serializer())
