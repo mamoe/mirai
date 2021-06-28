@@ -241,10 +241,8 @@ internal class MessageSerializationTest {
         )
         println(v.serialize(V.serializer()))
         assertEquals(
-            v.serialize(V.serializer()),
-            v.serialize(V.serializer())
-                .deserialize(V.serializer())
-                .serialize(V.serializer())
+            v,
+            v.serialize(V.serializer()).deserialize(V.serializer())
         )
     }
 }
