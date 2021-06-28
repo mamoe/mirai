@@ -12,8 +12,9 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
+import net.mamoe.mirai.internal.network.components.syncPushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -27,20 +28,8 @@ internal object OnlinePushPbPushTransMsg :
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
         val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
-
-        if (!bot.client.syncingController.pbPushTransMsgCacheList.addCache(
-                content.run {
-                    QQAndroidClient.MessageSvcSyncData.PbPushTransMsgSyncId(msgUid, msgSeq, msgTime)
-                }
-            )
-        ) {
-            return null
-        }
-        // bot.network.logger.debug { content._miraiContentToString() }
-
-
-        bot.components.noticeProcessorPipeline.process(bot, content)
-        return null
+        if (!bot.syncController.syncPushTrans(content)) return null
+        return bot.processPacketThroughPipeline(content)
     }
 
     override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket {

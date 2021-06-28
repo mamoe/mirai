@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket

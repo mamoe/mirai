@@ -56,9 +56,7 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
                 val group = bot.getGroupByUin(tmpHead.groupUin) ?: return
                 handlePrivateMessage(data, group[senderUin] ?: return)
             }
-            else -> {
-                markNotConsumed()
-            }
+            else -> markNotConsumed()
         }
 
     }

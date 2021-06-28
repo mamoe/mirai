@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.notice.GroupMessageProcessor.MemberNick.Companion.generateMemberNickFromMember
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -71,8 +72,9 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
         if (isFromSelfAccount) {
             val messageRandom = data.msg.msgBody.richText.attr?.random ?: return
 
-            if (bot.client.syncingController.pendingGroupMessageReceiptCacheList.contains { it.messageRandom == messageRandom }
-                || msgHead.fromAppid == 3116 || msgHead.fromAppid == 2021) {
+            if (bot.syncController.containsGroupMessageReceipt(messageRandom)
+                || msgHead.fromAppid == 3116 || msgHead.fromAppid == 2021
+            ) {
                 // 3116=group music share
                 // 2021=group file
                 // message sent by bot

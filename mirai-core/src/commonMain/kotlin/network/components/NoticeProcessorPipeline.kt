@@ -12,10 +12,10 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
-import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -24,8 +24,11 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMs
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushTransMsg
+import net.mamoe.mirai.internal.network.toPacket
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.TypeSafeMap
+import net.mamoe.mirai.utils.toDebugString
 import net.mamoe.mirai.utils.uncheckedCast
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -34,21 +37,35 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.reflect.KClass
 
+internal typealias ProcessResult = Collection<Packet>
+
 /**
  * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
  */
 internal interface NoticeProcessorPipeline {
     fun registerProcessor(processor: NoticeProcessor)
 
-    suspend fun process(bot: QQAndroidBot, data: Any?, attributes: TypeSafeMap = TypeSafeMap()): Collection<Packet>
+    /**
+     * Process [data] into [Packet]s. Exceptions are wrapped into [ParseErrorPacket]
+     */
+    suspend fun process(bot: QQAndroidBot, data: ProtocolStruct, attributes: TypeSafeMap = TypeSafeMap()): ProcessResult
 
     companion object : ComponentKey<NoticeProcessorPipeline> {
         val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
+
+        @JvmStatic
+        suspend inline fun QQAndroidBot.processPacketThroughPipeline(
+            data: ProtocolStruct,
+            attributes: TypeSafeMap = TypeSafeMap(),
+        ): Packet {
+            return components.noticeProcessorPipeline.process(this, data, attributes).toPacket()
+        }
     }
 }
 
 internal interface PipelineContext {
     val bot: QQAndroidBot
+
     val attributes: TypeSafeMap
 
 
@@ -99,7 +116,7 @@ internal interface PipelineContext {
      *
      * @return result collected from processors. This would also have been collected to this context (where you call [fire]).
      */
-    suspend fun fire(data: Any?): Collection<Packet>
+    suspend fun fire(data: ProtocolStruct): ProcessResult
 
     companion object {
         val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
@@ -109,7 +126,7 @@ internal interface PipelineContext {
 
 internal inline val PipelineContext.context get() = this
 
-internal class NoticeProcessorPipelineImpl : NoticeProcessorPipeline {
+internal open class NoticeProcessorPipelineImpl : NoticeProcessorPipeline {
     private val processors = ArrayList<NoticeProcessor>()
     private val processorsLock = ReentrantReadWriteLock()
 
@@ -147,21 +164,36 @@ internal class NoticeProcessorPipelineImpl : NoticeProcessorPipeline {
             this.collected.addAll(packets)
         }
 
-        override suspend fun fire(data: Any?): Collection<Packet> {
+        override suspend fun fire(data: ProtocolStruct): ProcessResult {
             return process(bot, data, attributes)
         }
     }
 
 
-    override suspend fun process(bot: QQAndroidBot, data: Any?, attributes: TypeSafeMap): Collection<Packet> {
+    override suspend fun process(bot: QQAndroidBot, data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
         processorsLock.read {
             val context = ContextImpl(bot, attributes)
             for (processor in processors) {
-                processor.process(context, data)
+                kotlin.runCatching {
+                    processor.process(context, data)
+                }.onFailure { e ->
+                    context.collect(
+                        ParseErrorPacket(
+                            data,
+                            IllegalStateException(
+                                "Exception in $processor while processing packet ${packetToString(data)}.",
+                                e,
+                            ),
+                        ),
+                    )
+                }
             }
             return context.collected
         }
     }
+
+    protected open fun packetToString(data: Any?): String =
+        data.toDebugString("mirai.network.debug.notice.pipeline.log.full")
 
 }
 
@@ -203,7 +235,6 @@ internal abstract class MsgCommonMsgProcessor : SimpleNoticeProcessor<MsgComm.Ms
 internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
     final override suspend fun PipelineContext.processImpl(data: Any) {
         when (data) {
-            is MsgInfo -> processImpl(data)
             is PbMsgInfo -> processImpl(data)
             is MsgOnlinePush.PbPushMsg -> processImpl(data)
             is MsgComm.Msg -> processImpl(data)
@@ -214,7 +245,6 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
         }
     }
 
-    protected open suspend fun PipelineContext.processImpl(data: MsgInfo) {}
     protected open suspend fun PipelineContext.processImpl(data: MsgType0x210) {} // 528
     protected open suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {} // 732
     protected open suspend fun PipelineContext.processImpl(data: PbMsgInfo) {}

@@ -13,7 +13,6 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
-import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -23,17 +22,13 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.context
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.toUHexString
 
 internal class UnconsumedNoticesAlerter(
     private val logger: MiraiLogger,
 ) : MixedNoticeProcessor() {
-    override suspend fun PipelineContext.processImpl(data: MsgInfo) {
-        if (isConsumed) return
-        logger.debug { "Unknown kind ${data.shMsgType.toInt()}, data=${data.vMsg.toUHexString()}" }
-    }
-
     override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
         if (isConsumed) return
         when (data.uSubMsgType) {
@@ -42,7 +37,6 @@ internal class UnconsumedNoticesAlerter(
             0xD4L, // bot 在其他客户端被踢或主动退出而同步情况
             -> {
                 // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
-
             }
 
             0xE2L -> {
@@ -51,9 +45,10 @@ internal class UnconsumedNoticesAlerter(
                 // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
                 // vProtobuf.loadAs(Msgtype0x210.serializer())
             }
-
+            else -> {
+                logger.debug { "Unknown group 528 type 0x${data.uSubMsgType.toUHexString("")}, data: " + data.vProtobuf.toUHexString() }
+            }
         }
-        logger.debug { "Unknown group 528 type 0x${data.uSubMsgType.toUHexString("")}, data: " + data.vProtobuf.toUHexString() }
     }
 
     override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
@@ -125,11 +120,21 @@ internal class UnconsumedNoticesAlerter(
 
     override suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) {
         if (isConsumed) return
-        TODO("Not yet implemented")
+        data.msg?.context {
+            throw contextualBugReportException(
+                "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
+                forDebug = this._miraiContentToString(),
+                additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群",
+            )
+        }
     }
 
     override suspend fun PipelineContext.processImpl(data: RequestPushStatus) {
         if (isConsumed) return
-        TODO("Not yet implemented")
+        throw contextualBugReportException(
+            "decode SvcRequestPushStatus (PC Client status change)",
+            data._miraiContentToString(),
+            additional = "unknown status=${data.status}",
+        )
     }
 }

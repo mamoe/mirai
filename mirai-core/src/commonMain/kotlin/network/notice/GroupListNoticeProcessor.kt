@@ -197,8 +197,8 @@ internal class GroupListNoticeProcessor(
     ///////////////////////////////////////////////////////////////////////////
 
     override suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) = data.msg.context {
-        markAsConsumed()
         if (this == null) return
+        markAsConsumed()
         when (subType) {
             // 处理被邀请入群 或 处理成员入群申请
             1 -> when (groupMsgType) {
@@ -259,16 +259,12 @@ internal class GroupListNoticeProcessor(
                             "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
                             this._miraiContentToString(),
                             null,
-                            "并描述此时机器人是否被踢出群等"
+                            "并描述此时机器人是否被踢出群等",
                         )
                     }
                 }
             }
-            else -> throw contextualBugReportException(
-                "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
-                forDebug = this._miraiContentToString(),
-                additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
-            )
+            else -> markNotConsumed()
         }
     }
 
