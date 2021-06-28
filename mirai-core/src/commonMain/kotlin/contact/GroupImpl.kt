@@ -319,14 +319,6 @@ internal fun Group.newNormalMember(memberInfo: MemberInfo): NormalMemberImpl {
     )
 }
 
-internal fun Group.newAnonymousMember(memberInfo: MemberInfo): AnonymousMemberImpl? {
-    this.checkIsGroupImpl()
-    memberInfo.anonymousId?.let {
-        return AnonymousMemberImpl(this, this.coroutineContext, memberInfo)
-    }
-    return null
-}
-
 internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl {
     return AnonymousMemberImpl(
         this, this.coroutineContext,
