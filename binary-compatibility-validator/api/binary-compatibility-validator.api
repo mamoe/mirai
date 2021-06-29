@@ -290,7 +290,7 @@ public final class net/mamoe/mirai/contact/ContactKt {
 }
 
 public final class net/mamoe/mirai/contact/ContactList : java/util/Collection, kotlin/jvm/internal/markers/KMappedMarker {
-	public final field delegate Ljava/util/concurrent/ConcurrentLinkedQueue;
+	public final field delegate Ljava/util/Collection;
 	public synthetic fun add (Ljava/lang/Object;)Z
 	public fun add (Lnet/mamoe/mirai/contact/Contact;)Z
 	public fun addAll (Ljava/util/Collection;)Z
