@@ -119,11 +119,11 @@ public class Voice @MiraiInternalApi constructor(
         if (this === other) return true
         if (other !is Voice) return false
 
-        if (this.pttInternalInstance == other.pttInternalInstance)
-            return true
         if (this.pttInternalInstance != null && other.pttInternalInstance != null) {
-            if (this.pttInternalInstanceSerializeCache == other.pttInternalInstanceSerializeCache)
+            if (this.pttInternalInstance == other.pttInternalInstance)
                 return true
+            // strict
+            return this.pttInternalInstanceSerializeCache == other.pttInternalInstanceSerializeCache
         }
 
         if (fileName != other.fileName) return false
