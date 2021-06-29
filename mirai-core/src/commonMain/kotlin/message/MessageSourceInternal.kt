@@ -10,14 +10,19 @@
 package net.mamoe.mirai.internal.message
 
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.sourceOrNull
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.cast
 import java.util.concurrent.atomic.AtomicBoolean
 
 
+/**
+ * All [MessageSource] should implement this interface.
+ */
 internal interface MessageSourceInternal {
     @Transient
     val sequenceIds: IntArray // ids
@@ -33,6 +38,37 @@ internal interface MessageSourceInternal {
     val isRecalledOrPlanned: AtomicBoolean
 
     fun toJceData(): ImMsgBody.SourceMsg
+}
+
+/**
+ * All [OnlineMessageSource.Outgoing] should implement this interface.
+ */
+internal interface OutgoingMessageSourceInternal : MessageSourceInternal {
+
+    // #1371:
+    // 问题是 `build` 得到的 `ForwardMessage` 会在 `transformSpecialMessages`
+    // 时上传并变成 `ForwardMessageInternal` 再传递给 factory 发送, 并以这个 internal 结果构造了 receipt.
+
+    // 于是构造 receipt 后会进行 light refine 并更新这个属性.
+
+    /**
+     * This 'overrides' [MessageSource.originalMessage].
+     *
+     * @see SendMessageHandler.sendMessagePacket
+     */
+    var originalMessage: MessageChain
+}
+
+@Suppress("DEPRECATION_ERROR")
+internal fun <C : Contact> OnlineMessageSource.Outgoing.createMessageReceipt(
+    target: C,
+    doLightRefine: Boolean,
+): MessageReceipt<C> {
+    if (doLightRefine) {
+        check(this is OutgoingMessageSourceInternal) { "Internal error: source !is OutgoingMessageSourceInternal" }
+        this.originalMessage = this.originalMessage.refineLight(bot)
+    }
+    return MessageReceipt(this, target)
 }
 
 @Suppress("RedundantSuspendModifier", "unused")

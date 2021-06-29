@@ -79,10 +79,10 @@ internal class OnlineMessageSourceToFriendImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
-    override val originalMessage: MessageChain,
+    override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Friend,
-) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
+) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal, OutgoingMessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
 
     override val bot: Bot
@@ -99,10 +99,10 @@ internal class OnlineMessageSourceToStrangerImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
-    override val originalMessage: MessageChain,
+    override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Stranger,
-) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
+) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal, OutgoingMessageSourceInternal {
 
     constructor(
         delegate: Outgoing,
@@ -125,10 +125,10 @@ internal class OnlineMessageSourceToTempImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
-    override val originalMessage: MessageChain,
+    override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Member,
-) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
+) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal, OutgoingMessageSourceInternal {
     constructor(
         delegate: Outgoing,
         target: Member,
@@ -150,11 +150,11 @@ internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
     override val internalIds: IntArray, // aka random
     override val time: Int,
-    override val originalMessage: MessageChain,
+    override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Group,
     providedSequenceIds: IntArray? = null,
-) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
+) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal, OutgoingMessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
 
     override val ids: IntArray

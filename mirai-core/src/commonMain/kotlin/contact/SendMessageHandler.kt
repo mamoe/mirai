@@ -17,6 +17,7 @@ import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
@@ -188,7 +189,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 )
             }
 
-            return MessageReceipt(sourceAwait, contact)
+            return sourceAwait.createMessageReceipt(contact, true)
         }
     }
 

@@ -40,7 +40,10 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @see MessageReceipt.sourceTime 源时间
  */
 @JvmBlockingBridge
-public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
+public open class MessageReceipt<out C : Contact>
+@MiraiInternalApi
+@Deprecated("Do not call it directly", level = DeprecationLevel.ERROR)
+constructor(
     /**
      * 指代发送出去的消息.
      */

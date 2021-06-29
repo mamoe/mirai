@@ -28,6 +28,7 @@ import net.mamoe.mirai.event.events.StrangerMessagePostSendEvent
 import net.mamoe.mirai.event.events.StrangerMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
+import net.mamoe.mirai.internal.message.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
@@ -78,7 +79,10 @@ internal class StrangerImpl(
     }
 
     private fun MessageReceipt<User>.convert(): MessageReceipt<StrangerImpl> {
-        return MessageReceipt(OnlineMessageSourceToStrangerImpl(source, this@StrangerImpl), this@StrangerImpl)
+        return OnlineMessageSourceToStrangerImpl(source, this@StrangerImpl).createMessageReceipt(
+            this@StrangerImpl,
+            doLightRefine = false //we've already did
+        )
     }
 
     override fun toString(): String = "Stranger($id)"

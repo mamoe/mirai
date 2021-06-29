@@ -21,7 +21,10 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
@@ -61,7 +64,10 @@ internal class NormalMemberImpl constructor(
     }
 
     private fun MessageReceipt<User>.convert(): MessageReceipt<NormalMemberImpl> {
-        return MessageReceipt(OnlineMessageSourceToTempImpl(source, this@NormalMemberImpl), this@NormalMemberImpl)
+        return OnlineMessageSourceToTempImpl(source, this@NormalMemberImpl).createMessageReceipt(
+            this@NormalMemberImpl,
+            doLightRefine = false //we've already did
+        )
     }
 
 
