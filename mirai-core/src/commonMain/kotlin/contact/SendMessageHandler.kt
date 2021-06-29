@@ -16,6 +16,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.Packet
@@ -233,7 +234,7 @@ internal abstract class SendMessageHandler<C : Contact> {
     open suspend fun uploadLongMessageHighway(
         chain: MessageChain,
     ): String = with(contact) {
-        return MiraiImpl.uploadMessageHighway(
+        return getMiraiImpl().uploadMessageHighway(
             bot, this@SendMessageHandler,
             listOf(
                 ForwardMessage.Node(
@@ -275,7 +276,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
             }
         }
 
-        val resId = MiraiImpl.uploadMessageHighway(
+        val resId = getMiraiImpl().uploadMessageHighway(
             bot = contact.bot,
             sendMessageHandler = this,
             message = forward.nodeList,

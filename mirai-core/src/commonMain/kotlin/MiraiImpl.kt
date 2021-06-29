@@ -63,6 +63,8 @@ import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
+internal fun getMiraiImpl() = Mirai as MiraiImpl
+
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
@@ -823,7 +825,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
-    internal suspend fun uploadMessageHighway(
+    internal open suspend fun uploadMessageHighway(
         bot: Bot,
         sendMessageHandler: SendMessageHandler<*>,
         message: Collection<ForwardMessage.INode>,
