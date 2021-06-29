@@ -365,7 +365,7 @@ internal class GroupTempSendMessageHandler(
         MessageSvcPbSendMsg::createToTemp
 }
 
-internal class GroupSendMessageHandler(
+internal open class GroupSendMessageHandler(
     override val contact: GroupImpl,
 ) : SendMessageHandler<GroupImpl>() {
     override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
