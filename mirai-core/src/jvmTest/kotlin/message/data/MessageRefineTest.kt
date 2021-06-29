@@ -16,6 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.OfflineMessageSourceImplData
@@ -267,7 +268,7 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
 
     @Test
     fun `test nested forward refinement`() = runBlockingUnit {
-        val redefined = MiraiImpl.run { testCases.nestedForward.toForwardMessageNodes(bot) }
+        val redefined = getMiraiImpl().run { testCases.nestedForward.toForwardMessageNodes(bot) }
         assertNodesEquals(
             listOf(
                 ForwardMessage.Node(
