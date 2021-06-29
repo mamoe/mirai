@@ -41,6 +41,11 @@ public abstract class PttMessage : MessageContent {
     @MiraiExperimentalApi
     public abstract val fileSize: Long
 
+    /*
+     * **internal impl note**
+     * 用于中转 ImMsgBody.Ptt, 在接受到其他用户发送的语音时能按照原样发回,
+     * 并且便于未来修改 (对 api 修改最小化)
+     */
     @MiraiInternalApi
     @Transient
     public var pttInternalInstance: Any? = null
