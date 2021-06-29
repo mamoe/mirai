@@ -129,7 +129,6 @@ internal class ServerListImpl(
         }
     }
 
-    @Synchronized
     override fun getLastPolledIP(): String = lastPolledAddress?.host ?: ""
 
     /**
