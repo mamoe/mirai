@@ -24,6 +24,8 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.Either
 import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.KEY_16_ZEROS
+import net.mamoe.mirai.utils.TestOnly
+import kotlin.random.Random
 
 @kotlin.Suppress("unused")
 internal class OutgoingPacketWithRespType<R : Packet?> constructor(
@@ -56,6 +58,15 @@ internal class IncomingPacket private constructor(
 
         operator fun invoke(commandName: String, sequenceId: Int, throwable: Throwable) =
             IncomingPacket(commandName, sequenceId, Either(throwable))
+
+
+        @TestOnly
+        operator fun invoke(commandName: String, data: Packet?) =
+            IncomingPacket(commandName, Random.nextInt(), data)
+
+        @TestOnly
+        operator fun invoke(commandName: String, throwable: Throwable) =
+            IncomingPacket(commandName, Random.nextInt(), throwable)
     }
 
     override fun toString(): String {

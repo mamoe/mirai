@@ -21,7 +21,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
  *
  * @see SelectorNetworkHandler
  */
-internal interface NetworkHandlerSelector<H : NetworkHandler> {
+internal interface NetworkHandlerSelector<out H : NetworkHandler> {
     /**
      * Returns an instance immediately without suspension, or `null` if instance not ready. Returned [H] can be in any states.
      *

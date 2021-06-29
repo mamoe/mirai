@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.TestNettyNH
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket

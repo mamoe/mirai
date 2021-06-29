@@ -36,21 +36,21 @@ import kotlin.coroutines.cancellation.CancellationException
  *
  * @see NetworkHandlerSelector
  */
-internal class SelectorNetworkHandler(
-    val selector: NetworkHandlerSelector<*>,
+internal open class SelectorNetworkHandler<out H : NetworkHandler>(
+    val selector: NetworkHandlerSelector<H>,
 ) : NetworkHandler {
     @Volatile
     private var lastCancellationCause: Throwable? = null
 
     override val context: NetworkHandlerContext get() = selector.getCurrentInstanceOrCreate().context
 
-    private val scope: CoroutineScope by lazy {
+    protected val scope: CoroutineScope by lazy {
         context.bot.coroutineContext
             .addNameHierarchically("SelectorNetworkHandler")
             .childScope()
     }
 
-    private suspend inline fun instance(): NetworkHandler {
+    protected suspend inline fun instance(): H {
         if (!scope.isActive) {
             throw lastCancellationCause?.let(::CancellationException)
                 ?: CancellationException("SelectorNetworkHandler is already closed")

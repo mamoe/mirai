@@ -19,6 +19,10 @@ internal sealed class AbstractNetworkHandlerTest : AbstractTest() {
     // Defaults
     ///////////////////////////////////////////////////////////////////////////
 
+    init {
+        System.setProperty("mirai.event.launch.undispatched", "true") // allow us to do some
+    }
+
     @BeforeEach
     fun be() {
         AbstractKeepAliveNetworkHandlerSelector.RECONNECT_DELAY = 0

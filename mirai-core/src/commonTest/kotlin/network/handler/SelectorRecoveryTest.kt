@@ -9,50 +9,24 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import io.netty.channel.Channel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.HeartbeatFailureHandler
 import net.mamoe.mirai.internal.network.components.HeartbeatScheduler
-import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
-import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.impl.netty.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTestWithSelector
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
-import net.mamoe.mirai.internal.network.impl.netty.TestNettyNH
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
-import java.net.SocketAddress
 import kotlin.test.assertFails
 
-internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<SelectorNetworkHandler>() {
-    val channel = AbstractNettyNHTest.NettyNHTestChannel()
-
-    private val selector = TestSelector {
-        object : TestNettyNH(bot, createContext(), address) {
-            override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel {
-                return channel
-            }
-        }
-    }
-
-    override val factory: NetworkHandlerFactory<SelectorNetworkHandler> =
-        object : NetworkHandlerFactory<SelectorNetworkHandler> {
-            override fun create(context: NetworkHandlerContext, address: SocketAddress): SelectorNetworkHandler {
-                return SelectorNetworkHandler(selector)
-            }
-        }
-
-    override val network: SelectorNetworkHandler get() = bot.network.cast()
-
+internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
     @Test
     fun `stop on manual close`() = runBlockingUnit {
         network.resumeConnection()
         network.close(IllegalStateException("Closed by test"))
         assertFails { network.resumeConnection() }
     }
-
 
     /**
      * Emulates system hibernation and network failure.
@@ -74,7 +48,7 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
             override fun launchJobsIn(
                 network: NetworkHandlerSupport,
                 scope: CoroutineScope,
-                onHeartFailure: HeartbeatFailureHandler
+                onHeartFailure: HeartbeatFailureHandler,
             ): List<Job> {
                 this.onHeartFailure = onHeartFailure
                 return listOf(Job())

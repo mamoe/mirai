@@ -12,8 +12,8 @@
 package net.mamoe.mirai.internal.network.handler
 
 import io.netty.channel.Channel
-import net.mamoe.mirai.internal.network.impl.netty.AbstractNettyNHTest
-import net.mamoe.mirai.internal.network.impl.netty.TestNettyNH
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.TestNettyNH
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
 import org.junit.jupiter.api.assertThrows

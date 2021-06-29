@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.isActive
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.setSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector

@@ -15,6 +15,7 @@ import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
@@ -32,27 +33,27 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
 
     // not allowed anymore
 
-//    @Test
-//    fun `closed on Force offline with BotOfflineEventMonitor`() = runBlockingUnit {
-//        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
-//        bot.login()
-//        assertState(OK)
-//        BotOfflineEvent.Force(bot, "test", "test").broadcast()
-//        assertState(CLOSED)
-//        assertFalse { network.isActive }
-//        assertTrue { bot.isActive }
-//    }
+    //    @Test
+    //    fun `closed on Force offline with BotOfflineEventMonitor`() = runBlockingUnit {
+    //        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
+    //        bot.login()
+    //        assertState(OK)
+    //        BotOfflineEvent.Force(bot, "test", "test").broadcast()
+    //        assertState(CLOSED)
+    //        assertFalse { network.isActive }
+    //        assertTrue { bot.isActive }
+    //    }
 
-//    @Test
-//    fun `closed on Active offline with BotOfflineEventMonitor`() = runBlockingUnit {
-//        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
-//        bot.login()
-//        assertState(OK)
-//        BotOfflineEvent.Active(bot, null).broadcast()
-//        assertState(CLOSED)
-//        assertFalse { network.isActive }
-//        assertTrue { bot.isActive }
-//    }
+    //    @Test
+    //    fun `closed on Active offline with BotOfflineEventMonitor`() = runBlockingUnit {
+    //        defaultComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
+    //        bot.login()
+    //        assertState(OK)
+    //        BotOfflineEvent.Active(bot, null).broadcast()
+    //        assertState(CLOSED)
+    //        assertFalse { network.isActive }
+    //        assertTrue { bot.isActive }
+    //    }
 
     @Test
     fun `state is CLOSED after Bot close`() = runBlockingUnit {
