@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.test
 
 import net.mamoe.mirai.IMirai
+import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit
@@ -23,6 +25,10 @@ internal expect fun initPlatform()
 abstract class AbstractTest {
     init {
         initPlatform()
+
+        MiraiLogger.setDefaultLoggerCreator {
+            SynchronizedStdoutLogger(it)
+        }
 
         System.setProperty("mirai.debug.network.packet.logger", "true")
         System.setProperty("mirai.debug.network.state.observer.logging", "true")

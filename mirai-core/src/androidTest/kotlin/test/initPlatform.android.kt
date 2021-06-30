@@ -20,11 +20,6 @@ internal actual fun initPlatform() {
 }
 
 private val init: Unit by lazy {
-    MiraiLogger.setDefaultLoggerCreator {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        net.mamoe.mirai.internal.utils.StdoutLogger(it)
-    }
-
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
         Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
     }
