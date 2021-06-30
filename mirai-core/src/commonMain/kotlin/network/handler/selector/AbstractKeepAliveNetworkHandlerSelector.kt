@@ -10,7 +10,9 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
@@ -34,7 +36,7 @@ import net.mamoe.mirai.utils.unwrapCancellationException
  */
 // may be replaced with a better name.
 internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandler>(
-    private val maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
+    private val maxAttempts: Int = DEFAULT_MAX_ATTEMPTS,
 ) : NetworkHandlerSelector<H> {
 
     init {
@@ -80,7 +82,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             if (attempted >= maxAttempts) {
                 throw exceptionCollector.getLast() ?: MaxAttemptsReachedException(null)
             }
-            yield() // Avoid endless recursion.
+            if (!currentCoroutineContext().isActive) yield() // throw canonical CancellationException if cancelled
             val current = getCurrentInstanceOrNull()
             lastNetwork = current
 
@@ -117,7 +119,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         runImpl() // will create new instance (see the `else` branch).
                     }
                     NetworkHandler.State.CONNECTING,
-                    NetworkHandler.State.INITIALIZED -> {
+                    NetworkHandler.State.INITIALIZED,
+                    -> {
                         current.resumeInstanceCatchingException()
                         return runImpl() // does not count for an attempt.
                     }
@@ -159,7 +162,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 @Suppress("FunctionName")
 internal fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(
     maxAttempts: Int,
-    createInstance: () -> H
+    createInstance: () -> H,
 ): AbstractKeepAliveNetworkHandlerSelector<H> {
     return object : AbstractKeepAliveNetworkHandlerSelector<H>(maxAttempts) {
         override fun createInstance(): H = createInstance()
