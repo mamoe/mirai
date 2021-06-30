@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
@@ -43,7 +42,7 @@ internal interface BotOfflineEventMonitor {
 
 internal data class BotClosedByEvent(
     val event: BotOfflineEvent,
-    override val message: String? = "Bot is closed by event '$event'."
+    override val message: String? = "Bot is closed by event '$event'.",
 ) : NetworkException(false)
 
 internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
@@ -55,7 +54,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         )
     }
 
-    private suspend fun onEvent(event: BotOfflineEvent) = coroutineScope {
+    private fun onEvent(event: BotOfflineEvent) {
         val bot = event.bot.asQQAndroidBot()
         val network = bot.network
 
