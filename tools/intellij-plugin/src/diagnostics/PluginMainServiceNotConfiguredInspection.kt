@@ -22,8 +22,7 @@ import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServi
 import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.hasAnnotation
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
-import org.jetbrains.kotlin.idea.util.module
-import org.jetbrains.kotlin.idea.util.rootManager
+import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.classOrObjectVisitor
