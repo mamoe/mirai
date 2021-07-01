@@ -146,6 +146,13 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         assertEquals(state, network.state)
     }
 
+    fun assertState(vararg accepted: State) {
+        val s = network.state
+        if (s !in accepted) {
+            throw AssertionError("Expected: ${accepted.joinToString()}, actual: $s")
+        }
+    }
+
     fun NetworkHandler.assertState(state: State) {
         assertEquals(state, this.state)
     }
