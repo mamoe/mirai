@@ -320,6 +320,15 @@ internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendConcurrently(
     respCallback: (resp: CSDataHighwayHead.RspDataHighwayHead) -> Unit = {},
 ) = coroutineScope {
     val channel = asFlow().produceIn0(this)
+
+    coroutineContext.job.invokeOnCompletion {
+        if (channel is Channel<*>) {
+            try {
+                channel.close() // safely closes resource
+            } catch (ignored: Exception) {
+            }
+        }
+    }
     // 'single thread' producer emits chunks to channel
 
     repeat(coroutines) {
