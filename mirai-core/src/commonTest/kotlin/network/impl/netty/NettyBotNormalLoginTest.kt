@@ -16,6 +16,7 @@ import net.mamoe.mirai.internal.network.framework.setSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
+import net.mamoe.mirai.internal.network.handler.selectorLogger
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.network.CustomLoginFailedException
 import org.junit.jupiter.api.Test
@@ -24,7 +25,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 
 internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
-    val selector = KeepAliveNetworkHandlerSelector {
+    val selector = KeepAliveNetworkHandlerSelector(selectorLogger) {
         super.factory.create(createContext(), address)
     }
 

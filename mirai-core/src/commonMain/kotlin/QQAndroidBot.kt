@@ -197,7 +197,8 @@ internal open class QQAndroidBot constructor(
     override fun createNetworkHandler(): NetworkHandler {
         return SelectorNetworkHandler(
             KeepAliveNetworkHandlerSelector(
-                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE)
+                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE),
+                logger = networkLogger.subLogger("Selector")
             ) {
                 val context = NetworkHandlerContextImpl(
                     bot,

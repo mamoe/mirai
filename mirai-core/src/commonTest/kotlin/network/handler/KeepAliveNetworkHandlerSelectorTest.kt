@@ -15,21 +15,24 @@ import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.AbstractKeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
 import kotlin.time.Duration
+
+internal val selectorLogger = MiraiLogger.create("selector")
 
 internal class TestSelector<H : NetworkHandler> :
     AbstractKeepAliveNetworkHandlerSelector<H> {
 
     val createInstance0: () -> H
 
-    constructor(createInstance0: () -> H) : super() {
+    constructor(createInstance0: () -> H) : super(logger = selectorLogger) {
         this.createInstance0 = createInstance0
     }
 
-    constructor(maxAttempts: Int, createInstance0: () -> H) : super(maxAttempts) {
+    constructor(maxAttempts: Int, createInstance0: () -> H) : super(maxAttempts, selectorLogger) {
         this.createInstance0 = createInstance0
     }
 

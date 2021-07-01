@@ -19,10 +19,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
-import net.mamoe.mirai.utils.ExceptionCollector
-import net.mamoe.mirai.utils.systemProp
-import net.mamoe.mirai.utils.toLongUnsigned
-import net.mamoe.mirai.utils.unwrapCancellationException
+import net.mamoe.mirai.utils.*
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -37,6 +34,7 @@ import net.mamoe.mirai.utils.unwrapCancellationException
 // may be replaced with a better name.
 internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandler>(
     private val maxAttempts: Int = DEFAULT_MAX_ATTEMPTS,
+    private val logger: MiraiLogger,
 ) : NetworkHandlerSelector<H> {
 
     init {
@@ -63,6 +61,12 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
     final override suspend fun awaitResumeInstance(): H = AwaitResumeInstance().run()
 
     private inner class AwaitResumeInstance {
+        private inline fun logIfEnabled(block: () -> String) {
+            if (SELECTOR_LOGGING) {
+                logger.debug { "Attempt #$attempted: ${block.invoke()}" }
+            }
+        }
+
         private var attempted: Int = 0
         private var lastNetwork: H? = null
         private val exceptionCollector: ExceptionCollector = object : ExceptionCollector() {
@@ -80,39 +84,55 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
         private tailrec suspend fun runImpl(): H {
             if (attempted >= maxAttempts) {
-                throw exceptionCollector.getLast() ?: MaxAttemptsReachedException(null)
+                logIfEnabled { "Max attempt $maxAttempts reached." }
+                throw exceptionCollector.getLast()?.apply { addSuppressed(MaxAttemptsReachedException(null)) }
+                    ?: MaxAttemptsReachedException(null)
             }
-            if (!currentCoroutineContext().isActive) yield() // throw canonical CancellationException if cancelled
+            if (!currentCoroutineContext().isActive) {
+                logIfEnabled { "Cancellation detected." }
+                yield() // throw canonical CancellationException if cancelled
+            }
             val current = getCurrentInstanceOrNull()
             lastNetwork = current
 
             suspend fun H.resumeInstanceCatchingException() {
+                logIfEnabled { "Try resumeConnection" }
                 try {
                     resumeConnection() // once finished, it should has been LOADING or OK
                 } catch (e: LoginFailedException) {
+                    logIfEnabled { "... failed with LoginFailedException $e" }
+                    logIfEnabled { "CLOSING SELECTOR" }
                     close(e)
+                    logIfEnabled { "... CLOSED" }
                     if (e is RetryLaterException) {
                         return
                     }
                     // LoginFailedException is not resumable
                     exceptionCollector.collectThrow(e)
                 } catch (e: Exception) {
+                    logIfEnabled { "... failed with $e" }
+                    logIfEnabled { "CLOSING SELECTOR" }
                     close(e)
+                    logIfEnabled { "... CLOSED" }
                     // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
                     // so that duplicated exceptions are ignored in logging
                 }
             }
 
+            logIfEnabled { "current.state = ${current?.state}" }
             return if (current != null) {
                 when (current.state) {
                     NetworkHandler.State.CLOSED -> {
                         if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
+                            logIfEnabled { "... Set current to null." }
                             // invalidate the instance and try again.
 
                             val lastFailure = current.getLastFailure()?.unwrapCancellationException()
+                            logIfEnabled { "...    Last failure was $lastFailure." }
                             exceptionCollector.collectException(lastFailure)
                         }
                         if (attempted > 1) {
+                            logIfEnabled { "... Delaying ${RECONNECT_DELAY.millisToHumanReadableString()}." }
                             delay(RECONNECT_DELAY) // make it slower to avoid massive reconnection on network failure.
                         }
                         attempted += 1
@@ -125,15 +145,19 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         return runImpl() // does not count for an attempt.
                     }
                     NetworkHandler.State.LOADING -> {
+                        logIfEnabled { "RETURN" }
                         return current
                     }
                     NetworkHandler.State.OK -> {
                         current.resumeInstanceCatchingException()
+                        logIfEnabled { "RETURN" }
                         return current
                     }
                 }
             } else {
+                logIfEnabled { "Creating new instance." }
                 refreshInstance()
+                logIfEnabled { "... Created." }
                 runImpl() // directly retry, does not count for attempts.
             }
         }
@@ -156,22 +180,29 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
          */
         @JvmField
         var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000)
+
+        @JvmField
+        var SELECTOR_LOGGING = systemProp("mirai.network.handle.selector.logging", false)
     }
 }
 
 @Suppress("FunctionName")
 internal fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(
     maxAttempts: Int,
+    logger: MiraiLogger,
     createInstance: () -> H,
 ): AbstractKeepAliveNetworkHandlerSelector<H> {
-    return object : AbstractKeepAliveNetworkHandlerSelector<H>(maxAttempts) {
+    return object : AbstractKeepAliveNetworkHandlerSelector<H>(maxAttempts, logger) {
         override fun createInstance(): H = createInstance()
     }
 }
 
 @Suppress("FunctionName")
-internal inline fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(crossinline createInstance: () -> H): AbstractKeepAliveNetworkHandlerSelector<H> {
-    return object : AbstractKeepAliveNetworkHandlerSelector<H>() {
+internal inline fun <H : NetworkHandler> KeepAliveNetworkHandlerSelector(
+    logger: MiraiLogger,
+    crossinline createInstance: () -> H,
+): AbstractKeepAliveNetworkHandlerSelector<H> {
+    return object : AbstractKeepAliveNetworkHandlerSelector<H>(logger = logger) {
         override fun createInstance(): H = createInstance()
     }
 }

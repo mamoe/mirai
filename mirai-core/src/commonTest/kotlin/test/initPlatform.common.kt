@@ -34,6 +34,7 @@ abstract class AbstractTest {
         System.setProperty("mirai.debug.network.state.observer.logging", "true")
         System.setProperty("mirai.debug.network.show.all.components", "true")
         System.setProperty("mirai.debug.network.show.components.creation.stacktrace", "true")
+        System.setProperty("mirai.network.handle.selector.logging", "true")
 
     }
 
