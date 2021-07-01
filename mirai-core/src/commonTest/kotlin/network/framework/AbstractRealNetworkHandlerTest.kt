@@ -55,7 +55,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         }
     }
 
-    open val networkLogger = MiraiLogger.TopLevel
+    open val networkLogger = MiraiLogger.create("network")
 
     sealed class NHEvent {
         object Login : NHEvent()
@@ -110,9 +110,10 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
 
         set(BotInitProcessor, object : BotInitProcessor {
             override fun setLoginHalted() {
+                nhEvents.add(NHEvent.SetLoginHalted)
             }
 
-            override suspend fun init(scope: CoroutineScope) {
+            override suspend fun init() {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
             }
