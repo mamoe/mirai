@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.*
 internal class ReserveUinInfo(
     val imgType: ByteArray,
     val imgFormat: ByteArray,
-    val imgUrl: ByteArray
+    val imgUrl: ByteArray,
 ) {
     override fun toString(): String {
         return "ReserveUinInfo(imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()})"
@@ -32,7 +32,7 @@ internal class WFastLoginInfo(
     var adUrl: String = "",
     var iconUrl: String = "",
     var profileUrl: String = "",
-    var userJson: String = ""
+    var userJson: String = "",
 ) {
     override fun toString(): String {
         return "WFastLoginInfo(outA1=$outA1, adUrl='$adUrl', iconUrl='$iconUrl', profileUrl='$profileUrl', userJson='$userJson')"
@@ -45,7 +45,7 @@ internal class WLoginSimpleInfo(
     val imgType: ByteArray,
     val imgFormat: ByteArray,
     val imgUrl: ByteArray,
-    val mainDisplayName: ByteArray
+    val mainDisplayName: ByteArray,
 ) {
     override fun toString(): String {
         return "WLoginSimpleInfo(uin=$uin, imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
@@ -57,7 +57,7 @@ internal class LoginExtraData(
     val uin: Long,
     val ip: ByteArray,
     val time: Int,
-    val version: Int
+    val version: Int,
 ) {
     override fun toString(): String {
         return "LoginExtraData(uin=$uin, ip=${ip.toUHexString()}, time=$time, version=$version)"
@@ -122,16 +122,16 @@ internal data class WLoginSigInfo(
     var wtSessionTicket: KeyWithCreationTime,
     var wtSessionTicketKey: ByteArray,
     var deviceToken: ByteArray,
-    var encryptedDownloadSession: EncryptedDownloadSession? = null
+    var encryptedDownloadSession: EncryptedDownloadSession? = null,
 ) {
 
     //图片加密下载
     //是否加密从bigdatachannel处得知
     @Serializable
     internal class EncryptedDownloadSession(
-        val appId: Long,//1600000226L
+        val appId: Long, //1600000226L
         val stKey: ByteArray,
-        val stSig: ByteArray
+        val stSig: ByteArray,
     )
 
     override fun toString(): String {
@@ -147,7 +147,7 @@ internal fun parsePSKeyMapAndPt4TokenMap(
     creationTime: Long,
     expireTime: Long,
     outPSKeyMap: PSKeyMap,
-    outPt4TokenMap: Pt4TokenMap
+    outPt4TokenMap: Pt4TokenMap,
 ) =
     data.read {
         repeat(readShort().toInt()) {
@@ -166,7 +166,7 @@ internal fun parsePSKeyMapAndPt4TokenMap(
 internal open class KeyWithExpiry(
     @SerialName("data1") override val data: ByteArray,
     @SerialName("creationTime1") override val creationTime: Long,
-    val expireTime: Long
+    val expireTime: Long,
 ) : KeyWithCreationTime(data, creationTime) {
     override fun toString(): String {
         return "KeyWithExpiry(data=${data.toUHexString()}, creationTime=$creationTime)"
@@ -176,7 +176,7 @@ internal open class KeyWithExpiry(
 @Serializable
 internal open class KeyWithCreationTime(
     open val data: ByteArray,
-    open val creationTime: Long
+    open val creationTime: Long,
 ) {
     override fun toString(): String {
         return "KeyWithCreationTime(data=${data.toUHexString()}, creationTime=$creationTime)"

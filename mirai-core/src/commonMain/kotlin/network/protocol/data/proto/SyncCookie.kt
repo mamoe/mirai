@@ -22,13 +22,13 @@ import kotlin.random.Random
 internal class SyncCookie(
     @ProtoNumber(1) @JvmField val time1: Long? = null, // 1580277992
     @ProtoNumber(2) @JvmField val time: Long, // 1580277992
-    @ProtoNumber(3) @JvmField val unknown1: Long = Random.nextLong().absoluteValue,// 678328038
+    @ProtoNumber(3) @JvmField val unknown1: Long = Random.nextLong().absoluteValue, // 678328038
     @ProtoNumber(4) @JvmField val unknown2: Long = Random.nextLong().absoluteValue, // 1687142153
     @ProtoNumber(5) @JvmField val const1: Long = const1_, // 1458467940
     @ProtoNumber(11) @JvmField val const2: Long = const2_, // 2683038258
     @ProtoNumber(12) @JvmField val unknown3: Long = 0x1d,
     @ProtoNumber(13) @JvmField val lastSyncTime: Long? = null,
-    @ProtoNumber(14) @JvmField val unknown4: Long = 0
+    @ProtoNumber(14) @JvmField val unknown4: Long = 0,
 ) : ProtoBuf
 
 private val const1_: Long = Random.nextLong().absoluteValue

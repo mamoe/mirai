@@ -10,5 +10,5 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 internal data class MaxAttemptsReachedException(
-    override val cause: Throwable?
+    override val cause: Throwable?,
 ) : IllegalStateException("Failed to resume instance. Maximum attempts reached.")

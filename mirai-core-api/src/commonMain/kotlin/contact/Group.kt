@@ -158,7 +158,6 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
         this.sendMessage(message.toPlainText())
 
 
-
     /**
      * 将一条消息设置为群精华消息, 需要管理员或群主权限.
      * 操作成功返回 `true`.

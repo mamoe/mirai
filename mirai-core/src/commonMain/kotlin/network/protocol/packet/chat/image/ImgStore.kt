@@ -106,14 +106,17 @@ internal class ImgStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            val resp = resp0.msgTryupImgRsp.firstOrNull() ?: error("cannot find `msgTryupImgRsp` from `Cmd0x388.RspBody`")
+            val resp =
+                resp0.msgTryupImgRsp.firstOrNull() ?: error("cannot find `msgTryupImgRsp` from `Cmd0x388.RspBody`")
             return when {
                 resp.result != 0 -> Response.Failed(resultCode = resp.result, message = resp.failMsg)
                 resp.boolFileExit -> Response.FileExists(fileId = resp.fileid, fileInfo = resp.msgImgInfo!!)
-                else -> Response.RequireUpload(fileId = resp.fileid,
+                else -> Response.RequireUpload(
+                    fileId = resp.fileid,
                     uKey = resp.upUkey,
                     uploadIpList = resp.uint32UpIp,
-                    uploadPortList = resp.uint32UpPort)
+                    uploadPortList = resp.uint32UpPort
+                )
             }
         }
     }

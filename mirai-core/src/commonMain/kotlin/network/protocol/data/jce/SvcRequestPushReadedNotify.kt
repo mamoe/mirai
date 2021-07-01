@@ -20,7 +20,7 @@ internal class SvcRequestPushReadedNotify(
     @JvmField @TarsId(0) val notifyType: Byte,
     @JvmField @TarsId(1) val vC2CReadedNotify: List<C2CMsgReadedNotify>? = null,
     @JvmField @TarsId(2) val vGroupReadedNotify: List<GroupMsgReadedNotify>? = null,
-    @JvmField @TarsId(3) val vDisReadedNotify: List<DisMsgReadedNotify>? = null
+    @JvmField @TarsId(3) val vDisReadedNotify: List<DisMsgReadedNotify>? = null,
 ) : JceStruct
 
 
@@ -30,7 +30,7 @@ internal class C2CMsgReadedNotify(
     @JvmField @TarsId(1) val lastReadTime: Long? = null,
     @JvmField @TarsId(2) val flag: Long? = null,
     @JvmField @TarsId(3) val phoneNum: String? = "",
-    @JvmField @TarsId(4) val bindedUin: Long? = null
+    @JvmField @TarsId(4) val bindedUin: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -38,14 +38,14 @@ internal class DisMsgReadedNotify(
     @JvmField @TarsId(0) val disUin: Long? = null,
     @JvmField @TarsId(1) val opType: Long? = null,
     @JvmField @TarsId(2) val memberSeq: Long? = null,
-    @JvmField @TarsId(3) val disMsgSeq: Long? = null
+    @JvmField @TarsId(3) val disMsgSeq: Long? = null,
 ) : JceStruct
 
 
 @Serializable
 internal class GPicInfo(
     @JvmField @TarsId(0) val vPath: ByteArray,
-    @JvmField @TarsId(1) val vHost: ByteArray? = null
+    @JvmField @TarsId(1) val vHost: ByteArray? = null,
 ) : JceStruct
 
 
@@ -55,7 +55,7 @@ internal class GroupMsgHead(
     @JvmField @TarsId(1) val totalPkg: Byte,
     @JvmField @TarsId(2) val curPkg: Byte,
     @JvmField @TarsId(3) val usPkgSeq: Int,
-    @JvmField @TarsId(4) val dwReserved: Long
+    @JvmField @TarsId(4) val dwReserved: Long,
 ) : JceStruct
 
 @Serializable
@@ -63,7 +63,7 @@ internal class GroupMsgReadedNotify(
     @JvmField @TarsId(0) val groupCode: Long? = null,
     @JvmField @TarsId(1) val opType: Long? = null,
     @JvmField @TarsId(2) val memberSeq: Long? = null,
-    @JvmField @TarsId(3) val groupMsgSeq: Long? = null
+    @JvmField @TarsId(3) val groupMsgSeq: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -89,6 +89,6 @@ internal class RequestPushGroupMsg(
     @JvmField @TarsId(18) val stGroupMsgHead: GroupMsgHead? = null,
     @JvmField @TarsId(19) val wUserActive: Int? = null,
     @JvmField @TarsId(20) val vMarketFace: List<MarketFaceInfo>? = null,
-    @JvmField @TarsId(21) val uSuperQQBubbleId: Long? = null
+    @JvmField @TarsId(21) val uSuperQQBubbleId: Long? = null,
 ) : JceStruct
 

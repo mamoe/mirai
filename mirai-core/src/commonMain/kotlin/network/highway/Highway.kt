@@ -118,7 +118,7 @@ internal object Highway {
 }
 
 internal enum class ResourceKind(
-    private val display: String
+    private val display: String,
 ) {
     PRIVATE_IMAGE("private image"),
     GROUP_IMAGE("group image"),
@@ -135,7 +135,7 @@ internal enum class ResourceKind(
 }
 
 internal enum class ChannelKind(
-    private val display: String
+    private val display: String,
 ) {
     HIGHWAY("Highway"),
     HTTP("Http")
@@ -150,7 +150,7 @@ internal suspend inline fun <reified R, reified IP> tryServersUpload(
     resourceSize: Long,
     resourceKind: ResourceKind,
     channelKind: ChannelKind,
-    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R,
 ) = servers.retryWithServers(
     (resourceSize * 1000 / 1024 / 10).coerceAtLeast(5000),
     onFail = { throw IllegalStateException("cannot upload $resourceKind, failed on all servers.", it) }
@@ -185,7 +185,7 @@ internal suspend inline fun <reified R> tryServersDownload(
     servers: Collection<Pair<Int, Int>>,
     resourceKind: ResourceKind,
     channelKind: ChannelKind,
-    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R,
 ) = servers.retryWithServers(
     5000,
     onFail = { throw IllegalStateException("cannot download $resourceKind, failed on all servers.", it) }
@@ -200,7 +200,7 @@ internal suspend inline fun <reified R> tryDownload(
     times: Int = 1,
     resourceKind: ResourceKind,
     channelKind: ChannelKind,
-    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R,
 ) = retryCatching(times) {
     tryDownloadImplEach(bot, channelKind, resourceKind, host, port, implOnEachServer)
 }.getOrElse { throw IllegalStateException("Cannot download $resourceKind", it) }
@@ -212,7 +212,7 @@ private suspend inline fun <reified R> tryDownloadImplEach(
     resourceKind: ResourceKind,
     host: String,
     port: Int,
-    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R
+    crossinline implOnEachServer: suspend (ip: String, port: Int) -> R,
 ): R {
     bot.network.logger.verbose {
         "[${channelKind}] Downloading $resourceKind from ${host}:$port"
@@ -237,7 +237,7 @@ private suspend inline fun <reified R> tryDownloadImplEach(
 
 internal suspend fun ChunkedFlowSession<ByteReadPacket>.sendSequentially(
     socket: PlatformSocket,
-    respCallback: (resp: CSDataHighwayHead.RspDataHighwayHead) -> Unit = {}
+    respCallback: (resp: CSDataHighwayHead.RspDataHighwayHead) -> Unit = {},
 ) {
     contract { callsInPlace(respCallback, InvocationKind.UNKNOWN) }
     useAll {
@@ -299,7 +299,7 @@ internal interface HighwayProtocolChannel {
 //            }
 
 internal class SynchronousHighwayProtocolChannel(
-    val action: suspend (ByteReadPacket) -> ByteArray
+    val action: suspend (ByteReadPacket) -> ByteArray,
 ) : HighwayProtocolChannel {
     @Volatile
     var result: ByteArray? = null

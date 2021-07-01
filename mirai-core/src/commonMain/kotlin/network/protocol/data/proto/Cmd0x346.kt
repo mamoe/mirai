@@ -21,7 +21,7 @@ internal class Cmd0x346 : ProtoBuf {
     internal class AddrList(
         @JvmField @ProtoNumber(2) val strIp: List<String> = emptyList(),
         @JvmField @ProtoNumber(3) val strDomain: String = "",
-        @JvmField @ProtoNumber(4) val port: Int = 0
+        @JvmField @ProtoNumber(4) val port: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -30,7 +30,7 @@ internal class Cmd0x346 : ProtoBuf {
     @Serializable
     internal class ApplyCleanTrafficRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(20) val retMsg: String = ""
+        @JvmField @ProtoNumber(20) val retMsg: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -45,7 +45,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(80) val fileSize: Long = 0L,
         @JvmField @ProtoNumber(90) val fileName: String = "",
         @JvmField @ProtoNumber(100) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(110) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(110) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -53,7 +53,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
         @JvmField @ProtoNumber(30) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(40) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(40) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -65,27 +65,27 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(50) val fileSize: Long = 0L,
         @JvmField @ProtoNumber(60) val fileName: String = "",
         @JvmField @ProtoNumber(70) val localFilepath: String = "",
-        @JvmField @ProtoNumber(80) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(80) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class ApplyCopyToRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
-        @JvmField @ProtoNumber(30) val fileKey: String = ""
+        @JvmField @ProtoNumber(30) val fileKey: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class ApplyDownloadAbsReq(
         @JvmField @ProtoNumber(10) val uin: Long = 0L,
-        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class ApplyDownloadAbsRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
-        @JvmField @ProtoNumber(30) val msgDownloadInfo: Cmd0x346.DownloadInfo? = null
+        @JvmField @ProtoNumber(30) val msgDownloadInfo: Cmd0x346.DownloadInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -94,7 +94,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(30) val ownerType: Int = 0,
         @JvmField @ProtoNumber(500) val extUintype: Int = 0,
-        @JvmField @ProtoNumber(501) val needHttpsUrl: Int = 0
+        @JvmField @ProtoNumber(501) val needHttpsUrl: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -102,7 +102,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
         @JvmField @ProtoNumber(30) val msgDownloadInfo: Cmd0x346.DownloadInfo? = null,
-        @JvmField @ProtoNumber(40) val msgFileInfo: Cmd0x346.FileInfo? = null
+        @JvmField @ProtoNumber(40) val msgFileInfo: Cmd0x346.FileInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -111,7 +111,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(20) val recverUin: Long = 0L,
         @JvmField @ProtoNumber(30) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(40) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(50) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(50) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -120,7 +120,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(20) val retMsg: String = "",
         @JvmField @ProtoNumber(30) val totalSpace: Long = 0L,
         @JvmField @ProtoNumber(40) val usedSpace: Long = 0L,
-        @JvmField @ProtoNumber(50) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(50) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -133,14 +133,14 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(30) val useFileSize: Long = 0L,
         @JvmField @ProtoNumber(40) val useFileNum: Int = 0,
         @JvmField @ProtoNumber(50) val allFileSize: Long = 0L,
-        @JvmField @ProtoNumber(60) val allFileNum: Int = 0
+        @JvmField @ProtoNumber(60) val allFileNum: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class ApplyListDownloadReq(
         @JvmField @ProtoNumber(10) val uin: Long = 0L,
         @JvmField @ProtoNumber(20) val beginIndex: Int = 0,
-        @JvmField @ProtoNumber(30) val reqCount: Int = 0
+        @JvmField @ProtoNumber(30) val reqCount: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -151,7 +151,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(40) val beginIndex: Int = 0,
         @JvmField @ProtoNumber(50) val rspCount: Int = 0,
         @JvmField @ProtoNumber(60) val isEnd: Int = 0,
-        @JvmField @ProtoNumber(70) val msgFileList: List<Cmd0x346.FileInfo> = emptyList()
+        @JvmField @ProtoNumber(70) val msgFileList: List<Cmd0x346.FileInfo> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
@@ -163,7 +163,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(50) val _10mMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(60) val localFilepath: String = "",
         @JvmField @ProtoNumber(70) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(80) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(80) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -177,7 +177,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(70) val sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(80) val localFilepath: String = "",
         @JvmField @ProtoNumber(90) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(100) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(100) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -190,7 +190,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(60) val sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(70) val localFilepath: String = "",
         @JvmField @ProtoNumber(80) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -204,7 +204,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(70) val uploadKey: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(80) val totalSpace: Long = 0L,
         @JvmField @ProtoNumber(90) val usedSpace: Long = 0L,
-        @JvmField @ProtoNumber(100) val uploadDns: String = ""
+        @JvmField @ProtoNumber(100) val uploadDns: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -220,7 +220,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(90) val usedSpace: Long = 0L,
         @JvmField @ProtoNumber(100) val uploadHttpsPort: Int = 443,
         @JvmField @ProtoNumber(110) val uploadHttpsDomain: String = "",
-        @JvmField @ProtoNumber(120) val uploadDns: String = ""
+        @JvmField @ProtoNumber(120) val uploadDns: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -234,7 +234,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(70) val uploadKey: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(80) val totalSpace: Long = 0L,
         @JvmField @ProtoNumber(90) val usedSpace: Long = 0L,
-        @JvmField @ProtoNumber(100) val uploadDns: String = ""
+        @JvmField @ProtoNumber(100) val uploadDns: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -247,7 +247,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(60) val _10mMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(70) val localFilepath: String = "",
         @JvmField @ProtoNumber(80) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -260,7 +260,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(60) val _3sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(70) val localFilepath: String = "",
         @JvmField @ProtoNumber(80) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -273,7 +273,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(60) val sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(70) val localFilepath: String = "",
         @JvmField @ProtoNumber(80) val dangerLevel: Int = 0,
-        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L
+        @JvmField @ProtoNumber(90) val totalSpace: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -291,7 +291,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(110) val boolFileExist: Boolean = false,
         @JvmField @ProtoNumber(120) val packSize: Int = 0,
         @JvmField @ProtoNumber(130) val strUploadipList: List<String> = emptyList(),
-        @JvmField @ProtoNumber(140) val uploadDns: String = ""
+        @JvmField @ProtoNumber(140) val uploadDns: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -314,7 +314,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(142) val uploadHttpsPort: Int = 443,
         @JvmField @ProtoNumber(143) val uploadHttpsDomain: String = "",
         @JvmField @ProtoNumber(150) val uploadDns: String = "",
-        @JvmField @ProtoNumber(160) val uploadLanip: String = ""
+        @JvmField @ProtoNumber(160) val uploadLanip: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -335,7 +335,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(140) val uploadHttpsPort: Int = 443,
         @JvmField @ProtoNumber(150) val uploadHttpsDomain: String = "",
         @JvmField @ProtoNumber(160) val uploadDns: String = "",
-        @JvmField @ProtoNumber(170) val uploadLanip: String = ""
+        @JvmField @ProtoNumber(170) val uploadLanip: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -343,13 +343,13 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(10) val uin: Long = 0L,
         @JvmField @ProtoNumber(20) val peerUin: Long = 0L,
         @JvmField @ProtoNumber(30) val deleteType: Int = 0,
-        @JvmField @ProtoNumber(40) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(40) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class DeleteFileRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(20) val retMsg: String = ""
+        @JvmField @ProtoNumber(20) val retMsg: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -358,7 +358,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(2) val uinReceiver: Long = 0L,
         @JvmField @ProtoNumber(10) val msgTime: Int = 0,
         @JvmField @ProtoNumber(20) val msgRandom: Int = 0,
-        @JvmField @ProtoNumber(30) val msgSeqNo: Int = 0
+        @JvmField @ProtoNumber(30) val msgSeqNo: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -372,20 +372,20 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(70) val cookie: String = "",
         @JvmField @ProtoNumber(80) val httpsPort: Int = 443,
         @JvmField @ProtoNumber(90) val httpsDownloadDomain: String = "",
-        @JvmField @ProtoNumber(110) val downloadDns: String = ""
+        @JvmField @ProtoNumber(110) val downloadDns: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class DownloadSuccReq(
         @JvmField @ProtoNumber(10) val uin: Long = 0L,
-        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class DownloadSuccRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
-        @JvmField @ProtoNumber(30) val int32DownStat: Int = 0
+        @JvmField @ProtoNumber(30) val int32DownStat: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -406,7 +406,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(90800) val pttTime: Int = 0,
         @JvmField @ProtoNumber(90900) val bdhCmdid: Int = 0,
         @JvmField @ProtoNumber(91000) val reqTransferType: Int = 0,
-        @JvmField @ProtoNumber(91100) val isAuto: Int = 0
+        @JvmField @ProtoNumber(91100) val isAuto: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -414,7 +414,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(1) val transferType: Int = 0,
         @JvmField @ProtoNumber(2) val channelType: Int = 0,
         @JvmField @ProtoNumber(3) val allowRetry: Int = 0,
-        @JvmField @ProtoNumber(4) val serverAddrIpv6List: Cmd0x346.AddrList? = null
+        @JvmField @ProtoNumber(4) val serverAddrIpv6List: Cmd0x346.AddrList? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -432,39 +432,39 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(110) val clientType: Int = 0,
         @JvmField @ProtoNumber(120) val ownerUin: Long = 0L,
         @JvmField @ProtoNumber(121) val peerUin: Long = 0L,
-        @JvmField @ProtoNumber(130) val expireTime: Int = 0
+        @JvmField @ProtoNumber(130) val expireTime: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class FileQueryReq(
         @JvmField @ProtoNumber(10) val uin: Long = 0L,
-        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(20) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class FileQueryRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
-        @JvmField @ProtoNumber(30) val msgFileInfo: Cmd0x346.FileInfo? = null
+        @JvmField @ProtoNumber(30) val msgFileInfo: Cmd0x346.FileInfo? = null,
     ) : ProtoBuf
 
     @Serializable
     internal class RecallFileReq(
         @JvmField @ProtoNumber(1) val uin: Long = 0L,
-        @JvmField @ProtoNumber(2) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(2) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class RecallFileRsp(
         @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = ""
+        @JvmField @ProtoNumber(2) val retMsg: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class RecvListQueryReq(
         @JvmField @ProtoNumber(1) val uin: Long = 0L,
         @JvmField @ProtoNumber(2) val beginIndex: Int = 0,
-        @JvmField @ProtoNumber(3) val reqCount: Int = 0
+        @JvmField @ProtoNumber(3) val reqCount: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -475,20 +475,20 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(4) val beginIndex: Int = 0,
         @JvmField @ProtoNumber(5) val rspFileCount: Int = 0,
         @JvmField @ProtoNumber(6) val isEnd: Int = 0,
-        @JvmField @ProtoNumber(7) val msgFileList: List<Cmd0x346.FileInfo> = emptyList()
+        @JvmField @ProtoNumber(7) val msgFileList: List<Cmd0x346.FileInfo> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
     internal class RenewFileReq(
         @JvmField @ProtoNumber(1) val uin: Long = 0L,
         @JvmField @ProtoNumber(2) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(3) val addTtl: Int = 0
+        @JvmField @ProtoNumber(3) val addTtl: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class RenewFileRsp(
         @JvmField @ProtoNumber(1) val int32RetCode: Int = 0,
-        @JvmField @ProtoNumber(2) val retMsg: String = ""
+        @JvmField @ProtoNumber(2) val retMsg: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -519,7 +519,7 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(90000) val msgApplyCopyToReq: Cmd0x346.ApplyCopyToReq? = null,
         @JvmField @ProtoNumber(90001) val msgApplyCleanTrafficReq: Cmd0x346.ApplyCleanTrafficReq? = null,
         @JvmField @ProtoNumber(90002) val msgApplyGetTrafficReq: Cmd0x346.ApplyGetTrafficReq? = null,
-        @JvmField @ProtoNumber(99999) val msgExtensionReq: Cmd0x346.ExtensionReq? = null
+        @JvmField @ProtoNumber(99999) val msgExtensionReq: Cmd0x346.ExtensionReq? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -548,14 +548,14 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(90000) val msgApplyCopyToRsp: Cmd0x346.ApplyCopyToRsp? = null,
         @JvmField @ProtoNumber(90001) val msgApplyCleanTrafficRsp: Cmd0x346.ApplyCleanTrafficRsp? = null,
         @JvmField @ProtoNumber(90002) val msgApplyGetTrafficRsp: Cmd0x346.ApplyGetTrafficRsp? = null,
-        @JvmField @ProtoNumber(99999) val msgExtensionRsp: Cmd0x346.ExtensionRsp? = null
+        @JvmField @ProtoNumber(99999) val msgExtensionRsp: Cmd0x346.ExtensionRsp? = null,
     ) : ProtoBuf
 
     @Serializable
     internal class SendListQueryReq(
         @JvmField @ProtoNumber(1) val uin: Long = 0L,
         @JvmField @ProtoNumber(2) val beginIndex: Int = 0,
-        @JvmField @ProtoNumber(3) val reqCount: Int = 0
+        @JvmField @ProtoNumber(3) val reqCount: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -568,21 +568,21 @@ internal class Cmd0x346 : ProtoBuf {
         @JvmField @ProtoNumber(6) val isEnd: Int = 0,
         @JvmField @ProtoNumber(7) val totLimit: Long = 0L,
         @JvmField @ProtoNumber(8) val usedLimit: Long = 0L,
-        @JvmField @ProtoNumber(9) val msgFileList: List<Cmd0x346.FileInfo> = emptyList()
+        @JvmField @ProtoNumber(9) val msgFileList: List<Cmd0x346.FileInfo> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
     internal class UploadSuccReq(
         @JvmField @ProtoNumber(10) val senderUin: Long = 0L,
         @JvmField @ProtoNumber(20) val recverUin: Long = 0L,
-        @JvmField @ProtoNumber(30) val uuid: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(30) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class UploadSuccRsp(
         @JvmField @ProtoNumber(10) val int32RetCode: Int = 0,
         @JvmField @ProtoNumber(20) val retMsg: String = "",
-        @JvmField @ProtoNumber(30) val msgFileInfo: Cmd0x346.FileInfo? = null
+        @JvmField @ProtoNumber(30) val msgFileInfo: Cmd0x346.FileInfo? = null,
     ) : ProtoBuf
 }
         

@@ -88,7 +88,7 @@ internal fun AccountSecretsImpl(
 }
 
 internal fun AccountSecretsImpl(
-    device: DeviceInfo, account: BotAccount
+    device: DeviceInfo, account: BotAccount,
 ): AccountSecretsImpl {
     return AccountSecretsImpl(
         loginExtraData = CopyOnWriteArraySet(),

@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 @Serializable
 internal class Cmd0x388 : ProtoBuf {
     @Serializable
-internal class DelImgReq(
+    internal class DelImgReq(
         @ProtoNumber(1) @JvmField val srcUin: Long = 0L,
         @ProtoNumber(2) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(3) @JvmField val reqTerm: Int = 0,
@@ -26,40 +26,40 @@ internal class DelImgReq(
         @ProtoNumber(6) @JvmField val buildVer: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(7) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(8) @JvmField val picWidth: Int = 0,
-        @ProtoNumber(9) @JvmField val picHeight: Int = 0
+        @ProtoNumber(9) @JvmField val picHeight: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class DelImgRsp(
+    internal class DelImgRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val failMsg: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(3) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class ExpRoamExtendInfo(
-        @ProtoNumber(1) @JvmField val resid: ByteArray = EMPTY_BYTE_ARRAY
+    internal class ExpRoamExtendInfo(
+        @ProtoNumber(1) @JvmField val resid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class ExpRoamPicInfo(
+    internal class ExpRoamPicInfo(
         @ProtoNumber(1) @JvmField val shopFlag: Int = 0,
         @ProtoNumber(2) @JvmField val pkgId: Int = 0,
-        @ProtoNumber(3) @JvmField val picId: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(3) @JvmField val picId: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class ExtensionCommPicTryUp(
-        @ProtoNumber(1) @JvmField val bytesExtinfo: List<ByteArray> = emptyList()
+    internal class ExtensionCommPicTryUp(
+        @ProtoNumber(1) @JvmField val bytesExtinfo: List<ByteArray> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
-internal class ExtensionExpRoamTryUp(
-        @ProtoNumber(1) @JvmField val msgExproamPicInfo: List<ExpRoamPicInfo> = emptyList()
+    internal class ExtensionExpRoamTryUp(
+        @ProtoNumber(1) @JvmField val msgExproamPicInfo: List<ExpRoamPicInfo> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
-internal class GetImgUrlReq(
+    internal class GetImgUrlReq(
         @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(2) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(3) @JvmField val fileid: Long = 0L,
@@ -79,11 +79,11 @@ internal class GetImgUrlReq(
         @ProtoNumber(17) @JvmField val fileWidth: Int = 0,
         @ProtoNumber(18) @JvmField val picType: Int = 0,
         @ProtoNumber(19) @JvmField val picUpTimestamp: Int = 0,
-        @ProtoNumber(20) @JvmField val reqTransferType: Int = 0
+        @ProtoNumber(20) @JvmField val reqTransferType: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class GetImgUrlRsp(
+    internal class GetImgUrlRsp(
         @ProtoNumber(1) @JvmField val fileid: Long = 0L,
         @ProtoNumber(2) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val result: Int = 0,
@@ -104,11 +104,11 @@ internal class GetImgUrlRsp(
         @ProtoNumber(19) @JvmField val bigThumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(20) @JvmField val httpsUrlFlag: Int = 0,
         @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info> = emptyList(),
-        @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class GetPttUrlReq(
+    internal class GetPttUrlReq(
         @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(2) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(3) @JvmField val fileid: Long = 0L,
@@ -123,11 +123,11 @@ internal class GetPttUrlReq(
         @ProtoNumber(12) @JvmField val codec: Int = 0,
         @ProtoNumber(13) @JvmField val buId: Int = 0,
         @ProtoNumber(14) @JvmField val reqTransferType: Int = 0,
-        @ProtoNumber(15) @JvmField val isAuto: Int = 0
+        @ProtoNumber(15) @JvmField val isAuto: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class GetPttUrlRsp(
+    internal class GetPttUrlRsp(
         @ProtoNumber(1) @JvmField val fileid: Long = 0L,
         @ProtoNumber(2) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val result: Int = 0,
@@ -142,17 +142,17 @@ internal class GetPttUrlRsp(
         @ProtoNumber(12) @JvmField val allowRetry: Int = 0,
         @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(28) @JvmField val strDomain: String = ""
+        @ProtoNumber(28) @JvmField val strDomain: String = "",
     ) : ProtoBuf
 
     @Suppress("ArrayInDataClass")
     @Serializable
-internal class ImgInfo(
+    internal class ImgInfo(
         @ProtoNumber(1) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val fileType: Int = 0,
         @ProtoNumber(3) @JvmField val fileSize: Long = 0L,
         @ProtoNumber(4) @JvmField val fileWidth: Int = 0,
-        @ProtoNumber(5) @JvmField val fileHeight: Int = 0
+        @ProtoNumber(5) @JvmField val fileHeight: Int = 0,
     ) : ProtoBuf {
         override fun toString(): String {
             return "ImgInfo(fileMd5=${fileMd5.contentToString()}, fileType=$fileType, fileSize=$fileSize, fileWidth=$fileWidth, fileHeight=$fileHeight)"
@@ -160,20 +160,20 @@ internal class ImgInfo(
     }
 
     @Serializable
-internal class IPv6Info(
+    internal class IPv6Info(
         @ProtoNumber(1) @JvmField val ip6: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val port: Int = 0
+        @ProtoNumber(2) @JvmField val port: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class PicSize(
+    internal class PicSize(
         @ProtoNumber(1) @JvmField val original: Int = 0,
         @ProtoNumber(2) @JvmField val thumb: Int = 0,
-        @ProtoNumber(3) @JvmField val high: Int = 0
+        @ProtoNumber(3) @JvmField val high: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class ReqBody(
+    internal class ReqBody(
         @ProtoNumber(1) @JvmField val netType: Int = 0,
         @ProtoNumber(2) @JvmField val subcmd: Int = 0,
         @ProtoNumber(3) @JvmField val msgTryupImgReq: List<TryUpImgReq> = emptyList(),
@@ -182,22 +182,22 @@ internal class ReqBody(
         @ProtoNumber(6) @JvmField val msgGetpttUrlReq: List<GetPttUrlReq> = emptyList(),
         @ProtoNumber(7) @JvmField val commandId: Int = 0,
         @ProtoNumber(8) @JvmField val msgDelImgReq: List<DelImgReq> = emptyList(),
-        @ProtoNumber(1001) @JvmField val extension: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(1001) @JvmField val extension: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class RspBody(
+    internal class RspBody(
         @ProtoNumber(1) @JvmField val clientIp: Int = 0,
         @ProtoNumber(2) @JvmField val subcmd: Int = 0,
         @ProtoNumber(3) @JvmField val msgTryupImgRsp: List<TryUpImgRsp> = emptyList(),
         @ProtoNumber(4) @JvmField val msgGetimgUrlRsp: List<GetImgUrlRsp> = emptyList(),
         @ProtoNumber(5) @JvmField val msgTryupPttRsp: List<TryUpPttRsp> = emptyList(),
         @ProtoNumber(6) @JvmField val msgGetpttUrlRsp: List<GetPttUrlRsp> = emptyList(),
-        @ProtoNumber(7) @JvmField val msgDelImgRsp: List<DelImgRsp> = emptyList()
+        @ProtoNumber(7) @JvmField val msgDelImgRsp: List<DelImgRsp> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
-internal class TryUpImgReq(
+    internal class TryUpImgReq(
         @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(2) @JvmField val srcUin: Long = 0L,
         @ProtoNumber(3) @JvmField val fileId: Long = 0L,
@@ -224,11 +224,11 @@ internal class TryUpImgReq(
         @ProtoNumber(17) @JvmField val fileIndex: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(18) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(19) @JvmField val srvUpload: Int = 0,
-        @ProtoNumber(20) @JvmField val transferUrl: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(20) @JvmField val transferUrl: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ImgReq
 
     @Serializable
-internal class TryUpImgRsp(
+    internal class TryUpImgRsp(
         @ProtoNumber(1) @JvmField val fileId: Long = 0L,
         @ProtoNumber(2) @JvmField val result: Int = 0,
         @ProtoNumber(3) @JvmField val failMsg: String = "",
@@ -243,20 +243,20 @@ internal class TryUpImgRsp(
         @ProtoNumber(12) @JvmField val boolNewBigChan: Boolean = false,
         @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(1001) @JvmField val msgInfo4busi: TryUpInfo4Busi? = null
+        @ProtoNumber(1001) @JvmField val msgInfo4busi: TryUpInfo4Busi? = null,
     ) : ProtoBuf
 
     @Serializable
-internal class TryUpInfo4Busi(
+    internal class TryUpInfo4Busi(
         @ProtoNumber(1) @JvmField val downDomain: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val thumbDownUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val originalDownUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val bigDownUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(5) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(5) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class TryUpPttReq(
+    internal class TryUpPttReq(
         @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(2) @JvmField val srcUin: Long = 0L,
         @ProtoNumber(3) @JvmField val fileId: Long = 0L,
@@ -272,11 +272,11 @@ internal class TryUpPttReq(
         @ProtoNumber(13) @JvmField val boolNewUpChan: Boolean = false,
         @ProtoNumber(14) @JvmField val codec: Int = 0,
         @ProtoNumber(15) @JvmField val voiceType: Int = 0,
-        @ProtoNumber(16) @JvmField val buId: Int = 0
+        @ProtoNumber(16) @JvmField val buId: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class TryUpPttRsp(
+    internal class TryUpPttRsp(
         @ProtoNumber(1) @JvmField val fileId: Long = 0L,
         @ProtoNumber(2) @JvmField val result: Int = 0,
         @ProtoNumber(3) @JvmField val failMsg: ByteArray? = null,
@@ -290,6 +290,6 @@ internal class TryUpPttRsp(
         @ProtoNumber(11) @JvmField val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(12) @JvmField val channelType: Int = 0,
         @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
-        @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 }

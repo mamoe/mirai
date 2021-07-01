@@ -31,7 +31,7 @@ internal class RequestPushNotify(
     @TarsId(10) @JvmField val msgCtrlBuf: String?,
     @TarsId(11) @JvmField val serverBuf: ByteArray?,
     @TarsId(12) @JvmField val pingFlag: Long?,
-    @TarsId(13) @JvmField val svrip: Int?
+    @TarsId(13) @JvmField val svrip: Int?,
 ) : JceStruct, Packet {
     override fun toString(): String {
         return "RequestPushNotify(usMsgType=$usMsgType)"
@@ -58,7 +58,7 @@ internal class MsgInfo(
     @TarsId(15) @JvmField val vRemarkOfSender: ByteArray?,
     @TarsId(16) @JvmField val strFromMobile: String?,
     @TarsId(17) @JvmField val strFromName: String?,
-    @TarsId(18) @JvmField val vNickName: List<String>?//,
+    @TarsId(18) @JvmField val vNickName: List<String>?, //,
     //@SerialId(19) @JvmField val stC2CTmpMsgHead: TempMsgHead?
 ) : JceStruct
 
@@ -68,17 +68,17 @@ internal class ShareData(
     @TarsId(0) @JvmField val pkgname: String = "",
     @TarsId(1) @JvmField val msgtail: String = "",
     @TarsId(2) @JvmField val picurl: String = "",
-    @TarsId(3) @JvmField val url: String = ""
+    @TarsId(3) @JvmField val url: String = "",
 ) : JceStruct
 
 @Serializable
 internal class TempMsgHead(
     @TarsId(0) @JvmField val c2c_type: Int? = 0,
-    @TarsId(1) @JvmField val serviceType: Int? = 0
+    @TarsId(1) @JvmField val serviceType: Int? = 0,
 ) : JceStruct
 
 @Serializable
 internal class CPicInfo(
     @TarsId(0) @JvmField val vPath: ByteArray = EMPTY_BYTE_ARRAY,
-    @TarsId(1) @JvmField val vHost: ByteArray? = EMPTY_BYTE_ARRAY
+    @TarsId(1) @JvmField val vHost: ByteArray? = EMPTY_BYTE_ARRAY,
 ) : JceStruct

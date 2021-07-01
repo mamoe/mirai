@@ -35,7 +35,7 @@ internal class GroupSettingsImpl(
         getter: () -> T,
         setter: (T) -> Unit,
         crossinline packetConstructor: (client: QQAndroidClient, groupCode: Long, newValue: T) -> OutgoingPacket,
-        crossinline eventConstructor: (old: T) -> Event
+        crossinline eventConstructor: (old: T) -> Event,
     ) {
         checkBotPermission(MemberPermission.ADMINISTRATOR)
         val oldValue = getter()

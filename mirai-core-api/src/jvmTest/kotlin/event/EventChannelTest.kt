@@ -185,7 +185,7 @@ internal class EventChannelTest : AbstractEventTest() {
         val messageEventChannel = a.filterIsInstance<MessageEvent>()
         // group.asChannel<GroupMessageEvent>()
 
-        val listener: Listener<GroupMessageEvent> = messageEventChannel.subscribeAlways<GroupEvent>() {
+        val listener: Listener<GroupMessageEvent> = messageEventChannel.subscribeAlways<GroupEvent> {
 
         }
 

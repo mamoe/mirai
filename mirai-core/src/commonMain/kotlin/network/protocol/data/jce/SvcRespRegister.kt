@@ -36,10 +36,10 @@ internal class SvcRespRegister(
      */
     @JvmField @TarsId(14) val largeSeqUpdate: Byte = 0,
     @JvmField @TarsId(15) val bytes_0x769_rspBody: ByteArray? = null,
-    @JvmField @TarsId(16) val iStatus: Int? = 0
+    @JvmField @TarsId(16) val iStatus: Int? = 0,
 ) : JceStruct
 
 internal fun FriendListCache.isValid(svcRespRegister: SvcRespRegister): Boolean {
     return svcRespRegister.iLargeSeq == friendListSeq && svcRespRegister.timeStamp == timeStamp
-//    return this.largeSeqUpdate != 0.toByte()
+    //    return this.largeSeqUpdate != 0.toByte()
 }

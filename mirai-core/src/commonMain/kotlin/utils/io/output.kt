@@ -35,7 +35,11 @@ internal inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray
     return byteArray.size
 }
 
-internal inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
+internal inline fun BytePacketBuilder.writeIntLVPacket(
+    tag: UByte? = null,
+    lengthOffset: ((Long) -> Long) = { it },
+    builder: BytePacketBuilder.() -> Unit,
+): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
@@ -44,7 +48,11 @@ internal inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengt
         return length.toInt()
     }
 
-internal inline fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
+internal inline fun BytePacketBuilder.writeShortLVPacket(
+    tag: UByte? = null,
+    lengthOffset: ((Long) -> Long) = { it },
+    builder: BytePacketBuilder.() -> Unit,
+): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)

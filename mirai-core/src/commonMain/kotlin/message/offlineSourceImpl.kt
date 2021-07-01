@@ -109,7 +109,7 @@ internal class OfflineMessageSourceImplData(
 internal fun OfflineMessageSourceImplData(
     bot: Bot,
     delegate: List<MsgComm.Msg>,
-    kind: MessageSourceKind
+    kind: MessageSourceKind,
 ): OfflineMessageSourceImplData {
     val head = delegate.first().msgHead
     return OfflineMessageSourceImplData(

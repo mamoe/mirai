@@ -168,12 +168,12 @@ internal abstract class SendMessageHandler<C : Contact> {
 
                         source = CompletableDeferred(constructSourceForSpecialMessage(finalMessage, 3116))
                     }
-//                    is CommonOidbResponse<*> -> {
-//                        when (resp.toResult("send message").getOrThrow()) {
-//                            is Oidb0x6d9.FeedsRspBody -> {
-//                            }
-//                        }
-//                    }
+                    //                    is CommonOidbResponse<*> -> {
+                    //                        when (resp.toResult("send message").getOrThrow()) {
+                    //                            is Oidb0x6d9.FeedsRspBody -> {
+                    //                            }
+                    //                        }
+                    //                    }
                 }
             }
 
@@ -196,7 +196,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         client: QQAndroidClient,
         message: MessageChain,
         fragmented: Boolean,
-        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
+        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit,
     ): List<OutgoingPacket> {
         message.takeSingleContent<MusicShare>()?.let { musicShare ->
             return listOf(
@@ -230,7 +230,7 @@ internal abstract class SendMessageHandler<C : Contact> {
     ): OnlineMessageSource.Outgoing
 
     open suspend fun uploadLongMessageHighway(
-        chain: MessageChain
+        chain: MessageChain,
     ): String = with(contact) {
         return MiraiImpl.uploadMessageHighway(
             bot, this@SendMessageHandler,
@@ -263,7 +263,7 @@ internal abstract class SendMessageHandler<C : Contact> {
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessages(message: Message): MessageChain {
     suspend fun processForwardMessage(
-        forward: ForwardMessage
+        forward: ForwardMessage,
     ): ForwardMessageInternal {
         if (!(message is MessageChain && message.contains(IgnoreLengthCheck))) {
             check(forward.nodeList.size <= 200) {
@@ -336,7 +336,7 @@ internal sealed class UserSendMessageHandler<C : AbstractUser>(
 
     override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        fromAppId: Int
+        fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
         throw UnsupportedOperationException("Sending MusicShare or FileMessage to User is not yet supported")
     }
@@ -386,7 +386,7 @@ internal class GroupSendMessageHandler(
 
     override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        fromAppId: Int
+        fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
 
         val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =

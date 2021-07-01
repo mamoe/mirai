@@ -21,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
 internal abstract class AbstractMember(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
-    memberInfo: MemberInfo
+    memberInfo: MemberInfo,
 ) : AbstractUser(group.bot, coroutineContext, memberInfo), Member {
     final override val group: GroupImpl by group.unsafeWeakRef()
 

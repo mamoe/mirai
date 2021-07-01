@@ -179,7 +179,7 @@ public interface LowLevelApiAccessor {
         groupId: Long,
         image: GroupAnnouncementImage,
         announcement: GroupAnnouncement
-    ):String
+    ): String
 
     /**
      * 删除群公告

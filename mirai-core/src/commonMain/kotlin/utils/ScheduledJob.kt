@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 internal class ScheduledJob(
     coroutineContext: CoroutineContext,
     private val intervalMillis: Long,
-    private val task: suspend () -> Unit
+    private val task: suspend () -> Unit,
 ) : CoroutineScope by CoroutineScope(coroutineContext + SupervisorJob(coroutineContext[Job])) {
     private val coroutineExceptionHandler =
         coroutineContext[CoroutineExceptionHandler].also {

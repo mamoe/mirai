@@ -22,7 +22,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val parentFolderId: String = "",
-        @JvmField @ProtoNumber(4) val folderName: String = ""
+        @JvmField @ProtoNumber(4) val folderName: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -30,21 +30,21 @@ internal class Oidb0x6d7 : ProtoBuf {
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
-        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null
+        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null,
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
     internal class DeleteFolderReqBody(
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val appId: Int = 0,
-        @JvmField @ProtoNumber(3) val folderId: String = ""
+        @JvmField @ProtoNumber(3) val folderId: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class DeleteFolderRspBody(
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
-        @JvmField @ProtoNumber(3) val clientWording: String = ""
+        @JvmField @ProtoNumber(3) val clientWording: String = "",
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -53,7 +53,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val folderId: String = "",
         @JvmField @ProtoNumber(4) val parentFolderId: String = "",
-        @JvmField @ProtoNumber(5) val destFolderId: String = ""
+        @JvmField @ProtoNumber(5) val destFolderId: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -61,7 +61,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
-        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null
+        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null,
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -69,7 +69,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val folderId: String = "",
-        @JvmField @ProtoNumber(4) val newFolderName: String = ""
+        @JvmField @ProtoNumber(4) val newFolderName: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -77,7 +77,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
-        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null
+        @JvmField @ProtoNumber(4) val folderInfo: GroupFileCommon.FolderInfo? = null,
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -85,7 +85,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @JvmField @ProtoNumber(1) val createFolderReq: CreateFolderReqBody? = null,
         @JvmField @ProtoNumber(2) val deleteFolderReq: DeleteFolderReqBody? = null,
         @JvmField @ProtoNumber(3) val renameFolderReq: RenameFolderReqBody? = null,
-        @JvmField @ProtoNumber(4) val moveFolderReq: MoveFolderReqBody? = null
+        @JvmField @ProtoNumber(4) val moveFolderReq: MoveFolderReqBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -93,7 +93,7 @@ internal class Oidb0x6d7 : ProtoBuf {
         @JvmField @ProtoNumber(1) val createFolderRsp: CreateFolderRspBody? = null,
         @JvmField @ProtoNumber(2) val deleteFolderRsp: DeleteFolderRspBody? = null,
         @JvmField @ProtoNumber(3) val renameFolderRsp: RenameFolderRspBody? = null,
-        @JvmField @ProtoNumber(4) val moveFolderRsp: MoveFolderRspBody? = null
+        @JvmField @ProtoNumber(4) val moveFolderRsp: MoveFolderRspBody? = null,
     ) : ProtoBuf
 }
         

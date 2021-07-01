@@ -13,5 +13,5 @@ import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 
 internal data class NettyChannelException(
     override val message: String? = null,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : NetworkException(true)

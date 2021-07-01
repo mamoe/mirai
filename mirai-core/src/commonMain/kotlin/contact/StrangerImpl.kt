@@ -20,7 +20,9 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.asFriendOrNull
 import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.event.events.StrangerMessagePostSendEvent
 import net.mamoe.mirai.event.events.StrangerMessagePreSendEvent
@@ -47,7 +49,7 @@ internal inline fun Stranger.checkIsImpl(): StrangerImpl {
 internal class StrangerImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
-    internal val strangerInfo: StrangerInfo
+    internal val strangerInfo: StrangerInfo,
 ) : Stranger, AbstractUser(bot, coroutineContext, strangerInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)

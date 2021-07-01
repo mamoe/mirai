@@ -22,7 +22,7 @@ internal class RequestMSFForceOffline(
     @TarsId(4) @JvmField val title: String? = "",
     @TarsId(5) @JvmField val sigKick: Byte? = 0,
     @TarsId(6) @JvmField val vecSigKickData: ByteArray? = null,
-    @TarsId(7) @JvmField val sameDevice: Byte? = 0
+    @TarsId(7) @JvmField val sameDevice: Byte? = 0,
 ) : JceStruct
 
 
@@ -30,5 +30,5 @@ internal class RequestMSFForceOffline(
 internal class RspMSFForceOffline(
     @TarsId(0) @JvmField val uin: Long,
     @TarsId(1) @JvmField val seq: Long,
-    @TarsId(2) @JvmField val const: Byte = 0
+    @TarsId(2) @JvmField val const: Byte = 0,
 ) : JceStruct

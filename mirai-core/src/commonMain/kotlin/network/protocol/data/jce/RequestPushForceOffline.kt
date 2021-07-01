@@ -19,5 +19,5 @@ internal class RequestPushForceOffline(
     @TarsId(0) @JvmField val uin: Long,
     @TarsId(1) @JvmField val title: String = "",
     @TarsId(2) @JvmField val tips: String = "",
-    @TarsId(3) @JvmField val sameDevice: Byte? = null
+    @TarsId(3) @JvmField val sameDevice: Byte? = null,
 ) : JceStruct, Packet

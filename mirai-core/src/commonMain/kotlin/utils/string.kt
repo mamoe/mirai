@@ -8,7 +8,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 internal data class MessageData(
     val data: String,
     val cmd: Int,
-    val text: String
+    val text: String,
 )
 
 @Suppress("RegExpRedundantEscape")

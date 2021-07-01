@@ -43,5 +43,5 @@ internal data class SvcReqMSFLoginNotifyData(
     @JvmField @TarsId(5) val info: String? = "",
     @JvmField @TarsId(6) val iProductType: Long? = null,
     @JvmField @TarsId(7) val iClientType: Long? = null,
-    @JvmField @TarsId(8) val vecInstanceList: List<InstanceInfo>? = null
+    @JvmField @TarsId(8) val vecInstanceList: List<InstanceInfo>? = null,
 ) : JceStruct

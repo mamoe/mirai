@@ -47,10 +47,12 @@ internal class BotInitProcessorTest {
             assertEquals(1, p.ranTimes)
             assertEquals(0, p.haltedTimes)
             assertState(NetworkHandler.State.LOADING)
-            network.collectReceived(IncomingPacket(
-                MessageSvcPushForceOffline.commandName,
-                RequestPushForceOffline(bot.uin)
-            ))
+            network.collectReceived(
+                IncomingPacket(
+                    MessageSvcPushForceOffline.commandName,
+                    RequestPushForceOffline(bot.uin)
+                )
+            )
             assertEquals(1, p.ranTimes)
             assertEquals(1, p.haltedTimes)
             eventDispatcher.joinBroadcast()
@@ -82,10 +84,12 @@ internal class BotInitProcessorTest {
             assertEquals(0, p.haltedTimes)
             assertState(NetworkHandler.State.LOADING)
 
-            network.currentInstance().collectReceived(IncomingPacket(
-                MessageSvcPushForceOffline.commandName,
-                RequestPushForceOffline(bot.uin)
-            ))
+            network.currentInstance().collectReceived(
+                IncomingPacket(
+                    MessageSvcPushForceOffline.commandName,
+                    RequestPushForceOffline(bot.uin)
+                )
+            )
             // all jobs launched during `collectReceived` are UNDISPATCHED, `collectReceived` returns on `def.await()` (suspension point)
             // first run is CANCELLED.
 

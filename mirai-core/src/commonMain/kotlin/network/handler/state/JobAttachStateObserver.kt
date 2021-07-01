@@ -31,7 +31,7 @@ internal class JobAttachStateObserver(
     override fun stateChanged0(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         new.launch(CoroutineName(name) + coroutineContext, start = CoroutineStart.UNDISPATCHED) {
             try {

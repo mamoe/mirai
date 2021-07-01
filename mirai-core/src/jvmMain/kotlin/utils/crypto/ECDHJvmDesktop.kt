@@ -15,7 +15,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
-import java.util.*
 import javax.crypto.KeyAgreement
 
 
@@ -26,7 +25,7 @@ internal actual typealias ECDHPublicKey = PublicKey
 
 internal actual class ECDHKeyPairImpl(
     private val delegate: KeyPair,
-    initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key
+    initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key,
 ) : ECDHKeyPair {
     override val privateKey: ECDHPrivateKey get() = delegate.private
     override val publicKey: ECDHPublicKey get() = delegate.public
@@ -85,7 +84,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
 
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
-            publicKey: ECDHPublicKey
+            publicKey: ECDHPublicKey,
         ): ByteArray {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)

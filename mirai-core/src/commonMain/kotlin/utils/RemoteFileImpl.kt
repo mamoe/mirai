@@ -360,12 +360,12 @@ internal class RemoteFileImpl(
                     parentFolderId = info.parentFolderId,
                 ).sendAndExpect(bot).toResult("RemoteFile.delete", checkResp = false).getOrThrow().int32RetCode == 0
             }
-//            recursively -> {
-//                this.listFiles().collect { child ->
-//                    child.delete()
-//                }
-//                this.delete()
-//            }
+            //            recursively -> {
+            //                this.listFiles().collect { child ->
+            //                    child.delete()
+            //                }
+            //                this.delete()
+            //            }
             else -> {
                 // natively 'recursive'
                 FileManagement.DeleteFolder(
@@ -403,14 +403,14 @@ internal class RemoteFileImpl(
             // TODO: 2021/3/4 cross-group file move
 
             //                target.mkdir()
-//                val targetFolderId = target.getIdSmart() ?: return false
-//                this.listFiles().mapNotNull { it.checkIsImpl().getFileFolderInfo() }.collect {
-//                    FileManagement.MoveFile(client, contact.id, it.busId, it.id, it.parentFolderId, targetFolderId)
-//                        .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow()
-//
-//                    // TODO: 2021/3/3 batch packets
-//                }
-//                this.delete() // it is now empty
+            //                val targetFolderId = target.getIdSmart() ?: return false
+            //                this.listFiles().mapNotNull { it.checkIsImpl().getFileFolderInfo() }.collect {
+            //                    FileManagement.MoveFile(client, contact.id, it.busId, it.id, it.parentFolderId, targetFolderId)
+            //                        .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow()
+            //
+            //                    // TODO: 2021/3/3 batch packets
+            //                }
+            //                this.delete() // it is now empty
 
             error("Cross-group file operation is not yet supported.")
         }
@@ -441,7 +441,7 @@ internal class RemoteFileImpl(
 
     private suspend fun upload0(
         resource: ExternalResource,
-        callback: RemoteFile.ProgressionCallback?
+        callback: RemoteFile.ProgressionCallback?,
     ): Oidb0x6d6.UploadFileRspBody? {
         val parent = parent ?: return null
         val parentInfo = parent.getFileFolderInfo() ?: return null
@@ -526,7 +526,7 @@ internal class RemoteFileImpl(
 
     override suspend fun upload(
         resource: ExternalResource,
-        callback: RemoteFile.ProgressionCallback?
+        callback: RemoteFile.ProgressionCallback?,
     ): FileMessage {
         val resp = upload0(resource, null) ?: error("Failed to upload file.")
         return FileMessageImpl(
@@ -563,8 +563,8 @@ internal class RemoteFileImpl(
     override suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
         file.toExternalResource().use { uploadAndSend(it) }
 
-//    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
-//    }
+    //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
+    //    }
 
     override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {
         val info = getFileFolderInfo() ?: return null

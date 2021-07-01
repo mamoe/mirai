@@ -16,7 +16,10 @@ import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.*
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.ReceiveAnnouncement
+import net.mamoe.mirai.data.covertToAnnouncement
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -64,7 +67,7 @@ internal class GroupImpl(
     coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
-    members: Sequence<MemberInfo>
+    members: Sequence<MemberInfo>,
 ) : Group, AbstractContact(bot, coroutineContext) {
     companion object
 

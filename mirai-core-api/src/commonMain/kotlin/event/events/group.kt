@@ -9,7 +9,8 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
+@file:Suppress(
+    "unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
     "MemberVisibilityCanBePrivate"
 )
 
@@ -98,7 +99,8 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
 /**
  * Bot 成功加入了一个新群
  */
-public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent {
+public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent(),
+    GroupMemberInfoChangeEvent {
     public abstract override val group: Group
 
     /**

@@ -13,12 +13,12 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 
 internal class CombinedStateObserver(
-    private val list: List<StateObserver>
+    private val list: List<StateObserver>,
 ) : StateObserver {
     override fun beforeStateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         list.forEach { it.beforeStateChanged(networkHandler, previous, new) }
     }
@@ -26,7 +26,7 @@ internal class CombinedStateObserver(
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         list.forEach { it.stateChanged(networkHandler, previous, new) }
     }
@@ -34,7 +34,7 @@ internal class CombinedStateObserver(
     override fun exceptionOnCreatingNewState(
         networkHandler: NetworkHandlerSupport,
         previousState: NetworkHandlerSupport.BaseStateImpl,
-        exception: Throwable
+        exception: Throwable,
     ) {
         list.forEach { it.exceptionOnCreatingNewState(networkHandler, previousState, exception) }
     }
@@ -46,7 +46,7 @@ internal class CombinedStateObserver(
     override fun afterStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
-        result: Result<Unit>
+        result: Result<Unit>,
     ) {
         list.forEach { it.afterStateResume(networkHandler, state, result) }
     }

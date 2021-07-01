@@ -16,7 +16,8 @@ private val lock = ReentrantLock()
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "CANNOT_OVERRIDE_INVISIBLE_MEMBER")
 internal class SynchronizedStdoutLogger(override val identity: String?) : net.mamoe.mirai.internal.utils.StdoutLogger(
-    identity) {
+    identity
+) {
 
     override val output: (String) -> Unit = { str ->
         lock.withLock { println(str) }

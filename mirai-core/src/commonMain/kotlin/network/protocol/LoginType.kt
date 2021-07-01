@@ -23,6 +23,7 @@ internal value class LoginType(
          * 密码登录
          */
         val PASSWORD = LoginType(1)
+
         /**
          * 微信一键登录
          */

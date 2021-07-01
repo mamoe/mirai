@@ -56,6 +56,7 @@ internal interface ECDHKeyPair {
  */
 internal expect class ECDH(keyPair: ECDHKeyPair) {
     val keyPair: ECDHKeyPair
+
     /**
      * 由 [keyPair] 的私匙和 [peerPublicKey] 计算 shareKey
      */

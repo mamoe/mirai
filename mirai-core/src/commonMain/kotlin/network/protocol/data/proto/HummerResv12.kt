@@ -28,13 +28,13 @@ internal class MarketFaceExtPb : ProtoBuf {
         @JvmField @ProtoNumber(7) val endTime: Int = 0,
         @JvmField @ProtoNumber(8) val emojiType: Int = 0,
         @JvmField @ProtoNumber(9) val apngSupportSize: List<SupportSize> = emptyList(),
-        @JvmField @ProtoNumber(10) val hasIpProduct: Int = 0
+        @JvmField @ProtoNumber(10) val hasIpProduct: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class SupportSize(
         @JvmField @ProtoNumber(1) val width: Int = 0,
-        @JvmField @ProtoNumber(2) val height: Int = 0
+        @JvmField @ProtoNumber(2) val height: Int = 0,
     ) : ProtoBuf
 }
         

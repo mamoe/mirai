@@ -21,14 +21,14 @@ internal class BigDataChannel(
     @TarsId(2) @JvmField val sBigdataKeySession: ByteArray? = null,
     @TarsId(3) @JvmField val uSigUin: Long? = null,
     @TarsId(4) @JvmField val iConnectFlag: Int? = 1,
-    @TarsId(5) @JvmField val vBigdataPbBuf: ByteArray? = null
+    @TarsId(5) @JvmField val vBigdataPbBuf: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
 internal class BigDataIpInfo(
     @TarsId(0) @JvmField val uType: Long,
     @TarsId(1) @JvmField val sIp: String = "",
-    @TarsId(2) @JvmField val uPort: Long
+    @TarsId(2) @JvmField val uPort: Long,
 ) : JceStruct
 
 @Serializable
@@ -36,7 +36,7 @@ internal class BigDataIpList(
     @TarsId(0) @JvmField val uServiceType: Long,
     @TarsId(1) @JvmField val vIplist: List<BigDataIpInfo>,
     @TarsId(2) @JvmField val netSegConfs: List<NetSegConf>? = null,
-    @TarsId(3) @JvmField val ufragmentSize: Long? = null
+    @TarsId(3) @JvmField val ufragmentSize: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -46,18 +46,18 @@ internal class ClientLogConfig(
     @TarsId(3) @JvmField val timeFinish: TimeStamp? = null,
     @TarsId(4) @JvmField val loglevel: Byte? = null,
     @TarsId(5) @JvmField val cookie: Int? = null,
-    @TarsId(6) @JvmField val lseq: Long? = null
+    @TarsId(6) @JvmField val lseq: Long? = null,
 ) : JceStruct
 
 @Serializable
 internal class DomainIpChannel(
-    @TarsId(0) @JvmField val vDomainIplists: List<DomainIpList>
+    @TarsId(0) @JvmField val vDomainIplists: List<DomainIpList>,
 ) : JceStruct
 
 @Serializable
 internal class DomainIpInfo(
     @TarsId(1) @JvmField val uIp: Int,
-    @TarsId(2) @JvmField val uPort: Int
+    @TarsId(2) @JvmField val uPort: Int,
 ) : JceStruct
 
 @Serializable
@@ -65,7 +65,7 @@ internal class DomainIpList(
     @TarsId(0) @JvmField val uDomainType: Int,
     @TarsId(1) @JvmField val vIplist: List<DomainIpInfo>,
     @TarsId(2) @JvmField val unknown: ByteArray? = null,
-    @TarsId(4) @JvmField val int: Int? = null// added
+    @TarsId(4) @JvmField val int: Int? = null, // added
 ) : JceStruct
 
 @Serializable
@@ -84,7 +84,7 @@ internal class _340(
     @TarsId(13) @JvmField val field1326: List<_339>? = null,
     @TarsId(14) @JvmField val netType: Byte? = 0,
     @TarsId(15) @JvmField val heThreshold: Int? = 0,
-    @TarsId(16) @JvmField val policyId: String? = ""
+    @TarsId(16) @JvmField val policyId: String? = "",
 ) : JceStruct
 
 @Serializable
@@ -97,7 +97,7 @@ internal class _339(
     @TarsId(6) @JvmField val field1303: Int? = 8,
     @TarsId(7) @JvmField val field1304: Byte? = 0,
     @TarsId(8) @JvmField val field1305: String = "",
-    @TarsId(9) @JvmField val field1306: String = ""
+    @TarsId(9) @JvmField val field1306: String = "",
 ) : JceStruct
 
 
@@ -122,13 +122,13 @@ internal class FileStoragePushFSSvcList(
 @Serializable
 internal class FileStorageServerListInfo(
     @TarsId(1) @JvmField val sIP: String = "",
-    @TarsId(2) @JvmField val iPort: Int
+    @TarsId(2) @JvmField val iPort: Int,
 ) : JceStruct
 
 @Serializable
 internal class FmtIPInfo(
     @TarsId(0) @JvmField val sGateIp: String = "",
-    @TarsId(1) @JvmField val iGateIpOper: Long
+    @TarsId(1) @JvmField val iGateIpOper: Long,
 ) : JceStruct
 
 @Serializable
@@ -136,7 +136,7 @@ internal class NetSegConf(
     @TarsId(0) @JvmField val uint32NetType: Long? = null,
     @TarsId(1) @JvmField val uint32Segsize: Long? = null,
     @TarsId(2) @JvmField val uint32Segnum: Long? = null,
-    @TarsId(3) @JvmField val uint32Curconnnum: Long? = null
+    @TarsId(3) @JvmField val uint32Curconnnum: Long? = null,
 ) : JceStruct
 
 @Suppress("ArrayInDataClass")
@@ -144,7 +144,7 @@ internal class NetSegConf(
 internal class PushReq(
     @TarsId(1) @JvmField val type: Int,
     @TarsId(2) @JvmField val jcebuf: ByteArray,
-    @TarsId(3) @JvmField val seq: Long
+    @TarsId(3) @JvmField val seq: Long,
 ) : JceStruct, Packet
 
 @Serializable
@@ -167,7 +167,7 @@ internal data class ServerListPush(
      */
     @TarsId(14) val ipv6ConfigVal: Byte? = 0,
     //@JvmField @TarsId(15) val netTestDelay:Int? = 0,
-    @TarsId(16) val configDesc: String? = ""
+    @TarsId(16) val configDesc: String? = "",
 ) : JceStruct {
 
     @Serializable
@@ -189,18 +189,19 @@ internal data class ServerListPush(
          * uni->China unicom 中国联通
          * others->其他
          */
-        @TarsId(9) val ispName: String = ""
+        @TarsId(9) val ispName: String = "",
     ) : JceStruct {
         override fun toString(): String {
             return "$host:$port"
         }
     }
 }
+
 @Serializable
 internal class PushResp(
     @TarsId(1) @JvmField val type: Int,
     @TarsId(2) @JvmField val seq: Long,
-    @TarsId(3) @JvmField val jcebuf: ByteArray? = null
+    @TarsId(3) @JvmField val jcebuf: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
@@ -212,7 +213,7 @@ internal class SsoServerList(
     @TarsId(6) @JvmField val useNewList: Byte? = null,
     @TarsId(7) @JvmField val iMultiConn: Int? = 1,
     @TarsId(8) @JvmField val vHttp2g3glist: List<SsoServerListInfo>? = null,
-    @TarsId(9) @JvmField val vHttpWifilist: List<SsoServerListInfo>? = null
+    @TarsId(9) @JvmField val vHttpWifilist: List<SsoServerListInfo>? = null,
 ) : JceStruct
 
 @Serializable
@@ -222,7 +223,7 @@ internal class SsoServerListInfo(
     @TarsId(3) @JvmField val linkType: Byte,
     @TarsId(4) @JvmField val proxy: Byte,
     @TarsId(5) @JvmField val protocolType: Byte? = null,
-    @TarsId(6) @JvmField val iTimeOut: Int? = 10
+    @TarsId(6) @JvmField val iTimeOut: Int? = 10,
 ) : JceStruct
 
 @Serializable
@@ -230,5 +231,5 @@ internal class TimeStamp(
     @TarsId(1) @JvmField val year: Int,
     @TarsId(2) @JvmField val month: Byte,
     @TarsId(3) @JvmField val day: Byte,
-    @TarsId(4) @JvmField val hour: Byte
+    @TarsId(4) @JvmField val hour: Byte,
 ) : JceStruct

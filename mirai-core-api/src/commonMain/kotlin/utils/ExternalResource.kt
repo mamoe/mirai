@@ -151,7 +151,7 @@ public interface ExternalResource : Closeable {
         @JvmName("create")
         public fun RandomAccessFile.toExternalResource(
             formatName: String? = null,
-            closeOriginalFileOnClose: Boolean = true
+            closeOriginalFileOnClose: Boolean = true,
         ): ExternalResource =
             ExternalResourceImplByFile(this, formatName, closeOriginalFileOnClose)
 
@@ -212,7 +212,7 @@ public interface ExternalResource : Closeable {
         @JvmOverloads
         public suspend fun <C : Contact> InputStream.sendAsImageTo(
             contact: C,
-            formatName: String? = null
+            formatName: String? = null,
         ): MessageReceipt<C> =
             runBIO {
                 // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
@@ -303,7 +303,7 @@ public interface ExternalResource : Closeable {
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
-            callback: RemoteFile.ProgressionCallback? = null
+            callback: RemoteFile.ProgressionCallback? = null,
         ): FileMessage = toExternalResource().use { contact.uploadFile(path, it, callback) }
 
         /**
@@ -337,7 +337,7 @@ public interface ExternalResource : Closeable {
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
-            callback: RemoteFile.ProgressionCallback? = null
+            callback: RemoteFile.ProgressionCallback? = null,
         ): FileMessage = contact.uploadFile(path, this, callback)
 
         /**
@@ -356,7 +356,7 @@ public interface ExternalResource : Closeable {
         public suspend fun <C : FileSupported> File.sendTo(
             contact: C,
             path: String,
-            callback: RemoteFile.ProgressionCallback? = null
+            callback: RemoteFile.ProgressionCallback? = null,
         ): MessageReceipt<C> = toExternalResource().use { contact.sendFile(path, it, callback) }
 
         /**
@@ -376,7 +376,7 @@ public interface ExternalResource : Closeable {
         public suspend fun <C : FileSupported> ExternalResource.sendAsFileTo(
             contact: C,
             path: String,
-            callback: RemoteFile.ProgressionCallback? = null
+            callback: RemoteFile.ProgressionCallback? = null,
         ): MessageReceipt<C> = contact.sendFile(path, this, callback)
 
         /**

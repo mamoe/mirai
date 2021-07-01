@@ -158,7 +158,7 @@ private fun Any.canBeIgnored(): Boolean {
 
 private fun Any.contentToStringReflectively(
     prefix: String,
-    filter: ((name: String, value: Any?) -> Boolean)? = null
+    filter: ((name: String, value: Any?) -> Boolean)? = null,
 ): String {
     val newPrefix = "$prefix    "
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +

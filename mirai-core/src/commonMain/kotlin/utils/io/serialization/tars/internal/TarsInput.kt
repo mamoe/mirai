@@ -19,7 +19,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
  * Tars Input. 需要手动管理 head.
  */
 internal class TarsInput(
-    val input: Input, private val charset: Charset
+    val input: Input, private val charset: Charset,
 ) {
     private var _head: TarsHead? = null
     private var _nextHead: TarsHead? = null
@@ -67,7 +67,7 @@ internal class TarsInput(
     @Suppress("FunctionName")
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun readNextHeadButDoNotAssignTo_Head(
-        ignoreNextHead: Boolean = false
+        ignoreNextHead: Boolean = false,
     ): TarsHead? {
         if (!ignoreNextHead) {
             val n = _nextHead
@@ -112,7 +112,7 @@ internal class TarsInput(
     inline fun <R : Any> skipToHeadAndUseIfPossibleOrFail(
         tag: Int,
         crossinline message: () -> String = { "tag not found: $tag" },
-        crossinline block: (TarsHead) -> R
+        crossinline block: (TarsHead) -> R,
     ): R {
         return checkNotNull<R>(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
     }

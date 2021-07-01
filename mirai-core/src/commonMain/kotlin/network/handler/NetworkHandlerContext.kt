@@ -31,7 +31,7 @@ internal inline fun NetworkHandlerContext.mapComponents(action: (ComponentStorag
 internal class NetworkHandlerContextImpl(
     override val bot: QQAndroidBot,
     override val logger: MiraiLogger,
-    private val storage: ComponentStorage // should be the same as bot.components
+    private val storage: ComponentStorage, // should be the same as bot.components
 ) : NetworkHandlerContext, ComponentStorage by storage {
     override fun toString(): String {
         return "NetworkHandlerContextImpl(bot=${bot.id}, storage=$storage)"

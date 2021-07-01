@@ -50,6 +50,6 @@ internal class SvcReqRegister(
     @TarsId(33) @JvmField var bytes_0x769_reqbody: ByteArray? = null,
     @TarsId(34) @JvmField var bIsSetStatus: Byte = 0,
     @TarsId(35) @JvmField var vecServerBuf: ByteArray? = null,
-    @TarsId(36) @JvmField var bSetMute: Byte = 0
+    @TarsId(36) @JvmField var bSetMute: Byte = 0,
     // @SerialId(25) var vecBindUin: ArrayList<*>? = null // ?? 未知泛型
 ) : JceStruct

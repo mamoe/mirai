@@ -103,6 +103,7 @@ internal class WtLogin {
             class Success(override val bot: Bot) : LoginPacketResponse() {
                 override fun toString(): String = "LoginPacketResponse.Success"
             }
+
             data class Error(
                 override val bot: Bot,
                 val code: Int,

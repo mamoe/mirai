@@ -91,7 +91,7 @@ internal open class QQAndroidBot constructor(
                 override fun stateChanged0(
                     networkHandler: NetworkHandlerSupport,
                     previous: BaseStateImpl,
-                    new: BaseStateImpl
+                    new: BaseStateImpl,
                 ) {
                     eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).thenBroadcast(eventDispatcher) {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {

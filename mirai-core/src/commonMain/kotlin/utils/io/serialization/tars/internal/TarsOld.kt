@@ -55,13 +55,16 @@ internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAn
 
 //@Suppress("DEPRECATION_ERROR")
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-internal class TarsOld internal constructor(private val charset: Charset, override val serializersModule: SerializersModule = EmptySerializersModule) :
+internal class TarsOld internal constructor(
+    private val charset: Charset,
+    override val serializersModule: SerializersModule = EmptySerializersModule,
+) :
     SerialFormat, BinaryFormat {
 
     private inner class ListWriter(
         private val count: Int,
         private val tag: Int,
-        private val parentEncoder: TarsEncoder
+        private val parentEncoder: TarsEncoder,
     ) : TarsEncoder(BytePacketBuilder()) {
         override fun SerialDescriptor.getTag(index: Int): Int {
             return 0
@@ -75,7 +78,7 @@ internal class TarsOld internal constructor(private val charset: Charset, overri
     }
 
     private inner class TarsMapWriter(
-        output: BytePacketBuilder
+        output: BytePacketBuilder,
     ) : TarsEncoder(output) {
         override fun SerialDescriptor.getTag(index: Int): Int {
             return if (index % 2 == 0) 0 else 1
@@ -97,7 +100,7 @@ internal class TarsOld internal constructor(private val charset: Charset, overri
     @Suppress("unused", "MemberVisibilityCanBePrivate")
     @OptIn(ExperimentalIoApi::class)
     private open inner class TarsEncoder(
-        val output: BytePacketBuilder
+        val output: BytePacketBuilder,
     ) : TaggedEncoder<Int>() {
         override val serializersModule get() = this@TarsOld.serializersModule
 
@@ -109,7 +112,7 @@ internal class TarsOld internal constructor(private val charset: Charset, overri
          * 序列化最开始的时候的
          */
         override fun beginStructure(
-            descriptor: SerialDescriptor
+            descriptor: SerialDescriptor,
         ): CompositeEncoder =
             when (descriptor.kind) {
                 StructureKind.LIST -> this
@@ -135,9 +138,9 @@ internal class TarsOld internal constructor(private val charset: Charset, overri
                 }
             }
             serializer.descriptor.kind == StructureKind.LIST
-                && value is ByteArray -> encodeTaggedByteArray(popTag(), value as ByteArray)
+                    && value is ByteArray -> encodeTaggedByteArray(popTag(), value as ByteArray)
             serializer.descriptor.kind == StructureKind.LIST
-                && serializer.descriptor.getElementDescriptor(0) is PrimitiveKind -> {
+                    && serializer.descriptor.getElementDescriptor(0) is PrimitiveKind -> {
                 serializer.serialize(
                     ListWriter(
                         when (value) {

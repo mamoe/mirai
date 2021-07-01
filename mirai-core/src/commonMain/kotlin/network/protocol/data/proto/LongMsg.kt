@@ -16,66 +16,66 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 internal class LongMsg : ProtoBuf {
     @Serializable
-internal class MsgDeleteReq(
+    internal class MsgDeleteReq(
         @ProtoNumber(1) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val msgType: Int = 0
+        @ProtoNumber(2) @JvmField val msgType: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class MsgDeleteRsp(
+    internal class MsgDeleteRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
-        @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class MsgDownReq(
+    internal class MsgDownReq(
         @ProtoNumber(1) @JvmField val srcUin: Int = 0,
         @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val msgType: Int = 0,
-        @ProtoNumber(4) @JvmField val needCache: Int = 0
+        @ProtoNumber(4) @JvmField val needCache: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class MsgDownRsp(
+    internal class MsgDownRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(3) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class MsgUpReq(
+    internal class MsgUpReq(
         @ProtoNumber(1) @JvmField val msgType: Int = 0,
         @ProtoNumber(2) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(3) @JvmField val msgId: Int = 0,
         @ProtoNumber(4) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val storeType: Int = 0,
         @ProtoNumber(6) @JvmField val msgUkey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(7) @JvmField val needCache: Int = 0
+        @ProtoNumber(7) @JvmField val needCache: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class MsgUpRsp(
+    internal class MsgUpRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val msgId: Int = 0,
-        @ProtoNumber(3) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(3) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class ReqBody(
+    internal class ReqBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0,
         @ProtoNumber(2) @JvmField val termType: Int = 0,
         @ProtoNumber(3) @JvmField val platformType: Int = 0,
         @ProtoNumber(4) @JvmField val msgUpReq: List<LongMsg.MsgUpReq> = emptyList(),
         @ProtoNumber(5) @JvmField val msgDownReq: List<LongMsg.MsgDownReq> = emptyList(),
         @ProtoNumber(6) @JvmField val msgDelReq: List<LongMsg.MsgDeleteReq> = emptyList(),
-        @ProtoNumber(10) @JvmField val agentType: Int = 0
+        @ProtoNumber(10) @JvmField val agentType: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class RspBody(
+    internal class RspBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0,
         @ProtoNumber(2) @JvmField val msgUpRsp: List<LongMsg.MsgUpRsp> = emptyList(),
         @ProtoNumber(3) @JvmField val msgDownRsp: List<LongMsg.MsgDownRsp> = emptyList(),
-        @ProtoNumber(4) @JvmField val msgDelRsp: List<LongMsg.MsgDeleteRsp> = emptyList()
+        @ProtoNumber(4) @JvmField val msgDelRsp: List<LongMsg.MsgDeleteRsp> = emptyList(),
     ) : ProtoBuf
 }

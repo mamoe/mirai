@@ -26,7 +26,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(4) val parentFolderId: String = "",
         @JvmField @ProtoNumber(5) val fileId: String = "",
         @JvmField @ProtoNumber(6) val msgdbSeq: Int = 0,
-        @JvmField @ProtoNumber(7) val msgRand: Int = 0
+        @JvmField @ProtoNumber(7) val msgRand: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -36,7 +36,7 @@ internal class Oidb0x6d6 : ProtoBuf {
          */
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
-        @JvmField @ProtoNumber(3) val clientWording: String = ""
+        @JvmField @ProtoNumber(3) val clientWording: String = "",
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -48,7 +48,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(5) val boolThumbnailReq: Boolean = false,
         @JvmField @ProtoNumber(6) val urlType: Int = 0,
         @JvmField @ProtoNumber(7) val boolPreviewReq: Boolean = false,
-        @JvmField @ProtoNumber(8) val src: Int = 0
+        @JvmField @ProtoNumber(8) val src: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -66,7 +66,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(11) val saveFileName: String = "",
         @JvmField @ProtoNumber(12) val previewPort: Int = 0,
         @JvmField @ProtoNumber(13) val downloadDnsHttps: String = "",
-        @JvmField @ProtoNumber(14) val previewPortHttps: Int = 0
+        @JvmField @ProtoNumber(14) val previewPortHttps: Int = 0,
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -76,7 +76,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(3) val busId: Int = 0,
         @JvmField @ProtoNumber(4) val fileId: String = "",
         @JvmField @ProtoNumber(5) val parentFolderId: String = "",
-        @JvmField @ProtoNumber(6) val destFolderId: String = ""
+        @JvmField @ProtoNumber(6) val destFolderId: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -84,7 +84,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
-        @JvmField @ProtoNumber(4) val parentFolderId: String = ""
+        @JvmField @ProtoNumber(4) val parentFolderId: String = "",
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -94,14 +94,14 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(3) val busId: Int = 0,
         @JvmField @ProtoNumber(4) val fileId: String = "",
         @JvmField @ProtoNumber(5) val parentFolderId: String = "",
-        @JvmField @ProtoNumber(6) val newFileName: String = ""
+        @JvmField @ProtoNumber(6) val newFileName: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class RenameFileRspBody(
         @ProtoNumber(1) override val int32RetCode: Int = 0,
         @ProtoNumber(2) override val retMsg: String = "",
-        @JvmField @ProtoNumber(3) val clientWording: String = ""
+        @JvmField @ProtoNumber(3) val clientWording: String = "",
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -111,7 +111,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(3) val downloadFileReq: DownloadFileReqBody? = null,
         @JvmField @ProtoNumber(4) val deleteFileReq: DeleteFileReqBody? = null,
         @JvmField @ProtoNumber(5) val renameFileReq: RenameFileReqBody? = null,
-        @JvmField @ProtoNumber(6) val moveFileReq: MoveFileReqBody? = null
+        @JvmField @ProtoNumber(6) val moveFileReq: MoveFileReqBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -120,7 +120,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val busId: Int = 0,
         @JvmField @ProtoNumber(4) val fileId: String = "",
-        @JvmField @ProtoNumber(5) val sha: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(5) val sha: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -130,7 +130,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val uploadIp: String = "",
         @JvmField @ProtoNumber(5) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(6) val checkKey: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(6) val checkKey: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf, CheckableStruct
 
     @Serializable
@@ -140,7 +140,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(3) val downloadFileRsp: DownloadFileRspBody? = null,
         @JvmField @ProtoNumber(4) val deleteFileRsp: DeleteFileRspBody? = null,
         @JvmField @ProtoNumber(5) val renameFileRsp: RenameFileRspBody? = null,
-        @JvmField @ProtoNumber(6) val moveFileRsp: MoveFileRspBody? = null
+        @JvmField @ProtoNumber(6) val moveFileRsp: MoveFileRspBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -156,7 +156,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(9) val sha: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(10) val sha3: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(11) val md5: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(15) val boolSupportMultiUpload: Boolean = false
+        @JvmField @ProtoNumber(15) val boolSupportMultiUpload: Boolean = false,
     ) : ProtoBuf
 
     @Serializable
@@ -173,7 +173,7 @@ internal class Oidb0x6d6 : ProtoBuf {
         @JvmField @ProtoNumber(10) val boolFileExist: Boolean = false,
         @JvmField @ProtoNumber(12) val uploadIpLanV4: List<String> = emptyList(),
         @JvmField @ProtoNumber(13) val uploadIpLanV6: List<String> = emptyList(),
-        @JvmField @ProtoNumber(14) val uploadPort: Int = 0
+        @JvmField @ProtoNumber(14) val uploadPort: Int = 0,
     ) : ProtoBuf, CheckableStruct
 }
         

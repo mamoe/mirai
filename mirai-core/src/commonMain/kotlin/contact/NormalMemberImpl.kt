@@ -36,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
 internal class NormalMemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
-    memberInfo: MemberInfo
+    memberInfo: MemberInfo,
 ) : NormalMember, AbstractMember(group, coroutineContext, memberInfo) {
 
     @Suppress("unused") // false positive

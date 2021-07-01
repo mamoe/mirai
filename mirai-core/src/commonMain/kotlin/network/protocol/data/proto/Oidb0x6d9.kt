@@ -30,7 +30,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(9) val localPath: String = "",
         @JvmField @ProtoNumber(10) val fileName: String = "",
         @JvmField @ProtoNumber(11) val srcUin: Long = 0L,
-        @JvmField @ProtoNumber(12) val md5: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(12) val md5: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -39,7 +39,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(2) val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val saveFilePath: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(5) val busId: Int = 0
+        @JvmField @ProtoNumber(5) val busId: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -54,7 +54,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(100) val timCloudPdirKey: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(101) val timCloudPpdirKey: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(102) val timCloudExtensionInfo: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(103) val timFileExistOption: Int = 0
+        @JvmField @ProtoNumber(103) val timFileExistOption: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -64,7 +64,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val saveFilePath: String = "",
         @JvmField @ProtoNumber(5) val busId: Int = 0,
-        @JvmField @ProtoNumber(40) val fileName: String = ""
+        @JvmField @ProtoNumber(40) val fileName: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -72,7 +72,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val feedsInfoList: List<GroupFileCommon.FeedsInfo> = emptyList(),
-        @JvmField @ProtoNumber(4) val multiSendSeq: Int = 0
+        @JvmField @ProtoNumber(4) val multiSendSeq: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -81,7 +81,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(2) val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val feedsResultList: List<GroupFileCommon.FeedsResult> = emptyList(),
-        @JvmField @ProtoNumber(5) val svrbusyWaitTime: Int = 0
+        @JvmField @ProtoNumber(5) val svrbusyWaitTime: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -89,7 +89,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(1) val transFileReq: TransFileReqBody? = null,
         @JvmField @ProtoNumber(2) val copyFromReq: CopyFromReqBody? = null,
         @JvmField @ProtoNumber(3) val copyToReq: CopyToReqBody? = null,
-        @JvmField @ProtoNumber(5) val feedsInfoReq: FeedsReqBody? = null
+        @JvmField @ProtoNumber(5) val feedsInfoReq: FeedsReqBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -97,7 +97,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(1) val transFileRsp: TransFileRspBody? = null,
         @JvmField @ProtoNumber(2) val copyFromRsp: CopyFromRspBody? = null,
         @JvmField @ProtoNumber(3) val copyToRsp: CopyToRspBody? = null,
-        @JvmField @ProtoNumber(5) val feedsInfoRsp: FeedsRspBody? = null
+        @JvmField @ProtoNumber(5) val feedsInfoRsp: FeedsRspBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -105,7 +105,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val appId: Int = 0,
         @JvmField @ProtoNumber(3) val busId: Int = 0,
-        @JvmField @ProtoNumber(4) val fileId: String = ""
+        @JvmField @ProtoNumber(4) val fileId: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -114,7 +114,7 @@ internal class Oidb0x6d9 : ProtoBuf {
         @JvmField @ProtoNumber(2) val retMsg: String = "",
         @JvmField @ProtoNumber(3) val clientWording: String = "",
         @JvmField @ProtoNumber(4) val saveBusId: Int = 0,
-        @JvmField @ProtoNumber(5) val saveFilePath: String = ""
+        @JvmField @ProtoNumber(5) val saveFilePath: String = "",
     ) : ProtoBuf
 }
         

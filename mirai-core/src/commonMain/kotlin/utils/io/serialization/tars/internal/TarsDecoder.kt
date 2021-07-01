@@ -24,7 +24,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 internal class TarsDecoder(
-    val input: TarsInput, override val serializersModule: SerializersModule
+    val input: TarsInput, override val serializersModule: SerializersModule,
 ) : TaggedDecoder<TarsTag>() {
     override fun SerialDescriptor.getTag(index: Int): TarsTag {
         val annotations = this.getElementAnnotations(index)

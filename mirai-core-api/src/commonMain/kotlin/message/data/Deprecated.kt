@@ -65,7 +65,8 @@ constructor(
     public val kind: RichMessageKind,
 ) : MessageMetadata, ConstrainSingle {
     @Suppress("DEPRECATION_ERROR")
-    override val key: Key get() = Key
+    override val key: Key
+        get() = Key
 
     override fun toString(): String {
         val resourceId = resourceId

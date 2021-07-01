@@ -177,6 +177,7 @@ public enum class MusicKind constructor(
         "cmccwm.mobilemusic",
         "6cdc72a439cef99a3418d2a78aa28c73"
     ),
+
     /**
      * @since 2.7
      */
@@ -187,6 +188,7 @@ public enum class MusicKind constructor(
         "com.kugou.android",
         "fe4a24d80fcf253a00676a808f62c2c6"
     ),
+
     /**
      * @since 2.7
      */

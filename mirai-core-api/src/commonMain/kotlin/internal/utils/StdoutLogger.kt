@@ -101,6 +101,7 @@ internal open class StdoutLogger constructor(
         if (e != null) debug((message ?: e.toString()) + "\n${e.stackTraceToString()}")
         else debug(message.toString())
     }
+
     protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
 
     private val currentTimeFormatted get() = timeFormat.format(Date())

@@ -81,7 +81,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: Friend
+    override val target: Friend,
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
 
@@ -101,12 +101,12 @@ internal class OnlineMessageSourceToStrangerImpl(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: Stranger
+    override val target: Stranger,
 ) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
 
     constructor(
         delegate: Outgoing,
-        target: Stranger
+        target: Stranger,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
@@ -127,11 +127,11 @@ internal class OnlineMessageSourceToTempImpl(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: Member
+    override val target: Member,
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
     constructor(
         delegate: Outgoing,
-        target: Member
+        target: Member,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
@@ -182,10 +182,10 @@ internal class OnlineMessageSourceToGroupImpl(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceIds: IntArray
         get() = when {
-                sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: intArrayOf()
-                !sequenceIdDeferred.isActive -> intArrayOf()
-                else -> error("sequenceIds not yet available")
-            }
+            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: intArrayOf()
+            !sequenceIdDeferred.isActive -> intArrayOf()
+            else -> error("sequenceIds not yet available")
+        }
 
 
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }

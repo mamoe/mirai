@@ -28,7 +28,7 @@ import net.mamoe.mirai.utils.read
 @OptIn(ExperimentalSerializationApi::class)
 internal class Tars(
     override val serializersModule: SerializersModule = EmptySerializersModule,
-    val charset: Charset = Charsets.UTF_8
+    val charset: Charset = Charsets.UTF_8,
 ) : SerialFormat, BinaryFormat {
     private val old = TarsOld(charset)
 

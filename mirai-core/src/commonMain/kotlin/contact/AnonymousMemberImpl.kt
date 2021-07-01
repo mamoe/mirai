@@ -20,7 +20,7 @@ internal class AnonymousMemberImpl(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
-    override val anonymousId: String
+    override val anonymousId: String,
 ) : AnonymousMember, AbstractMember(group, coroutineContext, memberInfo) {
     override suspend fun mute(durationSeconds: Int) {
         checkBotPermissionHigherThanThis("mute")

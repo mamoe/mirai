@@ -19,7 +19,7 @@ internal class QPayReminderMsg : ProtoBuf {
     internal class GetInfoReq(
         @ProtoNumber(1) @JvmField val scene: String = "",
         @ProtoNumber(2) @JvmField val subCmd: String = "",
-        @ProtoNumber(3) @JvmField val infoDate: String = ""
+        @ProtoNumber(3) @JvmField val infoDate: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -29,7 +29,7 @@ internal class QPayReminderMsg : ProtoBuf {
         @ProtoNumber(3) @JvmField val urgency: Int = 0,
         @ProtoNumber(4) @JvmField val templateNo: Int = 0,
         @ProtoNumber(5) @JvmField val content: String = "",
-        @ProtoNumber(6) @JvmField val infoDate: String = ""
+        @ProtoNumber(6) @JvmField val infoDate: String = "",
     ) : ProtoBuf
 }
 
@@ -37,7 +37,7 @@ internal class Structmsg : ProtoBuf {
     @Serializable
     internal class AddFrdSNInfo(
         @ProtoNumber(1) @JvmField val notSeeDynamic: Int = 0,
-        @ProtoNumber(2) @JvmField val setSn: Int = 0
+        @ProtoNumber(2) @JvmField val setSn: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -58,13 +58,13 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(14) @JvmField val grpMsgSupportInviteAutoJoin: Int = 0,
         @ProtoNumber(15) @JvmField val grpMsgMaskInviteAutoJoin: Int = 0,
         @ProtoNumber(16) @JvmField val grpMsgGetDisbandedByAdmin: Int = 0,
-        @ProtoNumber(17) @JvmField val grpMsgGetC2cInviteJoinGroup: Int = 0
+        @ProtoNumber(17) @JvmField val grpMsgGetC2cInviteJoinGroup: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class FriendInfo(
         @ProtoNumber(1) @JvmField val msgJointFriend: String = "",
-        @ProtoNumber(2) @JvmField val msgBlacklist: String = ""
+        @ProtoNumber(2) @JvmField val msgBlacklist: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -74,20 +74,20 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(3) @JvmField val msgAlert: String = "",
         @ProtoNumber(4) @JvmField val msgDetailAlert: String = "",
         @ProtoNumber(5) @JvmField val msgOtherAdminDone: String = "",
-        @ProtoNumber(6) @JvmField val appPrivilegeFlag: Int = 0
+        @ProtoNumber(6) @JvmField val appPrivilegeFlag: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class MsgInviteExt(
         @ProtoNumber(1) @JvmField val srcType: Int = 0,
         @ProtoNumber(2) @JvmField val srcCode: Long = 0L,
-        @ProtoNumber(3) @JvmField val waitState: Int = 0
+        @ProtoNumber(3) @JvmField val waitState: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class MsgPayGroupExt(
         @ProtoNumber(1) @JvmField val joinGrpTime: Long = 0L,
-        @ProtoNumber(2) @JvmField val quitGrpTime: Long = 0L
+        @ProtoNumber(2) @JvmField val quitGrpTime: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -99,7 +99,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(5) @JvmField val flag: FlagInfo? = null,
         @ProtoNumber(6) @JvmField val language: Int = 0,
         @ProtoNumber(7) @JvmField val version: Int = 0,
-        @ProtoNumber(8) @JvmField val friendMsgTypeFlag: Long = 0L
+        @ProtoNumber(8) @JvmField val friendMsgTypeFlag: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -108,7 +108,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(2) @JvmField val latestFriendSeq: Long = 0L,
         @ProtoNumber(3) @JvmField val latestGroupSeq: Long = 0L,
         @ProtoNumber(4) @JvmField val version: Int = 0,
-        @ProtoNumber(5) @JvmField val language: Int = 0
+        @ProtoNumber(5) @JvmField val language: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -121,7 +121,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(6) @JvmField val subSrcId: Int = 0,
         @ProtoNumber(7) @JvmField val groupMsgType: Int = 0,
         @ProtoNumber(8) @JvmField val actionInfo: SystemMsgActionInfo? = null,
-        @ProtoNumber(9) @JvmField val language: Int = 0
+        @ProtoNumber(9) @JvmField val language: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -135,7 +135,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(7) @JvmField val language: Int = 0,
         @ProtoNumber(8) @JvmField val isGetFrdRibbon: Boolean = true,
         @ProtoNumber(9) @JvmField val isGetGrpRibbon: Boolean = true,
-        @ProtoNumber(10) @JvmField val friendMsgTypeFlag: Long = 0L
+        @ProtoNumber(10) @JvmField val friendMsgTypeFlag: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -143,13 +143,13 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(1) @JvmField val latestFriendSeq: Long = 0L,
         @ProtoNumber(2) @JvmField val latestGroupSeq: Long = 0L,
         @ProtoNumber(3) @JvmField val type: Int = 0,
-        @ProtoNumber(4) @JvmField val checktype: Int /* enum */ = 1
+        @ProtoNumber(4) @JvmField val checktype: Int /* enum */ = 1,
     ) : ProtoBuf
 
     @Serializable
     internal class RspHead(
         @ProtoNumber(1) @JvmField val result: Int = 0,
-        @ProtoNumber(2) @JvmField val msgFail: String = ""
+        @ProtoNumber(2) @JvmField val msgFail: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -161,7 +161,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(5) @JvmField val checktype: Int /* enum */ = 1,
         @ProtoNumber(100) @JvmField val gameNick: String = "",
         @ProtoNumber(101) @JvmField val undecidForQim: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(102) @JvmField val unReadCount3: Int = 0
+        @ProtoNumber(102) @JvmField val unReadCount3: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -173,7 +173,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(5) @JvmField val latestGroupSeq: Long = 0L,
         @ProtoNumber(6) @JvmField val followingFriendSeq: Long = 0L,
         @ProtoNumber(7) @JvmField val followingGroupSeq: Long = 0L,
-        @ProtoNumber(8) @JvmField val msgDisplay: String = ""
+        @ProtoNumber(8) @JvmField val msgDisplay: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -182,7 +182,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(2) @JvmField val msgDetail: String = "",
         @ProtoNumber(3) @JvmField val type: Int = 0,
         @ProtoNumber(5) @JvmField val msgInvalidDecided: String = "",
-        @ProtoNumber(6) @JvmField val remarkResult: Int = 0
+        @ProtoNumber(6) @JvmField val remarkResult: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -204,14 +204,14 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(20) @JvmField val checktype: Int /* enum */ = 1,
         @ProtoNumber(100) @JvmField val gameNick: String = "",
         @ProtoNumber(101) @JvmField val undecidForQim: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(102) @JvmField val unReadCount3: Int = 0
+        @ProtoNumber(102) @JvmField val unReadCount3: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class RspSystemMsgRead(
         @ProtoNumber(1) @JvmField val head: RspHead? = null,
         @ProtoNumber(2) @JvmField val type: Int = 0,
-        @ProtoNumber(3) @JvmField val checktype: Int /* enum */ = 1
+        @ProtoNumber(3) @JvmField val checktype: Int /* enum */ = 1,
     ) : ProtoBuf
 
     @Serializable
@@ -222,7 +222,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(4) @JvmField val msgTime: Long = 0L,
         @ProtoNumber(5) @JvmField val reqUin: Long = 0L,
         @ProtoNumber(6) @JvmField val unreadFlag: Int = 0,
-        @ProtoNumber(50) @JvmField val msg: SystemMsg? = null
+        @ProtoNumber(50) @JvmField val msg: SystemMsg? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -278,7 +278,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(67) @JvmField val reqUinGender: Int = 0,
         @ProtoNumber(68) @JvmField val reqUinAge: Int = 0,
         @ProtoNumber(69) @JvmField val c2cInviteJoinGroupFlag: Int = 0,
-        @ProtoNumber(101) @JvmField val cardSwitch: Int = 0
+        @ProtoNumber(101) @JvmField val cardSwitch: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -287,7 +287,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(2) @JvmField val result: String = "",
         @ProtoNumber(3) @JvmField val action: Int = 0,
         @ProtoNumber(4) @JvmField val actionInfo: SystemMsgActionInfo? = null,
-        @ProtoNumber(5) @JvmField val detailName: String = ""
+        @ProtoNumber(5) @JvmField val detailName: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -299,7 +299,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(51) @JvmField val groupId: Int = 0,
         @ProtoNumber(52) @JvmField val remark: String = "",
         @ProtoNumber(53) @JvmField val blacklist: Boolean = false,
-        @ProtoNumber(54) @JvmField val addFrdSNInfo: AddFrdSNInfo? = null
+        @ProtoNumber(54) @JvmField val addFrdSNInfo: AddFrdSNInfo? = null,
     ) : ProtoBuf
 }
 
@@ -316,6 +316,6 @@ internal class Youtu : ProtoBuf {
         @ProtoNumber(7) @JvmField val name: String = "",
         @ProtoNumber(8) @JvmField val nameConfidence: Float = 0.0F,
         @ProtoNumber(9) @JvmField val image: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(10) @JvmField val sessionId: String = ""
+        @ProtoNumber(10) @JvmField val sessionId: String = "",
     ) : ProtoBuf
 }

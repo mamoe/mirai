@@ -67,7 +67,7 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 internal class FriendImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
-    internal val friendInfo: FriendInfo
+    internal val friendInfo: FriendInfo,
 ) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)

@@ -45,19 +45,19 @@ internal class TarsTagMapEntryValue : TarsTag() {
 }
 
 internal data class TarsTagCommon(
-    override val id: Int
+    override val id: Int,
 ) : TarsTag()
 
 @OptIn(ExperimentalSerializationApi::class)
 internal fun TarsHead.checkType(type: Byte, message: String, tag: TarsTag, descriptor: SerialDescriptor) {
     check(this.type == type) {
         "type mismatch. " +
-            "Expected ${TarsHead.findTarsTypeName(type)}, " +
-            "actual ${TarsHead.findTarsTypeName(this.type)} for $message. " +
-            "Tag info: " +
-            "id=${tag.id}, " +
-            "name=${descriptor.getElementName(tag.id)} " +
-            "in ${descriptor.serialName}"
+                "Expected ${TarsHead.findTarsTypeName(type)}, " +
+                "actual ${TarsHead.findTarsTypeName(this.type)} for $message. " +
+                "Tag info: " +
+                "id=${tag.id}, " +
+                "name=${descriptor.getElementName(tag.id)} " +
+                "in ${descriptor.serialName}"
     }
 }
 

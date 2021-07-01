@@ -23,5 +23,5 @@ internal data class InstanceInfo(
      * @see ClientKind
      */
     @JvmField @TarsId(3) val iProductType: Long? = null,
-    @JvmField @TarsId(4) val iClientType: Long? = null
+    @JvmField @TarsId(4) val iClientType: Long? = null,
 ) : JceStruct

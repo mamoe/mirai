@@ -28,12 +28,12 @@ internal data class MemberInfoImpl(
     override val anonymousId: String?,
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
     override var lastSpeakTimestamp: Int = 0,
-    override val isOfficialBot: Boolean = false
+    override val isOfficialBot: Boolean = false,
 ) : MemberInfo {
     constructor(
         client: QQAndroidClient,
         jceInfo: StTroopMemberInfo,
-        groupOwnerId: Long
+        groupOwnerId: Long,
     ) : this(
         uin = jceInfo.memberUin,
         nick = jceInfo.nick,

@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.copy
 @SerialName(UnsupportedMessage.SERIAL_NAME)
 @Serializable(UnsupportedMessageImpl.Serializer::class)
 internal data class UnsupportedMessageImpl(
-    val structElem: ImMsgBody.Elem
+    val structElem: ImMsgBody.Elem,
 ) : UnsupportedMessage {
     override val struct: ByteArray by lazy { structElem.toByteArray(ImMsgBody.Elem.serializer()) }
     override fun toString(): String = content

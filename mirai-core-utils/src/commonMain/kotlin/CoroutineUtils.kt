@@ -26,21 +26,21 @@ import kotlin.coroutines.EmptyCoroutineContext
 )
 @kotlin.internal.LowPriorityInOverloadResolution
 public suspend inline fun <R> runBIO(
-    noinline block: suspend CoroutineScope.() -> R
+    noinline block: suspend CoroutineScope.() -> R,
 ): R = withContext(Dispatchers.IO, block)
 
 public suspend inline fun <R> runBIO(
-    noinline block: () -> R
+    noinline block: () -> R,
 ): R = runInterruptible(context = Dispatchers.IO, block = block)
 
 public suspend inline fun <T, R> T.runBIO(
-    crossinline block: T.() -> R
+    crossinline block: T.() -> R,
 ): R = runInterruptible(context = Dispatchers.IO, block = { block() })
 
 public inline fun CoroutineScope.launchWithPermit(
     semaphore: Semaphore,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    crossinline block: suspend () -> Unit
+    crossinline block: suspend () -> Unit,
 ): Job {
     return launch(coroutineContext) {
         semaphore.withPermit { block() }
@@ -74,28 +74,28 @@ public fun CoroutineContext.childScopeContext(
 
 public inline fun <E : U, U : CoroutineContext.Element> CoroutineContext.getOrElse(
     key: CoroutineContext.Key<E>,
-    default: () -> U
+    default: () -> U,
 ): U = this[key] ?: default()
 
 public inline fun <E : CoroutineContext.Element> CoroutineContext.addIfAbsent(
     key: CoroutineContext.Key<E>,
-    default: () -> CoroutineContext.Element
+    default: () -> CoroutineContext.Element,
 ): CoroutineContext = if (this[key] == null) this + default() else this
 
 public inline fun CoroutineContext.addNameIfAbsent(
-    name: () -> String
+    name: () -> String,
 ): CoroutineContext = addIfAbsent(CoroutineName) { CoroutineName(name()) }
 
 public fun CoroutineContext.addNameHierarchically(
-    name: String
+    name: String,
 ): CoroutineContext = this + CoroutineName(this[CoroutineName]?.name?.plus('.')?.plus(name) ?: name)
 
 public fun CoroutineContext.hierarchicalName(
-    name: String
+    name: String,
 ): CoroutineName = CoroutineName(this[CoroutineName]?.name?.plus('.')?.plus(name) ?: name)
 
 public fun CoroutineScope.hierarchicalName(
-    name: String
+    name: String,
 ): CoroutineName = this.coroutineContext.hierarchicalName(name)
 
 public inline fun <R> runUnwrapCancellationException(block: () -> R): R {
@@ -163,6 +163,7 @@ public inline fun <reified E> Throwable.unwrap(): Throwable {
     if (suppressed.isNotEmpty()) return this
     return this.findCause { it !is E }
         ?.also { it.addSuppressed(this) }
-        ?.fillInStackTrace() // add the unwrapped CancellationException to suppress so we loss no information
         ?: this
 }
+
+public val CoroutineContext.coroutineName: String get() = this[CoroutineName]?.name ?: "unnamed"

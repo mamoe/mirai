@@ -39,7 +39,8 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable
 @SerialName(MessageOrigin.SERIAL_NAME)
 @MiraiExperimentalApi
-public class MessageOrigin( // [2.3, 2.6-M1) 类名为 RichMessageOrigin
+public class MessageOrigin(
+    // [2.3, 2.6-M1) 类名为 RichMessageOrigin
     /**
      * 原 [SingleMessage].
      */

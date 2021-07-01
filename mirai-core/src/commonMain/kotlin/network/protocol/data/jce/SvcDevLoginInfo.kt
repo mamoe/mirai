@@ -25,7 +25,7 @@ internal data class SvcDevLoginInfo(
     // @JvmField @TarsId(7) val stDeviceItemDes: DeviceItemDes? = null,
     @JvmField @TarsId(8) val iTerType: Long? = null, // 1:windows, 2: mobile, 3: ios
     @JvmField @TarsId(9) val iProductType: Long? = null, // always 0
-    @JvmField @TarsId(10) val iCanBeKicked: Long? = null // isOnline
+    @JvmField @TarsId(10) val iCanBeKicked: Long? = null, // isOnline
 ) : JceStruct
 
 /*
@@ -76,6 +76,6 @@ internal class SvcReqGetDevLoginInfo(
     @JvmField @TarsId(3) val iTimeStamp: Long,
     @JvmField @TarsId(4) val iNextItemIndex: Long,
     @JvmField @TarsId(5) val iRequireMax: Long,
-    @JvmField @TarsId(6) val iGetDevListType: Long? = 7L // 1: online list 2: recent list? 4: getAuthLoginDevList?
+    @JvmField @TarsId(6) val iGetDevListType: Long? = 7L, // 1: online list 2: recent list? 4: getAuthLoginDevList?
 ) : JceStruct
 

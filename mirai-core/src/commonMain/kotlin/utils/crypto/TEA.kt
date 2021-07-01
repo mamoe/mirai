@@ -45,7 +45,7 @@ internal object TEA {
         key: ByteArray,
         offset: Int = 0,
         length: Int = receiver.remaining.toInt() - offset,
-        consumer: (ByteArray) -> Unit
+        consumer: (ByteArray) -> Unit,
     ) {
         ByteArrayPool.useInstance {
             receiver.readFully(it, offset, length)
@@ -54,7 +54,12 @@ internal object TEA {
     }
 
     @JvmStatic
-    fun decrypt(receiver: ByteReadPacket, key: ByteArray, offset: Int = 0, length: Int = (receiver.remaining - offset).toInt()): ByteReadPacket =
+    fun decrypt(
+        receiver: ByteReadPacket,
+        key: ByteArray,
+        offset: Int = 0,
+        length: Int = (receiver.remaining - offset).toInt(),
+    ): ByteReadPacket =
         decryptAsByteArray(receiver, key, offset, length) { data -> ByteReadPacket(data) }
 
     inline fun <R> decryptAsByteArray(
@@ -62,7 +67,7 @@ internal object TEA {
         key: ByteArray,
         offset: Int = 0,
         length: Int = (receiver.remaining - offset).toInt(),
-        consumer: (ByteArray) -> R
+        consumer: (ByteArray) -> R,
     ): R {
         return ByteArrayPool.useInstance {
             receiver.readFully(it, offset, length)

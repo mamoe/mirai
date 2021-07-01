@@ -14,5 +14,5 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
 @Serializable
 internal class DeviceItemDes(
-    @JvmField @TarsId(0) val vecItemDes: ByteArray
+    @JvmField @TarsId(0) val vecItemDes: ByteArray,
 ) : JceStruct

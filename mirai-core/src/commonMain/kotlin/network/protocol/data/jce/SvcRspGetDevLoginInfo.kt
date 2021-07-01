@@ -21,6 +21,6 @@ internal class SvcRspGetDevLoginInfo(
     @JvmField @TarsId(3) val iTotalItemCount: Long,
     @JvmField @TarsId(4) val vecCurrentLoginDevInfo: List<SvcDevLoginInfo>? = null,
     @JvmField @TarsId(5) val vecHistoryLoginDevInfo: List<SvcDevLoginInfo>? = null,
-    @JvmField @TarsId(6) val vecAuthLoginDevInfo: List<SvcDevLoginInfo>? = null
+    @JvmField @TarsId(6) val vecAuthLoginDevInfo: List<SvcDevLoginInfo>? = null,
 ) : JceStruct
 

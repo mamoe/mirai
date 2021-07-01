@@ -31,7 +31,7 @@ internal class GroupMngReqJce(
     @TarsId(13) @JvmField val vecJoinGroupRichMsg: ByteArray? = null,
     @TarsId(14) @JvmField val sJoinGroupAuth: String? = "",
     @TarsId(15) @JvmField val sJoinGroupVerifyToken: String? = "",
-    @TarsId(16) @JvmField val dwJoinVerifyType: Long? = null
+    @TarsId(16) @JvmField val dwJoinVerifyType: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -47,5 +47,5 @@ internal class GroupMngRes(
     @TarsId(8) @JvmField val sAuthGrpInfo: String? = "",
     @TarsId(9) @JvmField val sJoinQuestion: String? = "",
     @TarsId(10) @JvmField val sJoinAnswer: String? = "",
-    @TarsId(11) @JvmField val dwDis2GrpLimitType: Long? = null
+    @TarsId(11) @JvmField val dwDis2GrpLimitType: Long? = null,
 ) : JceStruct

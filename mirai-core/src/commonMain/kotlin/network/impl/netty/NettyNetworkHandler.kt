@@ -85,7 +85,7 @@ internal open class NettyNetworkHandler(
     }
 
     private inner class RawIncomingPacketCollector(
-        private val decodePipeline: PacketDecodePipeline
+        private val decodePipeline: PacketDecodePipeline,
     ) : SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
         override fun channelRead0(ctx: ChannelHandlerContext, msg: RawIncomingPacket) {
             decodePipeline.send(msg)
@@ -214,7 +214,7 @@ internal open class NettyNetworkHandler(
      * @see StateObserver
      */
     protected abstract inner class NettyState(
-        correspondingState: State
+        correspondingState: State,
     ) : BaseStateImpl(correspondingState) {
         /**
          * @return `true` if packet has been sent, `false` if state is not ready for send.
@@ -225,7 +225,7 @@ internal open class NettyNetworkHandler(
 
     protected inner class StateInitialized : NettyState(State.INITIALIZED) {
         override suspend fun sendPacketImpl(packet: OutgoingPacket): Boolean {
-//            error("Cannot send packet when connection is not set. (resumeConnection not called.)")
+            //            error("Cannot send packet when connection is not set. (resumeConnection not called.)")
             return false
         }
 
@@ -307,7 +307,7 @@ internal open class NettyNetworkHandler(
      * @see StateObserver
      */
     protected inner class StateLoading(
-        private val connection: NettyChannel
+        private val connection: NettyChannel,
     ) : NettyState(State.LOADING) {
         init {
             coroutineContext.job.invokeOnCompletion {
@@ -380,7 +380,7 @@ internal open class NettyNetworkHandler(
     }
 
     protected inner class StateClosed(
-        val exception: Throwable?
+        val exception: Throwable?,
     ) : NettyState(State.CLOSED) {
         init {
             close(exception)
