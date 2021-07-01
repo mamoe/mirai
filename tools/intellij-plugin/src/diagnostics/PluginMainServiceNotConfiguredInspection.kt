@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServi
 import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.hasAnnotation
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
+import org.jetbrains.kotlin.idea.debugger.readAction
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
@@ -98,7 +99,8 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
         fqName: String,
     ): Boolean {
         return runWithCancellationCheck {
-            val sourceRoots = psiOrKtClass.module?.rootManager?.sourceRoots ?: return@runWithCancellationCheck false
+            val sourceRoots: Array<com.intellij.openapi.vfs.VirtualFile> =
+                psiOrKtClass.module?.rootManager?.sourceRoots ?: return@runWithCancellationCheck false
             val services = sourceRoots.asSequence().flatMap { file ->
                 SERVICE_FILE_NAMES.asSequence().mapNotNull { serviceFileName ->
                     file.findFileByRelativePath("META-INF/services/$serviceFileName")
