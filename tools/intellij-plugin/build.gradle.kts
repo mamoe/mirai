@@ -31,26 +31,32 @@ kotlin.target.compilations.forEach { kotlinCompilation ->
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = Versions.intellij
-    isDownloadSources = true
-    updateSinceUntilBuild = false
+    version.set(Versions.intellij)
+    downloadSources.set(true)
+    updateSinceUntilBuild.set(false)
 
-    sandboxDirectory = projectDir.resolve("run/idea-sandbox").absolutePath
+    sandboxDir.set(projectDir.resolve("run/idea-sandbox").absolutePath)
 
-    setPlugins(
-        "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
-        "java",
-        "gradle"
+    plugins.set(
+        listOf(
+            "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
+            "java",
+            "gradle"
+        )
     )
 }
 
-project.extra.set("javaTarget", JavaVersion.VERSION_11) // see build.gradle.kts:213 in root project
-
-tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class) {
+afterEvaluate {
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishPluginTask::class) {
     val pluginKey = project.findProperty("jetbrains.hub.key")?.toString()
     if (pluginKey != null) {
         logger.info("Found jetbrains.hub.key")
-        setToken(pluginKey)
+        token.set(pluginKey)
     } else {
         logger.info("jetbrains.hub.key not found")
     }
@@ -64,13 +70,14 @@ kotlin.target.compilations.all {
     kotlinOptions {
         apiVersion = "1.4"
         languageVersion = "1.4"
+        jvmTarget = "11"
     }
 }
 
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
-    sinceBuild("201.*")
-    untilBuild("215.*")
-    pluginDescription(
+    sinceBuild.set("201.*")
+    untilBuild.set("215.*")
+    pluginDescription.set(
         """
         Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Console</a>
         
@@ -82,7 +89,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
         </ul>
     """.trimIndent()
     )
-    changeNotes(
+    changeNotes.set(
         """
         See <a href="https://github.com/mamoe/mirai-console/releases">https://github.com/mamoe/mirai-console/releases</a>
     """.trimIndent()
