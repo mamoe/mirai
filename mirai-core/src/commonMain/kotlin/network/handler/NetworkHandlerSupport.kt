@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.SingleEntrantLock
+import net.mamoe.mirai.internal.utils.fromMiraiLogger
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -38,6 +39,7 @@ internal abstract class NetworkHandlerSupport(
 ) : NetworkHandler, CoroutineScope {
     final override val coroutineContext: CoroutineContext =
         additionalCoroutineContext.childScopeContext(SupervisorJob(context.bot.coroutineContext.job))
+            .plus(CoroutineExceptionHandler.fromMiraiLogger(logger))
 
     protected abstract fun initialState(): BaseStateImpl
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
@@ -217,7 +219,7 @@ internal abstract class NetworkHandlerSupport(
      * This is designed to be used inside [BaseStateImpl].
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
-        noinline new: () -> S
+        noinline new: () -> S,
     ): S? = synchronized(lockForSetStateWithOldInstance) {
         if (_state === this) {
             this@NetworkHandlerSupport.setState(new)
