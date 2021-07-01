@@ -56,9 +56,12 @@ internal open class NettyNetworkHandler(
     protected open fun handleExceptionInDecoding(error: Throwable) {
         if (error is OicqDecodingException) {
             if (error.targetException is EOFException) return
-            throw error.targetException
         }
-        throw error
+
+        coroutineContext[CoroutineExceptionHandler]!!.handleException(
+            coroutineContext,
+            ExceptionInPacketCodecException(error.unwrap<OicqDecodingException>())
+        )
     }
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {

@@ -51,6 +51,10 @@ internal interface PacketCodec {
     }
 }
 
+internal data class ExceptionInPacketCodecException(
+    override val cause: Throwable,
+) : IllegalStateException("Exception in PacketCodec.", cause)
+
 internal class OicqDecodingException(
     val targetException: Throwable
 ) : RuntimeException(
