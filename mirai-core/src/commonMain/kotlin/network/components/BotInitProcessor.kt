@@ -10,7 +10,10 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
@@ -22,28 +25,41 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPushForceOffline
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.Symbol
-import net.mamoe.mirai.utils.hierarchicalName
 
 
 /**
- * Facade of [ContactUpdater], [OtherClientUpdater], [ConfigPushSyncer].
  * Handles initialization jobs after successful logon.
+ *
+ * The initialization includes:
+ * - Downloading contact list, which might read from local cache
+ * - Synchronizing message sequence id
+ * - Synchronizing BDH session for resource uploading
+ *
+ * Calls [ContactUpdater], [OtherClientUpdater], [ConfigPushSyncer], ... (see [BotInitProcessorImpl])
  *
  * Attached to handler state [NetworkHandler.State.LOADING] [as state observer][asObserver] in [QQAndroidBot.stateObserverChain].
  */
 internal interface BotInitProcessor {
     /**
-     * Called when login was potentially halted. see [MessageSvcPushForceOffline]
+     * Do initialization. Implementor must ensure initialization runs exactly single time.
+     */
+    suspend fun init()
+
+    /**
+     * Called when login was potentially halted, meaning the data might not have been loaded,
+     * so we need to set the flag that helps keep single-initialization to UNINITIALIZED.
+     *
+     * This is called in [MessageSvcPushForceOffline], which is in case connection is closed by server during the [NetworkHandler.State.LOADING] state.
+     *
+     * See [BotInitProcessorImpl.state].
      */
     fun setLoginHalted()
-
-    suspend fun init(scope: CoroutineScope)
 
     companion object : ComponentKey<BotInitProcessor>
 }
 
 internal fun BotInitProcessor.asObserver(targetState: State = State.LOADING): StateObserver {
-    return JobAttachStateObserver("BotInitProcessor.init", targetState) { init(it) }
+    return JobAttachStateObserver("BotInitProcessor.init", targetState) { init() }
 }
 
 
@@ -64,10 +80,10 @@ internal class BotInitProcessorImpl(
         state.compareAndSet(expect = INITIALIZING, update = UNINITIALIZED)
     }
 
-    override suspend fun init(scope: CoroutineScope) {
+    override suspend fun init() {
         if (!state.compareAndSet(expect = UNINITIALIZED, update = INITIALIZING)) return
 
-        scope.launch(scope.hierarchicalName("BotInitProcessorImpl.init")) {
+        try {
             check(bot.isActive) { "bot is dead therefore network can't init." }
             context[ContactUpdater].closeAllContacts(CancellationException("re-init"))
 
@@ -86,11 +102,10 @@ internal class BotInitProcessorImpl(
 
             state.value = INITIALIZED
             bot.components[SsoProcessor].firstLoginSucceed = true
-        }.apply {
-            invokeOnCompletion { e ->
-                if (e != null) setLoginHalted()
-            }
-        }.join()
+        } catch (e: Throwable) {
+            setLoginHalted()
+            throw e
+        }
     }
 
     private inline fun runWithCoverage(block: () -> Unit) {

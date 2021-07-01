@@ -31,7 +31,7 @@ internal object MessageSvcPushForceOffline :
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushForceOffline) {
         components[AccountSecretsManager].invalidate() // otherwise you receive `MessageSvc.PushForceOffline` again just after logging in.
-        components[BotInitProcessor].setLoginHalted()
+        components[BotInitProcessor].setLoginHalted() // so that BotInitProcessor will be run on successful reconnection.
         network.close(ForceOfflineException(packet.title, "Closed by MessageSvc.PushForceOffline: $packet"))
     }
 }
