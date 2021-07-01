@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij
 
+import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.intellij.diagnostics.CommandDeclarationChecker
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
 import net.mamoe.mirai.console.intellij.diagnostics.PluginDataValuesChecker
