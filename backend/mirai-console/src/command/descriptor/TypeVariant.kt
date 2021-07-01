@@ -64,7 +64,8 @@ public object MessageContentTypeVariant : TypeVariant<MessageContent> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageContent>()
     override fun mapValue(valueArgument: Message): MessageContent =
-        valueArgument.castOrNull<MessageContent>() ?: error("Accepts MessageContent only but given ${valueArgument.kClassQualifiedName}")
+        valueArgument.castOrNull<MessageContent>()
+            ?: error("Accepts MessageContent only but given ${valueArgument.kClassQualifiedName}")
 }
 
 @ExperimentalCommandDescriptors

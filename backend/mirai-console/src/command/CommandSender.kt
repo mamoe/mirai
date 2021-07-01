@@ -206,21 +206,24 @@ public interface CommandSender : CoroutineScope, Permittee {
          */
         @JvmStatic
         @JvmName("from")
-        public fun GroupTempMessageEvent.toCommandSender(): GroupTempCommandSenderOnMessage = GroupTempCommandSenderOnMessage(this)
+        public fun GroupTempMessageEvent.toCommandSender(): GroupTempCommandSenderOnMessage =
+            GroupTempCommandSenderOnMessage(this)
 
         /**
          * 构造 [StrangerCommandSenderOnMessage]
          */
         @JvmStatic
         @JvmName("from")
-        public fun StrangerMessageEvent.toCommandSender(): StrangerCommandSenderOnMessage = StrangerCommandSenderOnMessage(this)
+        public fun StrangerMessageEvent.toCommandSender(): StrangerCommandSenderOnMessage =
+            StrangerCommandSenderOnMessage(this)
 
         /**
          * 构造 [OtherClientCommandSenderOnMessage]
          */
         @JvmStatic
         @JvmName("from")
-        public fun OtherClientMessageEvent.toCommandSender(): OtherClientCommandSenderOnMessage = OtherClientCommandSenderOnMessage(this)
+        public fun OtherClientMessageEvent.toCommandSender(): OtherClientCommandSenderOnMessage =
+            OtherClientCommandSenderOnMessage(this)
 
         /**
          * 构造 [CommandSenderOnMessage]
@@ -599,7 +602,8 @@ public sealed class TempCommandSender(
 @Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
 public open class GroupTempCommandSender internal constructor(
     public final override val user: NormalMember,
-) : @Suppress("DEPRECATION_ERROR") TempCommandSender(user), CoroutineScope by user.childScope("GroupTempCommandSender") {
+) : @Suppress("DEPRECATION_ERROR") TempCommandSender(user),
+    CoroutineScope by user.childScope("GroupTempCommandSender") {
     public override val group: Group get() = user.group
     public override val subject: NormalMember get() = user
     public override fun toString(): String = "GroupTempCommandSender($user)"
@@ -649,7 +653,8 @@ public open class OtherClientCommandSender internal constructor(
     public override val permitteeId: PermitteeId = AbstractPermitteeId.AnyOtherClient
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: String): MessageReceipt<OtherClient> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: String): MessageReceipt<OtherClient> =
+        sendMessage(PlainText(message))
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> = client.sendMessage(message)
@@ -696,7 +701,10 @@ public class MemberCommandSenderOnMessage internal constructor(
  */
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempCommandSenderOnMessage 已更改为 GroupTempCommandSenderOnMessage",
-    replaceWith = ReplaceWith("GroupTempCommandSenderOnMessage", "net.mamoe.mirai.console.command.GroupTempCommandSenderOnMessage"),
+    replaceWith = ReplaceWith(
+        "GroupTempCommandSenderOnMessage",
+        "net.mamoe.mirai.console.command.GroupTempCommandSenderOnMessage"
+    ),
     DeprecationLevel.ERROR
 )
 public sealed class TempCommandSenderOnMessage(

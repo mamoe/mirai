@@ -103,7 +103,10 @@ class PluginCoordinatesStep(
                             .forEach { v -> miraiVersionBox.addItem(v) }
                     },
                     onFailure = { e ->
-                        Validation.popup("Failed to download version list, please select a version by yourself. \nCause: ${e.cause ?: e}", miraiVersionBox)
+                        Validation.popup(
+                            "Failed to download version list, please select a version by yourself. \nCause: ${e.cause ?: e}",
+                            miraiVersionBox
+                        )
                     }
                 )
 

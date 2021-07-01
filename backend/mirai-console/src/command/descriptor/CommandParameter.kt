@@ -81,7 +81,10 @@ public interface CommandValueParameter<T : Any?> : CommandParameter<T> {
     public fun accepts(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): Boolean =
         accepting(argument, commandArgumentContext).isAcceptable
 
-    public fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance
+    public fun accepting(
+        argument: CommandValueArgument,
+        commandArgumentContext: CommandArgumentContext?
+    ): ArgumentAcceptance
 }
 
 @ExperimentalCommandDescriptors
@@ -155,7 +158,10 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         }
     }
 
-    public override fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
+    public override fun accepting(
+        argument: CommandValueArgument,
+        commandArgumentContext: CommandArgumentContext?
+    ): ArgumentAcceptance {
         if (isVararg) {
             val arrayElementType = this.type.arguments.single() // Array<T>
             return acceptingImpl(arrayElementType.type ?: ANY_TYPE, argument, commandArgumentContext)
@@ -205,7 +211,11 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
 
         override fun toString(): String = "<$expectingValue>"
 
-        override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
+        override fun acceptingImpl(
+            expectingType: KType,
+            argument: CommandValueArgument,
+            commandArgumentContext: CommandArgumentContext?
+        ): ArgumentAcceptance {
             return if (argument.value.content.equals(expectingValue, ignoreCase)) {
                 ArgumentAcceptance.Direct
             } else ArgumentAcceptance.Impossible

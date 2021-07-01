@@ -56,7 +56,8 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
 
             ;
 
-            public object Parser : CommandValueArgumentParser<ConfigurationKey>, InternalCommandValueArgumentParserExtensions<ConfigurationKey>() {
+            public object Parser : CommandValueArgumentParser<ConfigurationKey>,
+                InternalCommandValueArgumentParserExtensions<ConfigurationKey>() {
                 override fun parse(raw: String, sender: CommandSender): ConfigurationKey {
                     val key = values().find { it.name.equals(raw, ignoreCase = true) }
                     if (key != null) return key
@@ -70,7 +71,8 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
             PLAIN,
             MD5;
 
-            public object Parser : CommandValueArgumentParser<ConfigurationKey>, InternalCommandValueArgumentParserExtensions<ConfigurationKey>() {
+            public object Parser : CommandValueArgumentParser<ConfigurationKey>,
+                InternalCommandValueArgumentParserExtensions<ConfigurationKey>() {
                 override fun parse(raw: String, sender: CommandSender): ConfigurationKey {
                     val key = ConfigurationKey.values().find { it.name.equals(raw, ignoreCase = true) }
                     if (key != null) return key

@@ -23,7 +23,11 @@ import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 
 class CommandDeclarationChecker : DeclarationChecker {
-    override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
+    override fun check(
+        declaration: KtDeclaration,
+        descriptor: DeclarationDescriptor,
+        context: DeclarationCheckerContext
+    ) {
         if (declaration !is KtNamedFunction) return
 
         // exclusive checks or return

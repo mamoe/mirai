@@ -63,7 +63,8 @@ public interface JvmPlugin : Plugin, CoroutineScope,
      * @receiver 组件容器
      */
     @RestrictedScope(COMMAND_REGISTER, PERMISSION_REGISTER)
-    public fun PluginComponentStorage.onLoad() {}
+    public fun PluginComponentStorage.onLoad() {
+    }
 
     /**
      * 在插件被启用时调用, 可能会被调用多次

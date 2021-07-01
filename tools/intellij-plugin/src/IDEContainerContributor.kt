@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.intellij
 
-import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.intellij.diagnostics.CommandDeclarationChecker
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
 import net.mamoe.mirai.console.intellij.diagnostics.PluginDataValuesChecker
@@ -52,7 +51,11 @@ class IDEContainerContributor : StorageComponentContainerContributor {
     class DeclarationCheckerIgnoringExceptions(
         private val delegate: DeclarationChecker
     ) : DeclarationChecker {
-        override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
+        override fun check(
+            declaration: KtDeclaration,
+            descriptor: DeclarationDescriptor,
+            context: DeclarationCheckerContext
+        ) {
             runIgnoringErrors { delegate.check(declaration, descriptor, context) }
         }
 
@@ -67,7 +70,8 @@ fun ModuleDescriptor.hasMiraiConsoleDependency(): Boolean {
             ?: return false
     val facet = KotlinFacet.get(module) ?: return false
     val pluginClasspath =
-        facet.configuration.settings.compilerArguments?.castOrNull<K2JVMCompilerArguments>()?.classpathAsList0 ?: return false
+        facet.configuration.settings.compilerArguments?.castOrNull<K2JVMCompilerArguments>()?.classpathAsList0
+            ?: return false
 
     if (pluginClasspath.none { path -> path.name.contains(pluginJpsJarName) }) return false
     return true

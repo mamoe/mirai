@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
+import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.references.resolveToDescriptors
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
@@ -26,6 +27,7 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
+import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
@@ -36,15 +38,14 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeProjection
 import org.jetbrains.kotlin.types.typeUtil.supertypes
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
-import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
-import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
 
 
 /**
  * For CompositeCommand.SubCommand
  */
 fun KtNamedFunction.isCompositeCommandSubCommand(): Boolean = this.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME)
-fun PsiModifierListOwner.isCompositeCommandSubCommand(): Boolean = this.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME)
+fun PsiModifierListOwner.isCompositeCommandSubCommand(): Boolean =
+    this.hasAnnotation(COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME)
 
 internal fun PsiModifierListOwner.hasAnnotation(fqName: FqName): Boolean = this.hasAnnotation(fqName.asString())
 
@@ -118,7 +119,14 @@ fun KtClass.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqNam
 fun PsiElement.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)
 
 val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.getKotlinFqName() }
-val PsiClass.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { clazz -> clazz.qualifiedName?.let { FqName(it) } }
+val PsiClass.allSuperNames: Sequence<FqName>
+    get() = allSuperTypes.mapNotNull { clazz ->
+        clazz.qualifiedName?.let {
+            FqName(
+                it
+            )
+        }
+    }
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 @kotlin.internal.LowPriorityInOverloadResolution
@@ -247,7 +255,8 @@ fun ConstantValue<*>.selfOrChildrenConstantStrings(): Sequence<String> {
 }
 
 fun ClassDescriptor.findMemberFunction(name: Name, vararg typeProjection: TypeProjection): SimpleFunctionDescriptor? {
-    return getMemberScope(typeProjection.toList()).getContributedFunctions(name, NoLookupLocation.FROM_IDE).firstOrNull()
+    return getMemberScope(typeProjection.toList()).getContributedFunctions(name, NoLookupLocation.FROM_IDE)
+        .firstOrNull()
 }
 
 fun DeclarationDescriptor.companionObjectDescriptor(): ClassDescriptor? {
@@ -260,7 +269,9 @@ fun DeclarationDescriptor.companionObjectDescriptor(): ClassDescriptor? {
 fun KtExpression.resolveStringConstantValues(bindingContext: BindingContext): Sequence<String> {
     when (this) {
         is KtNameReferenceExpression -> {
-            when (val descriptor = references.firstIsInstance<KtSimpleNameReference>().resolveToDescriptors(bindingContext).singleOrNull()) {
+            when (val descriptor =
+                references.firstIsInstance<KtSimpleNameReference>().resolveToDescriptors(bindingContext)
+                    .singleOrNull()) {
                 is VariableDescriptor -> {
                     val compileTimeConstant = descriptor.compileTimeInitializer ?: return emptySequence()
                     return compileTimeConstant.selfOrChildrenConstantStrings()

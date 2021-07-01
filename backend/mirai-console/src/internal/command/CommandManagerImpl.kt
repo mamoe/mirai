@@ -61,7 +61,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
     ///// IMPL
 
 
-    override fun getRegisteredCommands(owner: CommandOwner): List<Command> = _registeredCommands.filter { it.owner == owner }
+    override fun getRegisteredCommands(owner: CommandOwner): List<Command> =
+        _registeredCommands.filter { it.owner == owner }
+
     override val allRegisteredCommands: List<Command> get() = _registeredCommands.toList() // copy
     override val commandPrefix: String get() = CommandConfig.commandPrefix
     override fun unregisterAllCommands(owner: CommandOwner) {

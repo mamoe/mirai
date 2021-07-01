@@ -116,7 +116,8 @@ internal fun <K, V> PluginData.createCompositeMapValueImpl(
     valueToV: (Value<V>) -> V = Value<V>::value,
     applyToShadowedMap: ((MutableMap<K, V>) -> (MutableMap<K, V>))? = null
 ): CompositeMapValueImpl<K, V> {
-    return object : CompositeMapValueImpl<K, V>(mapInitializer, kToValue, vToValue, valueToK, valueToV, applyToShadowedMap) {
+    return object :
+        CompositeMapValueImpl<K, V>(mapInitializer, kToValue, vToValue, valueToK, valueToV, applyToShadowedMap) {
         override fun onChanged() = this@createCompositeMapValueImpl.onValueChanged(this)
     }
 }

@@ -50,7 +50,8 @@ class ProvideDefaultValueFix(
         ImportInsertHelper.getInstance(project).importDescriptor(file, referee)
          */
 
-        val typeName = typeProjection.element?.typeReference?.typeElement?.castOrNull<KtUserType>()?.referencedName ?: return
+        val typeName =
+            typeProjection.element?.typeReference?.typeElement?.castOrNull<KtUserType>()?.referencedName ?: return
         val argumentList = element.findChild<KtValueArgumentList>() ?: return
         val offset = argumentList.leftParenthesis?.endOffset ?: return
 
@@ -62,7 +63,8 @@ class ProvideDefaultValueFix(
 
     companion object : KotlinSingleIntentionActionFactory() {
         override fun createAction(diagnostic: Diagnostic): IntentionAction? {
-            val diagnostic1 = diagnostic.castOrNull<DiagnosticWithParameters2<KtTypeProjection, KtCallExpression, *>>() ?: return null
+            val diagnostic1 =
+                diagnostic.castOrNull<DiagnosticWithParameters2<KtTypeProjection, KtCallExpression, *>>() ?: return null
             return ProvideDefaultValueFix(diagnostic1.a, SmartPointerManager.createPointer(diagnostic1.psiElement))
         }
 

@@ -18,7 +18,10 @@ import net.mamoe.mirai.console.extension.SingletonExtension
 @ExperimentalCommandDescriptors
 public interface CommandCallResolverProvider : SingletonExtension<CommandCallResolver> {
     public companion object ExtensionPoint :
-        AbstractSingletonExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class, BuiltInCommandCallResolver)
+        AbstractSingletonExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(
+            CommandCallResolverProvider::class,
+            BuiltInCommandCallResolver
+        )
 }
 
 @ExperimentalCommandDescriptors

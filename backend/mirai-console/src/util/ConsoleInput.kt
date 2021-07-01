@@ -18,7 +18,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.util.ConsoleInputImpl
 
 /**
- * Console 输入. 由于 console 接管了 [标准输入][System.in], [readLine] 等操作需要在这里进行.
+ * Console 输入. 由于 console 接管了 [标准输入][System. in], [readLine] 等操作需要在这里进行.
  */
 public interface ConsoleInput {
     /**

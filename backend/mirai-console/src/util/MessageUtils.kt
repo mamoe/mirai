@@ -17,7 +17,8 @@ import net.mamoe.mirai.message.data.MessageContent
 @ConsoleExperimentalApi
 public object MessageUtils {
     @JvmStatic
-    public fun MessageChain.messageContentsSequence(): Sequence<MessageContent> = asSequence().filterIsInstance<MessageContent>()
+    public fun MessageChain.messageContentsSequence(): Sequence<MessageContent> =
+        asSequence().filterIsInstance<MessageContent>()
 
     @JvmStatic
     public fun MessageChain.firstContent(): MessageContent = messageContentsSequence().first()

@@ -60,7 +60,8 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
          */
         valueName: String,
         annotations: List<Annotation>,
-    ): T = value.apply { this@AbstractPluginData.valueNodes.add(ValueNode(valueName, this, annotations, this.serializer)) }
+    ): T =
+        value.apply { this@AbstractPluginData.valueNodes.add(ValueNode(valueName, this, annotations, this.serializer)) }
 
     /**
      * 使用 `by value()` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪, 并创建 [ValueNode] 加入 [valueNodes]

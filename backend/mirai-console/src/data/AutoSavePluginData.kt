@@ -18,7 +18,9 @@ import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.TimedTask
 import net.mamoe.mirai.console.util.launchTimedTask
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.withSwitch
 
 /**
  * 链接自动保存的 [PluginData].
@@ -52,7 +54,7 @@ public open class AutoSavePluginData private constructor(
             ?.let { return }
         MiraiConsole.mainLogger.error(
             "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
-                "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner_::class.qualifiedNameOrTip}",
+                    "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner_::class.qualifiedNameOrTip}",
             e
         )
     }

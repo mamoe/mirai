@@ -268,7 +268,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             if (::instance.isInitialized && instance.isActive) {
                 error(
                     "Mirai Console is already initialized and is currently running. " +
-                        "Run MiraiConsole.cancel to kill old instance before starting another instance."
+                            "Run MiraiConsole.cancel to kill old instance before starting another instance."
                 )
             }
             this@Companion.instance = this

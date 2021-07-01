@@ -44,13 +44,16 @@ public interface JvmPluginDescription : PluginDescription {
         @JvmStatic
         public fun loadFromResource(
             filename: String = "plugin.yml",
-            pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader() ?: error("Cannot find caller classloader, please specify manually."),
+            pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader()
+                ?: error("Cannot find caller classloader, please specify manually."),
         ): JvmPluginDescription {
-            val stream = pluginClassloader.getResourceAsStream(filename) ?: error("Cannot find plugin description resource '$filename'")
+            val stream = pluginClassloader.getResourceAsStream(filename)
+                ?: error("Cannot find plugin description resource '$filename'")
 
             val bytes = stream.use { it.readBytes() }
 
-            return Yaml.decodeFromString(SimpleJvmPluginDescription.SerialData.serializer(), String(bytes)).toJvmPluginDescription()
+            return Yaml.decodeFromString(SimpleJvmPluginDescription.SerialData.serializer(), String(bytes))
+                .toJvmPluginDescription()
         }
     }
 }

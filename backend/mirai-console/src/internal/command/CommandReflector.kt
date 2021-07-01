@@ -148,7 +148,11 @@ internal class CommandReflector(
     }
 
     companion object {
-        fun generateUsage(command: Command, annotationResolver: SubCommandAnnotationResolver?, overloads: Iterable<CommandSignature>): String {
+        fun generateUsage(
+            command: Command,
+            annotationResolver: SubCommandAnnotationResolver?,
+            overloads: Iterable<CommandSignature>
+        ): String {
             return overloads.joinToString("\n") { subcommand ->
                 buildString {
                     if (command.prefixOptional) {
@@ -250,7 +254,9 @@ internal class CommandReflector(
                 var receiverParameter = function.extensionReceiverParameter
                 if (receiverParameter == null && valueParameters.isNotEmpty()) {
                     val valueFirstParameter = valueParameters[0]
-                    if (valueFirstParameter.type.classifierAsKClassOrNull()?.isSubclassOf(CommandSender::class) == true) {
+                    if (valueFirstParameter.type.classifierAsKClassOrNull()
+                            ?.isSubclassOf(CommandSender::class) == true
+                    ) {
                         receiverParameter = valueFirstParameter
                         valueParameters.removeAt(0)
                     }
@@ -271,7 +277,8 @@ internal class CommandReflector(
                             continue
                         }
                         val functionParameter =
-                            functionValueParameters[commandParameter] ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
+                            functionValueParameters[commandParameter]
+                                ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
                         args[functionParameter] = value
                     }
 
@@ -279,7 +286,7 @@ internal class CommandReflector(
                     if (instanceParameter != null) {
                         check(instanceParameter.type.classifierAsKClass().isInstance(command)) {
                             "Bad command call resolved. " +
-                                "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${command::class}."
+                                    "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${command::class}."
                         }
                         args[instanceParameter] = command
                     }
@@ -287,7 +294,7 @@ internal class CommandReflector(
                     if (receiverParameter != null) {
                         check(receiverParameter.type.classifierAsKClass().isInstance(call.caller)) {
                             "Bad command call resolved. " +
-                                "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
+                                    "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
                         }
                         args[receiverParameter] = call.caller
                     }
@@ -303,18 +310,29 @@ internal class CommandReflector(
 
     private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<out CommandSender> {
         check(!this.isVararg) { "Receiver cannot be vararg." }
-        check(this.type.classifierAsKClass().isSubclassOf(CommandSender::class)) { "Receiver must be subclass of CommandSender" }
+        check(
+            this.type.classifierAsKClass().isSubclassOf(CommandSender::class)
+        ) { "Receiver must be subclass of CommandSender" }
 
         return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
     }
 
-    private fun createStringConstantParameterForName(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
+    private fun createStringConstantParameterForName(
+        index: Int,
+        expectingValue: String
+    ): AbstractCommandValueParameter.StringConstant {
         return AbstractCommandValueParameter.StringConstant("#$index", expectingValue, true)
     }
 
     private fun KParameter.toUserDefinedCommandParameter(): AbstractCommandValueParameter.UserDefinedType<*> {
-        return AbstractCommandValueParameter.UserDefinedType<Any?>(nameForCommandParameter(), this.isOptional, this.isVararg, this.type) // Any? is erased
+        return AbstractCommandValueParameter.UserDefinedType<Any?>(
+            nameForCommandParameter(),
+            this.isOptional,
+            this.isVararg,
+            this.type
+        ) // Any? is erased
     }
 
-    private fun KParameter.nameForCommandParameter(): String? = annotationResolver.getAnnotatedName(command, this) ?: this.name
+    private fun KParameter.nameForCommandParameter(): String? =
+        annotationResolver.getAnnotatedName(command, this) ?: this.name
 }

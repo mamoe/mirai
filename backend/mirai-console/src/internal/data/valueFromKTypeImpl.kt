@@ -146,7 +146,7 @@ internal fun KClass<*>.createInstanceSmart(): Any {
 
         ConcurrentHashMap::class,
         ConcurrentMap::class,
-        -> ConcurrentHashMap<Any?,Any?>()
+        -> ConcurrentHashMap<Any?, Any?>()
 
         else -> createInstanceOrNull()
             ?: error("Cannot create instance or find a initial value for ${this.qualifiedNameOrTip}")

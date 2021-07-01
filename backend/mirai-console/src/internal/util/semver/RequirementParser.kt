@@ -271,7 +271,10 @@ internal class RequirementParser {
                                 val isStartingOfGroup = nextToken is Token.GroupBod.Left
                                 if (isStartingOfGroup != isEndingOfGroup) {
                                     fun getType(type: Boolean) = if (type) "`}`" else "<EOF>"
-                                    next.ia(reader, "Except ${getType(isStartingOfGroup)} but got ${getType(isEndingOfGroup)}")
+                                    next.ia(
+                                        reader,
+                                        "Except ${getType(isStartingOfGroup)} but got ${getType(isEndingOfGroup)}"
+                                    )
                                 } else {
                                     // reader.insertToken = next
                                     break
@@ -284,7 +287,7 @@ internal class RequirementParser {
                                     fun getMode(type: Boolean) = if (type) "`&&`" else "`||`"
                                     next.ia(
                                         reader, "Cannot change logic mode after setting. " +
-                                            "Except ${getMode(mode)} but got ${getMode(stx)}"
+                                                "Except ${getMode(mode)} but got ${getMode(stx)}"
                                     )
                                 }
                                 chunks.add(process(reader))

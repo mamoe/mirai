@@ -143,4 +143,6 @@ internal val IGNORED_DEPENDENCIES_IN_SHADOW = arrayOf(
     "net.mamoe:kotlin-jvm-blocking-bridge-common",
     "net.mamoe:kotlin-jvm-blocking-bridge-metadata",
     "net.mamoe:kotlin-jvm-blocking-bridge-jvm"
-).map { it.toLowerCase() }.map { MiraiConsoleExtension.ExcludedDependency(it.substringBefore(':'), it.substringAfterLast(':')) }.toTypedArray()
+).map { it.toLowerCase() }
+    .map { MiraiConsoleExtension.ExcludedDependency(it.substringBefore(':'), it.substringAfterLast(':')) }
+    .toTypedArray()

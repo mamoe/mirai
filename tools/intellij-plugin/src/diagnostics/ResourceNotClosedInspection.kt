@@ -71,11 +71,19 @@ fun KtReferenceExpression.resolveCalleeFunction(): KtNamedFunction? {
     return originalCallee
 }
 
-fun KtNamedFunction.isNamedMemberFunctionOf(className: String, functionName: String, extensionReceiver: String? = null): Boolean {
+fun KtNamedFunction.isNamedMemberFunctionOf(
+    className: String,
+    functionName: String,
+    extensionReceiver: String? = null
+): Boolean {
     if (extensionReceiver != null) {
-        if (this.receiverTypeReference?.resolveReferencedType()?.getKotlinFqName()?.toString() != extensionReceiver) return false
+        if (this.receiverTypeReference?.resolveReferencedType()?.getKotlinFqName()
+                ?.toString() != extensionReceiver
+        ) return false
     }
-    return this.name == functionName && this.containingClassOrObject?.allSuperTypes?.any { it.getKotlinFqName()?.toString() == className } == true
+    return this.name == functionName && this.containingClassOrObject?.allSuperTypes?.any {
+        it.getKotlinFqName()?.toString() == className
+    } == true
 }
 
 @Suppress("DialogTitleCapitalization")
@@ -110,7 +118,8 @@ object ResourceNotClosedInspectionProcessors {
 
             if (!parent.receiverExpression.isCallingExternalResourceCreators()) return
 
-            class Fix(private val functionName: String) : KotlinCrossLanguageQuickFixAction<KtDotQualifiedExpression>(parent), KotlinUniversalQuickFix {
+            class Fix(private val functionName: String) :
+                KotlinCrossLanguageQuickFixAction<KtDotQualifiedExpression>(parent), KotlinUniversalQuickFix {
                 override fun getFamilyName(): String = FAMILY_NAME
                 override fun getText(): String = "修复 $functionName"
 

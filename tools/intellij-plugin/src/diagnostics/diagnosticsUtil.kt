@@ -30,7 +30,8 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlinx.serialization.compiler.resolve.toClassDescriptor
 
 fun KotlinType.isSubtypeOfReadOnlyPluginData(): Boolean {
-    return this.toClassDescriptor?.getAllSuperClassifiers()?.any { it.fqNameOrNull() == READ_ONLY_PLUGIN_DATA_FQ_NAME } == true
+    return this.toClassDescriptor?.getAllSuperClassifiers()
+        ?.any { it.fqNameOrNull() == READ_ONLY_PLUGIN_DATA_FQ_NAME } == true
 }
 
 fun DeclarationCheckerContext.report(diagnostic: Diagnostic) {

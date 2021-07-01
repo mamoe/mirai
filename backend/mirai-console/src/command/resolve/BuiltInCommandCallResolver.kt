@@ -28,7 +28,8 @@ import net.mamoe.mirai.message.data.toMessageChain
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
     override fun resolve(call: CommandCall): CommandResolveResult {
-        val callee = CommandManager.matchCommand(call.calleeName) ?: return CommandResolveResult(CommandExecuteResult.UnresolvedCommand(call))
+        val callee = CommandManager.matchCommand(call.calleeName)
+            ?: return CommandResolveResult(CommandExecuteResult.UnresolvedCommand(call))
 
         val valueArguments = call.valueArguments
         val context = callee.safeCast<CommandArgumentContextAware>()?.context
@@ -95,7 +96,10 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
         val receiverParameter = signature.receiverParameter
         if (receiverParameter?.type?.classifierAsKClass()?.isInstance(caller) == false) {
             errorSink.reportUnmatched(
-                UnmatchedCommandSignature(signature, FailureReason.InapplicableReceiverArgument(receiverParameter, caller))
+                UnmatchedCommandSignature(
+                    signature,
+                    FailureReason.InapplicableReceiverArgument(receiverParameter, caller)
+                )
             )// not compatible receiver
             return null
         }
@@ -107,7 +111,12 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
         val remainingParameters = valueParameters.drop(zipped.size).toMutableList()
 
         if (remainingParameters.any { !it.isOptional && !it.isVararg }) {
-            errorSink.reportUnmatched(UnmatchedCommandSignature(signature, FailureReason.NotEnoughArguments))// not enough args. // vararg can be empty.
+            errorSink.reportUnmatched(
+                UnmatchedCommandSignature(
+                    signature,
+                    FailureReason.NotEnoughArguments
+                )
+            )// not enough args. // vararg can be empty.
             return null
         }
 
@@ -122,9 +131,13 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
             if (valueArguments.size > valueParameters.size && zipped.last().first.isVararg) {
                 // merge vararg arguments
                 val (varargParameter, _)
-                    = zipped.removeLast()
+                        = zipped.removeLast()
 
-                zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.toMessageChain()))
+                zipped.add(
+                    varargParameter to DefaultCommandValueArgument(
+                        valueArguments.drop(zipped.size).map { it.value }.toMessageChain()
+                    )
+                )
             } else {
                 // add default empty vararg argument
                 val remainingVararg = remainingParameters.find { it.isVararg }
@@ -140,8 +153,12 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
                     val accepting = parameter.accepting(argument, context)
                     if (accepting.isNotAcceptable) {
-                        errorSink.reportUnmatched(UnmatchedCommandSignature(signature,
-                            FailureReason.InapplicableValueArgument(parameter, argument)))// argument type not assignable
+                        errorSink.reportUnmatched(
+                            UnmatchedCommandSignature(
+                                signature,
+                                FailureReason.InapplicableValueArgument(parameter, argument)
+                            )
+                        )// argument type not assignable
                         return null
                     }
                     ArgumentAcceptanceWithIndex(index, accepting)
@@ -173,7 +190,8 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 val candidates = list
                     .asSequence().filterIsInstance<ResolveData>()
                     .flatMap { phase ->
-                        phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }.map { phase to it }
+                        phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }
+                            .map { phase to it }
                     }.toList()
 
                 candidates.singleOrNull()?.let { return it.first } // single Direct

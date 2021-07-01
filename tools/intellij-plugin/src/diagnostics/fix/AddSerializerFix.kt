@@ -43,7 +43,9 @@ class AddSerializerFix(
 
     companion object : KotlinSingleIntentionActionFactory() {
         override fun createAction(diagnostic: Diagnostic): IntentionAction? {
-            val classDescriptor = diagnostic.castOrNull<DiagnosticWithParameters1<*, *>>()?.a?.castOrNull<ClassDescriptor>() ?: return null
+            val classDescriptor =
+                diagnostic.castOrNull<DiagnosticWithParameters1<*, *>>()?.a?.castOrNull<ClassDescriptor>()
+                    ?: return null
             val ktClassOrObject = classDescriptor.findPsi()?.castOrNull<KtClassOrObject>() ?: return null
             return AddSerializerFix(ktClassOrObject)
         }

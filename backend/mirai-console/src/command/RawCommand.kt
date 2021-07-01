@@ -61,7 +61,12 @@ public abstract class RawCommand(
     override val overloads: List<@JvmWildcard CommandSignature> = listOf(
         CommandSignatureImpl(
             receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
-            valueParameters = listOf(AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>("args", true))
+            valueParameters = listOf(
+                AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>(
+                    "args",
+                    true
+                )
+            )
         ) { call ->
             val sender = call.caller
             val arguments = call.rawValueArguments

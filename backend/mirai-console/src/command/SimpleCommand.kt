@@ -64,7 +64,10 @@ public abstract class SimpleCommand(
         reflector.findSubCommands().also {
             reflector.validate(it)
             if (it.isEmpty())
-                throw IllegalCommandDeclarationException(this, "SimpleCommand must have at least one subcommand, whereas zero present.")
+                throw IllegalCommandDeclarationException(
+                    this,
+                    "SimpleCommand must have at least one subcommand, whereas zero present."
+                )
         }
     }
 

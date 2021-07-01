@@ -124,7 +124,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.info { "Starting mirai-console..." }
             mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
             mainLogger.info { frontEndDescription.render() }
-            mainLogger.info { "Welcome to visit https://mirai.mamoe.net/"}
+            mainLogger.info { "Welcome to visit https://mirai.mamoe.net/" }
         }
 
         phase("check coroutineContext") {

@@ -70,7 +70,12 @@ sealed class GradleProjectCreator(
             VfsUtil.createDirectoryIfMissing(root, "src/main/${model.languageType.sourceSetDirName}")
             VfsUtil.createDirectoryIfMissing(root, "src/main/resources")
             addFileChanged(root.writeChild(model.languageType.pluginMainClassFile(this)))
-            addFileChanged(root.writeChild("src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin", model.mainClassQualifiedName))
+            addFileChanged(
+                root.writeChild(
+                    "src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin",
+                    model.mainClassQualifiedName
+                )
+            )
             addFileChanged(root.writeChild(".gitignore", getTemplate(FT.Gitignore)))
             addFileChanged(root.writeChild("gradle.properties", getTemplate(FT.GradleProperties)))
             addFileChanged(root.writeChild("src/test/kotlin/RunTerminal.kt", getTemplate(FT.RunTerminal)))

@@ -107,6 +107,7 @@ internal abstract class ShortValueImpl : ShortValue, SerializerAwareValue<Short>
         else value.hashCode() * 31
     }
 }
+
 internal abstract class IntValueImpl : IntValue, SerializerAwareValue<Int>, KSerializer<Unit>, AbstractValueImpl<Int> {
     constructor()
     constructor(default: Int) {

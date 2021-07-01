@@ -26,14 +26,15 @@ interface ILanguageType {
 
 sealed class LanguageType : ILanguageType {
     @Suppress("UNCHECKED_CAST")
-    fun <T: String?> escapeString(string: T): T {
+    fun <T : String?> escapeString(string: T): T {
         string ?: return null as T
         return string
             .replace("\\", "\\\\")
             .replace("\n", "\\n")
             .replace("\"", "\\\"") as T
     }
-    abstract fun <T: String?> escapeRawString(string: T): T
+
+    abstract fun <T : String?> escapeRawString(string: T): T
 
     companion object {
         val DEFAULT = Kotlin
@@ -66,6 +67,7 @@ sealed class LanguageType : ILanguageType {
                 content = creator.project.getTemplate(FT.PluginMainJava, templateProperties)
             )
         }
+
         override fun <T : String?> escapeRawString(string: T): T = escapeString(string)
     }
 }

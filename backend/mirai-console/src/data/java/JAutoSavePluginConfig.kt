@@ -37,4 +37,5 @@ import net.mamoe.mirai.console.data.PluginData
  * @see JAutoSavePluginData
  * @see PluginConfig
  */
-public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName), PluginConfig
+public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName),
+    PluginConfig

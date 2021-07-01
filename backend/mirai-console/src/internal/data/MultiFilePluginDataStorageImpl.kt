@@ -81,7 +81,7 @@ internal open class MultiFilePluginDataStorageImpl(
                 // Just use mainLogger for convenience.
                 MiraiConsole.mainLogger.warning(
                     "Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. " +
-                        "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new",
+                            "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new",
                     it
                 )
                 json.encodeToString(instance.updaterSerializer, Unit)

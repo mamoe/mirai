@@ -25,7 +25,8 @@
     <depends>com.intellij.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <moduleType id="MIRAI_MODULE_TYPE" implementationClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleType"/>
+        <moduleType id="MIRAI_MODULE_TYPE"
+                    implementationClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleType"/>
         <moduleBuilder id="MIRAI_MODULE" builderClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleBuilder"/>
 
         <fileTemplateGroup implementation="net.mamoe.mirai.console.intellij.assets.FileTemplateRegistrar"/>

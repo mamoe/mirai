@@ -113,10 +113,10 @@ public object PlainTextValueArgumentParser : InternalCommandValueArgumentParserE
 public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExtensions<Boolean>() {
     public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
-            || str.equals("yes", ignoreCase = true)
-            || str.equals("enabled", ignoreCase = true)
-            || str.equals("on", ignoreCase = true)
-            || str.equals("1", ignoreCase = true)
+                || str.equals("yes", ignoreCase = true)
+                || str.equals("enabled", ignoreCase = true)
+                || str.equals("on", ignoreCase = true)
+                || str.equals("1", ignoreCase = true)
     }
 }
 
@@ -217,11 +217,21 @@ public object ExistingUserValueArgumentParser : InternalCommandValueArgumentPars
     """.trimIndent()
 
     override fun parse(raw: String, sender: CommandSender): User {
-        return parseImpl(sender, raw, ExistingMemberValueArgumentParser::parse, ExistingFriendValueArgumentParser::parse)
+        return parseImpl(
+            sender,
+            raw,
+            ExistingMemberValueArgumentParser::parse,
+            ExistingFriendValueArgumentParser::parse
+        )
     }
 
     override fun parse(raw: MessageContent, sender: CommandSender): User {
-        return parseImpl(sender, raw, ExistingMemberValueArgumentParser::parse, ExistingFriendValueArgumentParser::parse)
+        return parseImpl(
+            sender,
+            raw,
+            ExistingMemberValueArgumentParser::parse,
+            ExistingFriendValueArgumentParser::parse
+        )
     }
 
     private fun <T> parseImpl(
@@ -444,8 +454,8 @@ public class EnumValueArgumentParser<T : Enum<T>>(
             }
 
             val camelCaseDirection = if ((
-                    enums.map { it.name.lowercase() } + camelCase.map { it.first.lowercase() }
-                    ).hasDuplicates()
+                        enums.map { it.name.lowercase() } + camelCase.map { it.first.lowercase() }
+                        ).hasDuplicates()
             ) { // 确认驼峰命名与源没有冲突
                 emptyMap()
             } else {
@@ -469,7 +479,8 @@ public class EnumValueArgumentParser<T : Enum<T>>(
     }
 }
 
-internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : AbstractCommandValueArgumentParser<T>() {
+internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> :
+    AbstractCommandValueArgumentParser<T>() {
     private fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
 
     protected fun Long.findBotOrFail(): Bot = Bot.getInstanceOrNull(this) ?: illegalArgument("无法找到 Bot: $this")
@@ -502,11 +513,12 @@ internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : 
             illegalArgument("无法找到成员 $idOrCard")
         } else {
             var index = 1
-            illegalArgument("无法找到成员 $idOrCard。 多个成员满足搜索结果或匹配度不足: \n\n" +
-                candidates.joinToString("\n", limit = 6) {
-                    val percentage = (it.second * 100).toDecimalPlace(0)
-                    "#${index++}(${percentage}%)${it.first.nameCardOrNick.truncate(10)}(${it.first.id})" // #1 15.4%
-                }
+            illegalArgument(
+                "无法找到成员 $idOrCard。 多个成员满足搜索结果或匹配度不足: \n\n" +
+                        candidates.joinToString("\n", limit = 6) {
+                            val percentage = (it.second * 100).toDecimalPlace(0)
+                            "#${index++}(${percentage}%)${it.first.nameCardOrNick.truncate(10)}(${it.first.id})" // #1 15.4%
+                        }
             )
         }
     }

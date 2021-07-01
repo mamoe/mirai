@@ -24,8 +24,6 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -57,7 +55,8 @@ public interface CommandArgumentContext {
     ) {
         public companion object {
             @JvmStatic
-            public fun <T : Any> ParserPair<T>.toPair(): Pair<KClass<T>, CommandValueArgumentParser<T>> = klass to parser
+            public fun <T : Any> ParserPair<T>.toPair(): Pair<KClass<T>, CommandValueArgumentParser<T>> =
+                klass to parser
         }
     }
 

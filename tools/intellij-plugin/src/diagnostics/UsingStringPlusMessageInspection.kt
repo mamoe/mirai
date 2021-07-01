@@ -14,7 +14,6 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import net.mamoe.mirai.console.intellij.resolve.*
@@ -68,7 +67,7 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
                     // complex expressions, e.g. `str.toString().plus(msg)`, `"".also {  }.plus(msg)`
                     val replaced =
                         element.replace(KtPsiFactory(project).createExpression("net.mamoe.mirai.message.data.PlainText(${element.text})"))
-                            as? KtElement ?: return
+                                as? KtElement ?: return
                     ShortenReferences.DEFAULT.process(replaced)
                     return
                 }
@@ -77,7 +76,7 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
                     val receiver = element.getQualifiedExpressionForReceiver() ?: return
                     val replaced = receiver
                         .replace(KtPsiFactory(project).createExpression("net.mamoe.mirai.message.data.PlainText(${receiver.text})"))
-                        as? KtElement ?: return
+                            as? KtElement ?: return
 
                     ShortenReferences.DEFAULT.process(replaced)
                 }
@@ -118,7 +117,8 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
                     }
                 )
             } else {
-                val nameReferenceExpression = expression.findChild<KtNameReferenceExpression>() ?: expression.calleeExpression ?: expression
+                val nameReferenceExpression =
+                    expression.findChild<KtNameReferenceExpression>() ?: expression.calleeExpression ?: expression
                 holder.registerProblem(
                     nameReferenceExpression,
                     DESCRIPTION,
@@ -138,7 +138,8 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor = Visitor(holder)
 
-    abstract class ConvertToPlainTextFix<T : PsiElement>(element: T) : KotlinCrossLanguageQuickFixAction<T>(element), KotlinUniversalQuickFix {
+    abstract class ConvertToPlainTextFix<T : PsiElement>(element: T) : KotlinCrossLanguageQuickFixAction<T>(element),
+        KotlinUniversalQuickFix {
         @Suppress("DialogTitleCapitalization")
         override fun getFamilyName(): String = "Mirai Console"
 

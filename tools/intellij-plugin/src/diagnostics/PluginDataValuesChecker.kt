@@ -37,7 +37,11 @@ class PluginDataValuesChecker : DeclarationChecker {
     /**
      * [KtObjectDeclaration], [KtParameter], [KtPrimaryConstructor], [KtClass], [KtNamedFunction], [KtProperty]
      */
-    override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
+    override fun check(
+        declaration: KtDeclaration,
+        descriptor: DeclarationDescriptor,
+        context: DeclarationCheckerContext
+    ) {
         val bindingContext = context.bindingContext
 
         //println(declaration::class.qualifiedName + "\t:" + declaration.text.take(10))
@@ -65,25 +69,32 @@ class PluginDataValuesChecker : DeclarationChecker {
 
     private fun KtProperty.isInsideOrExtensionOfReadOnlyPluginData(): Boolean {
         return containingClassOrObject?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // inside
-            || receiverTypeReference?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // extension
+                || receiverTypeReference?.hasSuperType(READ_ONLY_PLUGIN_DATA_FQ_NAME) == true // extension
     }
 
     private fun checkReadOnly(property: KtProperty, context: DeclarationCheckerContext) {
         // first parent is KtPropertyDelegate, next is KtProperty
 
         if (property.isVar // var
-            && property.delegateExpression?.getResolvedCall(context)?.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) == true // by value()
+            && property.delegateExpression?.getResolvedCall(context)
+                ?.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) == true // by value()
             && property.isInsideOrExtensionOfReadOnlyPluginData() // extensionReceiver is ReadOnlyPluginData or null
         ) {
             context.report(MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.on(property.valOrVarKeyword))
         }
     }
 
-    private fun checkConstructableAndSerializable(call: ResolvedCall<out CallableDescriptor>, expr: KtCallExpression, context: DeclarationCheckerContext) {
+    private fun checkConstructableAndSerializable(
+        call: ResolvedCall<out CallableDescriptor>,
+        expr: KtCallExpression,
+        context: DeclarationCheckerContext
+    ) {
         if (call.resultingDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) != true) return
 
         for ((typeParameterDescriptor, kotlinType) in call.typeArguments.entries) {
-            if ((typeParameterDescriptor.isReified || typeParameterDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true)
+            if ((typeParameterDescriptor.isReified || typeParameterDescriptor.resolveContextKinds?.contains(
+                    ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR
+                ) == true)
                 && kotlinType is SimpleType
             ) {
 
@@ -124,7 +135,11 @@ class PluginDataValuesChecker : DeclarationChecker {
         context.report(factory.on(inspectionTarget, callExpr, jetTypeFqn.substringAfterLast('.')))
     }
 
-    private fun checkConstructableAndSerializable(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
+    private fun checkConstructableAndSerializable(
+        type: KotlinType,
+        callExpr: KtCallExpression,
+        context: DeclarationCheckerContext
+    ) {
         val classDescriptor = type.classDescriptor() ?: return
 
         if (canBeSerializedInternally(classDescriptor)) return

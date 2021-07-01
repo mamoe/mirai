@@ -72,7 +72,12 @@ class ContextualParametersChecker : DeclarationChecker {
                 elementChecker(context, argument.asElement(), argument, null)?.let { context.report(it) }
             } else {
                 for (resolvedConstant in resolvedConstants) {
-                    elementChecker(context, argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
+                    elementChecker(
+                        context,
+                        argument.asElement(),
+                        argument,
+                        resolvedConstant
+                    )?.let { context.report(it) }
                 }
             }
         }
@@ -82,7 +87,8 @@ class ContextualParametersChecker : DeclarationChecker {
         private val ID_REGEX: Regex = CheckerConstants.PLUGIN_ID_REGEX
         private val FORBIDDEN_ID_NAMES: Array<String> = CheckerConstants.PLUGIN_FORBIDDEN_NAMES
 
-        private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名"""
+        private const val syntax =
+            """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名"""
 
         const val SEMANTIC_VERSIONING_PATTERN =
             """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?${'$'}"""
@@ -102,7 +108,10 @@ class ContextualParametersChecker : DeclarationChecker {
             val lowercaseId = value.toLowerCase()
 
             if (ID_REGEX.matchEntire(value) == null) {
-                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 无效. 正确的插件 Id 应该满足正则表达式 '${ID_REGEX.pattern}', \n$syntax")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(
+                    inspectionTarget,
+                    "插件 Id 无效. 正确的插件 Id 应该满足正则表达式 '${ID_REGEX.pattern}', \n$syntax"
+                )
             }
 
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseId }?.let { illegal ->
@@ -122,7 +131,10 @@ class ContextualParametersChecker : DeclarationChecker {
 
         fun checkPluginVersion(inspectionTarget: KtElement, value: String): Diagnostic? {
             if (!SEMANTIC_VERSIONING_REGEX.matches(value)) {
-                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(
+                    inspectionTarget,
+                    "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/"
+                )
             }
             return null
         }
@@ -140,7 +152,11 @@ class ContextualParametersChecker : DeclarationChecker {
         fun checkPermissionNamespace(inspectionTarget: KtElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不能为空")
-                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "不允许权限命名空间中存在空格")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(
+                    inspectionTarget,
+                    value,
+                    "不允许权限命名空间中存在空格"
+                )
                 value.contains(':') -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不允许包含 ':'")
                 else -> null
             }
@@ -159,7 +175,11 @@ class ContextualParametersChecker : DeclarationChecker {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "权限 Id 不能为空")
                 value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "暂时不允许权限 Id 中存在空格")
-                value.count { it == ':' } != 1 -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "权限 Id 必须为 \"命名空间:名称\". 且命名空间和名称均不能包含 ':'")
+                value.count { it == ':' } != 1 -> ILLEGAL_PERMISSION_ID.on(
+                    inspectionTarget,
+                    value,
+                    "权限 Id 必须为 \"命名空间:名称\". 且命名空间和名称均不能包含 ':'"
+                )
                 else -> null
             }
         }
@@ -174,7 +194,11 @@ class ContextualParametersChecker : DeclarationChecker {
             }
         }
 
-        fun checkConsoleCommandOwner(context: DeclarationCheckerContext, inspectionTarget: KtElement, argument: ValueArgument): Diagnostic? {
+        fun checkConsoleCommandOwner(
+            context: DeclarationCheckerContext,
+            inspectionTarget: KtElement,
+            argument: ValueArgument
+        ): Diagnostic? {
             val expr = argument.getArgumentExpression() ?: return null
 
             if (expr is KtReferenceExpression) {
@@ -188,7 +212,12 @@ class ContextualParametersChecker : DeclarationChecker {
     }
 
     fun interface ElementChecker {
-        operator fun invoke(context: DeclarationCheckerContext, declaration: KtElement, valueArgument: ValueArgument, value: String?): Diagnostic?
+        operator fun invoke(
+            context: DeclarationCheckerContext,
+            declaration: KtElement,
+            valueArgument: ValueArgument,
+            value: String?
+        ): Diagnostic?
     }
 
     @Suppress("unused")
@@ -202,13 +231,19 @@ class ContextualParametersChecker : DeclarationChecker {
                 }
             }
 
-            fun put(key: ResolveContextKind, value: KFunction2<KtElement, ValueArgument, Diagnostic?>): ElementChecker? {
+            fun put(
+                key: ResolveContextKind,
+                value: KFunction2<KtElement, ValueArgument, Diagnostic?>
+            ): ElementChecker? {
                 return put(key) { _, d, v, _ ->
                     value(d, v)
                 }
             }
 
-            fun put(key: ResolveContextKind, value: (DeclarationCheckerContext, KtElement, ValueArgument) -> Diagnostic?): ElementChecker? {
+            fun put(
+                key: ResolveContextKind,
+                value: (DeclarationCheckerContext, KtElement, ValueArgument) -> Diagnostic?
+            ): ElementChecker? {
                 return put(key) { c, d, v, _ ->
                     value(c, d, v)
                 }

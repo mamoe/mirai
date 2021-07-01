@@ -28,7 +28,8 @@ import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 /**
  * @since 2.4
  */
-class WrapWithResourceUseCallIntention : SelfTargetingIntention<KtDotQualifiedExpression>(KtDotQualifiedExpression::class.java, { "转换为 .use" }) {
+class WrapWithResourceUseCallIntention :
+    SelfTargetingIntention<KtDotQualifiedExpression>(KtDotQualifiedExpression::class.java, { "转换为 .use" }) {
     override fun applyTo(element: KtDotQualifiedExpression, editor: Editor?) {
         val selectorExpression = element.selectorExpression ?: return
         selectorExpression.replaceExpressionAndShortenReferences("use { it.${selectorExpression.text} }")
@@ -48,7 +49,8 @@ class WrapWithResourceUseCallIntention : SelfTargetingIntention<KtDotQualifiedEx
  * to be supported by 2.5
  * @since 2.4
  */
-class WrapWithResourceUseCallJavaIntention : SelfTargetingIntention<PsiMethodCallExpression>(PsiMethodCallExpression::class.java, { "转换为 .use" }) {
+class WrapWithResourceUseCallJavaIntention :
+    SelfTargetingIntention<PsiMethodCallExpression>(PsiMethodCallExpression::class.java, { "转换为 .use" }) {
     override fun applyTo(element: PsiMethodCallExpression, editor: Editor?) {
         // val selectorExpression = element.methodExpression
 

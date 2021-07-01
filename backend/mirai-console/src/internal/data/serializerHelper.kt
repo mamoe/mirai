@@ -76,7 +76,7 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
                         }
                         requireNotNull(rootClass.constructSerializerForGivenTypeArgs(*serializers.toTypedArray())) {
                             "Can't find a method to construct serializer for type ${rootClass.simpleName}. " +
-                                "Make sure this class is marked as @Serializable or provide serializer explicitly."
+                                    "Make sure this class is marked as @Serializable or provide serializer explicitly."
                         }
                     }
                 }

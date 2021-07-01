@@ -65,7 +65,8 @@ class FunctionSignatureBuilder {
         this.returnType = FqName(returnType)
     }
 
-    fun build(): FunctionSignature = FunctionSignature(name, dispatchReceiver, extensionReceiver, parameters, returnType)
+    fun build(): FunctionSignature =
+        FunctionSignature(name, dispatchReceiver, extensionReceiver, parameters, returnType)
 }
 
 fun FunctionSignatureBuilder.dispatchReceiver(dispatchReceiver: FqName) {
@@ -85,13 +86,19 @@ fun KtFunction.hasSignature(functionSignature: FunctionSignature): Boolean {
         if (this.containingClassOrObject?.fqName != functionSignature.dispatchReceiver) return false
     }
     if (functionSignature.extensionReceiver != null) {
-        if (this.receiverTypeReference?.resolveReferencedType()?.getKotlinFqName() != functionSignature.extensionReceiver) return false
+        if (this.receiverTypeReference?.resolveReferencedType()
+                ?.getKotlinFqName() != functionSignature.extensionReceiver
+        ) return false
     }
     if (functionSignature.parameters != null) {
-        if (this.valueParameters.zip(functionSignature.parameters).any { it.first.type()?.fqName != it.second }) return false
+        if (this.valueParameters.zip(functionSignature.parameters)
+                .any { it.first.type()?.fqName != it.second }
+        ) return false
     }
     if (functionSignature.returnType != null) {
-        if (this.getReturnTypeReference()?.resolveReferencedType()?.getKotlinFqName() != functionSignature.returnType) return false
+        if (this.getReturnTypeReference()?.resolveReferencedType()
+                ?.getKotlinFqName() != functionSignature.returnType
+        ) return false
     }
     return true
 }
@@ -118,7 +125,9 @@ fun PsiMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
         if (receiver.type.canonicalText != functionSignature.extensionReceiver.toString()) return false
     }
     if (functionSignature.parameters != null) {
-        if (parameters.zip(functionSignature.parameters).any { it.first.type.canonicalText != it.second.toString() }) return false
+        if (parameters.zip(functionSignature.parameters)
+                .any { it.first.type.canonicalText != it.second.toString() }
+        ) return false
     }
     if (functionSignature.returnType != null) {
         if (returnType?.canonicalText != functionSignature.returnType.toString()) return false
@@ -143,7 +152,9 @@ fun CallableDescriptor.hasSignature(functionSignature: FunctionSignature): Boole
         if (this.containingDeclaration.fqNameUnsafe != functionSignature.dispatchReceiver.toUnsafe()) return false
     }
     if (functionSignature.parameters != null) {
-        if (this.valueParameters.zip(functionSignature.parameters).any { it.first.type.fqName != it.second }) return false
+        if (this.valueParameters.zip(functionSignature.parameters)
+                .any { it.first.type.fqName != it.second }
+        ) return false
     }
     if (functionSignature.returnType != null) {
         if (this.returnType?.fqName != functionSignature.returnType) return false

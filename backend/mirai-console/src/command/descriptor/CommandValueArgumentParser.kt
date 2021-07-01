@@ -125,7 +125,10 @@ public abstract class AbstractCommandValueArgumentParser<T : Any> : CommandValue
         @JvmStatic
         @JvmSynthetic
         @Throws(CommandArgumentParserException::class)
-        protected inline fun CommandValueArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing =
+        protected inline fun CommandValueArgumentParser<*>.illegalArgument(
+            message: String,
+            cause: Throwable? = null
+        ): Nothing =
             throw CommandArgumentParserException(message, cause)
 
         /**

@@ -3,25 +3,26 @@ package $PACKAGE_NAME;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 
-public final class ${CLASS_NAME} extends JavaPlugin {
-    public static final ${CLASS_NAME} INSTANCE = new ${CLASS_NAME}();
+public final class ${CLASS_NAME} extends JavaPlugin{
+public static final ${CLASS_NAME} INSTANCE=new ${CLASS_NAME}();
 
-    #set($HAS_DETAILS = ${PLUGIN_AUTHOR} != "" || ${PLUGIN_DEPENDS_ON} != "" || ${PLUGIN_INFO} != "" || ${PLUGIN_NAME} != "")
-    private ${CLASS_NAME}() {
-        #if($HAS_DETAILS == false)
-        super(new JvmPluginDescriptionBuilder("$PLUGIN_ID", "$PLUGIN_VERSION").build());#end
-        #if($HAS_DETAILS)
-        super(new JvmPluginDescriptionBuilder("$PLUGIN_ID", "$PLUGIN_VERSION")
-            #if($PLUGIN_NAME != "").name("$PLUGIN_NAME")
-            #end#if($PLUGIN_INFO != "").info("$PLUGIN_INFO")
-        #end#if($PLUGIN_AUTHOR != "").author("$PLUGIN_AUTHOR")
-            #end#if($PLUGIN_DEPENDS_ON != "").dependsOn("$PLUGIN_DEPENDS_ON")
-        #end
-        .build());#end
-    }
+#set($HAS_DETAILS = ${PLUGIN_AUTHOR} != "" || ${PLUGIN_DEPENDS_ON} != "" || ${PLUGIN_INFO} != "" || ${PLUGIN_NAME} !=
+    "")
+private ${CLASS_NAME}(){
+    #if($HAS_DETAILS == false)
+            super(new JvmPluginDescriptionBuilder("$PLUGIN_ID","$PLUGIN_VERSION").build());#end
+    #if($HAS_DETAILS)
+            super(new JvmPluginDescriptionBuilder("$PLUGIN_ID","$PLUGIN_VERSION")
+        #if($PLUGIN_NAME != "").name("$PLUGIN_NAME")
+        #end#if($PLUGIN_INFO != "").info("$PLUGIN_INFO")
+    #end#if($PLUGIN_AUTHOR != "").author("$PLUGIN_AUTHOR")
+    #end#if($PLUGIN_DEPENDS_ON != "").dependsOn("$PLUGIN_DEPENDS_ON")
+    #end
+            .build());#end
+        }
 
-    @Override
-    public void onEnable() {
+@Override
+public void onEnable(){
         getLogger().info("Plugin loaded!");
-    }
-}
+        }
+        }

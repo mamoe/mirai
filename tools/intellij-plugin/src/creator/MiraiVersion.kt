@@ -21,7 +21,8 @@ enum class MiraiVersionKind {
         override fun isThatKind(version: String): Boolean = version matches REGEX_STABLE
     },
     Prerelease {
-        override fun isThatKind(version: String): Boolean = !version.contains("-dev") // && (version.contains("-M") || version.contains("-RC"))
+        override fun isThatKind(version: String): Boolean =
+            !version.contains("-dev") // && (version.contains("-M") || version.contains("-RC"))
     },
     Nightly {
         override fun isThatKind(version: String): Boolean = true // version.contains("-dev")

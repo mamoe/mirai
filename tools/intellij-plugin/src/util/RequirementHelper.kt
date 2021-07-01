@@ -23,9 +23,9 @@ object RequirementHelper {
     fun isValid(rule: String): Boolean {
         return rule.trim().let {
             directVersion.matches(it) ||
-                versionSelect.matches(it) ||
-                versionMathRange.matches(it) ||
-                versionRule.matches(it)
+                    versionSelect.matches(it) ||
+                    versionMathRange.matches(it) ||
+                    versionRule.matches(it)
         }
     }
 

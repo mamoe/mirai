@@ -84,10 +84,10 @@ internal object SemVersionInternal {
         }
         if (versionSelect.matches(trimmed)) {
             val regex = ("^" +
-                trimmed.replace(".", "\\.")
-                    .replace("x", ".+") +
-                "$"
-                ).toRegex()
+                    trimmed.replace(".", "\\.")
+                        .replace("x", ".+") +
+                    "$"
+                    ).toRegex()
             return object : RequirementInternal {
                 override fun test(version: SemVersion): Boolean = regex.matches(version.toString())
             }

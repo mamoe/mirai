@@ -69,7 +69,8 @@ import kotlin.reflect.full.createType
  *
  * @see PluginData
  */
-public abstract class JAutoSavePluginData public constructor(saveName: String) : AutoSavePluginData(saveName), PluginConfig {
+public abstract class JAutoSavePluginData public constructor(saveName: String) : AutoSavePluginData(saveName),
+    PluginConfig {
 
     //// region JPluginData_value_primitives CODEGEN ////
 

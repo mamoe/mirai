@@ -32,7 +32,9 @@ val Path.vfOrNull: VirtualFile?
 val Path.vf: VirtualFile
     get() = vfOrNull ?: error("Failed to resolve VirtualFile ${this.toAbsolutePath()}")
 
-fun VirtualFile.readText(): String? = if (this.exists() && !this.isDirectory) String(inputStream.use { it.readBytes() }) else null
+fun VirtualFile.readText(): String? =
+    if (this.exists() && !this.isDirectory) String(inputStream.use { it.readBytes() }) else null
+
 fun VirtualFile.readChildText(relative: String): String? = this.resolve(relative)?.readText()
 
 fun VirtualFile.resolve(relative: String): VirtualFile? = VfsUtil.findRelativeFile(

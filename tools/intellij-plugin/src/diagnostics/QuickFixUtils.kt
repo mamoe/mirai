@@ -18,8 +18,12 @@ import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
 
 
-fun <T: PsiElement> LocalQuickFix(text: String, element: T, invokeAction: QuickFixInvoke<T>.() -> Unit): LocalQuickFix {
-    return object:  KotlinCrossLanguageQuickFixAction<T>(element), KotlinUniversalQuickFix {
+fun <T : PsiElement> LocalQuickFix(
+    text: String,
+    element: T,
+    invokeAction: QuickFixInvoke<T>.() -> Unit
+): LocalQuickFix {
+    return object : KotlinCrossLanguageQuickFixAction<T>(element), KotlinUniversalQuickFix {
         @Suppress("DialogTitleCapitalization")
         override fun getFamilyName(): String = "Mirai console"
         override fun getText(): String = text

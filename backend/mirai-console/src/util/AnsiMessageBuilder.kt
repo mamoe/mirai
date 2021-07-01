@@ -125,10 +125,14 @@ public open class AnsiMessageBuilder public constructor(
     /////////////////////////////////////////////////////////////////////////////////
     override fun append(c: Char): AnsiMessageBuilder = apply { delegate.append(c) }
     override fun append(csq: CharSequence?): AnsiMessageBuilder = apply { delegate.append(csq) }
-    override fun append(csq: CharSequence?, start: Int, end: Int): AnsiMessageBuilder = apply { delegate.append(csq, start, end) }
+    override fun append(csq: CharSequence?, start: Int, end: Int): AnsiMessageBuilder =
+        apply { delegate.append(csq, start, end) }
+
     public fun append(any: Any?): AnsiMessageBuilder = apply { delegate.append(any) }
     public fun append(value: String): AnsiMessageBuilder = apply { delegate.append(value) }
-    public fun append(value: String, start: Int, end: Int): AnsiMessageBuilder = apply { delegate.append(value, start, end) }
+    public fun append(value: String, start: Int, end: Int): AnsiMessageBuilder =
+        apply { delegate.append(value, start, end) }
+
     public fun append(value: Boolean): AnsiMessageBuilder = apply { delegate.append(value) }
     public fun append(value: Float): AnsiMessageBuilder = apply { delegate.append(value) }
     public fun append(value: Double): AnsiMessageBuilder = apply { delegate.append(value) }

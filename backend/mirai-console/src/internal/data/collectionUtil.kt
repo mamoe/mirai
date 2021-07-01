@@ -417,6 +417,7 @@ internal fun <K, V> MutableMap<K, V>.observable(onChanged: () -> Unit): MutableM
 
         override fun replace(key: K, value: V): V? =
             this@observable.replace(key, value).also { onChanged() }
+
         override fun computeIfAbsent(key: K, mappingFunction: Function<in K, out V>): V =
             this@observable.computeIfAbsent(key, mappingFunction).also { onChanged() }
 

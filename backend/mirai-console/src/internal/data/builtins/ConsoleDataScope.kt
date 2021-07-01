@@ -11,7 +11,10 @@ package net.mamoe.mirai.console.internal.data.builtins
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.data.*
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.minutesToMillis

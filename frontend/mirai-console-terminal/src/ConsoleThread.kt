@@ -103,7 +103,12 @@ internal fun startupConsoleThread() {
                         consoleLogger.warning { "权限不足." }
                     }
                     is UnmatchedSignature -> {
-                        consoleLogger.warning { "参数不匹配, 你是否想执行: \n" + result.failureReasons.render(result.command, result.call) }
+                        consoleLogger.warning {
+                            "参数不匹配, 你是否想执行: \n" + result.failureReasons.render(
+                                result.command,
+                                result.call
+                            )
+                        }
                     }
                     is Failure -> {
                         consoleLogger.warning { result.toString() }
@@ -143,7 +148,8 @@ private fun List<CommandValueParameter<*>>.anyStringConstantUnmatched(arguments:
 @OptIn(ExperimentalCommandDescriptors::class)
 internal fun UnmatchedCommandSignature.render(command: Command): String {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    val usage = net.mamoe.mirai.console.internal.command.CommandReflector.generateUsage(command, null, listOf(this.signature))
+    val usage =
+        net.mamoe.mirai.console.internal.command.CommandReflector.generateUsage(command, null, listOf(this.signature))
     return usage.trim() + "    (${failureReason.render()})"
 }
 

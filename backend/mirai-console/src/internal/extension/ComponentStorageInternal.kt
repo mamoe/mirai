@@ -57,7 +57,12 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         val userDefined = instances.getOrPut(this, ::CopyOnWriteArraySet) as Set<ExtensionRegistry<T>>
 
         val builtins = if (this is AbstractInstanceExtensionPoint<*, *>) {
-            this.builtinImplementations.mapTo(HashSet()) { DataExtensionRegistry(null, it) } as Set<ExtensionRegistry<T>>
+            this.builtinImplementations.mapTo(HashSet()) {
+                DataExtensionRegistry(
+                    null,
+                    it
+                )
+            } as Set<ExtensionRegistry<T>>
         } else null
 
         return builtins?.plus(userDefined) ?: userDefined

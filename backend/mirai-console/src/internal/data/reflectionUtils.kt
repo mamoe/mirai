@@ -44,8 +44,8 @@ internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflectio
             ?: createInstanceOrNull()
             ?: throw IllegalArgumentException(
                 "Cannot create PluginData instance. " +
-                    "PluginDataHolder supports PluginData implemented as an object " +
-                    "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
+                        "PluginDataHolder supports PluginData implemented as an object " +
+                        "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
             )
     }
 }

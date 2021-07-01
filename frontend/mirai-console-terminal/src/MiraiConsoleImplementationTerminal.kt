@@ -67,13 +67,13 @@ open class MiraiConsoleImplementationTerminal
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
-        CoroutineExceptionHandler { coroutineContext, throwable ->
-            if (throwable is CancellationException) {
-                return@CoroutineExceptionHandler
-            }
-            val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
-            MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
-        }) {
+            CoroutineExceptionHandler { coroutineContext, throwable ->
+                if (throwable is CancellationException) {
+                    return@CoroutineExceptionHandler
+                }
+                val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
+                MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
+            }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
     override val isAnsiSupported: Boolean get() = true
 
@@ -145,7 +145,8 @@ private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
 
     // net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
     // is console's version not frontend's version
-    override val version: SemVersion = SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)
+    override val version: SemVersion =
+        SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)
 }
 
 internal val ANSI_RESET = Ansi().reset().toString()

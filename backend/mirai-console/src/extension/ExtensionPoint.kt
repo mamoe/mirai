@@ -75,6 +75,11 @@ public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>,
      */
     @ConsoleExperimentalApi
     public open val selectedInstance: T by lazy {
-        GlobalComponentStorage.run { this@AbstractSingletonExtensionPoint.findSingletonInstance(extensionType, builtinImplementation) }
+        GlobalComponentStorage.run {
+            this@AbstractSingletonExtensionPoint.findSingletonInstance(
+                extensionType,
+                builtinImplementation
+            )
+        }
     }
 }

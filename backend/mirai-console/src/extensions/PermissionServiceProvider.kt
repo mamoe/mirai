@@ -24,7 +24,10 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  */
 public interface PermissionServiceProvider : SingletonExtension<PermissionService<*>> {
     public companion object ExtensionPoint :
-        AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(PermissionServiceProvider::class, BuiltInPermissionService) {
+        AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(
+            PermissionServiceProvider::class,
+            BuiltInPermissionService
+        ) {
         internal var permissionServiceOk = false
 
         @ConsoleExperimentalApi

@@ -21,8 +21,10 @@ import net.mamoe.mirai.console.extension.InstanceExtension
 @ExperimentalCommandDescriptors
 public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {
     public companion object ExtensionPoint :
-        AbstractInstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class,
-            SpaceSeparatedCommandCallParser.Provider)
+        AbstractInstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(
+            CommandCallParserProvider::class,
+            SpaceSeparatedCommandCallParser.Provider
+        )
 }
 
 

@@ -46,7 +46,8 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
             kotlinOptions {
                 if (this !is KotlinJvmOptions) return@kotlinOptions
                 jvmTarget = miraiExtension.jvmTarget.toString()
-                if (!miraiExtension.dontConfigureKotlinJvmDefault) freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
+                if (!miraiExtension.dontConfigureKotlinJvmDefault) freeCompilerArgs =
+                    freeCompilerArgs + "-Xjvm-default=all"
             }
         }
         when (target.platformType) {
@@ -64,10 +65,15 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
     }
 
     @Suppress("SpellCheckingInspection")
-    private fun KotlinDependencyHandler.configureDependencies(project: Project, sourceSet: KotlinSourceSet, target: KotlinTarget) {
+    private fun KotlinDependencyHandler.configureDependencies(
+        project: Project,
+        sourceSet: KotlinSourceSet,
+        target: KotlinTarget
+    ) {
         val miraiExtension = project.miraiExtension
 
-        val isJvm = target.platformType == KotlinPlatformType.jvm || target.platformType == KotlinPlatformType.androidJvm
+        val isJvm =
+            target.platformType == KotlinPlatformType.jvm || target.platformType == KotlinPlatformType.androidJvm
 
         if (!miraiExtension.noCoreApi) compileOnly("net.mamoe:mirai-core-api:${miraiExtension.coreVersion}")
         if (!miraiExtension.noConsole && isJvm) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
@@ -102,7 +108,11 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         tasks.findByName("shadowJar")?.enabled = false
 
         fun registerBuildPluginTask(target: KotlinTarget, isSingleTarget: Boolean) {
-            tasks.create("buildPlugin".wrapNameWithPlatform(target, isSingleTarget), BuildMiraiPluginTask::class.java, target).apply shadow@{
+            tasks.create(
+                "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
+                BuildMiraiPluginTask::class.java,
+                target
+            ).apply shadow@{
                 group = "mirai"
 
                 archiveExtension.set("mirai.jar")
@@ -160,7 +170,8 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 }
 
 internal val Project.miraiExtension: MiraiConsoleExtension
-    get() = extensions.findByType(MiraiConsoleExtension::class.java) ?: error("Cannot find MiraiConsoleExtension in project ${this.name}")
+    get() = extensions.findByType(MiraiConsoleExtension::class.java)
+        ?: error("Cannot find MiraiConsoleExtension in project ${this.name}")
 
 internal val Project.kotlinTargets: Collection<KotlinTarget>
     get() {

@@ -77,7 +77,8 @@ public interface CommandCallResolver {
         @ExperimentalCommandDescriptors
         public fun CommandCall.resolve(): CommandResolveResult {
             GlobalComponentStorage.run {
-                val instance = CommandCallResolverProvider.findSingletonInstance(CommandCallResolverProvider.builtinImplementation)
+                val instance =
+                    CommandCallResolverProvider.findSingletonInstance(CommandCallResolverProvider.builtinImplementation)
                 return instance.resolve(this@resolve)
             }
         }

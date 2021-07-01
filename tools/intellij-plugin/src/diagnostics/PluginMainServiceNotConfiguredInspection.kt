@@ -21,7 +21,6 @@ import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
 import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServiceFix
 import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.hasAnnotation
-import org.jetbrains.kotlin.idea.debugger.readAction
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.util.module
 import org.jetbrains.kotlin.idea.util.rootManager
@@ -51,7 +50,7 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
             val fqName = element.fqName?.asString() ?: return@visitor
 
             val found = isServiceConfiguredWithAutoService(element)
-                || isServiceConfiguredWithResource(element, fqName)
+                    || isServiceConfiguredWithResource(element, fqName)
 
             if (!found) {
                 registerProblemImpl(holder, element, fqName)

@@ -89,7 +89,8 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
             group = "mirai"
 
             val metadataFile =
-                project.buildDir.resolve("mirai").resolve(if (isSingleTarget) "mirai-plugin.metadata" else "mirai-plugin-${target.name}.metadata")
+                project.buildDir.resolve("mirai")
+                    .resolve(if (isSingleTarget) "mirai-plugin.metadata" else "mirai-plugin-${target.name}.metadata")
             outputs.file(metadataFile)
 
 
@@ -140,7 +141,8 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
     }
 }
 
-internal inline fun File.renamed(block: File.(nameWithoutExtension: String) -> String): File = this.resolveSibling(block(this, nameWithoutExtension))
+internal inline fun File.renamed(block: File.(nameWithoutExtension: String) -> String): File =
+    this.resolveSibling(block(this, nameWithoutExtension))
 
 private fun Project.registerBintrayPublish() {
     val mirai = miraiExtension
@@ -191,7 +193,10 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
                 url = uri("$buildDir/repo")
             }
         }*/
-        publications.register("mavenJava".wrapNameWithPlatform(target, isSingleTarget), MavenPublication::class.java) { publication ->
+        publications.register(
+            "mavenJava".wrapNameWithPlatform(target, isSingleTarget),
+            MavenPublication::class.java
+        ) { publication ->
             with(publication) {
                 from(components["java"])
 
@@ -213,7 +218,12 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
                 artifact(tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target })
                 artifact(
                     mapOf(
-                        "source" to tasks.getByName("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).outputs.files.singleFile,
+                        "source" to tasks.getByName(
+                            "generatePluginMetadata".wrapNameWithPlatform(
+                                target,
+                                isSingleTarget
+                            )
+                        ).outputs.files.singleFile,
                         "extension" to "mirai.metadata"
                     )
                 )

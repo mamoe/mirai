@@ -42,7 +42,8 @@ public interface MiraiConsoleFrontEndDescription {
      * 返回 `null` 表示禁止 [MiraiConsole] 后端检查版本兼容性.
      */
     @MiraiExperimentalApi
-    public val compatibleBackendVersion: SemVersion? get() = null
+    public val compatibleBackendVersion: SemVersion?
+        get() = null
 
     /**
      * 返回显示在 [MiraiConsole] 启动时的信息
