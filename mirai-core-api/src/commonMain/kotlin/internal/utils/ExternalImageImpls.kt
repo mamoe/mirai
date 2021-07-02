@@ -78,11 +78,13 @@ public abstract class ExternalResourceHolder : Closeable {
         try {
             closeImpl()
         } finally {
-            val closed = this.closed
-            if (closed is CompletableDeferred<Unit>) {
-                closed.complete(Unit)
-            } else {
-                closed.cancel()
+            kotlin.runCatching {
+                val closed = this.closed
+                if (closed is CompletableDeferred<Unit>) {
+                    closed.complete(Unit)
+                } else {
+                    closed.cancel()
+                }
             }
         }
     }
