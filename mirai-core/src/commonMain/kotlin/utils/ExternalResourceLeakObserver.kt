@@ -64,6 +64,7 @@ internal object ExternalResourceLeakObserver : Runnable {
                     }
                     val holder = reference.holder
                     reference.clear()
+                    references.remove(reference)
                     if (holder.isClosed) {
                         continue@loop
                     }
