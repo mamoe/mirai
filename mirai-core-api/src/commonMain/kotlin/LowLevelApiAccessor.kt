@@ -15,8 +15,10 @@ import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
 
@@ -293,4 +295,17 @@ public interface LowLevelApiAccessor {
         seconds: Int,
     )
 
+    /**
+     * 序列化 [Voice.pttInternalInstance]
+     */
+    @LowLevelApi
+    @MiraiInternalApi // For Voice serialize
+    public fun serializePttElem(ptt: Any?): String
+
+    /**
+     * 反序列化 [Voice.pttInternalInstance]
+     */
+    @LowLevelApi
+    @MiraiInternalApi // For Voice serialize
+    public fun deserializePttElem(ptt: String): Any?
 }
