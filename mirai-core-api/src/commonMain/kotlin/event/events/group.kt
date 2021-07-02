@@ -104,7 +104,8 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
     public abstract override val group: Group
 
     /**
-     * 不确定. 可能是主动加入
+     * 不确定, 已知的来源:
+     * - Bot 在其他客户端创建群聊而同步到 Bot 客户端.
      */
     @MiraiExperimentalApi
     public data class Active @MiraiInternalApi constructor(
