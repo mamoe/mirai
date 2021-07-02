@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
