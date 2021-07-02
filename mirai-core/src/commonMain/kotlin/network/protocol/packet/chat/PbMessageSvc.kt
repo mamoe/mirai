@@ -33,7 +33,7 @@ internal class PbMessageSvc {
         sealed class Response : Packet {
             object Success : Response() {
                 override fun toString(): String {
-                    return "PbMessageSvc.PbMsgWithDraw.Response.Success"
+                    return "PbMsgWithDraw.Success"
                 }
             }
 
@@ -53,7 +53,14 @@ internal class PbMessageSvc {
         ): OutgoingPacketWithRespType<Response> {
             require(messageSequenceId.size == messageRandom.size)
 
-            return buildOutgoingUniPacket(client) {
+            return buildOutgoingUniPacket(
+                client,
+                name = "PbMsgWithDraw(" +
+                        "group=$groupCode, " +
+                        "seq=${messageSequenceId.joinToString(separator = ",")}, " +
+                        "rand=${messageRandom.joinToString(separator = ",")}" +
+                        ")"
+            ) {
                 writeProtoBuf(
                     MsgSvc.PbMsgWithDrawReq.serializer(),
                     MsgSvc.PbMsgWithDrawReq(
@@ -89,7 +96,15 @@ internal class PbMessageSvc {
         ): OutgoingPacketWithRespType<Response> {
             require(messageSequenceId.size == messageRandom.size)
 
-            return buildOutgoingUniPacket(client) {
+            return buildOutgoingUniPacket(
+                client,
+                name = "PbMsgWithDraw(" +
+                        "groupTemp=$toUin, " +
+                        "seq=${messageSequenceId.joinToString(separator = ",")}, " +
+                        "rand=${messageRandom.joinToString(separator = ",")}, " +
+                        "time=${time}" +
+                        ")"
+            ) {
                 writeProtoBuf(
                     MsgSvc.PbMsgWithDrawReq.serializer(),
                     MsgSvc.PbMsgWithDrawReq(
@@ -128,7 +143,15 @@ internal class PbMessageSvc {
         ): OutgoingPacketWithRespType<Response> {
             require(messageSequenceId.size == messageRandom.size)
 
-            return buildOutgoingUniPacket(client) {
+            return buildOutgoingUniPacket(
+                client,
+                name = "PbMsgWithDraw(" +
+                        "friend=$toUin, " +
+                        "seq=${messageSequenceId.joinToString(separator = ",")}, " +
+                        "rand=${messageRandom.joinToString(separator = ",")}, " +
+                        "time=${time}" +
+                        ")"
+            ) {
                 writeProtoBuf(
                     MsgSvc.PbMsgWithDrawReq.serializer(),
                     MsgSvc.PbMsgWithDrawReq(
