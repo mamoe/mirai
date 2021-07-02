@@ -26,7 +26,7 @@ object Versions {
 
     const val coroutines = "1.5.0"
     const val atomicFU = "0.16.1"
-    const val serialization = "1.1.0"
+    const val serialization = "1.2.1"
     const val ktor = "1.5.4"
 
     const val androidGradle = "3.6.2"
@@ -36,7 +36,7 @@ object Versions {
     const val junit = "5.4.2"
 
     @Suppress("SpellCheckingInspection")
-    const val yamlkt = "0.9.0"
+    const val yamlkt = "0.10.0"
 
     const val intellijGradlePlugin = "1.1"
 }
