@@ -10,7 +10,10 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.utils.*
+import java.io.Closeable
 import java.io.InputStream
 import java.io.RandomAccessFile
 
@@ -27,7 +30,18 @@ internal class ExternalResourceImplByFileWithMd5(
     private val file: RandomAccessFile,
     override val md5: ByteArray,
     formatName: String?
-) : ExternalResource {
+) : ExternalResourceInternal {
+    internal class ResourceHolder(
+        @JvmField internal val file: RandomAccessFile,
+    ) : ExternalResourceHolder() {
+        override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+        override fun closeImpl() {
+            file.close()
+        }
+    }
+
+    override val holder: ResourceHolder = ResourceHolder(file)
+
     override val sha1: ByteArray by lazy { inputStream().sha1() }
     override val size: Long = file.length()
     override val formatName: String by lazy {
@@ -39,22 +53,67 @@ internal class ExternalResourceImplByFileWithMd5(
         return file.inputStream()
     }
 
-    override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+    override val closed: CompletableDeferred<Unit> get() = holder.closed
+    override fun close() = holder.close()
 
+    init {
+        registerToLeakObserver(this)
+    }
+}
+
+@MiraiInternalApi
+public abstract class ExternalResourceHolder : Closeable {
+    /**
+     * Mirror of [ExternalResource.closed]
+     */
+    public abstract val closed: Deferred<Unit>
+    public val isClosed: Boolean get() = _closed
+    public val createStackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
+
+    private var _closed = false
+    protected abstract fun closeImpl()
     override fun close() {
+        if (_closed) return
+        _closed = true
         try {
-            file.close()
+            closeImpl()
         } finally {
-            kotlin.runCatching { closed.complete(Unit) }
+            val closed = this.closed
+            if (closed is CompletableDeferred<Unit>) {
+                closed.complete(Unit)
+            } else {
+                closed.cancel()
+            }
         }
     }
+}
+
+@MiraiInternalApi
+public interface ExternalResourceInternal : ExternalResource {
+    @MiraiInternalApi
+    public val holder: ExternalResourceHolder
 }
 
 internal class ExternalResourceImplByFile(
     private val file: RandomAccessFile,
     formatName: String?,
-    private val closeOriginalFileOnClose: Boolean = true
-) : ExternalResource {
+    closeOriginalFileOnClose: Boolean = true
+) : ExternalResourceInternal {
+    internal class ResourceHolder(
+        @JvmField internal val closeOriginalFileOnClose: Boolean,
+        @JvmField internal val file: RandomAccessFile,
+    ) : ExternalResourceHolder() {
+        override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+        override fun closeImpl() {
+            if (closeOriginalFileOnClose) file.close()
+        }
+    }
+
+    override val holder: ResourceHolder = ResourceHolder(
+        closeOriginalFileOnClose,
+        file,
+    )
+
     override val size: Long = file.length()
     override val md5: ByteArray by lazy { inputStream().md5() }
     override val sha1: ByteArray by lazy { inputStream().sha1() }
@@ -67,13 +126,11 @@ internal class ExternalResourceImplByFile(
         return file.inputStream()
     }
 
-    override val closed: CompletableDeferred<Unit> = CompletableDeferred()
-    override fun close() {
-        try {
-            if (closeOriginalFileOnClose) file.close()
-        } finally {
-            kotlin.runCatching { closed.complete(Unit) }
-        }
+    override val closed: CompletableDeferred<Unit> get() = holder.closed
+    override fun close() = holder.close()
+
+    init {
+        registerToLeakObserver(this)
     }
 }
 
@@ -108,6 +165,13 @@ private fun RandomAccessFile.inputStream(): InputStream {
     }.buffered()
 }
 
+private fun registerToLeakObserver(resource: ExternalResourceInternal) {
+    try {
+        Mirai
+    } catch (ignored: Throwable) { // mirai-core not aliveable
+        return
+    }.registerResourceLeakWatch(resource)
+}
 
 /*
  * ImgType:
