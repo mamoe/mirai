@@ -31,7 +31,7 @@ internal class MsgRevokeUserDef : ProtoBuf {
 
     @Serializable
     internal class UinTypeUserDef(
-        @ProtoNumber(1) @JvmField val fromUinType: Int = 0,
+        @ProtoNumber(1) @JvmField val fromUinType: Int,
         @ProtoNumber(2) @JvmField val fromGroupCode: Long = 0L,
         @ProtoNumber(3) @JvmField val fileUuid: List<String> = emptyList()
     ) : ProtoBuf

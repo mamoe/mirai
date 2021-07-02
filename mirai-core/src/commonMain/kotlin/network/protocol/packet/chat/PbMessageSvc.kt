@@ -111,17 +111,19 @@ internal class PbMessageSvc {
                         c2cWithDraw = listOf(
                             MsgSvc.PbC2CMsgWithDrawReq(
                                 subCmd = 1,
+                                longMessageFlag = 0,
                                 msgInfo = messageSequenceId.zip(messageRandom).map { (seq, random) ->
                                     MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                        msgType = 0,
                                         fromUin = client.bot.id,
                                         toUin = toUin,
                                         msgSeq = seq,
                                         msgRandom = random,
                                         msgUid = 0x0100000000000000 or random.toLongUnsigned(),
-                                        msgTime = time.toLong(),
+                                        msgTime = time.toLongUnsigned(),
                                         routingHead = MsgSvc.RoutingHead(
                                             grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
-                                        )
+                                        ),
                                     )
                                 },
                                 reserved = RESERVED_TEMP
@@ -158,14 +160,16 @@ internal class PbMessageSvc {
                         c2cWithDraw = listOf(
                             MsgSvc.PbC2CMsgWithDrawReq(
                                 subCmd = 1,
+                                longMessageFlag = 0,
                                 msgInfo = messageSequenceId.zip(messageRandom).map { (seq, random) ->
                                     MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                        msgType = 0,
                                         fromUin = client.bot.id,
                                         toUin = toUin,
                                         msgSeq = seq,
                                         msgRandom = random,
                                         msgUid = 0x0100000000000000 or random.toLongUnsigned(),
-                                        msgTime = time.toLong(),
+                                        msgTime = time.toLongUnsigned(),
                                         routingHead = MsgSvc.RoutingHead(
                                             c2c = MsgSvc.C2C(
                                                 toUin = toUin
@@ -173,7 +177,9 @@ internal class PbMessageSvc {
                                         )
                                     )
                                 },
-                                reserved = byteArrayOf(0x08, 0x00)
+                                reserved = MsgRevokeUserDef.UinTypeUserDef(
+                                    0,
+                                ).toByteArray(MsgRevokeUserDef.UinTypeUserDef.serializer())
                             )
                         )
                     )

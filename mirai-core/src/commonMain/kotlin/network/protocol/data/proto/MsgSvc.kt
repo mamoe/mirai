@@ -247,7 +247,7 @@ internal class MsgSvc : ProtoBuf {
     @Serializable
     internal class PbC2CMsgWithDrawReq(
         @ProtoNumber(1) @JvmField val msgInfo: List<MsgInfo> = emptyList(),
-        @ProtoNumber(2) @JvmField val longMessageFlag: Int = 0,
+        @ProtoNumber(2) @JvmField val longMessageFlag: Int,
         @ProtoNumber(3) @JvmField val reserved: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val subCmd: Int = 0,
     ) : ProtoBuf {
@@ -262,7 +262,7 @@ internal class MsgSvc : ProtoBuf {
             @ProtoNumber(7) @JvmField val pkgNum: Int = 0,
             @ProtoNumber(8) @JvmField val pkgIndex: Int = 0,
             @ProtoNumber(9) @JvmField val divSeq: Int = 0,
-            @ProtoNumber(10) @JvmField val msgType: Int = 0,
+            @ProtoNumber(10) @JvmField val msgType: Int,
             @ProtoNumber(20) @JvmField val routingHead: RoutingHead? = null,
         )
     }
