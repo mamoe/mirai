@@ -104,12 +104,12 @@ internal open class QQAndroidBot constructor(
             },
             StateChangedObserver("LastConnectedAddressUpdater", State.OK) {
                 components[ServerList].run {
-                    lastConnectedIp = getLastPolledIP()
+                    lastConnectedIP = getLastPolledIP()
                 }
             },
             StateChangedObserver("LastDisconnectedAddressUpdater", State.CLOSED) {
                 components[ServerList].run {
-                    lastDisconnectedIp = lastConnectedIp
+                    lastDisconnectedIP = lastConnectedIP
                 }
             },
             StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->

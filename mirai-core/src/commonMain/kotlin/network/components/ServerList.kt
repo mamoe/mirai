@@ -62,12 +62,12 @@ internal interface ServerList {
     /**
      * Last disconnected ip
      */
-    var lastDisconnectedIp: String
+    var lastDisconnectedIP: String
 
     /**
      * Last connected ip
      */
-    var lastConnectedIp: String
+    var lastConnectedIP: String
 
     /**
      * Get last poll ip
@@ -140,8 +140,8 @@ internal class ServerListImpl(
         }
     }
 
-    override var lastDisconnectedIp: String = ""
-    override var lastConnectedIp: String = ""
+    override var lastDisconnectedIP: String = ""
+    override var lastConnectedIP: String = ""
 
     override fun getLastPolledIP(): String = lastPolledAddress?.host ?: ""
 

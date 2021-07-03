@@ -30,8 +30,8 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
-import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -163,8 +163,8 @@ internal class StatSvc {
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
             if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
                 client.bot.components[ServerList].run {
-                    uOldSSOIp = lastDisconnectedIp.toIpV4Long()
-                    uNewSSOIp = lastConnectedIp.toIpV4Long()
+                    uOldSSOIp = lastDisconnectedIP.toIpV4Long()
+                    uNewSSOIp = lastConnectedIP.toIpV4Long()
                 }
             } else {
                 uOldSSOIp = 0
