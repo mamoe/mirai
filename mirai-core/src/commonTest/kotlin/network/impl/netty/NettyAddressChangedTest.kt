@@ -1,6 +1,8 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.TestNettyNH
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.Test
