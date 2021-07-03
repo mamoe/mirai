@@ -76,7 +76,7 @@ internal object ExternalResourceLeakObserver : Runnable {
                             {
                                 "A resource leak occurred, use ExternalResource.close to avoid it!! (holder=$holder)" + if (isExternalResourceCreationStackEnabled) {
                                     ""
-                                } else ". Add jvm option `-D$isExternalResourceCreationStackEnabledName=true` to visit creation stack track"
+                                } else ". Add jvm option `-D$isExternalResourceCreationStackEnabledName=true` to show creation stack track"
                             },
                             stackException
                         )
