@@ -89,12 +89,12 @@ interface Value<T> : ReadWriteProperty<Any?, T> {
 
 1. 定义一个单例，继承 `AutoSavePluginData`
 ```kotlin
-object MyData : AutoSavePluginData()
+object MyData : AutoSavePluginData("MyData")
 ```
 
 2. 使用委托添加属性。所有类型都可以使用同样的‘语法’。
 ```kotlin
-object MyData : AutoSavePluginData() {
+object MyData : AutoSavePluginData("MyData") { // 文件名为 MyData, 会被保存为 MyData.yml
     val value1 by value<Int>() // 推断为 Int
     val value2 by value(0) // 默认值为 0， 推断为 Int
     var value3 by value(0) // 支持 var，修改会自动保存
@@ -155,7 +155,7 @@ class CustomB(val str: String = "") // 参数可选，CustomB 就可以直接被
 
 使用时：
 ```kotlin
-object MyData : AutoSavePluginData() {
+object MyData : AutoSavePluginData("MyData") {
     val value1 by value(CustomA("")) // CustomA 不可以通过反射直接构造实例，因为必须提供参数 str。因此要在创建 value 时提供默认值。
     val value2: CustomB by value() // CustomB 可以通过反射直接构造实例
 }
