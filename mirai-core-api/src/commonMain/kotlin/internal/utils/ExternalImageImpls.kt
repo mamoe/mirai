@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.utils
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.io.InputStream
@@ -68,7 +67,9 @@ internal abstract class ExternalResourceHolder : Closeable {
      */
     abstract val closed: Deferred<Unit>
     val isClosed: Boolean get() = _closed.value
-    val createStackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
+    val createStackTrace: Array<StackTraceElement>? = if (isExternalResourceCreationStackEnabled) {
+        Thread.currentThread().stackTrace
+    } else null
 
     private val _closed = atomic(false)
     protected abstract fun closeImpl()
@@ -166,6 +167,11 @@ private fun RandomAccessFile.inputStream(): InputStream {
 
 private fun registerToLeakObserver(resource: ExternalResourceInternal) {
     ExternalResourceLeakObserver.register(resource)
+}
+
+internal const val isExternalResourceCreationStackEnabledName = "mirai.resource.creation.stack.enabled"
+internal val isExternalResourceCreationStackEnabled by lazy {
+    systemProp(isExternalResourceCreationStackEnabledName, false)
 }
 
 /*

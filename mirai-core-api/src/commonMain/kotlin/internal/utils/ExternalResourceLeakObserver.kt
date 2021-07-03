@@ -68,12 +68,16 @@ internal object ExternalResourceLeakObserver : Runnable {
                     if (holder.isClosed) {
                         continue@loop
                     }
-                    val stackException = ExternalResourceCreateStackTrace().also {
-                        it.stackTrace = holder.createStackTrace
+                    val stackException = holder.createStackTrace?.let { stack ->
+                        ExternalResourceCreateStackTrace().also { it.stackTrace = stack }
                     }
                     kotlin.runCatching { // Observer should avoid all possible errors
                         logger.error(
-                            { "A resource leak occurred, use ExternalResource.close to avoid it!! (holder=$holder)" },
+                            {
+                                "A resource leak occurred, use ExternalResource.close to avoid it!! (holder=$holder)" + if (isExternalResourceCreationStackEnabled) {
+                                    ""
+                                } else ". Add jvm option `-D$isExternalResourceCreationStackEnabledName=true` to visit creation stack track"
+                            },
                             stackException
                         )
                     }
@@ -83,7 +87,11 @@ internal object ExternalResourceLeakObserver : Runnable {
                         kotlin.runCatching { // Observer should avoid all possible errors
                             logger.error(
                                 { "Exception in closing a leaked resource (holder=$holder)" },
-                                exceptionInClose.also { it.addSuppressed(stackException) }
+                                exceptionInClose.also {
+                                    if (stackException != null) {
+                                        it.addSuppressed(stackException)
+                                    }
+                                }
                             )
                         }
                     }
