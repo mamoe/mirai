@@ -34,7 +34,7 @@ internal abstract class AbstractNettyNHTestWithSelector : AbstractRealNetworkHan
     val channel = AbstractNettyNHTest.NettyNHTestChannel()
 
     val selector = TestSelector<TestNettyNH> {
-        object : TestNettyNH(bot, createContext(), address) {
+        object : TestNettyNH(bot, createContext(), createAddress()) {
             override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel = channel
         }
     }

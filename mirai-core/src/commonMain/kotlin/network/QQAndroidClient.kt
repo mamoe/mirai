@@ -207,7 +207,6 @@ internal open class QQAndroidClient(
      */
     var timeDifference: Long = 0
 
-
     @Suppress("PropertyName")
     internal var _uin: Long = account.id
 
