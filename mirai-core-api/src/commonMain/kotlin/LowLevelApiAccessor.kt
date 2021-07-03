@@ -308,11 +308,4 @@ public interface LowLevelApiAccessor {
     @LowLevelApi
     @MiraiInternalApi // For Voice serialize
     public fun deserializePttElem(ptt: String): Any?
-
-    /**
-     * 将 [ExternalResource] 注册至资源监视器
-     */
-    @LowLevelApi
-    @MiraiInternalApi
-    public fun registerResourceLeakWatch(resource: ExternalResource)
 }

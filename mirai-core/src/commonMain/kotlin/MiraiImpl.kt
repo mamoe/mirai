@@ -47,7 +47,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
-import net.mamoe.mirai.internal.utils.ExternalResourceLeakObserver
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -1194,9 +1193,5 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun deserializePttElem(ptt: String): Any? {
         if (ptt.isBlank()) return null
         return ptt.hexToBytes().loadAs(ImMsgBody.Ptt.serializer())
-    }
-
-    override fun registerResourceLeakWatch(resource: ExternalResource) {
-        ExternalResourceLeakObserver.register(resource)
     }
 }
