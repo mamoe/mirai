@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
-import net.mamoe.mirai.utils.unwrap
 import net.mamoe.mirai.utils.unwrapCancellationException
 import java.io.IOException
 

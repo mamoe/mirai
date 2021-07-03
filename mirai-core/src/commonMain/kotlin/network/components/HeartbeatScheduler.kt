@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.selector.PacketTimeoutException
 import net.mamoe.mirai.utils.BotConfiguration.HeartbeatStrategy.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
@@ -101,11 +102,11 @@ internal class TimeBasedHeartbeatSchedulerImpl(
                 }
 
                 try {
-                    withTimeoutOrNull(timeout()) {
+                    withTimeout(timeout()) {
                         action()
-                    } ?: error("Timeout $name.")
+                    }
                 } catch (e: Throwable) {
-                    onHeartFailure(name, e)
+                    onHeartFailure(name, PacketTimeoutException("Timeout receiving Heartbeat response", e))
                 }
             }
         }.apply {
