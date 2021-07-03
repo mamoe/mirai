@@ -61,14 +61,13 @@ internal class ExternalResourceImplByFileWithMd5(
     }
 }
 
-@MiraiInternalApi
-public abstract class ExternalResourceHolder : Closeable {
+internal abstract class ExternalResourceHolder : Closeable {
     /**
      * Mirror of [ExternalResource.closed]
      */
-    public abstract val closed: Deferred<Unit>
-    public val isClosed: Boolean get() = _closed
-    public val createStackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
+    abstract val closed: Deferred<Unit>
+    val isClosed: Boolean get() = _closed
+    val createStackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
 
     private var _closed = false
     protected abstract fun closeImpl()
@@ -90,10 +89,8 @@ public abstract class ExternalResourceHolder : Closeable {
     }
 }
 
-@MiraiInternalApi
-public interface ExternalResourceInternal : ExternalResource {
-    @MiraiInternalApi
-    public val holder: ExternalResourceHolder
+internal interface ExternalResourceInternal : ExternalResource {
+    val holder: ExternalResourceHolder
 }
 
 internal class ExternalResourceImplByFile(
@@ -168,11 +165,7 @@ private fun RandomAccessFile.inputStream(): InputStream {
 }
 
 private fun registerToLeakObserver(resource: ExternalResourceInternal) {
-    try {
-        Mirai
-    } catch (ignored: Throwable) { // mirai-core not aliveable
-        return
-    }.registerResourceLeakWatch(resource)
+    ExternalResourceLeakObserver.register(resource)
 }
 
 /*
