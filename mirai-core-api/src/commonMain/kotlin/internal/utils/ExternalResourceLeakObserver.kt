@@ -91,7 +91,7 @@ internal object ExternalResourceLeakObserver : Runnable {
             } catch (throwable: Throwable) {
                 kotlin.runCatching { // Observer should avoid all possible errors
                     logger.error(
-                        "Exception in enque loop",
+                        "Exception in queue loop",
                         throwable
                     )
                 }
