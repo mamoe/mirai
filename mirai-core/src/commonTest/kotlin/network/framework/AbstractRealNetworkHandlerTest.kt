@@ -136,8 +136,9 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
 
+    //Use overrideComponents to avoid StackOverflowError when applying components
     open fun createAddress(): InetSocketAddress =
-        bot.components[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
+        overrideComponents[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions
