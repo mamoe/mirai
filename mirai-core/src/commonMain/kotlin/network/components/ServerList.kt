@@ -58,6 +58,22 @@ internal interface ServerList {
      */
     fun refresh()
 
+
+    /**
+     * Last disconnected ip
+     */
+    var lastDisconnectedIP: String
+
+    /**
+     * Last connected ip
+     */
+    var lastConnectedIP: String
+
+    /**
+     * Get last poll ip
+     */
+    fun getLastPolledIP(): String
+
     /**
      * [Poll][Queue.poll] from current address list. Returns `null` if current address list is empty.
      */
@@ -100,6 +116,9 @@ internal class ServerListImpl(
     @Volatile
     private var current: Queue<ServerAddress> = ArrayDeque(initial)
 
+    @Volatile
+    private var lastPolledAddress: ServerAddress? = null
+
     @Synchronized
     override fun setPreferred(list: Collection<ServerAddress>) {
         logger.info { "Server list: ${list.joinToString()}." }
@@ -121,12 +140,19 @@ internal class ServerListImpl(
         }
     }
 
+    override var lastDisconnectedIP: String = ""
+    override var lastConnectedIP: String = ""
+
+    override fun getLastPolledIP(): String = lastPolledAddress?.host ?: ""
+
     /**
      * [Poll][Queue.poll] from current address list. Returns `null` if current address list is empty.
      */
     @Synchronized
     override fun pollCurrent(): ServerAddress? {
-        return current.poll()
+        return current.poll()?.also { address ->
+            lastPolledAddress = address
+        }
     }
 
     /**
@@ -135,7 +161,9 @@ internal class ServerListImpl(
     @Synchronized
     override fun pollAny(): ServerAddress {
         if (current.isEmpty()) refresh()
-        return current.remove()
+        return current.remove().also { address ->
+            lastPolledAddress = address
+        }
     }
 
     override fun toString(): String {

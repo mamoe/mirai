@@ -132,11 +132,13 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         return instance
     }
 
-    open fun createHandler(): NetworkHandler = factory.create(createContext(), address)
+    open fun createHandler(): NetworkHandler = factory.create(createContext(), createAddress())
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
 
-    val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
+    //Use overrideComponents to avoid StackOverflowError when applying components
+    open fun createAddress(): InetSocketAddress =
+        overrideComponents[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions

@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
+import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
@@ -39,6 +40,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.internal.utils.toIpV4Long
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toReadPacket
@@ -158,16 +161,27 @@ internal class StatSvc {
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
-            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
-                iLargeSeq = friendListCache.friendListSeq
-                //  timeStamp = friendListCache.timeStamp
+            if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+                client.bot.components[ServerList].run {
+                    uOldSSOIp = lastDisconnectedIP.toIpV4Long()
+                    uNewSSOIp = lastConnectedIP.toIpV4Long()
+                }
+            } else {
+                uOldSSOIp = 0
+                uNewSSOIp = 0
             }
+            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache ->
+                iLargeSeq = friendListCache.friendListSeq
+            }
+            //  timeStamp = friendListCache.timeStamp
+            strVendorName = "MIUI"
+            strVendorOSName = "?ONEPLUS A5000_23_17"
         }
 
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 1L or 2 or 4, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
             name: String,
@@ -221,10 +235,6 @@ internal class StatSvc {
                                 strDevName = client.device.model.encodeToString(),
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
-                                uOldSSOIp = 0,
-                                uNewSSOIp = 0,
-                                strVendorName = "MIUI",
-                                strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
                                 /*
                                 var44.uNewSSOIp = field_127445;
