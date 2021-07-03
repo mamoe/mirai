@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Mirai
@@ -66,14 +67,13 @@ internal abstract class ExternalResourceHolder : Closeable {
      * Mirror of [ExternalResource.closed]
      */
     abstract val closed: Deferred<Unit>
-    val isClosed: Boolean get() = _closed
+    val isClosed: Boolean get() = _closed.value
     val createStackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
 
-    private var _closed = false
+    private val _closed = atomic(false)
     protected abstract fun closeImpl()
     override fun close() {
-        if (_closed) return
-        _closed = true
+        if (!_closed.compareAndSet(false, true)) return
         try {
             closeImpl()
         } finally {
