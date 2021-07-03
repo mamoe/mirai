@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
+import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -160,19 +161,21 @@ internal class StatSvc {
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
-            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache: FriendListCache ->
-                if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
-                    uOldSSOIp = client.lastDisconnectedIp.toIpV4Long()
-                    uNewSSOIp = client.lastConnectedIp.toIpV4Long()
-                } else {
-                    uOldSSOIp = 0
-                    uNewSSOIp = 0
+            if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+                client.bot.components[ServerList].run {
+                    uOldSSOIp = lastDisconnectedIp.toIpV4Long()
+                    uNewSSOIp = lastConnectedIp.toIpV4Long()
                 }
-                iLargeSeq = friendListCache.friendListSeq
-                strVendorName = "MIUI"
-                strVendorOSName = "?ONEPLUS A5000_23_17"
-                //  timeStamp = friendListCache.timeStamp
+            } else {
+                uOldSSOIp = 0
+                uNewSSOIp = 0
             }
+            client.bot.components[ContactCacheService].friendListCache?.let { friendListCache ->
+                iLargeSeq = friendListCache.friendListSeq
+            }
+            //  timeStamp = friendListCache.timeStamp
+            strVendorName = "MIUI"
+            strVendorOSName = "?ONEPLUS A5000_23_17"
         }
 
         fun offline(

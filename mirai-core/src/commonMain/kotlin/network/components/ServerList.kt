@@ -58,6 +58,17 @@ internal interface ServerList {
      */
     fun refresh()
 
+
+    /**
+     * Last disconnected ip
+     */
+    var lastDisconnectedIp: String
+
+    /**
+     * Last connected ip
+     */
+    var lastConnectedIp: String
+
     /**
      * Get last poll ip
      */
@@ -128,6 +139,9 @@ internal class ServerListImpl(
             "Internal error: failed to fill server list. No server available."
         }
     }
+
+    override var lastDisconnectedIp: String = ""
+    override var lastConnectedIp: String = ""
 
     override fun getLastPolledIP(): String = lastPolledAddress?.host ?: ""
 
