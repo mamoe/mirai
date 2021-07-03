@@ -13,28 +13,25 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.BotLeaveEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import kotlin.math.max
 
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<Packet?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<Packet>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -46,30 +43,24 @@ internal class NewContact {
                         frdMsgGetBusiCard = 1,
                         frdMsgNeedWaitingMsg = 1,
                         frdMsgUint32NeedAllUnreadMsg = 1,
-                        grpMsgMaskInviteAutoJoin = 1
+                        grpMsgMaskInviteAutoJoin = 1,
                     ),
                     friendMsgTypeFlag = 1,
                     isGetFrdRibbon = false,
                     isGetGrpRibbon = false,
                     msgNum = 20,
-                    version = 1000
-                )
+                    version = 1000,
+                ),
             )
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
+            readProtoBuf(Structmsg.RspSystemMsgNew.serializer()).run {
                 return friendmsgs.filter {
-                    it.msgTime >= bot.client.syncingController.latestMsgNewFriendTime
+                    it.msgTime >= bot.syncController.latestMsgNewFriendTime
                 }.mapNotNull { struct ->
-                    if (!bot.client.syncingController.systemMsgNewFriendCacheList.addCache(
-                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
-                                struct.msgSeq,
-                                struct.msgTime
-                            )
-                        )
-                    ) { // duplicate
+                    if (!bot.syncController.syncNewFriend(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
                     }
                     struct.msg?.run {
@@ -79,17 +70,11 @@ internal class NewContact {
                             msgAdditional,
                             struct.reqUin,
                             groupCode,
-                            reqUinNick
+                            reqUinNick,
                         )
                     }
-                }.let { packets ->
-                    when {
-                        packets.isEmpty() -> null
-                        packets.size == 1 -> packets[0]
-                        else -> MultiPacketByIterable(packets)
-                    }
-                }.also {
-                    bot.client.syncingController.run {
+                }.toPacket().also {
+                    bot.syncController.run {
                         latestMsgNewFriendTime = max(latestMsgNewFriendTime, friendmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
                 }
@@ -103,7 +88,7 @@ internal class NewContact {
                 eventId: Long,
                 fromId: Long,
                 accept: Boolean,
-                blackList: Boolean = false
+                blackList: Boolean = false,
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -114,14 +99,14 @@ internal class NewContact {
                                 addFrdSNInfo = Structmsg.AddFrdSNInfo(),
                                 msg = "",
                                 remark = "",
-                                blacklist = !accept && blackList
+                                blacklist = !accept && blackList,
                             ),
                             msgSeq = eventId,
                             reqUin = fromId,
                             srcId = 6,
                             subSrcId = 7,
-                            subType = 1
-                        )
+                            subType = 1,
+                        ),
                     )
                 }
 
@@ -155,125 +140,29 @@ internal class NewContact {
                         grpMsgNeedAutoAdminWording = 1,
                         grpMsgNotAllowJoinGrpInviteNotFrd = 1,
                         grpMsgSupportInviteAutoJoin = 1,
-                        grpMsgWordingDown = 1
+                        grpMsgWordingDown = 1,
                     ),
                     friendMsgTypeFlag = 1,
                     isGetFrdRibbon = false,
                     isGetGrpRibbon = false,
                     msgNum = 5,
-                    version = 1000
-                )
+                    version = 1000,
+                ),
             )
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            fun handleStruct(struct: Structmsg.StructMsg): Packet? {
-                return struct.msg?.run {
-                    when (subType) {
-                        1 -> { // 处理被邀请入群 或 处理成员入群申请
-                            when (groupMsgType) {
-                                1 -> {
-                                    // 成员申请入群
-                                    MemberJoinRequestEvent(
-                                        bot, struct.msgSeq, msgAdditional,
-                                        struct.reqUin, groupCode, groupName, reqUinNick
-                                    )
-                                }
-                                2 -> {
-                                    // Bot 被邀请入群
-                                    BotInvitedJoinGroupRequestEvent(
-                                        bot, struct.msgSeq, actionUin,
-                                        groupCode, groupName, actionUinNick
-                                    )
-                                }
-                                22 -> {
-                                    // 成员邀请入群
-                                    MemberJoinRequestEvent(
-                                        bot, struct.msgSeq, msgAdditional,
-                                        struct.reqUin, groupCode, groupName, reqUinNick, actionUin
-                                    )
-                                }
-                                else -> throw contextualBugReportException(
-                                    "parse SystemMsgNewGroup, subType=1",
-                                    this._miraiContentToString(),
-                                    additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
-                                )
-                            }
-                        }
-                        2 -> { // 被邀请入群, 自动同意, 不需处理
-
-//                            val group = bot.getNewGroup(groupCode) ?: return null
-//                            val invitor = group[actionUin]
-//
-//                            BotJoinGroupEvent.Invite(invitor)
-                            null
-                        }
-                        3 -> { // 已被请他管理员处理
-                            null
-                        }
-                        5 -> {
-                            val group = bot.getGroup(groupCode) ?: return null
-                            when (groupMsgType) {
-                                3 -> {
-                                    // https://github.com/mamoe/mirai/issues/651
-                                    // msgDescribe=将你设置为管理员
-                                    // msgTitle=管理员设置
-                                    null
-                                }
-                                13 -> { // 成员主动退出, 机器人是管理员, 接到通知
-                                    // 但无法获取是哪个成员.
-                                    null
-                                }
-                                7 -> { // 机器人被踢
-                                    val operator = group[actionUin] ?: return null
-                                    BotLeaveEvent.Kick(operator)
-                                }
-                                else -> {
-                                    throw contextualBugReportException(
-                                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
-                                        this._miraiContentToString(),
-                                        null,
-                                        "并描述此时机器人是否被踢出群等"
-                                    )
-                                }
-                            }
-                        }
-                        else -> throw contextualBugReportException(
-                            "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
-                            forDebug = this._miraiContentToString(),
-                            additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
-                        )
-                    }
-                }
-            }
-
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 groupmsgs.filter {
-                    it.msgTime >= bot.client.syncingController.latestMsgNewGroupTime
+                    it.msgTime >= bot.syncController.latestMsgNewGroupTime
                 }.mapNotNull { struct ->
-                    if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
-                            QQAndroidClient.MessageSvcSyncData.SystemMsgNewSyncId(
-                                struct.msgSeq,
-                                struct.msgTime
-                            )
-                        )
-                    ) { // duplicate
+                    if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
                     }
-                    try {
-                        handleStruct(struct)
-                    } catch (e: Throwable) {
-                        ParseErrorPacket(e)
-                    }
-                }.let { packets ->
-                    when {
-                        packets.isEmpty() -> null
-                        packets.size == 1 -> packets[0]
-                        else -> MultiPacketByIterable(packets)
-                    }
-                }.also {
-                    bot.client.syncingController.run {
+                    bot.processPacketThroughPipeline(struct)
+                }.toPacket().also {
+                    bot.syncController.run {
                         latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
                 }
@@ -290,7 +179,7 @@ internal class NewContact {
                 isInvited: Boolean,
                 accept: Boolean?,
                 blackList: Boolean = false,
-                message: String = ""
+                message: String = "",
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -305,7 +194,7 @@ internal class NewContact {
                                 groupCode = groupId,
                                 msg = message,
                                 remark = "",
-                                blacklist = blackList
+                                blacklist = blackList,
                             ),
                             groupMsgType = if (isInvited) 2 else 1,
                             language = 1000,
@@ -313,8 +202,8 @@ internal class NewContact {
                             reqUin = fromId,
                             srcId = 3,
                             subSrcId = if (isInvited) 10016 else 31,
-                            subType = 1
-                        )
+                            subType = 1,
+                        ),
                     )
                 }
 

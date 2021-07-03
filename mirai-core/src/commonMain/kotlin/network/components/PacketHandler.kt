@@ -75,7 +75,7 @@ internal class EventBroadcasterPacketHandler(
 
     private fun impl(packet: Packet?) {
         if (packet == null) return
-        if (packet is MultiPacket<*>) {
+        if (packet is MultiPacket) {
             for (p in packet) {
                 impl(p)
             }

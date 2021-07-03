@@ -54,17 +54,17 @@ internal class PacketLoggingStrategyImpl(
                 packet ?: return
                 if (!bot.logger.isEnabled && !logger.isEnabled) return
                 if (packet is ParseErrorPacket) {
-                    packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
+                    packet.direction.getLogger(bot).error("Exception on parsing packet.", packet.error)
                 }
 
-                if (packet is MultiPacket<*>) {
+                if (packet is MultiPacket) {
                     for (d in packet) {
                         logReceivedImpl(d, incomingPacket, logger)
                     }
                 }
 
                 logReceivedImpl(packet, incomingPacket, logger)
-            }
+            },
         )
     }
 

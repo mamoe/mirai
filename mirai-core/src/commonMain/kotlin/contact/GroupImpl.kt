@@ -64,35 +64,36 @@ internal fun Group.checkIsGroupImpl(): GroupImpl {
 @Suppress("PropertyName")
 internal class GroupImpl(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>,
-) : Group, AbstractContact(bot, coroutineContext) {
+) : Group, AbstractContact(bot, parentCoroutineContext) {
     companion object
 
     val uin: Long = groupInfo.uin
     override val settings: GroupSettingsImpl = GroupSettingsImpl(this, groupInfo)
     override var name: String by settings::name
 
-    override lateinit var owner: NormalMember
-    override lateinit var botAsMember: NormalMember
+    override lateinit var owner: NormalMemberImpl
+    override lateinit var botAsMember: NormalMemberImpl
 
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
 
-    override val members: ContactList<NormalMember> = ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) {
-        if (it.uin == bot.id) {
-            botAsMember = newMember(it).cast()
-            if (it.permission == MemberPermission.OWNER) {
-                owner = botAsMember
+    override val members: ContactList<NormalMemberImpl> =
+        ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) { info ->
+            if (info.uin == bot.id) {
+                botAsMember = newNormalMember(info)
+                if (info.permission == MemberPermission.OWNER) {
+                    owner = botAsMember
+                }
+                null
+            } else newNormalMember(info).also { member ->
+                if (member.permission == MemberPermission.OWNER) {
+                    owner = member
+                }
             }
-            null
-        } else newMember(it).cast<NormalMember>().also { member ->
-            if (member.permission == MemberPermission.OWNER) {
-                owner = member
-            }
-        }
-    })
+        })
 
     val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
@@ -117,10 +118,8 @@ internal class GroupImpl(
         return true
     }
 
-    override operator fun get(id: Long): NormalMember? {
-        if (id == bot.id) {
-            return botAsMember
-        }
+    override operator fun get(id: Long): NormalMemberImpl? {
+        if (id == bot.id) return botAsMember
         return members.firstOrNull { it.id == id }
     }
 
@@ -277,12 +276,13 @@ internal class GroupImpl(
     override fun toString(): String = "Group($id)"
 }
 
+@Deprecated("use addNewNormalMember or newAnonymousMember")
 internal fun Group.newMember(memberInfo: MemberInfo): Member {
     this.checkIsGroupImpl()
-    memberInfo.anonymousId?.let { anId ->
+    memberInfo.anonymousId?.let {
         return AnonymousMemberImpl(
             this, this.coroutineContext,
-            memberInfo, anId
+            memberInfo
         )
     }
     return NormalMemberImpl(
@@ -292,16 +292,35 @@ internal fun Group.newMember(memberInfo: MemberInfo): Member {
     )
 }
 
-internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl = newMember(
-    MemberInfoImpl(
-        uin = 80000000L,
-        nick = name,
-        permission = MemberPermission.MEMBER,
-        remark = "匿名",
-        nameCard = name,
-        specialTitle = "匿名",
-        muteTimestamp = 0,
-        anonymousId = id,
+internal fun Group.addNewNormalMember(memberInfo: MemberInfo): NormalMemberImpl? {
+    if (members.contains(memberInfo.uin)) return null
+    return newNormalMember(memberInfo).also {
+        members.delegate.add(it)
+    }
+}
+
+internal fun Group.newNormalMember(memberInfo: MemberInfo): NormalMemberImpl {
+    this.checkIsGroupImpl()
+    return NormalMemberImpl(
+        this,
+        this.coroutineContext,
+        memberInfo
     )
-) as AnonymousMemberImpl
+}
+
+internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberImpl {
+    return AnonymousMemberImpl(
+        this, this.coroutineContext,
+        MemberInfoImpl(
+            uin = 80000000L,
+            nick = name,
+            permission = MemberPermission.MEMBER,
+            remark = "匿名",
+            nameCard = name,
+            specialTitle = "匿名",
+            muteTimestamp = 0,
+            anonymousId = id,
+        )
+    )
+}
 

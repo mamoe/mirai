@@ -16,7 +16,6 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
@@ -30,7 +29,9 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
@@ -326,20 +327,20 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     @LowLevelApi
-    override fun newFriend(bot: Bot, friendInfo: FriendInfo): Friend {
+    override fun newFriend(bot: Bot, friendInfo: FriendInfo): FriendImpl {
         return FriendImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo
+            bot.coroutineContext,
+            friendInfo.impl(),
         )
     }
 
     @LowLevelApi
-    override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger {
+    override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): StrangerImpl {
         return StrangerImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            strangerInfo
+            bot.coroutineContext,
+            strangerInfo.impl(),
         )
     }
 

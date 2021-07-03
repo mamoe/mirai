@@ -28,34 +28,34 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
-public data class FriendRemarkChangeEvent internal constructor(
+public data class FriendRemarkChangeEvent @MiraiInternalApi public constructor(
     public override val friend: Friend,
     public val oldRemark: String,
-    public val newRemark: String
+    public val newRemark: String,
 ) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 成功添加了一个新好友的事件
  */
-public data class FriendAddEvent @MiraiInternalApi constructor(
+public data class FriendAddEvent @MiraiInternalApi public constructor(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
-    public override val friend: Friend
+    public override val friend: Friend,
 ) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 好友已被删除或主动删除的事件.
  */
-public data class FriendDeleteEvent internal constructor(
-    public override val friend: Friend
+public data class FriendDeleteEvent @MiraiInternalApi public constructor(
+    public override val friend: Friend,
 ) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 一个账号请求添加机器人为好友的事件
  */
 @Suppress("DEPRECATION")
-public data class NewFriendRequestEvent internal constructor(
+public data class NewFriendRequestEvent @MiraiInternalApi public constructor(
     public override val bot: Bot,
     /**
      * 事件唯一识别号
@@ -76,7 +76,7 @@ public data class NewFriendRequestEvent internal constructor(
     /**
      * 群名片或好友昵称
      */
-    public val fromNick: String
+    public val fromNick: String,
 ) : BotEvent, Packet, AbstractEvent(), FriendInfoChangeEvent {
     @JvmField
     internal val responded: AtomicBoolean = AtomicBoolean(false)
@@ -97,25 +97,25 @@ public data class NewFriendRequestEvent internal constructor(
 /**
  * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
  */
-public data class FriendAvatarChangedEvent internal constructor(
-    public override val friend: Friend
+public data class FriendAvatarChangedEvent @MiraiInternalApi public constructor(
+    public override val friend: Friend,
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
  * @see BotNickChangedEvent
  */
-public data class FriendNickChangedEvent internal constructor(
+public data class FriendNickChangedEvent @MiraiInternalApi public constructor(
     public override val friend: Friend,
     public val from: String,
-    public val to: String
+    public val to: String,
 ) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
 
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
  */
-public data class FriendInputStatusChangedEvent internal constructor(
+public data class FriendInputStatusChangedEvent @MiraiInternalApi public constructor(
     public override val friend: Friend,
-    public val inputting: Boolean
+    public val inputting: Boolean,
 
-) : FriendEvent, Packet, AbstractEvent()
+    ) : FriendEvent, Packet, AbstractEvent()

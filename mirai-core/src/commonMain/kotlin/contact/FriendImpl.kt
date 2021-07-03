@@ -18,12 +18,9 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -34,7 +31,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
@@ -56,9 +52,9 @@ internal fun net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo.toMir
     )
 
 @OptIn(ExperimentalContracts::class)
-internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
+internal inline fun Friend.impl(): FriendImpl {
     contract {
-        returns() implies (this@checkIsFriendImpl is FriendImpl)
+        returns() implies (this@impl is FriendImpl)
     }
     check(this is FriendImpl) { "A Friend instance is not instance of FriendImpl. Your instance: ${this::class.qualifiedName}" }
     return this
@@ -66,20 +62,16 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 
 internal class FriendImpl(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
-    internal val friendInfo: FriendInfo,
-) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
-    @Suppress("unused") // bug
-    val lastMessageSequence: AtomicInt = atomic(-1)
-    val friendPkgMsgParsingCache = C2CPkgMsgParsingCache()
-
+    parentCoroutineContext: CoroutineContext,
+    override val info: FriendInfoImpl,
+) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override suspend fun delete() {
         check(bot.friends[this.id] != null) {
             "Friend ${this.id} had already been deleted"
         }
         bot.network.run {
             FriendList.DelFriend.invoke(bot.client, this@FriendImpl)
-                .sendAndExpect<FriendList.DelFriend.Response>().also {
+                .sendAndExpect().also {
                     check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
                 }
         }

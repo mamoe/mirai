@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.utils.io
 
-/**
- * 仅有标示作用
- */
-internal interface ProtoBuf
+internal interface ProtocolStruct
+internal interface ProtoBuf : ProtocolStruct
+internal interface JceStruct : ProtocolStruct

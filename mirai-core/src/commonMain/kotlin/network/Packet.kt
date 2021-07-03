@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network
 
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.MiraiLogger
 
 /*
@@ -32,21 +33,33 @@ interface Packet {
 /**
  * PacketFactory 可以一次解析多个包出来. 它们将会被分别广播.
  */
-internal interface MultiPacket<out P : Packet> : Packet, Iterable<P>
+internal interface MultiPacket : Packet, Collection<Packet>
 
-internal open class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
-    Iterable<P> by delegate {
-    override fun toString(): String = "MultiPacketByIterable"
+internal fun Collection<Packet>.toPacket(): Packet {
+    return when (this.size) {
+        1 -> this.single()
+        else -> MultiPacketImpl(this)
+    }
 }
 
-internal open class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) :
-    MultiPacket<P> {
-    override operator fun iterator(): Iterator<P> = delegate.iterator()
+internal fun MultiPacket(delegate: Collection<Packet>): MultiPacket = MultiPacketImpl(delegate)
+internal fun MultiPacket(delegate: Packet): MultiPacket =
+    if (delegate is MultiPacket) delegate else MultiPacket(listOf(delegate))
 
-    override fun toString(): String = "MultiPacketBySequence"
+internal open class MultiPacketImpl(
+    val delegate: Collection<Packet>,
+) : MultiPacket, Collection<Packet> by delegate {
+
+    override fun toString(): String = delegate.joinToString(
+        separator = "\n",
+        prefix = "MultiPacket [\n",
+        postfix = "]",
+    )
 }
+
 
 internal class ParseErrorPacket(
+    val data: ProtocolStruct,
     val error: Throwable,
     val direction: Direction = Direction.TO_BOT_LOGGER,
 ) : Packet, Packet.NoLog {

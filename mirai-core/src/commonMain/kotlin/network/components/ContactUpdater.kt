@@ -19,10 +19,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.StrangerImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
@@ -34,6 +32,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.isValid
+import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
@@ -76,7 +75,7 @@ internal class ContactUpdaterImpl(
     val bot: QQAndroidBot, // not good
     val components: ComponentStorage,
     private val logger: MiraiLogger,
-) : ContactUpdater {
+) : ContactUpdater, NewContactSupport {
     override val otherClientsLock: Mutex = Mutex()
     override val groupListModifyLock: Mutex = Mutex()
     private val cacheService get() = components[ContactCacheService]
@@ -176,15 +175,12 @@ internal class ContactUpdaterImpl(
         }
 
         for (friendInfoImpl in list) {
-            addFriendToBot(friendInfoImpl)
+            bot.addNewFriendAndRemoveStranger(friendInfoImpl)
         }
 
 
         initFriendOk = true
     }
-
-    private fun addFriendToBot(it: FriendInfo) =
-        bot.friends.delegate.add(FriendImpl(bot, bot.coroutineContext, it))
 
     private suspend fun addGroupToBot(stTroopNum: StTroopNum) = stTroopNum.run {
         suspend fun refreshGroupMemberList(): Sequence<MemberInfo> {
@@ -214,11 +210,11 @@ internal class ContactUpdaterImpl(
         bot.groups.delegate.add(
             GroupImpl(
                 bot = bot,
-                coroutineContext = bot.coroutineContext,
+                parentCoroutineContext = bot.coroutineContext,
                 id = groupCode,
                 groupInfo = GroupInfoImpl(stTroopNum),
-                members = members
-            )
+                members = members,
+            ),
         )
     }
 
