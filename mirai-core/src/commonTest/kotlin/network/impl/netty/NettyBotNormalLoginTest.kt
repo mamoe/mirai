@@ -26,7 +26,7 @@ import kotlin.test.assertFalse
 
 internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
     val selector = KeepAliveNetworkHandlerSelector(selectorLogger) {
-        super.factory.create(createContext(), address)
+        super.factory.create(createContext(), createAddress())
     }
 
     override fun createHandler(): NetworkHandler {
