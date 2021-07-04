@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -12,14 +12,12 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.data.ReceiveAnnouncement
-import net.mamoe.mirai.data.covertToAnnouncement
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -93,6 +91,8 @@ internal class GroupImpl(
             }
         }
     })
+
+    override val announcements: Announcements by lazy { AnnouncementsImpl(this) }
 
     val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
@@ -250,29 +250,6 @@ internal class GroupImpl(
         }
         return result.success
     }
-
-    override suspend fun getAnnouncements(): Flow<ReceiveAnnouncement> =
-        flow {
-            var i = 1
-            while (true) {
-                val result = Mirai.getRawGroupAnnouncements(bot, id, i++)
-                check(result.ec == 0) { "Get Group Announcement error at page $i" }
-
-                if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty())
-                    return@flow
-
-                result.inst?.let { emitAll(it.asFlow()) }
-                result.feeds?.let { emitAll(it.asFlow()) }
-            }
-        }.map { it.covertToAnnouncement(bot.id) }
-
-    override suspend fun deleteAnnouncement(fid: String) {
-        checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }
-        Mirai.deleteGroupAnnouncement(bot, id, fid)
-    }
-
-    override suspend fun getAnnouncement(fid: String): ReceiveAnnouncement =
-        Mirai.getGroupAnnouncement(bot, id, fid).covertToAnnouncement(bot.id)
 
     override fun toString(): String = "Group($id)"
 }

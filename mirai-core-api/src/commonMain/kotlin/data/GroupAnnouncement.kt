@@ -1,25 +1,27 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:Suppress("DEPRECATION")
 
 package net.mamoe.mirai.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.announcement.Announcement
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
- * 群公告数据类
- * getGroupAnnouncementList时，如果page=1，那么你可以在inst里拿到一些置顶公告
+ * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [Announcement].
  *
- * 发公告时只需要填写text，其他参数可为默认值
- *
+ * @suppress 此 API 非常不稳定, 将在未来版本删除
  */
+@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementList(
@@ -27,8 +29,24 @@ public data class GroupAnnouncementList(
     @SerialName("em") val msg: String,   //信息
     val feeds: List<GroupAnnouncement>? = null,   //群公告列表
     val inst: List<GroupAnnouncement>? = null  //置顶列表？ 应该是发送给新成员的
-)
+) {
+    /*
+  // notes from original implementor, luo123, on 2020/3/13
 
+ * 群公告数据类
+ * getGroupAnnouncementList时，如果page=1，那么你可以在inst里拿到一些置顶公告
+ *
+ * 发公告时只需要填写text，其他参数可为默认值
+ *
+     */
+}
+
+/**
+ * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
+ *
+ * @suppress 此 API 非常不稳定, 将在未来版本删除
+ */
+@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncement(
@@ -44,6 +62,12 @@ public data class GroupAnnouncement(
     val fid: String? = null,      //公告的id
 )
 
+/**
+ * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
+ *
+ * @suppress 此 API 非常不稳定, 将在未来版本删除
+ */
+@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementMsg(
@@ -52,6 +76,12 @@ public data class GroupAnnouncementMsg(
     val title: String? = null
 )
 
+/**
+ * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
+ *
+ * @suppress 此 API 非常不稳定, 将在未来版本删除
+ */
+@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
 @MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementSettings(
@@ -59,12 +89,4 @@ public data class GroupAnnouncementSettings(
     @SerialName("remind_ts") val remindTs: Int = 0,
     @SerialName("tip_window_type") val tipWindowType: Int = 0,  //是否用弹窗展示   1 不使用
     @SerialName("confirm_required") val confirmRequired: Int = 0 // 是否需要确认收到 1 需要
-)
-
-@MiraiExperimentalApi
-@Serializable
-public data class GroupAnnouncementImage(
-    @SerialName("h") val height: String,
-    @SerialName("w") val width: String,
-    @SerialName("id") val id: String
 )
