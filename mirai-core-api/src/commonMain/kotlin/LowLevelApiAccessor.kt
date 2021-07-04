@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmBlockingBridge
@@ -133,6 +133,8 @@ public interface LowLevelApiAccessor {
      * 获取群公告列表
      * @param page 页码
      */
+    @Suppress("DEPRECATION")
+    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
     @LowLevelApi
     @MiraiExperimentalApi
     public suspend fun getRawGroupAnnouncements(
@@ -143,22 +145,12 @@ public interface LowLevelApiAccessor {
     ): GroupAnnouncementList
 
     /**
-     * 上传群公告的所需要的一个图片，但不发送
-     *
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun uploadGroupAnnouncementImage(
-        bot: Bot,
-        groupId: Long,
-        resource: ExternalResource
-    ): GroupAnnouncementImage
-
-    /**
      * 发送群公告
      *
      * @return 公告的fid
      */
+    @Suppress("DEPRECATION")
+    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
     @LowLevelApi
     @MiraiExperimentalApi
     public suspend fun sendGroupAnnouncement(
@@ -168,42 +160,32 @@ public interface LowLevelApiAccessor {
     ): String
 
     /**
-     * 发送包含图片的群公告
-     *
-     * @return 公告的fid
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun sendGroupAnnouncementWithImage(
-        bot: Bot,
-        groupId: Long,
-        image: GroupAnnouncementImage,
-        announcement: GroupAnnouncement
-    ): String
-
-    /**
      * 删除群公告
      * @param fid [GroupAnnouncement.fid]
      */
+    @Suppress("DEPRECATION")
+    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
     @LowLevelApi
     @MiraiExperimentalApi
     public suspend fun deleteGroupAnnouncement(
         bot: Bot,
         groupId: Long,
         fid: String
-    )
+    ): Boolean
 
     /**
      * 获取一条群公告
      * @param fid [GroupAnnouncement.fid]
      */
+    @Suppress("DEPRECATION")
+    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
     @LowLevelApi
     @MiraiExperimentalApi
     public suspend fun getGroupAnnouncement(
         bot: Bot,
         groupId: Long,
         fid: String
-    ): GroupAnnouncement
+    ): GroupAnnouncement?
 
 
     /**

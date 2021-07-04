@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal
@@ -14,11 +14,8 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.http.*
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
@@ -59,7 +56,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -561,6 +557,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     @LowLevelApi
     @MiraiExperimentalApi
     override suspend fun getRawGroupAnnouncements(
@@ -598,47 +595,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         isLenient = true
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun uploadGroupAnnouncementImage(
-        bot: Bot,
-        groupId: Long,
-        resource: ExternalResource
-    ): GroupAnnouncementImage = bot.asQQAndroidBot().run {
-        //https://youtrack.jetbrains.com/issue/KTOR-455
-        val rep = Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
-            body = MultiPartFormDataContent(formData {
-                append("\"bkn\"", bkn)
-                append("\"source\"", "troopNotice")
-                append("m", "0")
-                append(
-                    "\"pic_up\"",
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Image.PNG)
-                        append(HttpHeaders.ContentDisposition, "filename=\"temp_uploadFile.png\"")
-                    }
-                ) {
-                    writeFully(resource.inputStream().withUse { readBytes() })
-                }
-            })
-            headers {
-                append(
-                    "cookie",
-                    " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error("cookie parse p_skey error")}; "
-                )
-            }
-        }
-        val jsonObj = json.parseToJsonElement(rep)
-        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int != 0) {
-            throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
-        }
-        val id = jsonObj.jsonObject["id"]?.jsonPrimitive?.content
-            ?: throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
-        return json.decodeFromString(GroupAnnouncementImage.serializer(), id)
-    }
-
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     @LowLevelApi
     @MiraiExperimentalApi
     override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
@@ -674,83 +631,41 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
         }
 
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun sendGroupAnnouncementWithImage(
-        bot: Bot,
-        groupId: Long,
-        image: GroupAnnouncementImage,
-        announcement: GroupAnnouncement
-    ): String = bot.asQQAndroidBot().run {
-        val rep = withContext(network.coroutineContext) {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String): Boolean =
+        bot.asQQAndroidBot().run {
+            val data = Mirai.Http.post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
                     append("bkn", bkn)
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append("pic", image.id)
-                    append("imgWidth", image.width)
-                    append("imgHeight", image.height)
-                    append(
-                        "settings",
-                        json.encodeToString(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
+                    append("fid", fid)
                     append("format", "json")
                 })
                 headers {
                     append(
                         "cookie",
-                        " p_uin=o${id};" +
-                                " p_skey=${
-                                    client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error(
-                                        "parse error"
-                                    )
-                                }; "
+                        "uin=o${id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
-
             }
-        }
-        val jsonObj = json.parseToJsonElement(rep)
-        return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-            ?: throw throw IllegalStateException("Send Announcement with image fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-    }
+            val jsonObj = json.parseToJsonElement(data)
+            if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
+                throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
+            }
 
+            return jsonObj.jsonObject["ec"]?.jsonPrimitive?.int == 0
+        }
+
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     @LowLevelApi
     @MiraiExperimentalApi
-    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
-        val data = Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-            body = MultiPartFormDataContent(formData {
-                append("qid", groupId)
-                append("bkn", bkn)
-                append("fid", fid)
-                append("format", "json")
-            })
-            headers {
-                append(
-                    "cookie",
-                    "uin=o${id};" +
-                            " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                            " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                )
-            }
-        }
-        val jsonObj = json.parseToJsonElement(data)
-        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
-            throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
-        }
-    }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
+    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement? =
         bot.asQQAndroidBot().run {
             val rep = network.run {
                 Mirai.Http.post<String> {
