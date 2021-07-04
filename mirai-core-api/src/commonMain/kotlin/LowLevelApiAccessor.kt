@@ -16,10 +16,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.WeakRef
+import net.mamoe.mirai.utils.*
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -41,6 +38,7 @@ public annotation class LowLevelApi
  * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
 @LowLevelApi
+@NotStableForInheritance
 public interface LowLevelApiAccessor {
     /**
      * 主动刷新 keys, 如 SKey, PSKey 等.

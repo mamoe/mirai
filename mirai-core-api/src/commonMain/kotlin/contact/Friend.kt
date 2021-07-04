@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
 
@@ -21,6 +22,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 代表一位好友.
@@ -31,7 +33,7 @@ import net.mamoe.mirai.message.data.toPlainText
  *
  * @see FriendMessageEvent
  */
-@JvmBlockingBridge
+@NotStableForInheritance
 public interface Friend : User, CoroutineScope, VoiceSupported {
     /**
      * QQ 号码

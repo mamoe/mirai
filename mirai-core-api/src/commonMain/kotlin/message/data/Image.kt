@@ -70,6 +70,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  * @see Image.flash 转换普通图片为闪照
  */
 @Serializable(Image.Serializer::class)
+@NotStableForInheritance
 public interface Image : Message, MessageContent, CodableMessage {
 
     /**

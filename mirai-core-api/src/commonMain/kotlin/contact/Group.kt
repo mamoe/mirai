@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport", "NOTHING_TO_INLINE")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
 
@@ -26,7 +27,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群.

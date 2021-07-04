@@ -39,6 +39,7 @@ import net.mamoe.mirai.utils.*
  */
 @Serializable(FileMessage.Serializer::class)
 @SerialName(FileMessage.SERIAL_NAME)
+@NotStableForInheritance
 public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 服务器需要的某种 ID.

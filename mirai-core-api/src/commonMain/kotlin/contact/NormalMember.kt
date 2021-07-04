@@ -1,11 +1,13 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
 
@@ -18,6 +20,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
+import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
@@ -28,7 +31,7 @@ import kotlin.time.ExperimentalTime
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
  */
-@JvmBlockingBridge
+@NotStableForInheritance
 public interface NormalMember : Member {
     /**
      * 群名片. 可能为空.

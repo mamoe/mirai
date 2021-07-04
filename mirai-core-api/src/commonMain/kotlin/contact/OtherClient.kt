@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
@@ -20,11 +20,13 @@ import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PAD
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.toLongUnsigned
 
 /**
  * 其他设备. 如当 [Bot] 以 [ANDROID_PHONE] 登录时, 还可以有其他设备以 [ANDROID_PAD], iOS, PC 或其他设备登录.
  */
+@NotStableForInheritance
 public interface OtherClient : Contact {
     public val info: OtherClientInfo
 

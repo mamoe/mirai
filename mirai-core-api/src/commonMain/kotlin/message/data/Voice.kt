@@ -26,6 +26,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
  */
 @Serializable
 @MiraiExperimentalApi
+@NotStableForInheritance
 public abstract class PttMessage : MessageContent {
 
     public companion object Key :

@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmName("MessageUtils")
@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
 
@@ -33,6 +34,7 @@ import kotlin.annotation.AnnotationTarget.*
  */
 // not using sealed class for customized implementations
 // using polymorphic serializer from Message.Serializer
+@NotStableForInheritance
 public interface RichMessage : MessageContent, ConstrainSingle {
     override val key: MessageKey<RichMessage> get() = Key
 
@@ -164,6 +166,7 @@ public class SimpleServiceMessage(
  * @see LightApp 小程序类型消息
  * @see SimpleServiceMessage
  */
+@NotStableForInheritance
 public interface ServiceMessage : RichMessage, CodableMessage {
     public companion object Key :
         AbstractPolymorphicMessageKey<RichMessage, ServiceMessage>(RichMessage, { it.safeCast() })

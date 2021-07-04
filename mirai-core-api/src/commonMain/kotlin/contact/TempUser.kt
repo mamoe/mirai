@@ -10,6 +10,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 临时会话用户, 非群成员.
@@ -17,4 +18,5 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * [#429](https://github.com/mamoe/mirai/issues/429)
  */
 @MiraiInternalApi("其他渠道的临时会话暂未支持. ")
+@NotStableForInheritance
 public interface TempUser : User
