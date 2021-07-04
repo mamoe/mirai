@@ -19,11 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.message.map
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.chunkedHexToBytes
-import net.mamoe.mirai.utils.copy
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 /**
  * mirai 尚未支持的消息类型.
