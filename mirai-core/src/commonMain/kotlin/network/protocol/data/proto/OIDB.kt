@@ -240,6 +240,7 @@ internal class Oidb0x8fc : ProtoBuf {
     @Serializable
     internal class CommCardNameBuf(
         @ProtoNumber(1) @JvmField val richCardName: List<RichCardNameElem> = emptyList(),
+        @ProtoNumber(2) @JvmField val coolId: Int,
     ) : ProtoBuf
 
     @Serializable
@@ -264,7 +265,7 @@ internal class Oidb0x8fc : ProtoBuf {
         @ProtoNumber(5) @JvmField val specialTitle: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val specialTitleExpireTime: Int = 0,
         @ProtoNumber(7) @JvmField val uinName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(8) @JvmField val memberCardName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(8) @JvmField val memberCardName: String = "",
         @ProtoNumber(9) @JvmField val phone: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(10) @JvmField val email: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(11) @JvmField val remark: ByteArray = EMPTY_BYTE_ARRAY,
@@ -279,7 +280,7 @@ internal class Oidb0x8fc : ProtoBuf {
     @Serializable
     internal class RichCardNameElem(
         @ProtoNumber(1) @JvmField val ctrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val text: String = "",
     ) : ProtoBuf
 
     @Serializable

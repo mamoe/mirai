@@ -19,13 +19,13 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.utils.autoHexToBytes
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.ExperimentalContracts
@@ -96,11 +96,19 @@ internal class NormalMemberImpl constructor(
                 _nameCard = newValue
                 launch {
                     bot.network.run {
-                        TroopManagement.EditGroupNametag(
+                        TroopManagement.SetMemberNameNew(
                             bot.client,
-                            this@NormalMemberImpl,
-                            newValue,
-                        ).sendWithoutExpect()
+                            group.groupCode,
+                            this@NormalMemberImpl.id,
+                            TroopManagement.RichName(newValue, "25 C4 80 C4 80 07 C3 95".autoHexToBytes())
+                        ).sendAndExpect().also {
+                            it.toResult("Set member nick").getOrThrow()
+                        }
+//                        TroopManagement.EditGroupNametag(
+//                            bot.client,
+//                            this@NormalMemberImpl,
+//                            newValue,
+//                        ).sendWithoutExpect()
                     }
                     MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcast()
                 }

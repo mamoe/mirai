@@ -188,7 +188,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
         if (this[0] == 0x0A.toByte()) {
             val nameBuf = loadAs(Oidb0x8fc.CommCardNameBuf.serializer())
             if (nameBuf.richCardName.isNotEmpty()) {
-                return@runCatching nameBuf.richCardName.joinToString("") { it.text.encodeToString() }
+                return@runCatching nameBuf.richCardName.joinToString("") { it.text }
             }
         }
         return@runCatching null

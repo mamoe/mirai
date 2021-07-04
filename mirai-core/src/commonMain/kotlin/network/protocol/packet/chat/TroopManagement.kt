@@ -27,7 +27,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.utils.autoHexToBytes
 import net.mamoe.mirai.utils.daysToSeconds
+import net.mamoe.mirai.utils.encodeToString
 
 internal class TroopManagement {
 
@@ -323,6 +325,53 @@ internal class TroopManagement {
         }
     }
 
+    class RichName(
+        val name: String,
+        val control: ByteArray? = null
+    ) {
+        fun toRichCardNames(): List<Oidb0x8fc.RichCardNameElem> {
+            return if (control == null) listOf(Oidb0x8fc.RichCardNameElem(text = name))
+            else listOf(Oidb0x8fc.RichCardNameElem(text = name))
+        }
+    }
+
+    internal object SetMemberNameNew : OutgoingPacketFactory<CommonOidbResponse<Oidb0x8fc.RspBody>>("OidbSvc.0x8fc_3") {
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            memberId: Long,
+            richName: RichName
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                2300, 3, Oidb0x8fc.ReqBody.serializer(), Oidb0x8fc.ReqBody(
+                    groupCode = groupCode,
+                    memLevelInfo = listOf(
+                        Oidb0x8fc.MemberInfo(
+                            uin = memberId,
+                            memberCardName = richName.name,
+                            commRichCardName = Oidb0x8fc.CommCardNameBuf(
+                                richCardName = listOfNotNull(
+                                    if (richName.control != null) Oidb0x8fc.RichCardNameElem(ctrl = richName.control) else null,
+                                    Oidb0x8fc.RichCardNameElem(text = richName.name)
+                                ),
+                                coolId = 0,
+                            ).toByteArray(Oidb0x8fc.CommCardNameBuf.serializer()),
+
+                            )
+                    ),
+                    msgClientInfo = Oidb0x8fc.ClientInfo(
+                        implat = 109,
+                        ingClientver = client.buildVer
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): CommonOidbResponse<Oidb0x8fc.RspBody> {
+            return readOidbRespCommon(Oidb0x8fc.RspBody.serializer()) { it }
+        }
+    }
+
     internal object EditGroupNametag :
         OutgoingPacketFactory<EditGroupNametag.Response>("friendlist.ModifyGroupCardReq") {
         object Response : Packet {
@@ -362,7 +411,8 @@ internal class TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = newName,
+                                        sName = "<" + "25 C4 80 C4 80 07 C3 95".autoHexToBytes()
+                                            .encodeToString() + ">" + newName,
                                         sPhone = "",
                                         sEmail = "",
                                         sRemark = ""
