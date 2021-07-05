@@ -17,6 +17,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.time.Instant
 
 
@@ -27,6 +28,7 @@ import java.time.Instant
  *
  * @since 2.7
  */
+@NotStableForInheritance
 public interface OnlineAnnouncement : Announcement {
     /**
      * 公告所属群

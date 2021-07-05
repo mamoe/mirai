@@ -9,27 +9,22 @@
 
 @file:Suppress("DEPRECATION")
 
-package net.mamoe.mirai.data
+package net.mamoe.mirai.internal.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.contact.announcement.Announcement
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.contact.announcement.AnnouncementImage
+import net.mamoe.mirai.utils.CheckableResponseA
+import net.mamoe.mirai.utils.JsonStruct
+import net.mamoe.mirai.utils.MiraiInternalApi
 
-/**
- * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [Announcement].
- *
- * @suppress 此 API 非常不稳定, 将在未来版本删除
- */
-@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-@MiraiExperimentalApi
 @Serializable
-public data class GroupAnnouncementList(
-    val ec: Int,  //状态码 0 是正常的
-    @SerialName("em") val msg: String,   //信息
+internal data class GroupAnnouncementList(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
     val feeds: List<GroupAnnouncement>? = null,   //群公告列表
     val inst: List<GroupAnnouncement>? = null  //置顶列表？ 应该是发送给新成员的
-) {
+) : CheckableResponseA(), JsonStruct {
     /*
   // notes from original implementor, luo123, on 2020/3/13
 
@@ -41,52 +36,45 @@ public data class GroupAnnouncementList(
      */
 }
 
-/**
- * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
- *
- * @suppress 此 API 非常不稳定, 将在未来版本删除
- */
-@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-@MiraiExperimentalApi
 @Serializable
-public data class GroupAnnouncement(
+internal data class GroupAnnouncement(
     @SerialName("u") val sender: Long = 0, //发送者id
     val msg: GroupAnnouncementMsg,
     val type: Int = 0, //20 为inst , 6 为feeds
-    val settings: GroupAnnouncementSettings? = null,
+    val settings: GroupAnnouncementSettings = GroupAnnouncementSettings.DEFAULT,
     @SerialName("pubt") val time: Long = 0, //发布时间
     @SerialName("read_num") val readNum: Int = 0, //如果需要确认,则为确认收到的人数,反之则为已经阅读的人数
     @SerialName("is_read") val isRead: Int = 0, //好像没用
     @SerialName("is_all_confirm") val isAllConfirm: Int = 0, //为0 则未全部收到
     val pinned: Int = 0, //1为置顶, 0为默认
     val fid: String? = null,      //公告的id
-)
+) : JsonStruct
 
-/**
- * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
- *
- * @suppress 此 API 非常不稳定, 将在未来版本删除
- */
-@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-@MiraiExperimentalApi
 @Serializable
-public data class GroupAnnouncementMsg(
+internal class GroupAnnouncementImage @MiraiInternalApi constructor(
+    @SerialName("h") val height: String,
+    @SerialName("w") val width: String,
+    @SerialName("id") val id: String
+) : JsonStruct {
+    fun toPublic(): AnnouncementImage = AnnouncementImage(height, width, id)
+}
+
+@Serializable
+internal data class GroupAnnouncementMsg(
     val text: String,
     val text_face: String? = null,
     val title: String? = null
 )
 
-/**
- * 群公告的协议数据结构. 仅同于内部操作, 用户请使用 [AnnouncementImpl].
- *
- * @suppress 此 API 非常不稳定, 将在未来版本删除
- */
-@Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-@MiraiExperimentalApi
+
 @Serializable
-public data class GroupAnnouncementSettings(
+internal data class GroupAnnouncementSettings(
     @SerialName("is_show_edit_card") val isShowEditCard: Int = 0, //引导群成员修改该昵称  1 引导
     @SerialName("remind_ts") val remindTs: Int = 0,
     @SerialName("tip_window_type") val tipWindowType: Int = 0,  //是否用弹窗展示   1 不使用
     @SerialName("confirm_required") val confirmRequired: Int = 0 // 是否需要确认收到 1 需要
-)
+) : JsonStruct {
+    companion object {
+        val DEFAULT = GroupAnnouncementSettings()
+    }
+}

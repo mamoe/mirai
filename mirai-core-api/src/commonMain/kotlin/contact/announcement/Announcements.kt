@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.toList
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.util.stream.Stream
 
 
@@ -25,6 +26,7 @@ import java.util.stream.Stream
  *
  * @since 2.7
  */
+@NotStableForInheritance
 public interface Announcements {
     /**
      * 创建一个能获取该群内所有群公告列表的 [Flow]. 在 [Flow] 被使用时才会分页下载 [OnlineAnnouncement].

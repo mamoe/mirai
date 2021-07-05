@@ -21,10 +21,12 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 @SerialName(AnnouncementImage.SERIAL_NAME)
 @Serializable
 public class AnnouncementImage @MiraiInternalApi public constructor(
-    @SerialName("h") public val height: String,
-    @SerialName("w") public val width: String,
-    @SerialName("id") public val id: String
+    public val height: String,
+    public val width: String,
+    public val id: String
 ) {
+    // For stability, do not make it `data class`.
+
     public companion object {
         public const val SERIAL_NAME: String = "AnnouncementImage"
     }

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.contact.announcement
 
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -52,10 +51,8 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
 ) {
     /**
      * @see AnnouncementParameters.image
-     * @suppress 此 API 不稳定, 可能在任意时间改动
      */
-    @MiraiExperimentalApi
-    public var image: ByteArray? = prototype.image
+    public var image: AnnouncementImage? = prototype.image
 
     /**
      * @see AnnouncementParameters.sendToNewMember
@@ -83,10 +80,9 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
     public var needConfirm: Boolean = prototype.needConfirm
 
     /**
-     * @suppress 此 API 不稳定, 可能在任意时间改动
+     * @see AnnouncementParameters.image
      */
-    @MiraiExperimentalApi
-    public fun image(image: ByteArray?): AnnouncementParametersBuilder {
+    public fun image(image: AnnouncementImage): AnnouncementParametersBuilder {
         this.image = image
         return this
     }
