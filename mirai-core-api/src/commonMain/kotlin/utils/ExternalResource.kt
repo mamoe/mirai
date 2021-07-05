@@ -32,6 +32,8 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.RemoteFile.Companion.sendFile
 import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 /**
@@ -66,6 +68,19 @@ import java.io.*
  * @see FileCacheStrategy
  */
 public interface ExternalResource : Closeable {
+
+    /**
+     * 是否在 _使用一次_ 后自动 [close].
+     *
+     * 该属性仅供调用方参考. 如 [Contact.uploadImage] 会在方法结束时关闭 [isAutoClose] 为 `true` 的 [ExternalResource], 无论上传图片是否成功.
+     *
+     * 所有 mirai 内置的上传图片, 上传语音等方法都支持该行为.
+     *
+     * @since 2.8
+     */
+    @MiraiExperimentalApi
+    public val isAutoClose: Boolean
+        get() = false
 
     /**
      * 文件内容 MD5. 16 bytes
@@ -187,6 +202,23 @@ public interface ExternalResource : Closeable {
         @Throws(IOException::class) // not in BIO context so propagate IOException
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
+
+        /**
+         * 创建一个在 _使用一次_ 后就会自动 [close] 的 [ExternalResource].
+         *
+         * @since 2.8
+         */
+        @JvmName("createAutoCloseable")
+        @JvmStatic
+        public fun ExternalResource.toAutoCloseable(): ExternalResource {
+            return if (isAutoClose) this else {
+                val delegate = this
+                object : ExternalResource by delegate {
+                    override val isAutoClose: Boolean get() = true
+                    override fun toString(): String = "ExternalResourceWithAutoClose(delegate=$delegate)"
+                }
+            }
+        }
 
         // endregion
 
@@ -426,4 +458,42 @@ public interface ExternalResource : Closeable {
         }
         // endregion
     }
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+// Continuing mark it as experimental until Kotlin's contextual receivers design is published.
+// We might be able to make `action` a type `context(ExternalResource) () -> R`.
+public inline fun <T : ExternalResource, R> T.withAutoClose(action: () -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    trySafely(
+        block = { return action() },
+        finally = { if (isAutoClose) close() }
+    )
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+public inline fun <T : ExternalResource, R> T.runAutoClose(action: T.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return withAutoClose { action() }
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+public inline fun <T : ExternalResource, R> T.useAutoClose(action: (resource: T) -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return runAutoClose(action)
 }
