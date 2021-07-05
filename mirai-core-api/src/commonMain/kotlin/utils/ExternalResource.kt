@@ -31,6 +31,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.RemoteFile.Companion.sendFile
+import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
 
 
