@@ -11,7 +11,6 @@ package net.mamoe.mirai.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.utils.MiraiInternalApi
 
 
 /**
@@ -23,7 +22,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  */
 @SerialName(AnnouncementImage.SERIAL_NAME)
 @Serializable
-public class AnnouncementImage @MiraiInternalApi public constructor(
+public class AnnouncementImage private constructor(
     public val id: String,
     public val height: String,
     public val width: String,
@@ -32,6 +31,14 @@ public class AnnouncementImage @MiraiInternalApi public constructor(
 
     public companion object {
         public const val SERIAL_NAME: String = "AnnouncementImage"
+
+        /**
+         * 创建 [AnnouncementImage] 实例.
+         */
+        @JvmStatic
+        public fun create(id: String, height: String, width: String): AnnouncementImage {
+            return AnnouncementImage(id, height, width)
+        }
     }
 
     override fun toString(): String {
