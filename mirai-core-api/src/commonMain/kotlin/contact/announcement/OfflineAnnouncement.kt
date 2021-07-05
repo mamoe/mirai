@@ -31,6 +31,9 @@ public sealed interface OfflineAnnouncement : Announcement {
     public companion object {
         public const val SERIAL_NAME: String = "OfflineAnnouncement"
 
+        @JvmStatic
+        public fun serializer(): KSerializer<OfflineAnnouncement> = Serializer
+
         /**
          * 创建 [OfflineAnnouncement]. 若 [announcement] 类型为 [OfflineAnnouncement] 则直接返回 [announcement].
          */
