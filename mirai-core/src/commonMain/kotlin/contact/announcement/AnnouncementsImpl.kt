@@ -73,7 +73,7 @@ internal class AnnouncementsImpl(
         }.map { it.toAnnouncement(group) }
     }
 
-    override suspend fun asStream(): Stream<OnlineAnnouncement> {
+    override fun asStream(): Stream<OnlineAnnouncement> {
         return stream {
             var i = 1
             while (true) {

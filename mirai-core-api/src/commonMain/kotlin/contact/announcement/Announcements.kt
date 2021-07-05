@@ -37,7 +37,7 @@ public interface Announcements {
     /**
      * 创建一个能获取该群内所有群公告列表的 [Stream]. 在 [Stream] 被使用时才会分页下载 [OnlineAnnouncement].
      */
-    public suspend fun asStream(): Stream<OnlineAnnouncement>
+    public fun asStream(): Stream<OnlineAnnouncement>
 
     /**
      * 获取所有群公告列表, 将全部 [OnlineAnnouncement] 都下载后再返回.
