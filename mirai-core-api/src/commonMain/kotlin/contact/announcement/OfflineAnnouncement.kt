@@ -72,6 +72,34 @@ public sealed interface OfflineAnnouncement : Announcement {
     }
 }
 
+/**
+ * 创建 [OfflineAnnouncement]. 若 [from] 类型为 [OfflineAnnouncement] 则直接返回 [from].
+ * @since 2.7
+ */
+public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
+    OfflineAnnouncement.from(from)
+
+/**
+ * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
+ * @param content 公告内容
+ * @param parameters 附加参数
+ * @since 2.7
+ */
+public inline fun OfflineAnnouncement(content: String, parameters: AnnouncementParameters): OfflineAnnouncement =
+    OfflineAnnouncement.create(content, parameters)
+
+/**
+ * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
+ * @param content 公告内容
+ * @param parameters 附加参数
+ * @see AnnouncementParametersBuilder
+ * @since 2.7
+ */
+public inline fun OfflineAnnouncement(
+    content: String,
+    parameters: AnnouncementParametersBuilder.() -> Unit
+): OfflineAnnouncement = OfflineAnnouncement.create(content, parameters)
+
 @SerialName(OfflineAnnouncement.SERIAL_NAME)
 @Serializable
 private data class OfflineAnnouncementImpl(
