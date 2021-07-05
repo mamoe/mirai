@@ -19,6 +19,8 @@ import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.map
 import net.mamoe.mirai.utils.safeCast
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * 表示在本地构建的 [Announcement].
@@ -75,7 +77,10 @@ public sealed interface OfflineAnnouncement : Announcement {
         public inline fun create(
             content: String,
             parameters: AnnouncementParametersBuilder.() -> Unit
-        ): OfflineAnnouncement = create(content, buildAnnouncementParameters(parameters))
+        ): OfflineAnnouncement {
+            contract { callsInPlace(parameters, InvocationKind.EXACTLY_ONCE) }
+            return create(content, buildAnnouncementParameters(parameters))
+        }
 
         internal object Serializer : KSerializer<OfflineAnnouncement> by OfflineAnnouncementImpl.serializer().map(
             resultantDescriptor = OfflineAnnouncementImpl.serializer().descriptor.copy(SERIAL_NAME),
@@ -111,7 +116,10 @@ public inline fun OfflineAnnouncement(content: String, parameters: AnnouncementP
 public inline fun OfflineAnnouncement(
     content: String,
     parameters: AnnouncementParametersBuilder.() -> Unit
-): OfflineAnnouncement = OfflineAnnouncement.create(content, parameters)
+): OfflineAnnouncement {
+    contract { callsInPlace(parameters, InvocationKind.EXACTLY_ONCE) }
+    return OfflineAnnouncement.create(content, parameters)
+}
 
 @SerialName(OfflineAnnouncement.SERIAL_NAME)
 @Serializable
