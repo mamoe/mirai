@@ -18,7 +18,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -557,138 +560,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
-    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getRawGroupAnnouncements(
-        bot: Bot,
-        groupId: Long,
-        page: Int,
-        amount: Int
-    ): GroupAnnouncementList = bot.asQQAndroidBot().run {
-        val rep = bot.asQQAndroidBot().network.run {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bot.bkn)
-                    append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                    append("n", amount)
-                    append("ni", if (page == 1) 1 else 0)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()};"
-                    )
-                }
-            }
-        }
-//        bot.network.logger.error(rep)
-        return json.decodeFromString(GroupAnnouncementList.serializer(), rep)
-    }
-
     private val json = Json {
-        ignoreUnknownKeys = true
         isLenient = true
+        ignoreUnknownKeys = true
     }
-
-    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
-        bot.asQQAndroidBot().run {
-            val rep = Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bkn)
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append(
-                        "settings",
-                        json.encodeToString(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-            val jsonObj = json.parseToJsonElement(rep)
-            return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-                ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-        }
-
-    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String): Boolean =
-        bot.asQQAndroidBot().run {
-            val data = Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bkn)
-                    append("fid", fid)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-            val jsonObj = json.parseToJsonElement(data)
-            if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
-                throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
-            }
-
-            return jsonObj.jsonObject["ec"]?.jsonPrimitive?.int == 0
-        }
-
-    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement? =
-        bot.asQQAndroidBot().run {
-            val rep = network.run {
-                Mirai.Http.post<String> {
-                    url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
-                    body = MultiPartFormDataContent(formData {
-                        append("qid", groupId)
-                        append("bkn", bkn)
-                        append("fid", fid)
-                        append("format", "json")
-                    })
-                    headers {
-                        append(
-                            "cookie",
-                            "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
-                        )
-                    }
-                }
-            }
-
-//        bot.network.logger.error(rep)
-            return json.decodeFromString(GroupAnnouncement.serializer(), rep)
-
-        }
 
     @LowLevelApi
     @MiraiExperimentalApi

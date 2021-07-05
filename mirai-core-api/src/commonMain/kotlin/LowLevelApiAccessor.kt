@@ -16,7 +16,10 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -128,64 +131,6 @@ public interface LowLevelApiAccessor {
         groupCode: Long,
         ownerId: Long
     ): Sequence<MemberInfo>
-
-    /**
-     * 获取群公告列表
-     * @param page 页码
-     */
-    @Suppress("DEPRECATION")
-    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getRawGroupAnnouncements(
-        bot: Bot,
-        groupId: Long,
-        page: Int = 1,
-        amount: Int = 10
-    ): GroupAnnouncementList
-
-    /**
-     * 发送群公告
-     *
-     * @return 公告的fid
-     */
-    @Suppress("DEPRECATION")
-    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun sendGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        announcement: GroupAnnouncement
-    ): String
-
-    /**
-     * 删除群公告
-     * @param fid [GroupAnnouncement.fid]
-     */
-    @Suppress("DEPRECATION")
-    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun deleteGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        fid: String
-    ): Boolean
-
-    /**
-     * 获取一条群公告
-     * @param fid [GroupAnnouncement.fid]
-     */
-    @Suppress("DEPRECATION")
-    @Deprecated("Will be removed in the future. Use Announcement instead.", level = DeprecationLevel.WARNING)
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        fid: String
-    ): GroupAnnouncement?
 
 
     /**

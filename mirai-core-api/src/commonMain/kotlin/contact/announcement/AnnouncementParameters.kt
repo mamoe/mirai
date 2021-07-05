@@ -11,8 +11,6 @@ package net.mamoe.mirai.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 群公告的附加参数.
@@ -25,12 +23,10 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 @Serializable
 public class AnnouncementParameters internal constructor(
     /**
-     * 群公告的图片，目前仅支持发送图片，不支持获得图片
-     * @suppress 此 API 不稳定, 可能在任意时间改动
+     * 群公告的图片，目前仅支持发送图片，不支持获得图片.
+     * @see AnnouncementImage
      */
-    @Transient // do not serialize unstable properties
-    @MiraiExperimentalApi
-    public val image: ByteArray? = null,
+    public val image: AnnouncementImage? = null,
 
     /**
      * 是否发送给新成员
