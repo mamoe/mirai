@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -95,7 +95,11 @@ internal class FileCacheAccountSecretsManager(
         val loaded = kotlin.runCatching {
             TEA.decrypt(file.readBytes(), account.passwordMd5).loadAs(AccountSecretsImpl.serializer())
         }.getOrElse { e ->
-            logger.error("Failed to load account secrets from local cache. Invalidating cache...", e)
+            if (e.message == "Field 'ecdhInitialPublicKey' is required for type with serial name 'net.mamoe.mirai.internal.network.context.AccountSecretsImpl', but it was missing") {
+                logger.info { "Detected old account secrets, invalidating..." }
+            } else {
+                logger.error("Failed to load account secrets from local cache. Invalidating cache...", e)
+            }
             file.delete()
             return null
         }
