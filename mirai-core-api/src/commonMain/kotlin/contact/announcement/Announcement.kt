@@ -16,8 +16,6 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.announcement.Announcement.Companion.publishAnnouncement
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 
 /**
@@ -92,7 +90,7 @@ public sealed interface Announcement {
          */
         @JvmOverloads
         @JvmStatic
-        public suspend inline fun Group.publishAnnouncement(
+        public suspend fun Group.publishAnnouncement(
             content: String,
             parameters: AnnouncementParameters = AnnouncementParameters.DEFAULT
         ): OnlineAnnouncement = this.announcements.publish(OfflineAnnouncement(content, parameters))
@@ -115,7 +113,8 @@ public sealed interface Announcement {
             content: String,
             parameters: AnnouncementParametersBuilder.() -> Unit
         ): OnlineAnnouncement {
-            contract { callsInPlace(parameters, InvocationKind.EXACTLY_ONCE) }
+            // contract { callsInPlace(parameters, InvocationKind.EXACTLY_ONCE) }
+            // no contract and no inline: IDE fails to analyze this funciton
             return this.announcements.publish(OfflineAnnouncement(content, parameters))
         }
     }
