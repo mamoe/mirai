@@ -63,7 +63,7 @@ internal class GroupAnnouncementImage @MiraiInternalApi constructor(
 internal data class GroupAnnouncementMsg(
     val text: String,
     val text_face: String? = null,
-    val title: String? = null
+//    val title: String? = null // no title any more
 )
 
 

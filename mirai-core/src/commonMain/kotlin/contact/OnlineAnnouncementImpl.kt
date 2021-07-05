@@ -21,12 +21,11 @@ import net.mamoe.mirai.contact.announcement.OnlineAnnouncement
  */
 //@SerialName(OnlineAnnouncementImpl.SERIAL_NAME)
 //@Serializable(OnlineAnnouncementImpl.Serializer::class)
-internal class OnlineAnnouncementImpl constructor(
+internal class OnlineAnnouncementImpl(
     override val group: Group,
     override val senderId: Long,
     override val sender: NormalMember?,
-    override val title: String,
-    override val body: String,
+    override val content: String,
     override val parameters: AnnouncementParameters,
     override val fid: String,
     override val isAllRead: Boolean,

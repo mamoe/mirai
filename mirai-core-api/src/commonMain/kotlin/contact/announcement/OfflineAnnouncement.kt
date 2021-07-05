@@ -36,39 +36,35 @@ public sealed interface OfflineAnnouncement : Announcement {
          */
         @JvmStatic
         public inline fun from(announcement: Announcement): OfflineAnnouncement =
-            announcement.safeCast() ?: announcement.run { create(title, body, parameters) }
+            announcement.safeCast() ?: announcement.run { create(content, parameters) }
 
         /**
          * 创建 [OfflineAnnouncement].
-         * @param title 标题
-         * @param body 公告内容
+         * @param content 公告内容
          * @param parameters 附加参数
          */
         @JvmStatic
         public fun create(
-            title: String,
-            body: String,
+            content: String,
             parameters: AnnouncementParameters = AnnouncementParameters.DEFAULT
-        ): OfflineAnnouncement = OfflineAnnouncementImpl(title, body, parameters)
+        ): OfflineAnnouncement = OfflineAnnouncementImpl(content, parameters)
 
         /**
          * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
-         * @param title 标题
-         * @param body 公告内容
+         * @param content 公告内容
          * @param parameters 附加参数
          * @see AnnouncementParametersBuilder
-         * */
+         */
         @JvmStatic
         public inline fun create(
-            title: String,
-            body: String,
+            content: String,
             parameters: AnnouncementParametersBuilder.() -> Unit
-        ): OfflineAnnouncement = create(title, body, buildAnnouncementParameters(parameters))
+        ): OfflineAnnouncement = create(content, buildAnnouncementParameters(parameters))
 
         internal object Serializer : KSerializer<OfflineAnnouncement> by OfflineAnnouncementImpl.serializer().map(
             resultantDescriptor = OfflineAnnouncementImpl.serializer().descriptor.copy(SERIAL_NAME),
             deserialize = { it },
-            serialize = { it.safeCast<OfflineAnnouncementImpl>() ?: create(title, body, parameters).cast() }
+            serialize = { it.safeCast<OfflineAnnouncementImpl>() ?: create(content, parameters).cast() }
         )
     }
 }
@@ -76,9 +72,8 @@ public sealed interface OfflineAnnouncement : Announcement {
 @SerialName(OfflineAnnouncement.SERIAL_NAME)
 @Serializable
 private data class OfflineAnnouncementImpl(
-    override val title: String,
-    override val body: String,
+    override val content: String,
     override val parameters: AnnouncementParameters
 ) : OfflineAnnouncement {
-    override fun toString() = "OfflineAnnouncement(title='$title', body='$body', parameters=$parameters)"
+    override fun toString() = "OfflineAnnouncement(body='$content', parameters=$parameters)"
 }

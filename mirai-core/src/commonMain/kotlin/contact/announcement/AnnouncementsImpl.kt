@@ -93,8 +93,7 @@ internal class AnnouncementsImpl(
             group = group,
             senderId = bot.id,
             sender = group.botAsMember,
-            title = title,
-            body = body,
+            content = content,
             parameters = parameters,
             fid = fid,
             isAllRead = false,
@@ -181,26 +180,24 @@ internal object AnnouncementProtocol {
     }
 
     suspend fun getRawGroupAnnouncements(
-        bot: Bot,
+        bot: QQAndroidBot,
         groupId: Long,
         page: Int,
         amount: Int = 10
-    ): Either<DeserializationFailure, GroupAnnouncementList> = bot.asQQAndroidBot().run {
-        return bot.asQQAndroidBot().network.run {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bot.bkn)
-                    append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                    append("n", amount)
-                    append("ni", if (page == 1) 1 else 0)
-                    append("format", "json")
-                })
-                cookie("uin", "o${bot.id}")
-                cookie("skey", sKey)
-            }
+    ): Either<DeserializationFailure, GroupAnnouncementList> {
+        return Mirai.Http.post<String> {
+            url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
+            body = MultiPartFormDataContent(formData {
+                append("qid", groupId)
+                append("bkn", bot.bkn)
+                append("ft", 23)  //好像是一个用来识别应用的参数
+                append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
+                append("n", amount)
+                append("ni", if (page == 1) 1 else 0)
+                append("format", "json")
+            })
+            cookie("uin", "o${bot.id}")
+            cookie("skey", bot.sKey)
         }.loadSafelyAs(GroupAnnouncementList.serializer())
     }
 
@@ -245,10 +242,7 @@ internal object AnnouncementProtocol {
     fun Announcement.toGroupAnnouncement(senderId: Long): GroupAnnouncement {
         return GroupAnnouncement(
             sender = senderId,
-            msg = GroupAnnouncementMsg(
-                title = title,
-                text = body
-            ),
+            msg = GroupAnnouncementMsg(text = content),
             type = if (parameters.sendToNewMember) 20 else 6,
             settings = GroupAnnouncementSettings(
                 isShowEditCard = if (parameters.isShowEditCard) 1 else 0,
@@ -266,8 +260,7 @@ internal object AnnouncementProtocol {
             group = group,
             senderId = sender,
             sender = group[sender],
-            title = msg.title ?: "",
-            body = msg.text,
+            content = msg.text,
             parameters = buildAnnouncementParameters {
                 isPinned = pinned == 1
                 sendToNewMember = type == 20
