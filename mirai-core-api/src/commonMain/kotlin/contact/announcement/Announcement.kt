@@ -25,14 +25,9 @@ import net.mamoe.mirai.contact.Group
  */
 public sealed interface Announcement {
     /**
-     * 标题
-     */
-    public val title: String
-
-    /**
      * 内容
      */
-    public val body: String
+    public val content: String
 
     /**
      * 附加参数. 可以通过 [AnnouncementParametersBuilder] 构建获得.
