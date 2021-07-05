@@ -14,10 +14,37 @@ package net.mamoe.mirai.contact.announcement
 
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.PermissionDeniedException
 
 
 /**
- * 表示一个群公告.
+ * 表示一个 (群) 公告.
+ *
+ * ## 公告类型
+ *
+ * [Announcement] 可以是 [OnlineAnnouncement] 或 [OfflineAnnouncement].
+ *
+ * - [OnlineAnnouncement] 表示从 [Announcements.get] 等途径在线获取的, 已经存在于服务器的公告.
+ * - [OfflineAnnouncement] 表示在本地构建的 [Announcement].
+ *
+ * ## 发送公告
+ *
+ * ### 构造一条新公告并发送
+ *
+ * 构造 [OfflineAnnouncement] 然后调用其 [OfflineAnnouncement.publishTo] 或 [Announcements.publish].
+ *
+ * 在构造时可提供可选的 [AnnouncementParameters] 来设置一些附加属性.
+ *
+ * ### 转发获取的公告到其他群
+ *
+ * 通过一个群的 [Announcements] 获取到 [OnlineAnnouncement], 然后调用 [OnlineAnnouncement.publishTo] 到另一个群即可.
+ * 由于目前不支持获取公告的图片, 转发的公告也就不会带有原公告的图片.
+ *
+ * ## 序列化
+ *
+ * [OfflineAnnouncement] 支持 kotlinx-serialization 序列化, 可使用 serializer [OfflineAnnouncement.serializer].
+ *
+ * [OnlineAnnouncement] 无法序列化. 只能将其转为 [OfflineAnnouncement] 再序列化. 在 Kotlin 使用 [Announcement.toOffline], 在 Java 使用 [OfflineAnnouncement.from].
  *
  * @see Announcement
  *
@@ -37,7 +64,10 @@ public sealed interface Announcement {
     public val parameters: AnnouncementParameters
 
     /**
-     * 在该群发布群公告并获得 [OnlineAnnouncement].
+     * 在该群发布群公告并获得 [OnlineAnnouncement]. 发布公告后群内将会出现 "有新公告" 系统提示.
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     * @see Announcements.publish
      */
     public suspend fun publishTo(group: Group): OnlineAnnouncement = group.announcements.publish(this)
 }

@@ -11,11 +11,12 @@ package net.mamoe.mirai.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.announcement.AnnouncementParameters.Companion.DEFAULT
 
 /**
  * 群公告的附加参数.
  *
- * 可通过 [AnnouncementParametersBuilder] 构建.
+ * 可通过 [AnnouncementParametersBuilder] 构建. 默认实例为 [DEFAULT].
  *
  * @since 2.7
  */
@@ -23,34 +24,19 @@ import kotlinx.serialization.Serializable
 @Serializable
 public class AnnouncementParameters internal constructor(
     /**
-     * 群公告的图片，目前仅支持发送图片，不支持获得图片.
+     * 群公告的图片，目前仅支持发送图片，不支持获得图片. 可通过 [Announcements.uploadImage] 上传图片.
      * @see AnnouncementImage
      */
     public val image: AnnouncementImage? = null,
-
-    /**
-     * 是否发送给新成员
-     */
+    /** 发送给新成员 */
     public val sendToNewMember: Boolean = false,
-
-    /**
-     * 是否置顶，可以有多个置顶公告
-     */
+    /** 置顶. 可以有多个置顶公告 */
     public val isPinned: Boolean = false,
-
-    /**
-     * 是否显示能够引导群成员修改昵称的窗口
-     */
+    /** 显示能够引导群成员修改昵称的窗口 */
     public val isShowEditCard: Boolean = false,
-
-    /**
-     * 是否使用弹窗
-     */
+    /** 使用弹窗 */
     public val isTip: Boolean = false,
-
-    /**
-     * 是否需要群成员确认
-     */
+    /** 需要群成员确认 */
     public val needConfirm: Boolean = false,
 ) {
     /**
@@ -70,7 +56,7 @@ public class AnnouncementParameters internal constructor(
         public const val SERIAL_NAME: String = "AnnouncementParameters"
 
         /**
-         * 使用默认值的 [AnnouncementParameters] 实例
+         * 默认值的 [AnnouncementParameters] 实例
          */
         @JvmStatic
         @get:JvmName("getDefault")
