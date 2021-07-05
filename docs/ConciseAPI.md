@@ -46,8 +46,9 @@ ExternalResource.create(new File("foo.txt"))
 
 > 注: 
 > - `ExternalResource` 和 `java.io.InputStream` 等资源一样, 需要手动关闭 `close()`
-> - 使用 `java.io.InputStream`, `java.io.RandomAccessFile` 构造 `ExternalResource`
->   时, 需要关闭 `java.io.InputStream` 或 `java.io.RandomAccessFile`
+> - 使用 `java.io.InputStream` 构造 `ExternalResource` 时, 需要关闭 `java.io.InputStream`
+> - 使用 `java.io.RandomAccessFile` 构造 `ExternalResource` 时, 请不要关闭 `RandomAccessFile`,
+>   否则会间接关闭 `ExternalResource`
 
 
 ```kotlin

@@ -148,6 +148,8 @@ public interface ExternalResource : Closeable {
         /**
          * 创建 [ExternalResource].
          *
+         * **注意**：使用此方法时请不要关闭 [RandomAccessFile], 否则会间接关闭 [ExternalResource]
+         *
          * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
          *
          * @param formatName 查看 [ExternalResource.formatName]
