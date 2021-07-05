@@ -30,25 +30,40 @@ import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.OnlineAnnouncementImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.deleteGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getGroupAnnouncement
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRawGroupAnnouncements
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 import java.util.stream.Stream
 
 internal class AnnouncementsImpl(
     private val group: GroupImpl,
+    private val logger: MiraiLogger,
 ) : Announcements {
     inline val bot get() = group.bot
+
+    private suspend fun getGroupAnnouncementList(i: Int): GroupAnnouncementList? {
+        return bot.getRawGroupAnnouncements(group.id, i).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load announcement for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
 
     override suspend fun asFlow(): Flow<OnlineAnnouncement> {
         return flow {
             var i = 1
             while (true) {
-                val result = AnnouncementProtocol.getRawGroupAnnouncements(bot, group.id, i++).rightOrNull ?: break
+                val result = getGroupAnnouncementList(i++) ?: break
 
                 if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty()) break
 
@@ -62,9 +77,7 @@ internal class AnnouncementsImpl(
         return stream {
             var i = 1
             while (true) {
-                val result = runBlocking {
-                    AnnouncementProtocol.getRawGroupAnnouncements(bot, group.id, i++)
-                }.rightOrNull ?: break
+                val result = runBlocking { getGroupAnnouncementList(i++) } ?: break
 
                 if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty()) break
 
@@ -87,7 +100,7 @@ internal class AnnouncementsImpl(
         val bot = group.bot
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
         val image = parameters.image
-        val fid = AnnouncementProtocol.sendGroupAnnouncement(bot, group.id, toGroupAnnouncement(bot.id), image)
+        val fid = bot.sendGroupAnnouncement(group.id, toGroupAnnouncement(bot.id), image)
 
         return OnlineAnnouncementImpl(
             group = group,
@@ -148,12 +161,11 @@ internal object AnnouncementProtocol {
         @SerialName("new_fid") val fid: String,
     ) : CheckableResponseA(), JsonStruct
 
-    suspend fun sendGroupAnnouncement(
-        bot: Bot,
+    suspend fun QQAndroidBot.sendGroupAnnouncement(
         groupId: Long,
         announcement: GroupAnnouncement,
         image: AnnouncementImage?,
-    ): String = bot.asQQAndroidBot().run {
+    ): String {
         return Mirai.Http.post<String> {
             url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
             body = MultiPartFormDataContent(formData {
@@ -172,15 +184,14 @@ internal object AnnouncementProtocol {
                 )
                 append("format", "json")
             })
-            cookie("uin", "o${bot.id}")
-            cookie("p_uin", "o${bot.id}")
+            cookie("uin", "o$id")
+            cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
         }.loadSafelyAs(SendGroupAnnouncementResp.serializer()).checked().fid
     }
 
-    suspend fun getRawGroupAnnouncements(
-        bot: QQAndroidBot,
+    suspend fun QQAndroidBot.getRawGroupAnnouncements(
         groupId: Long,
         page: Int,
         amount: Int = 10
@@ -189,15 +200,15 @@ internal object AnnouncementProtocol {
             url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
             body = MultiPartFormDataContent(formData {
                 append("qid", groupId)
-                append("bkn", bot.bkn)
+                append("bkn", bkn)
                 append("ft", 23)  //好像是一个用来识别应用的参数
                 append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
                 append("n", amount)
                 append("ni", if (page == 1) 1 else 0)
                 append("format", "json")
             })
-            cookie("uin", "o${bot.id}")
-            cookie("skey", bot.sKey)
+            cookie("uin", "o$id")
+            cookie("skey", sKey)
         }.loadSafelyAs(GroupAnnouncementList.serializer())
     }
 
