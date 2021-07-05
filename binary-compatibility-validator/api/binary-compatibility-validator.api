@@ -5624,6 +5624,10 @@ public final class net/mamoe/mirai/utils/MiraiLoggerWithSwitch : net/mamoe/mirai
 	public fun warning0 (Ljava/lang/String;Ljava/lang/Throwable;)V
 }
 
+public abstract interface annotation class net/mamoe/mirai/utils/NotStableForInheritance : java/lang/annotation/Annotation {
+	public abstract fun message ()Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/utils/OverFileSizeMaxException : java/lang/IllegalStateException {
 	public fun <init> ()V
 }

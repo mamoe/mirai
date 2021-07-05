@@ -19,10 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.utils.chunkedHexToBytes
-import net.mamoe.mirai.utils.copy
-import net.mamoe.mirai.utils.map
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 /**
  * mirai 尚未支持的消息类型.
@@ -32,6 +29,7 @@ import net.mamoe.mirai.utils.toUHexString
  */
 @SerialName(UnsupportedMessage.SERIAL_NAME)
 @Serializable(UnsupportedMessage.Serializer::class)
+@NotStableForInheritance
 public interface UnsupportedMessage : MessageContent {
     override fun contentToString(): String =
         "[不支持的消息#${struct.contentHashCode()}]" // to produce 'stable' and reliable text
