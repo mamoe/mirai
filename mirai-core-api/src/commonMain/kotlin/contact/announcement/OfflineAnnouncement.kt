@@ -71,7 +71,7 @@ public sealed interface OfflineAnnouncement : Announcement {
          * @param parameters 可选的附加参数
          * @see AnnouncementParametersBuilder
          */
-        @JvmStatic
+        @JvmSynthetic
         public inline fun create(
             content: String,
             parameters: AnnouncementParametersBuilder.() -> Unit
