@@ -34,6 +34,9 @@ import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRaw
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
+import net.mamoe.mirai.internal.network.highway.ChannelKind
+import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.io.writeResource
@@ -96,7 +99,24 @@ internal class AnnouncementsImpl(
         return bot.getGroupAnnouncement(group.id, fid).toAnnouncement(group)
     }
 
+
+    private fun Announcement.describe(): String =
+        "'${content.truncated(10)}' ${parameters.describe()}"
+
+    private fun AnnouncementParameters.describe(): String {
+        return mutableListOf<String>().apply {
+            if (image != null) add("with image")
+            if (sendToNewMember) add("sendToNewMember")
+            if (pinned) add("pinned")
+            if (showEditCard) add("showEditCard")
+            if (popup) add("popup")
+            if (needConfirm) add("needConfirm")
+        }.joinToString()
+    }
+
     override suspend fun publish(announcement: Announcement): OnlineAnnouncement = announcement.run {
+        val id = announcement.hashCode()
+        logger.verbose { "Publishing announcement #$id: ${announcement.describe()}" }
         val bot = group.bot
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
         val image = parameters.image
@@ -112,13 +132,27 @@ internal class AnnouncementsImpl(
             isAllRead = false,
             readMemberNumber = 0,
             publishTime = currentTimeSeconds()
-        )
+        ).also {
+            logger.verbose { "Publishing announcement #$id: success." }
+        }
     }
 
     override suspend fun uploadImage(resource: ExternalResource): AnnouncementImage {
-        return AnnouncementProtocol.uploadGroupAnnouncementImage(bot, resource)
+        return tryServersUpload(
+            bot,
+            serversStub,
+            resource.size,
+            ResourceKind.ANNOUNCEMENT_IMAGE,
+            ChannelKind.HTTP
+        ) { _, _ ->
+            // use common logging
+
+            AnnouncementProtocol.uploadGroupAnnouncementImage(bot, resource)
+        }
     }
 }
+
+private val serversStub = listOf("web.qun.qq.com" to 80)
 
 internal object AnnouncementProtocol {
     @Serializable
@@ -148,10 +182,12 @@ internal object AnnouncementProtocol {
                     writeResource(resource)
                 }
             })
-            cookie("p_uin", "o${bot.id}")
+            cookie("uin", "o$id")
+            cookie("p_uin", "o$id")
+            cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
         }.loadSafelyAs(UploadImageResp.serializer()).checked()
-        return resp.id.loadSafelyAs(GroupAnnouncementImage.serializer()).checked().toPublic()
+        return resp.id.replace("&quot;", "\"").loadSafelyAs(GroupAnnouncementImage.serializer()).checked().toPublic()
     }
 
     @Serializable
