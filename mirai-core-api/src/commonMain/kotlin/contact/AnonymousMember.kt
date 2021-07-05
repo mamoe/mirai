@@ -7,19 +7,22 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("DeprecatedCallableAddReplaceWith")
+
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 匿名
  *
  * 代表匿名群成员
  */
-@Suppress("DeprecatedCallableAddReplaceWith")
+@NotStableForInheritance
 public interface AnonymousMember : Member {
     /** 该匿名群成员 ID */
     public val anonymousId: String
