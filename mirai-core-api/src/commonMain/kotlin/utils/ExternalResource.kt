@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
@@ -50,6 +50,8 @@ import java.io.*
  *
  * 当 [ExternalResource] 创建时就可能会打开一个文件 (如使用 [File.toExternalResource]).
  * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
+ *
+ * 自 2.7 起, 每个 mirai 内置的 [ExternalResource] 实现都有引用跟踪, 当 [ExternalResource] 无强引用后就会执行被动释放, 避免资源泄露.
  *
  * ## 实现 [ExternalResource]
  *
@@ -125,6 +127,10 @@ public interface ExternalResource : Closeable {
          */
         public const val DEFAULT_FORMAT_NAME: String = "mirai"
 
+        ///////////////////////////////////////////////////////////////////////////
+        // region toExternalResource
+        ///////////////////////////////////////////////////////////////////////////
+
         /**
          * **打开文件**并创建 [ExternalResource].
          *
@@ -181,6 +187,11 @@ public interface ExternalResource : Closeable {
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
+        // endregion
+
+        ///////////////////////////////////////////////////////////////////////////
+        // region sendAsImageTo
+        ///////////////////////////////////////////////////////////////////////////
 
         /**
          * 将图片作为单独的消息发送给指定联系人.
@@ -233,6 +244,12 @@ public interface ExternalResource : Closeable {
             return toExternalResource(formatName).withUse { sendAsImageTo(contact) }
         }
 
+        // endregion
+
+        ///////////////////////////////////////////////////////////////////////////
+        // region uploadAsImage
+        ///////////////////////////////////////////////////////////////////////////
+
         /**
          * 上传图片并构造 [Image]. 这个函数可能需消耗一段时间.
          *
@@ -260,6 +277,12 @@ public interface ExternalResource : Closeable {
         public suspend fun InputStream.uploadAsImage(contact: Contact, formatName: String? = null): Image =
             // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
             runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
+
+        // endregion
+
+        ///////////////////////////////////////////////////////////////////////////
+        // region uploadAsFile
+        ///////////////////////////////////////////////////////////////////////////
 
         /**
          * 将文件作为图片上传后构造 [Image].
@@ -340,6 +363,12 @@ public interface ExternalResource : Closeable {
             callback: RemoteFile.ProgressionCallback? = null,
         ): FileMessage = contact.uploadFile(path, this, callback)
 
+        // endregion
+
+        ///////////////////////////////////////////////////////////////////////////
+        // region sendAsFileTo
+        ///////////////////////////////////////////////////////////////////////////
+
         /**
          * 上传文件并发送文件消息.
          *
@@ -378,6 +407,12 @@ public interface ExternalResource : Closeable {
             path: String,
             callback: RemoteFile.ProgressionCallback? = null,
         ): MessageReceipt<C> = contact.sendFile(path, this, callback)
+
+        // endregion
+
+        ///////////////////////////////////////////////////////////////////////////
+        // region uploadAsVoice
+        ///////////////////////////////////////////////////////////////////////////
 
         /**
          * 将文件作为语音上传后构造 [Voice]. 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友.
@@ -431,5 +466,6 @@ public interface ExternalResource : Closeable {
         public suspend fun File.uploadAsVoice(contact: VoiceSupported): Voice =
             toExternalResource().withUse { uploadAsVoice(contact) }
 
+        // endregion
     }
 }
