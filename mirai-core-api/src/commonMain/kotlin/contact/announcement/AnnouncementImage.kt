@@ -24,9 +24,9 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 @SerialName(AnnouncementImage.SERIAL_NAME)
 @Serializable
 public class AnnouncementImage @MiraiInternalApi public constructor(
+    public val id: String,
     public val height: String,
     public val width: String,
-    public val id: String
 ) {
     // For stability, do not make it `data class`.
 
@@ -35,7 +35,7 @@ public class AnnouncementImage @MiraiInternalApi public constructor(
     }
 
     override fun toString(): String {
-        return "AnnouncementImage(height='$height', width='$width', id='$id')"
+        return "AnnouncementImage(id='$id', height='$height', width='$width')"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -44,17 +44,17 @@ public class AnnouncementImage @MiraiInternalApi public constructor(
 
         other as AnnouncementImage
 
+        if (id != other.id) return false
         if (height != other.height) return false
         if (width != other.width) return false
-        if (id != other.id) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = height.hashCode()
+        var result = id.hashCode()
+        result = 31 * result + height.hashCode()
         result = 31 * result + width.hashCode()
-        result = 31 * result + id.hashCode()
         return result
     }
 }
