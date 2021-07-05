@@ -21,7 +21,7 @@ import net.mamoe.mirai.contact.announcement.OnlineAnnouncement
  */
 //@SerialName(OnlineAnnouncementImpl.SERIAL_NAME)
 //@Serializable(OnlineAnnouncementImpl.Serializer::class)
-internal class OnlineAnnouncementImpl(
+internal data class OnlineAnnouncementImpl(
     override val group: Group,
     override val senderId: Long,
     override val sender: NormalMember?,
