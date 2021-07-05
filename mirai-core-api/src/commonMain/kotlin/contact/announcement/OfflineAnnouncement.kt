@@ -103,8 +103,10 @@ public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
  * @param parameters 可选的附加参数
  * @since 2.7
  */
-public inline fun OfflineAnnouncement(content: String, parameters: AnnouncementParameters): OfflineAnnouncement =
-    OfflineAnnouncement.create(content, parameters)
+public inline fun OfflineAnnouncement(
+    content: String,
+    parameters: AnnouncementParameters = AnnouncementParameters.DEFAULT
+): OfflineAnnouncement = OfflineAnnouncement.create(content, parameters)
 
 /**
  * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].

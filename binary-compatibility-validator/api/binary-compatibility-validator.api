@@ -716,6 +716,7 @@ public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncementKt {
 	public static final fun OfflineAnnouncement (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
 	public static final fun OfflineAnnouncement (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
 	public static final fun OfflineAnnouncement (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static synthetic fun OfflineAnnouncement$default (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
