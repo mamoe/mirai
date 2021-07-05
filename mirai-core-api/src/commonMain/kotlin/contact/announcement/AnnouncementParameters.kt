@@ -31,11 +31,11 @@ public class AnnouncementParameters internal constructor(
     /** 发送给新成员 */
     public val sendToNewMember: Boolean = false,
     /** 置顶. 可以有多个置顶公告 */
-    public val isPinned: Boolean = false,
+    public val pinned: Boolean = false,
     /** 显示能够引导群成员修改昵称的窗口 */
-    public val isShowEditCard: Boolean = false,
+    public val showEditCard: Boolean = false,
     /** 使用弹窗 */
-    public val isTip: Boolean = false,
+    public val popup: Boolean = false,
     /** 需要群成员确认 */
     public val needConfirm: Boolean = false,
 ) {
@@ -44,12 +44,12 @@ public class AnnouncementParameters internal constructor(
      */
     public fun builder(): AnnouncementParametersBuilder = AnnouncementParametersBuilder().apply {
         val outer = this@AnnouncementParameters
-        this.image = outer.image
-        this.sendToNewMember = outer.sendToNewMember
-        this.isPinned = outer.isPinned
-        this.isShowEditCard = outer.isShowEditCard
-        this.isTip = outer.isTip
-        this.needConfirm = outer.needConfirm
+        image(outer.image)
+        sendToNewMember(outer.sendToNewMember)
+        pinned(outer.pinned)
+        showEditCard(outer.showEditCard)
+        popup(outer.popup)
+        needConfirm(outer.needConfirm)
     }
 
     public companion object {
@@ -71,9 +71,9 @@ public class AnnouncementParameters internal constructor(
 
         if (image != other.image) return false
         if (sendToNewMember != other.sendToNewMember) return false
-        if (isPinned != other.isPinned) return false
-        if (isShowEditCard != other.isShowEditCard) return false
-        if (isTip != other.isTip) return false
+        if (pinned != other.pinned) return false
+        if (showEditCard != other.showEditCard) return false
+        if (popup != other.popup) return false
         if (needConfirm != other.needConfirm) return false
 
         return true
@@ -82,14 +82,14 @@ public class AnnouncementParameters internal constructor(
     override fun hashCode(): Int {
         var result = image?.hashCode() ?: 0
         result = 31 * result + sendToNewMember.hashCode()
-        result = 31 * result + isPinned.hashCode()
-        result = 31 * result + isShowEditCard.hashCode()
-        result = 31 * result + isTip.hashCode()
+        result = 31 * result + pinned.hashCode()
+        result = 31 * result + showEditCard.hashCode()
+        result = 31 * result + popup.hashCode()
         result = 31 * result + needConfirm.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "AnnouncementParameters(image=$image, sendToNewMember=$sendToNewMember, isPinned=$isPinned, isShowEditCard=$isShowEditCard, isTip=$isTip, needConfirm=$needConfirm)"
+        return "AnnouncementParameters(image=$image, sendToNewMember=$sendToNewMember, pinned=$pinned, showEditCard=$showEditCard, popup=$popup, needConfirm=$needConfirm)"
     }
 }

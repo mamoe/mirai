@@ -256,11 +256,11 @@ internal object AnnouncementProtocol {
             msg = GroupAnnouncementMsg(text = content),
             type = if (parameters.sendToNewMember) 20 else 6,
             settings = GroupAnnouncementSettings(
-                isShowEditCard = if (parameters.isShowEditCard) 1 else 0,
-                tipWindowType = if (parameters.isTip) 0 else 1,
+                isShowEditCard = if (parameters.showEditCard) 1 else 0,
+                tipWindowType = if (parameters.popup) 0 else 1,
                 confirmRequired = if (parameters.needConfirm) 1 else 0,
             ),
-            pinned = if (parameters.isPinned) 1 else 0,
+            pinned = if (parameters.pinned) 1 else 0,
         )
     }
 
@@ -273,11 +273,11 @@ internal object AnnouncementProtocol {
             sender = group[sender],
             content = msg.text,
             parameters = buildAnnouncementParameters {
-                isPinned = pinned == 1
+                pinned = this@toAnnouncement.pinned == 1
                 sendToNewMember = type == 20
-                isTip = settings.tipWindowType == 0
+                popup = settings.tipWindowType == 0
                 needConfirm = settings.confirmRequired == 1
-                isShowEditCard = settings.isShowEditCard == 1
+                showEditCard = settings.isShowEditCard == 1
             },
             fid = fid,
             isAllRead = isAllConfirm != 0,
