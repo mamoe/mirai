@@ -26,6 +26,8 @@ import java.time.Instant
  *
  * [OnlineAnnouncement] 拥有唯一识别属性 [fid] 代表其存在于服务器中的 ID. 可进行 [删除][delete]
  *
+ * 可在 [Announcement] 获取更多信息.
+ *
  * @since 2.7
  */
 @NotStableForInheritance
@@ -68,17 +70,18 @@ public interface OnlineAnnouncement : Announcement {
     public val publishTime: Long
 
     /**
-     * 删除这个公告. 需要管理员权限.
+     * 删除这个公告. 需要管理员权限. 使用 [Announcements.delete] 与此方法效果相同.
      *
      * @return 成功返回 `true`, 群公告已被删除时返回 `false`
-     * @throws PermissionDeniedException 没有权限时抛出
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
      * @see Announcements.delete
      */
     public suspend fun delete(): Boolean = group.announcements.delete(fid)
 }
 
 /**
- * 公告所属 [Bot], 即 `sender.bot`.
+ * 公告所在群所属的 [Bot], 即 `group.bot`.
  * @since 2.7
  */
 public inline val OnlineAnnouncement.bot: Bot get() = group.bot

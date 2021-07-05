@@ -14,13 +14,21 @@ package net.mamoe.mirai.contact.announcement
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.announcement.OfflineAnnouncement.Companion.serializer
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.map
 import net.mamoe.mirai.utils.safeCast
 
 /**
- * 表示在本地构建的, 无唯一标识符的 [Announcement].
+ * 表示在本地构建的 [Announcement].
+ *
+ * 支持序列化, 使用 [serializer].
+ *
+ * 可以通过 [OfflineAnnouncement], [OfflineAnnouncement.create] 等方法构建, 然后使用 [OfflineAnnouncement.publishTo] 或 [Announcements.publish] 发布公告到群.
+ *
+ * 在 [Announcement] 获取更多信息.
+ *
  * @see OnlineAnnouncement.publishTo
  *
  * @since 2.7
@@ -36,6 +44,10 @@ public sealed interface OfflineAnnouncement : Announcement {
 
         /**
          * 创建 [OfflineAnnouncement]. 若 [announcement] 类型为 [OfflineAnnouncement] 则直接返回 [announcement].
+         *
+         * 若要转发获取到的公告到一个群, 可直接调用 [Announcement.publishTo] 而不需要构造 [OfflineAnnouncement].
+         *
+         * @see OnlineAnnouncement.toOffline
          */
         @JvmStatic
         public inline fun from(announcement: Announcement): OfflineAnnouncement =
@@ -44,8 +56,9 @@ public sealed interface OfflineAnnouncement : Announcement {
         /**
          * 创建 [OfflineAnnouncement].
          * @param content 公告内容
-         * @param parameters 附加参数
+         * @param parameters 可选的附加参数
          */
+        @JvmOverloads
         @JvmStatic
         public fun create(
             content: String,
@@ -55,7 +68,7 @@ public sealed interface OfflineAnnouncement : Announcement {
         /**
          * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
          * @param content 公告内容
-         * @param parameters 附加参数
+         * @param parameters 可选的附加参数
          * @see AnnouncementParametersBuilder
          */
         @JvmStatic
@@ -73,7 +86,7 @@ public sealed interface OfflineAnnouncement : Announcement {
 }
 
 /**
- * 创建 [OfflineAnnouncement]. 若 [from] 类型为 [OfflineAnnouncement] 则直接返回 [from].
+ * 依据 [from] 创建 [OfflineAnnouncement]. 若 [from] 类型为 [OfflineAnnouncement] 则直接返回 [from].
  * @since 2.7
  */
 public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
@@ -82,7 +95,7 @@ public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
 /**
  * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
  * @param content 公告内容
- * @param parameters 附加参数
+ * @param parameters 可选的附加参数
  * @since 2.7
  */
 public inline fun OfflineAnnouncement(content: String, parameters: AnnouncementParameters): OfflineAnnouncement =
@@ -91,7 +104,7 @@ public inline fun OfflineAnnouncement(content: String, parameters: AnnouncementP
 /**
  * 创建 [AnnouncementParameters] 并创建 [OfflineAnnouncement].
  * @param content 公告内容
- * @param parameters 附加参数
+ * @param parameters 可选的附加参数
  * @see AnnouncementParametersBuilder
  * @since 2.7
  */

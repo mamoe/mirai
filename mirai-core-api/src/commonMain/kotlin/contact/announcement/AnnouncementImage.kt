@@ -16,6 +16,9 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 群公告图片. 可通过 [Announcements.uploadImage] 上传获得. 不确定服务器会保存多久.
+ *
+ * 要发布一条带有图片的公告, 请在构造 [AnnouncementParameters] 时提供 [AnnouncementParameters.image] 参数. 详见 [Announcement].
+ *
  * @since 2.7
  */
 @SerialName(AnnouncementImage.SERIAL_NAME)
