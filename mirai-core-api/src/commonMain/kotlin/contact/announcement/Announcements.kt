@@ -89,7 +89,7 @@ public interface Announcements {
     public suspend fun get(fid: String): OnlineAnnouncement?
 
     /**
-     * 在该群发布群公告并获得 [OnlineAnnouncement]. 发布公告后群内将会出现 "有新公告" 系统提示.
+     * 在该群发布群公告并获得 [OnlineAnnouncement], 需要管理员权限. 发布公告后群内将会出现 "有新公告" 系统提示.
      * @throws PermissionDeniedException 当没有权限时抛出
      * @throws IllegalStateException 当协议异常时抛出
      * @see Announcement.publishTo
