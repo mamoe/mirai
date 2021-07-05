@@ -572,10 +572,28 @@ public abstract interface class net/mamoe/mirai/contact/VoiceSupported : net/mam
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
+	public static final field Companion Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;
 	public abstract fun getContent ()Ljava/lang/String;
 	public abstract fun getParameters ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publishTo (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public fun publishTo (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/announcement/Announcement$Companion {
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun publishAnnouncement$default (Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static synthetic fun publishAnnouncement$default (Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
