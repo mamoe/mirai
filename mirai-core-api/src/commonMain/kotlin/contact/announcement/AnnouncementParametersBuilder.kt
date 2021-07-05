@@ -53,36 +53,48 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
      * @see AnnouncementParameters.image
      */
     public var image: AnnouncementImage? = prototype.image
+        @JvmName("image") get
+        @JvmSynthetic set
 
     /**
      * @see AnnouncementParameters.sendToNewMember
      */
     public var sendToNewMember: Boolean = prototype.sendToNewMember
+        @JvmName("sendToNewMember") get
+        @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.isPinned
+     * @see AnnouncementParameters.pinned
      */
-    public var isPinned: Boolean = prototype.isPinned
+    public var pinned: Boolean = prototype.pinned
+        @JvmName("pinned") get
+        @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.isShowEditCard
+     * @see AnnouncementParameters.showEditCard
      */
-    public var isShowEditCard: Boolean = prototype.isShowEditCard
+    public var showEditCard: Boolean = prototype.showEditCard
+        @JvmName("showEditCard") get
+        @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.isTip
+     * @see AnnouncementParameters.popup
      */
-    public var isTip: Boolean = prototype.isTip
+    public var popup: Boolean = prototype.popup
+        @JvmName("popup") get
+        @JvmSynthetic set
 
     /**
      * @see AnnouncementParameters.needConfirm
      */
     public var needConfirm: Boolean = prototype.needConfirm
+        @JvmName("needConfirm") get
+        @JvmSynthetic set
 
     /**
      * @see AnnouncementParameters.image
      */
-    public fun image(image: AnnouncementImage): AnnouncementParametersBuilder {
+    public fun image(image: AnnouncementImage?): AnnouncementParametersBuilder {
         this.image = image
         return this
     }
@@ -96,26 +108,26 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see AnnouncementParameters.isPinned
+     * @see AnnouncementParameters.pinned
      */
     public fun pinned(isPinned: Boolean): AnnouncementParametersBuilder {
-        this.isPinned = isPinned
+        this.pinned = isPinned
         return this
     }
 
     /**
-     * @see AnnouncementParameters.isShowEditCard
+     * @see AnnouncementParameters.showEditCard
      */
     public fun showEditCard(isShowEditCard: Boolean): AnnouncementParametersBuilder {
-        this.isShowEditCard = isShowEditCard
+        this.showEditCard = isShowEditCard
         return this
     }
 
     /**
-     * @see AnnouncementParameters.isTip
+     * @see AnnouncementParameters.popup
      */
-    public fun tip(isTip: Boolean): AnnouncementParametersBuilder {
-        this.isTip = isTip
+    public fun popup(popup: Boolean): AnnouncementParametersBuilder {
+        this.popup = popup
         return this
     }
 
@@ -131,7 +143,7 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
      * 使用当前参数构造 [AnnouncementParameters].
      */
     public fun build(): AnnouncementParameters =
-        AnnouncementParameters(image, sendToNewMember, isPinned, isShowEditCard, isTip, needConfirm)
+        AnnouncementParameters(image, sendToNewMember, pinned, showEditCard, popup, needConfirm)
 }
 
 /**
