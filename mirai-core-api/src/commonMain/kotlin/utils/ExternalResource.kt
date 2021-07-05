@@ -31,7 +31,6 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.RemoteFile.Companion.sendFile
-import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
 
 
@@ -51,7 +50,7 @@ import java.io.*
  * 当 [ExternalResource] 创建时就可能会打开一个文件 (如使用 [File.toExternalResource]).
  * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
  *
- * 自 2.7 起, 每个 mirai 内置的 [ExternalResource] 实现都有引用跟踪, 当 [ExternalResource] 无强引用后就会执行被动释放, 避免资源泄露.
+ * 自 2.7 起, 每个 mirai 内置的 [ExternalResource] 实现都有引用跟踪, 当 [ExternalResource] 被 GC 后会执行被动释放, 但是该策略并不代表不需要手动 close.
  *
  * ## 实现 [ExternalResource]
  *
