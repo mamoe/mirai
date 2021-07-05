@@ -15,6 +15,9 @@ package net.mamoe.mirai.contact.announcement
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.announcement.Announcement.Companion.publishAnnouncement
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 /**
@@ -34,6 +37,8 @@ import net.mamoe.mirai.contact.PermissionDeniedException
  * 构造 [OfflineAnnouncement] 然后调用其 [OfflineAnnouncement.publishTo] 或 [Announcements.publish].
  *
  * 在构造时可提供可选的 [AnnouncementParameters] 来设置一些附加属性.
+ *
+ * 也可以使用 [Announcement.publishAnnouncement] 扩展快捷创建并发送公告.
  *
  * ### 转发获取的公告到其他群
  *
@@ -70,6 +75,50 @@ public sealed interface Announcement {
      * @see Announcements.publish
      */
     public suspend fun publishTo(group: Group): OnlineAnnouncement = group.announcements.publish(this)
+
+    public companion object {
+        /**
+         * 在该群发布群公告并获得 [OnlineAnnouncement]. 发布公告后群内将会出现 "有新公告" 系统提示.
+         *
+         * @param content 公告内容
+         * @param parameters 可选的附加参数
+         *
+         * @throws PermissionDeniedException 当没有权限时抛出
+         * @throws IllegalStateException 当协议异常时抛出
+         *
+         * @see OfflineAnnouncement
+         * @see Announcement.publishTo
+         * @see AnnouncementParametersBuilder
+         */
+        @JvmOverloads
+        @JvmStatic
+        public suspend inline fun Group.publishAnnouncement(
+            content: String,
+            parameters: AnnouncementParameters = AnnouncementParameters.DEFAULT
+        ): OnlineAnnouncement = this.announcements.publish(OfflineAnnouncement(content, parameters))
+
+        /**
+         * 在该群发布群公告并获得 [OnlineAnnouncement]. 发布公告后群内将会出现 "有新公告" 系统提示.
+         *
+         * @param content 公告内容
+         * @param parameters 可选的附加参数
+         *
+         * @throws PermissionDeniedException 当没有权限时抛出
+         * @throws IllegalStateException 当协议异常时抛出
+         *
+         * @see OfflineAnnouncement
+         * @see Announcement.publishTo
+         * @see AnnouncementParametersBuilder
+         */
+        @JvmSynthetic
+        public suspend inline fun Group.publishAnnouncement(
+            content: String,
+            parameters: AnnouncementParametersBuilder.() -> Unit
+        ): OnlineAnnouncement {
+            contract { callsInPlace(parameters, InvocationKind.EXACTLY_ONCE) }
+            return this.announcements.publish(OfflineAnnouncement(content, parameters))
+        }
+    }
 }
 
 /**
