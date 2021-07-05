@@ -30,4 +30,28 @@ public class AnnouncementImage @MiraiInternalApi public constructor(
     public companion object {
         public const val SERIAL_NAME: String = "AnnouncementImage"
     }
+
+    override fun toString(): String {
+        return "AnnouncementImage(height='$height', width='$width', id='$id')"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AnnouncementImage
+
+        if (height != other.height) return false
+        if (width != other.width) return false
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = height.hashCode()
+        result = 31 * result + width.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
 }

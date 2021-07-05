@@ -76,4 +76,34 @@ public class AnnouncementParameters internal constructor(
         @get:JvmName("getDefault")
         public val DEFAULT: AnnouncementParameters = AnnouncementParameters()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AnnouncementParameters
+
+        if (image != other.image) return false
+        if (sendToNewMember != other.sendToNewMember) return false
+        if (isPinned != other.isPinned) return false
+        if (isShowEditCard != other.isShowEditCard) return false
+        if (isTip != other.isTip) return false
+        if (needConfirm != other.needConfirm) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = image?.hashCode() ?: 0
+        result = 31 * result + sendToNewMember.hashCode()
+        result = 31 * result + isPinned.hashCode()
+        result = 31 * result + isShowEditCard.hashCode()
+        result = 31 * result + isTip.hashCode()
+        result = 31 * result + needConfirm.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "AnnouncementParameters(image=$image, sendToNewMember=$sendToNewMember, isPinned=$isPinned, isShowEditCard=$isShowEditCard, isTip=$isTip, needConfirm=$needConfirm)"
+    }
 }
