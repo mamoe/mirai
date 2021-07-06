@@ -24,8 +24,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 public class AnnouncementImage private constructor(
     public val id: String,
-    public val height: String,
-    public val width: String,
+    public val height: Int,
+    public val width: Int,
 ) {
     // For stability, do not make it `data class`.
 
@@ -36,13 +36,13 @@ public class AnnouncementImage private constructor(
          * 创建 [AnnouncementImage] 实例.
          */
         @JvmStatic
-        public fun create(id: String, height: String, width: String): AnnouncementImage {
+        public fun create(id: String, height: Int, width: Int): AnnouncementImage {
             return AnnouncementImage(id, height, width)
         }
     }
 
     override fun toString(): String {
-        return "AnnouncementImage(id='$id', height='$height', width='$width')"
+        return "AnnouncementImage(id='$id', height=$height, width=$width)"
     }
 
     override fun equals(other: Any?): Boolean {

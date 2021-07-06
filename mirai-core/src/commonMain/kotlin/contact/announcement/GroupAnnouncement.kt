@@ -52,8 +52,8 @@ internal data class GroupAnnouncement(
 
 @Serializable
 internal class GroupAnnouncementImage @MiraiInternalApi constructor(
-    @SerialName("h") val height: String,
-    @SerialName("w") val width: String,
+    @SerialName("h") val height: Int,
+    @SerialName("w") val width: Int,
     @SerialName("id") val id: String
 ) : JsonStruct {
     fun toPublic(): AnnouncementImage = AnnouncementImage.create(id, height, width)
