@@ -28,7 +28,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.utils.LazyProperty
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -177,7 +176,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
-    @LazyProperty
     public abstract val originalMessage: MessageChain
 
     /**
