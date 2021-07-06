@@ -596,13 +596,13 @@ public final class net/mamoe/mirai/contact/announcement/Announcement$Companion {
 public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
 	public static final field Companion Lnet/mamoe/mirai/contact/announcement/AnnouncementImage$Companion;
 	public static final field SERIAL_NAME Ljava/lang/String;
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public static final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public synthetic fun <init> (ILjava/lang/String;IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun create (Ljava/lang/String;II)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getHeight ()Ljava/lang/String;
+	public final fun getHeight ()I
 	public final fun getId ()Ljava/lang/String;
-	public final fun getWidth ()Ljava/lang/String;
+	public final fun getWidth ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -620,7 +620,7 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$$seria
 }
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$Companion {
-	public final fun create (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public final fun create (Ljava/lang/String;II)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
