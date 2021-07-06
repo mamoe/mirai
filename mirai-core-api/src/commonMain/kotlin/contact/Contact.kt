@@ -36,7 +36,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
     /**
      * 这个联系对象所属 [Bot].
      */
-    @WeakRefProperty
     public override val bot: Bot
 
     /**

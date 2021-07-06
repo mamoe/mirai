@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -29,7 +28,7 @@ internal fun QQAndroidBot.createOtherClient(
 }
 
 internal class OtherClientImpl(
-    bot: Bot,
+    bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
     override val info: OtherClientInfo,
 ) : OtherClient, AbstractContact(bot, coroutineContext) {

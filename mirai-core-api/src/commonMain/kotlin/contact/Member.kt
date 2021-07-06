@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
  * 代表一位群成员.
@@ -41,7 +40,6 @@ public interface Member : User {
     /**
      * 所在的群.
      */
-    @WeakRefProperty
     public val group: Group
 
     /**
