@@ -37,6 +37,10 @@ import java.util.stream.Stream
  *
  * 若获取全部公告列表, 可使用 [toList].
  *
+ * ## 发布群公告
+ *
+ * 查看 [Announcement]
+ *
  * @since 2.7
  */
 @NotStableForInheritance

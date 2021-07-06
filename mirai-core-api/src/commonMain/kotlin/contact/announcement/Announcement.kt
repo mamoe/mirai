@@ -28,15 +28,15 @@ import net.mamoe.mirai.contact.announcement.Announcement.Companion.publishAnnoun
  * - [OnlineAnnouncement] 表示从 [Announcements.get] 等途径在线获取的, 已经存在于服务器的公告.
  * - [OfflineAnnouncement] 表示在本地构建的 [Announcement].
  *
- * ## 发送公告
+ * ## 发布公告
  *
- * ### 构造一条新公告并发送
+ * ### 构造一条新公告并发布
  *
  * 构造 [OfflineAnnouncement] 然后调用其 [OfflineAnnouncement.publishTo] 或 [Announcements.publish].
  *
  * 在构造时可提供可选的 [AnnouncementParameters] 来设置一些附加属性.
  *
- * 也可以使用 [Announcement.publishAnnouncement] 扩展快捷创建并发送公告.
+ * 也可以使用 [Announcement.publishAnnouncement] 扩展快捷创建并发布公告.
  *
  * ### 转发获取的公告到其他群
  *
