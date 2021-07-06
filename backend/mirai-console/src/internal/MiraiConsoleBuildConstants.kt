@@ -14,8 +14,8 @@ import java.time.Instant
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
     @JvmStatic
-    val buildDate: Instant = Instant.ofEpochSecond(1624419793)
-    const val versionConst: String = "2.7-M2-dev-1"
+    val buildDate: Instant = Instant.ofEpochSecond(1625578590)
+    const val versionConst: String = "2.7-M2"
 
     @JvmStatic
     val version: SemVersion = SemVersion(versionConst)
