@@ -30,7 +30,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
 
 @Serializable(with = OnlineGroupImageImpl.Serializer::class)
 internal class OnlineGroupImageImpl(
-    internal val delegate: ImMsgBody.CustomFace
+    internal val delegate: ImMsgBody.CustomFace,
 ) : OnlineGroupImage() {
     object Serializer : Image.FallbackSerializer("OnlineGroupImage")
 
@@ -55,18 +55,11 @@ internal class OnlineGroupImageImpl(
             }/0?term=2"
         } else "http://gchat.qpic.cn" + delegate.origUrl
 
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineGroupImageImpl && other.imageId == this.imageId
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
 }
 
 @Serializable(with = OnlineFriendImageImpl.Serializer::class)
 internal class OnlineFriendImageImpl(
-    internal val delegate: ImMsgBody.NotOnlineImage
+    internal val delegate: ImMsgBody.NotOnlineImage,
 ) : @Suppress("DEPRECATION")
 OnlineFriendImage() {
     object Serializer : Image.FallbackSerializer("OnlineFriendImage")
@@ -97,13 +90,6 @@ OnlineFriendImage() {
         }
     // TODO: 2020/4/24 动态获取图片下载链接的 host
 
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineFriendImageImpl && other.imageId == this.imageId
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
 }
 
 /*
@@ -196,8 +182,8 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
         oldData = oldData,
-//        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
-//        useful = 1,
+        //        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
+        //        useful = 1,
         //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
     )
 }
@@ -220,25 +206,6 @@ internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
     )
 }
 
-
-/**
- * 所有 [Image] 实现的基类.
- */
-internal abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
-    private var _stringValue: String? = null
-        get() = field ?: kotlin.run {
-            field = "[mirai:image:$imageId]"
-            field
-        }
-
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = "[图片]"
-
-    @MiraiExperimentalApi
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:image:").append(imageId).append("]")
-    }
-}
 
 internal interface ConstOriginUrlAware {
     val originUrl: String
@@ -269,7 +236,7 @@ internal interface OfflineImage : Image
  */
 @Serializable(with = OfflineGroupImage.Serializer::class)
 internal data class OfflineGroupImage(
-    override val imageId: String
+    override val imageId: String,
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
     @Transient
     internal var fileId: Int? = null
@@ -299,7 +266,7 @@ internal abstract class OnlineGroupImage : GroupImage(), OnlineImage
 
 internal val Image.friendImageId: String
     get() {
-//    /1234567890-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
+        //    /1234567890-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
         return "/000000000-000000000-${md5.toUHexString("")}"
     }
 
@@ -310,7 +277,7 @@ internal val Image.friendImageId: String
  */
 @Serializable(with = OfflineFriendImage.Serializer::class)
 internal data class OfflineFriendImage(
-    override val imageId: String
+    override val imageId: String,
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
     object Serializer : Image.FallbackSerializer("OfflineFriendImage")
 

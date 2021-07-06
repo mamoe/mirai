@@ -37,6 +37,33 @@ git submodule update
 - 解决问题: 在 [issues](https://github.com/mamoe/mirai/issues) 查看 mirai 正遇到的所有问题, 或在 [里程碑](https://github.com/mamoe/mirai/milestones) 查看版本计划. 所有没有 assignee 的 issue 都处于
 - 协议支持: [添加新协议支持](#添加协议支持)
 
+### 加入开发组
+
+你可以随时提交 PR 解决任何问题。而若有兴趣，我们也欢迎你加入开发组，请联系 support@mamoe.net
+
+[mirai-compose]: https://github.com/sonder-joker/mirai-compose
+[plugin-center 服务端]: https://github.com/project-mirai/mirai-plugin-center
+[mirai-api-http]: https://github.com/project-mirai/mirai-api-http
+[project-mirai/docs]: https://github.com/project-mirai/docs
+[docs.mirai.mamoe.net]: https://docs.mirai.mamoe.net
+
+
+|           名称           |                                                   描述                                                   |
+|:------------------------:|:------------------------------------------------------------------------------------------------------:|
+|  core 和 console 日常更新  |           在 milestone 安排的日常更新。我们目前版本速度是一个月到两个月发布一个次版本（2.x)。需要日常的开发。           |
+|       console 后端       |                       架构稳定，现在格外需要在易用性上的提升，首先需要一个优化方案，再实现它们。                       |
+|       console 文档       |                   根据用户反馈，现在文档十分缺少。需要以用户的身份体验过 console 的人编写用户文档。                   |
+| 图形前端 [mirai-compose]  |                       各功能都缺目前尤其缺少对接 console PluginConfig 的图形化配置的实现。                       |
+|  [plugin-center 服务端]   |                    插件中心正在建设中。后端 Spring，前端 Vuetify。由于开发人员学业繁忙，暂搁置。                    |
+|    plugin-center 社区    | 插件中心计划支持所有语言的插件，因此需要与社区 SDK 作者沟通并帮助它们接入 Console 的 PluginLoader API 和插件中心的要求。 |
+| plugin-center console 端 |               需要评估现在 console 架构是否足够支持插件中心及所有语言插件的管理，实现与插件中心的对接。                |
+|   plugin-center gradle   |                              对接插件中心，实现通过 Task 上传插件。还没有开始做。                               |
+|   mirai-console-loader   |                 console 启动器。对接插件中心的 API，支持下载和更新插件等。不确定之后是否会有人实现。                 |
+|         IDE 插件         |               IntelliJ IDEA 的插件的工作。可以为 mirai 框架添加检查等功能。这个部分目前基本满足需求。                |
+|   [mirai-api-http] v2    |                                                日常维护。                                                |
+|   [project-mirai/docs]   |  用户友好文档自动部署，使用 VuePress , 部署于 [docs.mirai.mamoe.net]，目前还有部分超链接错误的问题。               |
+
+
 ### 里程碑
 
 [里程碑](https://github.com/mamoe/mirai/milestones) 为各版本的开发计划. 在完成所有任务后就会发布该版本.

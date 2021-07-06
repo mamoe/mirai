@@ -1,22 +1,22 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.safeCast
 
 
 /**
@@ -26,6 +26,7 @@ import net.mamoe.mirai.utils.safeCast
  */
 @Serializable
 @MiraiExperimentalApi
+@NotStableForInheritance
 public abstract class PttMessage : MessageContent {
 
     public companion object Key :
@@ -39,6 +40,31 @@ public abstract class PttMessage : MessageContent {
 
     @MiraiExperimentalApi
     public abstract val fileSize: Long
+
+    /*
+     * **internal impl note**
+     * 用于中转 ImMsgBody.Ptt, 在接受到其他用户发送的语音时能按照原样发回,
+     * 并且便于未来修改 (对 api 修改最小化)
+     */
+    @MiraiInternalApi
+    @Transient
+    public var pttInternalInstance: Any? = null
+        set(value) {
+            field = value
+            _pttInternalInstanceSerializeCache = null
+        }
+
+    @MiraiInternalApi
+    protected val pttInternalInstanceSerializeCache: String
+        get() {
+            _pttInternalInstanceSerializeCache?.let { return it }
+            return Mirai.serializePttElem(pttInternalInstance).also {
+                _pttInternalInstanceSerializeCache = it
+            }
+        }
+
+    @Transient
+    private var _pttInternalInstanceSerializeCache: String? = null
 }
 
 /**
@@ -53,7 +79,8 @@ public abstract class PttMessage : MessageContent {
  *
  * [Voice] 实例可以通过序列化方式保存. 下次可以用它发送因而不需要上传. 但可能由于未来服务器更新, 这项功能就不稳定. 因此建议总是上传音频文件而不要保存 [Voice].
  */
-@Serializable // experimental
+@Suppress("DuplicatedCode")
+@Serializable(Voice.Serializer::class) // experimental
 @SerialName(Voice.SERIAL_NAME)
 public class Voice @MiraiInternalApi constructor(
     @MiraiExperimentalApi public override val fileName: String,
@@ -87,4 +114,70 @@ public class Voice @MiraiInternalApi constructor(
     public override fun toString(): String = _stringValue!!
 
     public override fun contentToString(): String = "[语音消息]"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Voice) return false
+
+        if (this.pttInternalInstance != null && other.pttInternalInstance != null) {
+            if (this.pttInternalInstance == other.pttInternalInstance)
+                return true
+            // strict
+            return this.pttInternalInstanceSerializeCache == other.pttInternalInstanceSerializeCache
+        }
+
+        if (fileName != other.fileName) return false
+        if (!md5.contentEquals(other.md5)) return false
+        if (fileSize != other.fileSize) return false
+        if (codec != other.codec) return false
+        if (_url != other._url) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        if (pttInternalInstance != null)
+            return pttInternalInstanceSerializeCache.hashCode()
+
+        var result = fileName.hashCode()
+        result = 12 * result + md5.contentHashCode()
+        result = 54 * result + fileSize.hashCode()
+        result = 33 * result + codec
+        result = 15 * result + _url.hashCode()
+        return result
+    }
+
+    public object Serializer : KSerializer<Voice> by VoiceS.serializer().map(
+        resultantDescriptor = VoiceS.serializer().descriptor.copy(SERIAL_NAME),
+        deserialize = {
+            Voice(
+                fileName = it.fileName,
+                md5 = it.md5,
+                fileSize = it.fileSize,
+                codec = it.codec,
+                _url = it._url,
+            ).also { v -> v.pttInternalInstance = Mirai.deserializePttElem(it.ptt) }
+        },
+        serialize = {
+            VoiceS(
+                fileName = it.fileName,
+                md5 = it.md5,
+                fileSize = it.fileSize,
+                _url = it._url,
+                codec = it.codec,
+                ptt = Mirai.serializePttElem(it.pttInternalInstance)
+            )
+        }
+    ) {
+        @Serializable
+        @SerialName(SERIAL_NAME)
+        private class VoiceS(
+            val fileName: String,
+            val md5: ByteArray,
+            val fileSize: Long,
+            val codec: Int,
+            val _url: String,
+            val ptt: String = "",
+        )
+    }
 }

@@ -20,7 +20,7 @@ internal class HummerResv21 : ProtoBuf {
     @Serializable
     internal class FileImgInfo(
         @JvmField @ProtoNumber(1) val fileWidth: Int = 0,
-        @JvmField @ProtoNumber(2) val fileHeight: Int = 0
+        @JvmField @ProtoNumber(2) val fileHeight: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -37,20 +37,20 @@ internal class HummerResv21 : ProtoBuf {
         @JvmField @ProtoNumber(10) val imgWidth: Int = 0,
         @JvmField @ProtoNumber(11) val imgHeight: Int = 0,
         @JvmField @ProtoNumber(12) val videoDuration: Long = 0L,
-        @JvmField @ProtoNumber(13) val busId: Int = 0
+        @JvmField @ProtoNumber(13) val busId: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class ResvAttr(
         @JvmField @ProtoNumber(1) val fileImageInfo: FileImgInfo? = null,
-        @JvmField @ProtoNumber(2) val forwardExtFileInfo: ForwardExtFileInfo? = null
+        @JvmField @ProtoNumber(2) val forwardExtFileInfo: ForwardExtFileInfo? = null,
     ) : ProtoBuf
 
     @Serializable
     internal class XtfSenderInfo(
         @JvmField @ProtoNumber(1) val lanIp: Int = 0,
         @JvmField @ProtoNumber(2) val lanPort: Int = 0,
-        @JvmField @ProtoNumber(3) val lanSrkey: Long = 0L
+        @JvmField @ProtoNumber(3) val lanSrkey: Long = 0L,
     ) : ProtoBuf
 }
         

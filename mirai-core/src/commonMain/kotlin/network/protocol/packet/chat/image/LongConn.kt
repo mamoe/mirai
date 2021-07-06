@@ -64,8 +64,14 @@ internal class LongConn {
 
         sealed class Response : Packet {
             data class FileExists(val resourceId: String, val imageInfo: Cmd0x352.ImgInfo) : Response()
+
             @Suppress("ArrayInDataClass")
-            data class RequireUpload(val resourceId: String, val serverIp: List<Int>, val serverPort: List<Int>, val uKey: ByteArray) : Response()
+            data class RequireUpload(
+                val resourceId: String,
+                val serverIp: List<Int>,
+                val serverPort: List<Int>,
+                val uKey: ByteArray
+            ) : Response()
 
             data class Failed(val message: String) : Response()
         }

@@ -22,7 +22,9 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.SingleEntrantLock
+import net.mamoe.mirai.internal.utils.fromMiraiLogger
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.fold
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -37,6 +39,7 @@ internal abstract class NetworkHandlerSupport(
 ) : NetworkHandler, CoroutineScope {
     final override val coroutineContext: CoroutineContext =
         additionalCoroutineContext.childScopeContext(SupervisorJob(context.bot.coroutineContext.job))
+            .plus(CoroutineExceptionHandler.fromMiraiLogger(logger))
 
     protected abstract fun initialState(): BaseStateImpl
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
@@ -47,11 +50,6 @@ internal abstract class NetworkHandlerSupport(
     }
 
     override fun close(cause: Throwable?) {
-//        if (cause == null) {
-//            logger.info { "NetworkHandler '$this' closed" }
-//        } else {
-//            logger.info { "NetworkHandler '$this' closed: $cause" }
-//        }
         if (coroutineContext.job.isActive) {
             coroutineContext.job.cancel("NetworkHandler closed", cause)
         }
@@ -74,15 +72,13 @@ internal abstract class NetworkHandlerSupport(
         for (listener in packetListeners) {
             if (!listener.isExpected(packet)) continue
             if (packetListeners.remove(listener)) {
-                val e = packet.exception
-                if (e != null) {
-                    listener.result.completeExceptionally(e)
-                } else {
-                    listener.result.complete(packet.data)
-                }
+                packet.result.fold(
+                    onLeft = { listener.result.completeExceptionally(it) },
+                    onRight = { listener.result.complete(it) }
+                )
             }
         }
-        launch {
+        launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 packetHandler.handlePacket(packet)
             } catch (e: Throwable) { // do not pass it to CoroutineExceptionHandler for a more controllable behavior.
@@ -202,6 +198,7 @@ internal abstract class NetworkHandlerSupport(
     protected data class StateSwitchingException(
         val old: BaseStateImpl,
         val new: BaseStateImpl,
+        override val cause: Throwable? = new.getCause(), // so it can be unwrapped
     ) : CancellationException("State is switched from $old to $new")
 
     /**
@@ -222,7 +219,7 @@ internal abstract class NetworkHandlerSupport(
      * This is designed to be used inside [BaseStateImpl].
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
-        noinline new: () -> S
+        noinline new: () -> S,
     ): S? = synchronized(lockForSetStateWithOldInstance) {
         if (_state === this) {
             this@NetworkHandlerSupport.setState(new)

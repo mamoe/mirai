@@ -139,6 +139,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         withContext(Dispatchers.IO) { input() }
     }
 
+    override val isSliderCaptchaSupported: Boolean get() = true
+
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)
         @Suppress("BlockingMethodInNonBlockingContext")
@@ -183,7 +185,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         val logger = loggerSupplier(bot)
         logger.info { "[SliderCaptcha] 需要滑动验证码, 请按照以下链接的步骤完成滑动验证码, 然后输入获取到的 ticket" }
         logger.info { "[SliderCaptcha] Slider captcha required. Please solve the captcha with following link. Type ticket here after completion." }
-        logger.info { "[SliderCaptcha] @see https://github.com/project-mirai/mirai-login-solver-selenium#%E4%B8%8B%E8%BD%BD-chrome-%E6%89%A9%E5%B1%95%E6%8F%92%E4%BB%B6" }
+        logger.info { "[SliderCaptcha] @see https://github.com/project-mirai/mirai-login-solver-selenium" }
+        logger.info { "[SliderCaptcha] @see https://docs.mirai.mamoe.net/mirai-login-solver-selenium/" }
         logger.info { "[SliderCaptcha] 或者输入 TxCaptchaHelper 来使用 TxCaptchaHelper 完成滑动验证码" }
         logger.info { "[SliderCaptcha] Or type `TxCaptchaHelper` to resolve slider captcha with TxCaptchaHelper.apk" }
         logger.info { "[SliderCaptcha] Captcha link: $url" }

@@ -24,7 +24,7 @@ internal class CustomFaceExtPb : ProtoBuf {
     @Serializable
     internal class AnimationImageShow(
         @JvmField @ProtoNumber(1) val int32EffectId: Int = 0,
-        @JvmField @ProtoNumber(2) val animationParam: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(2) val animationParam: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -46,7 +46,7 @@ internal class CustomFaceExtPb : ProtoBuf {
         @JvmField @ProtoNumber(16) val cameraCaptureTemplateinfo: String = "",
         @JvmField @ProtoNumber(17) val cameraCaptureMaterialname: String = "",
         @JvmField @ProtoNumber(18) val adEmoJumpUrl: String = "",
-        @JvmField @ProtoNumber(19) val adEmoDescStr: String = ""
+        @JvmField @ProtoNumber(19) val adEmoDescStr: String = "",
     ) : ProtoBuf
 }
         

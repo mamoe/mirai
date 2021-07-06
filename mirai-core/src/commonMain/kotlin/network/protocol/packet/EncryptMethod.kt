@@ -14,8 +14,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
+import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
@@ -65,26 +65,26 @@ internal class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteA
     override val currentLoginState: Int get() = 3
 }
 
-internal class EncryptMethodECDH135(override val ecdh: ECDH) :
+internal class EncryptMethodECDH135(override val ecdh: ECDHWithPublicKey) :
     EncryptMethodECDH {
     override val id: Int get() = 135
 }
 
-internal class EncryptMethodECDH7(override val ecdh: ECDH) :
+internal class EncryptMethodECDH7(override val ecdh: ECDHWithPublicKey) :
     EncryptMethodECDH {
     override val id: Int get() = 7 // 135
 }
 
 internal interface EncryptMethodECDH : EncryptMethod {
     companion object {
-        operator fun invoke(ecdh: ECDH): EncryptMethodECDH {
+        operator fun invoke(ecdh: ECDHWithPublicKey): EncryptMethodECDH {
             return if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
                 EncryptMethodECDH135(ecdh)
             } else EncryptMethodECDH7(ecdh)
         }
     }
 
-    val ecdh: ECDH
+    val ecdh: ECDHWithPublicKey
 
     override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         /* //new curve p-256
@@ -95,21 +95,19 @@ internal interface EncryptMethodECDH : EncryptMethod {
         writeShort(0x0001)
          */
 
-        writeByte(1) // version
+        writeByte(2) // version
         writeByte(1) // const
         writeFully(client.randomKey)
-        writeShort(0x0102)
-
+        writeShort(0x0131)
+        writeShort(ecdh.version.toShort())// public key version
         if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
             writeShortLVByteArray(ECDHKeyPair.DefaultStub.defaultPublicKey)
             encryptAndWrite(ECDHKeyPair.DefaultStub.defaultShareKey, body)
         } else {
             // for p-256, drop(26). // but not really sure.
-            writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).toByteArray().also {
-                check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
-            })
+            writeShortLVByteArray(ecdh.keyPair.maskedPublicKey)
 
-            encryptAndWrite(ecdh.keyPair.initialShareKey, body)
+            encryptAndWrite(ecdh.keyPair.maskedShareKey, body)
         }
     }
 }

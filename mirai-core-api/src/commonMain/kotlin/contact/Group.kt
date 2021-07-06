@@ -1,32 +1,32 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport", "NOTHING_TO_INLINE")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群.
  */
-@JvmBlockingBridge
-public interface Group : Contact, CoroutineScope, FileSupported {
+@NotStableForInheritance
+public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported {
     /**
      * 群名称.
      *
@@ -92,6 +92,12 @@ public interface Group : Contact, CoroutineScope, FileSupported {
     public val members: ContactList<NormalMember>
 
     /**
+     * 获取群公告相关功能接口
+     * @since 2.7
+     */
+    public val announcements: Announcements
+
+    /**
      * 获取群成员实例. 不存在时返回 `null`.
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
@@ -150,19 +156,6 @@ public interface Group : Contact, CoroutineScope, FileSupported {
      */
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
         this.sendMessage(message.toPlainText())
-
-    /**
-     * 上传一个语音消息以备发送.
-     *
-     * - **请手动关闭 [resource]**
-     * - 请使用 amr 或 silk 格式
-     *
-     * @see ExternalResource.uploadAsVoice
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
-     */
-    public suspend fun uploadVoice(resource: ExternalResource): Voice
 
 
     /**
@@ -258,3 +251,4 @@ public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
  * @see Group.botMuteRemaining 剩余禁言时间
  */
 public inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
+

@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.event.registerEventHandler
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.runBIO
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -62,7 +63,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     /**
      * 此事件通道的默认 [CoroutineScope.coroutineContext]. 将会被添加给所有注册的事件监听器.
      */
-    public val defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
+    public val defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) {
 
     /**
@@ -189,7 +190,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
     public fun filter(filter: (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return filter { runInterruptible { filter(it) } }
+        return filter { runBIO { filter(it) } }
     }
 
     /**
@@ -371,7 +372,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
-        noinline handler: suspend E.(E) -> ListeningStatus
+        noinline handler: suspend E.(E) -> ListeningStatus,
     ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority, handler)
 
     /**
@@ -386,7 +387,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: suspend E.(E) -> ListeningStatus
+        handler: suspend E.(E) -> ListeningStatus,
     ): Listener<E> = subscribeInternal(
         eventClass,
         createListener(coroutineContext, concurrency, priority) { it.handler(it); }
@@ -411,7 +412,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-        noinline handler: suspend E.(E) -> Unit
+        noinline handler: suspend E.(E) -> Unit,
     ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority, handler)
 
 
@@ -425,7 +426,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: suspend E.(E) -> Unit
+        handler: suspend E.(E) -> Unit,
     ): Listener<E> = subscribeInternal(
         eventClass,
         createListener(coroutineContext, concurrency, priority) { it.handler(it); ListeningStatus.LISTENING }
@@ -446,7 +447,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     public inline fun <reified E : Event> subscribeOnce(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
-        noinline handler: suspend E.(E) -> Unit
+        noinline handler: suspend E.(E) -> Unit,
     ): Listener<E> = subscribeOnce(E::class, coroutineContext, priority, handler)
 
     /**
@@ -456,7 +457,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: suspend E.(E) -> Unit
+        handler: suspend E.(E) -> Unit,
     ): Listener<E> = subscribeInternal(
         eventClass,
         createListener(coroutineContext, LOCKED, priority) { it.handler(it); ListeningStatus.STOPPED }
@@ -504,7 +505,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: Consumer<E>
+        handler: Consumer<E>,
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
@@ -531,7 +532,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: java.util.function.Function<E, ListeningStatus>
+        handler: java.util.function.Function<E, ListeningStatus>,
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
@@ -556,7 +557,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: Consumer<E>
+        handler: Consumer<E>,
     ): Listener<E> = subscribeInternal(
         eventClass.kotlin,
         createListener(coroutineContext, concurrency, priority) { event ->
@@ -599,7 +600,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         coroutineContext: CoroutineContext,
         concurrencyKind: ConcurrencyKind,
         priority: EventPriority = EventPriority.NORMAL,
-        handler: suspend (E) -> ListeningStatus
+        handler: suspend (E) -> ListeningStatus,
     ): Listener<E> {
         val context = this.defaultCoroutineContext + coroutineContext
         return Handler(

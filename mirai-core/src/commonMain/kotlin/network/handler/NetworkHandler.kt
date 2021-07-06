@@ -148,6 +148,8 @@ internal interface NetworkHandler : CoroutineScope {
 
     /**
      * Closes this handler gracefully (i.e. asynchronously).
+     *
+     * After invocation of [close], [state] will always be [State.CLOSED].
      */
     fun close(cause: Throwable?)
 
@@ -159,7 +161,7 @@ internal interface NetworkHandler : CoroutineScope {
      * @suppress This is for compatibility with old code. Use [sendWithoutExpect] without extension receiver instead.
      */
     suspend fun OutgoingPacket.sendWithoutExpect(
-        antiCollisionParam: Any? = null
+        antiCollisionParam: Any? = null,
     ) = this@NetworkHandler.sendWithoutExpect(this)
 
     /**
@@ -169,7 +171,7 @@ internal interface NetworkHandler : CoroutineScope {
     suspend fun <R> OutgoingPacket.sendAndExpect(
         timeoutMillis: Long = 5000,
         retry: Int = 2,
-        antiCollisionParam: Any? = null // signature collision
+        antiCollisionParam: Any? = null, // signature collision
     ): R = sendAndExpect(this, timeoutMillis, retry) as R
 
     /**
@@ -178,7 +180,7 @@ internal interface NetworkHandler : CoroutineScope {
     @Suppress("UNCHECKED_CAST")
     suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(
         timeoutMillis: Long = 5000,
-        retry: Int = 2
+        retry: Int = 2,
     ): R = sendAndExpect(this, timeoutMillis, retry) as R
 }
 

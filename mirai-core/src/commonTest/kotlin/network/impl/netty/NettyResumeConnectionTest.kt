@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.Test

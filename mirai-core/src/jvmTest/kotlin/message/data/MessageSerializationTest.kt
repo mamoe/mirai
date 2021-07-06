@@ -217,4 +217,42 @@ internal class MessageSerializationTest {
             actual = source
         )
     }
+
+    @Serializable
+    data class V(
+        val msg: Voice
+    )
+
+    @Test
+    fun `test Voice serialization`() {
+        val v = V(Voice("4517", byteArrayOf(14), 50, 3, "https://github.com"))
+        println(v.serialize(V.serializer()))
+        assertEquals(
+            v.serialize(V.serializer()),
+            v.serialize(V.serializer())
+                .deserialize(V.serializer())
+                .serialize(V.serializer())
+        )
+        assertEquals(
+            v,
+            v.serialize(V.serializer()).deserialize(V.serializer())
+        )
+        v.msg.pttInternalInstance = ImMsgBody.Ptt(
+            srcUin = 1234567890,
+            fileMd5 = byteArrayOf(14, 81, 37, 14),
+            boolValid = true,
+            format = 90,
+        )
+        println(v.serialize(V.serializer()))
+        assertEquals(
+            v.serialize(V.serializer()),
+            v.serialize(V.serializer())
+                .deserialize(V.serializer())
+                .serialize(V.serializer())
+        )
+        assertEquals(
+            v,
+            v.serialize(V.serializer()).deserialize(V.serializer())
+        )
+    }
 }

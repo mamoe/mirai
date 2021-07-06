@@ -52,7 +52,7 @@ internal fun ByteBuf.toReadPacket(): ByteReadPacket {
 
 
 internal fun MiraiLogger.asCoroutineExceptionHandler(
-    priority: SimpleLogger.LogPriority = ERROR
+    priority: SimpleLogger.LogPriority = ERROR,
 ): CoroutineExceptionHandler {
     return CoroutineExceptionHandler { context, e ->
         call(

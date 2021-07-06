@@ -11,9 +11,11 @@ package net.mamoe.mirai.internal.network.handler.state
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.utils.unwrapCancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -29,13 +31,13 @@ internal class JobAttachStateObserver(
     override fun stateChanged0(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
-        new.launch(CoroutineName(name) + coroutineContext) {
+        new.launch(CoroutineName(name) + coroutineContext, start = CoroutineStart.UNDISPATCHED) {
             try {
                 job(new)
             } catch (e: Throwable) {
-                throw IllegalStateException("Exception in attached Job '$name'", e)
+                throw IllegalStateException("Exception in attached Job '$name'", e.unwrapCancellationException())
             }
         }
     }

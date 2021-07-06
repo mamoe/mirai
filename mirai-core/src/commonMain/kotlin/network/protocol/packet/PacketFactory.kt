@@ -149,6 +149,7 @@ internal object KnownPacketFactories {
         TroopManagement.GroupOperation,
         TroopManagement.GetTroopConfig,
         TroopManagement.ModifyAdmin,
+        TroopManagement.GetAdmin,
         //  TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,

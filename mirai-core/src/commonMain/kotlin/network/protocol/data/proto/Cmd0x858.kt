@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 @Serializable
 internal class Oidb0x858 : ProtoBuf {
     @Serializable
-internal class GoldMsgTipsElem(
+    internal class GoldMsgTipsElem(
         @ProtoNumber(1) @JvmField val type: Int = 0,
         @ProtoNumber(2) @JvmField val billno: String = "",
         @ProtoNumber(3) @JvmField val result: Int = 0,
@@ -30,27 +30,27 @@ internal class GoldMsgTipsElem(
         @ProtoNumber(6) @JvmField val interval: Int = 0,
         @ProtoNumber(7) @JvmField val finish: Int = 0,
         @ProtoNumber(8) @JvmField val uin: List<Long> = emptyList(),
-        @ProtoNumber(9) @JvmField val action: Int = 0
+        @ProtoNumber(9) @JvmField val action: Int = 0,
     ) : ProtoBuf
 
     @Serializable
-internal class MessageRecallReminder(
+    internal class MessageRecallReminder(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
         @ProtoNumber(2) @JvmField val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val recalledMsgList: List<MessageMeta> = emptyList(),
         @ProtoNumber(4) @JvmField val reminderContent: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf {
         @Serializable
-internal class MessageMeta(
+        internal class MessageMeta(
             @ProtoNumber(1) @JvmField val seq: Int = 0,
             @ProtoNumber(2) @JvmField val time: Int = 0,
-            @ProtoNumber(3) @JvmField val msgRandom: Int = 0
+            @ProtoNumber(3) @JvmField val msgRandom: Int = 0,
         ) : ProtoBuf
     }
 
     @Serializable
-internal class NotifyMsgBody(
+    internal class NotifyMsgBody(
         @ProtoNumber(1) @JvmField val optEnumType: Int /* enum */ = 5,
         @ProtoNumber(2) @JvmField val optUint64MsgTime: Long = 0L,
         @ProtoNumber(3) @JvmField val optUint64MsgExpires: Long = 0L,
@@ -60,18 +60,18 @@ internal class NotifyMsgBody(
         @ProtoNumber(7) @JvmField val optMsgObjUpdate: NotifyObjmsgUpdate? = null,
         // @SerialId(8) @JvmField val optStcmGameState: ApolloGameStatus.STCMGameMessage? = null,
         // @SerialId(9) @JvmField val aplloMsgPush: ApolloPushMsgInfo.STPushMsgElem? = null,
-        @ProtoNumber(10) @JvmField val optMsgGoldtips: GoldMsgTipsElem? = null
+        @ProtoNumber(10) @JvmField val optMsgGoldtips: GoldMsgTipsElem? = null,
     ) : ProtoBuf
 
     @Serializable
-internal class NotifyObjmsgUpdate(
+    internal class NotifyObjmsgUpdate(
         @ProtoNumber(1) @JvmField val objmsgId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val updateType: Int = 0,
-        @ProtoNumber(3) @JvmField val extMsg: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(3) @JvmField val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class RedGrayTipsInfo(
+    internal class RedGrayTipsInfo(
         @ProtoNumber(1) @JvmField val optUint32ShowLastest: Int = 0,
         @ProtoNumber(2) @JvmField val senderUin: Long = 0L,
         @ProtoNumber(3) @JvmField val receiverUin: Long = 0L,
@@ -90,6 +90,6 @@ internal class RedGrayTipsInfo(
         @ProtoNumber(16) @JvmField val idiom: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(17) @JvmField val idiomSeq: Int = 0,
         @ProtoNumber(18) @JvmField val idiomAlpha: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(19) @JvmField val jumpurl: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(19) @JvmField val jumpurl: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 }

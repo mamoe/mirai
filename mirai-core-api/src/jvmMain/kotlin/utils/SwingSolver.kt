@@ -25,6 +25,8 @@ import javax.swing.*
 
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
+    override val isSliderCaptchaSupported: Boolean get() = true
+
     public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String {
         val image = runBIO { ImageIO.read(data.inputStream()) }
         return SwingLoginSolver(
@@ -47,8 +49,9 @@ public object SwingSolver : LoginSolver() {
             topComponent = JLabel(
                 """
                 <html>
-                需要滑动验证码, 完成后请输入ticket<br/>
-                @see: https://github.com/project-mirai/mirai-login-solver-selenium
+                需要滑动验证码, 完成后请输入ticket <br/>
+                @see: https://github.com/project-mirai/mirai-login-solver-selenium <br/>
+                @see: https://docs.mirai.mamoe.net/mirai-login-solver-selenium/
                 """.trimIndent()
             ),
         )

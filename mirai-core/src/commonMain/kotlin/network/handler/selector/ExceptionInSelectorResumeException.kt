@@ -10,5 +10,5 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 internal class ExceptionInSelectorResumeException(
-    cause: Throwable
+    cause: Throwable,
 ) : RuntimeException(cause)

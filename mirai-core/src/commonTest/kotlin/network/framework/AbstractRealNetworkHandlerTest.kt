@@ -9,11 +9,10 @@
 
 package net.mamoe.mirai.internal.network.framework
 
-import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.components.*
@@ -38,11 +37,13 @@ import kotlin.test.assertEquals
 
 /**
  * With real factory and components as in [QQAndroidBot.components].
+ *
+ * Extend [AbstractNettyNHTestWithSelector] or [AbstractNettyNHTest].
  */
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
+internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
     abstract val factory: NetworkHandlerFactory<H>
-    abstract val network: NetworkHandler
+    abstract val network: H
 
     var bot: QQAndroidBot by lateinitMutableProperty {
         object : QQAndroidBot(MockAccount, MockConfiguration.copy()) {
@@ -54,13 +55,14 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         }
     }
 
-    open val networkLogger = MiraiLogger.TopLevel
+    open val networkLogger = MiraiLogger.create("network")
 
     sealed class NHEvent {
         object Login : NHEvent()
         object Logout : NHEvent()
         object DoHeartbeatNow : NHEvent()
         object Init : NHEvent()
+        object SetLoginHalted : NHEvent()
     }
 
     val nhEvents = ConcurrentLinkedQueue<NHEvent>()
@@ -68,7 +70,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     /**
      * This overrides [QQAndroidBot.components]
      */
-    open val overrideComponents = ConcurrentComponentStorage().apply {
+    val overrideComponents = ConcurrentComponentStorage().apply {
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {
@@ -108,19 +110,15 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
         set(BotInitProcessor, object : BotInitProcessor {
             override fun setLoginHalted() {
+                nhEvents.add(NHEvent.SetLoginHalted)
             }
 
-            override suspend fun init(scope: CoroutineScope) {
+            override suspend fun init() {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
             }
         })
         set(ServerList, ServerListImpl())
-
-        set(BotOfflineEventMonitor, object : BotOfflineEventMonitor {
-            override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
-            }
-        })
 
         set(
             EventDispatcher,
@@ -129,10 +127,18 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         // set(StateObserver, bot.run { stateObserverChain() })
     }
 
-    open fun createHandler(): H = factory.create(createContext(), address)
+    fun <T : Any> setComponent(key: ComponentKey<in T>, instance: T): T {
+        overrideComponents[key] = instance
+        return instance
+    }
+
+    open fun createHandler(): NetworkHandler = factory.create(createContext(), createAddress())
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
-    val address: InetSocketAddress = InetSocketAddress.createUnresolved("localhost", 123)
+
+    //Use overrideComponents to avoid StackOverflowError when applying components
+    open fun createAddress(): InetSocketAddress =
+        overrideComponents[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions
@@ -142,9 +148,22 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         assertEquals(state, network.state)
     }
 
+    fun assertState(vararg accepted: State) {
+        val s = network.state
+        if (s !in accepted) {
+            throw AssertionError("Expected: ${accepted.joinToString()}, actual: $s")
+        }
+    }
+
     fun NetworkHandler.assertState(state: State) {
         assertEquals(state, this.state)
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]
+}
+
+internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
+    overrideComponents[SsoProcessor] = object : SsoProcessor by overrideComponents[SsoProcessor] {
+        override suspend fun login(handler: NetworkHandler) = action(handler)
+    }
 }

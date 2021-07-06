@@ -16,13 +16,13 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 internal fun StateChangedObserver(
     name: String,
     to: State,
-    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
+    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit,
 ): StateObserver {
     return object : StateChangedObserver(to) {
         override fun stateChanged0(
             networkHandler: NetworkHandlerSupport,
             previous: NetworkHandlerSupport.BaseStateImpl,
-            new: NetworkHandlerSupport.BaseStateImpl
+            new: NetworkHandlerSupport.BaseStateImpl,
         ) {
             action(new)
         }
@@ -36,13 +36,13 @@ internal fun StateChangedObserver(
     name: String,
     from: State,
     to: State,
-    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
+    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit,
 ): StateObserver {
     return object : StateObserver {
         override fun stateChanged(
             networkHandler: NetworkHandlerSupport,
             previous: NetworkHandlerSupport.BaseStateImpl,
-            new: NetworkHandlerSupport.BaseStateImpl
+            new: NetworkHandlerSupport.BaseStateImpl,
         ) {
             if (previous.correspondingState == from && new.correspondingState == to) {
                 action(new)
@@ -58,13 +58,13 @@ internal fun BeforeStateChangedObserver(
     name: String,
     from: State,
     to: State,
-    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit
+    action: (new: NetworkHandlerSupport.BaseStateImpl) -> Unit,
 ): StateObserver {
     return object : StateObserver {
         override fun beforeStateChanged(
             networkHandler: NetworkHandlerSupport,
             previous: NetworkHandlerSupport.BaseStateImpl,
-            new: NetworkHandlerSupport.BaseStateImpl
+            new: NetworkHandlerSupport.BaseStateImpl,
         ) {
             if (previous.correspondingState == from && new.correspondingState == to) {
                 action(new)
@@ -81,13 +81,13 @@ internal abstract class StateChangedObserver(
     protected abstract fun stateChanged0(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     )
 
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         if (previous.correspondingState != state && new.correspondingState == state) {
             stateChanged0(networkHandler, previous, new)

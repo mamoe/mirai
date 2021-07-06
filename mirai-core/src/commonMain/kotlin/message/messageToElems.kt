@@ -241,7 +241,7 @@ internal fun MessageChain.toRichTextElems(
 
             is ForwardMessage,
             is MessageSource, // mirai metadata only
-            is RichMessage // already transformed above
+            is RichMessage, // already transformed above
             -> {
 
             }

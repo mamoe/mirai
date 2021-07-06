@@ -16,7 +16,9 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
@@ -168,12 +170,12 @@ internal abstract class SendMessageHandler<C : Contact> {
 
                         source = CompletableDeferred(constructSourceForSpecialMessage(finalMessage, 3116))
                     }
-//                    is CommonOidbResponse<*> -> {
-//                        when (resp.toResult("send message").getOrThrow()) {
-//                            is Oidb0x6d9.FeedsRspBody -> {
-//                            }
-//                        }
-//                    }
+                    //                    is CommonOidbResponse<*> -> {
+                    //                        when (resp.toResult("send message").getOrThrow()) {
+                    //                            is Oidb0x6d9.FeedsRspBody -> {
+                    //                            }
+                    //                        }
+                    //                    }
                 }
             }
 
@@ -188,7 +190,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 )
             }
 
-            return MessageReceipt(sourceAwait, contact)
+            return sourceAwait.createMessageReceipt(contact, true)
         }
     }
 
@@ -196,7 +198,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         client: QQAndroidClient,
         message: MessageChain,
         fragmented: Boolean,
-        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
+        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit,
     ): List<OutgoingPacket> {
         message.takeSingleContent<MusicShare>()?.let { musicShare ->
             return listOf(
@@ -230,9 +232,9 @@ internal abstract class SendMessageHandler<C : Contact> {
     ): OnlineMessageSource.Outgoing
 
     open suspend fun uploadLongMessageHighway(
-        chain: MessageChain
+        chain: MessageChain,
     ): String = with(contact) {
-        return MiraiImpl.uploadMessageHighway(
+        return getMiraiImpl().uploadMessageHighway(
             bot, this@SendMessageHandler,
             listOf(
                 ForwardMessage.Node(
@@ -263,7 +265,7 @@ internal abstract class SendMessageHandler<C : Contact> {
  */
 internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessages(message: Message): MessageChain {
     suspend fun processForwardMessage(
-        forward: ForwardMessage
+        forward: ForwardMessage,
     ): ForwardMessageInternal {
         if (!(message is MessageChain && message.contains(IgnoreLengthCheck))) {
             check(forward.nodeList.size <= 200) {
@@ -274,7 +276,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
             }
         }
 
-        val resId = MiraiImpl.uploadMessageHighway(
+        val resId = getMiraiImpl().uploadMessageHighway(
             bot = contact.bot,
             sendMessageHandler = this,
             message = forward.nodeList,
@@ -336,7 +338,7 @@ internal sealed class UserSendMessageHandler<C : AbstractUser>(
 
     override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        fromAppId: Int
+        fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
         throw UnsupportedOperationException("Sending MusicShare or FileMessage to User is not yet supported")
     }
@@ -363,7 +365,7 @@ internal class GroupTempSendMessageHandler(
         MessageSvcPbSendMsg::createToTemp
 }
 
-internal class GroupSendMessageHandler(
+internal open class GroupSendMessageHandler(
     override val contact: GroupImpl,
 ) : SendMessageHandler<GroupImpl>() {
     override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
@@ -386,7 +388,7 @@ internal class GroupSendMessageHandler(
 
     override suspend fun constructSourceForSpecialMessage(
         finalMessage: MessageChain,
-        fromAppId: Int
+        fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
 
         val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =

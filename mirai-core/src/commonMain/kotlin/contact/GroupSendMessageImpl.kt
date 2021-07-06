@@ -24,7 +24,7 @@ import net.mamoe.mirai.message.data.toMessageChain
  */
 internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
     message: Message,
-    eventConstructor: (C, Message) -> MessagePreSendEvent
+    eventConstructor: (C, Message) -> MessagePreSendEvent,
 ): MessageChain {
     return kotlin.runCatching {
         eventConstructor(this, message).broadcast()

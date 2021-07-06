@@ -80,6 +80,11 @@ Mirai 官方提供两个插件：
 
 如果是 JAR 文件的插件，放入 `plugins` 即可。其他插件一般都有特殊说明如何使用，请参考它们的说明。
 
+#### 推荐安装的插件
+
+- [chat-command](https://github.com/project-mirai/chat-command): 不安装此环境不能在聊天环境中执行命令
+- [LuckPerms-Mirai](https://github.com/Karlatemp/LuckPerms-Mirai) (*社区*): 易用的高级高效率权限组插件, 适合权限分配模型比较复杂的情况
+- [mirai-api-http](https://github.com/project-mirai/mirai-api-http)：提供 HTTP 支持，允许使用其他编程语言的插件
 
 ### 使用控制台指令
 

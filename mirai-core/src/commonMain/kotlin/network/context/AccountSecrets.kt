@@ -16,6 +16,8 @@ import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
+import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKey
+import net.mamoe.mirai.internal.utils.crypto.defaultInitialPublicKey
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
@@ -52,6 +54,7 @@ internal interface AccountSecrets {
 
     var tgtgtKey: ByteArray
     val randomKey: ByteArray
+    var ecdhInitialPublicKey: ECDHInitialPublicKey
 }
 
 @Suppress("ArrayInDataClass") // for `copy`
@@ -65,16 +68,27 @@ internal data class AccountSecretsImpl(
     override var ksid: ByteArray,
     override var tgtgtKey: ByteArray,
     override val randomKey: ByteArray,
+    override var ecdhInitialPublicKey: ECDHInitialPublicKey,
 ) : AccountSecrets, ProtoBuf
 
 internal fun AccountSecretsImpl(
     other: AccountSecrets,
 ): AccountSecretsImpl = other.run {
-    AccountSecretsImpl(loginExtraData, wLoginSigInfoField, G, dpwd, randSeed, ksid, tgtgtKey, randomKey)
+    AccountSecretsImpl(
+        loginExtraData,
+        wLoginSigInfoField,
+        G,
+        dpwd,
+        randSeed,
+        ksid,
+        tgtgtKey,
+        randomKey,
+        ecdhInitialPublicKey
+    )
 }
 
 internal fun AccountSecretsImpl(
-    device: DeviceInfo, account: BotAccount
+    device: DeviceInfo, account: BotAccount,
 ): AccountSecretsImpl {
     return AccountSecretsImpl(
         loginExtraData = CopyOnWriteArraySet(),
@@ -85,5 +99,6 @@ internal fun AccountSecretsImpl(
         ksid = EMPTY_BYTE_ARRAY,
         tgtgtKey = (account.passwordMd5 + ByteArray(4) + account.id.toInt().toByteArray()).md5(),
         randomKey = getRandomByteArray(16),
+        ecdhInitialPublicKey = defaultInitialPublicKey
     )
 }

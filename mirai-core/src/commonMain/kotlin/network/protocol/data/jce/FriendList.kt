@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.data.jce
@@ -19,7 +19,7 @@ internal class DelFriendReq(
     @JvmField @TarsId(0) val uin: Long,
     @JvmField @TarsId(1) val delUin: Long,
     @JvmField @TarsId(2) val delType: Byte,
-    @JvmField @TarsId(3) val version: Int? = null
+    @JvmField @TarsId(3) val version: Int? = null,
 ) : JceStruct
 
 @Serializable
@@ -27,7 +27,7 @@ internal class DelFriendResp(
     @JvmField @TarsId(0) val uin: Long,
     @JvmField @TarsId(1) val delUin: Long,
     @JvmField @TarsId(2) val result: Int,
-    @JvmField @TarsId(3) val errorCode: Short? = null
+    @JvmField @TarsId(3) val errorCode: Short? = null,
 ) : JceStruct
 
 @Serializable
@@ -35,7 +35,7 @@ internal class ModifyGroupCardReq(
     @TarsId(0) @JvmField val dwZero: Long,
     @TarsId(1) @JvmField val dwGroupCode: Long,
     @TarsId(2) @JvmField val dwNewSeq: Long,
-    @TarsId(3) @JvmField val vecUinInfo: List<stUinInfo>
+    @TarsId(3) @JvmField val vecUinInfo: List<stUinInfo>,
 ) : JceStruct
 
 @Serializable
@@ -46,7 +46,7 @@ internal class stUinInfo(
     @TarsId(3) @JvmField val gender: Byte,
     @TarsId(4) @JvmField val sPhone: String = "",
     @TarsId(5) @JvmField val sEmail: String = "",
-    @TarsId(6) @JvmField val sRemark: String = ""
+    @TarsId(6) @JvmField val sRemark: String = "",
 ) : JceStruct
 
 @Serializable
@@ -69,7 +69,7 @@ internal class GetFriendListReq(
     @TarsId(15) @JvmField val ifGetBothFlag: Byte? = null,
     @TarsId(16) @JvmField val vec0xd50Req: ByteArray? = null,
     @TarsId(17) @JvmField val vec0xd6bReq: ByteArray? = null,
-    @TarsId(18) @JvmField val vecSnsTypelist: List<Long>? = null
+    @TarsId(18) @JvmField val vecSnsTypelist: List<Long>? = null,
 ) : JceStruct
 
 
@@ -101,13 +101,13 @@ internal class GetFriendListResp(
     @TarsId(23) @JvmField val stSelfInfo: FriendInfo? = null,
     @TarsId(24) @JvmField val showPcIcon: Byte? = null,
     @TarsId(25) @JvmField val wGetExtSnsRspCode: Short? = null,
-    @TarsId(26) @JvmField val stSubSrvRspCode: FriendListSubSrvRspCode? = null
+    @TarsId(26) @JvmField val stSubSrvRspCode: FriendListSubSrvRspCode? = null,
 ) : JceStruct
 
 @Serializable
 internal class FriendListSubSrvRspCode(
     @TarsId(0) @JvmField val wGetMutualMarkRspCode: Short? = null,
-    @TarsId(1) @JvmField val wGetIntimateInfoRspCode: Short? = null
+    @TarsId(1) @JvmField val wGetIntimateInfoRspCode: Short? = null,
 ) : JceStruct
 
 @Serializable
@@ -168,7 +168,7 @@ internal class FriendInfo(
     @TarsId(53) @JvmField val showNameplate: Byte? = null,
     @TarsId(54) @JvmField val newLoverDiamondFlag: Byte? = null,
     @TarsId(55) @JvmField val vecExtSnsFrdData: ByteArray? = null,
-    @TarsId(56) @JvmField val vecMutualMarkData: ByteArray? = null
+    @TarsId(56) @JvmField val vecMutualMarkData: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
@@ -176,7 +176,7 @@ internal class VipBaseInfo(
     @TarsId(0) @JvmField val mOpenInfo: Map<Int, VipOpenInfo>? = null,
     // 1, 2 are since 8.2.7
     @TarsId(1) @JvmField val iNameplateVipType: Int? = 0,
-    @TarsId(2) @JvmField val iGrayNameplateFlag: Int? = 0
+    @TarsId(2) @JvmField val iGrayNameplateFlag: Int? = 0,
 ) : JceStruct
 
 @Serializable
@@ -185,7 +185,7 @@ internal class VipOpenInfo(
     @TarsId(1) @JvmField val iVipType: Int = -1,
     @TarsId(2) @JvmField val iVipLevel: Int = -1,
     @TarsId(3) @JvmField val iVipFlag: Int? = null,
-    @TarsId(4) @JvmField val nameplateId: Long? = null
+    @TarsId(4) @JvmField val nameplateId: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -195,6 +195,6 @@ internal class GroupInfo(
     @TarsId(2) @JvmField val friendCount: Int,
     @TarsId(3) @JvmField val onlineFriendCount: Int,
     @TarsId(4) @JvmField val seqid: Byte? = null,
-    @TarsId(5) @JvmField val sqqOnLineCount: Int? = null
+    @TarsId(5) @JvmField val sqqOnLineCount: Int? = null,
 ) : JceStruct
 

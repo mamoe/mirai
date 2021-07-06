@@ -21,13 +21,13 @@ internal class Oidb0xeac : ProtoBuf {
     @Serializable
     internal class ArkMsg(
         @JvmField @ProtoNumber(1) val appName: String = "",
-        @JvmField @ProtoNumber(2) val json: String = ""
+        @JvmField @ProtoNumber(2) val json: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class BatchReqBody(
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
-        @JvmField @ProtoNumber(2) val msgs: List<Oidb0xeac.MsgInfo> = emptyList()
+        @JvmField @ProtoNumber(2) val msgs: List<Oidb0xeac.MsgInfo> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
@@ -36,7 +36,7 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(2) val errorCode: Int = 0,
         @JvmField @ProtoNumber(3) val succCnt: Int = 0,
         @JvmField @ProtoNumber(4) val msgProcInfos: List<Oidb0xeac.MsgProcessInfo> = emptyList(),
-        @JvmField @ProtoNumber(5) val digestTime: Int = 0
+        @JvmField @ProtoNumber(5) val digestTime: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -54,13 +54,13 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(11) val addDigestTime: Int = 0,
         @JvmField @ProtoNumber(12) val startTime: Int = 0,
         @JvmField @ProtoNumber(13) val latestMsgSeq: Int = 0,
-        @JvmField @ProtoNumber(14) val opType: Int = 0
+        @JvmField @ProtoNumber(14) val opType: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class FaceMsg(
         @JvmField @ProtoNumber(1) val index: Int = 0,
-        @JvmField @ProtoNumber(2) val text: String = ""
+        @JvmField @ProtoNumber(2) val text: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -72,7 +72,7 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(5) val deadTime: Long = 0L,
         @JvmField @ProtoNumber(6) val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(7) val ext: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(8) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(8) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -89,7 +89,7 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(104) val filePath: String = "",
         @JvmField @ProtoNumber(201) val thumbUrl: String = "",
         @JvmField @ProtoNumber(202) val originalUrl: String = "",
-        @JvmField @ProtoNumber(203) val resaveUrl: String = ""
+        @JvmField @ProtoNumber(203) val resaveUrl: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -101,13 +101,13 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(14) val groupFileMsg: Oidb0xeac.GroupFileMsg? = null,
         @JvmField @ProtoNumber(15) val shareMsg: Oidb0xeac.ShareMsg? = null,
         @JvmField @ProtoNumber(16) val richMsg: Oidb0xeac.RichMsg? = null,
-        @JvmField @ProtoNumber(17) val arkMsg: Oidb0xeac.ArkMsg? = null
+        @JvmField @ProtoNumber(17) val arkMsg: Oidb0xeac.ArkMsg? = null,
     ) : ProtoBuf
 
     @Serializable
     internal class MsgInfo(
         @JvmField @ProtoNumber(1) val msgSeq: Int = 0,
-        @JvmField @ProtoNumber(2) val msgRandom: Int = 0
+        @JvmField @ProtoNumber(2) val msgRandom: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -115,21 +115,21 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(1) val msg: Oidb0xeac.MsgInfo? = null,
         @JvmField @ProtoNumber(2) val errorCode: Int = 0,
         @JvmField @ProtoNumber(3) val digestUin: Long = 0L,
-        @JvmField @ProtoNumber(4) val digestTime: Int = 0
+        @JvmField @ProtoNumber(4) val digestTime: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
         @JvmField @ProtoNumber(1) val groupCode: Long = 0L,
         @JvmField @ProtoNumber(2) val msgSeq: Int = 0,
-        @JvmField @ProtoNumber(3) val msgRandom: Int = 0
+        @JvmField @ProtoNumber(3) val msgRandom: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class RichMsg(
         @JvmField @ProtoNumber(1) val serviceId: Int = 0,
         @JvmField @ProtoNumber(2) val xml: String = "",
-        @JvmField @ProtoNumber(3) val longMsgResid: String = ""
+        @JvmField @ProtoNumber(3) val longMsgResid: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -138,7 +138,7 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(2) val digestUin: Long = 0L,
         @JvmField @ProtoNumber(3) val digestTime: Int = 0,
         @JvmField @ProtoNumber(4) val msg: Oidb0xeac.DigestMsg? = null,
-        @JvmField @ProtoNumber(10) val errorCode: Int = 0
+        @JvmField @ProtoNumber(10) val errorCode: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -151,11 +151,11 @@ internal class Oidb0xeac : ProtoBuf {
         @JvmField @ProtoNumber(6) val pictureUrl: String = "",
         @JvmField @ProtoNumber(7) val action: String = "",
         @JvmField @ProtoNumber(8) val source: String = "",
-        @JvmField @ProtoNumber(9) val sourceUrl: String = ""
+        @JvmField @ProtoNumber(9) val sourceUrl: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class TextMsg(
-        @JvmField @ProtoNumber(1) val str: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(1) val str: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 }

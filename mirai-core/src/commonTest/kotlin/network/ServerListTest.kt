@@ -28,6 +28,18 @@ internal class ServerListTest : AbstractTest() {
     }
 
     @Test
+    fun `last poll ip is updated when polled`() {
+        val instance = ServerListImpl()
+        val old = instance.getLastPolledIP()
+        assertNotNull(old)
+        assert(old.isEmpty())
+        assertNotNull(instance.pollCurrent())
+        val new = instance.getLastPolledIP()
+        assertNotNull(new)
+        assertNotEquals(old, new)
+    }
+
+    @Test
     fun `not empty for initial`() {
         assertNotNull(ServerListImpl().pollAny())
     }

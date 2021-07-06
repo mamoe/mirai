@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
@@ -45,19 +45,19 @@ internal class TarsTagMapEntryValue : TarsTag() {
 }
 
 internal data class TarsTagCommon(
-    override val id: Int
+    override val id: Int,
 ) : TarsTag()
 
 @OptIn(ExperimentalSerializationApi::class)
 internal fun TarsHead.checkType(type: Byte, message: String, tag: TarsTag, descriptor: SerialDescriptor) {
     check(this.type == type) {
         "type mismatch. " +
-            "Expected ${TarsHead.findTarsTypeName(type)}, " +
-            "actual ${TarsHead.findTarsTypeName(this.type)} for $message. " +
-            "Tag info: " +
-            "id=${tag.id}, " +
-            "name=${descriptor.getElementName(tag.id)} " +
-            "in ${descriptor.serialName}"
+                "Expected ${TarsHead.findTarsTypeName(type)}, " +
+                "actual ${TarsHead.findTarsTypeName(this.type)} for $message. " +
+                "Tag info: " +
+                "id=${tag.id}, " +
+                "name=${descriptor.getElementName(tag.id)} " +
+                "in ${descriptor.serialName}"
     }
 }
 

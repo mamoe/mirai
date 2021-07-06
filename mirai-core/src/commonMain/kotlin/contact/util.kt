@@ -13,10 +13,8 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.utils.estimateLength
-import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.castOrNull
@@ -92,11 +90,13 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
                 renderGroupTempMessage(group, senderName, sender, message)
 
             is net.mamoe.mirai.event.events.StrangerMessageEvent,
-            is net.mamoe.mirai.event.events.StrangerMessageSyncEvent ->
+            is net.mamoe.mirai.event.events.StrangerMessageSyncEvent,
+            ->
                 renderStrangerMessage(senderName, sender, message)
 
             is net.mamoe.mirai.event.events.FriendMessageEvent,
-            is net.mamoe.mirai.event.events.FriendMessageSyncEvent ->
+            is net.mamoe.mirai.event.events.FriendMessageSyncEvent,
+            ->
                 renderFriendMessage(sender, message)
 
             is net.mamoe.mirai.event.events.OtherClientMessageEvent ->

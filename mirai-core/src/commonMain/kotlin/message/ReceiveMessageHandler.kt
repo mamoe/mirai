@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.message
 
-import io.ktor.util.*
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.readUShort
@@ -24,7 +23,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.encodeToString
+import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.unzip
 
 /**
  * 只在手动构造 [OfflineMessageSource] 时调用
@@ -73,7 +75,7 @@ private fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean?,
-    messageSourceKind: MessageSourceKind
+    messageSourceKind: MessageSourceKind,
 ): MessageChain {
     val messageList = this
 
@@ -126,9 +128,9 @@ internal object ReceiveMessageTransformer {
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-        builder: MessageChainBuilder
+        builder: MessageChainBuilder,
     ) {
-//        ProtoBuf.encodeToHexString(elements).soutv("join")
+        //        ProtoBuf.encodeToHexString(elements).soutv("join")
         // (this._miraiContentToString().soutv())
         for (element in elements) {
             transformElement(element, groupIdOrZero, messageSourceKind, bot, builder)
@@ -143,7 +145,7 @@ internal object ReceiveMessageTransformer {
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-        builder: MessageChainBuilder
+        builder: MessageChainBuilder,
     ) {
         when {
             element.srcMsg != null -> decodeSrcMsg(element.srcMsg, builder, bot, messageSourceKind, groupIdOrZero)
@@ -291,7 +293,7 @@ internal object ReceiveMessageTransformer {
         list: MessageChainBuilder,
         bot: Bot,
         messageSourceKind: MessageSourceKind,
-        groupIdOrZero: Long
+        groupIdOrZero: Long,
     ) {
         list.add(QuoteReply(OfflineMessageSourceImplData(srcMsg, bot, messageSourceKind, groupIdOrZero)))
     }
@@ -310,7 +312,7 @@ internal object ReceiveMessageTransformer {
 
     private fun decodeLightApp(
         lightApp: ImMsgBody.LightAppElem,
-        list: MessageChainBuilder
+        list: MessageChainBuilder,
     ) {
         val content = runWithBugReport("解析 lightApp",
             { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {
@@ -326,7 +328,7 @@ internal object ReceiveMessageTransformer {
 
     private fun decodeCustomElem(
         customElem: ImMsgBody.CustomElem,
-        list: MessageChainBuilder
+        list: MessageChainBuilder,
     ) {
         customElem.data.read {
             kotlin.runCatching {
@@ -360,7 +362,7 @@ internal object ReceiveMessageTransformer {
 
     private fun decodeTransElem(
         transElement: ImMsgBody.TransElem,
-        list: MessageChainBuilder
+        list: MessageChainBuilder,
     ) {
         // file
         // type=24
@@ -368,14 +370,14 @@ internal object ReceiveMessageTransformer {
             24 -> transElement.elemValue.read {
                 // group file feed
                 // 01 00 77 08 06 12 0A 61 61 61 61 61 61 2E 74 78 74 1A 06 31 35 42 79 74 65 3A 5F 12 5D 08 66 12 25 2F 64 37 34 62 62 66 33 61 2D 37 62 32 35 2D 31 31 65 62 2D 38 34 66 38 2D 35 34 35 32 30 30 37 62 35 64 39 66 18 0F 22 0A 61 61 61 61 61 61 2E 74 78 74 28 00 3A 00 42 20 61 33 32 35 66 36 33 34 33 30 65 37 61 30 31 31 66 37 64 30 38 37 66 63 33 32 34 37 35 34 39 63
-//                fun getFileRsrvAttr(file: ObjMsg.MsgContentInfo.MsgFile): HummerResv21.ResvAttr? {
-//                    if (file.ext.isEmpty()) return null
-//                    val element = kotlin.runCatching {
-//                        jsonForFileDecode.parseToJsonElement(file.ext) as? JsonObject
-//                    }.getOrNull() ?: return null
-//                    val extInfo = element["ExtInfo"]?.toString()?.decodeBase64() ?: return null
-//                    return extInfo.loadAs(HummerResv21.ResvAttr.serializer())
-//                }
+                //                fun getFileRsrvAttr(file: ObjMsg.MsgContentInfo.MsgFile): HummerResv21.ResvAttr? {
+                //                    if (file.ext.isEmpty()) return null
+                //                    val element = kotlin.runCatching {
+                //                        jsonForFileDecode.parseToJsonElement(file.ext) as? JsonObject
+                //                    }.getOrNull() ?: return null
+                //                    val extInfo = element["ExtInfo"]?.toString()?.decodeBase64() ?: return null
+                //                    return extInfo.loadAs(HummerResv21.ResvAttr.serializer())
+                //                }
 
                 val var7 = readByte()
                 if (var7 == 1.toByte()) {
@@ -384,8 +386,8 @@ internal object ReceiveMessageTransformer {
                         // proto.msgType=6
 
                         val file = proto.msgContentInfo.firstOrNull()?.msgFile ?: continue // officially get(0) only.
-//                        val attr = getFileRsrvAttr(file) ?: continue
-//                        val info = attr.forwardExtFileInfo ?: continue
+                        //                        val attr = getFileRsrvAttr(file) ?: continue
+                        //                        val info = attr.forwardExtFileInfo ?: continue
 
                         list.add(
                             FileMessageImpl(
@@ -409,7 +411,7 @@ internal object ReceiveMessageTransformer {
 
     private fun decodeCommonElem(
         commonElem: ImMsgBody.CommonElem,
-        list: MessageChainBuilder
+        list: MessageChainBuilder,
     ) {
         when (commonElem.serviceType) {
             23 -> {
@@ -450,7 +452,7 @@ internal object ReceiveMessageTransformer {
 
     private fun decodeRichMessage(
         richMsg: ImMsgBody.RichMsg,
-        builder: MessageChainBuilder
+        builder: MessageChainBuilder,
     ) {
         val content = runWithBugReport("解析 richMsg", { richMsg.template1.toUHexString() }) {
             when (richMsg.template1[0].toInt()) {
@@ -520,5 +522,5 @@ internal object ReceiveMessageTransformer {
         fileSize.toLong(),
         format,
         kotlinx.io.core.String(downPara)
-    )
+    ).also { it.pttInternalInstance = this }
 }

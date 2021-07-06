@@ -209,7 +209,8 @@ object AndroidApiLevelCheck {
 
     @Suppress("UNCHECKED_CAST")
     fun check(classes: File, level: Int, project: Project) {
-        val apiVersionsFile = project.rootProject.projectDir.resolve("buildSrc/src/main/resources/androidutil/api-versions.xml")
+        val apiVersionsFile =
+            project.rootProject.projectDir.resolve("buildSrc/src/main/resources/androidutil/api-versions.xml")
         val classesInfos = mutableMapOf<String, ClassInfo>()
         XmlParser().parse(apiVersionsFile).children().forEach { classNode ->
             classNode as Node

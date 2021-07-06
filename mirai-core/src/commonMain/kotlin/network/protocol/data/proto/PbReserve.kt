@@ -33,7 +33,7 @@ internal class NotOnlineImage {
         @JvmField @ProtoNumber(16) val cameraCaptureTemplateinfo: String = "",
         @JvmField @ProtoNumber(17) val cameraCaptureMaterialname: String = "",
         @JvmField @ProtoNumber(18) val adEmoJumpUrl: String = "",
-        @JvmField @ProtoNumber(19) val adEmoDescStr: String = ""
+        @JvmField @ProtoNumber(19) val adEmoDescStr: String = "",
     ) : ProtoBuf
 }
 
@@ -41,7 +41,7 @@ internal class CustomFace {
     @Serializable
     internal class AnimationImageShow(
         @JvmField @ProtoNumber(1) val int32EffectId: Int = 0,
-        @JvmField @ProtoNumber(2) val animationParam: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(2) val animationParam: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -63,7 +63,7 @@ internal class CustomFace {
         @JvmField @ProtoNumber(16) val cameraCaptureTemplateinfo: String = "",
         @JvmField @ProtoNumber(17) val cameraCaptureMaterialname: String = "",
         @JvmField @ProtoNumber(18) val adEmoJumpUrl: String = "",
-        @JvmField @ProtoNumber(19) val adEmoDescStr: String = ""
+        @JvmField @ProtoNumber(19) val adEmoDescStr: String = "",
     ) : ProtoBuf
 }
 
@@ -131,27 +131,27 @@ internal class Generalflags : ProtoBuf {
         @ProtoNumber(63) @JvmField val robotGeneralTrans: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(64) @JvmField val troopPobingTemplate: Int = 0,
         @ProtoNumber(65) @JvmField val hudongMark: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(66) @JvmField val groupInfoFlagEx3: Int = 0
+        @ProtoNumber(66) @JvmField val groupInfoFlagEx3: Int = 0,
     ) : ProtoBuf
 }
 
 @Serializable
 internal class ResvAttrForGiftMsg : ProtoBuf {
     @Serializable
-internal class ActivityGiftInfo(
+    internal class ActivityGiftInfo(
         @ProtoNumber(1) @JvmField val isActivityGift: Int = 0,
         @ProtoNumber(2) @JvmField val textColor: String = "",
         @ProtoNumber(3) @JvmField val text: String = "",
-        @ProtoNumber(4) @JvmField val url: String = ""
+        @ProtoNumber(4) @JvmField val url: String = "",
     ) : ProtoBuf
 
     @Serializable
-internal class InteractGift(
-        @ProtoNumber(1) @JvmField val interactId: ByteArray = EMPTY_BYTE_ARRAY
+    internal class InteractGift(
+        @ProtoNumber(1) @JvmField val interactId: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
-internal class ResvAttr(
+    internal class ResvAttr(
         @ProtoNumber(1) @JvmField val int32SendScore: Int = 0,
         @ProtoNumber(2) @JvmField val int32RecvScore: Int = 0,
         @ProtoNumber(3) @JvmField val charmHeroism: ByteArray = EMPTY_BYTE_ARRAY,
@@ -159,24 +159,24 @@ internal class ResvAttr(
         @ProtoNumber(5) @JvmField val objColor: Int = 0,
         @ProtoNumber(6) @JvmField val animationType: Int = 0,
         @ProtoNumber(7) @JvmField val msgInteractGift: InteractGift? = null,
-        @ProtoNumber(8) @JvmField val activityGiftInfo: ActivityGiftInfo? = null
+        @ProtoNumber(8) @JvmField val activityGiftInfo: ActivityGiftInfo? = null,
     ) : ProtoBuf
 }
 
 @Serializable
 internal class SourceMsg : ProtoBuf {
     @Serializable
-internal class ResvAttr(
+    internal class ResvAttr(
         @ProtoNumber(1) @JvmField val richMsg2: ByteArray? = null,
         @ProtoNumber(2) @JvmField val oriMsgtype: Int? = null,
-        @ProtoNumber(3) @JvmField val origUids: List<Long>? = null
+        @ProtoNumber(3) @JvmField val origUids: List<Long>? = null,
     ) : ProtoBuf
 }
 
 @Serializable
 internal class VideoFile : ProtoBuf {
     @Serializable
-internal class ResvAttr(
+    internal class ResvAttr(
         @ProtoNumber(1) @JvmField val hotvideoIcon: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val hotvideoTitle: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val hotvideoUrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -188,6 +188,6 @@ internal class ResvAttr(
         @ProtoNumber(9) @JvmField val shortVideoId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(10) @JvmField val animojiModelId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(11) @JvmField val longVideoKandianType: Int = 0,
-        @ProtoNumber(12) @JvmField val source: Int = 0
+        @ProtoNumber(12) @JvmField val source: Int = 0,
     ) : ProtoBuf
 }

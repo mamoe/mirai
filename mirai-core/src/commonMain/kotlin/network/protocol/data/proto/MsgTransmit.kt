@@ -18,17 +18,17 @@ internal class MsgTransmit : ProtoBuf {
     @Serializable
     internal class PbMultiMsgItem(
         @ProtoNumber(1) @JvmField val fileName: String = "",
-        @ProtoNumber(2) @JvmField val buffer: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(2) @JvmField val buffer: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class PbMultiMsgNew(
-        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList()
+        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
     internal class PbMultiMsgTransmit(
         @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
-        @ProtoNumber(2) @JvmField val pbItemList: List<PbMultiMsgItem> = emptyList()
+        @ProtoNumber(2) @JvmField val pbItemList: List<PbMultiMsgItem> = emptyList(),
     ) : ProtoBuf
 }

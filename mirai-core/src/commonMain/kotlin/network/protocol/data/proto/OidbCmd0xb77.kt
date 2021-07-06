@@ -20,7 +20,7 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 internal class OidbCmd0xb77 : ProtoBuf {
     @Serializable
     internal class ArkJsonBody(
-        @JvmField @ProtoNumber(10) val jsonStr: String = ""
+        @JvmField @ProtoNumber(10) val jsonStr: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -38,7 +38,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(14) val metaText1: String = "",
         @JvmField @ProtoNumber(15) val metaText2: String = "",
         @JvmField @ProtoNumber(16) val metaText3: String = "",
-        @JvmField @ProtoNumber(20) val config: String = ""
+        @JvmField @ProtoNumber(20) val config: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -51,7 +51,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(6) val featureId: Int = 0,
         @JvmField @ProtoNumber(10) val meta: String = "",
         @JvmField @ProtoNumber(11) val items: List<TemplateItem> = emptyList(),
-        @JvmField @ProtoNumber(20) val config: String = ""
+        @JvmField @ProtoNumber(20) val config: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -61,7 +61,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(3) val androidPackageName: String = "",
         @JvmField @ProtoNumber(4) val androidSignature: String = "",
         @JvmField @ProtoNumber(5) val iosBundleId: String = "",
-        @JvmField @ProtoNumber(6) val pcSign: String = ""
+        @JvmField @ProtoNumber(6) val pcSign: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -75,7 +75,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(7) val original: Int = 0,
         @JvmField @ProtoNumber(101) val fileId: Int = 0,
         @JvmField @ProtoNumber(102) val serverIp: Int = 0,
-        @JvmField @ProtoNumber(103) val serverPort: Int = 0
+        @JvmField @ProtoNumber(103) val serverPort: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -86,7 +86,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(4) val miniAppType: Int = 0,
         @JvmField @ProtoNumber(5) val title: String = "",
         @JvmField @ProtoNumber(6) val desc: String = "",
-        @JvmField @ProtoNumber(10) val jsonStr: String = ""
+        @JvmField @ProtoNumber(10) val jsonStr: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -106,7 +106,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(15) val arkv1MsgBody: ArkV1MsgBody? = null,
         @JvmField @ProtoNumber(16) val arkJsonBody: ArkJsonBody? = null,
         @JvmField @ProtoNumber(17) val xmlMsgBody: XmlMsgBody? = null,
-        @JvmField @ProtoNumber(18) val miniAppMsgBody: MiniAppMsgBody? = null
+        @JvmField @ProtoNumber(18) val miniAppMsgBody: MiniAppMsgBody? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -128,7 +128,7 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(14) val pictureUrl: String = "",
         @JvmField @ProtoNumber(15) val action: String = "",
         @JvmField @ProtoNumber(16) val musicUrl: String = "",
-        @JvmField @ProtoNumber(21) val imageInfo: ImageInfo? = null
+        @JvmField @ProtoNumber(21) val imageInfo: ImageInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -138,20 +138,20 @@ internal class OidbCmd0xb77 : ProtoBuf {
         @JvmField @ProtoNumber(3) val jumpUrl: String = "",
         @JvmField @ProtoNumber(4) val level: Int = 0,
         @JvmField @ProtoNumber(5) val subLevel: Int = 0,
-        @JvmField @ProtoNumber(6) val developMsg: String = ""
+        @JvmField @ProtoNumber(6) val developMsg: String = "",
     ) : ProtoBuf, Packet
 
     @Serializable
     internal class TemplateItem(
         @JvmField @ProtoNumber(1) val key: String = "",
         @JvmField @ProtoNumber(2) val type: Int = 0,
-        @JvmField @ProtoNumber(3) val value: String = ""
+        @JvmField @ProtoNumber(3) val value: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class XmlMsgBody(
         @JvmField @ProtoNumber(11) val serviceId: Int = 0,
-        @JvmField @ProtoNumber(12) val xml: String = ""
+        @JvmField @ProtoNumber(12) val xml: String = "",
     ) : ProtoBuf
 }
         

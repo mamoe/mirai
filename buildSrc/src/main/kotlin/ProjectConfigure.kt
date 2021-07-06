@@ -14,6 +14,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -178,6 +179,18 @@ fun Project.configureFlattenSourceSets() {
         findByName("test")?.apply {
             resources.setSrcDirs(listOf(projectDir.resolve("resources")))
             java.setSrcDirs(listOf(projectDir.resolve("test")))
+        }
+    }
+}
+
+fun Project.configureJarManifest() {
+    this.tasks.withType<Jar> {
+        manifest {
+            attributes(
+                "Implementation-Vendor" to "Mamoe Technologies",
+                "Implementation-Title" to this@configureJarManifest.name.toString(),
+                "Implementation-Version" to this@configureJarManifest.version.toString()
+            )
         }
     }
 }

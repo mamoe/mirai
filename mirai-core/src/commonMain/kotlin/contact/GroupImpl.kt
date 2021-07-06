@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -15,15 +15,18 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
@@ -39,6 +42,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -64,7 +68,7 @@ internal class GroupImpl(
     coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
-    members: Sequence<MemberInfo>
+    members: Sequence<MemberInfo>,
 ) : Group, AbstractContact(bot, coroutineContext) {
     companion object
 
@@ -90,6 +94,13 @@ internal class GroupImpl(
             }
         }
     })
+
+    override val announcements: Announcements by lazy {
+        AnnouncementsImpl(
+            this,
+            bot.network.logger.subLogger("Group $id")
+        )
+    }
 
     val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
@@ -278,3 +289,4 @@ internal fun GroupImpl.newAnonymous(name: String, id: String): AnonymousMemberIm
         anonymousId = id,
     )
 ) as AnonymousMemberImpl
+

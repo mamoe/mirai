@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.data.jce
@@ -25,7 +25,7 @@ internal data class SvcDevLoginInfo(
     // @JvmField @TarsId(7) val stDeviceItemDes: DeviceItemDes? = null,
     @JvmField @TarsId(8) val iTerType: Long? = null, // 1:windows, 2: mobile, 3: ios
     @JvmField @TarsId(9) val iProductType: Long? = null, // always 0
-    @JvmField @TarsId(10) val iCanBeKicked: Long? = null // isOnline
+    @JvmField @TarsId(10) val iCanBeKicked: Long? = null, // isOnline
 ) : JceStruct
 
 /*
@@ -76,6 +76,6 @@ internal class SvcReqGetDevLoginInfo(
     @JvmField @TarsId(3) val iTimeStamp: Long,
     @JvmField @TarsId(4) val iNextItemIndex: Long,
     @JvmField @TarsId(5) val iRequireMax: Long,
-    @JvmField @TarsId(6) val iGetDevListType: Long? = 7L // 1: online list 2: recent list? 4: getAuthLoginDevList?
+    @JvmField @TarsId(6) val iGetDevListType: Long? = 7L, // 1: online list 2: recent list? 4: getAuthLoginDevList?
 ) : JceStruct
 

@@ -7,31 +7,33 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.impl.netty
+package net.mamoe.mirai.internal.network.framework
 
 import io.netty.channel.Channel
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
-import net.mamoe.mirai.internal.network.framework.ITestNetworkHandler
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.utils.ExceptionCollector
 import java.net.SocketAddress
 
 /**
  * You may need to override [createConnection]
  */
-internal open class TestNettyNH(
+internal abstract class TestNettyNH(
     override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
     address: SocketAddress,
 ) : NettyNetworkHandler(context, address), ITestNetworkHandler {
+
+    abstract override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel
 
     override fun setStateClosed(exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
         return setState { StateClosed(exception) }
@@ -52,10 +54,22 @@ internal open class TestNettyNH(
 
 }
 
+/**
+ * Without selector. When network is closed, it will not reconnect, so that you can check for its states.
+ *
+ * @see AbstractNettyNHTestWithSelector
+ */
 internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<TestNettyNH>() {
 
+    init {
+        overrideComponents[BotOfflineEventMonitor] = object : BotOfflineEventMonitor {
+            override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
+            }
+        }
+    }
+
     class NettyNHTestChannel(
-        var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null
+        var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null,
     ) : EmbeddedChannel() {
         public /*internal*/ override fun doRegister() {
             super.doRegister() // Set channel state to ACTIVE
@@ -81,21 +95,13 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
     override val network: TestNettyNH get() = bot.network as TestNettyNH
 
     override val factory: NetworkHandlerFactory<TestNettyNH> =
-        object : NetworkHandlerFactory<TestNettyNH> {
-            override fun create(context: NetworkHandlerContext, address: SocketAddress): TestNettyNH {
-                return object : TestNettyNH(bot, context, address) {
-                    override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
-                        channel.apply {
-                            doRegister() // restart channel
-                            setupChannelPipeline(pipeline(), decodePipeline)
-                        }
-                }
+        NetworkHandlerFactory<TestNettyNH> { context, address ->
+            object : TestNettyNH(bot, context, address) {
+                override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
+                    channel.apply {
+                        doRegister() // restart channel
+                        setupChannelPipeline(pipeline(), decodePipeline)
+                    }
             }
         }
-}
-
-internal fun AbstractNettyNHTest.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
-    overrideComponents[SsoProcessor] = object : SsoProcessor by overrideComponents[SsoProcessor] {
-        override suspend fun login(handler: NetworkHandler) = action(handler)
-    }
 }

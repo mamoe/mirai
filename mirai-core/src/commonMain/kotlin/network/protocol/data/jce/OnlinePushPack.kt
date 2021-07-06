@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.data.jce
@@ -26,7 +26,7 @@ internal class OnlinePushPack {
         @TarsId(7) @JvmField val sendTime: Long? = null,
         @TarsId(8) @JvmField val ssoSeq: Int? = null,
         @TarsId(9) @JvmField val ssoIp: Int? = null,
-        @TarsId(10) @JvmField val clientIp: Int? = null
+        @TarsId(10) @JvmField val clientIp: Int? = null,
     ) : JceStruct
 
     @Serializable
@@ -36,7 +36,7 @@ internal class OnlinePushPack {
         @TarsId(2) @JvmField val oSVer: String? = "",
         @TarsId(3) @JvmField val vendorName: String? = "",
         @TarsId(4) @JvmField val vendorOSName: String? = "",
-        @TarsId(5) @JvmField val iOSIdfa: String? = ""
+        @TarsId(5) @JvmField val iOSIdfa: String? = "",
     ) : JceStruct
 
     @Serializable
@@ -60,7 +60,7 @@ internal class OnlinePushPack {
         @TarsId(16) @JvmField val fromMobile: String? = "",
         @TarsId(17) @JvmField val fromName: String? = "",
         @TarsId(18) @JvmField val vNickName: List<String>? = null,
-        @TarsId(19) @JvmField val stC2CTmpMsgHead: TempMsgHead? = null
+        @TarsId(19) @JvmField val stC2CTmpMsgHead: TempMsgHead? = null,
     ) : JceStruct
 
     @Serializable
@@ -71,7 +71,7 @@ internal class OnlinePushPack {
         @TarsId(3) @JvmField val svrip: Int? = 0,
         @TarsId(4) @JvmField val vSyncCookie: ByteArray? = null,
         @TarsId(5) @JvmField val vUinPairMsg: List<UinPairMsg>? = null,
-        @TarsId(6) @JvmField val mPreviews: Map<String, ByteArray>? = null
+        @TarsId(6) @JvmField val mPreviews: Map<String, ByteArray>? = null,
         // @SerialId(7) @JvmField val wUserActive: Int? = null,
         //@SerialId(12) @JvmField val wGeneralFlag: Int? = null
     ) : JceStruct
@@ -83,7 +83,7 @@ internal class OnlinePushPack {
         @TarsId(2) @JvmField val svrip: Int = 0,
         @TarsId(3) @JvmField val pushToken: ByteArray? = null,
         @TarsId(4) @JvmField val serviceType: Int? = null,
-        @TarsId(5) @JvmField val deviceInfo: DeviceInfo? = null
+        @TarsId(5) @JvmField val deviceInfo: DeviceInfo? = null,
     ) : JceStruct
 
     @Serializable
@@ -91,7 +91,7 @@ internal class OnlinePushPack {
         @TarsId(1) @JvmField val uLastReadTime: Long? = null,
         @TarsId(2) @JvmField val peerUin: Long? = null,
         @TarsId(3) @JvmField val uMsgCompleted: Long? = null,
-        @TarsId(4) @JvmField val vMsgInfos: List<MsgInfo>? = null
+        @TarsId(4) @JvmField val vMsgInfos: List<MsgInfo>? = null,
     ) : JceStruct
 
     @Serializable
@@ -105,7 +105,7 @@ internal class OnlinePushPack {
         @TarsId(7) @JvmField val stMsgInfo0x20: MsgType0x210SubMsgType0x20? = null,
         @TarsId(8) @JvmField val stMsgInfo0x1d: MsgType0x210SubMsgType0x1d? = null,
         @TarsId(9) @JvmField val stMsgInfo0x24: MsgType0x210SubMsgType0x24? = null,
-        @TarsId(10) @JvmField val vProtobuf: ByteArray? = null
+        @TarsId(10) @JvmField val vProtobuf: ByteArray? = null,
     ) : JceStruct
 
     @Serializable
@@ -119,7 +119,7 @@ internal class OnlinePushPack {
         @TarsId(6) @JvmField val uint32Size: Long? = null,
         @TarsId(7) @JvmField val uint32Index: Long? = null,
         @TarsId(8) @JvmField val uint32Type: Long? = null,
-        @TarsId(9) @JvmField val buf: ByteArray? = null
+        @TarsId(9) @JvmField val buf: ByteArray? = null,
     ) : JceStruct
 
     @Serializable
@@ -129,48 +129,48 @@ internal class OnlinePushPack {
         @TarsId(2) @JvmField val stDelGroup: DelGroup? = null,
         @TarsId(3) @JvmField val stModGroupName: ModGroupName? = null,
         @TarsId(4) @JvmField val stModGroupSort: ModGroupSort? = null,
-        @TarsId(5) @JvmField val stModFriendGroup: ModFriendGroup? = null
+        @TarsId(5) @JvmField val stModFriendGroup: ModFriendGroup? = null,
     ) : JceStruct
 
     @Serializable
     internal class AddGroup(
         @TarsId(0) @JvmField val dwGroupID: Long? = null,
         @TarsId(1) @JvmField val dwSortID: Long? = null,
-        @TarsId(2) @JvmField val groupName: String? = ""
+        @TarsId(2) @JvmField val groupName: String? = "",
     ) : JceStruct
 
     @Serializable
     internal class DelGroup(
-        @TarsId(0) @JvmField val dwGroupID: Long? = null
+        @TarsId(0) @JvmField val dwGroupID: Long? = null,
     ) : JceStruct
 
     @Serializable
     internal class ModFriendGroup(
-        @TarsId(0) @JvmField val vMsgFrdGroup: List<FriendGroup>? = null
+        @TarsId(0) @JvmField val vMsgFrdGroup: List<FriendGroup>? = null,
     ) : JceStruct
 
     @Serializable
     internal class FriendGroup(
         @TarsId(0) @JvmField val dwFuin: Long? = null,
         @TarsId(1) @JvmField val vOldGroupID: List<Long>? = null,
-        @TarsId(2) @JvmField val vNewGroupID: List<Long>? = null
+        @TarsId(2) @JvmField val vNewGroupID: List<Long>? = null,
     ) : JceStruct
 
     @Serializable
     internal class ModGroupName(
         @TarsId(0) @JvmField val dwGroupID: Long? = null,
-        @TarsId(1) @JvmField val groupName: String? = ""
+        @TarsId(1) @JvmField val groupName: String? = "",
     ) : JceStruct
 
     @Serializable
     internal class ModGroupSort(
-        @TarsId(0) @JvmField val vMsgGroupSort: List<GroupSort>? = null
+        @TarsId(0) @JvmField val vMsgGroupSort: List<GroupSort>? = null,
     ) : JceStruct
 
     @Serializable
     internal class GroupSort(
         @TarsId(0) @JvmField val dwGroupID: Long? = null,
-        @TarsId(1) @JvmField val dwSortID: Long? = null
+        @TarsId(1) @JvmField val dwSortID: Long? = null,
     ) : JceStruct
 
     @Serializable
@@ -178,7 +178,7 @@ internal class OnlinePushPack {
         @TarsId(0) @JvmField val dwOpType: Long? = null,
         @TarsId(1) @JvmField val dwUin: Long? = null,
         @TarsId(2) @JvmField val dwID: Long? = null,
-        @TarsId(3) @JvmField val value: String? = ""
+        @TarsId(3) @JvmField val value: String? = "",
     ) : JceStruct
 
     @Serializable
@@ -198,7 +198,7 @@ internal class OnlinePushPack {
         @TarsId(12) @JvmField val sessionId: Long? = null,
         @TarsId(13) @JvmField val originfileMd5: ByteArray? = null,
         @TarsId(14) @JvmField val uOriginfiletype: Long? = null,
-        @TarsId(15) @JvmField val uSeq: Long? = null
+        @TarsId(15) @JvmField val uSeq: Long? = null,
     ) : JceStruct
 
     @Serializable
@@ -206,19 +206,19 @@ internal class OnlinePushPack {
         @TarsId(0) @JvmField val dwOpType: Long? = null,
         @TarsId(1) @JvmField val dwType: Long? = null,
         @TarsId(2) @JvmField val dwUin: Long? = null,
-        @TarsId(3) @JvmField val remaek: String? = ""
+        @TarsId(3) @JvmField val remaek: String? = "",
     ) : JceStruct
 
     @Serializable
     internal class MsgType0x210SubMsgType0x24(
-        @TarsId(0) @JvmField val vPluginNumList: List<PluginNum>? = null
+        @TarsId(0) @JvmField val vPluginNumList: List<PluginNum>? = null,
     ) : JceStruct
 
     @Serializable
     internal class PluginNum(
         @TarsId(0) @JvmField val dwID: Long? = null,
         @TarsId(1) @JvmField val dwNUm: Long? = null,
-        @TarsId(2) @JvmField val flag: Byte? = null
+        @TarsId(2) @JvmField val flag: Byte? = null,
     ) : JceStruct
 
     @Serializable
@@ -239,7 +239,7 @@ internal class OnlinePushPack {
         @TarsId(13) @JvmField val sessionId: Long? = null,
         @TarsId(14) @JvmField val originfileMd5: ByteArray? = null,
         @TarsId(15) @JvmField val uOriginfiletype: Long? = null,
-        @TarsId(16) @JvmField val uSeq: Long? = null
+        @TarsId(16) @JvmField val uSeq: Long? = null,
     ) : JceStruct
 
     @Serializable
@@ -253,6 +253,6 @@ internal class OnlinePushPack {
         @TarsId(6) @JvmField val uint32Operate: Long? = null,
         @TarsId(7) @JvmField val uint32Seq: Long? = null,
         @TarsId(8) @JvmField val uint32Code: Long? = null,
-        @TarsId(9) @JvmField val msg: String? = ""
+        @TarsId(9) @JvmField val msg: String? = "",
     ) : JceStruct
 }

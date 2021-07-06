@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 internal suspend inline fun <R, reified IP> Collection<Pair<IP, Int>>.retryWithServers(
     timeoutMillis: Long,
     onFail: (exception: Throwable?) -> Nothing,
-    crossinline block: suspend (ip: String, port: Int) -> R
+    crossinline block: suspend (ip: String, port: Int) -> R,
 ): R {
     require(this.isNotEmpty()) { "receiver of retryWithServers must not be empty" }
 

@@ -15,10 +15,11 @@ package net.mamoe.mirai.utils
 
 import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
-import kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.File
 
 public fun <T> File.loadNotBlankAs(
@@ -55,5 +56,34 @@ public fun ClassSerialDescriptorBuilder.takeElementsFrom(descriptor: SerialDescr
                 isOptional = isElementOptional(index),
             )
         }
+    }
+}
+
+public inline fun <T, R> KSerializer<T>.map(
+    resultantDescriptor: SerialDescriptor,
+    crossinline deserialize: T.(T) -> R,
+    crossinline serialize: R.(R) -> T,
+): KSerializer<R> {
+    return object : KSerializer<R> {
+        override val descriptor: SerialDescriptor get() = resultantDescriptor
+        override fun deserialize(decoder: Decoder): R = this@map.deserialize(decoder).let { deserialize(it, it) }
+        override fun serialize(encoder: Encoder, value: R) = serialize(encoder, value.let { serialize(it, it) })
+    }
+}
+
+public inline fun <T, R> KSerializer<T>.mapPrimitive(
+    serialName: String,
+    crossinline deserialize: (T) -> R,
+    crossinline serialize: R.(R) -> T,
+): KSerializer<R> {
+    val kind = this@mapPrimitive.descriptor.kind
+    check(kind is PrimitiveKind) { "kind must be PrimitiveKind but found $kind" }
+    return object : KSerializer<R> {
+        override fun deserialize(decoder: Decoder): R =
+            this@mapPrimitive.deserialize(decoder).let(deserialize)
+
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, kind)
+        override fun serialize(encoder: Encoder, value: R) =
+            this@mapPrimitive.serialize(encoder, value.let { serialize(it, it) })
     }
 }

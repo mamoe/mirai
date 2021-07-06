@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.MiraiImpl
+import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
 import kotlin.coroutines.CoroutineContext
@@ -20,11 +21,11 @@ internal class AnonymousMemberImpl(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
-    override val anonymousId: String
+    override val anonymousId: String,
 ) : AnonymousMember, AbstractMember(group, coroutineContext, memberInfo) {
     override suspend fun mute(durationSeconds: Int) {
         checkBotPermissionHigherThanThis("mute")
-        MiraiImpl.muteAnonymousMember(bot, anonymousId, nameCard, group.uin, durationSeconds)
+        getMiraiImpl().muteAnonymousMember(bot, anonymousId, nameCard, group.uin, durationSeconds)
     }
 
     override fun toString(): String = "AnonymousMember($nameCard, $anonymousId)"

@@ -17,14 +17,14 @@ import net.mamoe.mirai.utils.systemProp
 
 internal class LoggingStateObserver(
     val logger: MiraiLogger,
-    private val showStacktrace: Boolean = false
+    private val showStacktrace: Boolean = false,
 ) : StateObserver {
     override fun toString(): String = "LoggingStateObserver(logger=${logger.identity})"
 
     override fun beforeStateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         logger.debug(
             { "Before change: ${previous.correspondingState} -> ${new.correspondingState}" },
@@ -35,7 +35,7 @@ internal class LoggingStateObserver(
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         logger.debug(
             { "State changed: ${previous.correspondingState} -> ${new.correspondingState}" },
@@ -46,7 +46,7 @@ internal class LoggingStateObserver(
     override fun exceptionOnCreatingNewState(
         networkHandler: NetworkHandlerSupport,
         previousState: NetworkHandlerSupport.BaseStateImpl,
-        exception: Throwable
+        exception: Throwable,
     ) {
         logger.debug { "State changed: ${previousState.correspondingState} -> $exception" }
     }
@@ -58,7 +58,7 @@ internal class LoggingStateObserver(
     override fun afterStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
-        result: Result<Unit>
+        result: Result<Unit>,
     ) {
         result.fold(
             onSuccess = {

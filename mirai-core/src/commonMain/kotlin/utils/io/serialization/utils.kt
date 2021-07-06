@@ -34,23 +34,23 @@ internal typealias KtProtoBuf = kotlinx.serialization.protobuf.ProtoBuf
 
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,
-    name: String? = null
+    name: String? = null,
 ): T = this.read { readUniPacket(deserializer, name) }
 
 internal fun <T : JceStruct> ByteArray.loadAs(
-    deserializer: DeserializationStrategy<T>
+    deserializer: DeserializationStrategy<T>,
 ): T = this.read { Tars.UTF_8.load(deserializer, this) }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
-    struct: T
+    struct: T,
 ) {
     Tars.UTF_8.dumpTo(serializer, struct, this)
 }
 
 internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
-    length: Int = this.remaining.toInt()
+    length: Int = this.remaining.toInt(),
 ): T {
     this.readPacketExact(length).use {
         return Tars.UTF_8.load(serializer, it)
@@ -63,7 +63,7 @@ internal fun <T : JceStruct> BytePacketBuilder.writeJceRequestPacket(
     funcName: String,
     name: String = funcName,
     serializer: SerializationStrategy<T>,
-    body: T
+    body: T,
 ) = writeJceStruct(
     RequestPacket.serializer(),
     RequestPacket(
@@ -80,7 +80,7 @@ internal fun <T : JceStruct> BytePacketBuilder.writeJceRequestPacket(
  */
 internal fun <T : JceStruct> ByteReadPacket.readUniPacket(
     deserializer: DeserializationStrategy<T>,
-    name: String? = null
+    name: String? = null,
 ): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
@@ -95,7 +95,7 @@ internal fun <T : JceStruct> ByteReadPacket.readUniPacket(
  */
 internal fun <T : ProtoBuf> ByteReadPacket.readUniPacket(
     deserializer: DeserializationStrategy<T>,
-    name: String? = null
+    name: String? = null,
 ): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
@@ -123,7 +123,7 @@ internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: Strin
 }
 
 internal fun <T : JceStruct> T.toByteArray(
-    serializer: SerializationStrategy<T>
+    serializer: SerializationStrategy<T>,
 ): ByteArray = Tars.UTF_8.encodeToByteArray(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
@@ -175,16 +175,16 @@ internal fun <T : ProtoBuf> ByteArray.loadOidb(deserializer: DeserializationStra
  */
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
-    length: Int = this.remaining.toInt()
+    length: Int = this.remaining.toInt(),
 ): T = KtProtoBuf.decodeFromByteArray(serializer, this.readBytes(length))
 
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
 @JvmInline
 internal value class OidbBodyOrFailure<T : ProtoBuf> private constructor(
-    private val v: Any
+    private val v: Any,
 ) {
     internal class Failure(
-        val oidb: OidbSso.OIDBSSOPkg
+        val oidb: OidbSso.OIDBSSOPkg,
     )
 
     inline fun <R> fold(
@@ -215,7 +215,7 @@ internal value class OidbBodyOrFailure<T : ProtoBuf> private constructor(
  */
 internal inline fun <T : ProtoBuf> ByteReadPacket.readOidbSsoPkg(
     serializer: DeserializationStrategy<T>,
-    length: Int = this.remaining.toInt()
+    length: Int = this.remaining.toInt(),
 ): OidbBodyOrFailure<T> {
     val oidb = readBytes(length).loadAs(OidbSso.OIDBSSOPkg.serializer())
     return if (oidb.result == 0) {
@@ -231,7 +231,7 @@ internal inline fun <T : ProtoBuf> ByteReadPacket.readOidbSsoPkg(
 internal fun <T : JceStruct> jceRequestSBuffer(
     name: String,
     serializer: SerializationStrategy<T>,
-    jceStruct: T
+    jceStruct: T,
 ): ByteArray {
     return RequestDataVersion3(
         mapOf(
@@ -249,7 +249,7 @@ internal class JceRequestSBufferBuilder {
     val map: MutableMap<String, ByteArray> = LinkedHashMap()
     operator fun <T : JceStruct> String.invoke(
         serializer: SerializationStrategy<T>,
-        jceStruct: T
+        jceStruct: T,
     ) {
         map[this] = JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
     }

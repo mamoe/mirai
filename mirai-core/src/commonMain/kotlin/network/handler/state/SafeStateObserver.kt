@@ -34,7 +34,7 @@ internal class SafeStateObserver(
     override fun stateChanged(
         networkHandler: NetworkHandlerSupport,
         previous: NetworkHandlerSupport.BaseStateImpl,
-        new: NetworkHandlerSupport.BaseStateImpl
+        new: NetworkHandlerSupport.BaseStateImpl,
     ) {
         try {
             delegate.stateChanged(networkHandler, previous, new)
@@ -49,7 +49,7 @@ internal class SafeStateObserver(
     override fun exceptionOnCreatingNewState(
         networkHandler: NetworkHandlerSupport,
         previousState: NetworkHandlerSupport.BaseStateImpl,
-        exception: Throwable
+        exception: Throwable,
     ) {
         try {
             delegate.exceptionOnCreatingNewState(networkHandler, previousState, exception)
@@ -75,7 +75,7 @@ internal class SafeStateObserver(
     override fun afterStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
-        result: Result<Unit>
+        result: Result<Unit>,
     ) {
         try {
             delegate.afterStateResume(networkHandler, state, result)

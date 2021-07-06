@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.utils.*
+import java.io.Closeable
 import java.io.InputStream
 import java.io.RandomAccessFile
 
@@ -27,7 +30,18 @@ internal class ExternalResourceImplByFileWithMd5(
     private val file: RandomAccessFile,
     override val md5: ByteArray,
     formatName: String?
-) : ExternalResource {
+) : ExternalResourceInternal {
+    internal class ResourceHolder(
+        @JvmField internal val file: RandomAccessFile,
+    ) : ExternalResourceHolder() {
+        override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+        override fun closeImpl() {
+            file.close()
+        }
+    }
+
+    override val holder: ResourceHolder = ResourceHolder(file)
+
     override val sha1: ByteArray by lazy { inputStream().sha1() }
     override val size: Long = file.length()
     override val formatName: String by lazy {
@@ -39,22 +53,67 @@ internal class ExternalResourceImplByFileWithMd5(
         return file.inputStream()
     }
 
-    override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+    override val closed: CompletableDeferred<Unit> get() = holder.closed
+    override fun close() = holder.close()
 
+    init {
+        registerToLeakObserver(this)
+    }
+}
+
+internal abstract class ExternalResourceHolder : Closeable {
+    /**
+     * Mirror of [ExternalResource.closed]
+     */
+    abstract val closed: Deferred<Unit>
+    val isClosed: Boolean get() = _closed.value
+    val createStackTrace: Array<StackTraceElement>? = if (isExternalResourceCreationStackEnabled) {
+        Thread.currentThread().stackTrace
+    } else null
+
+    private val _closed = atomic(false)
+    protected abstract fun closeImpl()
     override fun close() {
+        if (!_closed.compareAndSet(false, true)) return
         try {
-            file.close()
+            closeImpl()
         } finally {
-            kotlin.runCatching { closed.complete(Unit) }
+            kotlin.runCatching {
+                val closed = this.closed
+                if (closed is CompletableDeferred<Unit>) {
+                    closed.complete(Unit)
+                } else {
+                    closed.cancel()
+                }
+            }
         }
     }
+}
+
+internal interface ExternalResourceInternal : ExternalResource {
+    val holder: ExternalResourceHolder
 }
 
 internal class ExternalResourceImplByFile(
     private val file: RandomAccessFile,
     formatName: String?,
-    private val closeOriginalFileOnClose: Boolean = true
-) : ExternalResource {
+    closeOriginalFileOnClose: Boolean = true
+) : ExternalResourceInternal {
+    internal class ResourceHolder(
+        @JvmField internal val closeOriginalFileOnClose: Boolean,
+        @JvmField internal val file: RandomAccessFile,
+    ) : ExternalResourceHolder() {
+        override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+        override fun closeImpl() {
+            if (closeOriginalFileOnClose) file.close()
+        }
+    }
+
+    override val holder: ResourceHolder = ResourceHolder(
+        closeOriginalFileOnClose,
+        file,
+    )
+
     override val size: Long = file.length()
     override val md5: ByteArray by lazy { inputStream().md5() }
     override val sha1: ByteArray by lazy { inputStream().sha1() }
@@ -67,13 +126,11 @@ internal class ExternalResourceImplByFile(
         return file.inputStream()
     }
 
-    override val closed: CompletableDeferred<Unit> = CompletableDeferred()
-    override fun close() {
-        try {
-            if (closeOriginalFileOnClose) file.close()
-        } finally {
-            kotlin.runCatching { closed.complete(Unit) }
-        }
+    override val closed: CompletableDeferred<Unit> get() = holder.closed
+    override fun close() = holder.close()
+
+    init {
+        registerToLeakObserver(this)
     }
 }
 
@@ -108,6 +165,14 @@ private fun RandomAccessFile.inputStream(): InputStream {
     }.buffered()
 }
 
+private fun registerToLeakObserver(resource: ExternalResourceInternal) {
+    ExternalResourceLeakObserver.register(resource)
+}
+
+internal const val isExternalResourceCreationStackEnabledName = "mirai.resource.creation.stack.enabled"
+internal val isExternalResourceCreationStackEnabled by lazy {
+    systemProp(isExternalResourceCreationStackEnabledName, false)
+}
 
 /*
  * ImgType:

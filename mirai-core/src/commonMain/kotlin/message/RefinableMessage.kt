@@ -45,7 +45,7 @@ internal interface RefinableMessage : SingleMessage {
 internal sealed class MessageRefiner {
     protected inline fun MessageChain.refineImpl(
         bot: Bot,
-        refineAction: (message: RefinableMessage) -> Message?
+        refineAction: (message: RefinableMessage) -> Message?,
     ): MessageChain {
         val convertLineSeparator = bot.configuration.convertLineSeparator
 
@@ -84,7 +84,7 @@ internal sealed class MessageRefiner {
 
 @Suppress("unused")
 internal class RefineContextKey<T : Any>(
-    val name: String?
+    val name: String?,
 ) {
     override fun toString(): String {
         return buildString {
@@ -121,7 +121,7 @@ internal object EmptyRefineContext : RefineContext {
 
 @Suppress("UNCHECKED_CAST")
 internal class SimpleRefineContext(
-    private val delegate: MutableMap<RefineContextKey<*>, Any> = mutableMapOf()
+    private val delegate: MutableMap<RefineContextKey<*>, Any> = mutableMapOf(),
 ) : MutableRefineContext {
 
     override fun contains(key: RefineContextKey<*>): Boolean = delegate.containsKey(key)

@@ -15,6 +15,8 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.lateinitMutableProperty
+import net.mamoe.mirai.utils.systemProp
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
@@ -29,7 +31,7 @@ internal class Handler<in E : Event> internal constructor(
     subscriberContext: CoroutineContext,
     @JvmField val handler: suspend (E) -> ListeningStatus,
     override val concurrencyKind: ConcurrencyKind,
-    override val priority: EventPriority
+    override val priority: EventPriority,
 ) : Listener<E>, CompletableJob by SupervisorJob(parentJob) { // avoid being cancelled on handling event
 
     private val subscriberContext: CoroutineContext = subscriberContext + this // override Job.
@@ -70,7 +72,7 @@ internal class Handler<in E : Event> internal constructor(
 
 internal class ListenerRegistry(
     val listener: Listener<Event>,
-    val type: KClass<out Event>
+    val type: KClass<out Event>,
 )
 
 
@@ -120,10 +122,24 @@ internal suspend fun <E : AbstractEvent> callAndRemoveIfRequired(event: E) {
         else -> supervisorScope {
             for (registry in GlobalEventListeners[EventPriority.MONITOR]) {
                 if (!registry.type.isInstance(event)) continue
-                launch { process(container, registry, registry.listener, event) }
+                launch(start = if (EVENT_LAUNCH_UNDISPATCHED) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT) {
+                    process(container, registry, registry.listener, event)
+                }
             }
         }
     }
+}
+
+/**
+ * If `true`, all event listeners runs directly in the broadcaster's thread until first suspension.
+ *
+ * If there is not suspension point in the listener, the coroutine executing [Event.broadcast] will not suspend,
+ * so the thread before and after execution will be the same and no other code is being executed if there is only one thread.
+ *
+ * This is useful for tests to not to depend on `delay`
+ */
+internal var EVENT_LAUNCH_UNDISPATCHED: Boolean by lateinitMutableProperty {
+    systemProp("mirai.event.launch.undispatched", false)
 }
 
 private suspend fun <E : AbstractEvent> process(

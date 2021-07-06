@@ -9,7 +9,21 @@
 
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import net.mamoe.mirai.utils.*
+
+
+internal fun CoroutineExceptionHandler.Key.fromMiraiLogger(
+    logger: MiraiLogger,
+    ignoreCancellationException: Boolean = true, // kotlinx.coroutines default
+): CoroutineExceptionHandler {
+    return CoroutineExceptionHandler { coroutineContext, throwable ->
+        if (!ignoreCancellationException || throwable !is CancellationException) {
+            logger.error("Exception in coroutine '${coroutineContext.coroutineName}'", throwable)
+        }
+    }
+}
 
 internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
     return SubLogger(name, this)

@@ -1,13 +1,14 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "FunctionName", "unused")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.message
 
@@ -21,6 +22,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 发送消息后得到的回执. 可用于撤回, 引用回复等.
@@ -39,8 +41,11 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @see MessageReceipt.sourceIds 源 ids
  * @see MessageReceipt.sourceTime 源时间
  */
-@JvmBlockingBridge
-public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
+@NotStableForInheritance
+public open class MessageReceipt<out C : Contact>
+@MiraiInternalApi
+@Deprecated("Do not call it directly", level = DeprecationLevel.ERROR)
+constructor(
     /**
      * 指代发送出去的消息.
      */

@@ -133,8 +133,6 @@ public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public abstract fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getRawGroupActiveData$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JIILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData;
 	public static synthetic fun getRawGroupActiveData$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun getRawGroupAnnouncements$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JIIILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupAnnouncementList;
-	public static synthetic fun getRawGroupAnnouncements$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JIILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getRawGroupList (Lnet/mamoe/mirai/Bot;)Lkotlin/sequences/Sequence;
 	public abstract fun getRawGroupList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJ)Lkotlin/sequences/Sequence;
@@ -330,7 +328,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
+public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/VoiceSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()J
@@ -345,11 +343,12 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
+public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported, net/mamoe/mirai/contact/VoiceSupported {
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getAnnouncements ()Lnet/mamoe/mirai/contact/announcement/Announcements;
 	public fun getAvatarUrl ()Ljava/lang/String;
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
@@ -371,8 +370,6 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;)Z
 	public abstract fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setName (Ljava/lang/String;)V
-	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
-	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/Group$Companion {
@@ -567,6 +564,190 @@ public final class net/mamoe/mirai/contact/UserKt {
 public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mirai/contact/ContactOrBot {
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
+}
+
+public abstract interface class net/mamoe/mirai/contact/VoiceSupported : net/mamoe/mirai/contact/Contact {
+	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
+	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
+	public static final field Companion Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;
+	public abstract fun getContent ()Ljava/lang/String;
+	public abstract fun getParameters ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun publishTo (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public fun publishTo (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/announcement/Announcement$Companion {
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final synthetic fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public final fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun publishAnnouncement$default (Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public static synthetic fun publishAnnouncement$default (Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
+	public static final field Companion Lnet/mamoe/mirai/contact/announcement/AnnouncementImage$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public synthetic fun <init> (ILjava/lang/String;IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun create (Ljava/lang/String;II)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()I
+	public final fun getId ()Ljava/lang/String;
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/contact/announcement/AnnouncementImage$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$Companion {
+	public final fun create (Ljava/lang/String;II)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementKt {
+	public static final fun toOffline (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters {
+	public static final field Companion Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun <init> ()V
+	public synthetic fun <init> (ILnet/mamoe/mirai/contact/announcement/AnnouncementImage;ZZZZZLkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public final fun builder ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public fun equals (Ljava/lang/Object;)Z
+	public static final fun getDefault ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public final fun getImage ()Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public final fun getRequireConfirmation ()Z
+	public final fun getSendToNewMember ()Z
+	public final fun getShowEditCard ()Z
+	public final fun getShowPopup ()Z
+	public fun hashCode ()I
+	public final fun isPinned ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters$Companion {
+	public final fun getDefault ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun build ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+	public final fun image ()Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public final fun image (Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun isPinned ()Z
+	public final fun isPinned (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun requireConfirmation ()Z
+	public final fun requireConfirmation (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun sendToNewMember ()Z
+	public final fun sendToNewMember (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final synthetic fun setImage (Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;)V
+	public final synthetic fun setPinned (Z)V
+	public final synthetic fun setRequireConfirmation (Z)V
+	public final synthetic fun setSendToNewMember (Z)V
+	public final synthetic fun setShowEditCard (Z)V
+	public final synthetic fun setShowPopup (Z)V
+	public final fun showEditCard ()Z
+	public final fun showEditCard (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun showPopup ()Z
+	public final fun showPopup (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+}
+
+public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBuilderKt {
+	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
+}
+
+public abstract interface class net/mamoe/mirai/contact/announcement/Announcements {
+	public fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun delete (Ljava/lang/String;)Z
+	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
+	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toList ()Ljava/util/List;
+	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
+	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/announcement/OfflineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
+	public static final field Companion Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public static fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static fun create (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static fun from (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncement$Companion {
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public final fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public final synthetic fun create (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public final fun create (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement$Companion;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public final fun from (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncementKt {
+	public static final fun OfflineAnnouncement (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static final fun OfflineAnnouncement (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static final fun OfflineAnnouncement (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+	public static synthetic fun OfflineAnnouncement$default (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
+}
+
+public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
+	public fun delete ()Z
+	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAllConfirmed ()Z
+	public abstract fun getConfirmedMembersCount ()I
+	public abstract fun getFid ()Ljava/lang/String;
+	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public abstract fun getPublicationTime ()J
+	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getSenderId ()J
+}
+
+public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
+	public static final fun getBot (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;)Lnet/mamoe/mirai/Bot;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
@@ -851,70 +1032,6 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$$seriali
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncement$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncement$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncement;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupAnnouncement;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncement$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementList$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncementList$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncementList;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupAnnouncementList;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementList$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementMsg$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncementMsg$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncementMsg;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupAnnouncementMsg;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementMsg$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementSettings$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupAnnouncementSettings$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupAnnouncementSettings;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupAnnouncementSettings;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupAnnouncementSettings$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -3168,6 +3285,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field AN_ZHONG_GUAN_CHA I
 	public static final field AO_MAN I
 	public static final field BAI_TUO I
+	public static final field BAI_XIE I
 	public static final field BAI_YAN I
 	public static final field BANG_BANG_TANG I
 	public static final field BAN_ZHUAN_ZHONG I
@@ -3177,14 +3295,17 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field BAO_QUAN I
 	public static final field BIAN_BIAN I
 	public static final field BIAN_PAO I
+	public static final field BIAN_XING I
 	public static final field BIAO_LEI I
 	public static final field BI_SHI I
+	public static final field BI_XIN I
 	public static final field BI_ZUI I
 	public static final field BO_BO I
 	public static final field BU I
 	public static final field BU_KAI_XIN I
 	public static final field CAI I
 	public static final field CAI_DAO I
+	public static final field CAI_GOU I
 	public static final field CANG_SANG I
 	public static final field CA_HAN I
 	public static final field CENG_YI_CENG I
@@ -3196,10 +3317,13 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field CHE_YI_CHE I
 	public static final field CHI I
 	public static final field CHI_GUA I
+	public static final field CHI_TANG I
+	public static final field CHONG_BAI I
 	public static final field Companion Lnet/mamoe/mirai/message/data/Face$Companion;
 	public static final field DAN I
 	public static final field DAN_GAO I
 	public static final field DAO I
+	public static final field DA_CALL I
 	public static final field DA_KU I
 	public static final field DA_LIAN I
 	public static final field DA_XIAO I
@@ -3228,6 +3352,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field HAN_XIAO I
 	public static final field HAO I
 	public static final field HAO_BANG I
+	public static final field HAO_SHAN I
 	public static final field HA_QIAN I
 	public static final field HENG I
 	public static final field HE_CAI I
@@ -3235,11 +3360,13 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field HE_NAI I
 	public static final field HE_XIE I
 	public static final field HONG_BAO I
+	public static final field HONG_BAO_BAO I
 	public static final field HUAI_XIAO I
 	public static final field HUA_CHI I
 	public static final field HUI_SHOU I
 	public static final field HUI_TOU I
 	public static final field HU_LIAN I
+	public static final field JIA_YOU I
 	public static final field JIA_YOU_BAO_BAO I
 	public static final field JIA_YOU_BI_SHENG I
 	public static final field JIE_WU I
@@ -3252,10 +3379,12 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field JI_E I
 	public static final field JI_ZHANG I
 	public static final field JU_HUA I
+	public static final field JU_JUE I
 	public static final field KAI_QIANG I
 	public static final field KA_FEI I
 	public static final field KEN_TOU I
 	public static final field KE_AI I
+	public static final field KE_DAO_LE I
 	public static final field KE_LIAN I
 	public static final field KE_TOU I
 	public static final field KOU_BI I
@@ -3268,6 +3397,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field K_GE I
 	public static final field K歌 I
 	public static final field LAN_QIU I
+	public static final field LAO_SE_PI I
 	public static final field LA_JIAO_JIANG I
 	public static final field LA_YAN_JING I
 	public static final field LEI_BEN I
@@ -3281,10 +3411,15 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field MANG_DAO_FEI_QI I
 	public static final field MEI_GUI I
 	public static final field MIAN_WU_BIAO_QING I
+	public static final field MIAO_MIAO I
 	public static final field MO_GUI_XIAO I
+	public static final field MO_JIN_LI I
 	public static final field MO_YU I
 	public static final field NAN_GUO I
 	public static final field NAO_KUO_TENG I
+	public static final field NA_DAO_HONG_BAO I
+	public static final field NIU_A I
+	public static final field NIU_QI_CHONG_TIAN I
 	public static final field NO I
 	public static final field O I
 	public static final field OK I
@@ -3293,6 +3428,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field PAI_SHOU I
 	public static final field PAI_TOU I
 	public static final field PAI_ZHUO I
+	public static final field PANG_SAN_JIN I
 	public static final field PEN_LIAN I
 	public static final field PEN_XIE I
 	public static final field PIAO_CHONG I
@@ -3300,12 +3436,17 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field PING_PANG I
 	public static final field PI_JIU I
 	public static final field QIAO_DA I
+	public static final field QIAO_KAI_XIN I
 	public static final field QIA_YI_QIA I
 	public static final field QING I
+	public static final field QING_ZHU I
 	public static final field QIN_QIN I
 	public static final field QIU_DA_LE I
+	public static final field QIU_HONG_BAO I
+	public static final field QI_DAI I
 	public static final field QI_DAO I
 	public static final field QUAN_TOU I
+	public static final field RANG_WO_KANG_KANG I
 	public static final field RENG_GOU I
 	public static final field SAO_RAO I
 	public static final field SE I
@@ -3339,6 +3480,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field WEI_XIAO I
 	public static final field WEN_HAO_LIAN I
 	public static final field WO_BU_KAN I
+	public static final field WO_MEI_SHI I
 	public static final field WO_SHOU I
 	public static final field WO_SUAN_LE I
 	public static final field WO_ZUI_MEI I
@@ -3347,11 +3489,14 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field WU_NAI I
 	public static final field WU_YAN_XIAO I
 	public static final field XIA I
+	public static final field XIAN_QI I
 	public static final field XIAN_WEN I
 	public static final field XIAO_JIU_JIE I
 	public static final field XIAO_KU I
 	public static final field XIAO_YANG_ER I
+	public static final field XIE_HONG_BAO I
 	public static final field XIE_YAN_XIAO I
+	public static final field XIN_NIAN_YAN_HUA I
 	public static final field XIN_SUI I
 	public static final field XI_GUA I
 	public static final field XU I
@@ -3360,10 +3505,13 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field YIN_XIAN I
 	public static final field YI_WEN I
 	public static final field YONG_BAO I
+	public static final field YOU_BAI_NIAN I
 	public static final field YOU_HENG_HENG I
 	public static final field YOU_LING I
+	public static final field YOU_QIN_QIN I
 	public static final field YOU_TAI_JI I
 	public static final field YOU_XIAN I
+	public static final field YUAN_BAO I
 	public static final field YUAN_LIANG I
 	public static final field YUE_LIANG I
 	public static final field YUN I
@@ -3372,14 +3520,19 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field ZHA_DAN I
 	public static final field ZHA_YAN_JING I
 	public static final field ZHENG_YAN I
+	public static final field ZHEN_HAO I
+	public static final field ZHEN_JING I
 	public static final field ZHE_MO I
 	public static final field ZHOU_MA I
 	public static final field ZHUAI_ZHA_TIAN I
 	public static final field ZHUAN_QUAN I
 	public static final field ZHUA_KUANG I
 	public static final field ZHU_TOU I
+	public static final field ZI_XI_FEN_XI I
 	public static final field ZI_YA I
+	public static final field ZUO_BAI_NIAN I
 	public static final field ZUO_HENG_HENG I
+	public static final field ZUO_QIN_QIN I
 	public static final field ZUO_TAI_JI I
 	public static final field ZU_QIU I
 	public static final field doge I
@@ -3389,17 +3542,20 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 不开心 I
 	public static final field 乒乓 I
 	public static final field 亲亲 I
+	public static final field 仔细分析 I
 	public static final field 佛系 I
 	public static final field 便便 I
 	public static final field 偷看 I
 	public static final field 偷笑 I
 	public static final field 傲慢 I
+	public static final field 元宝 I
 	public static final field 再见 I
 	public static final field 冷汗 I
 	public static final field 冷漠 I
 	public static final field 凋谢 I
 	public static final field 击掌 I
 	public static final field 刀 I
+	public static final field 加油 I
 	public static final field 加油必胜 I
 	public static final field 加油抱抱 I
 	public static final field 勾引 I
@@ -3409,13 +3565,17 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 发呆 I
 	public static final field 发怒 I
 	public static final field 发抖 I
+	public static final field 变形 I
 	public static final field 口罩护体 I
 	public static final field 可怜 I
 	public static final field 可爱 I
+	public static final field 右亲亲 I
 	public static final field 右哼哼 I
 	public static final field 右太极 I
+	public static final field 右拜年 I
 	public static final field 吃 I
 	public static final field 吃瓜 I
+	public static final field 吃糖 I
 	public static final field 吐 I
 	public static final field 吓 I
 	public static final field 呃 I
@@ -3432,8 +3592,10 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 啵啵 I
 	public static final field 喝奶 I
 	public static final field 喝彩 I
+	public static final field 喵喵 I
 	public static final field 喷脸 I
 	public static final field 喷血 I
+	public static final field 嗑到了 I
 	public static final field 嘘 I
 	public static final field 嘲讽 I
 	public static final field 回头 I
@@ -3448,17 +3610,23 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 奋斗 I
 	public static final field 好 I
 	public static final field 好棒 I
+	public static final field 好闪 I
 	public static final field 委屈 I
+	public static final field 嫌弃 I
 	public static final field 害怕 I
 	public static final field 害羞 I
 	public static final field 小样儿 I
 	public static final field 小纠结 I
 	public static final field 尴尬 I
+	public static final field 崇拜 I
+	public static final field 左亲亲 I
 	public static final field 左哼哼 I
 	public static final field 左太极 I
+	public static final field 左拜年 I
 	public static final field 差劲 I
 	public static final field 干杯 I
 	public static final field 幽灵 I
+	public static final field 庆祝 I
 	public static final field 开枪 I
 	public static final field 得意 I
 	public static final field 微笑 I
@@ -3475,9 +3643,11 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 憨笑 I
 	public static final field 我不看 I
 	public static final field 我最美 I
+	public static final field 我没事 I
 	public static final field 我酸了 I
 	public static final field 扇脸 I
 	public static final field 手枪 I
+	public static final field 打call I
 	public static final field 打脸 I
 	public static final field 扔狗 I
 	public static final field 托脸 I
@@ -3491,22 +3661,28 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 拍头 I
 	public static final field 拍手 I
 	public static final field 拍桌 I
+	public static final field 拒绝 I
 	public static final field 拜托 I
+	public static final field 拜谢 I
 	public static final field 拥抱 I
 	public static final field 拳头 I
 	public static final field 拽炸天 I
+	public static final field 拿到红包 I
 	public static final field 挥手 I
 	public static final field 捂脸 I
 	public static final field 掐一掐 I
 	public static final field 握手 I
 	public static final field 搬砖中 I
+	public static final field 摸锦鲤 I
 	public static final field 摸鱼 I
 	public static final field 撇嘴 I
 	public static final field 撩一撩 I
 	public static final field 擦汗 I
 	public static final field 敬礼 I
+	public static final field 敲开心 I
 	public static final field 敲打 I
 	public static final field 斜眼笑 I
+	public static final field 新年烟花 I
 	public static final field 无奈 I
 	public static final field 无眼笑 I
 	public static final field 无聊 I
@@ -3514,7 +3690,10 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 暗中观察 I
 	public static final field 暴击 I
 	public static final field 月亮 I
+	public static final field 期待 I
 	public static final field 棒棒糖 I
+	public static final field 比心 I
+	public static final field 求红包 I
 	public static final field 汗 I
 	public static final field 汪汪 I
 	public static final field 沧桑 I
@@ -3530,6 +3709,8 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 爱你 I
 	public static final field 爱心 I
 	public static final field 爱情 I
+	public static final field 牛啊 I
+	public static final field 牛气冲天 I
 	public static final field 狂笑 I
 	public static final field 猪头 I
 	public static final field 献吻 I
@@ -3539,6 +3720,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 甩头 I
 	public static final field 疑问 I
 	public static final field 白眼 I
+	public static final field 真好 I
 	public static final field 眨眼睛 I
 	public static final field 睁眼 I
 	public static final field 睡 I
@@ -3551,7 +3733,10 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 糊脸 I
 	public static final field 糗大了 I
 	public static final field 红包 I
+	public static final field 红包包 I
 	public static final field 羊驼 I
+	public static final field 老色痞 I
+	public static final field 胖三斤 I
 	public static final field 胜利 I
 	public static final field 脑阔疼 I
 	public static final field 舔一舔 I
@@ -3561,13 +3746,16 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 药 I
 	public static final field 菊花 I
 	public static final field 菜刀 I
+	public static final field 菜狗 I
 	public static final field 蛋 I
 	public static final field 蛋糕 I
 	public static final field 街舞 I
 	public static final field 衰 I
 	public static final field 西瓜 I
+	public static final field 让我康康 I
 	public static final field 请 I
 	public static final field 调皮 I
+	public static final field 谢红包 I
 	public static final field 赞 I
 	public static final field 足球 I
 	public static final field 跳绳 I
@@ -3586,6 +3774,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 问号脸 I
 	public static final field 阴险 I
 	public static final field 难过 I
+	public static final field 震惊 I
 	public static final field 面无表情 I
 	public static final field 鞭炮 I
 	public static final field 顶呱呱 I
@@ -4908,31 +5097,29 @@ public final class net/mamoe/mirai/message/data/VipFace$Kind$Companion {
 public final class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/PttMessage {
 	public static final field Key Lnet/mamoe/mirai/message/data/Voice$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
-	public synthetic fun <init> (ILjava/lang/String;[BJILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;[BJILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCodec ()I
 	public fun getFileName ()Ljava/lang/String;
 	public fun getFileSize ()J
 	public fun getMd5 ()[B
 	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/message/data/Voice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Voice$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+public final class net/mamoe/mirai/message/data/Voice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/Voice$Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Voice$Serializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Voice;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/Voice;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/message/data/Voice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
@@ -5246,8 +5433,14 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun uploadAsImage (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
@@ -5315,8 +5508,14 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
@@ -5456,6 +5655,10 @@ public final class net/mamoe/mirai/utils/MiraiLoggerWithSwitch : net/mamoe/mirai
 	public fun verbose0 (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning0 (Ljava/lang/String;)V
 	public fun warning0 (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public abstract interface annotation class net/mamoe/mirai/utils/NotStableForInheritance : java/lang/annotation/Annotation {
+	public abstract fun message ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/utils/OverFileSizeMaxException : java/lang/IllegalStateException {

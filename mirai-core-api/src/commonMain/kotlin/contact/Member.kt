@@ -1,13 +1,14 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "UnusedImport")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
 
@@ -19,7 +20,7 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.utils.WeakRefProperty
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 代表一位群成员.
@@ -34,12 +35,11 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * - [Member.asFriend] 转换为 [Friend]
  * - [Member.asStranger] 转换为 [Stranger]
  */
-@JvmBlockingBridge
+@NotStableForInheritance
 public interface Member : User {
     /**
      * 所在的群.
      */
-    @WeakRefProperty
     public val group: Group
 
     /**

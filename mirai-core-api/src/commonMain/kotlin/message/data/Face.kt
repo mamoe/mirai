@@ -33,7 +33,7 @@ public data class Face(public val id: Int) : // used in delegation
 
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
 
-    override fun toString(): String = serializeToMiraiCode()
+    override fun toString(): String = contentToString()
     override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
     @MiraiExperimentalApi
@@ -210,6 +210,8 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 阴险: Int = YIN_XIAN
         public const val QIN_QIN: Int = 109
         public const val 亲亲: Int = QIN_QIN
+        public const val ZUO_QIN_QIN: Int = QIN_QIN
+        public const val 左亲亲: Int = QIN_QIN
         public const val XIA: Int = 110
         public const val 吓: Int = XIA
         public const val KE_LIAN: Int = 111
@@ -484,10 +486,79 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 请: Int = QING
         public const val ZHENG_YAN: Int = 289
         public const val 睁眼: Int = ZHENG_YAN
-
+        public const val QIAO_KAI_XIN: Int = 290
+        public const val 敲开心: Int = QIAO_KAI_XIN
+        public const val ZHEN_JING: Int = 291
+        public const val 震惊: Int = ZHEN_JING
+        public const val RANG_WO_KANG_KANG: Int = 292
+        public const val 让我康康: Int = RANG_WO_KANG_KANG
+        public const val MO_JIN_LI: Int = 293
+        public const val 摸锦鲤: Int = MO_JIN_LI
+        public const val QI_DAI: Int = 294
+        public const val 期待: Int = QI_DAI
+        public const val NA_DAO_HONG_BAO: Int = 295
+        public const val 拿到红包: Int = NA_DAO_HONG_BAO
+        public const val ZHEN_HAO: Int = 296
+        public const val 真好: Int = ZHEN_HAO
+        public const val BAI_XIE: Int = 297
+        public const val 拜谢: Int = BAI_XIE
+        public const val YUAN_BAO: Int = 298
+        public const val 元宝: Int = YUAN_BAO
+        public const val NIU_A: Int = 299
+        public const val 牛啊: Int = NIU_A
+        public const val PANG_SAN_JIN: Int = 300
+        public const val 胖三斤: Int = PANG_SAN_JIN
+        public const val HAO_SHAN: Int = 301
+        public const val 好闪: Int = HAO_SHAN
+        public const val ZUO_BAI_NIAN: Int = 302
+        public const val 左拜年: Int = ZUO_BAI_NIAN
+        public const val YOU_BAI_NIAN: Int = 303
+        public const val 右拜年: Int = YOU_BAI_NIAN
+        public const val HONG_BAO_BAO: Int = 304
+        public const val 红包包: Int = HONG_BAO_BAO
+        public const val YOU_QIN_QIN: Int = 305
+        public const val 右亲亲: Int = YOU_QIN_QIN
+        public const val NIU_QI_CHONG_TIAN: Int = 306
+        public const val 牛气冲天: Int = NIU_QI_CHONG_TIAN
+        public const val MIAO_MIAO: Int = 307
+        public const val 喵喵: Int = MIAO_MIAO
+        public const val QIU_HONG_BAO: Int = 308
+        public const val 求红包: Int = QIU_HONG_BAO
+        public const val XIE_HONG_BAO: Int = 309
+        public const val 谢红包: Int = XIE_HONG_BAO
+        public const val XIN_NIAN_YAN_HUA: Int = 310
+        public const val 新年烟花: Int = XIN_NIAN_YAN_HUA
+        public const val DA_CALL: Int = 311
+        public const val 打call: Int = DA_CALL
+        public const val BIAN_XING: Int = 312
+        public const val 变形: Int = BIAN_XING
+        public const val KE_DAO_LE: Int = 313
+        public const val 嗑到了: Int = KE_DAO_LE
+        public const val ZI_XI_FEN_XI: Int = 314
+        public const val 仔细分析: Int = ZI_XI_FEN_XI
+        public const val JIA_YOU: Int = 315
+        public const val 加油: Int = JIA_YOU
+        public const val WO_MEI_SHI: Int = 316
+        public const val 我没事: Int = WO_MEI_SHI
+        public const val CAI_GOU: Int = 317
+        public const val 菜狗: Int = CAI_GOU
+        public const val CHONG_BAI: Int = 318
+        public const val 崇拜: Int = CHONG_BAI
+        public const val BI_XIN: Int = 319
+        public const val 比心: Int = BI_XIN
+        public const val QING_ZHU: Int = 320
+        public const val 庆祝: Int = QING_ZHU
+        public const val LAO_SE_PI: Int = 321
+        public const val 老色痞: Int = LAO_SE_PI
+        public const val JU_JUE: Int = 322
+        public const val 拒绝: Int = JU_JUE
+        public const val XIAN_QI: Int = 323
+        public const val 嫌弃: Int = XIAN_QI
+        public const val CHI_TANG: Int = 324
+        public const val 吃糖: Int = CHI_TANG
 
         @JvmField
-        public val names: Array<String> = Array(290) { "[表情]" }
+        public val names: Array<String> = Array(325) { "[表情]" }
 
         init {
             names[JING_YA] = "[惊讶]"
@@ -569,7 +640,7 @@ public data class Face(public val id: Int) : // used in delegation
             names[WEI_QU] = "[委屈]"
             names[KUAI_KU_LE] = "[快哭了]"
             names[YIN_XIAN] = "[阴险]"
-            names[QIN_QIN] = "[亲亲]"
+            names[ZUO_QIN_QIN] = "[左亲亲]"
             names[XIA] = "[吓]"
             names[KE_LIAN] = "[可怜]"
             names[CAI_DAO] = "[菜刀]"
@@ -707,7 +778,41 @@ public data class Face(public val id: Int) : // used in delegation
             names[O] = "[哦]"
             names[QING] = "[请]"
             names[ZHENG_YAN] = "[睁眼]"
+            names[QIAO_KAI_XIN] = "[敲开心]"
+            names[ZHEN_JING] = "[震惊]"
+            names[RANG_WO_KANG_KANG] = "[让我康康]"
+            names[MO_JIN_LI] = "[摸锦鲤]"
+            names[QI_DAI] = "[期待]"
+            names[NA_DAO_HONG_BAO] = "[拿到红包]"
+            names[ZHEN_HAO] = "[真好]"
+            names[BAI_XIE] = "[拜谢]"
+            names[YUAN_BAO] = "[元宝]"
+            names[NIU_A] = "[牛啊]"
+            names[PANG_SAN_JIN] = "[胖三斤]"
+            names[HAO_SHAN] = "[好闪]"
+            names[ZUO_BAI_NIAN] = "[左拜年]"
+            names[YOU_BAI_NIAN] = "[右拜年]"
+            names[HONG_BAO_BAO] = "[红包包]"
+            names[YOU_QIN_QIN] = "[右亲亲]"
+            names[NIU_QI_CHONG_TIAN] = "[牛气冲天]"
+            names[MIAO_MIAO] = "[喵喵]"
+            names[QIU_HONG_BAO] = "[求红包]"
+            names[XIE_HONG_BAO] = "[谢红包]"
+            names[XIN_NIAN_YAN_HUA] = "[新年烟花]"
+            names[DA_CALL] = "[打call]"
+            names[BIAN_XING] = "[变形]"
+            names[KE_DAO_LE] = "[嗑到了]"
+            names[ZI_XI_FEN_XI] = "[仔细分析]"
+            names[JIA_YOU] = "[加油]"
+            names[WO_MEI_SHI] = "[我没事]"
+            names[CAI_GOU] = "[菜狗]"
+            names[CHONG_BAI] = "[崇拜]"
+            names[BI_XIN] = "[比心]"
+            names[QING_ZHU] = "[庆祝]"
+            names[LAO_SE_PI] = "[老色痞]"
+            names[JU_JUE] = "[拒绝]"
+            names[XIAN_QI] = "[嫌弃]"
+            names[CHI_TANG] = "[吃糖]"
         }
-
     }
 }

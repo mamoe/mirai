@@ -17,7 +17,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 
 internal data class LightAppInternal(
-    override val content: String
+    override val content: String,
 ) : RichMessage, RefinableMessage {
     companion object Key :
         AbstractPolymorphicMessageKey<RichMessage, LightAppInternal>(RichMessage, { it.safeCast() })
@@ -114,7 +114,7 @@ internal data class LightAppStruct(
     @SerialName("ver")
     val ver: String = "",
     @SerialName("view")
-    val view: String = ""
+    val view: String = "",
 ) {
     @Serializable
     data class Config(
@@ -127,7 +127,7 @@ internal data class LightAppStruct(
         @SerialName("token")
         val token: String = "",
         @SerialName("type")
-        val type: String = ""
+        val type: String = "",
     )
 
     @Serializable
@@ -137,13 +137,13 @@ internal data class LightAppStruct(
         @SerialName("appid")
         val appid: Int = 0,
         @SerialName("uin")
-        val uin: Int = 0
+        val uin: Int = 0,
     )
 
     @Serializable
     data class Meta(
         @SerialName("music")
-        val music: Music? = null
+        val music: Music? = null,
     ) {
         @Serializable
         data class Music(
@@ -172,7 +172,7 @@ internal data class LightAppStruct(
             @SerialName("tag")
             val tag: String = "",
             @SerialName("title")
-            val title: String = ""
+            val title: String = "",
         )
     }
 }

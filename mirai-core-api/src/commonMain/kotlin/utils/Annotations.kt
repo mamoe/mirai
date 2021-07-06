@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.utils
@@ -54,6 +54,20 @@ public annotation class MiraiExperimentalApi(
 )
 
 /**
+ * 标记一个定义在使用上是稳定的 (如果没有特殊说明), 但只应该由 mirai 内部实现.
+ *
+ * 用户自行实现将可能造成对未来版本的不兼容, 因为新的抽象函数或属性会在未经警告的前提下添加. 自行实现还可能因 mirai 内部实现有部分硬编码成分而不兼容.
+ *
+ * @since 2.7
+ */
+@Retention(AnnotationRetention.BINARY)
+@Target(CLASS, PROPERTY, FUNCTION)
+@MustBeDocumented
+public annotation class NotStableForInheritance(
+    public val message: String = "This declaration is not stable for inheritance."
+)
+
+/**
  * 标记一个正计划在 [version] 版本时删除 (对外隐藏) 的 API.
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
@@ -79,10 +93,3 @@ internal annotation class EventListenerLikeJava
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(PROPERTY, FUNCTION, TYPE, CLASS)
 internal annotation class JavaFriendlyAPI
-
-/**
- * 表示这个属性由 [lazy] 委托, 即它只会在被需要的时候才初始化.
- */
-@Target(PROPERTY)
-@Retention(AnnotationRetention.BINARY)
-internal annotation class LazyProperty

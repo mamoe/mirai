@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcLi
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.utils.*
 import kotlin.random.Random
 
@@ -67,7 +66,6 @@ internal val DefaultServerList: MutableSet<Pair<String, Int>> =
  */
 internal open class QQAndroidClient(
     val account: BotAccount,
-    override val ecdh: ECDH = ECDH(),
     val device: DeviceInfo,
     accountSecrets: AccountSecrets
 ) : AccountSecrets by accountSecrets, SsoSession {

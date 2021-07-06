@@ -21,16 +21,29 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.Voice
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.recoverCatchingSuppressed
+import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -54,7 +67,7 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 internal class FriendImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
-    internal val friendInfo: FriendInfo
+    internal val friendInfo: FriendInfo,
 ) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
@@ -81,4 +94,63 @@ internal class FriendImpl(
     }
 
     override fun toString(): String = "Friend($id)"
+
+    override suspend fun uploadVoice(resource: ExternalResource): Voice = bot.network.run {
+        val voice = Voice(
+            "${resource.md5.toUHexString("")}.amr",
+            resource.md5,
+            resource.size,
+            resource.voiceCodec,
+            ""
+        )
+        kotlin.runCatching {
+            val resp = Highway.uploadResourceBdh(
+                bot = bot,
+                resource = resource,
+                kind = ResourceKind.PRIVATE_VOICE,
+                commandId = 26,
+                extendInfo = PttStore.C2C.createC2CPttStoreBDHExt(bot, this@FriendImpl.uin, resource)
+                    .toByteArray(Cmd0x346.ReqBody.serializer())
+            )
+            // resp._miraiContentToString("UV resp")
+            val c346resp = resp.extendInfo!!.loadAs(Cmd0x346.RspBody.serializer())
+            if (c346resp.msgApplyUploadRsp == null) {
+                error("Upload failed")
+            }
+            voice.pttInternalInstance = ImMsgBody.Ptt(
+                fileType = 4,
+                srcUin = bot.uin,
+                fileUuid = c346resp.msgApplyUploadRsp.uuid,
+                fileMd5 = resource.md5,
+                fileName = resource.md5 + ".amr".toByteArray(),
+                fileSize = resource.size.toInt(),
+                boolValid = true,
+            )
+        }.recoverCatchingSuppressed {
+            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect<Any>()) {
+                is PttStore.GroupPttUp.Response.RequireUpload -> {
+                    tryServersUpload(
+                        bot,
+                        resp.uploadIpList.zip(resp.uploadPortList),
+                        resource.size,
+                        ResourceKind.GROUP_VOICE,
+                        ChannelKind.HTTP
+                    ) { ip, port ->
+                        Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
+                    }
+                    voice.pttInternalInstance = ImMsgBody.Ptt(
+                        fileType = 4,
+                        srcUin = bot.uin,
+                        fileUuid = resp.fileId.toByteArray(),
+                        fileMd5 = resource.md5,
+                        fileName = resource.md5 + ".amr".toByteArray(),
+                        fileSize = resource.size.toInt(),
+                        boolValid = true,
+                    )
+                }
+            }
+        }.getOrThrow()
+
+        return voice
+    }
 }

@@ -13,7 +13,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 
@@ -43,9 +45,19 @@ internal data class ForwardMessageInternal(
      * not null means nested and need [ForwardMessageInternal.MsgTransmits] in [RefineContext]
      */
     val fileName: String?,
+
+    /**
+     * For light refine before constructing [MessageReceipt].
+     * See [OutgoingMessageSourceInternal] for more details.
+     */
+    val origin: ForwardMessage? = null,
 ) : AbstractServiceMessage(),
     RefinableMessage {
     override val serviceId: Int get() = 35
+
+    override fun tryRefine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
+        return origin ?: this
+    }
 
     override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message {
         bot.asQQAndroidBot()
@@ -75,28 +87,28 @@ internal data class ForwardMessageInternal(
             return MessageOrigin(
                 SimpleServiceMessage(serviceId, content),
                 null, // Nested don't have resource id
-                MessageOriginKind.FORWARD
+                MessageOriginKind.FORWARD,
             ) + ForwardMessage(
                 preview = preview,
                 title = title,
                 brief = brief,
                 source = source,
                 summary = summary.trim(),
-                nodeList = MiraiImpl.run { transmits.toForwardMessageNodes(bot, refineContext) }
+                nodeList = getMiraiImpl().run { transmits.toForwardMessageNodes(bot, refineContext) },
             )
         }
 
         return MessageOrigin(
             SimpleServiceMessage(serviceId, content),
             resId,
-            MessageOriginKind.FORWARD
+            MessageOriginKind.FORWARD,
         ) + ForwardMessage(
             preview = preview,
             title = title,
             brief = brief,
             source = source,
             summary = summary.trim(),
-            nodeList = Mirai.downloadForwardMessage(bot, resId!!)
+            nodeList = Mirai.downloadForwardMessage(bot, resId!!),
         )
     }
 
@@ -178,5 +190,5 @@ internal fun RichMessage.Key.forwardMessage(
             <source name="${source.take(50)}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ").trim()
-    return ForwardMessageInternal(template, resId, null)
+    return ForwardMessageInternal(template, resId, null, forwardMessage)
 }

@@ -19,5 +19,5 @@ internal class StrangerInfoImpl(
     override val uin: Long,
     override val nick: String,
     override val fromGroup: Long = 0,
-    override val remark: String = ""
+    override val remark: String = "",
 ) : StrangerInfo

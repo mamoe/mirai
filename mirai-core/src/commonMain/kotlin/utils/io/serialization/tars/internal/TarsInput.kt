@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
@@ -19,7 +19,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
  * Tars Input. 需要手动管理 head.
  */
 internal class TarsInput(
-    val input: Input, private val charset: Charset
+    val input: Input, private val charset: Charset,
 ) {
     private var _head: TarsHead? = null
     private var _nextHead: TarsHead? = null
@@ -67,7 +67,7 @@ internal class TarsInput(
     @Suppress("FunctionName")
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun readNextHeadButDoNotAssignTo_Head(
-        ignoreNextHead: Boolean = false
+        ignoreNextHead: Boolean = false,
     ): TarsHead? {
         if (!ignoreNextHead) {
             val n = _nextHead
@@ -112,7 +112,7 @@ internal class TarsInput(
     inline fun <R : Any> skipToHeadAndUseIfPossibleOrFail(
         tag: Int,
         crossinline message: () -> String = { "tag not found: $tag" },
-        crossinline block: (TarsHead) -> R
+        crossinline block: (TarsHead) -> R,
     ): R {
         return checkNotNull<R>(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
     }

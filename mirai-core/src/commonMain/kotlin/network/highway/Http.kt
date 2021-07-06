@@ -46,7 +46,7 @@ internal suspend fun HttpClient.postImage(
     uin: Long,
     groupcode: Long?,
     imageInput: ExternalResource,
-    uKeyHex: String
+    uKeyHex: String,
 ): Boolean = post<HttpStatusCode> {
     url {
         protocol = URLProtocol.HTTP

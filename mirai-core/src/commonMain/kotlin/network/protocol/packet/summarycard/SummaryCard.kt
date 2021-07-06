@@ -48,7 +48,7 @@ internal object SummaryCard {
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
-        )= buildOutgoingUniPacket(client) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(

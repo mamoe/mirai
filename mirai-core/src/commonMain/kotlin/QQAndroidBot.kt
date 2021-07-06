@@ -43,7 +43,9 @@ import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.contracts.contract
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -89,16 +91,26 @@ internal open class QQAndroidBot constructor(
                 override fun stateChanged0(
                     networkHandler: NetworkHandlerSupport,
                     previous: BaseStateImpl,
-                    new: BaseStateImpl
+                    new: BaseStateImpl,
                 ) {
-                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).onSuccess {
+                    eventDispatcher.broadcastAsync(BotOnlineEvent(bot)).thenBroadcast(eventDispatcher) {
                         if (!shouldBroadcastRelogin.compareAndSet(false, true)) {
-                            eventDispatcher.broadcastAsync(BotReloginEvent(bot, new.getCause()))
-                        }
+                            BotReloginEvent(bot, new.getCause())
+                        } else null
                     }
                 }
 
                 override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
+            },
+            StateChangedObserver("LastConnectedAddressUpdater", State.OK) {
+                components[ServerList].run {
+                    lastConnectedIP = getLastPolledIP()
+                }
+            },
+            StateChangedObserver("LastDisconnectedAddressUpdater", State.CLOSED) {
+                components[ServerList].run {
+                    lastDisconnectedIP = lastConnectedIP
+                }
             },
             StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->
                 // logging performed by BotOfflineEventMonitor
@@ -158,6 +170,10 @@ internal open class QQAndroidBot constructor(
             MessageSvcSyncer,
             MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
         )
+        set(
+            EcdhInitialPublicKeyUpdater,
+            EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater"))
+        )
         set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
         set(
@@ -191,7 +207,8 @@ internal open class QQAndroidBot constructor(
     override fun createNetworkHandler(): NetworkHandler {
         return SelectorNetworkHandler(
             KeepAliveNetworkHandlerSelector(
-                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE)
+                maxAttempts = configuration.reconnectionRetryTimes.coerceIn(1, Int.MAX_VALUE),
+                logger = networkLogger.subLogger("Selector")
             ) {
                 val context = NetworkHandlerContextImpl(
                     bot,

@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 
@@ -19,10 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.message.map
-import net.mamoe.mirai.utils.chunkedHexToBytes
-import net.mamoe.mirai.utils.copy
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 /**
  * mirai 尚未支持的消息类型.
@@ -32,8 +29,10 @@ import net.mamoe.mirai.utils.toUHexString
  */
 @SerialName(UnsupportedMessage.SERIAL_NAME)
 @Serializable(UnsupportedMessage.Serializer::class)
+@NotStableForInheritance
 public interface UnsupportedMessage : MessageContent {
-    override fun contentToString(): String = "[不支持的消息#${struct.contentHashCode()}]" // to produce 'stable' and reliable text
+    override fun contentToString(): String =
+        "[不支持的消息#${struct.contentHashCode()}]" // to produce 'stable' and reliable text
 
     /**
      * 原生消息数据

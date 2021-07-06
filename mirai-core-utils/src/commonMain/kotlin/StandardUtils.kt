@@ -219,3 +219,9 @@ public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwab
 public fun String.capitalize(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }
+
+public fun String.truncated(length: Int, truncated: String = "..."): String {
+    return if (this.length > length) {
+        this.take(10) + truncated
+    } else this
+}

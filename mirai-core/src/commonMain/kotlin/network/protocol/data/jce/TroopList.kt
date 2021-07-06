@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.data.jce
@@ -23,7 +23,7 @@ internal class GetTroopListReqV2Simplify(
     @TarsId(5) @JvmField val shVersion: Int? = null,
     @TarsId(6) @JvmField val dwCompanyId: Long? = null,
     @TarsId(7) @JvmField val versionNum: Long? = null,
-    @TarsId(8) @JvmField val getLongGroupName: Byte? = null
+    @TarsId(8) @JvmField val getLongGroupName: Byte? = null,
 ) : JceStruct
 
 @Serializable
@@ -31,7 +31,7 @@ internal class StTroopNumSimplify(
     @TarsId(0) @JvmField val groupCode: Long,
     @TarsId(1) @JvmField val dwGroupInfoSeq: Long? = null,
     @TarsId(2) @JvmField val dwGroupFlagExt: Long? = null,
-    @TarsId(3) @JvmField val dwGroupRankSeq: Long? = null
+    @TarsId(3) @JvmField val dwGroupRankSeq: Long? = null,
 ) : JceStruct
 
 
@@ -46,7 +46,7 @@ internal class GetTroopListRespV2(
     @TarsId(6) @JvmField val vecTroopListDel: List<StTroopNum>? = null,
     @TarsId(7) @JvmField val vecTroopRank: List<StGroupRankInfo>? = null,
     @TarsId(8) @JvmField val vecFavGroup: List<StFavoriteGroup>? = null,
-    @TarsId(9) @JvmField val vecTroopListExt: List<StTroopNum>? = null
+    @TarsId(9) @JvmField val vecTroopListExt: List<StTroopNum>? = null,
 ) : JceStruct
 
 
@@ -86,7 +86,7 @@ internal class StTroopNum(
     @TarsId(31) @JvmField val udwHLGuildAppid: Long? = null,
     @TarsId(32) @JvmField val udwHLGuildSubType: Long? = null,
     @TarsId(33) @JvmField val udwCmdUinRingtoneID: Long? = null,
-    @TarsId(34) @JvmField val udwCmdUinFlagEx2: Long? = null
+    @TarsId(34) @JvmField val udwCmdUinFlagEx2: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -99,7 +99,7 @@ internal class StGroupRankInfo(
     @TarsId(5) @JvmField val ownerName: String? = "",
     @TarsId(6) @JvmField val adminName: String? = "",
     @TarsId(7) @JvmField val dwOfficeMode: Long? = null,
-    @TarsId(9) @JvmField val fuckIssue405: List<FuckIssue405?>? = null // fake
+    @TarsId(9) @JvmField val fuckIssue405: List<FuckIssue405?>? = null, // fake
 ) : JceStruct
 
 @Serializable
@@ -110,13 +110,13 @@ internal class StFavoriteGroup(
     @TarsId(0) @JvmField val dwGroupCode: Long,
     @TarsId(1) @JvmField val dwTimestamp: Long? = null,
     @TarsId(2) @JvmField val dwSnsFlag: Long? = 1L,
-    @TarsId(3) @JvmField val dwOpenTimestamp: Long? = null
+    @TarsId(3) @JvmField val dwOpenTimestamp: Long? = null,
 ) : JceStruct
 
 @Serializable
 internal class StLevelRankPair(
     @TarsId(0) @JvmField val dwLevel: Long? = null,
-    @TarsId(1) @JvmField val rank: String? = ""
+    @TarsId(1) @JvmField val rank: String? = "",
 ) : JceStruct
 
 @Serializable
@@ -128,7 +128,7 @@ internal class GetTroopMemberListReq(
     @TarsId(4) @JvmField val version: Long? = null,
     @TarsId(5) @JvmField val reqType: Long? = null,
     @TarsId(6) @JvmField val getListAppointTime: Long? = null,
-    @TarsId(7) @JvmField val richCardNameVer: Byte? = null
+    @TarsId(7) @JvmField val richCardNameVer: Byte? = null,
 ) : JceStruct
 
 
@@ -142,7 +142,7 @@ internal class GetTroopMemberListResp(
     @TarsId(5) @JvmField val result: Int,
     @TarsId(6) @JvmField val errorCode: Short? = null,
     @TarsId(7) @JvmField val officeMode: Long? = null,
-    @TarsId(8) @JvmField val nextGetTime: Long? = null
+    @TarsId(8) @JvmField val nextGetTime: Long? = null,
 ) : JceStruct
 
 @Serializable
@@ -185,11 +185,11 @@ internal class StTroopMemberInfo(
     @TarsId(36) @JvmField val dwBigClubLevel: Long? = null,
     @TarsId(37) @JvmField val dwBigClubFlag: Long? = null,
     @TarsId(38) @JvmField val dwNameplate: Long? = null,
-    @TarsId(39) @JvmField val vecGroupHonor: ByteArray? = null
+    @TarsId(39) @JvmField val vecGroupHonor: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
 internal class QzoneUserInfo(
     @TarsId(0) @JvmField val eStarState: Int? = null,
-    @TarsId(1) @JvmField val extendInfo: Map<String, String>? = null
+    @TarsId(1) @JvmField val extendInfo: Map<String, String>? = null,
 ) : JceStruct

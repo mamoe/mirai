@@ -24,7 +24,7 @@ internal class RequestPushStatus(
     @JvmField @TarsId(5) val nPCVer: Long? = null,
     @JvmField @TarsId(6) val nClientType: Long? = null,
     @JvmField @TarsId(7) val nInstanceId: Long? = null,
-    @JvmField @TarsId(8) val vecInstanceList: List<InstanceInfo>? = null
+    @JvmField @TarsId(8) val vecInstanceList: List<InstanceInfo>? = null,
 ) : JceStruct
 
 

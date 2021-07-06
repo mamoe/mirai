@@ -70,7 +70,9 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
         MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
                 fromUin = chain.senderId,
-                toUin = if (isLong) { handler.targetUserUin ?: 0 } else 0,
+                toUin = if (isLong) {
+                    handler.targetUserUin ?: 0
+                } else 0,
                 msgSeq = calculateMsgSeq(chain),
                 msgTime = chain.time,
                 msgUid = 0x01000000000000000L or random.toLongUnsigned(),

@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal
@@ -18,7 +18,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -58,6 +61,8 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+
+internal fun getMiraiImpl() = Mirai as MiraiImpl
 
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
@@ -371,6 +376,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     break
                 }
             }
+            bot.network.run {
+                val resp =
+                    TroopManagement.GetAdmin(bot.client, groupCode).sendAndExpect<TroopManagement.GetAdmin.Response>()
+                check(resp is TroopManagement.GetAdmin.Response.Success) { "Failed to get admin info" }
+                sequence.filter { member -> member.permission == MemberPermission.MEMBER && resp.memberList.any { member.uin == it.memberUin } }
+                    .forEach { memberInfoImpl ->
+                        memberInfoImpl.permission = MemberPermission.ADMINISTRATOR
+                    }
+            }
             return sequence
         }
 
@@ -546,131 +560,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getRawGroupAnnouncements(
-        bot: Bot,
-        groupId: Long,
-        page: Int,
-        amount: Int
-    ): GroupAnnouncementList = bot.asQQAndroidBot().run {
-        val rep = bot.asQQAndroidBot().network.run {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bot.bkn)
-                    append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                    append("n", amount)
-                    append("ni", if (page == 1) 1 else 0)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
-                    )
-                }
-            }
-        }
-//        bot.network.logger.error(rep)
-        return json.decodeFromString(GroupAnnouncementList.serializer(), rep)
-    }
-
     private val json = Json {
-        ignoreUnknownKeys = true
         isLenient = true
+        ignoreUnknownKeys = true
     }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
-        bot.asQQAndroidBot().run {
-            val rep = Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bkn)
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append(
-                        "settings",
-                        json.encodeToString(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-            val jsonObj = json.parseToJsonElement(rep)
-            return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-                ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-        }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
-        val data = Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-            body = MultiPartFormDataContent(formData {
-                append("qid", groupId)
-                append("bkn", bkn)
-                append("fid", fid)
-                append("format", "json")
-            })
-            headers {
-                append(
-                    "cookie",
-                    "uin=o${id};" +
-                            " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                            " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                )
-            }
-        }
-        val jsonObj = json.parseToJsonElement(data)
-        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
-            throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
-        }
-    }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
-        bot.asQQAndroidBot().run {
-            val rep = network.run {
-                Mirai.Http.post<String> {
-                    url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
-                    body = MultiPartFormDataContent(formData {
-                        append("qid", groupId)
-                        append("bkn", bkn)
-                        append("fid", fid)
-                        append("format", "json")
-                    })
-                    headers {
-                        append(
-                            "cookie",
-                            "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
-                        )
-                    }
-                }
-            }
-
-//        bot.network.logger.error(rep)
-            return json.decodeFromString(GroupAnnouncement.serializer(), rep)
-
-        }
 
     @LowLevelApi
     @MiraiExperimentalApi
@@ -722,7 +615,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
-    internal suspend fun uploadMessageHighway(
+    internal open suspend fun uploadMessageHighway(
         bot: Bot,
         sendMessageHandler: SendMessageHandler<*>,
         message: Collection<ForwardMessage.INode>,
@@ -1080,5 +973,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 error("Message is too large and cannot download")
             }
         }
+    }
+
+    override fun serializePttElem(ptt: Any?): String {
+        if (ptt !is ImMsgBody.Ptt) return ""
+        return ptt.toByteArray(ImMsgBody.Ptt.serializer()).toUHexString()
+    }
+
+    override fun deserializePttElem(ptt: String): Any? {
+        if (ptt.isBlank()) return null
+        return ptt.hexToBytes().loadAs(ImMsgBody.Ptt.serializer())
     }
 }

@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
@@ -97,6 +97,7 @@ import java.io.File
  * @see FileSupported
  * @since 2.5
  */
+@NotStableForInheritance
 public interface RemoteFile {
     /**
      * 文件名或目录名.
@@ -443,7 +444,7 @@ public interface RemoteFile {
      */
     public suspend fun upload(
         resource: ExternalResource,
-        callback: ProgressionCallback? = null
+        callback: ProgressionCallback? = null,
     ): FileMessage
 
     /**
@@ -458,7 +459,7 @@ public interface RemoteFile {
      */
     public suspend fun upload(
         file: File,
-        callback: ProgressionCallback? = null
+        callback: ProgressionCallback? = null,
     ): FileMessage = file.toExternalResource().use { upload(it, callback) }
 
     /**
@@ -533,7 +534,7 @@ public interface RemoteFile {
         public suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
-            callback: ProgressionCallback? = null
+            callback: ProgressionCallback? = null,
         ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(resource, callback)
 
         /**
@@ -546,7 +547,7 @@ public interface RemoteFile {
         public suspend fun FileSupported.uploadFile(
             path: String,
             file: File,
-            callback: ProgressionCallback? = null
+            callback: ProgressionCallback? = null,
         ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(file, callback)
 
         /**
@@ -559,7 +560,7 @@ public interface RemoteFile {
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             resource: ExternalResource,
-            callback: ProgressionCallback? = null
+            callback: ProgressionCallback? = null,
         ): MessageReceipt<C> =
             @Suppress("DEPRECATION")
             this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
@@ -573,7 +574,7 @@ public interface RemoteFile {
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             file: File,
-            callback: ProgressionCallback? = null
+            callback: ProgressionCallback? = null,
         ): MessageReceipt<C> =
             @Suppress("DEPRECATION")
             this.filesRoot.resolve(path).upload(file, callback).sendTo(this)

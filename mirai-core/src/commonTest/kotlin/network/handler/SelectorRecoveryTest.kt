@@ -9,43 +9,20 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import io.netty.channel.Channel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.HeartbeatFailureHandler
 import net.mamoe.mirai.internal.network.components.HeartbeatScheduler
-import net.mamoe.mirai.internal.network.framework.AbstractRealNetworkHandlerTest
-import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.impl.netty.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTestWithSelector
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
-import net.mamoe.mirai.internal.network.impl.netty.TestNettyNH
+import net.mamoe.mirai.internal.network.impl.netty.NettyChannelException
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
-import java.net.SocketAddress
+import java.io.IOException
 import kotlin.test.assertFails
 
-internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<SelectorNetworkHandler>() {
-    val channel = AbstractNettyNHTest.NettyNHTestChannel()
-
-    private val selector = TestSelector {
-        object : TestNettyNH(bot, createContext(), address) {
-            override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel {
-                return channel
-            }
-        }
-    }
-
-    override val factory: NetworkHandlerFactory<SelectorNetworkHandler> =
-        object : NetworkHandlerFactory<SelectorNetworkHandler> {
-            override fun create(context: NetworkHandlerContext, address: SocketAddress): SelectorNetworkHandler {
-                return SelectorNetworkHandler(selector)
-            }
-        }
-
-    override val network: SelectorNetworkHandler get() = bot.network.cast()
-
+internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
     @Test
     fun `stop on manual close`() = runBlockingUnit {
         network.resumeConnection()
@@ -53,28 +30,47 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
         assertFails { network.resumeConnection() }
     }
 
+    /**
+     * Emulates system hibernation and network failure.
+     * @see HeartbeatFailedException
+     */
+    @Test
+    fun `can recover on heartbeat failure with IOException`() = runBlockingUnit {
+        // We allow IOException to cause a reconnect.
+        testRecoverWhenHeartbeatFailWith { IOException("test IO ex") }
+
+        // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
+        assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.OK)
+    }
 
     /**
      * Emulates system hibernation and network failure.
      * @see HeartbeatFailedException
      */
     @Test
-    fun `can recover on heartbeat failure`() = runBlockingUnit {
-        testRecover { HeartbeatFailedException("test", null) } // NetworkException
+    fun `can recover on heartbeat failure with NettyChannelException`() = runBlockingUnit {
+        // We allow IOException to cause a reconnect.
+        testRecoverWhenHeartbeatFailWith { NettyChannelException("test IO ex") }
+
+        // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
+        assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.OK)
     }
 
     @Test
     fun `cannot recover on other failures`() = runBlockingUnit {
-        testRecover { IllegalStateException() }
+        // ISE is considered as an internal error (bug).
+        testRecoverWhenHeartbeatFailWith { IllegalStateException() }
+
+        assertState(NetworkHandler.State.CLOSED)
     }
 
-    private suspend fun testRecover(exception: () -> Exception) {
+    private suspend fun testRecoverWhenHeartbeatFailWith(exception: () -> Exception) {
         val heartbeatScheduler = object : HeartbeatScheduler {
             lateinit var onHeartFailure: HeartbeatFailureHandler
             override fun launchJobsIn(
                 network: NetworkHandlerSupport,
                 scope: CoroutineScope,
-                onHeartFailure: HeartbeatFailureHandler
+                onHeartFailure: HeartbeatFailureHandler,
             ): List<Job> {
                 this.onHeartFailure = onHeartFailure
                 return listOf(Job())
@@ -87,9 +83,5 @@ internal class SelectorNetworkHandlerTest : AbstractRealNetworkHandlerTest<Selec
         assertState(NetworkHandler.State.OK)
 
         heartbeatScheduler.onHeartFailure("Test", exception())
-        assertState(NetworkHandler.State.CLOSED)
-
-        bot.network.resumeConnection() // in real, this is called by BotOnlineWatchdog in SelectorNetworkHandler
-        assertState(NetworkHandler.State.OK)
     }
 }

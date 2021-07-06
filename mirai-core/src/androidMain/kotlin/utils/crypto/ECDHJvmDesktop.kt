@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
+import net.mamoe.mirai.utils.decodeBase64
 import net.mamoe.mirai.utils.md5
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -22,19 +23,18 @@ internal actual typealias ECDHPrivateKey = PrivateKey
 internal actual typealias ECDHPublicKey = PublicKey
 
 internal actual class ECDHKeyPairImpl(
-    private val delegate: KeyPair
+    private val delegate: KeyPair,
+    initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key
 ) : ECDHKeyPair {
     override val privateKey: ECDHPrivateKey get() = delegate.private
     override val publicKey: ECDHPublicKey get() = delegate.public
-
-    override val initialShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
+    override val maskedPublicKey: ByteArray by lazy { publicKey.encoded.copyOfRange(26, 91) }
+    override val maskedShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
 }
-
-internal actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        private const val curveName = "secp192k1" // p-256
+        private const val curveName = "prime256v1" // p-256
 
         actual val isECDHAvailable: Boolean
 
@@ -59,14 +59,14 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             }.isSuccess
         }
 
-        actual fun generateKeyPair(): ECDHKeyPair {
+        actual fun generateKeyPair(initialPublicKey: ECDHPublicKey): ECDHKeyPair {
             if (!isECDHAvailable) {
                 return ECDHKeyPair.DefaultStub
             }
             return ECDHKeyPairImpl(
                 KeyPairGenerator.getInstance("ECDH")
                     .also { it.initialize(ECGenParameterSpec(curveName)) }
-                    .genKeyPair())
+                    .genKeyPair(), initialPublicKey)
         }
 
         actual fun calculateShareKey(
@@ -76,7 +76,15 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)
             instance.doPhase(publicKey, true)
-            return instance.generateSecret().md5()
+            return instance.generateSecret().copyOf(16).md5()
+        }
+
+        actual fun verifyPublicKey(version: Int, publicKey: String, publicKeySign: String): Boolean {
+            val arrayForVerify = "305$version$publicKey".toByteArray()
+            val signInstance = Signature.getInstance("SHA256WithRSA")
+            signInstance.initVerify(publicKeyForVerify)
+            signInstance.update(arrayForVerify)
+            return signInstance.verify(publicKeySign.decodeBase64())
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {

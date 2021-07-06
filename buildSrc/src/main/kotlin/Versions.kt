@@ -24,7 +24,7 @@ object Versions {
 
     const val coroutines = "1.5.0"
     const val atomicFU = "0.16.1"
-    const val serialization = "1.1.0"
+    const val serialization = "1.2.1"
     const val ktor = "1.5.4"
 
     const val binaryValidator = "0.4.0"
@@ -49,10 +49,10 @@ object Versions {
 
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
-    const val yamlkt = "0.9.0"
-    const val intellijGradlePlugin = "0.7.2"
-    const val kotlinIntellijPlugin = "211-1.4.32-release-IJ6693.72" // keep to newest as kotlinCompiler
-    const val intellij = "2021.1" // don't update easily unless you want your disk space -= 500MB
+    const val yamlkt = "0.10.0"
+    const val intellijGradlePlugin = "1.1"
+    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
+    const val intellij = "2021.1.3" // don't update easily unless you want your disk space -= 500MB
 
 }
 

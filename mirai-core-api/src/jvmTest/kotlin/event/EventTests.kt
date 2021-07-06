@@ -187,7 +187,7 @@ internal class EventTests : AbstractEventTest() {
         }
     }
 
-    open class PriorityTestEvent : AbstractEvent() {}
+    open class PriorityTestEvent : AbstractEvent()
 
     fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
         // runBlocking 会完全堵死, 没法退出

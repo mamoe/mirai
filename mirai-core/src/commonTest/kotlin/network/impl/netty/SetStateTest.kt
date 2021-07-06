@@ -14,6 +14,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
+import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.runBlockingUnit

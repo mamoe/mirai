@@ -10,5 +10,5 @@
 package net.mamoe.mirai.internal.network.handler.state
 
 internal class ExceptionInStateObserverException(
-    override val cause: Throwable
+    override val cause: Throwable,
 ) : RuntimeException()

@@ -10,11 +10,14 @@
 package net.mamoe.mirai.internal.network.impl.netty
 
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.utils.unwrapCancellationException
+import java.io.IOException
 
 internal class HeartbeatFailedException(
     private val name: String, // kind of HB
-    override val cause: Throwable? = null
-) : NetworkException(true) {
+    override val cause: Throwable,
+    recoverable: Boolean = cause.unwrapCancellationException() is IOException || cause is NetworkException && cause.recoverable,
+) : NetworkException(recoverable) {
     override val message: String = "Exception in $name job"
-    override fun toString(): String = "HeartbeatFailedException: $name, cause=$cause"
+    override fun toString(): String = "HeartbeatFailedException: $name, recoverable=$recoverable, cause=$cause"
 }

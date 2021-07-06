@@ -27,6 +27,9 @@ import network.framework.components.TestEventDispatcherImpl
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
 
+/**
+ * Mock network, can only test implementation of the framework of [NetworkHandler].
+ */
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerTest() {
     protected open fun createNetworkHandlerContext() = TestNetworkHandlerContext(bot, logger, components)

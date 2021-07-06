@@ -81,7 +81,7 @@ public data class RawForwardMessage(
  * | <消息 2>                 |
  * | <消息 3>                 |
  * |-------------------------|
- * | 查看 3 条转发消息          |
+ * | 查看3条转发消息          |
  * |-------------------------|
  * ```
  *
@@ -151,7 +151,7 @@ public data class ForwardMessage(
         /**
          * 显示在卡片底部
          */
-        public fun generateSummary(forward: RawForwardMessage): String = "查看 ${forward.nodeList.size} 条转发消息"
+        public fun generateSummary(forward: RawForwardMessage): String = "查看${forward.nodeList.size}条转发消息"
 
         /**
          * 默认的, 与官方客户端相似的展示方案.

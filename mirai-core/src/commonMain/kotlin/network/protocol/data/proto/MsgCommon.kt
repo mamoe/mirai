@@ -23,7 +23,7 @@ internal class MsgComm : ProtoBuf {
     internal class AppShareInfo(
         @ProtoNumber(1) @JvmField val appshareId: Int = 0,
         @ProtoNumber(2) @JvmField val appshareCookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val appshareResource: PluginInfo? = null
+        @ProtoNumber(3) @JvmField val appshareResource: PluginInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -38,7 +38,7 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(8) @JvmField val toPhone: String = "",
         @ProtoNumber(9) @JvmField val lockDisplay: Int = 0,
         @ProtoNumber(10) @JvmField val directionFlag: Int = 0,
-        @ProtoNumber(11) @JvmField val reserved: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(11) @JvmField val reserved: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -46,7 +46,7 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(1) @JvmField val pkgNum: Int = 0,
         @ProtoNumber(2) @JvmField val pkgIndex: Int = 0,
         @ProtoNumber(3) @JvmField val divSeq: Int = 0,
-        @ProtoNumber(4) @JvmField val autoReply: Int = 0
+        @ProtoNumber(4) @JvmField val autoReply: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -55,13 +55,13 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(2) @JvmField val discussType: Int = 0,
         @ProtoNumber(3) @JvmField val discussInfoSeq: Long = 0L,
         @ProtoNumber(4) @JvmField val discussRemark: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(5) @JvmField val discussName: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(5) @JvmField val discussName: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class ExtGroupKeyInfo(
         @ProtoNumber(1) @JvmField val curMaxSeq: Int = 0,
-        @ProtoNumber(2) @JvmField val curTime: Long = 0L
+        @ProtoNumber(2) @JvmField val curTime: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -73,7 +73,7 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(5) @JvmField val groupRank: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val groupLevel: Int = 0,
         @ProtoNumber(7) @JvmField val groupCardType: Int = 0,
-        @ProtoNumber(8) @JvmField val groupName: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(8) @JvmField val groupName: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -81,7 +81,7 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(1) @JvmField val msgHead: MsgHead,
         @ProtoNumber(2) @JvmField val contentHead: ContentHead? = null,
         @ProtoNumber(3) @JvmField val msgBody: ImMsgBody.MsgBody,
-        @ProtoNumber(4) @JvmField val appshareInfo: AppShareInfo? = null
+        @ProtoNumber(4) @JvmField val appshareInfo: AppShareInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -120,19 +120,19 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(25) @JvmField val extGroupKeyInfo: ExtGroupKeyInfo? = null,
         @ProtoNumber(26) @JvmField val multiCompatibleText: String = "",
         @ProtoNumber(27) @JvmField val authSex: Int = 0,
-        @ProtoNumber(28) @JvmField val isSrcMsg: Boolean = false
+        @ProtoNumber(28) @JvmField val isSrcMsg: Boolean = false,
     ) : ProtoBuf
 
     @Serializable
     internal class MsgType0x210(
         @ProtoNumber(1) @JvmField val subMsgType: Int = 0,
-        @ProtoNumber(2) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(2) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class MutilTransHead(
         @ProtoNumber(1) @JvmField val status: Int = 0,
-        @ProtoNumber(2) @JvmField val msgId: Int = 0
+        @ProtoNumber(2) @JvmField val msgId: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -147,13 +147,13 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(8) @JvmField val resDesc: String = "",
         @ProtoNumber(9) @JvmField val resUrlBig: String = "",
         @ProtoNumber(10) @JvmField val resUrlSmall: String = "",
-        @ProtoNumber(11) @JvmField val resConf: String = ""
+        @ProtoNumber(11) @JvmField val resConf: String = "",
     ) : ProtoBuf
 
     @Serializable
     internal class Uin2Nick(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
-        @ProtoNumber(2) @JvmField val nick: String = ""
+        @ProtoNumber(2) @JvmField val nick: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -165,6 +165,6 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(5) @JvmField val unreadMsgNum: Int = 0,
         @ProtoNumber(8) @JvmField val c2cType: Int = 0,
         @ProtoNumber(9) @JvmField val serviceType: Int = 0,
-        @ProtoNumber(10) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoNumber(10) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 }

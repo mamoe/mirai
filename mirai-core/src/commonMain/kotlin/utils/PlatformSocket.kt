@@ -115,7 +115,7 @@ internal class PlatformSocket : Closeable, HighwayProtocolChannel {
         suspend inline fun <R> withConnection(
             serverIp: String,
             serverPort: Int,
-            block: PlatformSocket.() -> R
+            block: PlatformSocket.() -> R,
         ): R {
             contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
             return connect(serverIp, serverPort).withUse(block)

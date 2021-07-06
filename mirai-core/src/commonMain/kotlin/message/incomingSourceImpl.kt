@@ -36,13 +36,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
 internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>
+    msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromFriend(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    override val ids: IntArray get() = sequenceIds// msg.msgBody.richText.attr!!.random
+    override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
     } // other client 消息的这个是0
@@ -60,13 +60,13 @@ internal class OnlineMessageSourceFromFriendImpl(
 @Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>
+    msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromStranger(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    override val ids: IntArray get() = sequenceIds// msg.msgBody.richText.attr!!.random
+    override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
     } // other client 消息的这个是0
@@ -123,14 +123,14 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>
+    msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromTemp(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    override val ids: IntArray get() = sequenceIds//
+    override val ids: IntArray get() = sequenceIds //
     override val time: Int = msg.first().msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
         msg.toMessageChainNoSource(bot, groupIdOrZero = 0, MessageSourceKind.TEMP)
@@ -146,7 +146,7 @@ internal class OnlineMessageSourceFromTempImpl(
 @Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
 internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>
+    msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromGroup(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 

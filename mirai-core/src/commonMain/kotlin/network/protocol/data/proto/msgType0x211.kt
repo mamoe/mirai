@@ -25,13 +25,13 @@ internal class SubMsgType0x3 : ProtoBuf {
     internal class FailNotify(
         @JvmField @ProtoNumber(1) val sessionid: Int = 0,
         @JvmField @ProtoNumber(2) val retCode: Int = 0,
-        @JvmField @ProtoNumber(3) val reason: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(3) val reason: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class MsgBody(
         @JvmField @ProtoNumber(1) val msgProgressNotify: ProgressNotify? = null,
-        @JvmField @ProtoNumber(2) val msgFailNotify: FailNotify? = null
+        @JvmField @ProtoNumber(2) val msgFailNotify: FailNotify? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -39,7 +39,7 @@ internal class SubMsgType0x3 : ProtoBuf {
         @JvmField @ProtoNumber(1) val sessionid: Int = 0,
         @JvmField @ProtoNumber(2) val uuid: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(3) val progress: Int = 0,
-        @JvmField @ProtoNumber(4) val averageSpeed: Int = 0
+        @JvmField @ProtoNumber(4) val averageSpeed: Int = 0,
     ) : ProtoBuf
 }
 
@@ -53,7 +53,7 @@ internal class SubMsgType0x4 : ProtoBuf {
         @JvmField @ProtoNumber(3) val onlineFileForPolyToOffline: Int = 0,
         @JvmField @ProtoNumber(4) val fileImageInfo: HummerResv21.FileImgInfo? = null,
         @JvmField @ProtoNumber(5) val msgXtfSenderInfo: HummerResv21.XtfSenderInfo? = null,
-        @JvmField @ProtoNumber(6) val resvAttr: HummerResv21.ResvAttr? = null
+        @JvmField @ProtoNumber(6) val resvAttr: HummerResv21.ResvAttr? = null,
     ) : ProtoBuf
 }
 
@@ -62,7 +62,7 @@ internal class SubMsgType0x4 : ProtoBuf {
 internal class SubMsgType0x5 : ProtoBuf {
     @Serializable
     internal class MsgBody(
-        @JvmField @ProtoNumber(1) val sessionid: Int = 0
+        @JvmField @ProtoNumber(1) val sessionid: Int = 0,
     ) : ProtoBuf
 }
 
@@ -83,12 +83,12 @@ internal class SubMsgType0x7 : ProtoBuf {
         @JvmField @ProtoNumber(10) val msgSubcmd0xaNfcThumbNotify: List<NFCNotify> = emptyList(),
         @JvmField @ProtoNumber(11) val msgSubcmd0xbMpfileNotify: List<MpFileNotify> = emptyList(),
         @JvmField @ProtoNumber(12) val msgSubcmd0xcProgressReq: ProgressReq? = null,
-        @JvmField @ProtoNumber(13) val msgSubcmd0xdProgressRsp: ProgressRsp? = null
+        @JvmField @ProtoNumber(13) val msgSubcmd0xdProgressRsp: ProgressRsp? = null,
     ) : ProtoBuf {
         @Serializable
         internal class ActionInfo(
             @JvmField @ProtoNumber(1) val serviceName: String = "",
-            @JvmField @ProtoNumber(2) val buf: ByteArray = EMPTY_BYTE_ARRAY
+            @JvmField @ProtoNumber(2) val buf: ByteArray = EMPTY_BYTE_ARRAY,
         ) : ProtoBuf
 
         @Serializable
@@ -100,7 +100,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(5) val msg: String = "",
             @JvmField @ProtoNumber(6) val groupId: Int = 0,
             @JvmField @ProtoNumber(7) val groupCurindex: Int = 0,
-            @JvmField @ProtoNumber(8) val batchID: Int = 0
+            @JvmField @ProtoNumber(8) val batchID: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -118,28 +118,28 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(11) val groupCurindex: Int = 0,
             @JvmField @ProtoNumber(20) val msgActionInfo: ActionInfo? = null,
             @JvmField @ProtoNumber(21) val batchID: Int = 0,
-            @JvmField @ProtoNumber(22) val groupflag: Int = 0
+            @JvmField @ProtoNumber(22) val groupflag: Int = 0,
         ) : ProtoBuf
 
         @Serializable
         internal class MsgItem(
             @JvmField @ProtoNumber(1) val type: Int = 0,
-            @JvmField @ProtoNumber(2) val text: String = ""
+            @JvmField @ProtoNumber(2) val text: String = "",
         ) : ProtoBuf
 
         @Serializable
         internal class QQDataTextMsg(
-            @JvmField @ProtoNumber(1) val msgItems: List<MsgItem> = emptyList()
+            @JvmField @ProtoNumber(1) val msgItems: List<MsgItem> = emptyList(),
         ) : ProtoBuf
 
         @Serializable
         internal class WifiPhotoNoPush(
-            @JvmField @ProtoNumber(1) val json: ByteArray = EMPTY_BYTE_ARRAY
+            @JvmField @ProtoNumber(1) val json: ByteArray = EMPTY_BYTE_ARRAY,
         ) : ProtoBuf
 
         @Serializable
         internal class WifiPhotoWithPush(
-            @JvmField @ProtoNumber(1) val json: ByteArray = EMPTY_BYTE_ARRAY
+            @JvmField @ProtoNumber(1) val json: ByteArray = EMPTY_BYTE_ARRAY,
         ) : ProtoBuf
 
         @Serializable
@@ -149,7 +149,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(3) val index: Int = 0,
             @JvmField @ProtoNumber(4) val type: Int = 0,
             @JvmField @ProtoNumber(5) val buf: ByteArray = EMPTY_BYTE_ARRAY,
-            @JvmField @ProtoNumber(6) val supportAuth: Int = 0
+            @JvmField @ProtoNumber(6) val supportAuth: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -157,7 +157,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(1) val buf: ByteArray = EMPTY_BYTE_ARRAY,
             @JvmField @ProtoNumber(2) val groupId: Int = 0,
             @JvmField @ProtoNumber(3) val groupSize: Int = 0,
-            @JvmField @ProtoNumber(4) val groupCurindex: Int = 0
+            @JvmField @ProtoNumber(4) val groupCurindex: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -168,7 +168,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(4) val port: Int = 0,
             @JvmField @ProtoNumber(5) val type: Int = 0,
             @JvmField @ProtoNumber(6) val power: Int = 0,
-            @JvmField @ProtoNumber(7) val json: ByteArray = EMPTY_BYTE_ARRAY
+            @JvmField @ProtoNumber(7) val json: ByteArray = EMPTY_BYTE_ARRAY,
         ) : ProtoBuf
 
         @Serializable
@@ -182,7 +182,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(7) val srcUinType: Int = 0,
             @JvmField @ProtoNumber(8) val dstUinType: Int = 0,
             @JvmField @ProtoNumber(9) val srcTerType: Int = 0,
-            @JvmField @ProtoNumber(10) val dstTerType: Int = 0
+            @JvmField @ProtoNumber(10) val dstTerType: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -202,7 +202,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(13) val groupCurindex: Int = 0,
             @JvmField @ProtoNumber(20) val msgActionInfo: ActionInfo? = null,
             @JvmField @ProtoNumber(21) val batchID: Int = 0,
-            @JvmField @ProtoNumber(22) val groupflag: Int = 0
+            @JvmField @ProtoNumber(22) val groupflag: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -210,7 +210,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(1) val cmd: Int = 0,
             @JvmField @ProtoNumber(2) val cookie: Long = 0L,
             @JvmField @ProtoNumber(3) val infoflag: Int = 0,
-            @JvmField @ProtoNumber(4) val uint64Sessionid: List<Long> = emptyList()
+            @JvmField @ProtoNumber(4) val uint64Sessionid: List<Long> = emptyList(),
         ) : ProtoBuf
 
         @Serializable
@@ -220,7 +220,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(3) val status: Int = 0,
             @JvmField @ProtoNumber(4) val filesize: Long = 0L,
             @JvmField @ProtoNumber(5) val filename: String = "",
-            @JvmField @ProtoNumber(6) val time: Long = 0L
+            @JvmField @ProtoNumber(6) val time: Long = 0L,
         ) : ProtoBuf
 
         @Serializable
@@ -229,7 +229,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(2) val cookie: Long = 0L,
             @JvmField @ProtoNumber(3) val packageCount: Int = 0,
             @JvmField @ProtoNumber(4) val packageIndex: Int = 0,
-            @JvmField @ProtoNumber(5) val msgProgressinfo: List<ProgressInfo> = emptyList()
+            @JvmField @ProtoNumber(5) val msgProgressinfo: List<ProgressInfo> = emptyList(),
         ) : ProtoBuf
 
         @Serializable
@@ -238,7 +238,7 @@ internal class SubMsgType0x7 : ProtoBuf {
             @JvmField @ProtoNumber(2) val token: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoType(ProtoIntegerType.FIXED) @JvmField @ProtoNumber(3) val fixed32Ip: Int = 0,
             @JvmField @ProtoNumber(4) val port: Int = 0,
-            @JvmField @ProtoNumber(5) val svrTaskId: Long = 0L
+            @JvmField @ProtoNumber(5) val svrTaskId: Long = 0L,
         ) : ProtoBuf
     }
 }
@@ -249,7 +249,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
     @Serializable
     internal class BusiReqHead(
         @JvmField @ProtoNumber(1) val int32Version: Int = 0,
-        @JvmField @ProtoNumber(2) val int32Seq: Int = 0
+        @JvmField @ProtoNumber(2) val int32Seq: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -257,7 +257,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val int32Version: Int = 0,
         @JvmField @ProtoNumber(2) val int32Seq: Int = 0,
         @JvmField @ProtoNumber(3) val int32ReplyCode: Int = 0,
-        @JvmField @ProtoNumber(4) val result: String = ""
+        @JvmField @ProtoNumber(4) val result: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -266,13 +266,13 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(2) val int32Mnc: Int = -1,
         @JvmField @ProtoNumber(3) val int32Lac: Int = -1,
         @JvmField @ProtoNumber(4) val int32Cellid: Int = -1,
-        @JvmField @ProtoNumber(5) val int32Rssi: Int = 0
+        @JvmField @ProtoNumber(5) val int32Rssi: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class ConnType(
         @JvmField @ProtoNumber(1) val type: Int /* enum */ = 1,
-        @JvmField @ProtoNumber(2) val desription: String = ""
+        @JvmField @ProtoNumber(2) val desription: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -280,7 +280,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val int32Lat: Int = 900000000,
         @JvmField @ProtoNumber(2) val int32Lon: Int = 900000000,
         @JvmField @ProtoNumber(3) val int32Alt: Int = -10000000,
-        @JvmField @ProtoNumber(4) val eType: Int /* enum */ = 0
+        @JvmField @ProtoNumber(4) val eType: Int /* enum */ = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -288,7 +288,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val int32Ip: Int = 0,
         @JvmField @ProtoNumber(2) val int32Mask: Int = 0,
         @JvmField @ProtoNumber(3) val int32Gateway: Int = 0,
-        @JvmField @ProtoNumber(4) val int32Port: Int = 0
+        @JvmField @ProtoNumber(4) val int32Port: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -300,14 +300,14 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(5) val idleWaiting: Int = 0,
         @JvmField @ProtoNumber(6) val forceWifi: Int = 0,
         @JvmField @ProtoNumber(7) val flagsWifipsw: Int = 0,
-        @JvmField @ProtoNumber(8) val flagsNetcheck: Int = 0
+        @JvmField @ProtoNumber(8) val flagsNetcheck: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class LBSInfo(
         @JvmField @ProtoNumber(1) val msgGps: GPS? = null,
         @JvmField @ProtoNumber(2) val msgWifis: List<Wifi> = emptyList(),
-        @JvmField @ProtoNumber(3) val msgCells: List<Cell> = emptyList()
+        @JvmField @ProtoNumber(3) val msgCells: List<Cell> = emptyList(),
     ) : ProtoBuf
 
     @Serializable
@@ -317,7 +317,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(3) val msgCcnfAbiQuery: NearFieldAbiQuery? = null,
         @JvmField @ProtoNumber(4) val msgCcPushJudgeResult: PushJudgeResult? = null,
         @JvmField @ProtoNumber(5) val msgCcnfFilesendReq: NearFieldFileSendReq? = null,
-        @JvmField @ProtoNumber(6) val msgCcnfFilestateSync: NearFieldFileStateSync? = null
+        @JvmField @ProtoNumber(6) val msgCcnfFilestateSync: NearFieldFileStateSync? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -329,7 +329,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(5) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(6) val int32PeerIp: Int = 0,
         @JvmField @ProtoNumber(7) val int32PeerPort: Int = 0,
-        @JvmField @ProtoNumber(8) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(8) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -342,7 +342,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(6) val fileThumbUrl: String = "",
         @JvmField @ProtoNumber(7) val sessionId: Long = 0L,
         @JvmField @ProtoNumber(8) val int32Timeout: Int = 0,
-        @JvmField @ProtoNumber(9) val groupId: Long = 0L
+        @JvmField @ProtoNumber(9) val groupId: Long = 0L,
     ) : ProtoBuf
 
     @Serializable
@@ -354,7 +354,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(5) val ssid: String = "",
         @JvmField @ProtoNumber(6) val int32ConnWifiapTimeout: Int = 0,
         @JvmField @ProtoNumber(7) val forceWifi: Int = 0,
-        @JvmField @ProtoNumber(8) val wifipsw: String = ""
+        @JvmField @ProtoNumber(8) val wifipsw: String = "",
     ) : ProtoBuf
 
     @Serializable
@@ -362,7 +362,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val eType: Int /* enum */ = 1,
         @JvmField @ProtoNumber(2) val sessionId: Long = 0L,
         @JvmField @ProtoNumber(3) val fromUin: Long = 0L,
-        @JvmField @ProtoNumber(4) val int32ErrorCode: Int = 0
+        @JvmField @ProtoNumber(4) val int32ErrorCode: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -372,14 +372,14 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(3) val msgIpInfo: IPAddrInfo? = null,
         @JvmField @ProtoNumber(4) val msgWifiDetail: WifiDetailInfo? = null,
         @JvmField @ProtoNumber(5) val msgWifiAbi: WifiAbility? = null,
-        @JvmField @ProtoNumber(6) val extra: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(6) val extra: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class NotifyList(
         @JvmField @ProtoNumber(1) val notifyType: Int /* enum */ = 0,
         @JvmField @ProtoNumber(2) val msgUpdateList: List<UpdateInfo> = emptyList(),
-        @JvmField @ProtoNumber(3) val sessionId: Int = 0
+        @JvmField @ProtoNumber(3) val sessionId: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -389,21 +389,21 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(3) val msgResult: JudgeResult? = null,
         @JvmField @ProtoNumber(4) val int32PeerIp: Int = 0,
         @JvmField @ProtoNumber(5) val int32PeerPort: Int = 0,
-        @JvmField @ProtoNumber(6) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(6) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class ReqAIOJudge(
         @JvmField @ProtoNumber(1) val msgHead: BusiReqHead? = null,
         @JvmField @ProtoNumber(2) val toUin: Long = 0L,
-        @JvmField @ProtoNumber(3) val msgNearfieldInfo: NearfieldInfo? = null
+        @JvmField @ProtoNumber(3) val msgNearfieldInfo: NearfieldInfo? = null,
     ) : ProtoBuf
 
     @Serializable
     internal class ReqExit(
         @JvmField @ProtoNumber(1) val msgHead: BusiReqHead? = null,
         @JvmField @ProtoNumber(2) val sessionId: Int = 0,
-        @JvmField @ProtoNumber(3) val msgNearfieldInfo: NearfieldInfo? = null
+        @JvmField @ProtoNumber(3) val msgNearfieldInfo: NearfieldInfo? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -411,7 +411,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val msgHead: BusiReqHead? = null,
         @JvmField @ProtoNumber(2) val msgNearfieldInfo: NearfieldInfo? = null,
         @JvmField @ProtoNumber(3) val sessionId: Int = 0,
-        @JvmField @ProtoNumber(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -419,7 +419,7 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(1) val msgHead: BusiReqHead? = null,
         @JvmField @ProtoNumber(2) val fromUin: Long = 0L,
         @JvmField @ProtoNumber(3) val msgNearfieldInfo: NearfieldInfo? = null,
-        @JvmField @ProtoNumber(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -430,12 +430,12 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(4) val toUin: Long = 0L,
         @JvmField @ProtoNumber(5) val int32PeerIp: Int = 0,
         @JvmField @ProtoNumber(6) val int32PeerPort: Int = 0,
-        @JvmField @ProtoNumber(7) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(7) val peerExtra: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class RespExit(
-        @JvmField @ProtoNumber(1) val msgHead: BusiRespHead? = null
+        @JvmField @ProtoNumber(1) val msgHead: BusiRespHead? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -444,13 +444,13 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(2) val msgUserList: List<UserProfile> = emptyList(),
         @JvmField @ProtoNumber(3) val sessionId: Int = 0,
         @JvmField @ProtoNumber(4) val int32UpdateInterval: Int = 0,
-        @JvmField @ProtoNumber(5) val cookie: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(5) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class UpdateInfo(
         @JvmField @ProtoNumber(1) val type: Int /* enum */ = 1,
-        @JvmField @ProtoNumber(2) val msgUser: UserProfile? = null
+        @JvmField @ProtoNumber(2) val msgUser: UserProfile? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -466,12 +466,12 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(20) val int32AbsNetReachablecheck: Int = 0,
         @JvmField @ProtoNumber(21) val int32AbsNetSpeedTest: Int = 0,
         @JvmField @ProtoNumber(30) val int32AbsUiPromptOnclick: Int = 0,
-        @JvmField @ProtoNumber(31) val int32AbsUiPromptPassive: Int = 0
+        @JvmField @ProtoNumber(31) val int32AbsUiPromptPassive: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class UserExtraInfo(
-        @JvmField @ProtoNumber(1) val ability: UserAbility? = null
+        @JvmField @ProtoNumber(1) val ability: UserAbility? = null,
     ) : ProtoBuf
 
     @Serializable
@@ -486,26 +486,26 @@ internal class C2CType0x211SubC2CType0x8 : ProtoBuf {
         @JvmField @ProtoNumber(8) val int32Ip: Int = 0,
         @JvmField @ProtoNumber(9) val int32Port: Int = 0,
         @JvmField @ProtoNumber(10) val tip: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(11) val extra: ByteArray = EMPTY_BYTE_ARRAY
+        @JvmField @ProtoNumber(11) val extra: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
     internal class Wifi(
         @JvmField @ProtoNumber(1) val mac: Long = 0L,
-        @JvmField @ProtoNumber(2) val int32Rssi: Int = 0
+        @JvmField @ProtoNumber(2) val int32Rssi: Int = 0,
     ) : ProtoBuf
 
     @Serializable
     internal class WifiAbility(
         @JvmField @ProtoNumber(1) val boolEstablishAbi: Boolean = false,
-        @JvmField @ProtoNumber(2) val boolAutoConnectAbi: Boolean = false
+        @JvmField @ProtoNumber(2) val boolAutoConnectAbi: Boolean = false,
     ) : ProtoBuf
 
     @Serializable
     internal class WifiDetailInfo(
         @JvmField @ProtoNumber(1) val boolSelfEstablish: Boolean = false,
         @JvmField @ProtoNumber(2) val ssid: String = "",
-        @JvmField @ProtoNumber(3) val mac: String = ""
+        @JvmField @ProtoNumber(3) val mac: String = "",
     ) : ProtoBuf
 }
 
@@ -516,14 +516,14 @@ internal class C2CType0x211SubC2CType0x9 : ProtoBuf {
     internal class MsgBody(
         @JvmField @ProtoNumber(1) val service: String = "",
         @JvmField @ProtoNumber(2) val cMD: Int = 0,
-        @JvmField @ProtoNumber(3) val msgPrinter: MsgPrinter? = null
+        @JvmField @ProtoNumber(3) val msgPrinter: MsgPrinter? = null,
     ) : ProtoBuf {
         @Serializable
         internal class HPPrinterStateInfo(
             @JvmField @ProtoNumber(1) val printerDin: Long = 0L,
             @JvmField @ProtoNumber(2) val printerQrPicUrl: String = "",
             @JvmField @ProtoNumber(3) val printerQrOpenUrl: String = "",
-            @JvmField @ProtoNumber(4) val printerTipUrl: String = ""
+            @JvmField @ProtoNumber(4) val printerTipUrl: String = "",
         ) : ProtoBuf
 
         @Serializable
@@ -534,14 +534,14 @@ internal class C2CType0x211SubC2CType0x9 : ProtoBuf {
             @JvmField @ProtoNumber(4) val resultMsg: String = "",
             @JvmField @ProtoNumber(5) val uint64SessionId: List<Long> = emptyList(),
             @JvmField @ProtoNumber(6) val msgSupportFileInfo: List<SupportFileInfo> = emptyList(),
-            @JvmField @ProtoNumber(7) val hpPrinterStateInfo: HPPrinterStateInfo? = null
+            @JvmField @ProtoNumber(7) val hpPrinterStateInfo: HPPrinterStateInfo? = null,
         ) : ProtoBuf
 
         @Serializable
         internal class SupportFileInfo(
             @JvmField @ProtoNumber(1) val fileSuffix: String = "",
             @JvmField @ProtoNumber(2) val copies: Int = 0,
-            @JvmField @ProtoNumber(3) val duplex: Int = 0
+            @JvmField @ProtoNumber(3) val duplex: Int = 0,
         ) : ProtoBuf
     }
 }
@@ -552,7 +552,7 @@ internal class C2CType0x211SubC2CType0xb : ProtoBuf {
     @Serializable
     internal class MsgBody(
         @JvmField @ProtoNumber(1) val msgMsgHeader: MsgHeader? = null,
-        @JvmField @ProtoNumber(2) val msgRejectMotify: RejectNotify? = null
+        @JvmField @ProtoNumber(2) val msgRejectMotify: RejectNotify? = null,
     ) : ProtoBuf {
         @Serializable
         internal class MsgHeader(
@@ -560,14 +560,14 @@ internal class C2CType0x211SubC2CType0xb : ProtoBuf {
             @JvmField @ProtoNumber(2) val sessionType: Int = 0,
             @JvmField @ProtoNumber(3) val toUin: Long = 0L,
             @JvmField @ProtoNumber(4) val toMobile: String = "",
-            @JvmField @ProtoNumber(5) val roomId: Long = 0L
+            @JvmField @ProtoNumber(5) val roomId: Long = 0L,
         ) : ProtoBuf
 
         @Serializable
         internal class RejectNotify(
             @JvmField @ProtoNumber(1) val enumRejectReason: Int /* enum */ = 201,
             @JvmField @ProtoNumber(2) val msg: String = "",
-            @JvmField @ProtoNumber(3) val ringFilename: String = ""
+            @JvmField @ProtoNumber(3) val ringFilename: String = "",
         ) : ProtoBuf
     }
 }

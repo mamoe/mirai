@@ -29,7 +29,11 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 internal class StrangerList {
     object GetStrangerList : OutgoingPacketFactory<GetStrangerList.Response>("OidbSvc.0x5d2_0") {
 
-        class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>, val origin: Oidb0x5d2.RspGetList?) : Packet {
+        class Response(
+            val result: Int,
+            val strangerList: List<Oidb0x5d2.FriendEntry>,
+            val origin: Oidb0x5d2.RspGetList?
+        ) : Packet {
             override fun toString(): String {
                 return "StrangerList.GetStrangerList.Response(result=$result)"
             }

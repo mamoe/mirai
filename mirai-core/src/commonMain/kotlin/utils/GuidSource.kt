@@ -69,7 +69,7 @@ internal value class GuidSource private constructor(val id: Long) { // uint actu
  */
 internal fun guidFlag(
     guidSource: GuidSource,
-    macOrAndroidIdChangeFlag: MacOrAndroidIdChangeFlag
+    macOrAndroidIdChangeFlag: MacOrAndroidIdChangeFlag,
 ): Long {
     var flag = 0L
     flag = flag or (guidSource.id shl 24 and 0xFF000000)

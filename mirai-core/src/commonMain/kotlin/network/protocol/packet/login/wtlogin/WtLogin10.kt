@@ -36,7 +36,7 @@ internal object WtLogin10 : WtLoginExt {
         ) {
             writeOicqRequestPacket(
                 client,
-                EncryptMethodECDH(client.ecdh),
+                commandId =
                 0x0810
             ) {
                 writeShort(11) // subCommand

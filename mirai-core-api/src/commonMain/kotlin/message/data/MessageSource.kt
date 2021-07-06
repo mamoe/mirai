@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -28,8 +28,8 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.utils.LazyProperty
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -176,7 +176,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
-    @LazyProperty
     public abstract val originalMessage: MessageChain
 
     /**
@@ -474,6 +473,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
         public final override val fromId: Long get() = sender.id
         public final override val targetId: Long get() = target.id
 
+        @NotStableForInheritance
         public abstract class ToFriend @MiraiInternalApi constructor() : Outgoing() {
             public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToFriend>(Outgoing, { it.safeCast() })
 
@@ -482,6 +482,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
         }
 
+        @NotStableForInheritance
         public abstract class ToStranger @MiraiInternalApi constructor() : Outgoing() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Outgoing, ToStranger>(Outgoing, { it.safeCast() })
@@ -491,6 +492,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
         }
 
+        @NotStableForInheritance
         public abstract class ToTemp @MiraiInternalApi constructor() : Outgoing() {
             public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToTemp>(Outgoing, { it.safeCast() })
 
@@ -499,6 +501,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public final override val subject: Member get() = target
         }
 
+        @NotStableForInheritance
         public abstract class ToGroup @MiraiInternalApi constructor() : Outgoing() {
             public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToGroup>(Outgoing, { it.safeCast() })
 
@@ -516,6 +519,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
         public final override val fromId: Long get() = sender.id
         public final override val targetId: Long get() = target.id
 
+        @NotStableForInheritance
         public abstract class FromFriend @MiraiInternalApi constructor() : Incoming() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromFriend>(Incoming, { it.safeCast() })
@@ -526,6 +530,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.ids})"
         }
 
+        @NotStableForInheritance
         public abstract class FromTemp @MiraiInternalApi constructor() : Incoming() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromTemp>(Incoming, { it.safeCast() })
@@ -536,6 +541,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public final override val target: Bot get() = sender.bot
         }
 
+        @NotStableForInheritance
         public abstract class FromStranger @MiraiInternalApi constructor() : Incoming() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromStranger>(Incoming, { it.safeCast() })
@@ -545,6 +551,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public final override val target: Bot get() = sender.bot
         }
 
+        @NotStableForInheritance
         public abstract class FromGroup @MiraiInternalApi constructor() : Incoming() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromGroup>(Incoming, { it.safeCast() })
@@ -567,6 +574,7 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
  *
  * 要获得 [OfflineMessageSource], 使用 [MessageSourceBuilder]. 或通过 [OnlineMessageSource.toOffline] 转换得到 (一般没有必要).
  */
+@NotStableForInheritance
 public abstract class OfflineMessageSource : MessageSource() { // TODO: 2021/1/10 Extract to separate file in Kotlin 1.5
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageSource, OfflineMessageSource>(MessageSource, { it.safeCast() })

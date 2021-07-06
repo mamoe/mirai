@@ -37,7 +37,7 @@ internal interface SsoProcessorContext {
 }
 
 internal class SsoProcessorContextImpl(
-    override val bot: QQAndroidBot
+    override val bot: QQAndroidBot,
 ) : SsoProcessorContext {
     override val account: BotAccount get() = bot.account
     override val device: DeviceInfo = configuration.createDeviceInfo(bot)

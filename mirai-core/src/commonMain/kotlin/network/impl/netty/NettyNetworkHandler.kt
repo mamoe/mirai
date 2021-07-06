@@ -36,13 +36,6 @@ internal open class NettyNetworkHandler(
     context: NetworkHandlerContext,
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
-    override fun close(cause: Throwable?) {
-        if (state == State.CLOSED) return // already
-        super.close(cause) // see the `init` block at line 213, just above [NettyState]
-    }
-
-    private fun closeSuper(cause: Throwable?) = super.close(cause)
-
     final override tailrec suspend fun sendPacketImpl(packet: OutgoingPacket) {
         val state = _state as NettyState
         if (state.sendPacketImpl(packet)) return
@@ -63,9 +56,12 @@ internal open class NettyNetworkHandler(
     protected open fun handleExceptionInDecoding(error: Throwable) {
         if (error is OicqDecodingException) {
             if (error.targetException is EOFException) return
-            throw error.targetException
         }
-        throw error
+
+        coroutineContext[CoroutineExceptionHandler]!!.handleException(
+            coroutineContext,
+            ExceptionInPacketCodecException(error.unwrap<OicqDecodingException>())
+        )
     }
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
@@ -92,7 +88,7 @@ internal open class NettyNetworkHandler(
     }
 
     private inner class RawIncomingPacketCollector(
-        private val decodePipeline: PacketDecodePipeline
+        private val decodePipeline: PacketDecodePipeline,
     ) : SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
         override fun channelRead0(ctx: ChannelHandlerContext, msg: RawIncomingPacket) {
             decodePipeline.send(msg)
@@ -201,9 +197,15 @@ internal open class NettyNetworkHandler(
     // states
     ///////////////////////////////////////////////////////////////////////////
 
+    override fun close(cause: Throwable?) {
+        if (state == State.CLOSED) return // quick check if already closed
+        if (setState { StateClosed(cause) } == null) return // atomic check
+        super.close(cause) // cancel coroutine scope
+    }
+
     init {
         coroutineContext.job.invokeOnCompletion { e ->
-            setState { StateClosed(e?.unwrapCancellationException()) }
+            close(e?.unwrapCancellationException())
         }
     }
 
@@ -215,7 +217,7 @@ internal open class NettyNetworkHandler(
      * @see StateObserver
      */
     protected abstract inner class NettyState(
-        correspondingState: State
+        correspondingState: State,
     ) : BaseStateImpl(correspondingState) {
         /**
          * @return `true` if packet has been sent, `false` if state is not ready for send.
@@ -226,7 +228,7 @@ internal open class NettyNetworkHandler(
 
     protected inner class StateInitialized : NettyState(State.INITIALIZED) {
         override suspend fun sendPacketImpl(packet: OutgoingPacket): Boolean {
-//            error("Cannot send packet when connection is not set. (resumeConnection not called.)")
+            //            error("Cannot send packet when connection is not set. (resumeConnection not called.)")
             return false
         }
 
@@ -308,7 +310,7 @@ internal open class NettyNetworkHandler(
      * @see StateObserver
      */
     protected inner class StateLoading(
-        private val connection: NettyChannel
+        private val connection: NettyChannel,
     ) : NettyState(State.LOADING) {
         init {
             coroutineContext.job.invokeOnCompletion {
@@ -381,10 +383,10 @@ internal open class NettyNetworkHandler(
     }
 
     protected inner class StateClosed(
-        val exception: Throwable?
+        val exception: Throwable?,
     ) : NettyState(State.CLOSED) {
         init {
-            closeSuper(exception)
+            close(exception)
         }
 
         override fun getCause(): Throwable? = exception

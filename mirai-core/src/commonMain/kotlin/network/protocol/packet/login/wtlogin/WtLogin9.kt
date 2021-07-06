@@ -22,7 +22,7 @@ internal object WtLogin9 : WtLoginExt {
         allowSlider: Boolean
     ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
-            writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
+            writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
                 writeShort(if (allowSlider) 0x18 else 0x17) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
