@@ -737,7 +737,7 @@ public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncementKt {
 public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
 	public fun delete ()Z
 	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getAllRead ()Z
+	public abstract fun getAllConfirmed ()Z
 	public abstract fun getConfirmedMembersCount ()I
 	public abstract fun getFid ()Ljava/lang/String;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
