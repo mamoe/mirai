@@ -13,8 +13,8 @@
 
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
-|  稳定   |             2.6.4              |
-|  预览   |               -                |
+|  稳定   |             2.6.7              |
+|  预览   |             2.7-M2             |
 |  开发   | [![Version]][Central Download] |
 
 ### 配置项目
@@ -38,7 +38,7 @@ plugins {
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "2.6.4")
+    api("net.mamoe", "mirai-core", "2.6.7")
 }
 ```
 
@@ -58,7 +58,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'net.mamoe:mirai-core:2.6.4'
+    implementation 'net.mamoe:mirai-core:2.6.7'
 }
 ```
 
@@ -71,7 +71,7 @@ dependencies {
 mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.6.4"
+    val miraiVersion = "2.6.7"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
@@ -87,7 +87,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.6.4</version>
+        <version>2.6.7</version>
     </dependency>
 </dependencies>
 ```
