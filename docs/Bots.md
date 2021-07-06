@@ -124,7 +124,7 @@ setLoginSolver(new YourLoginSolver())
 workingDir = File("C:/mirai")
 
 // Java
-setWorkingDir(File("C:/mirai"))
+setWorkingDir(new File("C:/mirai"))
 ```
 
 #### 修改 Bot 缓存目录
@@ -140,8 +140,8 @@ cacheDir = File("cache") // 最终为 workingDir 目录中的 cache 目录
 cacheDir = File("C:/cache") // 最终为 C:/cache
 
 // Java
-setCacheDir(File("cache")) // 最终为 workingDir 目录中的 cache 目录
-setCacheDir(File("C:/cache")) // 最终为 C:/cache
+setCacheDir(new File("cache")) // 最终为 workingDir 目录中的 cache 目录
+setCacheDir(new File("C:/cache")) // 最终为 C:/cache
 ```
 
 目前缓存目录会存储列表缓存、登录服务器、资源会话秘钥等。这些数据的存储方式有可能变化，请不要修改缓存目录中的文件。
