@@ -64,10 +64,10 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
         @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.pinned
+     * @see AnnouncementParameters.isPinned
      */
-    public var pinned: Boolean = prototype.pinned
-        @JvmName("pinned") get
+    public var isPinned: Boolean = prototype.isPinned
+        @JvmName("isPinned") get
         @JvmSynthetic set
 
     /**
@@ -78,17 +78,17 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
         @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.popup
+     * @see AnnouncementParameters.showPopup
      */
-    public var popup: Boolean = prototype.popup
-        @JvmName("popup") get
+    public var showPopup: Boolean = prototype.showPopup
+        @JvmName("showPopup") get
         @JvmSynthetic set
 
     /**
-     * @see AnnouncementParameters.needConfirm
+     * @see AnnouncementParameters.requireConfirmation
      */
-    public var needConfirm: Boolean = prototype.needConfirm
-        @JvmName("needConfirm") get
+    public var requireConfirmation: Boolean = prototype.requireConfirmation
+        @JvmName("requireConfirmation") get
         @JvmSynthetic set
 
     /**
@@ -108,10 +108,10 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see AnnouncementParameters.pinned
+     * @see AnnouncementParameters.isPinned
      */
-    public fun pinned(isPinned: Boolean): AnnouncementParametersBuilder {
-        this.pinned = isPinned
+    public fun isPinned(isPinned: Boolean): AnnouncementParametersBuilder {
+        this.isPinned = isPinned
         return this
     }
 
@@ -124,18 +124,18 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see AnnouncementParameters.popup
+     * @see AnnouncementParameters.showPopup
      */
-    public fun popup(popup: Boolean): AnnouncementParametersBuilder {
-        this.popup = popup
+    public fun showPopup(showPopup: Boolean): AnnouncementParametersBuilder {
+        this.showPopup = showPopup
         return this
     }
 
     /**
-     * @see AnnouncementParameters.needConfirm
+     * @see AnnouncementParameters.requireConfirmation
      */
-    public fun needConfirm(needConfirm: Boolean): AnnouncementParametersBuilder {
-        this.needConfirm = needConfirm
+    public fun requireConfirmation(requireConfirmation: Boolean): AnnouncementParametersBuilder {
+        this.requireConfirmation = requireConfirmation
         return this
     }
 
@@ -143,7 +143,7 @@ public class AnnouncementParametersBuilder @JvmOverloads constructor(
      * 使用当前参数构造 [AnnouncementParameters].
      */
     public fun build(): AnnouncementParameters =
-        AnnouncementParameters(image, sendToNewMember, pinned, showEditCard, popup, needConfirm)
+        AnnouncementParameters(image, sendToNewMember, isPinned, showEditCard, showPopup, requireConfirmation)
 }
 
 /**

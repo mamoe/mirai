@@ -28,9 +28,9 @@ internal data class OnlineAnnouncementImpl(
     override val content: String,
     override val parameters: AnnouncementParameters,
     override val fid: String,
-    override val isAllRead: Boolean,
-    override val readMemberNumber: Int,
-    override val publishTime: Long,
+    override val allConfirmed: Boolean,
+    override val confirmedMembersCount: Int,
+    override val publicationTime: Long,
 ) : OnlineAnnouncement {
 //
 //    @Serializable

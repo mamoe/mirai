@@ -107,10 +107,10 @@ internal class AnnouncementsImpl(
         return mutableListOf<String>().apply {
             if (image != null) add("with image")
             if (sendToNewMember) add("sendToNewMember")
-            if (pinned) add("pinned")
+            if (isPinned) add("pinned")
             if (showEditCard) add("showEditCard")
-            if (popup) add("popup")
-            if (needConfirm) add("needConfirm")
+            if (showPopup) add("popup")
+            if (requireConfirmation) add("needConfirm")
         }.joinToString()
     }
 
@@ -129,9 +129,9 @@ internal class AnnouncementsImpl(
             content = content,
             parameters = parameters,
             fid = fid,
-            isAllRead = false,
-            readMemberNumber = 0,
-            publishTime = currentTimeSeconds()
+            allConfirmed = false,
+            confirmedMembersCount = 0,
+            publicationTime = currentTimeSeconds()
         ).also {
             logger.verbose { "Publishing announcement #$id: success." }
         }
@@ -293,10 +293,10 @@ internal object AnnouncementProtocol {
             type = if (parameters.sendToNewMember) 20 else 6,
             settings = GroupAnnouncementSettings(
                 isShowEditCard = if (parameters.showEditCard) 1 else 0,
-                tipWindowType = if (parameters.popup) 0 else 1,
-                confirmRequired = if (parameters.needConfirm) 1 else 0,
+                tipWindowType = if (parameters.showPopup) 0 else 1,
+                confirmRequired = if (parameters.requireConfirmation) 1 else 0,
             ),
-            pinned = if (parameters.pinned) 1 else 0,
+            pinned = if (parameters.isPinned) 1 else 0,
         )
     }
 
@@ -309,16 +309,16 @@ internal object AnnouncementProtocol {
             sender = group[sender],
             content = msg.text,
             parameters = buildAnnouncementParameters {
-                pinned = this@toAnnouncement.pinned == 1
+                isPinned = this@toAnnouncement.pinned == 1
                 sendToNewMember = type == 20
-                popup = settings.tipWindowType == 0
-                needConfirm = settings.confirmRequired == 1
+                showPopup = settings.tipWindowType == 0
+                requireConfirmation = settings.confirmRequired == 1
                 showEditCard = settings.isShowEditCard == 1
             },
             fid = fid,
-            isAllRead = isAllConfirm != 0,
-            readMemberNumber = readNum,
-            publishTime = time
+            allConfirmed = isAllConfirm != 0,
+            confirmedMembersCount = readNum,
+            publicationTime = time
         )
     }
 }

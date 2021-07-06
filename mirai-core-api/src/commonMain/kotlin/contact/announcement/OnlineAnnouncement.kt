@@ -53,21 +53,21 @@ public interface OnlineAnnouncement : Announcement {
     public val fid: String
 
     /**
-     * 所有人都已阅读, 如果 [AnnouncementParameters.needConfirm] 为 `true` 则为所有人都已确认.
+     * 所有人都已阅读, 如果 [AnnouncementParameters.requireConfirmation] 为 `true` 则为所有人都已确认.
      */
-    public val isAllRead: Boolean
+    public val allConfirmed: Boolean
 
     /**
-     * 已经阅读的成员数量，如果 [AnnouncementParameters.needConfirm] 为 `true` 则为已经确认的成员数量
+     * 已经阅读的成员数量，如果 [AnnouncementParameters.requireConfirmation] 为 `true` 则为已经确认的成员数量
      */
-    public val readMemberNumber: Int
+    public val confirmedMembersCount: Int
 
     /**
      * 公告发出的时间，为 EpochSecond (自 1970-01-01T00：00：00Z 的秒数)
      *
      * @see Instant.ofEpochSecond
      */
-    public val publishTime: Long
+    public val publicationTime: Long
 
     /**
      * 删除这个公告. 需要管理员权限. 使用 [Announcements.delete] 与此方法效果相同.

@@ -637,12 +637,12 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters {
 	public fun equals (Ljava/lang/Object;)Z
 	public static final fun getDefault ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
 	public final fun getImage ()Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
-	public final fun getNeedConfirm ()Z
-	public final fun getPinned ()Z
-	public final fun getPopup ()Z
+	public final fun getRequireConfirmation ()Z
 	public final fun getSendToNewMember ()Z
 	public final fun getShowEditCard ()Z
+	public final fun getShowPopup ()Z
 	public fun hashCode ()I
+	public final fun isPinned ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -670,22 +670,22 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBu
 	public final fun build ()Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
 	public final fun image ()Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public final fun image (Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
-	public final fun needConfirm ()Z
-	public final fun needConfirm (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
-	public final fun pinned ()Z
-	public final fun pinned (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
-	public final fun popup ()Z
-	public final fun popup (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun isPinned ()Z
+	public final fun isPinned (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun requireConfirmation ()Z
+	public final fun requireConfirmation (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
 	public final fun sendToNewMember ()Z
 	public final fun sendToNewMember (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
 	public final synthetic fun setImage (Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;)V
-	public final synthetic fun setNeedConfirm (Z)V
 	public final synthetic fun setPinned (Z)V
-	public final synthetic fun setPopup (Z)V
+	public final synthetic fun setRequireConfirmation (Z)V
 	public final synthetic fun setSendToNewMember (Z)V
 	public final synthetic fun setShowEditCard (Z)V
+	public final synthetic fun setShowPopup (Z)V
 	public final fun showEditCard ()Z
 	public final fun showEditCard (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
+	public final fun showPopup ()Z
+	public final fun showPopup (Z)Lnet/mamoe/mirai/contact/announcement/AnnouncementParametersBuilder;
 }
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBuilderKt {
@@ -737,13 +737,13 @@ public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncementKt {
 public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
 	public fun delete ()Z
 	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAllRead ()Z
+	public abstract fun getConfirmedMembersCount ()I
 	public abstract fun getFid ()Ljava/lang/String;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
-	public abstract fun getPublishTime ()J
-	public abstract fun getReadMemberNumber ()I
+	public abstract fun getPublicationTime ()J
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
-	public abstract fun isAllRead ()Z
 }
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
