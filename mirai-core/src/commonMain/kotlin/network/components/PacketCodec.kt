@@ -14,12 +14,14 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketLogger
 import net.mamoe.mirai.internal.network.context.SsoSession
+import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.Either.Companion.ifRight
+import java.io.EOFException
 import kotlin.io.use
 
 
@@ -56,6 +58,10 @@ internal data class ExceptionInPacketCodecException(
     override val cause: Throwable,
 ) : IllegalStateException("Exception in PacketCodec.", cause)
 
+
+/**
+ * **Note**: [EOFException] is ignored. see [NettyNetworkHandler.handleExceptionInDecoding]
+ */
 internal class OicqDecodingException(
     val targetException: Throwable
 ) : RuntimeException(
