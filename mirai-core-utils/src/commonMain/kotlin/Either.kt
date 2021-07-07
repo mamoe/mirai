@@ -61,6 +61,27 @@ public value class Either<out L : Any, out R : Any?> private constructor(
         public inline operator fun <reified L : Any, reified R> invoke(right: R): Either<L, R> =
             checkTypes<L, R>(right).new(right)
 
+        /**
+         * Create a [Either] whose value is [left].
+         * @throws IllegalArgumentException if [left] satisfies both types [L] and [R].
+         */
+        @JvmName("left2")
+        public inline fun <reified L : Any, reified R> left(left: L): Either<L, R> =
+            checkTypes<L, R>(left).new(left)
+
+        /**
+         * Create a [Either] whose value is [right].
+         * @throws IllegalArgumentException if [right] satisfies both types [L] and [R].
+         */
+        @JvmName("right2")
+        public inline fun <reified L : Any, reified R> right(right: R): Either<L, R> =
+            checkTypes<L, R>(right).new(right)
+
+
+        /**
+         * Returns an [Either] with reverted [L] and [R].
+         */
+        public inline fun <R : Any, L : Any> Either<L, R>.reverted(): Either<R, L> = this.cast()
 
         ///////////////////////////////////////////////////////////////////////////
         // functions
