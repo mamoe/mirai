@@ -24,6 +24,7 @@ import net.mamoe.mirai.utils.withUse
 import java.io.File
 
 internal class TestSsoSession(
+    override val bot: QQAndroidBot,
     private val accountSecrets: AccountSecrets,
     override var outgoingPacketSessionId: ByteArray = byteArrayOf(1, 2, 3, 4),
     override var loginState: Int = 0,

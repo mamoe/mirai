@@ -70,7 +70,7 @@ internal open class QQAndroidClient(
     accountSecrets: AccountSecrets
 ) : AccountSecrets by accountSecrets, SsoSession {
     lateinit var _bot: QQAndroidBot
-    val bot: QQAndroidBot get() = _bot
+    override val bot: QQAndroidBot get() = _bot
 
     /**
      * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.

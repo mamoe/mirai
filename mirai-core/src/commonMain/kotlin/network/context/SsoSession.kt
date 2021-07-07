@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.context
 
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.components.PacketCodec
 import net.mamoe.mirai.internal.network.components.SsoProcessor
@@ -19,6 +20,7 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
  * @see AccountSecrets
  */
 internal interface SsoSession {
+    val bot: QQAndroidBot
     var outgoingPacketSessionId: ByteArray
 
     /**

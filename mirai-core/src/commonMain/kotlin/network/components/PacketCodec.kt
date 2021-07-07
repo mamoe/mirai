@@ -205,8 +205,7 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        val ecdhWithPublicKey =
-            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()
+        val ecdhWithPublicKey = client.bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()
         return when (encryptionMethod) {
             4 -> {
                 val size = (this.remaining - 1).toInt()
