@@ -157,6 +157,15 @@ public expect fun String.decodeBase64(): ByteArray
 public inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset): ByteReadPacket =
     ByteReadPacket(this, offset = offset, length = length)
 
+public inline fun <R> ByteReadPacket.letCloseOnException(block: (ByteReadPacket) -> R): R {
+    try {
+        return block(this)
+    } catch (e: Throwable) {
+        close()
+        throw e
+    }
+}
+
 public inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)

@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
+import net.mamoe.mirai.utils.Either.Companion.ifRight
 import kotlin.io.use
 
 
@@ -112,7 +113,10 @@ internal class PacketCodecImpl : PacketCodec {
                             }
                         }
                     )
-                    else -> error("Unknown flag2=$flag2")
+                    else -> {
+                        raw.body.ifRight { it.close() }
+                        error("Unknown flag2=$flag2")
+                    }
                 }
             }
         }
@@ -138,7 +142,7 @@ internal class PacketCodecImpl : PacketCodec {
     )
 
     private fun parseSsoFrame(client: SsoSession, bytes: ByteArray): DecodeResult =
-        bytes.toReadPacket().let { input ->
+        bytes.toReadPacket().letCloseOnException { input ->
             val commandName: String
             val ssoSequenceId: Int
             val dataCompressed: Int
