@@ -115,41 +115,6 @@ public fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
 public fun UByte.fixToUHex(): String =
     if (this.toInt() in 0..15) "0${this.toString(16).uppercase()}" else this.toString(16).uppercase()
 
-public fun String.hexToBytes(): ByteArray =
-    this.split(" ")
-        .asSequence()
-        .filterNot { it.isEmpty() }
-        .map { s -> s.toUByte(16).toByte() }
-        .toList()
-        .toByteArray()
-
-/**
- * 每 2 char 为一组, 转换 Hex 为 [ByteArray]
- *
- * 这个方法很累, 不建议经常使用.
- */
-public fun String.chunkedHexToBytes(): ByteArray =
-    this.asSequence().chunked(2).map { (it[0].toString() + it[1]).toUByte(16).toByte() }.toList().toByteArray()
-
-/**
- * 删掉全部空格和换行后每 2 char 为一组, 转换 Hex 为 [ByteArray].
- */
-public fun String.autoHexToBytes(): ByteArray =
-    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map {
-        (it[0].toString() + it[1]).toUByte(16).toByte()
-    }.toList().toByteArray()
-
-/**
- * 将无符号 Hex 转为 [UByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
- */
-public fun String.hexToUBytes(): UByteArray =
-    this.split(" ")
-        .asSequence()
-        .filterNot { it.isEmpty() }
-        .map { s -> s.toUByte(16) }
-        .toList()
-        .toUByteArray()
-
 /**
  * 将 [this] 前 4 个 [Byte] 的 bits 合并为一个 [Int]
  *
@@ -172,3 +137,100 @@ public fun ByteArray.toInt(): Int =
         .and(255) shl 8) + (this[3].toInt().and(
         255
     ) shl 0)
+
+
+///////////////////////////////////////////////////////////////////////////
+// hexToBytes
+///////////////////////////////////////////////////////////////////////////
+
+
+private val byteStringCandidates = arrayOf('a'..'f', 'A'..'F', '0'..'9', ' '..' ')
+private const val CHUNK_SPACE = -1
+
+public fun String.hexToBytes(): ByteArray {
+    val array = ByteArray(countHexBytes())
+    forEachHexChunkIndexed { index, char1, char2 ->
+        array[index] = Byte.parseFromHexChunk(char1, char2)
+    }
+    return array
+}
+
+public fun String.hexToUBytes(): UByteArray {
+    val array = UByteArray(countHexBytes())
+    forEachHexChunkIndexed { index, char1, char2 ->
+        array[index] = Byte.parseFromHexChunk(char1, char2).toUByte()
+    }
+    return array
+}
+
+public fun Byte.Companion.parseFromHexChunk(char1: Char, char2: Char): Byte {
+    return (char1.digitToInt(16).shl(SIZE_BITS / 2) or char2.digitToInt(16)).toByte()
+}
+
+private inline fun String.forEachHexChunkIndexed(block: (index: Int, char1: Char, char2: Char) -> Unit) {
+    var index = 0
+    forEachHexChunk { char1: Char, char2: Char ->
+        block(index++, char1, char2)
+    }
+}
+
+private inline fun String.forEachHexChunk(block: (char1: Char, char2: Char) -> Unit) {
+    var chunkSize = 0
+    var char1: Char = 0.toChar()
+    for ((index, c) in this.withIndex()) { // compiler optimization
+        if (c == ' ') {
+            if (chunkSize != 0) {
+                throw IllegalArgumentException("Invalid size of chunk at index ${index.minus(1)}")
+            }
+            continue
+        }
+        if (c in 'a'..'f' || c in 'A'..'F' || c in '0'..'9') { // compiler optimization
+            when (chunkSize) {
+                0 -> {
+                    chunkSize = 1
+                    char1 = c
+                }
+                1 -> {
+                    block(char1, c)
+                    chunkSize = 0
+                }
+            }
+        } else {
+            throw IllegalArgumentException("Invalid char '$c' at index $index")
+        }
+    }
+    if (chunkSize != 0) {
+        throw IllegalArgumentException("Invalid size of chunk at end of string")
+    }
+}
+
+public fun String.countHexBytes(): Int {
+    var chunkSize = 0
+    var count = 0
+    for ((index, c) in this.withIndex()) {
+        if (c == ' ') {
+            if (chunkSize != 0) {
+                throw IllegalArgumentException("Invalid size of chunk at index ${index.minus(1)}")
+            }
+            continue
+        }
+        c.isDigit()
+        if (c in 'a'..'f' || c in 'A'..'F' || c in '0'..'9') {
+            when (chunkSize) {
+                0 -> {
+                    chunkSize = 1
+                }
+                1 -> {
+                    count++
+                    chunkSize = 0
+                }
+            }
+        } else {
+            throw IllegalArgumentException("Invalid char '$c' at index $index")
+        }
+    }
+    if (chunkSize != 0) {
+        throw IllegalArgumentException("Invalid size of chunk at end of string")
+    }
+    return count
+}
