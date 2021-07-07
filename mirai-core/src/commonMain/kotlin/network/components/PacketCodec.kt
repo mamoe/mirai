@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketLogger
 import net.mamoe.mirai.internal.network.context.SsoSession
@@ -19,6 +18,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.fold
 import kotlin.io.use
 
 
@@ -100,11 +100,11 @@ internal class PacketCodecImpl : PacketCodec {
                 }
             }.let { raw ->
                 when (flag2) {
-                    0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
+                    0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.toByteArray())
                     2 -> RawIncomingPacket(
                         raw.commandName,
                         raw.sequenceId,
-                        raw.body.withUse {
+                        raw.body.toByteReadPacket().withUse {
                             try {
                                 parseOicqResponse(client)
                             } catch (e: Throwable) {
@@ -124,7 +124,17 @@ internal class PacketCodecImpl : PacketCodec {
         /**
          * Can be passed to [PacketFactory]
          */
-        val body: ByteReadPacket,
+        val body: Either<ByteArray, ByteReadPacket>,
+    )
+
+    private fun Either<ByteArray, ByteReadPacket>.toByteArray(): ByteArray = fold(
+        onLeft = { it },
+        onRight = { packet -> packet.readBytes().also { packet.close() } }
+    )
+
+    private fun Either<ByteArray, ByteReadPacket>.toByteReadPacket(): ByteReadPacket = fold(
+        onLeft = { it.toReadPacket() },
+        onRight = { it }
     )
 
     private fun parseSsoFrame(client: SsoSession, bytes: ByteArray): DecodeResult =
@@ -157,16 +167,16 @@ internal class PacketCodecImpl : PacketCodec {
                 dataCompressed = readInt()
             }
 
-            val packet = when (dataCompressed) {
+            val packet: Either<ByteArray, ByteReadPacket> = when (dataCompressed) {
                 0 -> {
                     val size = input.readInt().toLong() and 0xffffffff
                     if (size == input.remaining || size == input.remaining + 4) {
-                        input
+                        Either.right(input)
                     } else {
-                        buildPacket {
+                        Either.right(buildPacket {
                             writeInt(size.toInt())
                             writePacket(input)
-                        }
+                        })
                     }
                 }
                 1 -> {
@@ -175,14 +185,14 @@ internal class PacketCodecImpl : PacketCodec {
                         data.unzip(0, length).let {
                             val size = it.toInt()
                             if (size == it.size || size == it.size + 4) {
-                                it.toReadPacket(offset = 4)
+                                Either.right(it.toReadPacket(offset = 4))
                             } else {
-                                it.toReadPacket()
+                                Either.left(it)
                             }
                         }
                     }
                 }
-                8 -> input
+                8 -> Either.right(input)
                 else -> error("unknown dataCompressed flag: $dataCompressed")
             }
 
