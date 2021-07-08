@@ -376,15 +376,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     break
                 }
             }
-            bot.network.run {
-                val resp =
-                    TroopManagement.GetAdmin(bot.client, groupCode).sendAndExpect<TroopManagement.GetAdmin.Response>()
-                check(resp is TroopManagement.GetAdmin.Response.Success) { "Failed to get admin info" }
-                sequence.filter { member -> member.permission == MemberPermission.MEMBER && resp.memberList.any { member.uin == it.memberUin } }
-                    .forEach { memberInfoImpl ->
-                        memberInfoImpl.permission = MemberPermission.ADMINISTRATOR
-                    }
-            }
             return sequence
         }
 
