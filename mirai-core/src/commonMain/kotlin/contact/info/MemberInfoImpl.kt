@@ -39,7 +39,7 @@ internal data class MemberInfoImpl(
         nick = jceInfo.nick,
         permission = when {
             jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+            jceInfo.dwFlag?.takeLowestOneBit() == 1L -> MemberPermission.ADMINISTRATOR
             else -> MemberPermission.MEMBER
         },
         remark = jceInfo.autoRemark.orEmpty(),
