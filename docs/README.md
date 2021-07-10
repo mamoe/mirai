@@ -44,6 +44,7 @@
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
 [jerrita/saaya]: https://github.com/jerrita/saaya
 [Wybxc/YiriMirai]: https://github.com/Wybxc/YiriMirai
+[Excaive/miraicle]: https://github.com/Excaive/miraicle
 
 ### 原生接口
 
@@ -77,6 +78,7 @@
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
 | `Python`                  | [Wybxc/YiriMirai]                           |
+| `Python`                  | [Excaive/miraicle]                          |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
