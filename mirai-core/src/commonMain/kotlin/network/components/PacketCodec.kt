@@ -209,11 +209,12 @@ internal class PacketCodecImpl : PacketCodec {
             (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()
         return when (encryptionMethod) {
             4 -> {
+                val size = (this.remaining - 1).toInt()
                 val data =
                     TEA.decrypt(
                         this.readBytes(),
                         ecdhWithPublicKey.keyPair.maskedShareKey,
-                        length = (this.remaining - 1).toInt()
+                        length = size
                     )
 
                 val peerShareKey =
@@ -221,11 +222,12 @@ internal class PacketCodecImpl : PacketCodec {
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
+                val size = (this.remaining - 1).toInt();
                 // session
                 TEA.decrypt(
                     this.readBytes(),
                     client.wLoginSigInfo.wtSessionTicketKey,
-                    length = (this.remaining - 1).toInt()
+                    length = size
                 )
             }
             0 -> {
@@ -239,7 +241,8 @@ internal class PacketCodecImpl : PacketCodec {
                         TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
                     }
                 } else {
-                    TEA.decrypt(this.readBytes(), client.randomKey, length = (this.remaining - 1).toInt())
+                    val size = (this.remaining - 1).toInt()
+                    TEA.decrypt(this.readBytes(), client.randomKey, length = size)
                 }
             }
             else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
