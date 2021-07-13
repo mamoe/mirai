@@ -39,6 +39,7 @@
 [Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
+[Excaive/miraicle]: https://github.com/Excaive/miraicle
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
@@ -77,6 +78,7 @@
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
 | `Python`                  | [YiriMirai]                                 |
+| `Python`                  | [Excaive/miraicle]                          |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
