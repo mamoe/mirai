@@ -43,8 +43,9 @@
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
 [jerrita/saaya]: https://github.com/jerrita/saaya
-[Wybxc/YiriMirai]: https://github.com/Wybxc/YiriMirai
+[YiriMirai]: https://github.com/YiriMiraiProject/YiriMirai
 [Excaive/miraicle]: https://github.com/Excaive/miraicle
+
 
 ### 原生接口
 
@@ -77,7 +78,7 @@
 | `Python`                  | [Graia Framework][GraiaProject/Application] |
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
-| `Python`                  | [Wybxc/YiriMirai]                           |
+| `Python`                  | [YiriMirai]                                 |
 | `Python`                  | [Excaive/miraicle]                          |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
