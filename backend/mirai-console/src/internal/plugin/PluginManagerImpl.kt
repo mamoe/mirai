@@ -86,10 +86,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             resolvedPlugins.add(plugin)
         }.fold(
             onSuccess = {
-                logger.info { "Successfully loaded plugin ${getPluginDescription(plugin).name}" }
+                logger.info { "Successfully loaded plugin ${getPluginDescription(plugin).smartToString()}" }
             },
             onFailure = {
-                logger.info { "Cannot load plugin ${getPluginDescription(plugin).name}" }
+                logger.info { "Cannot load plugin ${getPluginDescription(plugin).smartToString()}" }
                 throw it
             }
         )
@@ -101,10 +101,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             this.enable(plugin as P)
         }.fold(
             onSuccess = {
-                logger.info { "Successfully enabled plugin ${getPluginDescription(plugin).name}" }
+                logger.info { "Successfully enabled plugin ${getPluginDescription(plugin).smartToString()}" }
             },
             onFailure = {
-                logger.info { "Cannot enable plugin ${getPluginDescription(plugin).name}" }
+                logger.info { "Cannot enable plugin ${getPluginDescription(plugin).smartToString()}" }
                 throw it
             }
         )
