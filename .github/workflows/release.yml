@@ -67,6 +67,11 @@ jobs:
         run: >
           ./gradlew publish --info --scan
 
+      - name: Gradle :mirai-bom:publish
+        run: >
+          ./gradlew
+          :mirai-bom:publish --info --scan
+
       - name: Publish Gradle plugin
         run: >
           ./gradlew
