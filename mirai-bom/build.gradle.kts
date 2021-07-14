@@ -11,7 +11,7 @@ dependencies {
         api(project(":mirai-core"))
         api(project(":mirai-core-api"))
         api(project(":mirai-core-utils"))
-        api(project(":mirai-console"))
+        findProject(":mirai-console")?.let(::api)
     }
 }
 
