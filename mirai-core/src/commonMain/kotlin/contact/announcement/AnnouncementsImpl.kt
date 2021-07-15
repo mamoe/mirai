@@ -203,7 +203,13 @@ internal object AnnouncementProtocol {
         image: AnnouncementImage?,
     ): String {
         return Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+            url(
+                "https://web.qun.qq.com/cgi-bin/announce/add_qun_" + if (announcement.type == 20) {
+                    "instruction"
+                } else {
+                    "notice"
+                }
+            )
             body = MultiPartFormDataContent(formData {
                 append("qid", groupId)
                 this.append("bkn", bkn)
@@ -219,6 +225,7 @@ internal object AnnouncementProtocol {
                     announcement.settings.toJsonString(GroupAnnouncementSettings.serializer()),
                 )
                 append("format", "json")
+                // append("type", announcement.type.toString())
             })
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
