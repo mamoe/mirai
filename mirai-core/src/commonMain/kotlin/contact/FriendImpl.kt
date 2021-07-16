@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:OptIn(LowLevelApi::class)
@@ -34,16 +34,14 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.recoverCatchingSuppressed
-import net.mamoe.mirai.utils.toByteArray
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -95,7 +93,7 @@ internal class FriendImpl(
 
     override fun toString(): String = "Friend($id)"
 
-    override suspend fun uploadVoice(resource: ExternalResource): Voice = bot.network.run {
+    override suspend fun uploadVoice(resource: ExternalResource): Voice = resource.withAutoClose {
         val voice = Voice(
             "${resource.md5.toUHexString("")}.amr",
             resource.md5,
@@ -127,7 +125,7 @@ internal class FriendImpl(
                 boolValid = true,
             )
         }.recoverCatchingSuppressed {
-            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect<Any>()) {
+            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect(bot)) {
                 is PttStore.GroupPttUp.Response.RequireUpload -> {
                     tryServersUpload(
                         bot,

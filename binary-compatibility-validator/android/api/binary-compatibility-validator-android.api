@@ -5401,6 +5401,7 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public fun getSha1 ()[B
 	public abstract fun getSize ()J
 	public abstract fun inputStream ()Ljava/io/InputStream;
+	public fun isAutoClose ()Z
 	public static fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -5522,6 +5523,9 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun uploadTo$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static synthetic fun uploadTo$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/utils/ExternalResourceKt {
 }
 
 public abstract interface class net/mamoe/mirai/utils/FileCacheStrategy {

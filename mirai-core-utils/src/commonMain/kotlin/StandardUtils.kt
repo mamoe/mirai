@@ -213,6 +213,36 @@ public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) ->
     }
 }
 
+/**
+ * Run [block] and do [finally], catching exception thrown in [finally] and add it to the exception from [block].
+ */
+public inline fun <R> trySafely(
+    block: () -> R,
+    finally: () -> Unit,
+): R {
+//    contract {
+//        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//        callsInPlace(finally, InvocationKind.EXACTLY_ONCE)
+//    }
+    var eInBlock: Throwable? = null
+    try {
+        return block()
+    } catch (e: Throwable) {
+        eInBlock = e
+    } finally {
+        try {
+            finally()
+        } catch (eInFinally: Throwable) {
+            if (eInBlock != null) {
+                eInBlock.addSuppressed(eInFinally)
+                throw eInBlock
+            } else throw eInFinally
+        }
+        if (eInBlock != null) throw eInBlock
+    }
+    throw AssertionError()
+}
+
 public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable =
     findCause(maxDepth, filter) ?: this
 
