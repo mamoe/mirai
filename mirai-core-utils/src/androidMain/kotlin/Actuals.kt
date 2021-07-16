@@ -23,13 +23,17 @@ public actual fun String.decodeBase64(): ByteArray {
     return Base64.decode(this, Base64.DEFAULT)
 }
 
+@PublishedApi
+internal class StacktraceException(override val message: String?, private val stacktrace: Array<StackTraceElement>) :
+    Exception(message, null, true, false) {
+    override fun fillInStackTrace(): Throwable = this
+    override fun getStackTrace(): Array<StackTraceElement> = stacktrace
+}
+
 public actual inline fun <reified E> Throwable.unwrap(): Throwable {
     if (this !is E) return this
     if (suppressed.isNotEmpty()) return this
-    val e =
-        Exception("unwrapped exception: $this").also {  // Android JDK could not resolve circular references so we copy one.
-            it.stackTrace = this.stackTrace
-        }
+    val e = StacktraceException("Unwrapped exception: $this", this.stackTrace)
     return this.findCause { it !is E }
         ?.also { it.addSuppressed(e) }
         ?: this
