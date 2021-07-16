@@ -103,6 +103,11 @@ jobs:
           ./gradlew
           :mirai-console-compiler-annotations:publish --info
 
+      - name: Gradle :mirai-bom:publish
+        run: >
+          ./gradlew
+          :mirai-bom:publish --info
+
       - name: Publish Gradle plugin
         run: >
           ./gradlew
