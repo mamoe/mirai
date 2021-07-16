@@ -157,13 +157,7 @@ public fun Throwable.unwrapCancellationException(): Throwable = unwrap<Cancellat
  *     at net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler.close(NettyNetworkHandler.kt:404)
  * ```
  */
-
-public inline fun <reified E> Throwable.unwrap(): Throwable {
-    if (this !is E) return this
-    if (suppressed.isNotEmpty()) return this
-    return this.findCause { it !is E }
-        ?.also { it.addSuppressed(this) }
-        ?: this
-}
+@Suppress("unused")
+public expect inline fun <reified E> Throwable.unwrap(): Throwable
 
 public val CoroutineContext.coroutineName: String get() = this[CoroutineName]?.name ?: "unnamed"

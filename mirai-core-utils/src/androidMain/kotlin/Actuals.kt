@@ -22,3 +22,15 @@ public actual fun ByteArray.encodeBase64(): String {
 public actual fun String.decodeBase64(): ByteArray {
     return Base64.decode(this, Base64.DEFAULT)
 }
+
+public actual inline fun <reified E> Throwable.unwrap(): Throwable {
+    if (this !is E) return this
+    if (suppressed.isNotEmpty()) return this
+    val e =
+        Exception("unwrapped exception: $this").also {  // Android JDK could not resolve circular references so we copy one.
+            it.stackTrace = this.stackTrace
+        }
+    return this.findCause { it !is E }
+        ?.also { it.addSuppressed(e) }
+        ?: this
+}
