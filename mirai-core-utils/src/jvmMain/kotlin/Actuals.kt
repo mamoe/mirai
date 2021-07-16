@@ -25,7 +25,6 @@ public actual fun String.decodeBase64(): ByteArray {
 
 public actual inline fun <reified E> Throwable.unwrap(): Throwable {
     if (this !is E) return this
-    if (suppressed.isNotEmpty()) return this
     return this.findCause { it !is E }
         ?.also { it.addSuppressed(this) }
         ?: this
