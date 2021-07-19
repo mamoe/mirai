@@ -103,7 +103,7 @@ interface PermitteeId {
 
 [`PermitteeId`] 是被许可人的标识符。
 
-一个这样的标识符即可代表特定的单个 [`Permittee`], 也可以表示多个同类 [`Permittee`].
+一个这样的标识符既可代表特定的单个 [`Permittee`], 也可以表示多个同类 [`Permittee`].
 
 #### `directParents`
 [`PermitteeId`] 允许拥有多个父对象。在检查权限时会首先检查自己, 再递归检查父类。
