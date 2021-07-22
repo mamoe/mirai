@@ -30,10 +30,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 public class MiraiConsoleGradlePlugin : Plugin<Project> {
-    public companion object {
-        internal const val BINTRAY_REPOSITORY_URL = "https://dl.bintray.com/him188moe/mirai"
-    }
-
     private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
         languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         dependencies { configureDependencies(project, this@configureSourceSet, target) }
@@ -158,7 +154,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         // plugins.apply("org.gradle.maven")
         plugins.apply(ShadowPlugin::class.java)
         plugins.apply(BintrayPlugin::class.java)
-        repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
+        repositories.mavenCentral()
 
         afterEvaluate {
             configureCompileTarget()
