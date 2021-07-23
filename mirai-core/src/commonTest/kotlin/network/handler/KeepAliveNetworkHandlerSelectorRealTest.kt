@@ -14,38 +14,62 @@ package net.mamoe.mirai.internal.network.handler
 import io.netty.channel.Channel
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.TestNettyNH
+import net.mamoe.mirai.internal.network.handler.selector.MaxAttemptsReachedException
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
 import org.junit.jupiter.api.assertThrows
-import java.net.SocketAddress
 import kotlin.test.Test
+import kotlin.test.assertIs
 
 internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
 
     internal class FakeFailOnCreatingConnection : AbstractNettyNHTest() {
         private class MyException : Exception()
 
-        override val factory: NetworkHandlerFactory<TestNettyNH> = object : NetworkHandlerFactory<TestNettyNH> {
-            override fun create(context: NetworkHandlerContext, address: SocketAddress): TestNettyNH {
-                return object : TestNettyNH(bot, context, address) {
+        private lateinit var throwException: () -> Nothing
+
+        override val factory: NetworkHandlerFactory<TestNettyNH> =
+            NetworkHandlerFactory<TestNettyNH> { context, address ->
+                object : TestNettyNH(bot, context, address) {
                     override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
-                        throw MyException()
+                        throwException()
                 }
             }
-        }
 
         @Test
-        fun `should not tolerant any exception thrown by states`() = runBlockingUnit {
+        fun `should not tolerant any exception except NetworkException thrown by states`() = runBlockingUnit {
             // selector should not tolerant any exception during state initialization, or in the Jobs launched in states.
+            throwException = {
+                throw MyException()
+            }
 
             val selector = TestSelector(3) { createHandler() }
             assertThrows<Throwable> { selector.awaitResumeInstance() }
         }
 
         @Test
-        fun `should unwrap exception`() = runBlockingUnit {
+        fun `should tolerant NetworkException thrown by states`() = runBlockingUnit {
+            // selector should not tolerant any exception during state initialization, or in the Jobs launched in states.
+            throwException = {
+                throw object : NetworkException(true) {}
+            }
+
             val selector = TestSelector(3) { createHandler() }
-            assertThrows<MyException> { selector.awaitResumeInstance() }
+            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+                assertIs<NetworkException>(it.cause)
+            }
+        }
+
+        @Test
+        fun `throws MaxAttemptsReachedException with cause of original`() = runBlockingUnit {
+            throwException = {
+                throw MyException()
+            }
+            val selector = TestSelector(3) { createHandler() }
+            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+                assertIs<MyException>(it.cause)
+            }
         }
     }
 
