@@ -214,7 +214,6 @@ public fun String.countHexBytes(): Int {
             }
             continue
         }
-        c.isDigit()
         if (c in 'a'..'f' || c in 'A'..'F' || c in '0'..'9') {
             when (chunkSize) {
                 0 -> {
