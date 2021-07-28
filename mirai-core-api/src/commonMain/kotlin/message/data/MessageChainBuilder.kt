@@ -97,25 +97,34 @@ public class MessageChainBuilder private constructor(
         return when (element) {
             // is ConstrainSingle -> container.add(element)
             is SingleMessage -> container.add(element) // no need to constrain
-            is Iterable<*> -> this.addAll(element.toMessageChain().asSequence())
+            is MessageChain -> addAll(element)
+            is Iterable<*> -> this.addAll(element.toMessageChain())
             else -> error("stub")
         }
     }
 
     public override fun addAll(elements: Collection<SingleMessage>): Boolean {
         flushCache()
-        return addAll(elements.asSequence())
+        return addAll(elements.asIterable())
     }
 
     public fun addAll(elements: Iterable<SingleMessage>): Boolean {
         flushCache()
-        return addAll(elements.asSequence())
+        var result = false
+        for (item in elements) {
+            if (add(item)) result = true
+        }
+        return result
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
     public fun addAll(elements: Iterable<Message>): Boolean {
         flushCache()
-        return addAll(elements.toMessageChain().asSequence())
+        var result = false
+        for (item in elements) {
+            if (add(item)) result = true
+        }
+        return result
     }
 
     @JvmSynthetic
