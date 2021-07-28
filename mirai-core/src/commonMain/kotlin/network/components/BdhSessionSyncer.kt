@@ -12,19 +12,17 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.SetSerializer
 import net.mamoe.mirai.internal.network.JsonForCache
 import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
-import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
-
-private val ServerListSerializer: KSerializer<Set<ServerAddress>> =
-    SetSerializer(ServerAddress.serializer())
+import java.util.concurrent.CopyOnWriteArraySet
 
 internal interface BdhSessionSyncer {
     val bdhSession: CompletableDeferred<BdhSession>
@@ -42,6 +40,17 @@ internal interface BdhSessionSyncer {
 
     companion object : ComponentKey<BdhSessionSyncer>
 }
+
+@Serializable
+internal class BdhSession(
+    val sigSession: ByteArray,
+    val sessionKey: ByteArray,
+    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+)
+
+private val ServerListSerializer: KSerializer<Set<ServerAddress>> =
+    SetSerializer(ServerAddress.serializer())
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class BdhSessionSyncerImpl(
