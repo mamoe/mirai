@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.component
 
+import net.mamoe.mirai.internal.network.component.ComponentKey.Companion.componentName
 import net.mamoe.mirai.utils.systemProp
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.LazyThreadSafetyMode.NONE
