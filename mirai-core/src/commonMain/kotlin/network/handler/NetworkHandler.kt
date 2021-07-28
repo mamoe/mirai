@@ -38,8 +38,6 @@ import net.mamoe.mirai.utils.MiraiLogger
 internal interface NetworkHandler : CoroutineScope {
     val context: NetworkHandlerContext
 
-    fun isOk() = state == State.OK
-
     /**
      * Current state of this handler. This is volatile.
      */

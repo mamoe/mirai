@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.network.LoginFailedException
@@ -85,7 +86,7 @@ internal abstract class AbstractBot constructor(
      */
     abstract val components: ComponentStorage
 
-    final override val isOnline: Boolean get() = network.isOk()
+    final override val isOnline: Boolean get() = network.state == State.OK
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
