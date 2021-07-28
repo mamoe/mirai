@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.components
 
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc

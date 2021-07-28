@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.selector.PacketTimeoutException
 import net.mamoe.mirai.utils.BotConfiguration.HeartbeatStrategy.*

@@ -13,8 +13,8 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.components.SsoSession
+import net.mamoe.mirai.internal.network.components.createDeviceInfo
 import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
-import net.mamoe.mirai.internal.network.context.createDeviceInfo
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
