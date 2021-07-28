@@ -76,7 +76,7 @@ internal class LoggingStateObserver(
          * - `full` for logging with stacktrace
          */
         var ENABLED = systemProp(
-            "mirai.debug.network.state.observer.logging",
+            "mirai.network.state.observer.logging",
             "off"
         ).lowercase()
 

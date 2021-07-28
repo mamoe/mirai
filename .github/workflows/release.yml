@@ -63,9 +63,9 @@ jobs:
       - name: Check
         run: >
           ./gradlew check --scan
-          -Dmirai.debug.network.show.all.components=true
+          -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
-          -Dmirai.debug.network.show.packet.details=true
+          -Dmirai.network.show.packet.details=true
 
       - name: Gradle :mirai-core-utils:publish
         run: >

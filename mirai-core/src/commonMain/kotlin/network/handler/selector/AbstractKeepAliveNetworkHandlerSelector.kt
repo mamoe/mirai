@@ -199,7 +199,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
          * millis
          */
         @JvmField
-        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000)
+        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000L)
+            .coerceIn(0..Long.MAX_VALUE)
 
         @JvmField
         var SELECTOR_LOGGING = systemProp("mirai.network.handle.selector.logging", false)

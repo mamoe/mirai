@@ -42,7 +42,7 @@ internal interface PacketCodec {
     suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket?
 
     companion object : ComponentKey<PacketCodec> {
-        val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", false)
+        val PACKET_DEBUG = systemProp("mirai.network.packet.logger", false)
 
         internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
             MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)

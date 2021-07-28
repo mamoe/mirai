@@ -90,7 +90,7 @@ internal class PacketLoggingStrategyImpl(
 
     companion object {
         fun getDefaultBlacklist(): Set<String> {
-            if (systemProp("mirai.debug.network.show.verbose.packets", false)) return emptySet()
+            if (systemProp("mirai.network.show.verbose.packets", false)) return emptySet()
             return DEFAULT_BLACKLIST
         }
 
@@ -112,6 +112,6 @@ internal class PacketLoggingStrategyImpl(
         }
 
         @JvmField
-        var SHOW_PACKET_DETAILS = systemProp("mirai.debug.network.show.packet.details", false)
+        var SHOW_PACKET_DETAILS = systemProp("mirai.network.show.packet.details", false)
     }
 }
