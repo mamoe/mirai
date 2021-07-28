@@ -13,9 +13,9 @@ import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.WLoginSigInfo
+import net.mamoe.mirai.internal.network.components.AccountSecrets
+import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.components.SsoSession
-import net.mamoe.mirai.internal.network.context.AccountSecrets
-import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
