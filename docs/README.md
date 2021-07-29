@@ -81,6 +81,7 @@
 | `Python`                  | [Excaive/miraicle]                          |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
+| `PHP`                     | [nkxingxh/miraiez]                          |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
