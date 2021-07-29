@@ -38,6 +38,7 @@
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
 [Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
+[Miyakowww/CocoaFramework2]: https://github.com/Miyakowww/CocoaFramework2
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 [Excaive/miraicle]: https://github.com/Excaive/miraicle
 
@@ -85,6 +86,7 @@
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
+| `C#`                      | [Miyakowww/CocoaFramework2]                 |
 | `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
