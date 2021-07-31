@@ -20,7 +20,6 @@ import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.contact.Platform
 import net.mamoe.mirai.data.OnlineStatus
-import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -31,6 +30,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
@@ -268,24 +268,29 @@ internal class StatSvc {
     }
 
     internal object ReqMSFOffline :
-        IncomingPacketFactory<BotOfflineEvent.MsfOffline>("StatSvc.ReqMSFOffline", "StatSvc.RspMSFForceOffline") {
+        IncomingPacketFactory<ReqMSFOffline.MsfOfflinePacket>("StatSvc.ReqMSFOffline", "StatSvc.RspMSFForceOffline") {
+
+        internal class MsfOfflinePacket(
+            val token: MsfOfflineToken,
+        ) : Packet {
+            override fun toString(): String = "StatSvc.ReqMSFOffline"
+        }
 
         internal data class MsfOfflineToken(
             val uin: Long,
             val seq: Long,
             val const: Byte
-        ) : Packet, RuntimeException("dropped by StatSvc.ReqMSFOffline")
+        ) : Packet, NetworkException("dropped by StatSvc.ReqMSFOffline", true)
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.MsfOffline {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): MsfOfflinePacket {
             val decodeUniPacket = readUniPacket(RequestMSFForceOffline.serializer())
             @Suppress("INVISIBLE_MEMBER")
-            return BotOfflineEvent.MsfOffline(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
+            return MsfOfflinePacket(MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 
-        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket {
-            val cause = packet.cause
-            check(cause is MsfOfflineToken) { "internal error: handling $packet in StatSvc.ReqMSFOffline" }
-            return buildResponseUniPacket(client) {
+        override suspend fun QQAndroidBot.handle(packet: MsfOfflinePacket, sequenceId: Int): OutgoingPacket? {
+            val cause = packet.token
+            val resp = buildResponseUniPacket(client) {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
@@ -304,6 +309,11 @@ internal class StatSvc {
                     )
                 )
             }
+            kotlin.runCatching {
+                bot.network.sendWithoutExpect(resp)
+            }
+            bot.network.close(cause)
+            return null
         }
     }
 

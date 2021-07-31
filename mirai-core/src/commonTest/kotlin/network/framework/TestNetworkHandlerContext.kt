@@ -14,8 +14,8 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.components.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver

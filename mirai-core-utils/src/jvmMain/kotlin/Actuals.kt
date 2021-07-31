@@ -22,3 +22,10 @@ public actual fun ByteArray.encodeBase64(): String {
 public actual fun String.decodeBase64(): ByteArray {
     return Base64.getDecoder().decode(this)
 }
+
+public actual inline fun <reified E> Throwable.unwrap(): Throwable {
+    if (this !is E) return this
+    return this.findCause { it !is E }
+        ?.also { it.addSuppressed(this) }
+        ?: this
+}

@@ -30,10 +30,10 @@ abstract class AbstractTest {
             SynchronizedStdoutLogger(it)
         }
 
-        System.setProperty("mirai.debug.network.packet.logger", "true")
-        System.setProperty("mirai.debug.network.state.observer.logging", "true")
-        System.setProperty("mirai.debug.network.show.all.components", "true")
-        System.setProperty("mirai.debug.network.show.components.creation.stacktrace", "true")
+        System.setProperty("mirai.network.packet.logger", "true")
+        System.setProperty("mirai.network.state.observer.logging", "true")
+        System.setProperty("mirai.network.show.all.components", "true")
+        System.setProperty("mirai.network.show.components.creation.stacktrace", "true")
         System.setProperty("mirai.network.handle.selector.logging", "true")
 
     }

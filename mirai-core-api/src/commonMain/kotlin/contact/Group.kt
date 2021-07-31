@@ -197,7 +197,13 @@ public interface GroupSettings {
      *
      * @see GroupEntranceAnnouncementChangeEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     * @see Announcements
+     * @see Group.announcements
      */
+    @Deprecated(
+        level = DeprecationLevel.WARNING,
+        message = "group.announcements.asFlow().filter { it.parameters.sendToNewMember }.firstOrNull()",
+    )
     public var entranceAnnouncement: String
 
     /**

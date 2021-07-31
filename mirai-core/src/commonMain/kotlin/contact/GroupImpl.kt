@@ -24,7 +24,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
-import net.mamoe.mirai.internal.network.context.BdhSession
+import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind

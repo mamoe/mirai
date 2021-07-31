@@ -11,8 +11,8 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.utils.chunkedHexToBytes
 import net.mamoe.mirai.utils.decodeBase64
+import net.mamoe.mirai.utils.hexToBytes
 import java.security.KeyFactory
 import java.security.spec.X509EncodedKeySpec
 
@@ -40,8 +40,8 @@ internal interface ECDHKeyPair {
 
     object DefaultStub : ECDHKeyPair {
         val defaultPublicKey =
-            "04edb8906046f5bfbe9abbc5a88b37d70a6006bfbabc1f0cd49dfb33505e63efc5d78ee4e0a4595033b93d02096dcd3190279211f7b4f6785079e19004aa0e03bc".chunkedHexToBytes()
-        val defaultShareKey = "c129edba736f4909ecc4ab8e010f46a3".chunkedHexToBytes()
+            "04edb8906046f5bfbe9abbc5a88b37d70a6006bfbabc1f0cd49dfb33505e63efc5d78ee4e0a4595033b93d02096dcd3190279211f7b4f6785079e19004aa0e03bc".hexToBytes()
+        val defaultShareKey = "c129edba736f4909ecc4ab8e010f46a3".hexToBytes()
 
         override val privateKey: Nothing get() = error("stub!")
         override val publicKey: Nothing get() = error("stub!")
@@ -130,10 +130,10 @@ internal val publicKeyForVerify by lazy {
         .generatePublic(X509EncodedKeySpec("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuJTW4abQJXeVdAODw1CamZH4QJZChyT08ribet1Gp0wpSabIgyKFZAOxeArcCbknKyBrRY3FFI9HgY1AyItH8DOUe6ajDEb6c+vrgjgeCiOiCVyum4lI5Fmp38iHKH14xap6xGaXcBccdOZNzGT82sPDM2Oc6QYSZpfs8EO7TYT7KSB2gaHz99RQ4A/Lel1Vw0krk+DescN6TgRCaXjSGn268jD7lOO23x5JS1mavsUJtOZpXkK9GqCGSTCTbCwZhI33CpwdQ2EHLhiP5RaXZCio6lksu+d8sKTWU1eEiEb3cQ7nuZXLYH7leeYFoPtbFV4RicIWp0/YG+RP7rLPCwIDAQAB".decodeBase64()))
 }
 internal val defaultInitialPublicKey: ECDHInitialPublicKey by lazy { ECDHInitialPublicKey(keyStr = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E") }
-private val signHead = "3059301306072a8648ce3d020106082a8648ce3d030107034200".chunkedHexToBytes()
+private val signHead = "3059301306072a8648ce3d020106082a8648ce3d030107034200".hexToBytes()
 
 internal fun String.adjustToPublicKey(): ECDHPublicKey {
-    return this.chunkedHexToBytes().adjustToPublicKey()
+    return this.hexToBytes().adjustToPublicKey()
 }
 
 internal fun ByteArray.adjustToPublicKey(): ECDHPublicKey {

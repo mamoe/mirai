@@ -9,9 +9,21 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
-internal abstract class NetworkException(
+internal abstract class NetworkException : Exception {
     /**
      * If true, the selector may recover the network handler by some means.
      */
-    val recoverable: Boolean,
-) : Exception()
+    val recoverable: Boolean
+
+    constructor(recoverable: Boolean) : super() {
+        this.recoverable = recoverable
+    }
+
+    constructor(message: String, recoverable: Boolean) : super(message) {
+        this.recoverable = recoverable
+    }
+
+    constructor(message: String, cause: Throwable?, recoverable: Boolean) : super(message, cause) {
+        this.recoverable = recoverable
+    }
+}

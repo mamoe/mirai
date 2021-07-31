@@ -10,6 +10,7 @@
 package net.mamoe.mirai.data
 
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 用户详细资料
@@ -18,6 +19,7 @@ import net.mamoe.mirai.contact.User
  * @suppress 使用这个接口是稳定的，但继承不稳定。将来可能会有新的属性添加。
  * @since 2.1
  */
+@NotStableForInheritance
 public interface UserProfile {
     public val nickname: String
     public val email: String

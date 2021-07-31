@@ -203,7 +203,13 @@ internal object AnnouncementProtocol {
         image: AnnouncementImage?,
     ): String {
         return Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+            url(
+                "https://web.qun.qq.com/cgi-bin/announce/add_qun_" + if (announcement.type == 20) {
+                    "instruction"
+                } else {
+                    "notice"
+                }
+            )
             body = MultiPartFormDataContent(formData {
                 append("qid", groupId)
                 this.append("bkn", bkn)
@@ -219,6 +225,7 @@ internal object AnnouncementProtocol {
                     announcement.settings.toJsonString(GroupAnnouncementSettings.serializer()),
                 )
                 append("format", "json")
+                // append("type", announcement.type.toString())
             })
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
@@ -289,7 +296,7 @@ internal object AnnouncementProtocol {
     fun Announcement.toGroupAnnouncement(senderId: Long): GroupAnnouncement {
         return GroupAnnouncement(
             sender = senderId,
-            msg = GroupAnnouncementMsg(text = content),
+            msg = GroupAnnouncementMsg(text = content), // 实际测试中发布一个新公告的时候不需要进行 html 转码
             type = if (parameters.sendToNewMember) 20 else 6,
             settings = GroupAnnouncementSettings(
                 isShowEditCard = if (parameters.showEditCard) 1 else 0,
@@ -307,7 +314,7 @@ internal object AnnouncementProtocol {
             group = group,
             senderId = sender,
             sender = group[sender],
-            content = msg.text,
+            content = msg.text.decodeHtmlEscape(),
             parameters = buildAnnouncementParameters {
                 isPinned = this@toAnnouncement.pinned == 1
                 sendToNewMember = type == 20

@@ -25,8 +25,6 @@ import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.components.*
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
@@ -42,6 +40,7 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -118,6 +117,9 @@ internal open class QQAndroidBot constructor(
                 when {
                     cause is ForceOfflineException -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Force(bot, cause.title, cause.message))
+                    }
+                    cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {
+                        eventDispatcher.broadcastAsync(BotOfflineEvent.MsfOffline(bot, cause))
                     }
                     cause is NetworkException && cause.recoverable -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))

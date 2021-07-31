@@ -7,13 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.context
+package net.mamoe.mirai.internal.network.components
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 
@@ -31,7 +30,7 @@ internal interface SsoProcessorContext {
 
     val protocol: BotConfiguration.MiraiProtocol
 
-    val configuration: BotConfiguration
+    val configuration: BotConfiguration get() = bot.configuration
 
     companion object : ComponentKey<SsoProcessorContext>
 }

@@ -22,3 +22,21 @@ public actual fun ByteArray.encodeBase64(): String {
 public actual fun String.decodeBase64(): ByteArray {
     return Base64.decode(this, Base64.DEFAULT)
 }
+
+@PublishedApi
+internal class StacktraceException(override val message: String?, private val stacktrace: Array<StackTraceElement>) :
+    Exception(message, null, true, false) {
+    override fun fillInStackTrace(): Throwable = this
+    override fun getStackTrace(): Array<StackTraceElement> = stacktrace
+}
+
+public actual inline fun <reified E> Throwable.unwrap(): Throwable {
+    if (this !is E) return this
+    val e = StacktraceException("Unwrapped exception: $this", this.stackTrace)
+    for (throwable in this.suppressed) {
+        e.addSuppressed(throwable)
+    }
+    return this.findCause { it !is E }
+        ?.also { it.addSuppressed(e) }
+        ?: this
+}

@@ -12,10 +12,8 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.context.AccountSecretsImpl
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
-import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
@@ -54,6 +52,24 @@ internal interface SsoProcessor {
     suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response
 
     companion object : ComponentKey<SsoProcessor>
+}
+
+/**
+ * Contains secrets for encryption and decryption during a session created by [SsoProcessor] and [PacketCodec].
+ *
+ * @see AccountSecrets
+ */
+internal interface SsoSession {
+    var outgoingPacketSessionId: ByteArray
+
+    /**
+     * always 0 for now.
+     */
+    var loginState: Int
+
+    // also present in AccountSecrets
+    var wLoginSigInfo: WLoginSigInfo
+    val randomKey: ByteArray
 }
 
 /**
