@@ -39,13 +39,6 @@ internal fun MessageChain.toRichTextElems(
     val forGroup = messageTarget is Group
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
 
-    if (this.anyIsInstance<QuoteReply>()) {
-        when (val source = this[QuoteReply]!!.source) {
-            is MessageSourceInternal -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
-            else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
-        }
-    }
-
     var longTextResId: String? = null
 
     fun transformOneMessage(currentMessage: Message) {
@@ -180,19 +173,7 @@ internal fun MessageChain.toRichTextElems(
                     ImMsgBody.Elem(face = currentMessage.toJceData())
                 }
             )
-            is QuoteReply -> {
-                if (forGroup) {
-                    when (val source = currentMessage.source) {
-                        is OnlineMessageSource.Incoming.FromGroup -> {
-                            val sender0 = source.sender
-                            if (sender0 !is AnonymousMember)
-                                transformOneMessage(At(sender0))
-                            // transformOneMessage(PlainText(" "))
-                            // removed by https://github.com/mamoe/mirai/issues/524
-                            // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
-                        }
-                    }
-                }
+            is QuoteReply -> { // transformed
             }
             is Dice -> transformOneMessage(MarketFaceImpl(currentMessage.toJceStruct()))
             is MarketFace -> {
@@ -246,6 +227,26 @@ internal fun MessageChain.toRichTextElems(
             }
         }
     }
+
+    if (this.anyIsInstance<QuoteReply>()) {
+        when (val source = this[QuoteReply]!!.source) {
+            is MessageSourceInternal -> {
+                elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
+                if (forGroup) {
+                    if (source is OnlineMessageSource.Incoming.FromGroup) {
+                        val sender0 = source.sender
+                        if (sender0 !is AnonymousMember)
+                            transformOneMessage(At(sender0))
+                        // transformOneMessage(PlainText(" "))
+                        // removed by https://github.com/mamoe/mirai/issues/524
+                        // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
+                    }
+                }
+            }
+            else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
+        }
+    }
+
     this.forEach(::transformOneMessage)
 
     if (withGeneralFlags) {
