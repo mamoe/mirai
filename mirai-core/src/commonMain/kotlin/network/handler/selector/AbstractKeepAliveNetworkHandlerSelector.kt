@@ -10,7 +10,10 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.yield
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.logger
@@ -87,9 +90,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 //                    ?: MaxAttemptsReachedException(null)
             }
             if (!currentCoroutineContext().isActive) {
-                logIfEnabled { "Cancellation detected." }
-                yield() // throw canonical CancellationException if cancelled
-                throw CancellationException("Cancellation detected.")
+                yield() // check cancellation
             }
             val current = getCurrentInstanceOrNull()
             lastNetwork = current
