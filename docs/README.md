@@ -76,29 +76,29 @@
 
 | 语言和技术                  | 维护者及项目地址                               |
 |:--------------------------|:--------------------------------------------|
-| `Python`                  | [Graia Framework][GraiaProject/Application] |
-| `Python`                  | [NoneBot]                                   |
-| `Python`                  | [jerrita/saaya]                             |
-| `Python`                  | [YiriMirai]                                 |
-| `Python`                  | [Excaive/miraicle]                          |
-| `C++`                     | [cyanray/mirai-cpp]                         |
-| `C++`                     | [Chlorie/miraipp]                           |
-| `PHP`                     | [nkxingxh/miraiez]                          |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
 | `C#`                      | [Miyakowww/CocoaFramework2]                 |
+| `C++`                     | [cyanray/mirai-cpp]                         |
+| `C++`                     | [Chlorie/miraipp]                           |
+| `Go`                      | [Logiase/gomirai]                           |
+| `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
+| `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
+| `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
+| `PHP`                     | [nkxingxh/miraiez]                          |
+| `Python`                  | [Graia Framework][GraiaProject/Application] |
+| `Python`                  | [NoneBot]                                   |
+| `Python`                  | [jerrita/saaya]                             |
+| `Python`                  | [YiriMirai]                                 |
+| `Python`                  | [Excaive/miraicle]                          |
 | `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
-| `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
-| `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
-| `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
-| `Go`                      | [Logiase/gomirai]                           |
 | `易语言`                   | [only52607/e-mirai]                         |
 
 
-> 排名不分先后  
+> 按字母顺序排序，排序不代表排名  
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
 特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：
