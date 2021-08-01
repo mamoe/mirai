@@ -41,6 +41,7 @@
 [Miyakowww/CocoaFramework2]: https://github.com/Miyakowww/CocoaFramework2
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 [Excaive/miraicle]: https://github.com/Excaive/miraicle
+[nkxingxh/miraiez]: https://github.com/nkxingxh/miraiez
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
@@ -82,6 +83,7 @@
 | `Python`                  | [Excaive/miraicle]                          |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
+| `PHP`                     | [nkxingxh/miraiez]                          |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
