@@ -40,6 +40,7 @@
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 [Excaive/miraicle]: https://github.com/Excaive/miraicle
+[nkxingxh/miraiez]: https://github.com/nkxingxh/miraiez
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
