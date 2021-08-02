@@ -18,16 +18,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import kotlin.random.Random
-import kotlin.random.nextInt
-
-internal fun getRandomString(length: Int): String =
-    getRandomString(length, *defaultRanges)
-
-private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
-
-internal fun getRandomString(length: Int, vararg charRanges: CharRange): String =
-    CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() }.concatToString()
+import net.mamoe.mirai.utils.getRandomString
 
 internal class ImgStore {
     object GroupPicUp : OutgoingPacketFactory<GroupPicUp.Response>("ImgStore.GroupPicUp") {

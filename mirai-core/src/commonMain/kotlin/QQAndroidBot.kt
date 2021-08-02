@@ -152,6 +152,7 @@ internal open class QQAndroidBot constructor(
 
         // There's no need to interrupt a broadcasting event when network handler closed.
         set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
+        set(RandomProvider, ThreadLocalRandomProvider())
 
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))

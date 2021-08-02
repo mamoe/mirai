@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.components.AccountSecrets
 import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -45,7 +46,7 @@ internal fun loadSession(
  */
 internal fun QQAndroidClient.dumpSessionSafe(): ByteArray {
     val secrets =
-        AccountSecretsImpl(device, account).copy(
+        AccountSecretsImpl(device, account, bot.components.getRandom(this)).copy(
             wLoginSigInfoField = wLoginSigInfo.copy(
                 tgt = EMPTY_BYTE_ARRAY,
                 encryptA1 = EMPTY_BYTE_ARRAY,

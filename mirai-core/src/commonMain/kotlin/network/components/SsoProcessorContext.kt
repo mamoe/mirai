@@ -12,7 +12,9 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 
@@ -44,4 +46,5 @@ internal class SsoProcessorContextImpl(
     override val configuration: BotConfiguration get() = bot.configuration
 }
 
-internal fun BotConfiguration.createDeviceInfo(bot: Bot): DeviceInfo = deviceInfo?.invoke(bot) ?: DeviceInfo.random()
+internal fun BotConfiguration.createDeviceInfo(bot: Bot): DeviceInfo =
+    deviceInfo?.invoke(bot) ?: DeviceInfo.random(bot.asQQAndroidBot().components.getRandom(this))

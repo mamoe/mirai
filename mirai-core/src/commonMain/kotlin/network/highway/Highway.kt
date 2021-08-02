@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.subAppId
@@ -80,7 +81,7 @@ internal object Highway {
 
         return tryServersUpload(
             bot = bot,
-            servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random()) else bdhSession.ssoAddresses,
+            servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random(bot.components.getRandom(this))) else bdhSession.ssoAddresses,
             resourceSize = resource.size,
             resourceKind = kind,
             channelKind = ChannelKind.HIGHWAY

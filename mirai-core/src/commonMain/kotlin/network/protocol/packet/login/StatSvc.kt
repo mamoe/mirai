@@ -41,10 +41,7 @@ import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.toIpV4Long
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.toReadPacket
+import net.mamoe.mirai.utils.*
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {

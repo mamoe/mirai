@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QQAndroidClient.MessageSvcSyncData.PendingGroupMessageReceiptSyncId
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgCtrl
@@ -40,7 +41,6 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.Response>("MessageSvc.PbSendMsg") {
     sealed class Response : Packet {
@@ -116,12 +116,14 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             message.fragmented()
         else listOf(message)
 
+        val random = client.bot.components.getRandom(this)
+
         val response = mutableListOf<OutgoingPacket>()
-        val div = if (fragmented.size == 1) 0 else getRandomUnsignedInt()
+        val div = if (fragmented.size == 1) 0 else getRandomUnsignedInt(random)
         val pkgNum = fragmented.size
 
         val seqIds = sequenceIdsInitializer(pkgNum)
-        val randIds0 = IntArray(pkgNum) { getRandomUnsignedInt() }
+        val randIds0 = IntArray(pkgNum) { getRandomUnsignedInt(random) }
         sequenceIds.set(seqIds)
         randIds.set(randIds0)
         postInit()
@@ -482,7 +484,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
     val source = OnlineMessageSourceToTempImpl(
-        internalIds = intArrayOf(Random.nextInt().absoluteValue),
+        internalIds = intArrayOf(client.bot.components.getRandom(this).nextInt().absoluteValue),
         sender = client.bot,
         target = member,
         time = currentTimeSeconds().toInt(),

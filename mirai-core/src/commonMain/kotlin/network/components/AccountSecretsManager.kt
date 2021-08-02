@@ -16,7 +16,6 @@ import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
 import net.mamoe.mirai.internal.utils.accountSecretsFile
 import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKey
@@ -28,6 +27,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
 import java.io.File
 import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.random.Random
 
 /**
  * For a [Bot].
@@ -82,7 +82,7 @@ internal data class AccountSecretsImpl(
     override var loginExtraData: MutableSet<LoginExtraData>,
     override var wLoginSigInfoField: WLoginSigInfo?,
     override var G: ByteArray,
-    override var dpwd: ByteArray = get_mpasswd().toByteArray(),
+    override var dpwd: ByteArray,
     override var randSeed: ByteArray,
     override var ksid: ByteArray,
     override var tgtgtKey: ByteArray,
@@ -132,26 +132,30 @@ internal fun AccountSecretsImpl(
 }
 
 internal fun AccountSecretsImpl(
-    device: DeviceInfo, account: BotAccount,
+    device: DeviceInfo, account: BotAccount, random: Random
 ): AccountSecretsImpl {
     return AccountSecretsImpl(
         loginExtraData = CopyOnWriteArraySet(),
         wLoginSigInfoField = null,
         G = device.guid,
-        dpwd = get_mpasswd().toByteArray(),
+        dpwd = get_mpasswd(random).toByteArray(),
         randSeed = EMPTY_BYTE_ARRAY,
         ksid = EMPTY_BYTE_ARRAY,
         tgtgtKey = (account.passwordMd5 + ByteArray(4) + account.id.toInt().toByteArray()).md5(),
-        randomKey = getRandomByteArray(16),
+        randomKey = getRandomByteArray(16, random),
         ecdhInitialPublicKey = defaultInitialPublicKey
     )
 }
 
 
-internal fun AccountSecretsManager.getSecretsOrCreate(account: BotAccount, device: DeviceInfo): AccountSecrets {
+internal fun AccountSecretsManager.getSecretsOrCreate(
+    account: BotAccount,
+    device: DeviceInfo,
+    random: Random
+): AccountSecrets {
     var secrets = getSecrets(account)
     if (secrets == null) {
-        secrets = AccountSecretsImpl(device, account)
+        secrets = AccountSecretsImpl(device, account, random)
         saveSecrets(account, secrets)
     }
     return secrets

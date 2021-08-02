@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.framework.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.components.createDeviceInfo
@@ -25,7 +26,11 @@ import net.mamoe.mirai.utils.lateinitMutableProperty
 internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcessor {
     val deviceInfo = bot.configuration.createDeviceInfo(bot)
     override var client: QQAndroidClient by lateinitMutableProperty {
-        QQAndroidClient(bot.account, device = deviceInfo, accountSecrets = AccountSecretsImpl(deviceInfo, bot.account))
+        QQAndroidClient(
+            bot.account,
+            device = deviceInfo,
+            accountSecrets = AccountSecretsImpl(deviceInfo, bot.account, bot.components.getRandom(this))
+        )
     }
     override val ssoSession: SsoSession get() = bot.client
     override var firstLoginSucceed: Boolean = false

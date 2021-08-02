@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
@@ -143,10 +144,13 @@ internal class SsoProcessorImpl(
         return QQAndroidClient(
             ssoContext.account,
             device = device,
-            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(ssoContext.account, device)
-        ).apply {
-            _bot = bot
-        }
+            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(
+                ssoContext.account,
+                device,
+                bot.components.getRandom(this)
+            ),
+            bot
+        )
     }
 
     ///////////////////////////////////////////////////////////////////////////

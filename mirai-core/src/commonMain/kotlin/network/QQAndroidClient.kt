@@ -20,6 +20,7 @@ import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecrets
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
@@ -27,15 +28,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.utils.*
-import kotlin.random.Random
 
 
 internal val DEFAULT_GUID = "%4;7t>;28<fc.5*6".toByteArray()
-
-/**
- * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
- */
-internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0, 255).toByte() }
 
 // [114.221.148.179:14000, 113.96.13.125:8080, 14.22.3.51:8080, 42.81.172.207:443, 114.221.144.89:80, 125.94.60.148:14000, 42.81.192.226:443, 114.221.148.233:8080, msfwifi.3g.qq.com:8080, 42.81.172.22:80]
 
@@ -67,10 +62,10 @@ internal val DefaultServerList: MutableSet<Pair<String, Int>> =
 internal open class QQAndroidClient(
     val account: BotAccount,
     val device: DeviceInfo,
-    accountSecrets: AccountSecrets
+    accountSecrets: AccountSecrets,
+    val bot: QQAndroidBot
 ) : AccountSecrets by accountSecrets, SsoSession {
-    lateinit var _bot: QQAndroidBot
-    val bot: QQAndroidBot get() = _bot
+    private val random get() = bot.components.getRandom(this)
 
     /**
      * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.
@@ -87,7 +82,7 @@ internal open class QQAndroidClient(
     var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
 
     @Volatile
-    private var _ssoSequenceId: Int = Random.nextInt(100000)
+    private var _ssoSequenceId: Int = random.nextInt(100000)
 
     @Synchronized
     @MiraiInternalApi("Do not use directly. Get from the lambda param of buildSsoPacket")
@@ -95,7 +90,7 @@ internal open class QQAndroidClient(
         _ssoSequenceId += 2
         val new = _ssoSequenceId
         if (new > 100000) {
-            _ssoSequenceId = Random.nextInt(100000) + 60000
+            _ssoSequenceId = random.nextInt(100000) + 60000
         }
         return new
     }
@@ -105,19 +100,19 @@ internal open class QQAndroidClient(
     val buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
 
 
-    private val sequenceId: AtomicInt = atomic(getRandomUnsignedInt())
+    private val sequenceId: AtomicInt = atomic(getRandomUnsignedInt(random))
     internal fun atomicNextMessageSequenceId(): Int = sequenceId.incrementAndGet()
     internal fun nextRequestPacketRequestId(): Int = sequenceId.incrementAndGet()
 
     @Volatile
-    private var highwayDataTransSequenceId: Int = Random.nextInt(100000)
+    private var highwayDataTransSequenceId: Int = random.nextInt(100000)
 
     @Synchronized
     internal fun nextHighwayDataTransSequenceId(): Int {
         highwayDataTransSequenceId += 1
         val new = highwayDataTransSequenceId
         if (new > 1000000) {
-            highwayDataTransSequenceId = Random.nextInt(1060000)
+            highwayDataTransSequenceId = random.nextInt(1060000)
         }
         return new
     }
@@ -125,7 +120,7 @@ internal open class QQAndroidClient(
     internal var strangerSeq: Int = 0
 
     // TODO: 2021/4/14 investigate whether they can be minimized
-    private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
+    private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt(random))
     internal fun getFriendSeq(): Int = friendSeq.value
 
     internal fun nextFriendSeq(): Int = friendSeq.incrementAndGet()

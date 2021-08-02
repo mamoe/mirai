@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.impl.netty
 import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
 import net.mamoe.mirai.internal.network.components.FileCacheAccountSecretsManager
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.test.runBlockingUnit
@@ -33,7 +34,7 @@ internal class AccountSecretsTest : AbstractNettyNHTest() {
     @Test
     fun `can login with good secrets`() = runBlockingUnit {
         val file = bot.configuration.accountSecretsFile()
-        val s = AccountSecretsImpl(DeviceInfo.random(), bot.account)
+        val s = AccountSecretsImpl(DeviceInfo.random(), bot.account, bot.components.getRandom(this@AccountSecretsTest))
         FileCacheAccountSecretsManager.saveSecretsToFile(file, bot.account, s)
         bot.login()
         bot.network.assertState(NetworkHandler.State.OK)

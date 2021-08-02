@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.lateinitMutableProperty
 
@@ -33,9 +34,12 @@ internal class BotClientHolderImpl(
         return QQAndroidClient(
             ssoContext.account,
             device = device,
-            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(ssoContext.account, device)
-        ).apply {
-            _bot = bot
-        }
+            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(
+                ssoContext.account,
+                device,
+                bot.components.getRandom(this)
+            ),
+            bot
+        )
     }
 }

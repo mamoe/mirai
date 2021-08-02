@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.EventDispatcherScopeFlag
+import net.mamoe.mirai.internal.network.components.RandomProvider.Companion.getRandom
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -60,7 +61,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
 
@@ -619,7 +619,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         val data = message.calculateValidationData(
             client = client,
-            random = Random.nextInt().absoluteValue,
+            random = bot.components.getRandom(this).nextInt().absoluteValue,
             sendMessageHandler,
             isLong,
         )
