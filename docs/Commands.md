@@ -126,8 +126,7 @@ Mirai Console 内建 [`SimpleCommand`] 与 [`CompositeCommand`] 拥有 [`Command
 ```kotlin
 object MySimpleCommand : SimpleCommand(
     MyPluginMain, "tell", "私聊",
-    description = "Tell somebody privately",
-    usage = "/tell <target> <message>",  // usage 如不设置则自动根据带有 @Handler 的方法生成
+    description = "Tell somebody privately"
 ) {
     @Handler // 标记这是指令处理器  // 函数名随意 
     suspend fun CommandSender.handle(target: User, message: String) { // 这两个参数会被作为指令参数要求

@@ -34,8 +34,7 @@ import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
  * ```
  * object MySimpleCommand : SimpleCommand(
  *     MyPlugin, "tell",
- *     description = "Message somebody",
- *     usage = "/tell <target> <message>"  // usage 如不设置则自动根据带有 @Handler 的方法生成
+ *     description = "Message somebody"
  * ) {
  *     @Handler
  *     suspend fun CommandSender.onCommand(target: User, message: String) {
