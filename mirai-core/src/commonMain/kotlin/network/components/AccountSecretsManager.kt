@@ -18,7 +18,7 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
-import net.mamoe.mirai.internal.utils.actualCacheDir
+import net.mamoe.mirai.internal.utils.accountSecretsFile
 import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKey
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.defaultInitialPublicKey
@@ -77,7 +77,6 @@ internal interface AccountSecrets {
 }
 
 
-@Suppress("ArrayInDataClass") // for `copy`
 @Serializable
 internal data class AccountSecretsImpl(
     override var loginExtraData: MutableSet<LoginExtraData>,
@@ -89,7 +88,39 @@ internal data class AccountSecretsImpl(
     override var tgtgtKey: ByteArray,
     override val randomKey: ByteArray,
     override var ecdhInitialPublicKey: ECDHInitialPublicKey,
-) : AccountSecrets, ProtoBuf
+) : AccountSecrets, ProtoBuf {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AccountSecretsImpl
+
+        if (loginExtraData != other.loginExtraData) return false
+        if (wLoginSigInfoField != other.wLoginSigInfoField) return false
+        if (!G.contentEquals(other.G)) return false
+        if (!dpwd.contentEquals(other.dpwd)) return false
+        if (!randSeed.contentEquals(other.randSeed)) return false
+        if (!ksid.contentEquals(other.ksid)) return false
+        if (!tgtgtKey.contentEquals(other.tgtgtKey)) return false
+        if (!randomKey.contentEquals(other.randomKey)) return false
+        if (ecdhInitialPublicKey != other.ecdhInitialPublicKey) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = loginExtraData.hashCode()
+        result = 31 * result + (wLoginSigInfoField?.hashCode() ?: 0)
+        result = 31 * result + G.contentHashCode()
+        result = 31 * result + dpwd.contentHashCode()
+        result = 31 * result + randSeed.contentHashCode()
+        result = 31 * result + ksid.contentHashCode()
+        result = 31 * result + tgtgtKey.contentHashCode()
+        result = 31 * result + randomKey.contentHashCode()
+        result = 31 * result + ecdhInitialPublicKey.hashCode()
+        return result
+    }
+}
 
 internal fun AccountSecretsImpl(
     other: AccountSecrets,
@@ -152,14 +183,7 @@ internal class FileCacheAccountSecretsManager(
     @Synchronized
     override fun saveSecrets(account: BotAccount, secrets: AccountSecrets) {
         if (secrets.wLoginSigInfoField == null) return
-
-        file.writeBytes(
-            TEA.encrypt(
-                AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),
-                account.passwordMd5
-            )
-        )
-
+        saveSecretsToFile(file, account, secrets)
         logger.info { "Saved account secrets to local cache for fast login." }
     }
 
@@ -190,6 +214,17 @@ internal class FileCacheAccountSecretsManager(
     override fun invalidate() {
         file.delete()
     }
+
+    companion object {
+        fun saveSecretsToFile(file: File, account: BotAccount, secrets: AccountSecrets) {
+            file.writeBytes(
+                TEA.encrypt(
+                    AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),
+                    account.passwordMd5
+                )
+            )
+        }
+    }
 }
 
 internal class CombinedAccountSecretsManager(
@@ -218,7 +253,7 @@ internal fun BotConfiguration.createAccountsSecretsManager(logger: MiraiLogger):
     return CombinedAccountSecretsManager(
         MemoryAccountSecretsManager(),
         FileCacheAccountSecretsManager(
-            actualCacheDir().resolve("account.secrets"),
+            accountSecretsFile(),
             logger
         )
     )

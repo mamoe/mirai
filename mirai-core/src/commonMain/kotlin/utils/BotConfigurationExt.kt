@@ -20,3 +20,4 @@ internal fun BotConfiguration.contactCacheDir(): File = actualCacheDir().resolve
 internal fun BotConfiguration.friendCacheFile(): File = contactCacheDir().resolveCreateFile("friends.json")
 internal fun BotConfiguration.groupCacheDir(): File = contactCacheDir().resolveMkdir("groups")
 internal fun BotConfiguration.groupCacheFile(groupId: Long): File = groupCacheDir().resolveCreateFile("$groupId.json")
+internal fun BotConfiguration.accountSecretsFile(): File = actualCacheDir().resolve("account.secrets")
