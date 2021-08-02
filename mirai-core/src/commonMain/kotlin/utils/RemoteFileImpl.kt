@@ -100,11 +100,9 @@ internal fun RemoteFile.checkIsImpl(): RemoteFileImpl {
 }
 
 internal class RemoteFileImpl(
-    contact: Group,
+    override val contact: Group,
     override val path: String, // absolute
 ) : RemoteFile {
-    private val contactRef by contact.weakRef()
-    override val contact get() = contactRef ?: error("RemoteFile is closed due to Contact closed.")
 
     constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
 
