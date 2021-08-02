@@ -18,9 +18,13 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
- * 匿名
+ * 代表匿名群成员.
  *
- * 代表匿名群成员
+ * 可通过 [anonymousId] 获取其识别属性. [AnonymousMember.id] 的值由服务器提供因此不可靠.
+ *
+ * 匿名群成员不支持发送私聊消息, 戳一戳, 上传图片.
+ *
+ * @see NormalMember
  */
 @NotStableForInheritance
 public interface AnonymousMember : Member {

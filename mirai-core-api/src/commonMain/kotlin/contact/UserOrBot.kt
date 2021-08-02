@@ -22,7 +22,13 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @NotStableForInheritance
 public interface UserOrBot : ContactOrBot {
     /**
-     * 昵称
+     * 获取昵称
+     *
+     * ### Kotlin 实用扩展:
+     *
+     * - [nameCardOrNick]: 若该用户是 [群成员][Member], 则优先返回其非空群名片, 否则返回 [nick].
+     * - [remarkOrNameCardOrNick]: 若 [Bot] 对该用户有[备注][User.remark]则返回备注, 否则返回 [nameCardOrNick].
+     *
      * @since 2.6
      */
     public val nick: String

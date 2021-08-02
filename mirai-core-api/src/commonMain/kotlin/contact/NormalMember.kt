@@ -28,10 +28,7 @@ import kotlin.time.ExperimentalTime
 /**
  * 代表一位普通的群成员.
  *
- * 群成员可能也是好友, 但他们在对象类型上不同.
- * 群成员可以通过 [asFriend] 得到相关好友对象.
- *
- * @see
+ * @see AnonymousMember
  */
 @NotStableForInheritance
 public interface NormalMember : Member {

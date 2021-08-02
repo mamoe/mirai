@@ -36,21 +36,6 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @NotStableForInheritance
 public interface Friend : User, CoroutineScope, VoiceSupported {
     /**
-     * QQ 号码
-     */
-    public override val id: Long
-
-    /**
-     * 昵称
-     */
-    public override val nick: String
-
-    /**
-     * 好友备注
-     */
-    public override val remark: String
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

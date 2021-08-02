@@ -19,13 +19,11 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public fun getGroup (J)Lnet/mamoe/mirai/contact/Group;
 	public fun getGroupOrFail (J)Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getGroups ()Lnet/mamoe/mirai/contact/ContactList;
-	public abstract fun getId ()J
 	public static fun getInstance (J)Lnet/mamoe/mirai/Bot;
 	public static fun getInstanceOrNull (J)Lnet/mamoe/mirai/Bot;
 	public static fun getInstances ()Ljava/util/List;
 	public static fun getInstancesSequence ()Lkotlin/sequences/Sequence;
 	public abstract fun getLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
-	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getOtherClients ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getStranger (J)Lnet/mamoe/mirai/contact/Stranger;
 	public fun getStrangerOrFail (J)Lnet/mamoe/mirai/contact/Stranger;
@@ -331,9 +329,6 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/VoiceSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getId ()J
-	public abstract fun getNick ()Ljava/lang/String;
-	public abstract fun getRemark ()Ljava/lang/String;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
@@ -526,8 +521,6 @@ public final class net/mamoe/mirai/contact/Platform$Companion {
 public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getId ()J
-	public abstract fun getNick ()Ljava/lang/String;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/StrangerNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
@@ -544,7 +537,6 @@ public final class net/mamoe/mirai/contact/StrangerKt {
 
 public abstract interface class net/mamoe/mirai/contact/User : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/UserOrBot {
 	public abstract fun getId ()J
-	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
 	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
