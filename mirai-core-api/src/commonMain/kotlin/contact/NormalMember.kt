@@ -26,10 +26,12 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 /**
- * 代表一位正常的群成员.
+ * 代表一位普通的群成员.
  *
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
+ *
+ * @see
  */
 @NotStableForInheritance
 public interface NormalMember : Member {
@@ -121,6 +123,8 @@ public interface NormalMember : Member {
      *
      * @see MemberPermissionChangeEvent 群成员权限变更事件
      * @throws PermissionDeniedException 无权限修改时抛出
+     *
+     * @since 2.7
      */
     public suspend fun modifyAdmin(operation: Boolean)
 

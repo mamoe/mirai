@@ -24,6 +24,32 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群.
+ *
+ * ## 群员操作
+ *
+ * ### 获取群成员
+ *
+ * 使用 [Group.members] 可获取除 [Bot] 自身外的所有群成员 (包括管理员和群主) 列表. [Bot] 自身在群内的对象可通过 [botAsMember] 获取.
+ *
+ * [get] 可以按 QQ 号码获取一个群成员对象, 在不存在时返回 `null`. [getOrFail] 则在不存在时抛出 [NoSuchElementException].
+ *
+ * ### 判断管理员权限
+ *
+ * 首先获取到目标群成员对象, 然后使用 [NormalMember.permission] 获取其权限.
+ *
+ * [Bot] 在群内的权限可通过 [Group.botPermission] 或其 [Member 对象][botAsMember] 的 [NormalMember.permission] 获取.
+ *
+ * ### 其他动作
+ *
+ * - 设置管理员权限: [NormalMember.modifyAdmin]
+ * - 禁言: [NormalMember.mute]
+ * - 戳一戳: [NormalMember.nudge]
+ *
+ * ## 群公告
+ *
+ * 可通过 [Group.announcements] 获取公告支持. 可在 [Announcements] 查看详细文档.
+ *
+ * ##
  */
 @NotStableForInheritance
 public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported {

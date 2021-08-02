@@ -35,7 +35,7 @@ import java.util.stream.Stream
  *
  * 通过 [asFlow] 或 [asStream] 可以获取到*惰性*流, 在从流中收集数据时才会请求服务器获取数据. 通常建议在 Kotlin 使用协程的 [asFlow], 在 Java 使用 [asStream].
  *
- * 若获取全部公告列表, 可使用 [toList].
+ * 若要获取全部公告列表, 可使用 [toList].
  *
  * ## 发布群公告
  *
