@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import java.io.File
+import kotlin.random.Random
 
 @Serializable
 public class DeviceInfo(
@@ -79,19 +80,35 @@ public class DeviceInfo(
         }
 
 
+        /**
+         * 创建一个随机 [DeviceInfo].
+         *
+         * @param random 使用的随机数生成器实例. 默认使用 [Random.Default]. 自 2.7 增加.
+         */
         @JvmStatic
-        public fun random(): DeviceInfo {
+        @JvmOverloads
+        public fun random(random: Random = Random.Default): DeviceInfo {
             return DeviceInfo(
-                display = "MIRAI.${getRandomString(6, '0'..'9')}.001".toByteArray(),
+                display = "MIRAI.${getRandomString(6, '0'..'9', random = random)}.001".toByteArray(),
                 product = "mirai".toByteArray(),
                 device = "mirai".toByteArray(),
                 board = "mirai".toByteArray(),
                 brand = "mamoe".toByteArray(),
                 model = "mirai".toByteArray(),
                 bootloader = "unknown".toByteArray(),
-                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${getRandomIntString(7)}:user/release-keys".toByteArray(),
-                bootId = generateUUID(getRandomByteArray(16).md5()).toByteArray(),
-                procVersion = "Linux version 3.0.31-${getRandomString(8)} (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
+                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${
+                    getRandomIntString(
+                        7,
+                        random = random
+                    )
+                }:user/release-keys".toByteArray(),
+                bootId = generateUUID(getRandomByteArray(16, random = random).md5()).toByteArray(),
+                procVersion = "Linux version 3.0.31-${
+                    getRandomString(
+                        8,
+                        random = random
+                    )
+                } (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
                 baseBand = byteArrayOf(),
                 version = Version(),
                 simInfo = "T-Mobile".toByteArray(),
@@ -99,8 +116,8 @@ public class DeviceInfo(
                 macAddress = "02:00:00:00:00:00".toByteArray(),
                 wifiBSSID = "02:00:00:00:00:00".toByteArray(),
                 wifiSSID = "<unknown ssid>".toByteArray(),
-                imsiMd5 = getRandomByteArray(16).md5(),
-                imei = getRandomIntString(15),
+                imsiMd5 = getRandomByteArray(16, random = random).md5(),
+                imei = getRandomIntString(15, random = random),
                 apn = "wifi".toByteArray()
             )
         }

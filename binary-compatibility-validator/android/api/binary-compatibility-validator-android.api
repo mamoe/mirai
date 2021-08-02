@@ -5316,6 +5316,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getWifiBSSID ()[B
 	public final fun getWifiSSID ()[B
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5335,6 +5336,8 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Companion {
 	public final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/utils/DeviceInfo$Companion;Ljava/io/File;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public static synthetic fun random$default (Lnet/mamoe/mirai/utils/DeviceInfo$Companion;Lkotlin/random/Random;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
