@@ -105,11 +105,13 @@ public interface NormalMember : Member {
      *
      * 管理员可踢出成员, 群主可踢出管理员和群员.
      *
+     * @param ban 为true时拉黑成员
+     *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      *
      */
-    public suspend fun kick(message: String)
+    public suspend fun kick(message: String, ban: Boolean = false)
 
     /**
      * 给予或移除群成员的管理员权限。

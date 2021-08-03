@@ -192,7 +192,8 @@ internal class TroopManagement {
         operator fun invoke(
             client: QQAndroidClient,
             member: Member,
-            message: String
+            message: String,
+            ban: Boolean
         ) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 OidbSso.OIDBSSOPkg.serializer(),
@@ -206,7 +207,7 @@ internal class TroopManagement {
                             Oidb0x8a0.KickMemberInfo(
                                 optUint32Operate = 5,
                                 optUint64MemberUin = member.id,
-                                optUint32Flag = 1//或者0
+                                optUint32Flag = if (ban) 1 else 0 //1为拉黑
                             )
                         ),
                         kickMsg = message.toByteArray()

@@ -170,7 +170,7 @@ internal class NormalMemberImpl constructor(
         this._muteTimestamp = 0
     }
 
-    override suspend fun kick(message: String) {
+    override suspend fun kick(message: String, ban: Boolean) {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
@@ -179,7 +179,8 @@ internal class NormalMemberImpl constructor(
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
                 member = this@NormalMemberImpl,
-                message = message
+                message = message,
+                ban = ban
             ).sendAndExpect()
 
             check(response.success) { "kick failed: ${response.ret}" }
