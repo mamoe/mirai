@@ -446,6 +446,8 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun isMuted ()Z
 	public fun kick (Ljava/lang/String;)V
 	public abstract fun kick (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun kick (Ljava/lang/String;Z)V
+	public abstract fun kick (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyAdmin (Z)V
 	public abstract fun modifyAdmin (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;

@@ -21,8 +21,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -171,6 +169,10 @@ internal class NormalMemberImpl constructor(
     }
 
     override suspend fun kick(message: String) {
+        kick(message, false)
+    }
+
+    override suspend fun kick(message: String, block: Boolean) {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
@@ -179,7 +181,8 @@ internal class NormalMemberImpl constructor(
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
                 member = this@NormalMemberImpl,
-                message = message
+                message = message,
+                ban = block
             ).sendAndExpect()
 
             check(response.success) { "kick failed: ${response.ret}" }
