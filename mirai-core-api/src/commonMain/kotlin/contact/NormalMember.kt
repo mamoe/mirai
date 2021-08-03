@@ -105,7 +105,7 @@ public interface NormalMember : Member {
      *
      * 管理员可踢出成员, 群主可踢出管理员和群员.
      *
-     * @param block 为`true`时拉黑成员
+     * @param block 为 `true` 时拉黑成员
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
@@ -114,7 +114,12 @@ public interface NormalMember : Member {
     public suspend fun kick(message: String, block: Boolean)
 
     /**
-     * 踢出该成员，默认不拉黑
+     * 踢出该成员, 默认不拉黑
+     *
+     * 管理员可踢出成员, 群主可踢出管理员和群员.
+     *
+     * @see MemberLeaveEvent.Kick 成员被踢出事件.
+     * @throws PermissionDeniedException 无权限修改时
      *
      */
     public suspend fun kick(message: String)
