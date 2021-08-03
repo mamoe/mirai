@@ -206,7 +206,7 @@ internal class TroopManagement {
                             Oidb0x8a0.KickMemberInfo(
                                 optUint32Operate = 5,
                                 optUint64MemberUin = member.id,
-                                optUint32Flag = 1//或者0
+                                optUint32Flag = 0
                             )
                         ),
                         kickMsg = message.toByteArray()
