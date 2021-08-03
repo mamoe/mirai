@@ -433,8 +433,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     )
 
     /**
-     * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件.
-     * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
+     * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件, 只监听一次.
+     * 当 [事件广播][Event.broadcast] 时, [handler] 会被执行.
      *
      * 可在任意时候通过 [Listener.complete] 来主动停止监听.
      *
