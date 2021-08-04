@@ -16,6 +16,7 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.content
@@ -117,6 +118,29 @@ public fun <R> EventChannel<*>.subscribeFriendMessages(
 ): R {
     contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
     return createBuilder(::FriendMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
+}
+
+/**
+ * @since 2.7
+ */
+public typealias UserMessageSubscribersBuilder = MessageSubscribersBuilder<UserMessageEvent, Listener<UserMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所 [User] 消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ *
+ * @since 2.7
+ */
+public fun <R> EventChannel<*>.subscribeUserMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: UserMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::UserMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
 @Deprecated(

@@ -1756,6 +1756,8 @@ public final class net/mamoe/mirai/event/SubscribeMessagesKt {
 	public static synthetic fun subscribeStrangerMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun subscribeTempMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun subscribeTempMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun subscribeUserMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun subscribeUserMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/event/SyncFromEventKt {
