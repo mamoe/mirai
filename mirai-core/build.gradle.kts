@@ -78,6 +78,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
+                api(yamlkt)
                 runtimeOnly(`slf4j-simple`)
             }
         }

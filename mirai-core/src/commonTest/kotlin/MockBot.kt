@@ -17,13 +17,18 @@ import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
+import kotlin.concurrent.thread
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.io.path.createTempDirectory
 
 internal val MockAccount = BotAccount(1, "pwd")
 
 internal val MockConfiguration = BotConfiguration {
     randomDeviceInfo()
+    workingDir = createTempDirectory("mirai").toFile().also { dir ->
+        Runtime.getRuntime().addShutdownHook(thread(false) { dir.deleteRecursively() })
+    }
 }
 
 internal class MockBotBuilder(

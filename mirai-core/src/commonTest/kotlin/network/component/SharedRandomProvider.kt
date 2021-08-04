@@ -9,11 +9,15 @@
 
 package net.mamoe.mirai.internal.network.component
 
+import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.RandomProvider
 import kotlin.random.Random
 
 internal class SharedRandomProvider(
     private val random: Random
-) : RandomProvider {
-    override fun getRandom(requester: Any): Random = random
+) : RandomProvider() {
+    override fun getRandom(requester: Any): Random = when (requester) {
+        is QQAndroidClient -> random
+        else -> Random
+    }
 }

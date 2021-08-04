@@ -1,0 +1,8 @@
+account:
+  id: 1
+  password: s
+
+workingDir: ~
+recordingsDir: test/recordings/
+
+note: ''

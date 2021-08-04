@@ -19,29 +19,25 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.TestNettyNH
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.Test
-import java.net.SocketAddress
 import java.util.concurrent.Executors
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 internal class NettySendPacketTest : AbstractNettyNHTest() {
-    override val factory: NetworkHandlerFactory<TestNettyNH> = object : NetworkHandlerFactory<TestNettyNH> {
-        override fun create(context: NetworkHandlerContext, address: SocketAddress): TestNettyNH {
-            return object : TestNettyNH(bot, context, address) {
+    override val factory: NetworkHandlerFactory<TestNettyNH> =
+        NetworkHandlerFactory<TestNettyNH> { context, address ->
+            object : TestNettyNH(bot, context, address) {
                 override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
                     channel.apply {
-                        doRegister() // restart channel
                         setupChannelPipeline(pipeline(), decodePipeline)
                     }
             }
         }
-    }
 
     // single thread so we can use [yield] to transfer dispatch
     private val singleThreadDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()

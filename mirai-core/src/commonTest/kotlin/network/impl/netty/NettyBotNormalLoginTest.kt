@@ -87,4 +87,12 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
 
         assertState(NetworkHandler.State.OK)
     }
+
+    @Test
+    fun `test real login with recording`() = runBlockingUnit {
+        useRecording("2021-08-04-11-46.recording")
+        bot.login()
+        eventDispatcher.joinBroadcast()
+        assertState(NetworkHandler.State.OK)
+    }
 }

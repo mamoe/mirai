@@ -41,7 +41,7 @@ internal class SsoProcessorContextImpl(
     override val bot: QQAndroidBot,
 ) : SsoProcessorContext {
     override val account: BotAccount get() = bot.account
-    override val device: DeviceInfo = configuration.createDeviceInfo(bot)
+    override val device: DeviceInfo by lazy { configuration.createDeviceInfo(bot) }
     override val protocol: BotConfiguration.MiraiProtocol get() = configuration.protocol
     override val configuration: BotConfiguration get() = bot.configuration
 }

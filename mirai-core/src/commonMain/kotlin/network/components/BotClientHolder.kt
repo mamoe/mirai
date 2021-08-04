@@ -34,11 +34,13 @@ internal class BotClientHolderImpl(
         return QQAndroidClient(
             ssoContext.account,
             device = device,
-            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(
-                ssoContext.account,
-                device,
-                bot.components.getRandom(this)
-            ),
+            accountSecrets = bot.components[AccountSecretsManager].run {
+                getSecretsOrCreate(
+                    ssoContext.account,
+                    device,
+                    bot.components.getRandom(this)
+                )
+            },
             bot
         )
     }

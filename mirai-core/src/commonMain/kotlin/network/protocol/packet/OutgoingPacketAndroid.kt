@@ -35,23 +35,32 @@ internal class OutgoingPacketWithRespType<R : Packet?> constructor(
     delegate: ByteReadPacket
 ) : OutgoingPacket(name, commandName, sequenceId, delegate)
 
+internal interface HasPacketIdentity {
+    val commandName: String
+    val sequenceId: Int
+
+    fun identityEquals(other: HasPacketIdentity): Boolean {
+        return other.sequenceId == this.sequenceId
+    }
+}
+
 // TODO: 2021/4/12 generalize
 internal open class OutgoingPacket constructor(
     name: String?,
-    val commandName: String,
-    val sequenceId: Int,
+    final override val commandName: String,
+    final override val sequenceId: Int,
     delegate: ByteReadPacket
-) {
+) : HasPacketIdentity {
     val delegate = delegate.readBytes()
     val displayName: String = if (name == null) commandName else "$commandName($name)"
 }
 
 internal class IncomingPacket private constructor(
-    val commandName: String,
-    val sequenceId: Int,
+    override val commandName: String,
+    override val sequenceId: Int,
 
     val result: Either<Throwable, Packet?>
-) {
+) : HasPacketIdentity {
     companion object {
         operator fun invoke(commandName: String, sequenceId: Int, data: Packet?) =
             IncomingPacket(commandName, sequenceId, Either(data))

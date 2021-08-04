@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
@@ -37,6 +38,12 @@ internal open class NettyNetworkHandler(
     private val address: SocketAddress,
 ) : NetworkHandlerSupport(context) {
     final override tailrec suspend fun sendPacketImpl(packet: OutgoingPacket) {
+        try {
+            context[PacketHandler].handlePacket(packet)
+        } catch (e: Throwable) {
+            logger.error(e)
+        }
+
         val state = _state as NettyState
         if (state.sendPacketImpl(packet)) return
 
@@ -179,6 +186,7 @@ internal open class NettyNetworkHandler(
                 launch(CoroutineName("PacketDecodePipeline processor #$processorId")) {
                     while (isActive) {
                         val raw = channel.receiveCatching().getOrNull() ?: return@launch
+                        context[PacketHandler].handlePacket(raw)
                         packetLogger.debug { "Packet Handling Processor #$processorId: receive packet ${raw.commandName}" }
                         val result = packetCodec.processBody(context.bot, raw)
                         if (result == null) {

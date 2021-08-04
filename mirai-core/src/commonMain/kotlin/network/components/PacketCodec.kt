@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.io.core.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -17,6 +19,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketL
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.*
 import kotlin.io.use
 
@@ -277,11 +280,12 @@ internal class PacketCodecImpl : PacketCodec {
 /**
  * Represents a packet that has just been decrypted. Subsequent operation is normally passing it to a responsible [PacketFactory] according to [commandName] from [KnownPacketFactories].
  */
+@Serializable
 internal class RawIncomingPacket constructor(
-    val commandName: String,
-    val sequenceId: Int,
+    @ProtoNumber(1) override val commandName: String,
+    @ProtoNumber(2) override val sequenceId: Int,
     /**
      * Can be passed to [PacketFactory]
      */
-    val body: ByteArray,
-)
+    @ProtoNumber(3) val body: ByteArray,
+) : HasPacketIdentity, ProtoBuf

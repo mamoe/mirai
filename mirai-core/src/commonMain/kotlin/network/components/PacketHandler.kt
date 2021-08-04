@@ -25,17 +25,26 @@ import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.cancellation.CancellationException
 
 internal interface PacketHandler {
-    suspend fun handlePacket(incomingPacket: IncomingPacket)
+    suspend fun handlePacket(incomingPacket: IncomingPacket) {}
+
+    /**
+     * Called on send. Can be useful for tests. Must not throw any exception.
+     */
+    suspend fun handlePacket(outgoingPacket: OutgoingPacket) {}
+
+    /**
+     * Called on received. Can be useful for tests. Must not throw any exception.
+     */
+    suspend fun handlePacket(rawIncomingPacket: RawIncomingPacket) {}
 
     companion object : ComponentKey<PacketHandler>
 }
 
-internal class PacketHandlerChain(
-    private val instances: Collection<PacketHandler>
-) : PacketHandler {
-    constructor(vararg instances: PacketHandler?) : this(instances.filterNotNull())
-    constructor(instances: Iterable<PacketHandler?>) : this(instances.filterNotNull())
+internal operator fun PacketHandler.plus(other: PacketHandler): PacketHandler = PacketHandlerChain(this, other)
 
+internal class PacketHandlerChain private constructor(
+    val instances: Collection<PacketHandler>
+) : PacketHandler {
     override suspend fun handlePacket(incomingPacket: IncomingPacket) {
         for (instance in instances) {
             try {
@@ -46,11 +55,46 @@ internal class PacketHandlerChain(
             }
         }
     }
+
+    override suspend fun handlePacket(rawIncomingPacket: RawIncomingPacket) {
+        for (instance in instances) {
+            try {
+                instance.handlePacket(rawIncomingPacket)
+            } catch (e: Throwable) {
+                if (e is CancellationException) return
+                throw ExceptionInPacketHandlerException(instance, rawIncomingPacket, e)
+            }
+        }
+    }
+
+    override suspend fun handlePacket(outgoingPacket: OutgoingPacket) {
+        for (instance in instances) {
+            try {
+                instance.handlePacket(outgoingPacket)
+            } catch (e: Throwable) {
+                if (e is CancellationException) return
+                throw ExceptionInPacketHandlerException(instance, outgoingPacket, e)
+            }
+        }
+    }
+
+    companion object {
+        operator fun invoke(
+            vararg instances: PacketHandler?
+        ): PacketHandlerChain = PacketHandlerChain(instances.asIterable())
+
+        operator fun invoke(
+            instances: Iterable<PacketHandler?>
+        ): PacketHandlerChain =
+            PacketHandlerChain(
+                instances.filterNotNull().flatMap { if (it is PacketHandlerChain) it.instances else listOf(it) })
+
+    }
 }
 
 internal data class ExceptionInPacketHandlerException(
     val packetHandler: PacketHandler,
-    val incomingPacket: IncomingPacket,
+    val incomingPacket: HasPacketIdentity,
     override val cause: Throwable,
 ) : IllegalStateException("Exception in PacketHandler '$packetHandler' for command '${incomingPacket.commandName}'.")
 

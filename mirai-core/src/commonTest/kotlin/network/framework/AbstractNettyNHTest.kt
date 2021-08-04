@@ -11,18 +11,26 @@ package net.mamoe.mirai.internal.network.framework
 
 import io.netty.channel.Channel
 import io.netty.channel.embedded.EmbeddedChannel
-import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.component.SharedRandomProvider
+import net.mamoe.mirai.internal.network.components.*
+import net.mamoe.mirai.internal.network.handler.*
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
+import net.mamoe.mirai.internal.network.recording.PacketRecordBundle
+import net.mamoe.mirai.internal.network.recording.ReplayingPacketHandler
+import net.mamoe.mirai.internal.network.recording.loadFrom
 import net.mamoe.mirai.utils.ExceptionCollector
+import net.mamoe.mirai.utils.warning
 import java.net.SocketAddress
+import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.random.Random
 
 /**
  * You may need to override [createConnection]
@@ -68,29 +76,7 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
         }
     }
 
-    class NettyNHTestChannel(
-        var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null,
-    ) : EmbeddedChannel() {
-        public /*internal*/ override fun doRegister() {
-            super.doRegister() // Set channel state to ACTIVE
-            // Drop old handlers
-            pipeline().let { p ->
-                while (p.first() != null) {
-                    p.removeFirst()
-                }
-            }
-        }
-
-        override fun handleInboundMessage(msg: Any?) {
-            ReferenceCountUtil.release(msg) // Not handled, Drop
-        }
-
-        override fun handleOutboundMessage(msg: Any?) {
-            fakeServer?.invoke(this, msg) ?: ReferenceCountUtil.release(msg)
-        }
-    }
-
-    val channel = NettyNHTestChannel()
+    var channel: EmbeddedChannel = EmbeddedChannel()
 
     override val network: TestNettyNH get() = bot.network as TestNettyNH
 
@@ -99,9 +85,56 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
             object : TestNettyNH(bot, context, address) {
                 override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
                     channel.apply {
-                        doRegister() // restart channel
+                        pipeline().removeAll { true }
                         setupChannelPipeline(pipeline(), decodePipeline)
                     }
             }
         }
+
+    /**
+     * Can be called only once.
+     */
+    fun useRecording(url: URL) {
+        overrideComponents.keys.forEach { if (it != ServerList) overrideComponents.remove(it) }
+
+        val handler = ReplayingPacketHandler(PacketRecordBundle.loadFrom(url.readBytes()))
+
+        networkLogger.warning {
+            handler.bundle.run {
+                """
+                Loaded recording ${url.file}:
+                Version: $version
+                Time: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date(time))}
+                Count: ${records.size}
+                Seed: $seed
+                Note: $note
+            """.trimIndent()
+            }
+        }
+        bot = object : QQAndroidBot(TODO(), MockConfiguration.copy()) {
+            override fun createBotLevelComponents(): ConcurrentComponentStorage =
+                super.createBotLevelComponents().apply {
+                    this[PacketHandler] += handler
+                    this[RandomProvider] = SharedRandomProvider(Random(handler.bundle.seed))
+                }
+
+            override fun createNetworkHandler(): NetworkHandler =
+                factory.create(
+                    NetworkHandlerContextImpl(bot, networkLogger, createNetworkLevelComponents()),
+                    createAddress()
+                )
+        }
+        channel = handler.channel
+    }
+
+    /**
+     * Can be called only once.
+     */
+    fun useRecording(name: String) {
+        return useRecording(
+            this::class.java.classLoader.getResource(name)
+                ?: this::class.java.classLoader.getResource("recording/data/$name")
+                ?: error("Could not find recording '$name'")
+        )
+    }
 }

@@ -20,16 +20,18 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
 
 internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcessor {
-    val deviceInfo = bot.configuration.createDeviceInfo(bot)
+    val deviceInfo: DeviceInfo by lazy { bot.configuration.createDeviceInfo(bot) }
     override var client: QQAndroidClient by lateinitMutableProperty {
         QQAndroidClient(
             bot.account,
             device = deviceInfo,
-            accountSecrets = AccountSecretsImpl(deviceInfo, bot.account, bot.components.getRandom(this))
+            accountSecrets = AccountSecretsImpl(deviceInfo, bot.account, bot.components.getRandom(this)),
+            bot
         )
     }
     override val ssoSession: SsoSession get() = bot.client

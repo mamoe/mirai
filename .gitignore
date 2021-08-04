@@ -51,3 +51,7 @@ bintray.key.txt
 /build-gpg-sign
 # Name for IDEA direction sorting
 build-secret-keys/
+
+**/resources/**/local*.*
+**/resources/**/local*.*.*
+**/resources/**/*.local.*

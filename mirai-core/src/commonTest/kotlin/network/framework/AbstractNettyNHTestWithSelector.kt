@@ -12,6 +12,7 @@
 package net.mamoe.mirai.internal.network.framework
 
 import io.netty.channel.Channel
+import io.netty.channel.embedded.EmbeddedChannel
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitorImpl
@@ -31,7 +32,7 @@ internal abstract class AbstractNettyNHTestWithSelector : AbstractRealNetworkHan
         overrideComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
     }
 
-    val channel = AbstractNettyNHTest.NettyNHTestChannel()
+    val channel = EmbeddedChannel()
 
     val selector = TestSelector<TestNettyNH> {
         object : TestNettyNH(bot, createContext(), createAddress()) {
