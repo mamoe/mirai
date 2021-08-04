@@ -14,7 +14,9 @@ package net.mamoe.mirai.utils
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import java.awt.*
 import java.awt.event.*
@@ -109,8 +111,8 @@ public object SwingSolver : LoginSolver() {
                 """
                 <html>
                 需要进行账户安全认证<br>
-                该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题<br>
-                完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次<br>
+                该账户有设备锁/不常用登录地点/不常用设备登录的问题<br>
+                请在<b>手机 QQ</b> 打开下面链接
                 成功后请关闭该窗口
             """.trimIndent()
             )
