@@ -74,6 +74,16 @@ analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 allprojects {
     group = "net.mamoe"
     version = Versions.project
+    val currentProj = this@allprojects
+    if (currentProj != rootProject) {
+        val rfm = currentProj.projectDir.relativeTo(rootProject.projectDir)
+        if (rfm.path.contains("mirai-core")) {
+            version = Versions.core
+        }
+        if (rfm.path.contains("mirai-console")) {
+            version = Versions.console
+        }
+    }
 
     repositories {
         // mavenLocal() // cheching issue cause compiler exception

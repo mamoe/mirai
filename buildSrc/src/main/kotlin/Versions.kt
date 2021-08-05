@@ -14,9 +14,9 @@ import org.gradle.api.attributes.Attribute
 object Versions {
     const val project = "2.7-M2"
 
-    const val core = project
-    const val console = project
-    const val consoleTerminal = project
+    val core = PublishSettings.getIfSnapshot("version.mirai.core") ?: project
+    val console = PublishSettings.getIfSnapshot("version.mirai.console") ?: project
+    val consoleTerminal: String = console
 
     const val kotlinCompiler = "1.5.10"
     const val kotlinStdlib = "1.5.10"
@@ -101,9 +101,9 @@ const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStd
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
 
 
-const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
-const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
-const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
+val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
+val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
+val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
 
 const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 

@@ -42,6 +42,9 @@ open class GpgSigner(private val workdir: File) {
         private var initialized: Boolean = false
         var signer: GpgSigner = NoopSigner
         fun setup(project: Project) {
+            if (PublishSettings.isSnapshot) {
+                return
+            }
             if (initialized) return
             initialized = true
             val rootProject = project.rootProject

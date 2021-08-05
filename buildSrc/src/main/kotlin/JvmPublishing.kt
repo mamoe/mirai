@@ -21,10 +21,14 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registering
+import java.util.*
 
 fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
         doLast {
+            if (PublishSettings.isSnapshot) {
+                return@doLast
+            }
             if (GpgSigner.signer == GpgSigner.NoopSigner) {
                 error("GPG Signer isn't available.")
             }
@@ -53,6 +57,23 @@ fun Project.configureRemoteRepos() {
                 }
             } else {
                 println("SonaType is not available")
+            }
+            if (PublishSettings.isSnapshot) {
+                maven {
+                    name = "SnapshotRepo"
+                    isAllowInsecureProtocol = true
+                    setUrl(
+                        String(
+                            Base64.getDecoder().decode(
+                                PublishSettings["snapshot.remote"]
+                            )
+                        )
+                    )
+                    credentials {
+                        username = PublishSettings["snapshot.user"]
+                        password = PublishSettings["snapshot.key"]
+                    }
+                }
             }
         }
     }
@@ -89,8 +110,10 @@ inline fun Project.configurePublishing(
                     vcs = vcs
                 )
 
-                artifact(sourcesJar.get())
-                artifact(stubJavadoc.get())
+                if (!PublishSettings.isSnapshot) {
+                    artifact(sourcesJar.get())
+                    artifact(stubJavadoc.get())
+                }
             }
         }
         configGpgSign(this@configurePublishing)

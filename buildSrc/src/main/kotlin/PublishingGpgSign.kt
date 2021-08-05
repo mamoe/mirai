@@ -53,6 +53,9 @@ object PublishingAccess {
 }
 
 fun PublishingExtension.configGpgSign(project: Project) {
+    if (PublishSettings.isSnapshot) {
+        return
+    }
     if (GpgSigner.signer === GpgSigner.NoopSigner) {
         return
     }

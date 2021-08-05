@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.MessageDigest
@@ -59,4 +60,14 @@ fun InputStream.md5(): ByteArray {
         }
     }
     return digest.digest()
+}
+
+fun findProjectDir(): File {
+    val current = File(".").absoluteFile
+    fun tryFind(file: File): File? {
+        if (file.resolve("mirai-core").isDirectory) return file
+        file.parentFile?.let { return tryFind(it) }
+        return null
+    }
+    return tryFind(current) ?: current
 }
