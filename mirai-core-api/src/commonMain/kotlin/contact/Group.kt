@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 
@@ -52,7 +53,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * ##
  */
 @NotStableForInheritance
-public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported {
+public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {
     /**
      * 群名称.
      *
@@ -183,6 +184,17 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
         this.sendMessage(message.toPlainText())
 
+
+    /**
+     * 上传一个语音消息以备发送. 该方法已弃用且将在未来版本删除, 请使用 [uploadAudio].
+     */
+    @Suppress("DEPRECATION")
+    @Deprecated(
+        "use uploadAudio",
+        replaceWith = ReplaceWith("uploadAudio(resource)"),
+        level = DeprecationLevel.WARNING
+    )
+    public suspend fun uploadVoice(resource: ExternalResource): Voice
 
     /**
      * 将一条消息设置为群精华消息, 需要管理员或群主权限.

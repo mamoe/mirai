@@ -122,8 +122,8 @@ internal enum class ResourceKind(
 ) {
     PRIVATE_IMAGE("private image"),
     GROUP_IMAGE("group image"),
-    PRIVATE_VOICE("private voice"),
-    GROUP_VOICE("group voice"),
+    PRIVATE_AUDIO("private audio"),
+    GROUP_AUDIO("group audio"),
 
     GROUP_FILE("group file"),
 

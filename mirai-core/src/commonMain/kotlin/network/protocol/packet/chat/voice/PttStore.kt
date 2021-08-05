@@ -22,18 +22,21 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.toIpV4AddressString
+import net.mamoe.mirai.message.data.AudioCodec
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toUHexString
 
-internal val ExternalResource.voiceCodec: Int
+internal inline val ExternalResource.voiceCodec: Int get() = audioCodec.id
+
+internal val ExternalResource.audioCodec: AudioCodec
     get() {
         return when (formatName) {
             // 实际上 amr 是 0, 但用 1 也可以发. 为了避免 silk 错被以 amr 发送导致降音质就都用 1
-            "amr" -> 1  // amr
-            "silk" -> 1  // silk V3
-            else -> 1     // use amr by default
+            "amr" -> AudioCodec.SILK
+            "silk" -> AudioCodec.SILK
+            else -> AudioCodec.AMR     // use amr by default
         }
     }
 
