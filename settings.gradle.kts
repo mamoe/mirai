@@ -16,6 +16,9 @@ pluginManagement {
     }
 }
 
+@Suppress("UnstableApiUsage")
+includeBuild("buildSrc/snapshots-publishing")
+
 rootProject.name = "mirai"
 
 fun includeProject(projectPath: String, dir: String? = null) {
