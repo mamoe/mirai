@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @see FriendMessageEvent
  */
 @NotStableForInheritance
-public interface Friend : User, CoroutineScope, VoiceSupported {
+public interface Friend : User, CoroutineScope, AudioSupported {
     /**
      * 向这个对象发送消息.
      *

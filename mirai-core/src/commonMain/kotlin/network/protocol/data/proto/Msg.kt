@@ -765,7 +765,69 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(30) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(31) @JvmField val bytesPttUrls: List<ByteArray> = emptyList(),
         @ProtoNumber(32) @JvmField val downloadFlag: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Ptt
+
+            if (fileType != other.fileType) return false
+            if (srcUin != other.srcUin) return false
+            if (!fileUuid.contentEquals(other.fileUuid)) return false
+            if (!fileMd5.contentEquals(other.fileMd5)) return false
+            if (!fileName.contentEquals(other.fileName)) return false
+            if (fileSize != other.fileSize) return false
+            if (!reserve.contentEquals(other.reserve)) return false
+            if (fileId != other.fileId) return false
+            if (serverIp != other.serverIp) return false
+            if (serverPort != other.serverPort) return false
+            if (boolValid != other.boolValid) return false
+            if (!signature.contentEquals(other.signature)) return false
+            if (!shortcut.contentEquals(other.shortcut)) return false
+            if (!fileKey.contentEquals(other.fileKey)) return false
+            if (magicPttIndex != other.magicPttIndex) return false
+            if (voiceSwitch != other.voiceSwitch) return false
+            if (!pttUrl.contentEquals(other.pttUrl)) return false
+            if (!groupFileKey.contentEquals(other.groupFileKey)) return false
+            if (time != other.time) return false
+            if (!downPara.contentEquals(other.downPara)) return false
+            if (format != other.format) return false
+            if (!pbReserve.contentEquals(other.pbReserve)) return false
+            if (bytesPttUrls != other.bytesPttUrls) return false
+            if (downloadFlag != other.downloadFlag) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = fileType
+            result = 31 * result + srcUin.hashCode()
+            result = 31 * result + fileUuid.contentHashCode()
+            result = 31 * result + fileMd5.contentHashCode()
+            result = 31 * result + fileName.contentHashCode()
+            result = 31 * result + fileSize
+            result = 31 * result + reserve.contentHashCode()
+            result = 31 * result + fileId
+            result = 31 * result + serverIp
+            result = 31 * result + serverPort
+            result = 31 * result + boolValid.hashCode()
+            result = 31 * result + signature.contentHashCode()
+            result = 31 * result + shortcut.contentHashCode()
+            result = 31 * result + fileKey.contentHashCode()
+            result = 31 * result + magicPttIndex
+            result = 31 * result + voiceSwitch
+            result = 31 * result + pttUrl.contentHashCode()
+            result = 31 * result + groupFileKey.contentHashCode()
+            result = 31 * result + time
+            result = 31 * result + downPara.contentHashCode()
+            result = 31 * result + format
+            result = 31 * result + pbReserve.contentHashCode()
+            result = 31 * result + bytesPttUrls.hashCode()
+            result = 31 * result + downloadFlag
+            return result
+        }
+    }
 
     @Serializable
     internal class PubAccInfo(

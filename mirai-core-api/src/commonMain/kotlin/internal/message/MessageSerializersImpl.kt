@@ -13,14 +13,12 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.overwriteWith
-import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import net.mamoe.mirai.utils.map
 import net.mamoe.mirai.utils.takeElementsFrom
 import kotlin.reflect.KClass
@@ -121,6 +119,7 @@ private val builtInSerializersModule by lazy {
             subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
 
             //  subclass(PttMessage::class, PttMessage.serializer())
+            @Suppress("DEPRECATION")
             subclass(Voice::class, Voice.serializer())
 
             // subclass(HummerMessage::class, HummerMessage.serializer())
@@ -188,31 +187,58 @@ private val builtInSerializersModule by lazy {
 // Tests:
 // net.mamoe.mirai.internal.message.data.MessageSerializationTest
 internal object MessageSerializersImpl : MessageSerializers {
-    @Volatile
-    private var serializersModuleField: SerializersModule? = null
+    private var serializersModuleField: SerializersModule by lateinitMutableProperty {
+        builtInSerializersModule
+    }
+
     override val serializersModule: SerializersModule
         get() {
             Mirai // ensure registered, for tests
-            return serializersModuleField ?: builtInSerializersModule
+            return serializersModuleField
         }
 
     @Synchronized
     override fun <M : SingleMessage> registerSerializer(type: KClass<M>, serializer: KSerializer<M>) {
-        serializersModuleField = serializersModule.overwriteWith(SerializersModule {
-            // contextual(type, serializer)
-            for (superclass in type.allSuperclasses) {
-                if (superclass.isFinal) continue
-                if (!superclass.isSubclassOf(SingleMessage::class)) continue
-                @Suppress("UNCHECKED_CAST")
-                polymorphic(superclass as KClass<Any>) {
-                    subclass(type, serializer)
-                }
-            }
-        })
+        serializersModuleField = serializersModule.overwritePolymorphicWith(type, serializer)
     }
 
     @Synchronized
     override fun registerSerializers(serializersModule: SerializersModule) {
         serializersModuleField = serializersModule.overwriteWith(serializersModule)
+    }
+}
+
+internal fun <M : Any> SerializersModule.overwritePolymorphicWith(
+    type: KClass<M>,
+    serializer: KSerializer<M>
+): SerializersModule {
+    return overwriteWith(SerializersModule {
+        // contextual(type, serializer)
+        for (superclass in type.allSuperclasses) {
+            if (superclass.isFinal) continue
+            if (!superclass.isSubclassOf(SingleMessage::class)) continue
+            @Suppress("UNCHECKED_CAST")
+            polymorphic(superclass as KClass<Any>) {
+                subclass(type, serializer)
+            }
+        }
+    })
+}
+
+private inline fun <reified M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(serializer: KSerializer<M>) =
+    hierarchicallyPolymorphic(M::class, serializer)
+
+private fun <M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(
+    type: KClass<M>,
+    serializer: KSerializer<M>
+) {
+    // contextual(type, serializer)
+    for (superclass in type.allSuperclasses) {
+        if (superclass.isFinal) continue
+        if (!superclass.isSubclassOf(SingleMessage::class)) continue
+        @Suppress("UNCHECKED_CAST")
+        polymorphic(superclass as KClass<Any>) {
+            subclass(type, serializer)
+        }
     }
 }

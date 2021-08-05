@@ -18,15 +18,12 @@ import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
+import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.*
 
 /**
  * 只在手动构造 [OfflineMessageSource] 时调用
@@ -91,7 +88,7 @@ private fun List<MsgComm.Msg>.toMessageChain(
     joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, builder)
 
     for (msg in messageList) {
-        msg.msgBody.richText.ptt?.toVoice()?.let { builder.add(it) }
+        msg.msgBody.richText.ptt?.toAudio()?.let { builder.add(it) }
     }
 
     return builder.build().cleanupRubbishMessageElements()
@@ -516,11 +513,13 @@ internal object ReceiveMessageTransformer {
         }
     }
 
-    fun ImMsgBody.Ptt.toVoice() = Voice(
-        kotlinx.io.core.String(fileName),
-        fileMd5,
-        fileSize.toLong(),
-        format,
-        kotlinx.io.core.String(downPara)
-    ).also { it.pttInternalInstance = this }
+    fun ImMsgBody.Ptt.toAudio() = OnlineAudioImpl(
+        filename = fileName.encodeToString(),
+        fileMd5 = fileMd5,
+        fileSize = fileSize.toLongUnsigned(),
+        codec = AudioCodec.fromId(format),
+        url = downPara.encodeToString(),
+        length = time.toLongUnsigned(),
+        originalPtt = this,
+    )
 }

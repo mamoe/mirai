@@ -23,22 +23,25 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.message.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
+import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_AUDIO
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
-import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_VOICE
 import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -204,32 +207,10 @@ internal class GroupImpl(
         }
     }
 
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
     override suspend fun uploadVoice(resource: ExternalResource): Voice {
         return bot.network.run {
-            kotlin.runCatching {
-                val (_) = Highway.uploadResourceBdh(
-                    bot = bot,
-                    resource = resource,
-                    kind = GROUP_VOICE,
-                    commandId = 29,
-                    extendInfo = PttStore.GroupPttUp.createTryUpPttPack(bot.id, id, resource)
-                        .toByteArray(Cmd0x388.ReqBody.serializer()),
-                )
-            }.recoverCatchingSuppressed {
-                when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect<Any>()) {
-                    is PttStore.GroupPttUp.Response.RequireUpload -> {
-                        tryServersUpload(
-                            bot,
-                            resp.uploadIpList.zip(resp.uploadPortList),
-                            resource.size,
-                            GROUP_VOICE,
-                            ChannelKind.HTTP
-                        ) { ip, port ->
-                            Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
-                        }
-                    }
-                }
-            }.getOrThrow()
+            uploadAudioResource(resource)
 
             // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
             //     ?.msgTryupPttRsp
@@ -241,6 +222,51 @@ internal class GroupImpl(
                 resource.size,
                 resource.voiceCodec,
                 ""
+            )
+        }
+    }
+
+    private suspend fun uploadAudioResource(resource: ExternalResource) {
+        kotlin.runCatching {
+            val (_) = Highway.uploadResourceBdh(
+                bot = bot,
+                resource = resource,
+                kind = GROUP_AUDIO,
+                commandId = 29,
+                extendInfo = PttStore.GroupPttUp.createTryUpPttPack(bot.id, id, resource)
+                    .toByteArray(Cmd0x388.ReqBody.serializer()),
+            )
+        }.recoverCatchingSuppressed {
+            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect(bot)) {
+                is PttStore.GroupPttUp.Response.RequireUpload -> {
+                    tryServersUpload(
+                        bot,
+                        resp.uploadIpList.zip(resp.uploadPortList),
+                        resource.size,
+                        GROUP_AUDIO,
+                        ChannelKind.HTTP
+                    ) { ip, port ->
+                        Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
+                    }
+                }
+            }
+        }.getOrThrow()
+    }
+
+    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio {
+        return bot.network.run {
+            uploadAudioResource(resource)
+
+            // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
+            //     ?.msgTryupPttRsp
+            //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
+
+            OfflineAudioImpl(
+                filename = "${resource.md5.toUHexString("")}.amr",
+                fileMd5 = resource.md5,
+                fileSize = resource.size,
+                codec = resource.audioCodec,
+                originalPtt = null,
             )
         }
 
