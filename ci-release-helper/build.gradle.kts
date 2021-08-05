@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 import keys.SecretKeys
+import org.gradle.kotlin.dsl.support.useToRun
+import java.net.URL
 
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
@@ -19,4 +21,35 @@ nexusStaging {
     val keys = SecretKeys.getCache(project).loadKey("sonatype")
     username = keys.user
     password = keys.password
+}
+
+tasks.register("updateSnapshotVersion") {
+    group = "mirai"
+    dependsOn(gradle.includedBuild("snapshots-publishing").task(":check"))
+
+    doLast {
+        var baseUrl = System.getenv("SNAPSHOTS_PUBLISHING_URL") ?: "https://repo.mirai.mamoe.net/snapshots/"
+        if (!baseUrl.endsWith('/')) {
+            baseUrl += "/"
+        }
+        baseUrl += "net/mamoe/mirai-core-utils/maven-metadata.xml"
+
+        val content = URL(baseUrl).openConnection().getInputStream().useToRun {
+            readBytes().decodeToString()
+        }
+
+        val branch = System.getenv("CURRENT_BRANCH_NAME")
+        logger.info("Current branch name is '$branch'")
+
+        val currentVersion = getLatestMiraiVersionForBranch(content, branch)
+
+        logger.info("Current newest version for this branch is '$currentVersion'")
+
+        val nextVersion = currentVersion.nextSnapshotVersion(branch).toString()
+
+        logger.info("Next snapshot version will be '$nextVersion'")
+        for (project in rootProject.allprojects) {
+            project.version = currentVersion.toString()
+        }
+    }
 }

@@ -26,10 +26,10 @@ kotlin {
 }
 
 
+private val versionsText = project.projectDir.resolve("src/main/kotlin/Versions.kt").readText()
 fun version(name: String): String {
-    val versions = project.projectDir.resolve("src/main/kotlin/Versions.kt").readText()
 
-    return versions.lineSequence()
+    return versionsText.lineSequence()
         .map { it.trim() }
         .single { it.startsWith("const val $name") }
         .substringAfter('"', "")
@@ -58,4 +58,6 @@ dependencies {
     api(asm("commons"))
 
     api(gradleApi())
+
+    implementation("net.mamoe:snapshots-publishing") // included from /buildSrc/snapshots-publishing
 }

@@ -1,0 +1,61 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Release Publish
+
+# Controls when the action will run. Triggers the workflow on push or pull request 
+# events but only for the master branch
+on: [ push ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  publish-mirai:
+    concurrency: snapshots
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --recursive
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - run: chmod -R 777 *
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Init gradle project
+        run: ./gradlew clean --scan
+
+      - name: fillBuildConstants
+        run: >
+          ./gradlew
+          fillBuildConstants --scan
+
+      - name: Assemble
+        run: ./gradlew assemble --scan
+
+      - name: Check
+        run: >
+          ./gradlew check --scan
+          -Dmirai.network.show.all.components=true
+          -Dkotlinx.coroutines.debug=on
+          -Dmirai.network.show.packet.details=true
+
+      - run: >
+          ./gradlew publish --info --scan
+          -DMIRAI_IS_SNAPSHOTS_PUBLISHING=true
+          -DSNAPSHOTS_PUBLISHING_USER=${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          -DSNAPSHOTS_PUBLISHING_KEY=${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          -DSNAPSHOTS_PUBLISHING_URL=${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          -DCURRENT_BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}
+
+      - name: Publish Gradle plugin
+        run: >
+          ./gradlew
+          :mirai-console-gradle:publishPlugins --scan
+          -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
+          -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
