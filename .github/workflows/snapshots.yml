@@ -22,10 +22,9 @@ jobs:
 
       - run: chmod -R 777 *
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v4.8
 
       - name: Init gradle project
         run: ./gradlew clean --scan
@@ -36,7 +35,7 @@ jobs:
           -DSNAPSHOTS_PUBLISHING_USER=${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           -DSNAPSHOTS_PUBLISHING_KEY=${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           -DSNAPSHOTS_PUBLISHING_URL=${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
-          -DCURRENT_BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}
+          -DCURRENT_BRANCH_NAME=${{ steps.branch-name.outputs.current_branch }}
 
       - name: fillBuildConstants
         run: >
