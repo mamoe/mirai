@@ -1,5 +1,3 @@
-import java.util.*
-
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
@@ -9,24 +7,27 @@ import java.util.*
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+
 object PublishSettings {
-    val projKeySettings = findProjectDir().resolve("keys.properties").let { store ->
-        println("SST: $store")
-        val prop = Properties()
+    val projKeySettings: JsonObject = findProjectDir().resolve("token.txt").let { store ->
         kotlin.runCatching {
             if (store.isFile) {
-                store.bufferedReader().use { prop.load(it) }
-            }
+                store.bufferedReader().use {
+                    JsonParser().parse(it).asJsonObject
+                }
+            } else null
         }.onFailure { it.printStackTrace(System.out) }
-        prop
+            .getOrNull() ?: JsonObject()
     }
 
-    val isSnapshot = projKeySettings.getProperty("isSnapshot")?.toBoolean() ?: false
+    val isSnapshot = projKeySettings.getAsJsonPrimitive("isSnapshot")?.asBoolean ?: false
 
-    operator fun get(key: String): String = projKeySettings.getProperty(key) ?: error("No property $key")
-    operator fun get(key: String, def: String): String = projKeySettings.getProperty(key, def) ?: def
+    operator fun get(key: String): String = projKeySettings[key]?.asString ?: error("No property $key")
+    operator fun get(key: String, def: String): String = projKeySettings[key]?.asString ?: def
 
     fun getIfSnapshot(key: String): String? = if (isSnapshot) {
-        projKeySettings.getProperty(key)
+        projKeySettings[key]?.asString
     } else null
 }
