@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Release Publish
+name: Snapshots Publish
 
 # Controls when the action will run. Triggers the workflow on push or pull request 
 # events but only for the master branch
@@ -29,6 +29,14 @@ jobs:
 
       - name: Init gradle project
         run: ./gradlew clean --scan
+
+      - run: >
+          ./gradlew updateSnapshotVersion --info --scan
+          -DMIRAI_IS_SNAPSHOTS_PUBLISHING=true
+          -DSNAPSHOTS_PUBLISHING_USER=${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          -DSNAPSHOTS_PUBLISHING_KEY=${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          -DSNAPSHOTS_PUBLISHING_URL=${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          -DCURRENT_BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}
 
       - name: fillBuildConstants
         run: >
