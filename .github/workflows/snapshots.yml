@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - dev
+      - snapshots-publishing
+
 jobs:
   publish-mirai:
     concurrency: snapshots
