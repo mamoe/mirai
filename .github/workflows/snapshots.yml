@@ -35,7 +35,7 @@ jobs:
           -DSNAPSHOTS_PUBLISHING_USER=${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           -DSNAPSHOTS_PUBLISHING_KEY=${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           -DSNAPSHOTS_PUBLISHING_URL=${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
-          -DCURRENT_BRANCH_NAME=${{ steps.branch-name.outputs.current_branch }}
+          -DCURRENT_BRANCH_NAME=${{ steps.branch-name.outputs.head_ref_branch }}
 
       - name: fillBuildConstants
         run: >
