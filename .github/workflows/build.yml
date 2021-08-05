@@ -74,7 +74,7 @@ jobs:
           ./gradlew
           :mirai-core-utils:publishAllPublicationsToSnapshotRepoRepository
           :mirai-core-api:publishAllPublicationsToSnapshotRepoRepository
-          :mirai-core-core:publishAllPublicationsToSnapshotRepoRepository
+          :mirai-core:publishAllPublicationsToSnapshotRepoRepository
           :mirai-console:publishAllPublicationsToSnapshotRepoRepository
           :mirai-console-terminal:publishAllPublicationsToSnapshotRepoRepository
           :mirai-console-compiler-common:publishAllPublicationsToSnapshotRepoRepository
