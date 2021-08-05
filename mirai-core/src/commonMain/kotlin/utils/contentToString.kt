@@ -12,6 +12,7 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.toUHexString
@@ -32,7 +33,7 @@ private fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) 
     return this.joinToString(prefix = "$prefix$indent", separator = "\n$prefix$indent", transform = transform)
 }
 
-private val SoutvLogger: MiraiLogger by lazy { MiraiLogger.create("soutv") }
+private val SoutvLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(IMirai::class, "soutv") }
 internal fun Any?.soutv(name: String = "unnamed") {
     @Suppress("DEPRECATION")
     SoutvLogger.debug { "$name = ${this._miraiContentToString()}" }

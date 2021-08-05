@@ -105,10 +105,10 @@ internal class ServerListImpl(
     initial: Collection<ServerAddress> = emptyList()
 ) : ServerList {
     @TestOnly
-    constructor(initial: Collection<ServerAddress>) : this(MiraiLogger.TopLevel, initial)
+    constructor(initial: Collection<ServerAddress>) : this(MiraiLogger.Factory.create(ServerListImpl::class), initial)
 
     @TestOnly
-    constructor() : this(MiraiLogger.TopLevel)
+    constructor() : this(MiraiLogger.Factory.create(ServerListImpl::class))
 
     @Volatile
     private var preferred: Set<ServerAddress> = DEFAULT_SERVER_LIST

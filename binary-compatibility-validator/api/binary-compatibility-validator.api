@@ -5651,15 +5651,20 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 	public abstract fun error (Ljava/lang/String;)V
 	public abstract fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun error (Ljava/lang/Throwable;)V
-	public abstract fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public abstract fun getIdentity ()Ljava/lang/String;
 	public abstract fun info (Ljava/lang/String;)V
 	public abstract fun info (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun info (Ljava/lang/Throwable;)V
+	public fun isDebugEnabled ()Z
 	public abstract fun isEnabled ()Z
-	public abstract fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun isErrorEnabled ()Z
+	public fun isInfoEnabled ()Z
+	public fun isVerboseEnabled ()Z
+	public fun isWarningEnabled ()Z
+	public fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public static fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
-	public abstract fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
+	public fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public abstract fun verbose (Ljava/lang/String;)V
 	public abstract fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun verbose (Ljava/lang/Throwable;)V
@@ -5672,6 +5677,23 @@ public final class net/mamoe/mirai/utils/MiraiLogger$Companion {
 	public final fun create (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final fun getTopLevel ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class net/mamoe/mirai/utils/MiraiLogger$Factory {
+	public static final field INSTANCE Lnet/mamoe/mirai/utils/MiraiLogger$Factory$INSTANCE;
+	public fun create (Ljava/lang/Class;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public abstract fun create (Ljava/lang/Class;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/MiraiLogger$Factory;Ljava/lang/Class;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/MiraiLogger$Factory;Lkotlin/reflect/KClass;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/MiraiLogger;
+}
+
+public final class net/mamoe/mirai/utils/MiraiLogger$Factory$INSTANCE : net/mamoe/mirai/utils/MiraiLogger$Factory {
+	public fun create (Ljava/lang/Class;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Ljava/lang/Class;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 }
 
 public abstract class net/mamoe/mirai/utils/MiraiLoggerPlatformBase : net/mamoe/mirai/utils/MiraiLogger {

@@ -326,7 +326,9 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Bot ${it.id}") }
+    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = {
+        MiraiLogger.Factory.create(Bot::class, "Bot ${it.id}")
+    }
 
     /**
      * 网络层日志构造器
@@ -338,7 +340,9 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Net ${it.id}") }
+    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = {
+        MiraiLogger.Factory.create(Bot::class, "Net ${it.id}")
+    }
 
 
     /**

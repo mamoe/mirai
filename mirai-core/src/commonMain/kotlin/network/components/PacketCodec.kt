@@ -45,7 +45,7 @@ internal interface PacketCodec {
         val PACKET_DEBUG = systemProp("mirai.network.packet.logger", false)
 
         internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
-            MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)
+            MiraiLogger.Factory.create(PacketCodec::class, "Packet").withSwitch(PACKET_DEBUG)
         }
     }
 }

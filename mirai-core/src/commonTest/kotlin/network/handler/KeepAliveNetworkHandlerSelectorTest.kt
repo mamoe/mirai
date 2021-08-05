@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
 import kotlin.time.Duration
 
-internal val selectorLogger = MiraiLogger.create("selector")
+internal val selectorLogger = MiraiLogger.Factory.create(TestSelector::class, "selector")
 
 internal class TestSelector<H : NetworkHandler> :
     AbstractKeepAliveNetworkHandlerSelector<H> {

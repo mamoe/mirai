@@ -57,6 +57,9 @@ internal class OnlineGroupImageImpl(
 
 }
 
+private val imageLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(Image::class) }
+internal val Image.Key.logger get() = imageLogger
+
 @Serializable(with = OnlineFriendImageImpl.Serializer::class)
 internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage,
@@ -70,7 +73,7 @@ OnlineFriendImage() {
             ?: kotlin.run {
                 if (delegate.picMd5.size == 16) generateImageId(delegate.picMd5, imageType)
                 else {
-                    MiraiLogger.TopLevel.warning(
+                    Image.logger.warning(
                         contextualBugReportException(
                             "Failed to compute friend imageId: resId=${delegate.resId}",
                             delegate._miraiContentToString(),
@@ -115,7 +118,7 @@ internal fun getImageType(id: Int): String {
         2001, 3 -> "png"
         else -> {
             if (UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED) {
-                MiraiLogger.TopLevel.debug(
+                Image.logger.debug(
                     "Unknown image id: $id. Stacktrace:",
                     Exception()
                 )

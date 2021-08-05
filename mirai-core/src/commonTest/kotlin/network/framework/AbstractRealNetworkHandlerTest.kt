@@ -53,7 +53,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         }
     }
 
-    open val networkLogger = MiraiLogger.create("network")
+    open val networkLogger = MiraiLogger.Factory.create(NetworkHandler::class, "network")
 
     sealed class NHEvent {
         object Login : NHEvent()

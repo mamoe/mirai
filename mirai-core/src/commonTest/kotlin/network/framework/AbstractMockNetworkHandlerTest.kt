@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -39,7 +40,7 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
         nhProvider = { createNetworkHandler() }
         additionalComponentsProvider = { this@AbstractMockNetworkHandlerTest.components }
     }
-    protected val logger = MiraiLogger.create("test")
+    protected val logger = MiraiLogger.Factory.create(Bot::class, "test")
     protected val components = ConcurrentComponentStorage().apply {
         set(SsoProcessor, TestSsoProcessor(bot))
         set(
@@ -49,8 +50,8 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
         set(
             StateObserver,
             SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States")),
-                MiraiLogger.create("StateObserver errors")
+                LoggingStateObserver(MiraiLogger.Factory.create(LoggingStateObserver::class, "States")),
+                MiraiLogger.Factory.create(SafeStateObserver::class, "StateObserver errors")
             )
         )
     }
