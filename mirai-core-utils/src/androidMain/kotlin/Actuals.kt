@@ -13,6 +13,9 @@
 package net.mamoe.mirai.utils
 
 import android.util.Base64
+import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 
 
 public actual fun ByteArray.encodeBase64(): String {
@@ -39,4 +42,17 @@ public actual inline fun <reified E> Throwable.unwrap(): Throwable {
     return this.findCause { it !is E }
         ?.also { it.addSuppressed(e) }
         ?: this
+}
+
+public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
+    var suppressed: Throwable? = null
+    return ServiceLoader.load(clazz.java).firstOrNull()
+        ?: runCatching {
+            Class.forName(fallbackImplementation).cast<Class<out T>>().kotlin.run { objectInstance ?: createInstance() }
+        }.onFailure {
+            suppressed = it
+        }.getOrNull()
+        ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
+            if (suppressed != null) addSuppressed(suppressed)
+        }
 }
