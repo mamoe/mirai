@@ -14,7 +14,7 @@ echo "isSnapshot=true" > keys.properties
 echo "snapshot.user=$SNAPSHOTS_PUBLISHING_USER" >> keys.properties
 echo "snapshot.key=$SNAPSHOTS_PUBLISHING_KEY"   >> keys.properties
 echo "snapshot.url=$SNAPSHOTS_PUBLISHING_URL"   >> keys.properties
-echo "snapshot.remote=$( echo "$SNAPSHOTS_PUBLISHING_URL" | base64 )"
+echo "snapshot.remote=$( echo "$SNAPSHOTS_PUBLISHING_URL" | base64 )" >> keys.properties
 
 tmp=$(git rev-parse HEAD)
 
