@@ -26,7 +26,10 @@ import org.junit.jupiter.api.Test
 internal class EventDispatcherTest : AbstractTest() {
     private class Ev : AbstractEvent()
 
-    private val dispatcher = TestEventDispatcherImpl(SupervisorJob(), MiraiLogger.create("EventDispatcherTest"))
+    private val dispatcher = TestEventDispatcherImpl(
+        SupervisorJob(),
+        MiraiLogger.Factory.create(EventDispatcherTest::class)
+    )
 
     @Test
     fun `can broadcast`() = runBlockingUnit {

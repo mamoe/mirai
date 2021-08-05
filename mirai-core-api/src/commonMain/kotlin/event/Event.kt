@@ -190,7 +190,7 @@ internal open class _EventBroadcast {
         }
     }
 
-    private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
+    private val topLevelEventLogger by lazy { MiraiLogger.Factory.create(Event::class, "EventPipeline") }
 }
 
 /**

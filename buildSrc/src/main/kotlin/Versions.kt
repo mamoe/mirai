@@ -40,7 +40,7 @@ object Versions {
     const val shadow = "6.1.0"
 
     const val slf4j = "1.7.30"
-    const val log4j = "2.13.3"
+    const val log4j = "2.14.1"
     const val asm = "9.1"
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
@@ -82,12 +82,15 @@ val `ktor-client-core` = ktor("client-core", Versions.ktor)
 val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
+val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network", Versions.ktor)
 val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
 
-const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
+const val `slf4j-api` = "org.slf4j:slf4j-api:" + Versions.slf4j
 const val `slf4j-simple` = "org.slf4j:slf4j-simple:" + Versions.slf4j
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
+const val `log4j-core` = "org.apache.logging.log4j:log4j-core:" + Versions.log4j
+const val `log4j-slf4j-impl` = "org.apache.logging.log4j:log4j-slf4j-impl:" + Versions.log4j
 
 val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)
 

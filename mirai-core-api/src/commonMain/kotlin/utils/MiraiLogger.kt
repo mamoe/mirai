@@ -13,7 +13,8 @@
 
 package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.Bot
+import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * 给这个 logger 添加一个开关, 用于控制是否记录 log
@@ -22,22 +23,70 @@ import net.mamoe.mirai.Bot
 public fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = MiraiLoggerWithSwitch(this, default)
 
 /**
- * 日志记录器. 所有的输出均依赖于它.
- * 不同的对象可拥有只属于自己的 logger. 通过 [identity] 来区分.
+ * 日志记录器.
  *
- * 注意: 如果你需要重新实现日志, 请不要直接实现这个接口, 请继承 [MiraiLoggerPlatformBase]
+ * ## Mirai 日志系统
  *
- * 在定义 logger 变量时, 请一直使用 [MiraiLogger] 或者 [MiraiLoggerWithSwitch].
+ * Mirai 内建简单的日志系统, 即 [MiraiLogger]. [MiraiLogger] 的实现有 [SimpleLogger], [PlatformLogger], [SilentLogger].
  *
- * Mirai 内建三种日志实现, 分别是 [SimpleLogger], [PlatformLogger], [SilentLogger]
+ * [MiraiLogger] 仅能处理简单的日志任务, 通常推荐使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 等日志库.
+ *
+ * ## 使用第三方日志库接管 Mirai 日志系统
+ *
+ * 使用 [LoggerAdapters], 将第三方日志 `Logger` 转为 [MiraiLogger]. 然后通过 [MiraiLogger.setDefaultLoggerCreator] 全局覆盖日志.
+ *
+ * ## 实现或使用 [MiraiLogger]
+ *
+ * 不建议实现或使用 [MiraiLogger]. 请优先考虑使用上述第三方框架. [MiraiLogger] 仅应用于兼容旧版本代码.
  *
  * @see SimpleLogger 简易 logger, 它将所有的日志记录操作都转移给 lambda `(String?, Throwable?) -> Unit`
  * @see PlatformLogger 各个平台下的默认日志记录实现.
  * @see SilentLogger 忽略任何日志记录操作的 logger 实例.
+ * @see LoggerAdapters
  *
  * @see MiraiLoggerPlatformBase 平台通用基础实现. 若 Mirai 自带的日志系统无法满足需求, 请继承这个类并实现其抽象函数.
  */
 public interface MiraiLogger {
+
+    /**
+     * 可以 service 实现的方式覆盖.
+     *
+     * @since 2.7
+     */
+    public interface Factory {
+        /**
+         * 创建 [MiraiLogger] 实例.
+         *
+         * @param requester 请求创建 [MiraiLogger] 的对象的 class
+         * @param identity 对象标记 (备注)
+         */
+        public fun create(requester: KClass<*>, identity: String? = null): MiraiLogger =
+            this.create(requester.java, identity)
+
+        /**
+         * 创建 [MiraiLogger] 实例.
+         *
+         * @param requester 请求创建 [MiraiLogger] 的对象的 class
+         * @param identity 对象标记 (备注)
+         */
+        public fun create(requester: Class<*>, identity: String? = null): MiraiLogger
+
+        /**
+         * 创建 [MiraiLogger] 实例.
+         *
+         * @param requester 请求创建 [MiraiLogger] 的对象
+         */
+        public fun create(requester: KClass<*>): MiraiLogger = create(requester, null)
+
+        /**
+         * 创建 [MiraiLogger] 实例.
+         *
+         * @param requester 请求创建 [MiraiLogger] 的对象
+         */
+        public fun create(requester: Class<*>): MiraiLogger = create(requester, null)
+
+        public companion object INSTANCE : Factory by loadService({ DefaultFactory() })
+    }
 
     public companion object {
         /**
@@ -45,34 +94,35 @@ public interface MiraiLogger {
          */
         @MiraiInternalApi
         @MiraiExperimentalApi
-        public val TopLevel: MiraiLogger by lazy { create("Mirai") }
-
-        @Volatile
-        private var defaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
+        @Deprecated("Deprecated.")
+        public val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
 
         /**
-         * 可直接修改这个变量的值来重定向日志输出.
+         * 已弃用, 请实现 service [net.mamoe.mirai.utils.MiraiLogger.Factory] 并以 [ServiceLoader] 支持的方式提供.
          */
+        @Suppress("DeprecatedCallableAddReplaceWith")
+        @Deprecated(
+            "Please set factory by providing an service of type net.mamoe.mirai.utils.MiraiLogger.Factory",
+            level = DeprecationLevel.WARNING
+        )
         @JvmStatic
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
-            defaultLogger = creator
+            DefaultFactory.override { _, identity -> creator(identity) }
         }
 
         /**
-         * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器.
-         *
-         * **注意:** 请务必将所有的输出定向到日志记录系统, 否则在某些情况下 (如 web 控制台中) 将无法接收到输出
-         *
-         * **注意:** 请为日志做好分类, 即不同的模块使用不同的 [MiraiLogger].
-         * 如, [Bot] 中使用 `identity` 为 "Bot(qqId)" 的 [MiraiLogger]
-         * 而 [Bot] 的网络处理中使用 `identity` 为 "BotNetworkHandler".
+         * 旧版本用于创建 [MiraiLogger]. 已弃用. 请使用 [MiraiLogger.Factory.INSTANCE.create].
          *
          * @see setDefaultLoggerCreator
          */
+        @Deprecated(
+            "Please use MiraiLogger.Factory.create", ReplaceWith(
+                "MiraiLogger.Factory.create(YourClass::class, identity)",
+                "net.mamoe.mirai.utils.MiraiLogger"
+            ), level = DeprecationLevel.WARNING
+        )
         @JvmStatic
-        public fun create(identity: String?): MiraiLogger {
-            return defaultLogger.invoke(identity)
-        }
+        public fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
     }
 
     /**
@@ -93,6 +143,61 @@ public interface MiraiLogger {
     public val isEnabled: Boolean
 
     /**
+     * 当 VERBOSE 级别的日志启用时返回 `true`.
+     *
+     * 若 [isEnabled] 为 `false`, 返回 `false`.
+     * 在使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 或 [JUL][java.util.logging.Logger] 时返回真实配置值.
+     * 其他情况下返回 [isEnabled] 的值.
+     *
+     * @since 2.7
+     */
+    public val isVerboseEnabled: Boolean get() = isEnabled
+
+    /**
+     * 当 DEBUG 级别的日志启用时返回 `true`
+     *
+     * 若 [isEnabled] 为 `false`, 返回 `false`.
+     * 在使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 或 [JUL][java.util.logging.Logger] 时返回真实配置值.
+     * 其他情况下返回 [isEnabled] 的值.
+     *
+     * @since 2.7
+     */
+    public val isDebugEnabled: Boolean get() = isEnabled
+
+    /**
+     * 当 INFO 级别的日志启用时返回 `true`
+     *
+     * 若 [isEnabled] 为 `false`, 返回 `false`.
+     * 在使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 或 [JUL][java.util.logging.Logger] 时返回真实配置值.
+     * 其他情况下返回 [isEnabled] 的值.
+     *
+     * @since 2.7
+     */
+    public val isInfoEnabled: Boolean get() = isEnabled
+
+    /**
+     * 当 WARNING 级别的日志启用时返回 `true`
+     *
+     * 若 [isEnabled] 为 `false`, 返回 `false`.
+     * 在使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 或 [JUL][java.util.logging.Logger] 时返回真实配置值.
+     * 其他情况下返回 [isEnabled] 的值.
+     *
+     * @since 2.7
+     */
+    public val isWarningEnabled: Boolean get() = isEnabled
+
+    /**
+     * 当 ERROR 级别的日志启用时返回 `true`
+     *
+     * 若 [isEnabled] 为 `false`, 返回 `false`.
+     * 在使用 [SLF4J][org.slf4j.Logger], [LOG4J][org.apache.logging.log4j.Logger] 或 [JUL][java.util.logging.Logger] 时返回真实配置值.
+     * 其他情况下返回 [isEnabled] 的值.
+     *
+     * @since 2.7
+     */
+    public val isErrorEnabled: Boolean get() = isEnabled
+
+    /**
      * 随从. 在 this 中调用所有方法后都应继续往 [follower] 传递调用.
      * [follower] 的存在可以让一次日志被多个日志记录器记录.
      *
@@ -102,7 +207,11 @@ public interface MiraiLogger {
      *
      * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MynLogger() + MyLogger2()`
      */
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
     public var follower: MiraiLogger?
+        get() = null
+        set(value) {}
 
     /**
      * 记录一个 `verbose` 级别的日志.
@@ -164,48 +273,50 @@ public interface MiraiLogger {
      *
      * @return [follower]
      */
-    public operator fun <T : MiraiLogger> plus(follower: T): T
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    public operator fun <T : MiraiLogger> plus(follower: T): T = follower
 }
 
 
 public inline fun MiraiLogger.verbose(message: () -> String) {
-    if (isEnabled) verbose(message())
+    if (isVerboseEnabled) verbose(message())
 }
 
 public inline fun MiraiLogger.verbose(message: () -> String, e: Throwable?) {
-    if (isEnabled) verbose(message(), e)
+    if (isVerboseEnabled) verbose(message(), e)
 }
 
 public inline fun MiraiLogger.debug(message: () -> String?) {
-    if (isEnabled) debug(message())
+    if (isDebugEnabled) debug(message())
 }
 
 public inline fun MiraiLogger.debug(message: () -> String?, e: Throwable?) {
-    if (isEnabled) debug(message(), e)
+    if (isDebugEnabled) debug(message(), e)
 }
 
 public inline fun MiraiLogger.info(message: () -> String?) {
-    if (isEnabled) info(message())
+    if (isInfoEnabled) info(message())
 }
 
 public inline fun MiraiLogger.info(message: () -> String?, e: Throwable?) {
-    if (isEnabled) info(message(), e)
+    if (isInfoEnabled) info(message(), e)
 }
 
 public inline fun MiraiLogger.warning(message: () -> String?) {
-    if (isEnabled) warning(message())
+    if (isWarningEnabled) warning(message())
 }
 
 public inline fun MiraiLogger.warning(message: () -> String?, e: Throwable?) {
-    if (isEnabled) warning(message(), e)
+    if (isWarningEnabled) warning(message(), e)
 }
 
 public inline fun MiraiLogger.error(message: () -> String?) {
-    if (isEnabled) error(message())
+    if (isErrorEnabled) error(message())
 }
 
 public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
-    if (isEnabled) error(message(), e)
+    if (isErrorEnabled) error(message(), e)
 }
 
 /**
@@ -353,8 +464,12 @@ public class MiraiLoggerWithSwitch internal constructor(private val delegate: Mi
  * @see PlatformLogger
  * @see SimpleLogger
  */
+@Suppress("DEPRECATION")
 public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     public override val isEnabled: Boolean get() = true
+
+    @Suppress("OverridingDeprecatedMember")
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
     public final override var follower: MiraiLogger? = null
 
     public final override fun verbose(message: String?) {
@@ -428,8 +543,36 @@ public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     protected open fun error0(message: String?): Unit = error0(message, null)
     protected abstract fun error0(message: String?, e: Throwable?)
 
+    @Suppress("OverridingDeprecatedMember")
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
     public override operator fun <T : MiraiLogger> plus(follower: T): T {
         this.follower = follower
         return follower
+    }
+}
+
+
+internal class DefaultFactory : MiraiLogger.Factory {
+    init {
+        INSTANCE = this
+    }
+
+    companion object {
+        lateinit var INSTANCE: DefaultFactory
+            private set
+
+        fun override(lambda: (requester: Class<*>, identity: String?) -> MiraiLogger) {
+            INSTANCE.override = lambda
+        }
+    }
+
+    private var override: ((requester: Class<*>, identity: String?) -> MiraiLogger)? =
+        null // 支持 LoggerAdapters 以及兼容旧版本
+
+    override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+        val override = override
+        return if (override != null) override(requester, identity) else PlatformLogger(
+            identity ?: requester.kotlin.simpleName ?: requester.simpleName
+        )
     }
 }

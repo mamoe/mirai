@@ -24,14 +24,14 @@ import net.mamoe.mirai.utils.MiraiLogger
 
 internal class TestNetworkHandlerContext(
     override val bot: QQAndroidBot = MockBot(),
-    override val logger: MiraiLogger = MiraiLogger.create("Test"),
+    override val logger: MiraiLogger = MiraiLogger.Factory.create(TestNetworkHandlerContext::class, "Test"),
     components: ComponentStorage = ConcurrentComponentStorage().apply {
         set(SsoProcessor, SsoProcessorImpl(SsoProcessorContextImpl(bot)))
         set(
             StateObserver,
             SafeStateObserver(
-                LoggingStateObserver(MiraiLogger.create("States")),
-                MiraiLogger.create("StateObserver errors")
+                LoggingStateObserver(MiraiLogger.Factory.create(LoggingStateObserver::class, "States")),
+                MiraiLogger.Factory.create(LoggingStateObserver::class, "StateObserver errors")
             )
         )
     }
