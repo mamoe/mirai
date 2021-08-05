@@ -62,7 +62,7 @@ fun Project.configureRemoteRepos() {
                 maven {
                     name = "SnapshotRepo"
                     isAllowInsecureProtocol = true
-                    setUrl(PublishSettings["snapshot.remote"].trim())
+                    setUrl(PublishSettings["snapshot.url"].trim())
                     credentials {
                         username = PublishSettings["snapshot.user"].trim()
                         password = PublishSettings["snapshot.key"].trim()
