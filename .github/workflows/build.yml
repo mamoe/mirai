@@ -49,7 +49,7 @@ jobs:
 
       - name: Pre-Setup snapshot publish
         if: "${{ github.event.ref == 'refs/heads/kar/snapshot' }}"
-        run: sh ci-release-helper/setup-shapshot.sh
+        run: node ci-release-helper/setup-snapshot.js
         env:
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
