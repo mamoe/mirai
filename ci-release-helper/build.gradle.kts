@@ -48,8 +48,12 @@ tasks.register("updateSnapshotVersion") {
         val nextVersion = currentVersion.nextSnapshotVersion(branch).toString()
 
         logger.info("Next snapshot version will be '$nextVersion'")
-        for (project in rootProject.allprojects) {
-            project.version = currentVersion.toString()
+
+        rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
+            var text = readText()
+            check(text.indexOf("project = \"${project.version}\"") != -1) { "Cannot find \"project = \\\"${project.version}\\\"\"" }
+            text = text.replace("project = \"${project.version}\"", "project = \"${nextVersion}\"")
+            writeText(text)
         }
     }
 }
