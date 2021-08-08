@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.utils.runBIO
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
@@ -298,7 +299,13 @@ internal class CommandReflector(
                         }
                         args[receiverParameter] = call.caller
                     }
-                    function.callSuspendBy(args)
+
+                    // #341
+                    if (function.isSuspend) {
+                        function.callSuspendBy(args)
+                    } else {
+                        runBIO { function.callBy(args) }
+                    }
                 }
             }.toList()
     }
