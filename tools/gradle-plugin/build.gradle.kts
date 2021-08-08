@@ -23,16 +23,18 @@ plugins {
 
 val integTest = sourceSets.create("integTest")
 
+/**
+ * Because we use [compileOnly] for `kotlin-gradle-plugin`, it would be missing
+ * in `plugin-under-test-metadata.properties`. Here we inject the jar into TestKit plugin
+ * classpath via [PluginUnderTestMetadata] to avoid [NoClassDefFoundError].
+ */
+val kotlinVersionForIntegrationTest: Configuration by configurations.creating
+
 dependencies {
     compileOnly(gradleApi())
     compileOnly(gradleKotlinDsl())
-    api(kotlin("gradle-plugin-api").toString()) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-    }
-    api(kotlin("gradle-plugin").toString()) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-    }
-
+    compileOnly(kotlin("gradle-plugin-api"))
+    compileOnly(kotlin("gradle-plugin"))
     compileOnly(kotlin("stdlib"))
 
     implementation("com.google.code.gson:gson:2.8.6")
@@ -52,6 +54,12 @@ dependencies {
     "integTestImplementation"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
 //    "integTestImplementation"("org.spockframework:spock-core:1.3-groovy-2.5")
     "integTestImplementation"(gradleTestKit())
+
+    kotlinVersionForIntegrationTest(kotlin("gradle-plugin", "1.5.21"))
+}
+
+tasks.named<PluginUnderTestMetadata>("pluginUnderTestMetadata") {
+    pluginClasspath.from(kotlinVersionForIntegrationTest)
 }
 
 version = Versions.console
