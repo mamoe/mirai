@@ -13,8 +13,8 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ServerList.Companion.DEFAULT_SERVER_LIST
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.info
-import org.jetbrains.annotations.TestOnly
 import java.net.InetSocketAddress
 import java.util.*
 
