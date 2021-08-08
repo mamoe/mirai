@@ -66,7 +66,7 @@ internal class AudioExtraData(
         @Serializable
         class Wrapper(
             @ProtoNumber(1) val version: Int,
-            @ProtoNumber(2) val v1: AudioExtraData,
+            @ProtoNumber(2) val v1: AudioExtraData? = null,
         ) : ProtoBuf
 
         private const val CURRENT_VERSION = 1
@@ -75,7 +75,7 @@ internal class AudioExtraData(
         fun loadFrom(byteArray: ByteArray?): AudioExtraData? {
             byteArray ?: return null
             return kotlin.runCatching {
-                byteArray.loadAs(Wrapper.serializer()).v1
+                byteArray.loadAs(Wrapper.serializer()).v1 // in this version we only support v1
             }.getOrNull()
         }
     }
