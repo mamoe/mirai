@@ -85,7 +85,7 @@ public interface MiraiLogger {
          */
         public fun create(requester: Class<*>): MiraiLogger = create(requester, null)
 
-        public companion object INSTANCE : Factory by loadService({ DefaultFactory() })
+        public companion object INSTANCE : Factory by loadService(Factory::class, { DefaultFactory() })
     }
 
     public companion object {
