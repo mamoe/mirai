@@ -33,7 +33,7 @@ public object LoggerAdapters {
     @JvmStatic
     @MiraiExperimentalApi
     public fun useLog4j2() {
-        DefaultFactory.override { requester, identity ->
+        DefaultFactoryOverrides.override { requester, identity ->
             val logger = LogManager.getLogger(requester)
             Log4jLoggerAdapter(logger, MarkerManager.getMarker(identity ?: logger.name).addParents(MARKER_MIRAI))
         }

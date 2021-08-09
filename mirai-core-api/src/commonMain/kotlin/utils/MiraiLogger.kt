@@ -107,7 +107,7 @@ public interface MiraiLogger {
         )
         @JvmStatic
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
-            DefaultFactory.override { _, identity -> creator(identity) }
+            DefaultFactoryOverrides.override { _, identity -> creator(identity) }
         }
 
         /**
@@ -551,26 +551,24 @@ public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     }
 }
 
-
-internal class DefaultFactory : MiraiLogger.Factory {
-    init {
-        INSTANCE = this
-    }
-
-    companion object {
-        lateinit var INSTANCE: DefaultFactory
-            private set
-
-        fun override(lambda: (requester: Class<*>, identity: String?) -> MiraiLogger) {
-            INSTANCE.override = lambda
-        }
-    }
-
-    private var override: ((requester: Class<*>, identity: String?) -> MiraiLogger)? =
+internal object DefaultFactoryOverrides {
+    var override: ((requester: Class<*>, identity: String?) -> MiraiLogger)? =
         null // 支持 LoggerAdapters 以及兼容旧版本
 
+    @JvmStatic
+    fun override(lambda: (requester: Class<*>, identity: String?) -> MiraiLogger) {
+        override = lambda
+    }
+
+    @JvmStatic
+    fun clearOverride() {
+        override = null
+    }
+}
+
+internal class DefaultFactory : MiraiLogger.Factory {
     override fun create(requester: Class<*>, identity: String?): MiraiLogger {
-        val override = override
+        val override = DefaultFactoryOverrides.override
         return if (override != null) override(requester, identity) else PlatformLogger(
             identity ?: requester.kotlin.simpleName ?: requester.simpleName
         )
