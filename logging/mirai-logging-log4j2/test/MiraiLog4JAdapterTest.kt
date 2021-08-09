@@ -21,6 +21,17 @@ import kotlin.test.assertIs
 
 internal class MiraiLog4JAdapterTest {
 
+    @Suppress("DEPRECATION")
+    @Test
+    fun `services prevail than legacy overrides`() {
+        MiraiLogger.setDefaultLoggerCreator {
+            net.mamoe.mirai.utils.SimpleLogger("my logger") { _: String?, _: Throwable? -> }
+        }
+
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        assertIs<net.mamoe.mirai.internal.utils.Log4jLoggerAdapter>(MiraiLogger.Factory.create(this::class))
+    }
+
     @Test
     fun `using log4j`() {
         assertIs<MiraiLog4JFactory>(loadService(MiraiLogger.Factory::class))
