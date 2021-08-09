@@ -44,18 +44,18 @@ internal val MiraiLogger.markerOrNull get() = (this as? MarkedMiraiLogger)?.mark
  *
  * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
  */
-internal fun MiraiLogger.subLogger(name: String): MarkedMiraiLogger {
+internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
     return subLoggerImpl(this, name)
 }
 
 // used by mirai-core
-internal fun subLoggerImpl(origin: MiraiLogger, name: String): MarkedMiraiLogger {
+internal fun subLoggerImpl(origin: MiraiLogger, name: String): MiraiLogger {
     return if (origin is MarkedMiraiLogger) {
         // origin can be Log4JAdapter or MiraiLoggerMarkedWrapper which delegates a non-Log4JAdapter.
         origin.subLogger(name) // Log4JAdapter natively supports Markers.
     } else {
-        // origin does not support Markers, so we add a wrapper for it.
-        MiraiLoggerMarkedWrapper(origin, Marker(name, origin.markerOrNull ?: MARKER_MIRAI))
+        return origin
+        // origin will never use the MiraiLoggerMarkedWrapper.marker so wrapping it is meaningless.
     }
 }
 
