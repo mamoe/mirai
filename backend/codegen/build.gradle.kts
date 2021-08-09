@@ -16,13 +16,13 @@ plugins {
 kotlin {
     sourceSets {
         all {
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+            languageSettings.optIn("kotlin.Experimental")
+            languageSettings.optIn("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
-            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-            languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
-            languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            languageSettings.optIn("net.mamoe.mirai.utils.MiraiInternalAPI")
+            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
+            languageSettings.optIn("kotlin.experimental.ExperimentalTypeInference")
+            languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
         }
     }
 }

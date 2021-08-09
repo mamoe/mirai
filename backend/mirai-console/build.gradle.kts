@@ -32,15 +32,15 @@ dependencies {
     compileAndTestRuntime(`mirai-core-utils`)
     compileAndTestRuntime(`kotlin-stdlib-jdk8`)
 
-    compileAndTestRuntime(`kotlinx-atomicfu`)
-    compileAndTestRuntime(`kotlinx-coroutines-core`)
-    compileAndTestRuntime(`kotlinx-serialization-core`)
-    compileAndTestRuntime(`kotlinx-serialization-json`)
+    compileAndTestRuntime(`kotlinx-atomicfu-jvm`)
+    compileAndTestRuntime(`kotlinx-coroutines-core-jvm`)
+    compileAndTestRuntime(`kotlinx-serialization-core-jvm`)
+    compileAndTestRuntime(`kotlinx-serialization-json-jvm`)
     compileAndTestRuntime(`kotlin-reflect`)
 
     implementation(project(":mirai-console-compiler-annotations"))
 
-    smartImplementation(yamlkt)
+    smartImplementation(`yamlkt-jvm`)
     smartImplementation(`jetbrains-annotations`)
     smartImplementation(`caller-finder`)
     smartApi(`kotlinx-coroutines-jdk8`)

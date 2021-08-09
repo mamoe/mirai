@@ -11,10 +11,7 @@
 package net.mamoe.mirai.console.intellij.creator.steps
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.compiler.common.CheckerConstants.PLUGIN_ID_PATTERN
 import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
@@ -90,6 +87,7 @@ class PluginCoordinatesStep(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun updateVersionItems() {
         GlobalScope.launch(Dispatchers.Main + CoroutineName("updateVersionItems")) {
             if (!model.availableMiraiVersionsOrFail.isCompleted) return@launch

@@ -162,10 +162,9 @@ fun Project.configureKotlinExperimentalUsages() {
     val sourceSets = kotlinSourceSets ?: return
 
     for (target in sourceSets) target.languageSettings.run {
-        enableLanguageFeature("InlineClasses")
         progressiveMode = true
         experimentalAnnotations.forEach { a ->
-            useExperimentalAnnotation(a)
+            optIn(a)
         }
     }
 }

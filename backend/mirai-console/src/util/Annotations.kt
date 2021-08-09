@@ -17,9 +17,8 @@ import kotlin.annotation.AnnotationTarget.*
 /**
  * 表明这个 API 是为了让 Java 使用者调用更方便. Kotlin 使用者不应该使用这些 API.
  */
-@Retention(AnnotationRetention.SOURCE)
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
-@Target(PROPERTY, FUNCTION, TYPE, CLASS)
+@Target(PROPERTY, FUNCTION, CLASS)
 internal annotation class JavaFriendlyApi
 
 /**

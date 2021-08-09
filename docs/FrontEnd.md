@@ -11,7 +11,7 @@ Mirai Console 前端开发文档。
 在 `build.gradle` 或 `build.gradle.kts` 添加：
 ```kotlin
 kotlin.sourceSets.all {
-    languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
+    languageSettings.optIn("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
 }
 ```
 
