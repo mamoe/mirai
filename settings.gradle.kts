@@ -19,6 +19,11 @@ pluginManagement {
 
 rootProject.name = "mirai"
 
+fun includeProject(projectPath: String, dir: String? = null) {
+    include(projectPath)
+    if (dir != null) project(projectPath).projectDir = file(dir)
+}
+
 include(":mirai-core-utils")
 include(":mirai-core-api")
 include(":mirai-core")
@@ -29,14 +34,17 @@ include(":binary-compatibility-validator-android")
 project(":binary-compatibility-validator-android").projectDir = file("binary-compatibility-validator/android")
 include(":ci-release-helper")
 
+includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
+includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
+includeProject(":mirai-logging-slf4j-simple", "logging/mirai-logging-slf4j-simple")
+includeProject(":mirai-logging-slf4j-logback", "logging/mirai-logging-slf4j-logback")
+
 
 fun includeConsoleProjects() {
     val disableOldFrontEnds = true
 
-    fun includeConsoleProject(projectPath: String, path: String? = null) {
-        include(projectPath)
-        if (path != null) project(projectPath).projectDir = file("mirai-console/$path")
-    }
+    fun includeConsoleProject(projectPath: String, dir: String? = null) =
+        includeProject(projectPath, "mirai-console/$dir")
 
     includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-annotations")
     includeConsoleProject(":mirai-console", "backend/mirai-console")

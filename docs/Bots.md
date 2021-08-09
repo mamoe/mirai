@@ -173,6 +173,20 @@ setDeviceInfo(bot -> /* create device info */)
 
 在线生成自定义设备信息的 `device.json`: https://ryoii.github.io/mirai-devicejs-generator/
 
+#### 使用其他日志库接管 mirai 日志系统
+*mirai 2.7 起支持*
+
+使用 Log4J, SLF4J 等接管 mirai 日志系统后则可使用它们的过滤等高级功能.
+
+mirai 内部使用 Log4J2, 依赖 log4j-api. Log4J2 支持对接到 SLF4J 等.
+
+- 要使用 Log4J2, 添加依赖 `net.mamoe:mirai-logging-log4j2`
+- 要使用 SLF4J 以及自定义的 SLF4J 实现, 添加依赖 `net.mamoe:mirai-logging-slf4j`
+- 要使用 SLF4J 以及 slf4j-simple, 添加依赖 `net.mamoe:mirai-logging-slf4j-simple`
+- 要使用 SLF4J 以及 logback-classic, 添加依赖 `net.mamoe:mirai-logging-slf4j-logback`
+
+版本号都与 mirai-core 相同.
+
 #### 重定向日志
 Bot 有两个日志类别，`Bot` 或 `Net`。`Bot` 为通常日志，如收到事件。`Net` 为网络日志，包含收到和发出的每一个包和网络层解析时遇到的错误。
 
@@ -271,3 +285,137 @@ contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保�
 > 下一步，[Contacts](Contacts.md)
 >
 > [回到 Mirai 文档索引](CoreAPI.md)
+
+
+<!--
+
+## 附录
+
+[Ktor]: https://github.com/ktor.io/ktor
+
+### 使用 Log4J2 接管 mirai 日志系统
+
+添加依赖:
+
+|         Group ID         |   Artifact ID    | 最低版本号 | 说明                                          |
+|:------------------------:|:----------------:|:--------:|:---------------------------------------------|
+| org.apache.logging.log4j |    log4j-api     |  2.14.1  | Log4J2 API 模块, 将会覆盖 mirai 依赖的 log4j-api |
+| org.apache.logging.log4j |    log4j-core    |  2.14.1  | Log4J2 核心实现模块, 所有相关模块版本必须相同        |
+| org.apache.logging.log4j | log4j-slf4j-impl |  2.14.1  | 用于将对 SLF4J 的调用转换为对 Log4J 的调用         |
+
+要添加 `log4j-slf4j-impl` 是因为 [Ktor] 使用了 SLF4J. 添加该模块可以让整个应用统一使用同一个日志库.
+
+#### Gradle 示例
+
+*`build.gradle.kts`*
+```kotlin
+dependencies {
+    val log4jVersion = "2.14.1"
+    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
+    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
+    
+    implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
+}
+```
+
+#### Maven 示例
+
+*`pom.xml`*
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.14.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.14.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>2.14.1</version>
+    </dependency>
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core</artifactId>
+        <version>2.7-RC</version>
+    </dependency>
+</dependencies>
+```
+
+### 使用 SLF4J 接管 mirai 日志系统
+
+添加依赖:
+
+|         Group ID         |  Artifact ID   | 最低版本号 | 说明                                          |
+|:------------------------:|:--------------:|:--------:|:---------------------------------------------|
+| org.apache.logging.log4j |   log4j-api    |  2.14.1  | Log4J2 API 模块, 将会覆盖 mirai 依赖的 log4j-api |
+| org.apache.logging.log4j | log4j-to-slf4j |  2.14.1  | 用于将对 Log4J 的调用转换为对 SLF4J 的调用         |
+|        org.slf4j         |   slf4j-api    |  1.7.32  | SLF4J API 模块, 将会覆盖 [Ktor] 依赖的 slf4j-api |
+
+除上以外, 还要添加一个 SLF4J 的实现, 例如 `slf4j-simple` 或 `logback-classic`.
+这与通常的操作方式相同.
+
+#### Gradle 示例
+
+*`build.gradle.kts`*
+```kotlin
+dependencies {
+    implementation("org.apache.logging.log4j:log4j-api:2.14.1")
+    implementation("org.apache.logging.log4j:log4j-to-slf4j:2.14.1")
+    implementation("org.slf4j:slf4j-api:1.7.32")
+    
+    implementation("org.slf4j:slf4j-simple:1.7.32") // 若要使用 slf4j-simple
+    implementation("ch.qos.logback:logback-classic:1.2.5") // 若要使用 logback
+
+    
+    implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
+}
+```
+
+#### Maven 示例
+
+*`pom.xml`*
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.14.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-to-slf4j</artifactId>
+        <version>2.14.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.32</version>
+    </dependency>
+    
+    <dependency> <!-- 若要使用 slf4j-simple --
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>1.7.32</version>
+    </dependency>
+    
+    <dependency> <!-- 若要使用 logback --
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.2.5</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core</artifactId>
+        <version>2.7-RC</version> <!--示例版本号--
+    </dependency>
+</dependencies>
+```
+
+-->
