@@ -17,5 +17,6 @@ public expect fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementa
 public inline fun <reified T : Any> loadService(fallbackImplementation: String? = null): T =
     loadService(T::class, fallbackImplementation)
 
-public inline fun <reified T : Any> loadService(noinline fallbackImplementation: () -> T): T =
-    loadServiceOrNull(T::class) ?: fallbackImplementation()
+// do not inline: T will be inferred to returning type of `fallbackImplementation`
+public fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: () -> T): T =
+    loadServiceOrNull(clazz) ?: fallbackImplementation()

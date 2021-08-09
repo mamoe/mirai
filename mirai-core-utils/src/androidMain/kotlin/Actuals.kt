@@ -47,17 +47,19 @@ public actual inline fun <reified E> Throwable.unwrap(): Throwable {
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
     var suppressed: Throwable? = null
     return ServiceLoader.load(clazz.java).firstOrNull()
-        ?: runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
+        ?: (if (fallbackImplementation == null) null
+        else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
         ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
             if (suppressed != null) addSuppressed(suppressed)
         }
 }
 
-private fun <T : Any> findCreateInstance(fallbackImplementation: String?): T {
+private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {
     return Class.forName(fallbackImplementation).cast<Class<out T>>().kotlin.run { objectInstance ?: createInstance() }
 }
 
 public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImplementation: String?): T? {
     return ServiceLoader.load(clazz.java).firstOrNull()
-        ?: runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
+        ?: if (fallbackImplementation == null) return null
+        else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
 }
