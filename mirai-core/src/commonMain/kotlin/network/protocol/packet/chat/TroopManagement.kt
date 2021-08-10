@@ -27,9 +27,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.utils.io.serialization.*
-import net.mamoe.mirai.utils.autoHexToBytes
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.encodeToString
+import net.mamoe.mirai.utils.hexToBytes
 
 internal class TroopManagement {
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
@@ -412,7 +412,7 @@ internal class TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = "<" + "25 C4 80 C4 80 07 C3 95".autoHexToBytes()
+                                        sName = "<" + "25 C4 80 C4 80 07 C3 95".hexToBytes()
                                             .encodeToString() + ">" + newName,
                                         sPhone = "",
                                         sEmail = "",

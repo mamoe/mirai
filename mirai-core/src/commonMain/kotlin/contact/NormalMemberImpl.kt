@@ -25,9 +25,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.autoHexToBytes
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.hexToBytes
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -100,7 +100,7 @@ internal class NormalMemberImpl constructor(
                             bot.client,
                             group.groupCode,
                             this@NormalMemberImpl.id,
-                            TroopManagement.RichName(newValue, "25 C4 80 C4 80 07 C3 95".autoHexToBytes())
+                            TroopManagement.RichName(newValue, "25 C4 80 C4 80 07 C3 95".hexToBytes())
                         ).sendAndExpect().also {
                             it.toResult("Set member nick").getOrThrow()
                         }
