@@ -60,6 +60,7 @@ public class DeviceInfo(
     )
 
     public companion object {
+        internal val logger = MiraiLogger.Factory.create(DeviceInfo::class, "DeviceInfo")
 
         /**
          * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.

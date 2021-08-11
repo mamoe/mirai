@@ -66,14 +66,20 @@ kotlin {
                 api(`ktor-client-core`)
                 api(`ktor-network`)
 
-                compileOnly(`log4j-api`)
-                compileOnly(slf4j)
+                implementation(`log4j-api`)
+                compileOnly(`slf4j-api`)
 
 
                 // they use Kotlin 1.3 so we need to ignore transitive dependencies
                 api1(`kotlinx-io-jvm`)
                 api1(`kotlinx-coroutines-io-jvm`)
                 implementation1(`kotlinx-atomicfu`)
+            }
+        }
+
+        commonTest {
+            dependencies {
+                runtimeOnly(`log4j-core`)
             }
         }
 

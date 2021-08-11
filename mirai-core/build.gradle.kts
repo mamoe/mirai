@@ -72,13 +72,13 @@ kotlin {
                 api1(`kotlinx-io-jvm`)
                 implementation1(`kotlinx-coroutines-io`)
                 implementation(`netty-all`)
+                implementation(`log4j-api`)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
-                runtimeOnly(`slf4j-simple`)
             }
         }
 

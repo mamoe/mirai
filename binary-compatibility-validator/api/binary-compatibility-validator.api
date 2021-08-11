@@ -176,6 +176,11 @@ public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/ma
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class net/mamoe/mirai/contact/AudioSupported : net/mamoe/mirai/contact/Contact {
+	public fun uploadAudio (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/OfflineAudio;
+	public abstract fun uploadAudio (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class net/mamoe/mirai/contact/BotIsBeingMutedException : java/lang/RuntimeException {
 	public fun <init> (Lnet/mamoe/mirai/contact/Group;)V
 	public final fun getTarget ()Lnet/mamoe/mirai/contact/Group;
@@ -326,7 +331,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/VoiceSupported {
+public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
@@ -338,7 +343,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported, net/mamoe/mirai/contact/VoiceSupported {
+public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
@@ -365,6 +370,8 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;)Z
 	public abstract fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setName (Ljava/lang/String;)V
+	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
+	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/Group$Companion {
@@ -446,6 +453,8 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun isMuted ()Z
 	public fun kick (Ljava/lang/String;)V
 	public abstract fun kick (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun kick (Ljava/lang/String;Z)V
+	public abstract fun kick (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyAdmin (Z)V
 	public abstract fun modifyAdmin (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
@@ -556,11 +565,6 @@ public final class net/mamoe/mirai/contact/UserKt {
 public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mirai/contact/ContactOrBot {
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
-}
-
-public abstract interface class net/mamoe/mirai/contact/VoiceSupported : net/mamoe/mirai/contact/Contact {
-	public fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/data/Voice;
-	public abstract fun uploadVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
@@ -1754,6 +1758,8 @@ public final class net/mamoe/mirai/event/SubscribeMessagesKt {
 	public static synthetic fun subscribeStrangerMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun subscribeTempMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun subscribeTempMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun subscribeUserMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static synthetic fun subscribeUserMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/event/SyncFromEventKt {
@@ -3154,6 +3160,41 @@ public final class net/mamoe/mirai/message/data/AtAll : net/mamoe/mirai/message/
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class net/mamoe/mirai/message/data/Audio : net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/Audio$Key;
+	public fun contentToString ()Ljava/lang/String;
+	public abstract fun getCodec ()Lnet/mamoe/mirai/message/data/AudioCodec;
+	public abstract fun getExtraData ()[B
+	public abstract fun getFileMd5 ()[B
+	public abstract fun getFileSize ()J
+	public abstract fun getFilename ()Ljava/lang/String;
+	public abstract fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/Audio$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public final class net/mamoe/mirai/message/data/AudioCodec : java/lang/Enum {
+	public static final field AMR Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static final field Companion Lnet/mamoe/mirai/message/data/AudioCodec$Companion;
+	public static final field SILK Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static final fun fromFormatName (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static final fun fromFormatNameOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static final fun fromId (I)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static final fun fromIdOrNull (I)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public final fun getFormatName ()Ljava/lang/String;
+	public final fun getId ()I
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/AudioCodec;
+}
+
+public final class net/mamoe/mirai/message/data/AudioCodec$Companion {
+	public final fun fromFormatName (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public final fun fromFormatNameOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public final fun fromId (I)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public final fun fromIdOrNull (I)Lnet/mamoe/mirai/message/data/AudioCodec;
+}
+
 public abstract interface class net/mamoe/mirai/message/data/ConstrainSingle : net/mamoe/mirai/message/data/SingleMessage {
 	public abstract fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 }
@@ -4495,6 +4536,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun At (Lnet/mamoe/mirai/contact/UserOrBot;)Lnet/mamoe/mirai/message/data/At;
 	public static final synthetic fun FileMessage (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static final synthetic fun Image (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
+	public static final synthetic fun OfflineAudio (Ljava/lang/String;[BJLnet/mamoe/mirai/message/data/AudioCodec;[B)Lnet/mamoe/mirai/message/data/OfflineAudio;
+	public static final synthetic fun OfflineAudio (Lnet/mamoe/mirai/message/data/OnlineAudio;)Lnet/mamoe/mirai/message/data/OfflineAudio;
 	public static final synthetic fun UnsupportedMessage ([B)Lnet/mamoe/mirai/message/data/UnsupportedMessage;
 	public static final synthetic fun at (Lnet/mamoe/mirai/contact/Member;)Lnet/mamoe/mirai/message/data/At;
 	public static final fun buildMessageChain (ILkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
@@ -4537,6 +4580,7 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun toMessageChain ([Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static final fun toOfflineMessageSource (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public static final synthetic fun toPlainText (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/PlainText;
+	public static final synthetic fun toVoice (Lnet/mamoe/mirai/message/data/Audio;)Lnet/mamoe/mirai/message/data/Voice;
 }
 
 public final class net/mamoe/mirai/message/data/MusicKind : java/lang/Enum {
@@ -4600,6 +4644,26 @@ public final class net/mamoe/mirai/message/data/MusicShare$Key : net/mamoe/mirai
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public abstract interface class net/mamoe/mirai/message/data/OfflineAudio : net/mamoe/mirai/message/data/Audio {
+	public static final field Key Lnet/mamoe/mirai/message/data/OfflineAudio$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/message/data/OfflineAudio$Factory {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/OfflineAudio$Factory$INSTANCE;
+	public abstract fun create (Ljava/lang/String;[BJLnet/mamoe/mirai/message/data/AudioCodec;[B)Lnet/mamoe/mirai/message/data/OfflineAudio;
+	public fun from (Lnet/mamoe/mirai/message/data/OnlineAudio;)Lnet/mamoe/mirai/message/data/OfflineAudio;
+}
+
+public final class net/mamoe/mirai/message/data/OfflineAudio$Factory$INSTANCE : net/mamoe/mirai/message/data/OfflineAudio$Factory {
+	public fun create (Ljava/lang/String;[BJLnet/mamoe/mirai/message/data/AudioCodec;[B)Lnet/mamoe/mirai/message/data/OfflineAudio;
+	public fun from (Lnet/mamoe/mirai/message/data/OnlineAudio;)Lnet/mamoe/mirai/message/data/OfflineAudio;
+}
+
+public final class net/mamoe/mirai/message/data/OfflineAudio$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public static final field SERIAL_NAME Ljava/lang/String;
+}
+
 public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/mamoe/mirai/message/data/MessageSource {
 	public static final field Key Lnet/mamoe/mirai/message/data/OfflineMessageSource$Key;
 	public fun <init> ()V
@@ -4607,6 +4671,17 @@ public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/ma
 }
 
 public final class net/mamoe/mirai/message/data/OfflineMessageSource$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public abstract interface class net/mamoe/mirai/message/data/OnlineAudio : net/mamoe/mirai/message/data/Audio {
+	public static final field Key Lnet/mamoe/mirai/message/data/OnlineAudio$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public abstract fun getLength ()J
+	public abstract fun getUrlForDownload ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/OnlineAudio$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public static final field SERIAL_NAME Ljava/lang/String;
 }
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource : net/mamoe/mirai/message/data/MessageSource {
@@ -5086,32 +5161,39 @@ public final class net/mamoe/mirai/message/data/VipFace$Kind$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/PttMessage {
+public class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/PttMessage {
 	public static final field Key Lnet/mamoe/mirai/message/data/Voice$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
+	public synthetic fun <init> (ILjava/lang/String;[BJILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;[BJILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCodec ()I
+	public static final fun fromAudio (Lnet/mamoe/mirai/message/data/Audio;)Lnet/mamoe/mirai/message/data/Voice;
 	public fun getFileName ()Ljava/lang/String;
 	public fun getFileSize ()J
 	public fun getMd5 ()[B
-	public final fun getUrl ()Ljava/lang/String;
+	public fun getUrl ()Ljava/lang/String;
+	public final fun get_codec ()I
 	public fun hashCode ()I
+	public final fun toAudio ()Lnet/mamoe/mirai/message/data/Audio;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/message/data/Voice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/message/data/Voice$Serializer : kotlinx/serialization/KSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Voice$Serializer;
+public final class net/mamoe/mirai/message/data/Voice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Voice$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Voice;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/Voice;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/Voice$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun fromAudio (Lnet/mamoe/mirai/message/data/Audio;)Lnet/mamoe/mirai/message/data/Voice;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
@@ -5425,14 +5507,8 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun uploadAsImage (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadAsImage (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public static fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public static fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public static fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
@@ -5500,14 +5576,8 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/File;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static synthetic fun uploadAsImage$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public final fun uploadAsVoice (Ljava/io/File;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public final fun uploadAsVoice (Ljava/io/InputStream;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/Voice;
 	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;)Lnet/mamoe/mirai/message/data/Voice;
-	public final fun uploadAsVoice (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/VoiceSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uploadTo (Ljava/io/File;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
@@ -5581,15 +5651,20 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 	public abstract fun error (Ljava/lang/String;)V
 	public abstract fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun error (Ljava/lang/Throwable;)V
-	public abstract fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public abstract fun getIdentity ()Ljava/lang/String;
 	public abstract fun info (Ljava/lang/String;)V
 	public abstract fun info (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun info (Ljava/lang/Throwable;)V
+	public fun isDebugEnabled ()Z
 	public abstract fun isEnabled ()Z
-	public abstract fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun isErrorEnabled ()Z
+	public fun isInfoEnabled ()Z
+	public fun isVerboseEnabled ()Z
+	public fun isWarningEnabled ()Z
+	public fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public static fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
-	public abstract fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
+	public fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public abstract fun verbose (Ljava/lang/String;)V
 	public abstract fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun verbose (Ljava/lang/Throwable;)V
@@ -5602,6 +5677,23 @@ public final class net/mamoe/mirai/utils/MiraiLogger$Companion {
 	public final fun create (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final fun getTopLevel ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class net/mamoe/mirai/utils/MiraiLogger$Factory {
+	public static final field INSTANCE Lnet/mamoe/mirai/utils/MiraiLogger$Factory$INSTANCE;
+	public fun create (Ljava/lang/Class;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public abstract fun create (Ljava/lang/Class;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/MiraiLogger$Factory;Ljava/lang/Class;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/MiraiLogger$Factory;Lkotlin/reflect/KClass;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/MiraiLogger;
+}
+
+public final class net/mamoe/mirai/utils/MiraiLogger$Factory$INSTANCE : net/mamoe/mirai/utils/MiraiLogger$Factory {
+	public fun create (Ljava/lang/Class;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Ljava/lang/Class;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun create (Lkotlin/reflect/KClass;Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 }
 
 public abstract class net/mamoe/mirai/utils/MiraiLoggerPlatformBase : net/mamoe/mirai/utils/MiraiLogger {

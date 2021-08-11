@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.SingleEntrantLock
 import net.mamoe.mirai.internal.utils.fromMiraiLogger
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -56,7 +57,7 @@ internal abstract class NetworkHandlerSupport(
     }
 
     protected val packetLogger: MiraiLogger by lazy {
-        MiraiLogger.create(context.logger.identity + ".debug").withSwitch(PacketCodec.PACKET_DEBUG)
+        context.logger.subLogger("NetworkDebug").withSwitch(PacketCodec.PACKET_DEBUG)
     }
 
     ///////////////////////////////////////////////////////////////////////////
