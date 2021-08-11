@@ -114,6 +114,8 @@ loginSolver = YourLoginSolver
 setLoginSolver(new YourLoginSolver())
 ```
 
+> 要获取更多有关 `LoginSolver` 的信息，查看 [LoginSolver.kt](../mirai-core-api/src/commonMain/kotlin/utils/LoginSolver.kt#L32)
+
 ### 常用配置
 
 #### 修改运行目录
@@ -176,16 +178,7 @@ setDeviceInfo(bot -> /* create device info */)
 #### 使用其他日志库接管 mirai 日志系统
 *mirai 2.7 起支持*
 
-使用 Log4J, SLF4J 等接管 mirai 日志系统后则可使用它们的过滤等高级功能.
-
-mirai 内部使用 Log4J2, 依赖 log4j-api. Log4J2 支持对接到 SLF4J 等.
-
-- 要使用 Log4J2, 添加依赖 `net.mamoe:mirai-logging-log4j2`
-- 要使用 SLF4J 以及自定义的 SLF4J 实现, 添加依赖 `net.mamoe:mirai-logging-slf4j`
-- 要使用 SLF4J 以及 slf4j-simple, 添加依赖 `net.mamoe:mirai-logging-slf4j-simple`
-- 要使用 SLF4J 以及 logback-classic, 添加依赖 `net.mamoe:mirai-logging-slf4j-logback`
-
-版本号都与 mirai-core 相同.
+使用 Log4J, SLF4J 等接管 mirai 日志系统后则可使用它们的过滤等高级功能。参阅 [mirai-logging](../logging/README.md) 以获取更多信息。
 
 #### 重定向日志
 Bot 有两个日志类别，`Bot` 或 `Net`。`Bot` 为通常日志，如收到事件。`Net` 为网络日志，包含收到和发出的每一个包和网络层解析时遇到的错误。
@@ -199,7 +192,13 @@ redirectNetworkLogToFile()
 redirectNetworkLogToDirectory()
 ```
 
-手动覆盖日志：
+关闭日志(将会完全禁用日志功能, 无论是否已经通过第三方日志库接管日志系统)：
+```
+noNetworkLog()
+noBotLog()
+```
+
+手动覆盖日志(不建议[(?)](../logging/README.md))：
 ```
 // Kotlin
 networkLoggerSupplier = { bot -> /* create logger */ }
@@ -209,14 +208,6 @@ botLoggerSupplier = { bot -> /* create logger */ }
 setNetworkLoggerSupplier(bot -> /* create logger */)
 setBotLoggerSupplier(bot -> /* create logger */)
 ```
-
-关闭日志：
-```
-noNetworkLog()
-noBotLog()
-```
-
-> 要获取更多有关 `LoginSolver` 的信息，查看 [LoginSolver.kt](../mirai-core-api/src/commonMain/kotlin/utils/LoginSolver.kt#L32)
 
 #### 启用列表缓存
 Mirai 在启动时会拉取全部好友列表和群成员列表。当账号拥有过多群时登录可能缓慢，开启列表缓存会大幅加速登录过程。
@@ -314,7 +305,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
-    
+
     implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
 }
 ```
@@ -368,11 +359,11 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:2.14.1")
     implementation("org.apache.logging.log4j:log4j-to-slf4j:2.14.1")
     implementation("org.slf4j:slf4j-api:1.7.32")
-    
+
     implementation("org.slf4j:slf4j-simple:1.7.32") // 若要使用 slf4j-simple
     implementation("ch.qos.logback:logback-classic:1.2.5") // 若要使用 logback
 
-    
+
     implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
 }
 ```
@@ -397,19 +388,19 @@ dependencies {
         <artifactId>slf4j-api</artifactId>
         <version>1.7.32</version>
     </dependency>
-    
+
     <dependency> <!-- 若要使用 slf4j-simple --
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
         <version>1.7.32</version>
     </dependency>
-    
+
     <dependency> <!-- 若要使用 logback --
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
         <version>1.2.5</version>
     </dependency>
-    
+
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core</artifactId>
