@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
@@ -18,8 +19,10 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 @Serializable
+@SerialName("RequestEventData")
 public sealed class RequestEventData {
     public abstract val eventId: Long
 
@@ -30,15 +33,17 @@ public sealed class RequestEventData {
     public abstract suspend fun reject(bot: Bot)
 
     @Serializable
-    public data class NewFriendRequest(
+    @SerialName("NewFriendRequest")
+    public class NewFriendRequest
+    @MiraiExperimentalApi public constructor(
         override val eventId: Long,
 
-        val requester: Long,
-        val requesterNick: String,
+        public val requester: Long,
+        public val requesterNick: String,
 
-        val fromGroupId: Long,
+        public val fromGroupId: Long,
 
-        val message: String,
+        public val message: String,
     ) : RequestEventData() {
         override suspend fun accept(bot: Bot) {
             Mirai.solveNewFriendRequestEvent(
@@ -67,17 +72,22 @@ public sealed class RequestEventData {
             )
         }
 
+        override fun toString(): String {
+            return "NewFriendRequest(eventId=$eventId, fromGroupId=$fromGroupId, message=$message, requester=$requester, requesterNick=$requesterNick)"
+        }
     }
 
     @Serializable
-    public data class BotInvitedJoinGroupRequest(
+    @SerialName("BotInvitedJoinGroupRequest")
+    public class BotInvitedJoinGroupRequest
+    @MiraiExperimentalApi public constructor(
         override val eventId: Long,
 
-        val invitor: Long,
-        val invitorNick: String,
+        public val invitor: Long,
+        public val invitorNick: String,
 
-        val groupId: Long,
-        val groupName: String,
+        public val groupId: Long,
+        public val groupName: String,
     ) : RequestEventData() {
         override suspend fun accept(bot: Bot) {
             Mirai.solveBotInvitedJoinGroupRequestEvent(
@@ -98,20 +108,27 @@ public sealed class RequestEventData {
                 accept = false,
             )
         }
+
+        override fun toString(): String {
+            return "BotInvitedJoinGroupRequest(eventId=$eventId, invitor=$invitor, invitorNick='$invitorNick', groupId=$groupId, groupName='$groupName')"
+        }
+
     }
 
     @Serializable
-    public data class MemberJoinRequest(
+    @SerialName("MemberJoinRequest")
+    public class MemberJoinRequest
+    @MiraiExperimentalApi public constructor(
         override val eventId: Long,
 
-        val requester: Long,
-        val requesterNick: String,
+        public val requester: Long,
+        public val requesterNick: String,
 
-        val groupId: Long,
-        val groupName: String,
-        val invitor: Long = 0L, // 如果不为 0 则为邀请入群
+        public val groupId: Long,
+        public val groupName: String,
+        public val invitor: Long = 0L, // 如果不为 0 则为邀请入群
 
-        val message: String,
+        public val message: String,
     ) : RequestEventData() {
         override suspend fun accept(bot: Bot) {
             Mirai.solveMemberJoinRequestEvent(
@@ -149,6 +166,11 @@ public sealed class RequestEventData {
                 message = message,
             )
         }
+
+        override fun toString(): String {
+            return "MemberJoinRequest(eventId=$eventId, groupId=$groupId, groupName=$groupName, invitor=$invitor, message=$message, requester=$requester, requesterNick=$requesterNick)"
+        }
+
     }
 
 

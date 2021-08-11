@@ -1361,22 +1361,12 @@ public abstract class net/mamoe/mirai/data/RequestEventData {
 public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest : net/mamoe/mirai/data/RequestEventData {
 	public static final field Companion Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest$Companion;
 	public synthetic fun <init> (IJJLjava/lang/String;JLjava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (JJLjava/lang/String;JLjava/lang/String;)V
 	public fun accept (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun component1 ()J
-	public final fun component2 ()J
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()J
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (JJLjava/lang/String;JLjava/lang/String;)Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest;JJLjava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getEventId ()J
 	public final fun getGroupId ()J
 	public final fun getGroupName ()Ljava/lang/String;
 	public final fun getInvitor ()J
 	public final fun getInvitorNick ()Ljava/lang/String;
-	public fun hashCode ()I
 	public fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
@@ -1407,19 +1397,8 @@ public final class net/mamoe/mirai/data/RequestEventData$Factory {
 public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest : net/mamoe/mirai/data/RequestEventData {
 	public static final field Companion Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest$Companion;
 	public synthetic fun <init> (IJJLjava/lang/String;JLjava/lang/String;JLjava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (JJLjava/lang/String;JLjava/lang/String;JLjava/lang/String;)V
 	public synthetic fun <init> (JJLjava/lang/String;JLjava/lang/String;JLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun accept (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun component1 ()J
-	public final fun component2 ()J
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()J
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()J
-	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (JJLjava/lang/String;JLjava/lang/String;JLjava/lang/String;)Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;JJLjava/lang/String;JLjava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getEventId ()J
 	public final fun getGroupId ()J
 	public final fun getGroupName ()Ljava/lang/String;
@@ -1427,7 +1406,6 @@ public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest : net
 	public final fun getMessage ()Ljava/lang/String;
 	public final fun getRequester ()J
 	public final fun getRequesterNick ()Ljava/lang/String;
-	public fun hashCode ()I
 	public final fun reject (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reject (Lnet/mamoe/mirai/Bot;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1455,22 +1433,12 @@ public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest$Compa
 public final class net/mamoe/mirai/data/RequestEventData$NewFriendRequest : net/mamoe/mirai/data/RequestEventData {
 	public static final field Companion Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest$Companion;
 	public synthetic fun <init> (IJJLjava/lang/String;JLjava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (JJLjava/lang/String;JLjava/lang/String;)V
 	public fun accept (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun component1 ()J
-	public final fun component2 ()J
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()J
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (JJLjava/lang/String;JLjava/lang/String;)Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest;JJLjava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getEventId ()J
 	public final fun getFromGroupId ()J
 	public final fun getMessage ()Ljava/lang/String;
 	public final fun getRequester ()J
 	public final fun getRequesterNick ()Ljava/lang/String;
-	public fun hashCode ()I
 	public fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reject (Lnet/mamoe/mirai/Bot;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
