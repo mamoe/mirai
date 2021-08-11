@@ -155,7 +155,7 @@ public sealed class RequestEventData {
     public companion object Factory {
         @JvmStatic
         @JvmName("from")
-        public fun NewFriendRequestEvent.toReqeustEventData(): NewFriendRequest {
+        public fun NewFriendRequestEvent.toRequestEventData(): NewFriendRequest {
             return NewFriendRequest(
                 eventId = eventId,
                 message = message,
