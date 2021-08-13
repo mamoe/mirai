@@ -143,7 +143,7 @@ internal object KnownPacketFactories {
         PttStore.GroupPttUp,
         PttStore.GroupPttDown,
         LongConn.OffPicUp,
-        LongConn.OffPicDown,
+//        LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
         TroopManagement.GroupOperation,

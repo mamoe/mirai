@@ -19,6 +19,5 @@ internal interface ConfigPushSyncer {
 
 internal class ConfigPushSyncerImpl : ConfigPushSyncer {
     override suspend fun awaitSync() {
-        // TODO("Not yet implemented")
     }
 }

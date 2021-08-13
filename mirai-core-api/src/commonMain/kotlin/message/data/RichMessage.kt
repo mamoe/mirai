@@ -230,7 +230,7 @@ public class XmlMessageBuilder(
      */
     public var brief: String = "",
     public var flag: Int = 3,
-    public var url: String = "", // TODO: 2019/12/3 unknown
+    public var url: String = "",
     public var sourceName: String = "",
     public var sourceIconURL: String = ""
 ) {

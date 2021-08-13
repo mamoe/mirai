@@ -209,9 +209,9 @@ internal class OnlineMessageSourceToGroupImpl(
                     toUin = Mirai.calculateGroupUinByGroupCode(targetId), // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
-                    msgSeq = sequenceIds.single(), // TODO !!
+                    msgSeq = sequenceIds.single(),
                     msgTime = time,
-                    msgUid = internalIds.single().toLongUnsigned(), //  TODO !!
+                    msgUid = internalIds.single().toLongUnsigned(),
                     groupInfo = MsgComm.GroupInfo(groupCode = targetId),
                     isSrcMsg = true
                 ),

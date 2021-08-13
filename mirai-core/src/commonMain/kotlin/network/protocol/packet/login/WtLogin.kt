@@ -50,7 +50,7 @@ internal class WtLogin {
                 ) {
                     writeOicqRequestPacket(client, commandId = 0x0810) {
                         writeShort(8) // subCommand
-                        writeShort(6) // count of TLVs, probably ignored by server?TODO
+                        writeShort(6) // count of TLVs, probably ignored by server?
                         t8(2052)
                         t104(client.t104)
                         t116(client.miscBitMap, client.subSigMap)
@@ -349,7 +349,7 @@ internal class WtLogin {
                     }
 
 
-                    // TODO sigMap??? =0x21410e0 // from qq
+                    // sigMap??? =0x21410e0 // from qq
 
                     val creationTime = currentTimeSeconds()
                     val expireTime = creationTime + 21600

@@ -31,8 +31,6 @@ internal class DecryptionFailedException : Exception {
  * **注意**: 此为 Mirai 内部 API. 它可能会在任何时刻被改变.
  */
 internal object TEA {
-    // TODO: 2020/2/28 使用 stream 式输入以避免缓存
-
     /**
      * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
      *

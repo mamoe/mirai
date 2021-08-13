@@ -91,7 +91,6 @@ OnlineFriendImage() {
         } else {
             "http://c2cpicdw.qpic.cn/offpic_new/0/" + delegate.resId + "/0?term=2"
         }
-    // TODO: 2020/4/24 动态获取图片下载链接的 host
 
 }
 
