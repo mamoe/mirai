@@ -127,6 +127,14 @@ internal data class WLoginSigInfo(
     var encryptedDownloadSession: EncryptedDownloadSession? = null,
 ) {
 
+    /**
+     * 获取 获取群公告 所需的 bkn 参数
+     * */
+    val bkn: Int
+        get() = sKey.data
+            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
+            .and(Int.MAX_VALUE)
+
     //图片加密下载
     //是否加密从bigdatachannel处得知
     @Serializable

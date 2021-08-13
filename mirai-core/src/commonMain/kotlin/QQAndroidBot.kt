@@ -37,9 +37,9 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
-import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.notice.*
 import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -240,14 +240,6 @@ internal open class QQAndroidBot constructor(
             },
         ) // We can move the factory to configuration but this is not necessary for now.
     }
-
-    /**
-     * 获取 获取群公告 所需的 bkn 参数
-     * */ // TODO: 2021/4/26 extract it after #1141 merged
-    val bkn: Int
-        get() = client.wLoginSigInfo.sKey.data
-            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
-            .and(Int.MAX_VALUE)
 }
 
 internal fun QQAndroidBot.getGroupByUinOrFail(uin: Long) =

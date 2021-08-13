@@ -28,10 +28,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.OnlineAnnouncementImpl
-import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.deleteGroupAnnouncement
-import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getGroupAnnouncement
-import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRawGroupAnnouncements
-import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -41,8 +37,6 @@ import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.Either.Companion.onLeft
-import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 import java.util.stream.Stream
 
 internal class AnnouncementsImpl(
@@ -169,7 +163,7 @@ internal object AnnouncementProtocol {
         val resp = Mirai.Http.post<String> {
             url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
             body = MultiPartFormDataContent(formData {
-                append("\"bkn\"", bkn)
+                append("\"bkn\"", client.wLoginSigInfo.bkn)
                 append("\"source\"", "troopNotice")
                 append("m", "0")
                 append(
@@ -212,7 +206,7 @@ internal object AnnouncementProtocol {
             )
             body = MultiPartFormDataContent(formData {
                 append("qid", groupId)
-                this.append("bkn", bkn)
+                append("bkn", client.wLoginSigInfo.bkn)
                 append("text", announcement.msg.text)
                 append("pinned", announcement.pinned)
                 image?.let {
@@ -243,7 +237,7 @@ internal object AnnouncementProtocol {
             url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
             body = MultiPartFormDataContent(formData {
                 append("qid", groupId)
-                append("bkn", bkn)
+                append("bkn", client.wLoginSigInfo.bkn)
                 append("ft", 23)  //好像是一个用来识别应用的参数
                 append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
                 append("n", amount)
@@ -288,7 +282,7 @@ internal object AnnouncementProtocol {
         fid: String
     ) = MultiPartFormDataContent(formData {
         append("qid", groupId)
-        append("bkn", bkn)
+        append("bkn", client.wLoginSigInfo.bkn)
         append("fid", fid)
         append("format", "json")
     })
