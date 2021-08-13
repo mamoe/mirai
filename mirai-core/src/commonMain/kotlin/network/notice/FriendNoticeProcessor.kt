@@ -153,7 +153,6 @@ internal class FriendNoticeProcessor(
         for (new in body.msgFrdRmk) {
             val friend = bot.getFriend(new.fuin)?.impl() ?: continue
 
-            // TODO: 2020/4/10 ADD REMARK QUERY
             collect(FriendRemarkChangeEvent(friend, friend.remark, new.rmkName))
             friend.info.remark = new.rmkName
         }
