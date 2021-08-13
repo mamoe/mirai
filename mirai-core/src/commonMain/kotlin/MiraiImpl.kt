@@ -16,7 +16,6 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
@@ -577,7 +576,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             val rep = network.run {
                 Mirai.Http.get<String> {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
-                    parameter("bkn", bkn)
+                    parameter("bkn", client.wLoginSigInfo.bkn)
                     parameter("gc", groupId)
                     if (page != -1) {
                         parameter("page", page)
@@ -795,7 +794,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 append("group_code", groupId)
                 append("seconds", seconds)
                 append("anony_nick", anonymousNick)
-                append("bkn", bot.bkn)
+                append("bkn", bot.client.wLoginSigInfo.bkn)
             })
             headers {
                 append(
