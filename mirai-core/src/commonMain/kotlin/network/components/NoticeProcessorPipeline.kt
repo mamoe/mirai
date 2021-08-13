@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
@@ -32,7 +33,6 @@ import net.mamoe.mirai.utils.toDebugString
 import net.mamoe.mirai.utils.uncheckedCast
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 
 internal typealias ProcessResult = Collection<Packet>
@@ -98,8 +98,8 @@ internal interface PipelineContext {
     val collected: MutableProcessResult
 
     // DSL to simplify some expressions
-    operator fun MutableProcessResult.plusAssign(packet: Packet) {
-        collect(packet)
+    operator fun MutableProcessResult.plusAssign(packet: Packet?) {
+        if (packet != null) collect(packet)
     }
 
 
@@ -114,11 +114,11 @@ internal interface PipelineContext {
     fun collect(packets: Iterable<Packet>)
 
     /**
-     * Fire the [data] into the processor pipeline.
+     * Fire the [data] into the processor pipeline, and collect the results to current [collected].
      *
-     * @return result collected from processors. This would also have been collected to this context (where you call [fire]).
+     * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
      */
-    suspend fun fire(data: ProtocolStruct): ProcessResult
+    suspend fun processAlso(data: ProtocolStruct): ProcessResult
 
     companion object {
         val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
@@ -129,7 +129,10 @@ internal interface PipelineContext {
 internal inline val PipelineContext.context get() = this
 
 internal open class NoticeProcessorPipelineImpl private constructor() : NoticeProcessorPipeline {
-    private val processors = CopyOnWriteArrayList<NoticeProcessor>()
+    /**
+     * Must be ordered
+     */
+    private val processors = ConcurrentLinkedQueue<NoticeProcessor>()
 
     override fun registerProcessor(processor: NoticeProcessor) {
         processors.add(processor)
@@ -141,7 +144,7 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
     ) : PipelineContext {
         private val consumers: Stack<NoticeProcessor> = Stack()
 
-        override val isConsumed: Boolean = consumers.isNotEmpty()
+        override val isConsumed: Boolean get() = consumers.isNotEmpty()
         override fun NoticeProcessor.markAsConsumed() {
             consumers.push(this)
         }
@@ -162,7 +165,7 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
             this.collected.data.addAll(packets)
         }
 
-        override suspend fun fire(data: ProtocolStruct): ProcessResult {
+        override suspend fun processAlso(data: ProtocolStruct): ProcessResult {
             return process(bot, data, attributes)
         }
     }
@@ -193,7 +196,6 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
 
 
     companion object {
-        fun createEmpty(): NoticeProcessorPipelineImpl = NoticeProcessorPipelineImpl()
         fun create(vararg processors: NoticeProcessor): NoticeProcessorPipelineImpl =
             NoticeProcessorPipelineImpl().apply {
                 for (processor in processors) {
@@ -214,9 +216,9 @@ internal interface NoticeProcessor {
     suspend fun process(context: PipelineContext, data: Any?)
 }
 
-internal abstract class AnyNoticeProcessor : SimpleNoticeProcessor<Any>(type())
+internal abstract class AnyNoticeProcessor : SimpleNoticeProcessor<ProtocolStruct>(type())
 
-internal abstract class SimpleNoticeProcessor<T : Any>(
+internal abstract class SimpleNoticeProcessor<in T : ProtocolStruct>(
     private val type: KClass<T>,
 ) : NoticeProcessor {
 
@@ -239,7 +241,7 @@ internal abstract class MsgCommonMsgProcessor : SimpleNoticeProcessor<MsgComm.Ms
 }
 
 internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
-    final override suspend fun PipelineContext.processImpl(data: Any) {
+    final override suspend fun PipelineContext.processImpl(data: ProtocolStruct) {
         when (data) {
             is PbMsgInfo -> processImpl(data)
             is MsgOnlinePush.PbPushMsg -> processImpl(data)
@@ -248,6 +250,7 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
             is MsgType0x2DC -> processImpl(data)
             is Structmsg.StructMsg -> processImpl(data)
             is RequestPushStatus -> processImpl(data)
+            is DecodedNotifyMsgBody -> processImpl(data)
         }
     }
 
@@ -258,4 +261,6 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
     protected open suspend fun PipelineContext.processImpl(data: MsgComm.Msg) {}
     protected open suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) {}
     protected open suspend fun PipelineContext.processImpl(data: RequestPushStatus) {}
+
+    protected open suspend fun PipelineContext.processImpl(data: DecodedNotifyMsgBody) {}
 }

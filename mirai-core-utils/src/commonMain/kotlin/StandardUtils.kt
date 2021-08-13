@@ -110,3 +110,6 @@ public inline fun <T> T.context(block: T.() -> Unit) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return block()
 }
+
+public fun assertUnreachable(hint: String? = null): Nothing =
+    error("This clause should not be reached. " + hint.orEmpty())

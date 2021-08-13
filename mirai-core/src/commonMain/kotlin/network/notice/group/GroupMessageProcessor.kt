@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.notice
+package net.mamoe.mirai.internal.network.notice.group
 
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.AbstractEvent
@@ -26,8 +26,8 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
-import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.network.notice.GroupMessageProcessor.MemberNick.Companion.generateMemberNickFromMember
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.MemberNick.Companion.generateMemberNickFromMember
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
@@ -39,7 +39,9 @@ import net.mamoe.mirai.utils.*
 /**
  * Handles [GroupMessageEvent]. For private message events, see [PrivateMessageNoticeProcessor]
  */
-internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPushMsg>(type()) {
+internal class GroupMessageProcessor(
+    private val logger: MiraiLogger,
+) : SimpleNoticeProcessor<MsgOnlinePush.PbPushMsg>(type()) {
     internal data class SendGroupMessageReceipt(
         val messageRandom: Int,
         val sequenceId: Int,
@@ -113,7 +115,7 @@ internal class GroupMessageProcessor : SimpleNoticeProcessor<MsgOnlinePush.PbPus
             nameCard = sender.generateMemberNickFromMember()
         } else { // normal member chat
             sender = group[msgHead.fromUin] ?: kotlin.run {
-                bot.network.logger.warning { "Failed to find member ${msgHead.fromUin} in group ${group.id}" }
+                logger.warning { "Failed to find member ${msgHead.fromUin} in group ${group.id}" }
                 return
             }
             nameCard = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.generateMemberNickFromMember()

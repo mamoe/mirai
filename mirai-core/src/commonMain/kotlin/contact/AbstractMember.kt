@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.CoroutineContext
 
-internal abstract class AbstractMember(
+internal sealed class AbstractMember(
     final override val group: GroupImpl,
     parentCoroutineContext: CoroutineContext,
     memberInfo: MemberInfo,

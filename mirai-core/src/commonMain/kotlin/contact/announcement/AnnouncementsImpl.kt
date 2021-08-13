@@ -28,6 +28,10 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.OnlineAnnouncementImpl
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.deleteGroupAnnouncement
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getGroupAnnouncement
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRawGroupAnnouncements
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -37,6 +41,8 @@ import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.onLeft
+import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 import java.util.stream.Stream
 
 internal class AnnouncementsImpl(

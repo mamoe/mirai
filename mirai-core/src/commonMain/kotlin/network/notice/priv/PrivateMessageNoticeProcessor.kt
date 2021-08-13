@@ -7,9 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.notice
+package net.mamoe.mirai.internal.network.notice.priv
 
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUin
@@ -18,7 +17,9 @@ import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.fromSync
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
 /**
@@ -47,7 +48,12 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
             166, 167, // 单向好友
             208, // friend ptt, maybe also support stranger
             -> {
-                handlePrivateMessage(data, bot.getFriend(senderUin) ?: bot.getStranger(senderUin) ?: return)
+                handlePrivateMessage(
+                    data,
+                    bot.getFriend(senderUin)?.impl()
+                        ?: bot.getStranger(senderUin)?.impl()
+                        ?: return
+                )
             }
 
             141, // group temp
@@ -63,9 +69,8 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
 
     private suspend fun PipelineContext.handlePrivateMessage(
         data: MsgComm.Msg,
-        user: User,
+        user: AbstractUser,
     ) = data.context {
-        user.impl()
         if (!user.messageSeq.updateIfDifferentWith(msgHead.msgSeq)) return
         if (contentHead?.autoReply == 1) return
 
@@ -80,15 +85,15 @@ internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg
                 is FriendImpl -> FriendMessageSyncEvent(user, chain, time)
                 is StrangerImpl -> StrangerMessageSyncEvent(user, chain, time)
                 is NormalMemberImpl -> GroupTempMessageSyncEvent(user, chain, time)
-                else -> null
+                is AnonymousMemberImpl -> assertUnreachable()
             }
         } else {
             when (user) {
                 is FriendImpl -> FriendMessageEvent(user, chain, time)
                 is StrangerImpl -> StrangerMessageEvent(user, chain, time)
                 is NormalMemberImpl -> GroupTempMessageEvent(user, chain, time)
-                else -> null
+                is AnonymousMemberImpl -> assertUnreachable()
             }
-        } ?: error("unreachable")
+        }
     }
 }

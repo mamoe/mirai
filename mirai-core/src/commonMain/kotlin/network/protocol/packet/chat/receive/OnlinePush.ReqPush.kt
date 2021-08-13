@@ -10,16 +10,13 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUInt
-import kotlinx.io.core.readUShort
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.User
-import net.mamoe.mirai.data.GroupHonorType
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.GroupNameChangeEvent
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
+import net.mamoe.mirai.event.events.MessageRecallEvent
+import net.mamoe.mirai.event.events.NudgeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
@@ -33,20 +30,16 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
-import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceRequestPacket
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.mapToIntArray
 
 
 //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
@@ -100,189 +93,24 @@ internal inline fun lambda732(crossinline block: ByteReadPacket.(GroupImpl, QQAn
     }
 }
 
-private fun handleMuteMemberPacket(
-    bot: QQAndroidBot,
-    group: GroupImpl,
-    operator: NormalMember,
-    target: Long,
-    timeSeconds: Int,
-): Packet? {
-    if (target == 0L) {
-        val new = timeSeconds != 0
-        if (group.settings.isMuteAllField == new) {
-            return null
-        }
-        group.settings.isMuteAllField = new
-        return GroupMuteAllEvent(!new, new, group, operator)
-    }
-
-    if (target == bot.id) {
-        return when {
-            group.botMuteRemaining == timeSeconds -> null
-            timeSeconds == 0 || timeSeconds == 0xFFFF_FFFF.toInt() -> {
-                group.botAsMember.checkIsMemberImpl()._muteTimestamp = 0
-                BotUnmuteEvent(operator)
-            }
-            else -> {
-                group.botAsMember.checkIsMemberImpl()._muteTimestamp =
-                    currentTimeSeconds().toInt() + timeSeconds
-                BotMuteEvent(timeSeconds, operator)
-            }
-        }
-    }
-
-    val member = group[target] ?: return null
-    member.checkIsMemberImpl()
-
-    if (member.muteTimeRemaining == timeSeconds) {
-        return null
-    }
-
-    member._muteTimestamp = currentTimeSeconds().toInt() + timeSeconds
-    return if (timeSeconds == 0) MemberUnmuteEvent(member, operator)
-    else MemberMuteEvent(member, timeSeconds, operator)
-}
-
 internal object Transformers732 : Map<Int, Lambda732> by mapOf(
     // mute
     0x0c to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
-        val operatorUin = readUInt().toLong()
-        if (operatorUin == bot.id) {
-            return@lambda732 emptySequence()
-        }
-        val operator = group[operatorUin] ?: return@lambda732 emptySequence()
-        readUInt().toLong() // time
-        val length = readUShort().toInt()
-        val packetList: MutableList<Packet> = mutableListOf()
-        repeat(length) {
-            val target = readUInt().toLong()
-            val timeSeconds = readUInt()
-            handleMuteMemberPacket(bot, group, operator, target, timeSeconds.toInt())?.let {
-                packetList.add(it)
-            }
-        }
-        return@lambda732 packetList.asSequence()
+        TODO("removed")
     },
 
     // anonymous
     0x0e to lambda732 { group: GroupImpl, _: QQAndroidBot ->
-        // 匿名
-        val operator = group[readUInt().toLong()] ?: return@lambda732 emptySequence()
-        val new = readInt() == 0
-        if (group.settings.isAnonymousChatEnabledField == new) {
-            return@lambda732 emptySequence()
-        }
-
-        group.settings.isAnonymousChatEnabledField = new
-        return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
+        TODO("removed")
     },
 
     //系统提示
     0x14 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
-
-        discardExact(1)
-        val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
-        when (grayTip?.templId) {
-            //戳一戳
-            10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
-                //预置数据，服务器将不会提供己方已知消息
-                var action = ""
-                var from: Member = group.botAsMember
-                var target: Member = group.botAsMember
-                var suffix = ""
-                grayTip.msgTemplParam.map {
-                    Pair(it.name.decodeToString(), it.value.decodeToString())
-                }.asSequence().forEach { (key, value) ->
-                    run {
-                        when (key) {
-                            "action_str" -> action = value
-                            "uin_str1" -> from = group[value.toLong()] ?: return@lambda732 emptySequence()
-                            "uin_str2" -> target = group[value.toLong()] ?: return@lambda732 emptySequence()
-                            "suffix_str" -> suffix = value
-                        }
-                    }
-                }
-                return@lambda732 sequenceOf(
-                    NudgeEvent(
-                        from = if (from.id == bot.id) bot else from,
-                        target = if (target.id == bot.id) bot else target,
-                        action = action,
-                        suffix = suffix,
-                        subject = group,
-                    ),
-                )
-            }
-            //龙王
-            10093L, 1053L, 1054L -> {
-                var now: NormalMember = group.botAsMember
-                var previous: NormalMember? = null
-                grayTip.msgTemplParam.asSequence().map {
-                    it.name.decodeToString() to it.value.decodeToString()
-                }.forEach { (key, value) ->
-                    when (key) {
-                        "uin" -> now = group[value.toLong()] ?: return@lambda732 emptySequence()
-                        "uin_last" -> previous = group[value.toLong()] ?: return@lambda732 emptySequence()
-                    }
-                }
-                return@lambda732 previous?.let {
-                    sequenceOf(
-                        GroupTalkativeChangeEvent(group, now, it),
-                        MemberHonorChangeEvent.Lose(it, GroupHonorType.TALKATIVE),
-                        MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE),
-                    )
-                } ?: sequenceOf(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))
-            }
-            else -> {
-                bot.network.logger.debug {
-                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
-                }
-                return@lambda732 emptySequence()
-            }
-        }
+        TODO("removed")
     },
     // 传字符串信息
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
-        discardExact(1)
-        readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).let { body ->
-            when (body.optEnumType) {
-                1 -> body.optMsgGraytips?.let { tipsInfo ->
-                    val message = tipsInfo.optBytesContent.decodeToString()
-                    //机器人信息
-                    if (tipsInfo.robotGroupOpt != 0) {
-                        TODO("removed")
-                    } else when {
-                        message.endsWith("群聊坦白说") -> {
-                            val new = when (message) {
-                                "管理员已关闭群聊坦白说" -> false
-                                "管理员已开启群聊坦白说" -> true
-                                else -> {
-                                    bot.network.logger.debug { "Unknown server confess talk messages $message" }
-                                    return@lambda732 emptySequence()
-                                }
-                            }
-                            return@lambda732 sequenceOf(
-                                GroupAllowConfessTalkEvent(
-                                    new,
-                                    !new,
-                                    group,
-                                    false,
-                                ),
-                            )
-                        }
-                        else -> {
-                            bot.network.logger.debug { "Unknown server messages $message" }
-                            return@lambda732 emptySequence()
-                        }
-                    }
-                }
-                else -> {
-                    bot.network.logger.debug {
-                        "Unknown Transformers732 0x10 optEnumType\noptEnumType=${body.optEnumType}\ncontent=${body._miraiContentToString()}"
-                    }
-                    return@lambda732 emptySequence()
-                }
-            } ?: return@lambda732 emptySequence()
-        }
+        TODO("removed")
         /*
         val dataBytes = readBytes(26)
 
@@ -352,31 +180,7 @@ internal object Transformers732 : Map<Int, Lambda732> by mapOf(
 
     // recall
     0x11 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
-        discardExact(1)
-        val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
-
-        val recallReminder = proto.optMsgRecall ?: return@lambda732 emptySequence()
-
-        val operator =
-            if (recallReminder.uin == bot.id) group.botAsMember
-            else group[recallReminder.uin] ?: return@lambda732 emptySequence()
-        val firstPkg = recallReminder.recalledMsgList.firstOrNull() ?: return@lambda732 emptySequence()
-
-        return@lambda732 when {
-            firstPkg.authorUin == bot.id && operator.id == bot.id -> emptySequence()
-            else -> sequenceOf(
-                MessageRecallEvent.GroupRecall(
-                    bot,
-                    firstPkg.authorUin,
-                    recallReminder.recalledMsgList.mapToIntArray { it.seq },
-                    recallReminder.recalledMsgList.mapToIntArray { it.msgRandom },
-                    firstPkg.time,
-                    operator,
-                    group,
-                    group[firstPkg.authorUin] ?: return@lambda732 emptySequence(),
-                ),
-            )
-        }
+        TODO("removed")
     },
 )
 
