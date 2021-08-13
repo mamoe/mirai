@@ -155,16 +155,15 @@ internal open class QQAndroidBot constructor(
         val pipelineLogger = networkLogger.subLogger("NoticeProcessor") //  shorten name
         set(
             NoticeProcessorPipeline,
-            NoticeProcessorPipelineImpl().apply {
-                registerProcessor(MsgInfoDecoder(pipelineLogger))
-
-                registerProcessor(FriendNoticeProcessor(pipelineLogger))
-                registerProcessor(GroupListNoticeProcessor(pipelineLogger))
-                registerProcessor(GroupMessageProcessor())
-                registerProcessor(PrivateMessageNoticeProcessor())
-                registerProcessor(OtherClientNoticeProcessor())
-                registerProcessor(UnconsumedNoticesAlerter(pipelineLogger))
-            },
+            NoticeProcessorPipelineImpl.create(
+                MsgInfoDecoder(pipelineLogger),
+                FriendNoticeProcessor(pipelineLogger),
+                GroupListNoticeProcessor(pipelineLogger),
+                GroupMessageProcessor(),
+                PrivateMessageNoticeProcessor(),
+                OtherClientNoticeProcessor(),
+                UnconsumedNoticesAlerter(pipelineLogger),
+            )
         )
 
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
