@@ -14,16 +14,14 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
 import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.network.notice.GroupMessageProcessor.SendGroupMessageReceipt
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement

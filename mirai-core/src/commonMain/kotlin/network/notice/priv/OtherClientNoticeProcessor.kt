@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.notice
+package net.mamoe.mirai.internal.network.notice.priv
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel

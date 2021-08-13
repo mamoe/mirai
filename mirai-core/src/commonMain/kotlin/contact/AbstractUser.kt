@@ -57,7 +57,7 @@ internal val User.correspondingMessageSourceKind
         else -> error("Unknown user: ${this::class.qualifiedName}")
     }
 
-internal abstract class AbstractUser(
+internal sealed class AbstractUser(
     bot: QQAndroidBot,
     parentCoroutineContext: CoroutineContext,
     userInfo: UserInfo,

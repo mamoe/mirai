@@ -27,7 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
-internal interface NewContactSupport {
+internal interface NewContactSupport { // can be a marker interface when context receivers are available.
 
     fun MsgComm.Msg.getNewMemberInfo(): MemberInfoImpl {
         return MemberInfoImpl(

@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.notice
+package net.mamoe.mirai.internal.network.notice.group
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -25,16 +25,19 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.PipelineContext
-import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
+import net.mamoe.mirai.internal.network.notice.NewContactSupport
+import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
-import net.mamoe.mirai.internal.network.protocol.data.proto.*
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
+import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.internal.utils.toMemberInfo
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.read
 
 
@@ -54,7 +57,7 @@ import net.mamoe.mirai.utils.read
  * @see BotInvitedJoinGroupRequestEvent
  * @see MemberJoinRequestEvent
  */
-internal class GroupListNoticeProcessor(
+internal class GroupOrMemberListNoticeProcessor(
     private val logger: MiraiLogger,
 ) : MixedNoticeProcessor(), NewContactSupport {
 
@@ -79,14 +82,14 @@ internal class GroupListNoticeProcessor(
      * @see MemberJoinEvent.Invite
      * @see MemberLeaveEvent.Quit
      */
-    override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) = data.context {
-        if (data.kind != 0x10) return
-        val proto = data.buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), offset = 1)
+    override suspend fun PipelineContext.processImpl(data: DecodedNotifyMsgBody) = data.context {
+        val proto = data.buf
         if (proto.optEnumType != 1) return
         val tipsInfo = proto.optMsgGraytips ?: return
 
         val message = tipsInfo.optBytesContent.decodeToString()
         // 机器人信息
+        markAsConsumed()
         when (tipsInfo.robotGroupOpt) {
             // 添加
             1 -> {
@@ -107,13 +110,8 @@ internal class GroupListNoticeProcessor(
                     collect(MemberLeaveEvent.Quit(member))
                 }
             }
-
-            else -> {
-                logger.debug { "Unknown robotGroupOpt ${tipsInfo.robotGroupOpt}, message=$message" }
-            }
+            else -> markNotConsumed()
         }
-
-        return markAsConsumed()
     }
 
     /**

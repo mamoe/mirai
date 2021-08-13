@@ -46,7 +46,7 @@ internal class MsgInfoDecoder(
         if (!bot.syncController.syncOnlinePush(data)) return
         when (data.shMsgType.toUShort().toInt()) {
             // 528
-            0x210 -> fire(data.vMsg.loadAs(MsgType0x210.serializer()))
+            0x210 -> processAlso(data.vMsg.loadAs(MsgType0x210.serializer()))
 
             // 732
             0x2dc -> {
@@ -57,7 +57,7 @@ internal class MsgInfoDecoder(
                     val kind = readByte().toInt()
                     discardExact(1)
 
-                    fire(MsgType0x2DC(kind, group, this.readBytes()))
+                    processAlso(MsgType0x2DC(kind, group, this.readBytes()))
                 }
             }
             else -> {
@@ -67,8 +67,37 @@ internal class MsgInfoDecoder(
     }
 }
 
-internal class MsgType0x2DC(
-    val kind: Int, // inner kind, read from vMsg
-    val group: GroupImpl,
-    val buf: ByteArray,
-) : ProtocolStruct
+internal interface BaseMsgType0x2DC<V> {
+    val kind: Int
+    val group: GroupImpl
+    val buf: V
+
+    fun Long.findMember() = group[this]
+    fun String.findMember() = this.toLongOrNull()?.let { group[it] }
+}
+
+internal data class MsgType0x2DC(
+    override val kind: Int, // inner kind, read from vMsg
+    override val group: GroupImpl,
+    override val buf: ByteArray,
+) : ProtocolStruct, BaseMsgType0x2DC<ByteArray> {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MsgType0x2DC
+
+        if (kind != other.kind) return false
+        if (group != other.group) return false
+        if (!buf.contentEquals(other.buf)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = kind
+        result = 31 * result + group.hashCode()
+        result = 31 * result + buf.contentHashCode()
+        return result
+    }
+}

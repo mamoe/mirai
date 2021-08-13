@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.notice
+package net.mamoe.mirai.internal.network.notice.priv
 
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm

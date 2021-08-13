@@ -37,8 +37,15 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
-import net.mamoe.mirai.internal.network.notice.*
+import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
+import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
 import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
+import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
@@ -156,13 +163,16 @@ internal open class QQAndroidBot constructor(
         set(
             NoticeProcessorPipeline,
             NoticeProcessorPipelineImpl.create(
-                MsgInfoDecoder(pipelineLogger),
-                FriendNoticeProcessor(pipelineLogger),
-                GroupListNoticeProcessor(pipelineLogger),
-                GroupMessageProcessor(),
+                MsgInfoDecoder(pipelineLogger.subLogger("MsgInfoDecoder")),
+                GroupNotificationDecoder(),
+
+                FriendNoticeProcessor(pipelineLogger.subLogger("FriendNoticeProcessor")),
+                GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
+                GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
                 PrivateMessageNoticeProcessor(),
                 OtherClientNoticeProcessor(),
-                UnconsumedNoticesAlerter(pipelineLogger),
+                UnconsumedNoticesAlerter(pipelineLogger.subLogger("UnconsumedNoticesAlerter")),
+                GroupRecallProcessor()
             )
         )
 
