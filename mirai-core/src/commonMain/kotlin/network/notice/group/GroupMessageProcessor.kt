@@ -27,7 +27,7 @@ import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.MemberNick.Companion.generateMemberNickFromMember
-import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
@@ -37,7 +37,7 @@ import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 
 /**
- * Handles [GroupMessageEvent]. For private message events, see [PrivateMessageNoticeProcessor]
+ * Handles [GroupMessageEvent]. For private message events, see [PrivateMessageProcessor]
  */
 internal class GroupMessageProcessor(
     private val logger: MiraiLogger,

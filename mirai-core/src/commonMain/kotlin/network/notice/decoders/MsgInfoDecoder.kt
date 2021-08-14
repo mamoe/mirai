@@ -15,9 +15,11 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.KEY_MSG_INFO
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.components.syncOnlinePush
+import net.mamoe.mirai.internal.network.notice.GroupAware
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack.SvcReqPushMsg
@@ -46,7 +48,7 @@ internal class MsgInfoDecoder(
         if (!bot.syncController.syncOnlinePush(data)) return
         when (data.shMsgType.toUShort().toInt()) {
             // 528
-            0x210 -> processAlso(data.vMsg.loadAs(MsgType0x210.serializer()))
+            0x210 -> processAlso(data.vMsg.loadAs(MsgType0x210.serializer()), KEY_MSG_INFO to data)
 
             // 732
             0x2dc -> {
@@ -57,7 +59,7 @@ internal class MsgInfoDecoder(
                     val kind = readByte().toInt()
                     discardExact(1)
 
-                    processAlso(MsgType0x2DC(kind, group, this.readBytes()))
+                    processAlso(MsgType0x2DC(kind, group, this.readBytes()), KEY_MSG_INFO to data)
                 }
             }
             else -> {
@@ -67,13 +69,12 @@ internal class MsgInfoDecoder(
     }
 }
 
-internal interface BaseMsgType0x2DC<V> {
+internal interface BaseMsgType0x2DC<V> : GroupAware {
     val kind: Int
-    val group: GroupImpl
+    override val group: GroupImpl
     val buf: V
 
-    fun Long.findMember() = group[this]
-    fun String.findMember() = this.toLongOrNull()?.let { group[it] }
+    override val bot get() = group.bot
 }
 
 internal data class MsgType0x2DC(

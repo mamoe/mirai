@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.checkIsMemberImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
@@ -23,15 +24,135 @@ import net.mamoe.mirai.internal.network.components.PipelineContext
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
+import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.utils.context
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.*
 
 internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSupport {
+
+    override suspend fun PipelineContext.processImpl(data: MsgType0x210) = data.context {
+        when (data.uSubMsgType) {
+            0x27L -> {
+                val body = vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.SubMsgType0x27MsgBody.serializer())
+                for (msgModInfo in body.msgModInfos) {
+                    markAsConsumed(msgModInfo)
+                    when {
+                        msgModInfo.msgModGroupProfile != null -> handleGroupProfileChanged(msgModInfo.msgModGroupProfile)
+                        msgModInfo.msgModGroupMemberProfile != null -> handleGroupMemberProfileChanged(msgModInfo.msgModGroupMemberProfile)
+                        else -> markNotConsumed(msgModInfo)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @see GroupNameChangeEvent
+     */
+    private fun PipelineContext.handleGroupProfileChanged(
+        modGroupProfile: Submsgtype0x27.SubMsgType0x27.ModGroupProfile
+    ) {
+        for (info in modGroupProfile.msgGroupProfileInfos) {
+            when (info.field) {
+                1 -> {
+                    // 群名
+                    val new = info.value.encodeToString()
+
+                    val group = bot.getGroup(modGroupProfile.groupCode) ?: continue
+                    group.checkIsGroupImpl()
+                    val old = group.name
+
+                    if (new == old) continue
+
+                    if (modGroupProfile.cmdUin == bot.id) continue
+                    val operator = group[modGroupProfile.cmdUin] ?: continue
+
+                    group.settings.nameField = new
+
+                    collect(GroupNameChangeEvent(old, new, group, operator))
+                }
+                2 -> {
+                    // 头像
+                    // top_package/akkz.java:3446
+                    /*
+                        var4 = var82.byteAt(0);
+                           short var3 = (short) (var82.byteAt(1) | var4 << 8);
+                           var85 = var18.method_77927(var7 + "");
+                           var85.troopface = var3;
+                           var85.hasSetNewTroopHead = true;
+                         */
+                    //                        bot.logger.debug(
+                    //                            contextualBugReportException(
+                    //                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+                    //                                forDebug = "this=${this._miraiContentToString()}"
+                    //                            )
+                    //                        )
+                }
+                3 -> { // troop.credit.data
+                    // top_package/akkz.java:3475
+                    // top_package/akkz.java:3498
+                    //                        bot.logger.debug(
+                    //                            contextualBugReportException(
+                    //                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+                    //                                forDebug = "this=${this._miraiContentToString()}"
+                    //                            )
+                    //                        )
+                }
+                else -> {
+                }
+            }
+        }
+    }
+
+    /**
+     * @see MemberCardChangeEvent
+     */
+    private fun PipelineContext.handleGroupMemberProfileChanged(
+        modGroupMemberProfile: Submsgtype0x27.SubMsgType0x27.ModGroupMemberProfile
+    ) {
+        for (info in modGroupMemberProfile.msgGroupMemberProfileInfos) {
+            when (info.field) {
+                1 -> { // name card
+                    val new = info.value
+                    val group = bot.getGroup(modGroupMemberProfile.groupCode) ?: continue
+                    group.checkIsGroupImpl()
+                    val member = group[modGroupMemberProfile.uin] ?: continue
+                    member.checkIsMemberImpl()
+
+                    val old = member.nameCard
+
+                    if (new == old) continue
+                    member._nameCard = new
+
+                    collect(MemberCardChangeEvent(old, new, member))
+                }
+                2 -> {
+                    if (info.value.singleOrNull()?.code != 0) {
+                        bot.logger.debug {
+                            "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
+                        }
+                    }
+                    continue
+                }
+                else -> {
+                    bot.logger.debug {
+                        "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
+                    }
+                    continue
+                }
+            }
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // MsgType0x2DC
+    ///////////////////////////////////////////////////////////////////////////
+
     override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
         when (data.kind) {
             0x0C -> processMute(data)
@@ -164,16 +285,17 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
      * @see NudgeEvent
      * @see MemberHonorChangeEvent
      * @see GroupTalkativeChangeEvent
-     */
+     */ // gray tip: 聊天中的灰色小框系统提示信息
     private fun PipelineContext.processGrayTip(
         data: MsgType0x2DC,
     ) = data.context {
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
         markAsConsumed()
         when (grayTip?.templId) {
-            // 戳一戳
+            // 群戳一戳
             10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
-                //预置数据，服务器将不会提供己方已知消息
+                // group nudge
+                // 预置数据，服务器将不会提供己方已知消息
                 val action = grayTip.msgTemplParam["action_str"].orEmpty()
                 val from = grayTip.msgTemplParam["uin_str1"]?.findMember() ?: group.botAsMember
                 val target = grayTip.msgTemplParam["uin_str2"]?.findMember() ?: group.botAsMember
@@ -211,3 +333,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
 }
 
 internal operator fun List<TroopTips0x857.TemplParam>.get(name: String) = this.findLast { it.name == name }?.value
+
+@JvmName("get2")
+internal operator fun List<Submsgtype0x122.Submsgtype0x122.TemplParam>.get(name: String) =
+    this.findLast { it.name == name }?.value
