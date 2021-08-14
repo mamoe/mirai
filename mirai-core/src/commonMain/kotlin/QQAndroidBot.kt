@@ -45,7 +45,7 @@ import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProc
 import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
 import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
-import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
@@ -169,7 +169,7 @@ internal open class QQAndroidBot constructor(
                 FriendNoticeProcessor(pipelineLogger.subLogger("FriendNoticeProcessor")),
                 GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
                 GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
-                PrivateMessageNoticeProcessor(),
+                PrivateMessageProcessor(),
                 OtherClientNoticeProcessor(),
                 UnconsumedNoticesAlerter(pipelineLogger.subLogger("UnconsumedNoticesAlerter")),
                 GroupRecallProcessor()

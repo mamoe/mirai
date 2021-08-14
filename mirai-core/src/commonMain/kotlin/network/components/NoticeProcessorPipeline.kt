@@ -15,8 +15,10 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.notice.BotAware
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
+import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -27,10 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushTransMsg
 import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
-import net.mamoe.mirai.utils.TypeKey
-import net.mamoe.mirai.utils.TypeSafeMap
-import net.mamoe.mirai.utils.toDebugString
-import net.mamoe.mirai.utils.uncheckedCast
+import net.mamoe.mirai.utils.*
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KClass
@@ -46,7 +45,11 @@ internal interface NoticeProcessorPipeline {
     /**
      * Process [data] into [Packet]s. Exceptions are wrapped into [ParseErrorPacket]
      */
-    suspend fun process(bot: QQAndroidBot, data: ProtocolStruct, attributes: TypeSafeMap = TypeSafeMap()): ProcessResult
+    suspend fun process(
+        bot: QQAndroidBot,
+        data: ProtocolStruct,
+        attributes: TypeSafeMap = TypeSafeMap.EMPTY
+    ): ProcessResult
 
     companion object : ComponentKey<NoticeProcessorPipeline> {
         val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
@@ -54,7 +57,7 @@ internal interface NoticeProcessorPipeline {
         @JvmStatic
         suspend inline fun QQAndroidBot.processPacketThroughPipeline(
             data: ProtocolStruct,
-            attributes: TypeSafeMap = TypeSafeMap(),
+            attributes: TypeSafeMap = TypeSafeMap.EMPTY,
         ): Packet {
             return components.noticeProcessorPipeline.process(this, data, attributes).toPacket()
         }
@@ -66,8 +69,8 @@ internal value class MutableProcessResult(
     val data: MutableCollection<Packet>
 )
 
-internal interface PipelineContext {
-    val bot: QQAndroidBot
+internal interface PipelineContext : BotAware {
+    override val bot: QQAndroidBot
 
     val attributes: TypeSafeMap
 
@@ -83,13 +86,13 @@ internal interface PipelineContext {
      * and throws a [contextualBugReportException] or logs something.
      */
     @ConsumptionMarker
-    fun NoticeProcessor.markAsConsumed()
+    fun NoticeProcessor.markAsConsumed(marker: Any = this)
 
     /**
      * Marks the input as not consumed, if it was marked by this [NoticeProcessor].
      */
     @ConsumptionMarker
-    fun NoticeProcessor.markNotConsumed()
+    fun NoticeProcessor.markNotConsumed(marker: Any = this)
 
     @DslMarker
     annotation class ConsumptionMarker // to give an explicit color.
@@ -116,13 +119,21 @@ internal interface PipelineContext {
     /**
      * Fire the [data] into the processor pipeline, and collect the results to current [collected].
      *
+     * @param attributes extra attributes
      * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
      */
-    suspend fun processAlso(data: ProtocolStruct): ProcessResult
+    suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap = TypeSafeMap.EMPTY): ProcessResult
 
     companion object {
         val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
+        val KEY_MSG_INFO = TypeKey<MsgInfo>("msgInfo")
+
         val PipelineContext.fromSync get() = attributes[KEY_FROM_SYNC]
+
+        /**
+         * 来自 [MsgInfo] 的数据, 即 [MsgType0x210], [MsgType0x2DC] 的处理过程之中可以使用
+         */
+        val PipelineContext.msgInfo get() = attributes[KEY_MSG_INFO]
     }
 }
 
@@ -142,15 +153,15 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
     inner class ContextImpl(
         override val bot: QQAndroidBot, override val attributes: TypeSafeMap,
     ) : PipelineContext {
-        private val consumers: Stack<NoticeProcessor> = Stack()
+        private val consumers: Stack<Any> = Stack()
 
         override val isConsumed: Boolean get() = consumers.isNotEmpty()
-        override fun NoticeProcessor.markAsConsumed() {
-            consumers.push(this)
+        override fun NoticeProcessor.markAsConsumed(marker: Any) {
+            consumers.push(marker)
         }
 
-        override fun NoticeProcessor.markNotConsumed() {
-            if (consumers.peek() === this) {
+        override fun NoticeProcessor.markNotConsumed(marker: Any) {
+            if (consumers.peek() === marker) {
                 consumers.pop()
             }
         }
@@ -165,8 +176,8 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
             this.collected.data.addAll(packets)
         }
 
-        override suspend fun processAlso(data: ProtocolStruct): ProcessResult {
-            return process(bot, data, attributes)
+        override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
+            return process(bot, data, this.attributes + attributes)
         }
     }
 

@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.context
  * @see GroupTempMessageEvent
  * @see GroupTempMessageSyncEvent
  */
-internal class PrivateMessageNoticeProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
+internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
     override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         markAsConsumed()
         if (msgHead.fromUin == bot.id && fromSync) {

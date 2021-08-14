@@ -12,6 +12,9 @@ package net.mamoe.mirai.internal.network.notice.priv
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUShort
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.impl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
@@ -19,17 +22,21 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.msgInfo
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
+import net.mamoe.mirai.internal.network.notice.group.get
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x115.SubMsgType0x115
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0xb3.SubMsgType0xb3
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList.GetFriendGroupList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.*
 
@@ -113,9 +120,66 @@ internal class FriendNoticeProcessor(
                 val body = vProtobuf.loadAs(SubMsgType0x115.MsgBody.serializer())
                 handleInputStatusChanged(body)
             }
+            0x122L -> {
+                val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
+                when (body.templId) {
+                    //戳一戳
+                    1132L, 1133L, 1134L, 1135L, 1136L, 10043L -> handlePrivateNudge(body)
+                }
+            }
+            0x8AL -> {
+                val body = vProtobuf.loadAs(Sub8A.serializer())
+                processFriendRecall(body)
+            }
             else -> markNotConsumed()
         }
     }
+
+
+    @Serializable
+    private class Wording(
+        @ProtoNumber(1) val itemID: Int = 0,
+        @ProtoNumber(2) val itemName: String = "",
+    ) : ProtoBuf
+
+    @Serializable
+    private class Sub8AMsgInfo(
+        @ProtoNumber(1) val fromUin: Long,
+        @ProtoNumber(2) val botUin: Long,
+        @ProtoNumber(3) val srcId: Int,
+        @ProtoNumber(4) val srcInternalId: Long,
+        @ProtoNumber(5) val time: Long,
+        @ProtoNumber(6) val random: Int,
+        @ProtoNumber(7) val pkgNum: Int, // 1
+        @ProtoNumber(8) val pkgIndex: Int, // 0
+        @ProtoNumber(9) val devSeq: Int, // 0
+        @ProtoNumber(12) val flag: Int, // 1
+        @ProtoNumber(13) val wording: Wording,
+    ) : ProtoBuf
+
+    @Serializable
+    private class Sub8A(
+        @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
+        @ProtoNumber(2) val appId: Int, // 1
+        @ProtoNumber(3) val instId: Int, // 1
+        @ProtoNumber(4) val longMessageFlag: Int, // 0
+        @ProtoNumber(5) val reserved: ByteArray? = null, // struct{ boolean(1), boolean(2) }
+    ) : ProtoBuf
+
+    private fun PipelineContext.processFriendRecall(body: Sub8A) {
+        for (info in body.msgInfo) {
+            if (info.botUin != bot.id) continue
+            collected += MessageRecallEvent.FriendRecall(
+                bot = bot,
+                messageIds = intArrayOf(info.srcId),
+                messageInternalIds = intArrayOf(info.srcInternalId.toInt()),
+                messageTime = info.time.toInt(),
+                operatorId = info.fromUin,
+                operator = bot.getFriend(info.fromUin) ?: continue,
+            )
+        }
+    }
+
 
     private fun PipelineContext.handleInputStatusChanged(body: SubMsgType0x115.MsgBody) {
         val friend = bot.getFriend(body.fromUin) ?: return
@@ -202,5 +266,24 @@ internal class FriendNoticeProcessor(
         val added = bot.addNewFriendAndRemoveStranger(info) ?: return
         collect(FriendAddEvent(added))
         if (removed != null) collect(StrangerRelationChangeEvent.Friended(removed, added))
+    }
+
+    private fun PipelineContext.handlePrivateNudge(body: Submsgtype0x122.Submsgtype0x122.MsgBody) {
+        val action = body.msgTemplParam["action_str"].orEmpty()
+        val from = body.msgTemplParam["uin_str1"]?.findFriendOrStranger() ?: bot.asFriend
+        val target = body.msgTemplParam["uin_str2"]?.findFriendOrStranger() ?: bot.asFriend
+        val suffix = body.msgTemplParam["suffix_str"].orEmpty()
+
+        val subject: User = bot.getFriend(msgInfo.lFromUin)
+            ?: bot.getStranger(msgInfo.lFromUin)
+            ?: return
+
+        collected += NudgeEvent(
+            from = if (from.id == bot.id) bot else from,
+            target = if (target.id == bot.id) bot else target,
+            action = action,
+            suffix = suffix,
+            subject = subject,
+        )
     }
 }

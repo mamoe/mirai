@@ -22,22 +22,86 @@ public value class TypeKey<out T>(public val name: String) {
     public inline infix fun <T> to(value: T): TypeSafeMap = buildTypeSafeMap { set(this@TypeKey, value) }
 }
 
-@JvmInline
-public value class TypeSafeMap(
-    private val map: MutableMap<TypeKey<*>, Any?> = ConcurrentHashMap()
-) {
-    public operator fun <T> get(key: TypeKey<T>): T =
+public interface TypeSafeMap {
+    public val size: Int
+
+    public operator fun <T> get(key: TypeKey<T>): T
+    public operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
+
+    public fun toMap(): Map<TypeKey<*>, Any?>
+
+    public companion object {
+        public val EMPTY: TypeSafeMap = TypeSafeMapImpl(emptyMap())
+    }
+}
+
+public operator fun TypeSafeMap.plus(other: TypeSafeMap): TypeSafeMap {
+    return when {
+        other.size == 0 -> this
+        this.size == 0 -> other
+        else -> buildTypeSafeMap {
+            setAll(this@plus)
+            setAll(other)
+        }
+    }
+}
+
+public interface MutableTypeSafeMap : TypeSafeMap {
+    public operator fun <T> set(key: TypeKey<T>, value: T)
+    public fun <T> remove(key: TypeKey<T>): T?
+    public fun setAll(other: TypeSafeMap)
+}
+
+
+internal open class TypeSafeMapImpl(
+    internal open val map: Map<TypeKey<*>, Any?> = ConcurrentHashMap()
+) : TypeSafeMap {
+    override val size: Int get() = map.size
+
+    override fun equals(other: Any?): Boolean {
+        return other is TypeSafeMapImpl && other.map == this.map
+    }
+
+    override fun hashCode(): Int {
+        return map.hashCode()
+    }
+
+    override operator fun <T> get(key: TypeKey<T>): T =
         map[key]?.uncheckedCast() ?: throw NoSuchElementException(key.toString())
 
-    public operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
-    public operator fun <T> set(key: TypeKey<T>, value: T) {
+    override operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
+
+    override fun toMap(): Map<TypeKey<*>, Any?> = map
+}
+
+@PublishedApi
+internal class MutableTypeSafeMapImpl(
+    override val map: MutableMap<TypeKey<*>, Any?> = ConcurrentHashMap()
+) : TypeSafeMap, MutableTypeSafeMap, TypeSafeMapImpl(map) {
+    override fun equals(other: Any?): Boolean {
+        return other is MutableTypeSafeMapImpl && other.map == this.map
+    }
+
+    override fun hashCode(): Int {
+        return map.hashCode()
+    }
+
+    override operator fun <T> set(key: TypeKey<T>, value: T) {
         map[key] = value
     }
 
-    public fun <T> remove(key: TypeKey<T>): T? = map.remove(key)?.uncheckedCast()
+    override fun setAll(other: TypeSafeMap) {
+        if (other is TypeSafeMapImpl) {
+            map.putAll(other.map)
+        } else {
+            map.putAll(other.toMap())
+        }
+    }
+
+    override fun <T> remove(key: TypeKey<T>): T? = map.remove(key)?.uncheckedCast()
 }
 
-public inline fun buildTypeSafeMap(block: TypeSafeMap.() -> Unit): TypeSafeMap {
+public inline fun buildTypeSafeMap(block: MutableTypeSafeMap.() -> Unit): MutableTypeSafeMap {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return TypeSafeMap().apply(block)
+    return MutableTypeSafeMapImpl().apply(block)
 }
