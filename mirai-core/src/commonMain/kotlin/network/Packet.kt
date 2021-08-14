@@ -33,22 +33,48 @@ interface Packet {
 /**
  * PacketFactory 可以一次解析多个包出来. 它们将会被分别广播.
  */
-internal interface MultiPacket : Packet, Collection<Packet>
+internal interface MultiPacket : Packet {
+    /**
+     * `true` if this packet has some useful meaning, otherwise it will be considered just as a wrapper of its children.
+     */
+    val isMeaningful: Boolean
+
+    /**
+     * if item is [MultiPacket], its children will be ignored.
+     */
+    fun children(): Iterator<Packet>
+}
 
 internal fun Collection<Packet>.toPacket(): Packet {
     return when (this.size) {
         1 -> this.single()
-        else -> MultiPacketImpl(this)
+        else -> MultiPacket(this)
     }
 }
 
-internal fun MultiPacket(delegate: Collection<Packet>): MultiPacket = MultiPacketImpl(delegate)
+internal fun MultiPacket(delegate: Collection<Packet>): MultiPacket {
+    return MultiPacketImpl(delegate)
+}
+
 internal fun MultiPacket(delegate: Packet): MultiPacket =
     if (delegate is MultiPacket) delegate else MultiPacket(listOf(delegate))
 
-internal open class MultiPacketImpl(
+
+private class MultiPacketImpl(
     val delegate: Collection<Packet>,
-) : MultiPacket, Collection<Packet> by delegate {
+) : MultiPacket {
+    override val isMeaningful: Boolean get() = false
+
+    override fun children(): Iterator<Packet> {
+        return sequence {
+            for (packet in delegate) {
+                yield(packet)
+                if (packet is MultiPacket) {
+                    yieldAll(packet.children())
+                }
+            }
+        }.iterator()
+    }
 
     override fun toString(): String = delegate.joinToString(
         separator = "\n",
