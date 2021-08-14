@@ -81,13 +81,17 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
      */
     open class Response(
         internal val syncFlagFromServer: MsgSvc.SyncFlag,
-        delegate: List<Packet>,
+        private val delegate: List<Packet>,
         val syncCookie: ByteArray?, override val bot: Bot,
     ) : AbstractEvent(),
         MultiPacket,
-        Collection<Packet> by delegate,
         Packet.NoEventLog,
         BotEvent {
+        override val isMeaningful: Boolean get() = true
+
+        override fun children(): Iterator<Packet> {
+            return delegate.iterator()
+        }
 
         override fun toString(): String =
             "MessageSvcPbGetMsg.Response(flag=$syncFlagFromServer)"

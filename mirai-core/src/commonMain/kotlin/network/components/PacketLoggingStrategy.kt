@@ -58,7 +58,8 @@ internal class PacketLoggingStrategyImpl(
                 }
 
                 if (packet is MultiPacket) {
-                    for (d in packet) {
+                    if (packet.isMeaningful) logReceivedImpl(packet, incomingPacket, logger)
+                    for (d in packet.children()) {
                         logReceivedImpl(d, incomingPacket, logger)
                     }
                 }
