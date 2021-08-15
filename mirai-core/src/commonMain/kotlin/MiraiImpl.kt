@@ -14,6 +14,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import io.ktor.util.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.currentCoroutineContext
@@ -622,20 +623,19 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     internal open suspend fun uploadMessageHighway(
-        bot: Bot,
-        sendMessageHandler: SendMessageHandler<*>,
-        message: Collection<ForwardMessage.INode>,
+        contact: AbstractContact,
+        nodes: Collection<ForwardMessage.INode>,
         isLong: Boolean,
-    ): String = with(bot.asQQAndroidBot()) {
-        message.forEach {
+    ): String = contact.bot.run {
+        nodes.forEach {
             it.messageChain.ensureSequenceIdAvailable()
         }
 
 
-        val data = message.calculateValidationData(
+        val data = nodes.calculateValidationData(
             client = client,
             random = Random.nextInt().absoluteValue,
-            sendMessageHandler,
+            contact,
             isLong,
         )
 
@@ -644,7 +644,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 buType = if (isLong) 1 else 2,
                 client = bot.client,
                 messageData = data,
-                dstUin = sendMessageHandler.targetUin
+                dstUin = contact.uin
             ).sendAndExpect()
         }
 
@@ -664,7 +664,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     msgUpReq = listOf(
                         LongMsg.MsgUpReq(
                             msgType = 3, // group
-                            dstUin = sendMessageHandler.targetUin,
+                            dstUin = contact.uin,
                             msgId = 0,
                             msgUkey = response.proto.msgUkey,
                             needCache = 0,

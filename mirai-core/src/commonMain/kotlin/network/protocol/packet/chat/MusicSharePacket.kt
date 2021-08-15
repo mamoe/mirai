@@ -30,8 +30,8 @@ internal object MusicSharePacket :
 
     class Response(
         val pkg: OidbSso.OIDBSSOPkg,
-    ) : Packet {
-        val response by lazy {
+    ) : Packet, SendMessageResponse {
+        val response: OidbCmd0xb77.RspBody by lazy {
             pkg.bodybuffer.loadAs(OidbCmd0xb77.RspBody.serializer())
         }
 

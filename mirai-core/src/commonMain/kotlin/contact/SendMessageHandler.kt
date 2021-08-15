@@ -27,9 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
-import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.castOrNull
@@ -100,7 +98,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 }
 
                 if (!contains(IgnoreLengthCheck)) {
-                    verityLength(this, contact)
+                    checkLength(this, contact)
                 }
 
                 this
@@ -235,7 +233,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         chain: MessageChain,
     ): String = with(contact) {
         return getMiraiImpl().uploadMessageHighway(
-            bot, this@SendMessageHandler,
+            contact.impl(),
             listOf(
                 ForwardMessage.Node(
                     senderId = bot.id,
@@ -277,9 +275,8 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
         }
 
         val resId = getMiraiImpl().uploadMessageHighway(
-            bot = contact.bot,
-            sendMessageHandler = this,
-            message = forward.nodeList,
+            contact = contact.impl(),
+            nodes = forward.nodeList,
             isLong = false,
         )
         return RichMessage.forwardMessage(
@@ -374,16 +371,7 @@ internal open class GroupSendMessageHandler(
         get() = contact.botAsMember.nameCardOrNick
 
     override suspend fun conversionMessageChain(chain: MessageChain): MessageChain = chain.map { element ->
-        when (element) {
-            is OfflineGroupImage -> {
-                contact.fixImageFileId(element)
-                element
-            }
-            is FriendImage -> {
-                contact.updateFriendImageForGroupMessage(element)
-            }
-            else -> element
-        }
+        TODO("removed")
     }.toMessageChain()
 
     override suspend fun constructSourceForSpecialMessage(
@@ -403,69 +391,5 @@ internal open class GroupSendMessageHandler(
             time = bot.clock.server.currentTimeSeconds().toInt(),
             originalMessage = finalMessage
         )
-    }
-
-    companion object {
-        private suspend fun GroupImpl.fixImageFileId(image: OfflineGroupImage) {
-            if (image.fileId == null) {
-                val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
-                    bot.client,
-                    uin = bot.id,
-                    groupCode = this.id,
-                    md5 = image.md5,
-                    size = 1,
-                ).sendAndExpect(bot)
-
-                when (response) {
-                    is ImgStore.GroupPicUp.Response.Failed -> {
-                        image.fileId = 0 // Failed
-                    }
-                    is ImgStore.GroupPicUp.Response.FileExists -> {
-                        image.fileId = response.fileId.toInt()
-                    }
-                    is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                        image.fileId = response.fileId.toInt()
-                    }
-                }
-            }
-        }
-
-        /**
-         * Ensures server holds the cache
-         */
-        private suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage): OfflineGroupImage {
-            bot.network.run {
-                val response = ImgStore.GroupPicUp(
-                    bot.client,
-                    uin = bot.id,
-                    groupCode = id,
-                    md5 = image.md5,
-                    size = image.size
-                ).sendAndExpect()
-                return OfflineGroupImage(
-                    imageId = image.imageId,
-                    width = image.width,
-                    height = image.height,
-                    size = if (response is ImgStore.GroupPicUp.Response.FileExists) {
-                        response.fileInfo.fileSize
-                    } else {
-                        image.size
-                    },
-                    imageType = image.imageType
-                ).also { img ->
-                    when (response) {
-                        is ImgStore.GroupPicUp.Response.FileExists -> {
-                            img.fileId = response.fileId.toInt()
-                        }
-                        is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                            img.fileId = response.fileId.toInt()
-                        }
-                        is ImgStore.GroupPicUp.Response.Failed -> {
-                            img.fileId = 0
-                        }
-                    }
-                }
-            }
-        }
     }
 }

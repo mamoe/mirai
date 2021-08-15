@@ -33,7 +33,8 @@ internal fun Contact.logMessageSent(message: Message) {
 
 internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
-internal fun MessageChain.verityLength(
+@Throws(MessageTooLargeException::class)
+internal fun MessageChain.checkLength(
     originalMessage: Message, target: Contact,
 ): Int {
     val chain = this

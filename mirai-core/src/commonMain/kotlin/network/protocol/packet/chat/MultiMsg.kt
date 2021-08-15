@@ -13,7 +13,9 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.contact.AbstractContact
+import net.mamoe.mirai.internal.contact.groupCodeOrNull
+import net.mamoe.mirai.internal.contact.userIdOrNull
 import net.mamoe.mirai.internal.message.MessageSourceInternal
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.toRichTextElems
@@ -49,7 +51,7 @@ internal class MessageValidationData(
 internal fun Collection<ForwardMessage.INode>.calculateValidationData(
     client: QQAndroidClient,
     random: Int,
-    handler: SendMessageHandler<*>,
+    contact: AbstractContact,
     isLong: Boolean,
 ): MessageValidationData {
     val offeredSourceIds = mutableSetOf<Int>()
@@ -66,32 +68,32 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
         return client.atomicNextMessageSequenceId()
     }
 
-    val msgList = map { chain ->
+    val msgList = map { node ->
         MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
-                fromUin = chain.senderId,
-                toUin = if (isLong) {
-                    handler.targetUserUin ?: 0
-                } else 0,
-                msgSeq = calculateMsgSeq(chain),
-                msgTime = chain.time,
+                fromUin = node.senderId,
+                toUin = if (isLong) contact.userIdOrNull ?: 0 else 0,
+                msgSeq = calculateMsgSeq(node),
+                msgTime = node.time,
                 msgUid = 0x01000000000000000L or random.toLongUnsigned(),
                 mutiltransHead = MsgComm.MutilTransHead(
                     status = 0,
                     msgId = 1
                 ),
                 msgType = 82, // troop
-                groupInfo = handler.run { chain.groupInfo },
+                groupInfo = MsgComm.GroupInfo(
+                    groupCode = contact.groupCodeOrNull ?: 0,
+                    groupCard = node.senderName
+                ),
                 isSrcMsg = false
             ),
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
-                    elems = chain.messageChain.toMessageChain()
-                        .toRichTextElems(
-                            handler.contact,
-                            withGeneralFlags = false,
-                            isForward = true,
-                        ).toMutableList()
+                    elems = node.messageChain.toMessageChain().toRichTextElems(
+                        contact,
+                        withGeneralFlags = false,
+                        isForward = true,
+                    ).toMutableList()
                 )
             )
         )

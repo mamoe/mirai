@@ -33,6 +33,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.SendMessageResponse
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.*
@@ -44,7 +45,7 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.Response>("MessageSvc.PbSendMsg") {
-    sealed class Response : Packet {
+    sealed class Response : Packet, SendMessageResponse {
         object SUCCESS : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.SUCCESS"
         }
