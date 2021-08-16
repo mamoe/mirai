@@ -67,6 +67,12 @@ kotlin {
             }
         }
 
+        val commonTest by getting {
+            dependencies {
+                api(yamlkt)
+            }
+        }
+
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 //
