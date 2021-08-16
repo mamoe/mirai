@@ -53,9 +53,6 @@ internal class PacketLoggingStrategyImpl(
             onRight = { packet ->
                 packet ?: return
                 if (!bot.logger.isEnabled && !logger.isEnabled) return
-                if (packet is ParseErrorPacket) {
-                    packet.direction.getLogger(bot).error("Exception on parsing packet.", packet.error)
-                }
 
                 if (packet is MultiPacket) {
                     if (packet.isMeaningful) logReceivedImpl(packet, incomingPacket, logger)
@@ -71,6 +68,9 @@ internal class PacketLoggingStrategyImpl(
 
     private fun logReceivedImpl(packet: Packet, incomingPacket: IncomingPacket, logger: MiraiLogger) {
         when (packet) {
+            is ParseErrorPacket -> {
+                packet.direction.getLogger(bot).error("Exception on parsing packet.", packet.error)
+            }
             is MessageEvent -> packet.logMessageReceived()
             is Packet.NoLog -> {
                 // nothing to do
