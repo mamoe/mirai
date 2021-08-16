@@ -80,6 +80,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
+                api(yamlkt)
             }
         }
 
