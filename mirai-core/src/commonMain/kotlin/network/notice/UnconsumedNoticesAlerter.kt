@@ -21,14 +21,13 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.utils._miraiContentToString
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.context
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 internal class UnconsumedNoticesAlerter(
-    private val logger: MiraiLogger,
+    logger: MiraiLogger,
 ) : MixedNoticeProcessor() {
+    private val logger: MiraiLogger = logger.withSwitch(systemProp("mirai.network.notice.unconsumed.logging", false))
+
     override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
         if (isConsumed) return
         when (data.uSubMsgType) {
@@ -78,12 +77,16 @@ internal class UnconsumedNoticesAlerter(
                 return
             }
         }
-        throw contextualBugReportException(
-            "解析 OnlinePush.PbPushTransMsg, msgType=${data.msgType}",
-            data._miraiContentToString(),
-            null,
-            "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作.",
-        )
+        if (logger.isEnabled && logger.isDebugEnabled) {
+            logger.debug(
+                contextualBugReportException(
+                    "解析 OnlinePush.PbPushTransMsg, msgType=${data.msgType}",
+                    data._miraiContentToString(),
+                    null,
+                    "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作.",
+                )
+            )
+        }
     }
 
     override suspend fun PipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
@@ -120,21 +123,25 @@ internal class UnconsumedNoticesAlerter(
 
     override suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) {
         if (isConsumed) return
-        data.msg?.context {
-            throw contextualBugReportException(
-                "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
-                forDebug = this._miraiContentToString(),
-                additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群",
-            )
+        if (logger.isEnabled && logger.isDebugEnabled) {
+            data.msg?.context {
+                throw contextualBugReportException(
+                    "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
+                    forDebug = this._miraiContentToString(),
+                    additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群",
+                )
+            }
         }
     }
 
     override suspend fun PipelineContext.processImpl(data: RequestPushStatus) {
         if (isConsumed) return
-        throw contextualBugReportException(
-            "decode SvcRequestPushStatus (PC Client status change)",
-            data._miraiContentToString(),
-            additional = "unknown status=${data.status}",
-        )
+        if (logger.isEnabled && logger.isDebugEnabled) {
+            throw contextualBugReportException(
+                "decode SvcRequestPushStatus (PC Client status change)",
+                data._miraiContentToString(),
+                additional = "unknown status=${data.status}",
+            )
+        }
     }
 }
