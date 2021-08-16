@@ -203,7 +203,7 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
     }
 
     protected open fun packetToString(data: Any?): String =
-        data.toDebugString("mirai.network.debug.notice.pipeline.log.full")
+        data.toDebugString("mirai.network.notice.pipeline.log.full")
 
 
     companion object {
