@@ -37,6 +37,7 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
 import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
 import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
@@ -171,8 +172,9 @@ internal open class QQAndroidBot constructor(
                 GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
                 PrivateMessageProcessor(),
                 OtherClientNoticeProcessor(),
+                GroupRecallProcessor(),
                 UnconsumedNoticesAlerter(pipelineLogger.subLogger("UnconsumedNoticesAlerter")),
-                GroupRecallProcessor()
+                TraceLoggingNoticeProcessor(pipelineLogger.subLogger("TraceLoggingNoticeProcessor"))
             )
         )
 
