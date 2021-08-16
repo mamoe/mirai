@@ -73,6 +73,10 @@ internal open class TypeSafeMapImpl(
         return map.hashCode()
     }
 
+    override fun toString(): String {
+        return "TypeSafeMapImpl(map=$map)"
+    }
+
     override operator fun <T> get(key: TypeKey<T>): T =
         map[key.name]?.uncheckedCast() ?: throw NoSuchElementException(key.toString())
 
@@ -92,6 +96,10 @@ internal class MutableTypeSafeMapImpl(
 
     override fun hashCode(): Int {
         return map.hashCode()
+    }
+
+    override fun toString(): String {
+        return "MutableTypeSafeMapImpl(map=$map)"
     }
 
     override operator fun <T> set(key: TypeKey<T>, value: T) {
