@@ -113,6 +113,10 @@ public inline fun MutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMapI
 public inline fun MutableTypeSafeMap(map: Map<String, Any?>): MutableTypeSafeMap =
     MutableTypeSafeMapImpl().also { it.map.putAll(map) }
 
+public inline fun TypeSafeMap(): TypeSafeMap = MutableTypeSafeMapImpl()
+public inline fun TypeSafeMap(map: Map<String, Any?>): TypeSafeMap =
+    MutableTypeSafeMapImpl().also { it.map.putAll(map) }
+
 public inline fun buildTypeSafeMap(block: MutableTypeSafeMap.() -> Unit): MutableTypeSafeMap {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return MutableTypeSafeMapImpl().apply(block)
