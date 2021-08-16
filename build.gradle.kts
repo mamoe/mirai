@@ -15,8 +15,10 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 buildscript {
     repositories {
-//        mavenLocal()
-        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        if (System.getProperty("use.maven.local") == "true") {
+            mavenLocal()
+        }
+
         mavenCentral()
         gradlePluginPortal()
         google()
@@ -67,8 +69,10 @@ allprojects {
     version = Versions.project
 
     repositories {
-        // mavenLocal() // cheching issue cause compiler exception
-        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        if (System.getProperty("use.maven.local") == "true") {
+            mavenLocal()
+        }
+
         mavenCentral()
         gradlePluginPortal()
         google()
