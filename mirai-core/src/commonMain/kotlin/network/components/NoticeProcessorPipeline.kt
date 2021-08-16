@@ -137,6 +137,36 @@ internal interface PipelineContext : BotAware {
     }
 }
 
+internal abstract class AbstractPipelineContext(
+    override val bot: QQAndroidBot, override val attributes: TypeSafeMap,
+) : PipelineContext {
+    private val consumers: Stack<Any> = Stack()
+
+    override val isConsumed: Boolean get() = consumers.isNotEmpty()
+    override fun NoticeProcessor.markAsConsumed(marker: Any) {
+        consumers.push(marker)
+    }
+
+    override fun NoticeProcessor.markNotConsumed(marker: Any) {
+        if (consumers.peek() === marker) {
+            consumers.pop()
+        }
+    }
+
+    override val collected = MutableProcessResult(ConcurrentLinkedQueue())
+
+    override fun collect(packet: Packet) {
+        collected.data.add(packet)
+    }
+
+    override fun collect(packets: Iterable<Packet>) {
+        this.collected.data.addAll(packets)
+    }
+
+    abstract override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult
+}
+
+
 internal inline val PipelineContext.context get() = this
 
 internal open class NoticeProcessorPipelineImpl private constructor() : NoticeProcessorPipeline {
@@ -151,31 +181,8 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
 
 
     inner class ContextImpl(
-        override val bot: QQAndroidBot, override val attributes: TypeSafeMap,
-    ) : PipelineContext {
-        private val consumers: Stack<Any> = Stack()
-
-        override val isConsumed: Boolean get() = consumers.isNotEmpty()
-        override fun NoticeProcessor.markAsConsumed(marker: Any) {
-            consumers.push(marker)
-        }
-
-        override fun NoticeProcessor.markNotConsumed(marker: Any) {
-            if (consumers.peek() === marker) {
-                consumers.pop()
-            }
-        }
-
-        override val collected = MutableProcessResult(ConcurrentLinkedQueue())
-
-        override fun collect(packet: Packet) {
-            collected.data.add(packet)
-        }
-
-        override fun collect(packets: Iterable<Packet>) {
-            this.collected.data.addAll(packets)
-        }
-
+        bot: QQAndroidBot, attributes: TypeSafeMap,
+    ) : AbstractPipelineContext(bot, attributes) {
         override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
             return process(bot, data, this.attributes + attributes)
         }
