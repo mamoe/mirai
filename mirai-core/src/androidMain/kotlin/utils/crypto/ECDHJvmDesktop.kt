@@ -13,6 +13,7 @@ import net.mamoe.mirai.utils.decodeBase64
 import net.mamoe.mirai.utils.md5
 import java.security.*
 import java.security.spec.ECGenParameterSpec
+import java.security.spec.KeySpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
@@ -31,6 +32,26 @@ internal actual class ECDHKeyPairImpl(
     override val maskedPublicKey: ByteArray by lazy { publicKey.encoded.copyOfRange(26, 91) }
     override val maskedShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
 }
+
+/**
+ * 绕过在Android P之后的版本无法使用EC的限制
+ * https://cs.android.com/android/platform/superproject/+/master:libcore/ojluni/src/main/java/sun/security/jca/Providers.java;l=371;bpv=1;bpt=1
+ * https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html
+ * */
+private class AndroidProvider : Provider("sbAndroid", 1.0, "") {
+    override fun getService(type: String?, algorithm: String?): Service? {
+        if (type == "KeyFactory" && algorithm == "EC") {
+            return object : Service(this, type, algorithm, "", emptyList(), emptyMap()) {
+                override fun newInstance(constructorParameter: Any?): Any {
+                    return org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi.EC()
+                }
+            }
+        }
+        return super.getService(type, algorithm)
+    }
+}
+
+private val ANDROID_PROVIDER = AndroidProvider()
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
@@ -88,7 +109,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {
-            return KeyFactory.getInstance("EC", "BC").generatePublic(X509EncodedKeySpec(key))
+            return KeyFactory.getInstance("EC", ANDROID_PROVIDER).generatePublic(X509EncodedKeySpec(key))
         }
     }
 
