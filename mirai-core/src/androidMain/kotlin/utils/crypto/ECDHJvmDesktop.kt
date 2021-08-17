@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import net.mamoe.mirai.utils.decodeBase64
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.recoverCatchingSuppressed
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
@@ -30,6 +31,31 @@ internal actual class ECDHKeyPairImpl(
     override val publicKey: ECDHPublicKey get() = delegate.public
     override val maskedPublicKey: ByteArray by lazy { publicKey.encoded.copyOfRange(26, 91) }
     override val maskedShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
+}
+
+/**
+ * 绕过在Android P之后的版本无法使用EC的限制
+ * https://cs.android.com/android/platform/superproject/+/master:libcore/ojluni/src/main/java/sun/security/jca/Providers.java;l=371;bpv=1;bpt=1
+ * https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html
+ * */
+private class AndroidProvider : Provider("sbAndroid", 1.0, "") {
+    override fun getService(type: String?, algorithm: String?): Service? {
+        if (type == "KeyFactory" && algorithm == "EC") {
+            return object : Service(this, type, algorithm, "", emptyList(), emptyMap()) {
+                override fun newInstance(constructorParameter: Any?): Any {
+                    return org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi.EC()
+                }
+            }
+        }
+        return super.getService(type, algorithm)
+    }
+}
+
+private val ANDROID_PROVIDER by lazy { AndroidProvider() }
+private val ecKf by lazy {
+    runCatching { KeyFactory.getInstance("EC", "BC") }
+        .recoverCatchingSuppressed { KeyFactory.getInstance("EC", ANDROID_PROVIDER) }
+        .getOrThrow()
 }
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
@@ -88,7 +114,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {
-            return KeyFactory.getInstance("EC", "BC").generatePublic(X509EncodedKeySpec(key))
+            return ecKf.generatePublic(X509EncodedKeySpec(key))
         }
     }
 
