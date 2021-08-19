@@ -861,6 +861,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
+    override fun getUin(contactOrBot: ContactOrBot): Long {
+        return when (contactOrBot) {
+            is Group -> contactOrBot.uin
+            is User -> contactOrBot.uin
+            is Bot -> contactOrBot.uin
+            else -> contactOrBot.id
+        }
+    }
+
     override fun constructMessageSource(
         botId: Long,
         kind: MessageSourceKind,
