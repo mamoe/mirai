@@ -479,7 +479,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         host: ListenerHost,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ) {
-        val cancelHook: Job?
+        val jobOfListenerHost: Job?
         val coroutineContext0 = if (host is SimpleListenerHost) {
             val listenerCoroutineContext = host.coroutineContext
             val listenerJob = listenerCoroutineContext[Job]
@@ -490,24 +490,29 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
 
             val registerCancelHook = when {
                 listenerJob === null -> false
-                (rsp[Job] ?: this.defaultCoroutineContext[Job]) !== listenerJob -> true
-                else -> false
+
+                // Registering cancellation hook is needless
+                // if [Job] of [EventChannel] is same as [Job] of [SimpleListenerHost]
+                (rsp[Job] ?: this.defaultCoroutineContext[Job]) === listenerJob -> false
+
+                else -> true
             }
 
-            cancelHook = if (registerCancelHook) {
+            jobOfListenerHost = if (registerCancelHook) {
                 listenerCoroutineContext[Job]
             } else {
                 null
             }
             rsp
         } else {
-            cancelHook = null
+            jobOfListenerHost = null
             coroutineContext
         }
         for (method in host.javaClass.declaredMethods) {
             method.getAnnotation(EventHandler::class.java)?.let {
                 val listener = method.registerEventHandler(host, this, it, coroutineContext0)
-                cancelHook?.invokeOnCompletion { exception ->
+                // For [SimpleListenerHost.cancelAll]
+                jobOfListenerHost?.invokeOnCompletion { exception ->
                     listener.cancel(
                         when (exception) {
                             is CancellationException -> exception
