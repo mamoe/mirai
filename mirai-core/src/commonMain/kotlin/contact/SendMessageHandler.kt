@@ -157,7 +157,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                         }
                         if (resp is MessageSvcPbSendMsg.Response.Failed) {
                             val contact = contact
-                            when (resp.errorCode) {
+                            when (resp.resultType) {
                                 120 -> if (contact is Group) throw BotIsBeingMutedException(contact)
                             }
                         }
