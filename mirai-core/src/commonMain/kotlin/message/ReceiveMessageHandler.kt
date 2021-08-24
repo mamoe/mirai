@@ -159,6 +159,7 @@ internal object ReceiveMessageTransformer {
             element.elemFlags2 != null
                     || element.extraInfo != null
                     || element.generalFlags != null
+                    || element.anonGroupMsg != null
             -> {
                 // ignore
             }
