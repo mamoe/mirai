@@ -16,6 +16,7 @@ import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.notice.BotAware
+import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
@@ -78,7 +79,7 @@ internal value class MutableProcessResult(
     val data: MutableCollection<Packet>
 )
 
-internal interface NoticePipelineContext : BotAware {
+internal interface NoticePipelineContext : BotAware, NewContactSupport {
     override val bot: QQAndroidBot
 
     val attributes: TypeSafeMap
@@ -206,7 +207,7 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
     }
 
 
-    inner class ContextImpl(
+    open inner class ContextImpl(
         bot: QQAndroidBot, attributes: TypeSafeMap,
     ) : AbstractNoticePipelineContext(bot, attributes) {
         override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
@@ -221,7 +222,7 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
 
     override suspend fun process(bot: QQAndroidBot, data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
         traceLogging.info { "process: data=$data" }
-        val context = ContextImpl(bot, attributes)
+        val context = createContext(bot, attributes)
 
         val diff = if (traceLogging.isEnabled) CollectionDiff<Packet>() else null
         diff?.save(context.collected.data)
@@ -254,6 +255,11 @@ internal open class NoticeProcessorPipelineImpl private constructor() : NoticePr
         }
         return context.collected.data
     }
+
+    protected open fun createContext(
+        bot: QQAndroidBot,
+        attributes: TypeSafeMap
+    ): NoticePipelineContext = ContextImpl(bot, attributes)
 
     protected open fun packetToString(data: Any?): String =
         data.toDebugString("mirai.network.notice.pipeline.log.full")
