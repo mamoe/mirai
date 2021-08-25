@@ -31,6 +31,7 @@
 <!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
 
 [`Command`]: ../backend/mirai-console/src/command/Command.kt
+[`Register`]: ../backend/mirai-console/src/command/CommandManager.kt#L77
 [`AbstractCommand`]: ../backend/mirai-console/src/command/Command.kt#L90
 [`CompositeCommand`]: ../backend/mirai-console/src/command/CompositeCommand.kt
 [`SimpleCommand`]: ../backend/mirai-console/src/command/SimpleCommand.kt
@@ -89,6 +90,12 @@ abstract override suspend fun CommandSender.onCommand(args: MessageChain)
 ```
 
 例如 `/test 123 [图片]`，在处理时 `onCommand` 接收的 `args` 为包含 2 个元素的 `MessageChain`。第一个元素为 `PlainText("123")`，第二个元素为 `Image` 类型。
+
+### [`Register`]
+需要把指令注册到 `CommandManager` 以在 Mirai Console 生效
+```kotlin
+CommandManager.registerCommand(command)
+```
 
 ## 参数智能解析
 > 本节可能较难理解。但这不会影响你阅读下面的示例。
