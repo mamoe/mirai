@@ -45,6 +45,7 @@ object Versions {
     const val asm = "9.1"
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
+    const val bouncycastle = "1.64"
 
     const val junit = "5.7.2"
 
@@ -122,3 +123,4 @@ const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
 const val `netty-all` = "io.netty:netty-all:${Versions.netty}"
+const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycastle}"
