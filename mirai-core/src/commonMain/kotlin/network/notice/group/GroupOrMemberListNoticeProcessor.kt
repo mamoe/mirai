@@ -21,11 +21,11 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.addNewNormalMember
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.getGroupByUin
+import net.mamoe.mirai.internal.getGroupByUinOrCode
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
-import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -59,7 +59,7 @@ import net.mamoe.mirai.utils.read
  */
 internal class GroupOrMemberListNoticeProcessor(
     private val logger: MiraiLogger,
-) : MixedNoticeProcessor(), NewContactSupport {
+) : MixedNoticeProcessor() {
 
     override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) {
         if (data.uSubMsgType != 0x44L) return
@@ -334,7 +334,7 @@ internal class GroupOrMemberListNoticeProcessor(
         groupUin: Long,
     ) {
         when (kind) {
-            2, 0x82 -> bot.getGroupByUin(groupUin)?.let { group ->
+            2, 0x82 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
                 if (target == bot.id) {
                     collect(BotLeaveEvent.Active(group))
                     bot.groups.delegate.remove(group)
@@ -346,7 +346,7 @@ internal class GroupOrMemberListNoticeProcessor(
                     member.cancel(CancellationException("Left actively"))
                 }
             }
-            3, 0x83 -> bot.getGroupByUin(groupUin)?.let { group ->
+            3, 0x83 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
                 if (target == bot.id) {
                     val member = group.members[operator] ?: return
                     collect(BotLeaveEvent.Kick(member))
@@ -373,7 +373,7 @@ internal class GroupOrMemberListNoticeProcessor(
         target: Long,
         newPermissionByte: Int,
     ) {
-        val group = bot.getGroupByUin(data.fromUin) ?: return
+        val group = bot.getGroupByUinOrCode(data.fromUin) ?: return
 
         val newPermission = if (newPermissionByte == 1) ADMINISTRATOR else MEMBER
 
@@ -394,13 +394,12 @@ internal class GroupOrMemberListNoticeProcessor(
     /**
      * Owner of the group [from] transfers ownership to another member [to], or retrieve ownership.
      */
-    // TODO: 2021/6/26 tests
     private suspend fun NoticePipelineContext.handleGroupOwnershipTransfer(
         data: OnlinePushTrans.PbMsgInfo,
         from: Long,
         to: Long,
     ) {
-        val group = bot.getGroupByUin(data.fromUin)
+        val group = bot.getGroupByUinOrCode(data.fromUin)
         if (from == bot.id) {
             // bot -> member
             group ?: return markAsConsumed()
@@ -414,17 +413,18 @@ internal class GroupOrMemberListNoticeProcessor(
             // member Retrieve or permission changed to OWNER
             var newOwner = group[to]
             if (newOwner == null) {
-                newOwner = group.addNewNormalMember(MemberInfoImpl(uin = to, nick = "", permission = OWNER)) ?: return
+                val nick = Mirai.queryProfile(bot, to).nickname
+                newOwner = group.addNewNormalMember(MemberInfoImpl(uin = to, nick = nick, permission = OWNER)) ?: return
                 collect(MemberJoinEvent.Retrieve(newOwner))
             } else if (newOwner.permission != OWNER) {
                 collect(MemberPermissionChangeEvent(newOwner, newOwner.permission, OWNER))
                 newOwner.permission = OWNER
             }
         } else {
-            // member -> bot
+            // member -> member/bot
 
             // bot Retrieve or permission changed to OWNER
-            if (group == null) {
+            if (group == null) { // TODO: 2021/8/25 test this
                 collect(BotJoinGroupEvent.Retrieve(bot.addNewGroupByUin(data.fromUin) ?: return))
                 return
             }
@@ -438,9 +438,20 @@ internal class GroupOrMemberListNoticeProcessor(
                 // if member is null, he has already quit the group in another event.
             }
 
-            if (group.botPermission != OWNER) {
-                collect(BotGroupPermissionChangeEvent(group, group.botPermission, OWNER))
-                group.botAsMember.permission = OWNER
+            if (to == bot.id) {
+                // member -> bot
+                if (group.botPermission != OWNER) {
+                    collect(BotGroupPermissionChangeEvent(group, group.botPermission, OWNER))
+                    group.botAsMember.permission = OWNER
+                }
+            } else {
+                // member -> member
+                group[to]?.let { newOwner ->
+                    if (newOwner.permission != OWNER) {
+                        collect(MemberPermissionChangeEvent(newOwner, newOwner.permission, OWNER))
+                    }
+                    newOwner.permission = OWNER
+                }
             }
         }
     }

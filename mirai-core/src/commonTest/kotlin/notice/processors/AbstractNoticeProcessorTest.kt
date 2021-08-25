@@ -30,7 +30,6 @@ import net.mamoe.mirai.utils.TypeSafeMap
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.hexToUBytes
-import java.util.*
 
 
 /**
@@ -56,11 +55,6 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
                 handler.handlePacket(IncomingPacket("test", packet))
             }
         }
-    }
-
-
-    private val properties = Properties().apply {
-        load(Thread.currentThread().contextClassLoader.getResourceAsStream("recording/data/notice/NoticeProcessorTestData.properties"))
     }
 
     fun setBot(id: Long): QQAndroidBot {
@@ -146,7 +140,7 @@ internal interface GroupExtensions {
 
     fun Group.addMember(
         id: Long,
-        nick: String,
+        nick: String = "user$id",
         permission: MemberPermission,
         remark: String = "",
         nameCard: String = "",
