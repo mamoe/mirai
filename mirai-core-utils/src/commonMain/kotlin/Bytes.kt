@@ -104,6 +104,33 @@ public fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {
     require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
 }
 
+@JvmOverloads
+@Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
+public fun Array<Byte>.toUHexString(
+    separator: String = " ",
+    offset: Int = 0,
+    length: Int = this.size - offset
+): String {
+    require(offset >= 0) { "offset shouldn't be negative: $offset" }
+    require(length >= 0) { "length shouldn't be negative: $length" }
+    require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
+
+    if (length == 0) {
+        return ""
+    }
+    val lastIndex = offset + length
+    return buildString(length * 2) {
+        this@toUHexString.forEachIndexed { index, it ->
+            if (index in offset until lastIndex) {
+                var ret = it.toUByte().toString(16).uppercase()
+                if (ret.length == 1) ret = "0$ret"
+                append(ret)
+                if (index < lastIndex - 1) append(separator)
+            }
+        }
+    }
+}
+
 
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
