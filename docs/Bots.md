@@ -306,7 +306,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
 
-    implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
+    implementation("net.mamoe:mirai-core:2.7.0") // 示例版本号
 }
 ```
 
@@ -333,7 +333,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core</artifactId>
-        <version>2.7-RC</version>
+        <version>2.7.0</version>
     </dependency>
 </dependencies>
 ```
@@ -364,7 +364,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.5") // 若要使用 logback
 
 
-    implementation("net.mamoe:mirai-core:2.7-RC") // 示例版本号
+    implementation("net.mamoe:mirai-core:2.7.0") // 示例版本号
 }
 ```
 
@@ -404,7 +404,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core</artifactId>
-        <version>2.7-RC</version> <!--示例版本号--
+        <version>2.7.0</version> <!--示例版本号--
     </dependency>
 </dependencies>
 ```
