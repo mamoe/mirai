@@ -42,9 +42,9 @@ tasks.register("updateSnapshotVersion") {
     }
 }
 
-val nextVersion by lazy { getNextVersion() }
+val nextVersion by lazy { getNextVersionImpl() }
 
-fun getNextVersion(): String {
+fun getNextVersionImpl(): String {
     var baseUrl = System.getenv("SNAPSHOTS_PUBLISHING_URL") ?: "https://repo.mirai.mamoe.net/snapshots/"
     if (!baseUrl.endsWith('/')) {
         baseUrl += "/"
