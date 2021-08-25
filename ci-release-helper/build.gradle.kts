@@ -93,7 +93,7 @@ tasks.register("createTagOnGitHub") {
                 header("Accept", "application/vnd.github.v3+json")
                 body = Gson().toJson(
                     mapOf(
-                        "ref" to "refs/tags/$nextVersion",
+                        "ref" to "refs/tags/build-$nextVersion",
                         "sha" to sha,
                     )
                 )
