@@ -28,6 +28,8 @@ import kotlin.time.ExperimentalTime
 /**
  * 代表一位普通的群成员.
  *
+ * 要查询更多用户信息, 使用 [NormalMember.queryProfile].
+ *
  * @see AnonymousMember
  */
 @NotStableForInheritance
