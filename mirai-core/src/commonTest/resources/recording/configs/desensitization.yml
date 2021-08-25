@@ -2,10 +2,11 @@
 #
 # Format:
 # ```
-# <sensitive value>: <replacer>
+# <sensitive value>: <replacement>
 # ```
 #
 # If key is a number, its group uin counterpart will also be processed, with calculated replacer.
+# WARNING: Ensure the <replacement> is not longer than <sensitive value>.
 #
 # For example, if your account id is 147258369, you may add:
 # ```

@@ -14,8 +14,9 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.network.components.PipelineContext
-import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.KEY_MSG_INFO
+import net.mamoe.mirai.internal.getGroupByUin
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_MSG_INFO
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.components.syncOnlinePush
@@ -36,7 +37,7 @@ import net.mamoe.mirai.utils.toUHexString
 internal class MsgInfoDecoder(
     private val logger: MiraiLogger,
 ) : SimpleNoticeProcessor<SvcReqPushMsg>(type()) {
-    override suspend fun PipelineContext.processImpl(data: SvcReqPushMsg) {
+    override suspend fun NoticePipelineContext.processImpl(data: SvcReqPushMsg) {
         // SvcReqPushMsg is fully handled here, no need to set consumed.
 
         for (msgInfo in data.vMsgInfos) {
@@ -44,16 +45,20 @@ internal class MsgInfoDecoder(
         }
     }
 
-    private suspend fun PipelineContext.decodeMsgInfo(data: MsgInfo) {
+    private suspend fun NoticePipelineContext.decodeMsgInfo(data: MsgInfo) {
         if (!bot.syncController.syncOnlinePush(data)) return
-        when (data.shMsgType.toUShort().toInt()) {
+        @Suppress("MoveVariableDeclarationIntoWhen") // for debug
+        val id = data.shMsgType.toUShort().toInt()
+        when (id) {
             // 528
             0x210 -> processAlso(data.vMsg.loadAs(MsgType0x210.serializer()), KEY_MSG_INFO to data)
 
             // 732
             0x2dc -> {
                 data.vMsg.read {
-                    val group = bot.getGroup(readUInt().toLong()) ?: return // group has not been initialized
+                    val groupCode = readUInt().toLong()
+                    val group = bot.getGroup(groupCode) ?: bot.getGroupByUin(groupCode)
+                    ?: return // group has not been initialized
                     group.checkIsGroupImpl()
 
                     val kind = readByte().toInt()

@@ -414,7 +414,7 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal class ExtraInfo(
-        @ProtoNumber(1) @JvmField val nick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField val nick: String = "",
         @ProtoNumber(2) @JvmField val groupCard: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val level: Int = 0,
         @ProtoNumber(4) @JvmField val flags: Int = 0,

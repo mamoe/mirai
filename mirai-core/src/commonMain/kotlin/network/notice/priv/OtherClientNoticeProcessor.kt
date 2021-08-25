@@ -26,7 +26,7 @@ import net.mamoe.mirai.internal.message.OnlineMessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -48,7 +48,7 @@ internal class OtherClientNoticeProcessor : MixedNoticeProcessor() {
      * @see OtherClientOnlineEvent
      * @see OtherClientOfflineEvent
      */
-    override suspend fun PipelineContext.processImpl(data: RequestPushStatus) {
+    override suspend fun NoticePipelineContext.processImpl(data: RequestPushStatus) {
         markAsConsumed()
         bot.components[ContactUpdater].otherClientsLock.withLock {
             val instanceInfo = data.vecInstanceList?.firstOrNull()
@@ -103,7 +103,7 @@ internal class OtherClientNoticeProcessor : MixedNoticeProcessor() {
     /**
      * @see OtherClientMessageEvent
      */
-    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         if (msgHead.msgType != 529) return
 
         // top_package/awbk.java:3765

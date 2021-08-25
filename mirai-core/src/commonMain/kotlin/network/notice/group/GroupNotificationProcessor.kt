@@ -20,8 +20,7 @@ import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.checkIsMemberImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
-import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
@@ -32,9 +31,11 @@ import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.*
 
-internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSupport {
+internal class GroupNotificationProcessor(
+    private val logger: MiraiLogger,
+) : MixedNoticeProcessor(), NewContactSupport {
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x210) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) = data.context {
         when (data.uSubMsgType) {
             0x27L -> {
                 val body = vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.SubMsgType0x27MsgBody.serializer())
@@ -53,7 +54,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
     /**
      * @see GroupNameChangeEvent
      */
-    private fun PipelineContext.handleGroupProfileChanged(
+    private fun NoticePipelineContext.handleGroupProfileChanged(
         modGroupProfile: Submsgtype0x27.SubMsgType0x27.ModGroupProfile
     ) {
         for (info in modGroupProfile.msgGroupProfileInfos) {
@@ -111,7 +112,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
     /**
      * @see MemberCardChangeEvent
      */
-    private fun PipelineContext.handleGroupMemberProfileChanged(
+    private fun NoticePipelineContext.handleGroupMemberProfileChanged(
         modGroupMemberProfile: Submsgtype0x27.SubMsgType0x27.ModGroupMemberProfile
     ) {
         for (info in modGroupMemberProfile.msgGroupMemberProfileInfos) {
@@ -132,14 +133,14 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
                 }
                 2 -> {
                     if (info.value.singleOrNull()?.code != 0) {
-                        bot.logger.debug {
+                        logger.debug {
                             "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
                         }
                     }
                     continue
                 }
                 else -> {
-                    bot.logger.debug {
+                    logger.debug {
                         "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
                     }
                     continue
@@ -153,7 +154,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
     // MsgType0x2DC
     ///////////////////////////////////////////////////////////////////////////
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x2DC) {
         when (data.kind) {
             0x0C -> processMute(data)
             0x0E -> processAllowAnonymousChat(data)
@@ -169,7 +170,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
      * @see BotMuteEvent
      * @see BotUnmuteEvent
      */
-    private fun PipelineContext.processMute(
+    private fun NoticePipelineContext.processMute(
         data: MsgType0x2DC,
     ) = data.context {
         fun handleMuteMemberPacket(
@@ -232,7 +233,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
     /**
      * @see GroupAllowAnonymousChatEvent
      */
-    private fun PipelineContext.processAllowAnonymousChat(
+    private fun NoticePipelineContext.processAllowAnonymousChat(
         data: MsgType0x2DC,
     ) = data.context {
         markAsConsumed()
@@ -249,7 +250,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
     /**
      * @see GroupAllowConfessTalkEvent
      */
-    private fun PipelineContext.processAllowConfessTask(
+    private fun NoticePipelineContext.processAllowConfessTask(
         data: MsgType0x2DC,
     ) = data.context {
         val proto = data.buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), offset = 1)
@@ -268,7 +269,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
                                 "管理员已关闭群聊坦白说" -> false
                                 "管理员已开启群聊坦白说" -> true
                                 else -> {
-                                    bot.network.logger.debug { "Unknown server confess talk messages $message" }
+                                    logger.debug { "Unknown server confess talk messages $message" }
                                     return
                                 }
                             }
@@ -286,7 +287,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
      * @see MemberHonorChangeEvent
      * @see GroupTalkativeChangeEvent
      */ // gray tip: 聊天中的灰色小框系统提示信息
-    private fun PipelineContext.processGrayTip(
+    private fun NoticePipelineContext.processGrayTip(
         data: MsgType0x2DC,
     ) = data.context {
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
@@ -324,7 +325,7 @@ internal class GroupNotificationProcessor : MixedNoticeProcessor(), NewContactSu
             }
             else -> {
                 markNotConsumed()
-                bot.network.logger.debug {
+                logger.debug {
                     "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
                 }
             }

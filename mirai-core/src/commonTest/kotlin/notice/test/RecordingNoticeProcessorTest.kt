@@ -11,22 +11,25 @@ package net.mamoe.mirai.internal.notice.test
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.MockBot
-import net.mamoe.mirai.internal.network.components.AbstractPipelineContext
+import net.mamoe.mirai.internal.network.components.AbstractNoticePipelineContext
 import net.mamoe.mirai.internal.network.components.ProcessResult
 import net.mamoe.mirai.internal.notice.Desensitizer
-import net.mamoe.mirai.internal.notice.RecordingNoticeProcessor
+import net.mamoe.mirai.internal.notice.Desensitizer.Companion.generateAndDesensitize
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.internal.utils.codegen.ConstructorCallCodegenFacade
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.MutableTypeSafeMap
 import net.mamoe.mirai.utils.TypeSafeMap
 import net.mamoe.yamlkt.Yaml
+import net.mamoe.yamlkt.YamlBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class RecordingNoticeProcessorTest : AbstractTest() {
 
-    class MyContext(attributes: TypeSafeMap) : AbstractPipelineContext(MockBot(), attributes) {
+    class MyContext(attributes: TypeSafeMap) : AbstractNoticePipelineContext(MockBot(), attributes) {
         override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
             throw UnsupportedOperationException()
         }
@@ -42,29 +45,23 @@ internal class RecordingNoticeProcessorTest : AbstractTest() {
         val context = MyContext(MutableTypeSafeMap(mapOf("test" to "value")))
         val struct = MyProtocolStruct("vvv")
 
-        val serialize = RecordingNoticeProcessor.serialize(context, struct)
-        println(serialize)
-        val deserialized = RecordingNoticeProcessor.deserialize(serialize)
-
-        assertEquals(context.attributes, deserialized.attributes)
-        assertEquals(struct, deserialized.struct)
-    }
-
-    @Test
-    fun `can read desensitization config`() {
-        val text = Thread.currentThread().contextClassLoader.getResource("recording/configs/test.desensitization.yml")!!
-            .readText()
-        val desensitizer = Desensitizer.create(Yaml.decodeFromString(text))
+        val serialize = ConstructorCallCodegenFacade.generateAndDesensitize(struct)
         assertEquals(
-            mapOf(
-                "123456789" to "111",
-                "987654321" to "111"
-            ), desensitizer.rules
+            """
+                net.mamoe.mirai.internal.notice.test.RecordingNoticeProcessorTest.MyProtocolStruct(
+                value="vvv",
+                )
+            """.trimIndent(),
+            serialize
         )
+//        val deserialized = KotlinScriptExternalDependencies
+//
+//        assertEquals(context.attributes, deserialized.attributes)
+//        assertEquals(struct, deserialized.struct)
     }
 
     @Test
-    fun `test desensitization`() {
+    fun `test plain desensitization`() {
         val text = Thread.currentThread().contextClassLoader.getResource("recording/configs/test.desensitization.yml")!!
             .readText()
         val desensitizer = Desensitizer.create(Yaml.decodeFromString(text))
@@ -82,6 +79,48 @@ internal class RecordingNoticeProcessorTest : AbstractTest() {
         """.trim()
             )
         )
+    }
 
+
+    @Serializable
+    data class TestProto(
+        @ProtoNumber(1) val proto: Proto
+    ) : ProtocolStruct {
+        @Serializable
+        data class Proto(
+            @ProtoNumber(1) val int: Int
+        )
+    }
+
+    @Serializable
+    data class ByteArrayWrapper(
+        val value: ByteArray
+    )
+
+    val format = Yaml {
+        // one-line
+        classSerialization = YamlBuilder.MapSerialization.FLOW_MAP
+        mapSerialization = YamlBuilder.MapSerialization.FLOW_MAP
+        listSerialization = YamlBuilder.ListSerialization.FLOW_SEQUENCE
+        stringSerialization = YamlBuilder.StringSerialization.DOUBLE_QUOTATION
+        encodeDefaultValues = false
+    }
+
+
+    @Test
+    fun `test long as byte array desensitization`() {
+        val text = Thread.currentThread().contextClassLoader.getResource("recording/configs/test.desensitization.yml")!!
+            .readText()
+        val desensitizer = Desensitizer.create(Yaml.decodeFromString(text))
+
+        val proto = TestProto(TestProto.Proto(123456789))
+
+        assertEquals(
+            TestProto(TestProto.Proto(111)),
+            format.decodeFromString(
+                TestProto.serializer(),
+                desensitizer.desensitize(format.encodeToString(TestProto.serializer(), proto))
+            )
+        )
     }
 }

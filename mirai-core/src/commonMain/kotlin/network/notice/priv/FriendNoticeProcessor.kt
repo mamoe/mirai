@@ -21,8 +21,8 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
-import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.msgInfo
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.msgInfo
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.group.get
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
@@ -50,7 +50,7 @@ import net.mamoe.mirai.utils.*
 internal class FriendNoticeProcessor(
     private val logger: MiraiLogger,
 ) : MixedNoticeProcessor(), NewContactSupport {
-    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         if (msgHead.msgType != 191) return
 
         var fromGroup = 0L
@@ -93,7 +93,7 @@ internal class FriendNoticeProcessor(
 
     }
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x210) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) = data.context {
         markAsConsumed()
         when (data.uSubMsgType) {
             0xB3L -> {
@@ -166,7 +166,7 @@ internal class FriendNoticeProcessor(
         @ProtoNumber(5) val reserved: ByteArray? = null, // struct{ boolean(1), boolean(2) }
     ) : ProtoBuf
 
-    private fun PipelineContext.processFriendRecall(body: Sub8A) {
+    private fun NoticePipelineContext.processFriendRecall(body: Sub8A) {
         for (info in body.msgInfo) {
             if (info.botUin != bot.id) continue
             collected += MessageRecallEvent.FriendRecall(
@@ -181,13 +181,13 @@ internal class FriendNoticeProcessor(
     }
 
 
-    private fun PipelineContext.handleInputStatusChanged(body: SubMsgType0x115.MsgBody) {
+    private fun NoticePipelineContext.handleInputStatusChanged(body: SubMsgType0x115.MsgBody) {
         val friend = bot.getFriend(body.fromUin) ?: return
         val item = body.msgNotifyItem ?: return
         collect(FriendInputStatusChangedEvent(friend, item.eventType == 1))
     }
 
-    private fun PipelineContext.handleProfileChanged(body: ModProfile) {
+    private fun NoticePipelineContext.handleProfileChanged(body: ModProfile) {
         var containsUnknown = false
         for (profileInfo in body.msgProfileInfos) {
             when (profileInfo.field) {
@@ -214,7 +214,7 @@ internal class FriendNoticeProcessor(
         }
     }
 
-    private fun PipelineContext.handleRemarkChanged(body: ModFriendRemark) {
+    private fun NoticePipelineContext.handleRemarkChanged(body: ModFriendRemark) {
         for (new in body.msgFrdRmk) {
             val friend = bot.getFriend(new.fuin)?.impl() ?: continue
 
@@ -223,20 +223,20 @@ internal class FriendNoticeProcessor(
         }
     }
 
-    private fun PipelineContext.handleAvatarChanged(body: ModCustomFace) {
+    private fun NoticePipelineContext.handleAvatarChanged(body: ModCustomFace) {
         if (body.uin == bot.id) {
             collect(BotAvatarChangedEvent(bot))
         }
         collect(FriendAvatarChangedEvent(bot.getFriend(body.uin) ?: return))
     }
 
-    private fun PipelineContext.handleFriendDeleted(body: DelFriend) {
+    private fun NoticePipelineContext.handleFriendDeleted(body: DelFriend) {
         for (id in body.uint64Uins) {
             collect(FriendDeleteEvent(bot.removeFriend(id) ?: continue))
         }
     }
 
-    private suspend fun PipelineContext.handleFriendAddedA(
+    private suspend fun NoticePipelineContext.handleFriendAddedA(
         body: Submsgtype0x44.MsgBody,
     ) = body.msgFriendMsgSync.context {
         if (this == null) return
@@ -255,20 +255,21 @@ internal class FriendNoticeProcessor(
         }
     }
 
-    private fun PipelineContext.handleFriendAddedB(data: MsgType0x210, body: SubMsgType0xb3.MsgBody) = data.context {
-        val info = FriendInfoImpl(
-            uin = body.msgAddFrdNotify.fuin,
-            nick = body.msgAddFrdNotify.fuinNick,
-            remark = "",
-        )
+    private fun NoticePipelineContext.handleFriendAddedB(data: MsgType0x210, body: SubMsgType0xb3.MsgBody) =
+        data.context {
+            val info = FriendInfoImpl(
+                uin = body.msgAddFrdNotify.fuin,
+                nick = body.msgAddFrdNotify.fuinNick,
+                remark = "",
+            )
 
-        val removed = bot.removeStranger(info.uin)
-        val added = bot.addNewFriendAndRemoveStranger(info) ?: return
-        collect(FriendAddEvent(added))
-        if (removed != null) collect(StrangerRelationChangeEvent.Friended(removed, added))
+            val removed = bot.removeStranger(info.uin)
+            val added = bot.addNewFriendAndRemoveStranger(info) ?: return
+            collect(FriendAddEvent(added))
+            if (removed != null) collect(StrangerRelationChangeEvent.Friended(removed, added))
     }
 
-    private fun PipelineContext.handlePrivateNudge(body: Submsgtype0x122.Submsgtype0x122.MsgBody) {
+    private fun NoticePipelineContext.handlePrivateNudge(body: Submsgtype0x122.Submsgtype0x122.MsgBody) {
         val action = body.msgTemplParam["action_str"].orEmpty()
         val from = body.msgTemplParam["uin_str1"]?.findFriendOrStranger() ?: bot.asFriend
         val target = body.msgTemplParam["uin_str2"]?.findFriendOrStranger() ?: bot.asFriend
