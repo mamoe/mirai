@@ -18,8 +18,8 @@ buildscript {
 //        mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         mavenCentral()
+        gradlePluginPortal()
         google()
-        jcenter()
     }
 
     dependencies {
@@ -78,9 +78,9 @@ allprojects {
     repositories {
         // mavenLocal() // cheching issue cause compiler exception
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
-        jcenter()
-        google()
         mavenCentral()
+        gradlePluginPortal()
+        google()
     }
 
     afterEvaluate {
