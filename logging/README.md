@@ -33,8 +33,8 @@ Mirai 日志转接模块，用于使用各大主流日志库接管 Mirai 日志�
 
 ```kotlin
 dependencies {
-    api("net.mamoe", "mirai-core", "2.6.7")
-    api("net.mamoe", "mirai-logging-log4j2", "2.6.7") // 在依赖 mirai-core 或 mirai-core-api 的前提下额外添加日志转接模块. 版本号相同
+    api("net.mamoe", "mirai-core", "2.7.0")
+    api("net.mamoe", "mirai-logging-log4j2", "2.7.0") // 在依赖 mirai-core 或 mirai-core-api 的前提下额外添加日志转接模块. 版本号相同
 }
 ```
 
@@ -44,8 +44,8 @@ dependencies {
 
 ```groovy
 dependencies {
-    api 'net.mamoe:mirai-core:2.6.7'
-    api 'net.mamoe:mirai-logging-log4j2:2.6.7' // 在依赖 mirai-core 或 mirai-core-api 的前提下额外添加日志转接模块. 版本号相同
+    api 'net.mamoe:mirai-core:2.7.0'
+    api 'net.mamoe:mirai-logging-log4j2:2.7.0' // 在依赖 mirai-core 或 mirai-core-api 的前提下额外添加日志转接模块. 版本号相同
 }
 ```
 
@@ -58,14 +58,14 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.6.7</version>
+        <version>2.7.0</version>
     </dependency>
     
     <!--在依赖 mirai-core 或 mirai-core-api 的前提下额外添加日志转接模块. 版本号相同-->
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-logging-log4j2</artifactId>
-        <version>2.6.7</version>
+        <version>2.7.0</version>
     </dependency>
 </dependencies>
 ```
