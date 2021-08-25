@@ -79,7 +79,8 @@ tasks.register("createTagOnGitHub") {
 
         val out = ByteArrayOutputStream()
         exec {
-            commandLine("git rev-parse HEAD")
+            commandLine("git")
+            args("rev-parse", "HEAD")
             standardOutput = out
             workingDir = rootProject.projectDir
         }
