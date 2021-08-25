@@ -11,15 +11,16 @@ package net.mamoe.mirai.internal.network.notice.group
 
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.mapToIntArray
 
 internal class GroupRecallProcessor : MixedNoticeProcessor() {
-    override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
-        val (_, group, buf) = data
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x2DC) {
+        val (kind, group, buf) = data
+        if (kind != 0x11) return
 
         val proto = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1)
 

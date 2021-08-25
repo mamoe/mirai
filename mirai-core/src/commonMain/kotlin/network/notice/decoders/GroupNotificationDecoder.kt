@@ -11,13 +11,13 @@ package net.mamoe.mirai.internal.network.notice.decoders
 
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 
 internal class GroupNotificationDecoder : MixedNoticeProcessor() {
-    override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x2DC) {
         when (data.kind) {
             0x10 -> {
                 val proto = data.buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), offset = 1)

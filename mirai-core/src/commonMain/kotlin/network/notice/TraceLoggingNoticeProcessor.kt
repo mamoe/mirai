@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.notice
 
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.MiraiLogger
@@ -22,11 +22,11 @@ internal class TraceLoggingNoticeProcessor(
 ) : SimpleNoticeProcessor<ProtocolStruct>(type()) {
     private val logger: MiraiLogger = logger.withSwitch(systemProp("mirai.network.notice.trace.logging", false))
 
-    override suspend fun PipelineContext.processImpl(data: ProtocolStruct) {
+    override suspend fun NoticePipelineContext.processImpl(data: ProtocolStruct) {
         logger.warning { "${data::class.simpleName}: isConsumed=$isConsumed" }
     }
 
-//    override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
+//    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) {
 //        logger.warning { "MsgType0x210: isConsumed=$isConsumed" }
 //    }
 //

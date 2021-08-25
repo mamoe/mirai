@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.notice
 
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
@@ -28,7 +28,7 @@ internal class UnconsumedNoticesAlerter(
 ) : MixedNoticeProcessor() {
     private val logger: MiraiLogger = logger.withSwitch(systemProp("mirai.network.notice.unconsumed.logging", false))
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) {
         if (isConsumed) return
         when (data.uSubMsgType) {
             0x26L, // VIP 进群提示
@@ -50,12 +50,12 @@ internal class UnconsumedNoticesAlerter(
         }
     }
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x2DC) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x2DC) {
         if (isConsumed) return
         logger.debug { "Unknown group 732 type ${data.kind}, data: " + data.buf.toUHexString() }
     }
 
-    override suspend fun PipelineContext.processImpl(data: OnlinePushTrans.PbMsgInfo) {
+    override suspend fun NoticePipelineContext.processImpl(data: OnlinePushTrans.PbMsgInfo) {
         if (isConsumed) return
         when {
             data.msgType == 529 && data.msgSubtype == 9 -> {
@@ -89,12 +89,12 @@ internal class UnconsumedNoticesAlerter(
         }
     }
 
-    override suspend fun PipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
         if (isConsumed) return
 
     }
 
-    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) {
         if (isConsumed) return
         when (data.msgHead.msgType) {
             732 -> {
@@ -121,7 +121,7 @@ internal class UnconsumedNoticesAlerter(
         }
     }
 
-    override suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) {
+    override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) {
         if (isConsumed) return
         if (logger.isEnabled && logger.isDebugEnabled) {
             data.msg?.context {
@@ -134,7 +134,7 @@ internal class UnconsumedNoticesAlerter(
         }
     }
 
-    override suspend fun PipelineContext.processImpl(data: RequestPushStatus) {
+    override suspend fun NoticePipelineContext.processImpl(data: RequestPushStatus) {
         if (isConsumed) return
         if (logger.isEnabled && logger.isDebugEnabled) {
             throw contextualBugReportException(

@@ -42,6 +42,7 @@ import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
 import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
 import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupNotificationProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
 import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
@@ -170,6 +171,7 @@ internal open class QQAndroidBot constructor(
                 FriendNoticeProcessor(pipelineLogger.subLogger("FriendNoticeProcessor")),
                 GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
                 GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
+                GroupNotificationProcessor(pipelineLogger.subLogger("GroupNotificationProcessor")),
                 PrivateMessageProcessor(),
                 OtherClientNoticeProcessor(),
                 GroupRecallProcessor(),
@@ -206,9 +208,9 @@ internal open class QQAndroidBot constructor(
         set(
             PacketHandler,
             PacketHandlerChain(
-                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
                 EventBroadcasterPacketHandler(components),
                 CallPacketFactoryPacketHandler(bot),
+                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
             ),
         )
         set(PacketCodec, PacketCodecImpl())

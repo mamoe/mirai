@@ -23,7 +23,7 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.MemberNick.Companion.generateMemberNickFromMember
@@ -67,7 +67,7 @@ internal class GroupMessageProcessor(
     }
 
 
-    override suspend fun PipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgOnlinePush.PbPushMsg) {
         val msgHead = data.msg.msgHead
 
         val isFromSelfAccount = msgHead.fromUin == bot.id

@@ -13,8 +13,8 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUin
 import net.mamoe.mirai.internal.message.toMessageChainOnline
-import net.mamoe.mirai.internal.network.components.PipelineContext
-import net.mamoe.mirai.internal.network.components.PipelineContext.Companion.fromSync
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
@@ -35,7 +35,7 @@ import net.mamoe.mirai.utils.context
  * @see GroupTempMessageSyncEvent
  */
 internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
-    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         markAsConsumed()
         if (msgHead.fromUin == bot.id && fromSync) {
             // Bot send message to himself? or from other client? I am not the implementer.
@@ -67,7 +67,7 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
 
     }
 
-    private suspend fun PipelineContext.handlePrivateMessage(
+    private suspend fun NoticePipelineContext.handlePrivateMessage(
         data: MsgComm.Msg,
         user: AbstractUser,
     ) = data.context {

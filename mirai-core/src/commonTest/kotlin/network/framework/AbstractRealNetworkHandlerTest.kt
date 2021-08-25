@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -43,8 +44,10 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
 
-    var bot: QQAndroidBot by lateinitMutableProperty {
-        object : QQAndroidBot(MockAccount, MockConfiguration.copy()) {
+    var bot: QQAndroidBot by lateinitMutableProperty { createBot() }
+
+    protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
+        return object : QQAndroidBot(account, MockConfiguration.copy()) {
             override fun createBotLevelComponents(): ConcurrentComponentStorage =
                 super.createBotLevelComponents().apply { setAll(overrideComponents) }
 

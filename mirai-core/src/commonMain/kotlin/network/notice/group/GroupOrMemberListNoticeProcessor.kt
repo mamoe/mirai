@@ -24,7 +24,7 @@ import net.mamoe.mirai.internal.getGroupByUin
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
-import net.mamoe.mirai.internal.network.components.PipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
@@ -61,7 +61,7 @@ internal class GroupOrMemberListNoticeProcessor(
     private val logger: MiraiLogger,
 ) : MixedNoticeProcessor(), NewContactSupport {
 
-    override suspend fun PipelineContext.processImpl(data: MsgType0x210) {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgType0x210) {
         if (data.uSubMsgType != 0x44L) return
         markAsConsumed()
         val msg = data.vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
@@ -82,7 +82,7 @@ internal class GroupOrMemberListNoticeProcessor(
      * @see MemberJoinEvent.Invite
      * @see MemberLeaveEvent.Quit
      */
-    override suspend fun PipelineContext.processImpl(data: DecodedNotifyMsgBody) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: DecodedNotifyMsgBody) = data.context {
         val proto = data.buf
         if (proto.optEnumType != 1) return
         val tipsInfo = proto.optMsgGraytips ?: return
@@ -120,7 +120,7 @@ internal class GroupOrMemberListNoticeProcessor(
      * @see MemberJoinEvent.Active
      * @see BotJoinGroupEvent.Active
      */
-    override suspend fun PipelineContext.processImpl(data: MsgComm.Msg) = data.context {
+    override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         bot.components[ContactUpdater].groupListModifyLock.withLock {
             when (data.msgHead.msgType) {
                 33 -> processGroupJoin33(data)
@@ -134,7 +134,7 @@ internal class GroupOrMemberListNoticeProcessor(
     }
 
     // 33
-    private suspend fun PipelineContext.processGroupJoin33(data: MsgComm.Msg) = data.context {
+    private suspend fun NoticePipelineContext.processGroupJoin33(data: MsgComm.Msg) = data.context {
         msgBody.msgContent.read {
             val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
             val group = bot.getGroupByUin(groupUin) ?: bot.addNewGroupByUin(groupUin) ?: return
@@ -178,13 +178,13 @@ internal class GroupOrMemberListNoticeProcessor(
     }
 
     // 38
-    private suspend fun PipelineContext.processGroupJoin38(data: MsgComm.Msg) = data.context {
+    private suspend fun NoticePipelineContext.processGroupJoin38(data: MsgComm.Msg) = data.context {
         if (bot.getGroupByUin(msgHead.fromUin) != null) return
         bot.addNewGroupByUin(msgHead.fromUin)?.let { collect(BotJoinGroupEvent.Active(it)) }
     }
 
     // 85
-    private suspend fun PipelineContext.processGroupJoin85(data: MsgComm.Msg) = data.context {
+    private suspend fun NoticePipelineContext.processGroupJoin85(data: MsgComm.Msg) = data.context {
         // msgHead.authUin: 处理人
         if (msgHead.toUin != bot.id) return
         processGroupJoin38(data)
@@ -194,7 +194,7 @@ internal class GroupOrMemberListNoticeProcessor(
     // Structmsg.StructMsg
     ///////////////////////////////////////////////////////////////////////////
 
-    override suspend fun PipelineContext.processImpl(data: Structmsg.StructMsg) = data.msg.context {
+    override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) = data.msg.context {
         if (this == null) return
         markAsConsumed()
         when (subType) {
@@ -270,7 +270,7 @@ internal class GroupOrMemberListNoticeProcessor(
     // OnlinePushTrans.PbMsgInfo
     ///////////////////////////////////////////////////////////////////////////
 
-    override suspend fun PipelineContext.processImpl(data: OnlinePushTrans.PbMsgInfo) {
+    override suspend fun NoticePipelineContext.processImpl(data: OnlinePushTrans.PbMsgInfo) {
         markAsConsumed()
         when (data.msgType) {
             44 -> data.msgData.read {
@@ -327,7 +327,7 @@ internal class GroupOrMemberListNoticeProcessor(
         }
     }
 
-    private fun PipelineContext.handleLeave(
+    private fun NoticePipelineContext.handleLeave(
         target: Long,
         kind: Int,
         operator: Long,
@@ -368,7 +368,7 @@ internal class GroupOrMemberListNoticeProcessor(
      * @see BotGroupPermissionChangeEvent
      * @see MemberPermissionChangeEvent
      */
-    private fun PipelineContext.handlePermissionChange(
+    private fun NoticePipelineContext.handlePermissionChange(
         data: OnlinePushTrans.PbMsgInfo,
         target: Long,
         newPermissionByte: Int,
@@ -395,7 +395,7 @@ internal class GroupOrMemberListNoticeProcessor(
      * Owner of the group [from] transfers ownership to another member [to], or retrieve ownership.
      */
     // TODO: 2021/6/26 tests
-    private suspend fun PipelineContext.handleGroupOwnershipTransfer(
+    private suspend fun NoticePipelineContext.handleGroupOwnershipTransfer(
         data: OnlinePushTrans.PbMsgInfo,
         from: Long,
         to: Long,

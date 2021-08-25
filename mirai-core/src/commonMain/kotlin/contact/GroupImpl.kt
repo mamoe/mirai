@@ -65,13 +65,37 @@ internal fun Group.checkIsGroupImpl(): GroupImpl {
     return this
 }
 
+internal fun GroupImpl(
+    bot: QQAndroidBot,
+    parentCoroutineContext: CoroutineContext,
+    id: Long,
+    groupInfo: GroupInfo,
+    members: Sequence<MemberInfo>,
+): GroupImpl {
+    return GroupImpl(bot, parentCoroutineContext, id, groupInfo, ContactList(ConcurrentLinkedQueue())).apply Group@{
+        members.forEach { info ->
+            if (info.uin == bot.id) {
+                botAsMember = newNormalMember(info)
+                if (info.permission == MemberPermission.OWNER) {
+                    owner = botAsMember
+                }
+            } else newNormalMember(info).let { member ->
+                if (member.permission == MemberPermission.OWNER) {
+                    owner = member
+                }
+                this@Group.members.delegate.add(member)
+            }
+        }
+    }
+}
+
 @Suppress("PropertyName")
-internal class GroupImpl(
+internal class GroupImpl constructor(
     bot: QQAndroidBot,
     parentCoroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
-    members: Sequence<MemberInfo>,
+    override val members: ContactList<NormalMemberImpl>,
 ) : Group, AbstractContact(bot, parentCoroutineContext) {
     companion object
 
@@ -84,20 +108,6 @@ internal class GroupImpl(
 
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
 
-    override val members: ContactList<NormalMemberImpl> =
-        ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) { info ->
-            if (info.uin == bot.id) {
-                botAsMember = newNormalMember(info)
-                if (info.permission == MemberPermission.OWNER) {
-                    owner = botAsMember
-                }
-                null
-            } else newNormalMember(info).also { member ->
-                if (member.permission == MemberPermission.OWNER) {
-                    owner = member
-                }
-            }
-        })
 
     override val announcements: Announcements by lazy {
         AnnouncementsImpl(
