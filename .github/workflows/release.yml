@@ -1,19 +1,11 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Release Publish
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
-# events but only for the master branch
 on:
   push:
     tags:
-      - '*-dev*'
-      - '*-release'
-      - 'v*'
+      - 'v*' # 正式版本
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   publish-mirai:
     runs-on: ubuntu-latest
     steps:
@@ -109,8 +101,3 @@ jobs:
           :mirai-console-gradle:publishPlugins --scan
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
           -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
-
-      - name: Gradle :ci-release-helper:closeAndReleaseRepository
-        run: >
-          ./gradlew
-          :ci-release-helper:closeAndReleaseRepository --info
