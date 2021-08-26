@@ -61,12 +61,20 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
         override val target: Contact,
         override val source: ExternalResource,
         val image: Image
-    ) : ImageUploadEvent()
+    ) : ImageUploadEvent() {
+        override fun toString(): String {
+            return "ImageUploadEvent.Succeed(target=$target, source=$source, image=$image)"
+        }
+    }
 
     public data class Failed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalResource,
         val errno: Int,
         val message: String
-    ) : ImageUploadEvent()
+    ) : ImageUploadEvent() {
+        override fun toString(): String {
+            return "ImageUploadEvent.Failed(target=$target, source=$source, errno=$errno, message='$message')"
+        }
+    }
 }
