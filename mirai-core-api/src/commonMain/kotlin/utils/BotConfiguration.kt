@@ -429,6 +429,15 @@ public open class BotConfiguration { // open for Java
         botLoggerSupplier = { _ -> SilentLogger }
     }
 
+    /**
+     * 是否显示过于冗长的事件日志
+     *
+     * 默认为 `false`
+     *
+     * @since 2.8
+     */
+    public var isShowingVerboseEventLog: Boolean = false
+
     ///////////////////////////////////////////////////////////////////////////
     // Cache
     //////////////////////////////////////////////////////////////////////////
@@ -569,6 +578,7 @@ public open class BotConfiguration { // open for Java
             new.cacheDir = cacheDir
             new.contactListCache = contactListCache
             new.convertLineSeparator = convertLineSeparator
+            new.isShowingVerboseEventLog = isShowingVerboseEventLog
         }
     }
 

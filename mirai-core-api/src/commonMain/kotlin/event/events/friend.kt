@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
+import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.atomic.AtomicBoolean
@@ -118,4 +119,4 @@ public data class FriendInputStatusChangedEvent @MiraiInternalApi public constru
     public override val friend: Friend,
     public val inputting: Boolean,
 
-    ) : FriendEvent, Packet, AbstractEvent()
+    ) : FriendEvent, Packet, AbstractEvent(), VerboseEvent
