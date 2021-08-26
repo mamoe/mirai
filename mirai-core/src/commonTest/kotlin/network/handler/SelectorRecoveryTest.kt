@@ -40,7 +40,7 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
         testRecoverWhenHeartbeatFailWith { IOException("test IO ex") }
 
         // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
-        assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.OK)
+        assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.LOADING, NetworkHandler.State.OK)
     }
 
     /**
