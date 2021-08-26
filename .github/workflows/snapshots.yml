@@ -59,7 +59,7 @@ jobs:
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
           CURRENT_BRANCH_NAME: dev
-          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAMOE_TOKEN: ${{ secrets.MAMOE_TOKEN }}
 
       - run: >
           ./gradlew publish --info --scan

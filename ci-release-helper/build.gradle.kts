@@ -74,7 +74,7 @@ tasks.register("createTagOnGitHub") {
     dependsOn(gradle.includedBuild("snapshots-publishing").task(":check"))
 
     doLast {
-        val token = System.getenv("GITHUB_OAUTH_TOKEN")
+        val token = System.getenv("MAMOE_TOKEN")
         require(!token.isNullOrBlank()) { "" }
 
         val out = ByteArrayOutputStream()
