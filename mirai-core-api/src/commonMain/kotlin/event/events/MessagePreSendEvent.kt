@@ -16,6 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.CancellableEvent
+import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -32,7 +33,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  *
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  */
-public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
+public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent, VerboseEvent {
     /** 发信目标. */
     public abstract val target: Contact
     public final override val bot: Bot get() = target.bot
