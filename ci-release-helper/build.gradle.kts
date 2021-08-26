@@ -6,14 +6,8 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-import com.google.gson.Gson
-import io.ktor.client.*
-import io.ktor.client.request.*
 import keys.SecretKeys
-import kotlinx.coroutines.runBlocking
-import org.gradle.kotlin.dsl.support.useToRun
 import java.io.ByteArrayOutputStream
-import java.net.URL
 
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
@@ -36,69 +30,65 @@ tasks.register("updateSnapshotVersion") {
         rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
             var text = readText()
             check(text.indexOf("project = \"${project.version}\"") != -1) { "Cannot find \"project = \\\"${project.version}\\\"\"" }
-            text = text.replace("project = \"${project.version}\"", "project = \"${nextVersion}\"")
+            text = text.replace("project = \"${project.version}\"", "project = \"${snapshotVersion}\"")
             writeText(text)
         }
     }
 }
 
-val nextVersion by lazy { getNextVersionImpl() }
+val snapshotVersion by lazy { getSnapshotVersionImpl() }
 
-fun getNextVersionImpl(): String {
-    var baseUrl = System.getenv("SNAPSHOTS_PUBLISHING_URL") ?: "https://repo.mirai.mamoe.net/snapshots/"
-    if (!baseUrl.endsWith('/')) {
-        baseUrl += "/"
-    }
-    baseUrl += "net/mamoe/mirai-core-utils/maven-metadata.xml"
-
-    val content = URL(baseUrl).openConnection().getInputStream().useToRun {
-        readBytes().decodeToString()
-    }
-
+fun getSnapshotVersionImpl(): String {
     val branch = System.getenv("CURRENT_BRANCH_NAME")
     logger.info("Current branch name is '$branch'")
-
-    val currentVersion = getLatestMiraiVersionForBranch(content, branch)
-
-    logger.info("Current newest version for this branch is '$currentVersion'")
-
-    val nextVersion = currentVersion.nextSnapshotVersion(branch).toString()
-
-    logger.info("Next snapshot version will be '$nextVersion'")
-
-    return nextVersion
+    return "${Versions.project}-$branch-${getSha()}".also {
+        logger.info("Snapshot version is '$it'")
+    }
 }
 
-tasks.register("createTagOnGitHub") {
-    group = "mirai"
-    dependsOn(gradle.includedBuild("snapshots-publishing").task(":check"))
+//tasks.register("createTagOnGitHub") {
+//    group = "mirai"
+//    dependsOn(gradle.includedBuild("snapshots-publishing").task(":check"))
+//
+//    doLast {
+//        val token = System.getenv("MAMOE_TOKEN")
+//        require(!token.isNullOrBlank()) { "" }
+//
+//        val out = ByteArrayOutputStream()
+//        exec {
+//            commandLine("git")
+//            args("rev-parse", "HEAD")
+//            standardOutput = out
+//            workingDir = rootProject.projectDir
+//        }
+//        val sha = out.toString()
+//        logger.info("Current sha is $sha")
+//
+//        runBlocking {
+//            val resp = HttpClient().post<String>("https://api.github.com/repos/mamoe/mirai/git/refs") {
+//                header("Authorization", "token $token")
+//                header("Accept", "application/vnd.github.v3+json")
+//                body = Gson().toJson(
+//                    mapOf(
+//                        "ref" to "refs/tags/build-$nextVersion",
+//                        "sha" to sha,
+//                    )
+//                )
+//            }
+//            logger.info(resp)
+//        }
+//    }
+//}
 
-    doLast {
-        val token = System.getenv("MAMOE_TOKEN")
-        require(!token.isNullOrBlank()) { "" }
-
-        val out = ByteArrayOutputStream()
-        exec {
-            commandLine("git")
-            args("rev-parse", "HEAD")
-            standardOutput = out
-            workingDir = rootProject.projectDir
-        }
-        val sha = out.toString()
-        logger.info("Current sha is $sha")
-
-        runBlocking {
-            val resp = HttpClient().post<String>("https://api.github.com/repos/mamoe/mirai/git/refs") {
-                header("Authorization", "token $token")
-                header("Accept", "application/vnd.github.v3+json")
-                body = Gson().toJson(
-                    mapOf(
-                        "ref" to "refs/tags/build-$nextVersion",
-                        "sha" to sha,
-                    )
-                )
-            }
-            logger.info(resp)
-        }
+fun getSha(): String {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine("git")
+        args("rev-parse", "HEAD")
+        standardOutput = out
+        workingDir = rootProject.projectDir
     }
+    val sha = out.toString()
+    logger.info("Current commit sha is '$sha'")
+    return sha
 }

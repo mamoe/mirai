@@ -52,16 +52,6 @@ jobs:
           -Dmirai.network.show.packet.details=true
 
       - run: >
-          ./gradlew createTagOnGitHub --info --scan
-        env:
-          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
-          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
-          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
-          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
-          CURRENT_BRANCH_NAME: dev
-          MAMOE_TOKEN: ${{ secrets.MAMOE_TOKEN }}
-
-      - run: >
           ./gradlew publish --info --scan
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
