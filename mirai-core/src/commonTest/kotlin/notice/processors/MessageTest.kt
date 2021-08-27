@@ -308,6 +308,102 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
         }
     }
 
+    // for #1410
+    @Test
+    suspend fun `group temp message test for issue 1410`() {
+        suspend fun runTest() = use(KEY_FROM_SYNC to false) {
+            bot.components[SsoProcessor].firstLoginSucceed = true
+
+            net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
+                msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
+                    fromUin = 1230001,
+                    toUin = 1230003,
+                    msgType = 141,
+                    c2cCmd = 11,
+                    msgSeq = 11080,
+                    msgTime = 1630,
+                    msgUid = 720,
+                    c2cTmpMsgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.C2CTmpMsgHead(
+                        c2cType = 2,
+                        groupUin = 2055561833,
+                        groupCode = 112561833,
+                        sig = "38 59 CD 1E 22 9A 0A BA 28 59 46 BE FA 51 36 D0 F1 7A 5D 54 F5 04 05 7E 66 C7 36 4F 73 BF 45 96 00 39 7C 8F F5 43 57 74 B0 EB D9 5E 0F 1F 9B CF".hexToBytes(),
+                    ),
+                    wseqInC2cMsghead = 25160,
+                ),
+                contentHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.ContentHead(
+                    pkgNum = 1,
+                ),
+                msgBody = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MsgBody(
+                    richText = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.RichText(
+                        attr = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Attr(
+                            codePage = 0,
+                            time = 1630,
+                            random = 1854,
+                            size = 12,
+                            effect = 0,
+                            charSet = 134,
+                            pitchAndFamily = 34,
+                            fontName = "微软雅黑",
+                        ),
+                        elems = mutableListOf(
+                            net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                                text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                                    str = "hello",
+                                ),
+                            ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                                extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                                    nick = "user1",
+                                ),
+                            ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                                elemFlags2 = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ElemFlags2(
+                                ),
+                            ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                                generalFlags = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.GeneralFlags(
+                                    pbReserve = "80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 CA 04 00".hexToBytes(),
+                                ),
+                            )
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        setBot(1230003).apply {
+            addGroup(112561833, 1230002, name = "testtest").apply {
+                addMember(1230001, permission = MemberPermission.MEMBER, nick = "user1")
+            }
+            addStranger(1230001, "user1", fromGroupId = 2230203)
+        }
+
+
+        runTest().run {
+            assertEquals(1, size)
+            val event = single()
+            assertIs<GroupTempMessageEvent>(event)
+            assertEquals(1630, event.time)
+            assertEquals(1230001, event.sender.id)
+            assertEquals("user1", event.senderName)
+
+            assertEquals("hello", event.message.content)
+
+            event.message.run {
+                assertEquals(2, size)
+                get(0).run {
+                    assertIs<OnlineMessageSource.Incoming.FromTemp>(this)
+                    assertContentEquals(intArrayOf(11080), ids)
+                    assertContentEquals(intArrayOf(1854), internalIds)
+                    assertEquals(1630, time)
+                    assertEquals(1230001, fromId)
+                    assertEquals(1230003, targetId)
+                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                }
+                assertIs<PlainText>(get(1))
+                assertEquals("hello", get(1).content)
+            }
+        }
+    }
+
     @Test
     fun `stranger message test`() { // TODO: 2021/8/27 cannot start a such conversation
 
