@@ -25,7 +25,7 @@ object ConstructorCallCodegenFacade {
      * Analyze [value] and give its correspondent [ValueDesc].
      */
     fun analyze(value: Any?, type: KType): ValueDesc {
-        if (value == null) return PlainValueDesc("null", null)
+        if (value == null) return PlainValueDesc(null, "null", null)
 
         val clazz = value::class
 
@@ -43,14 +43,15 @@ object ConstructorCallCodegenFacade {
                 prop.cast<KProperty1<Any, Any?>>()
                 map[valueParameter] = analyze(prop.get(value), prop.returnType)
             }
-            return ClassValueDesc(value, map)
+            return ClassValueDesc(null, value, map)
         }
 
-        ArrayValueDesc.createOrNull(value, type)?.let { return it }
+        ArrayValueDesc.createOrNull(value, type, null)?.let { return it }
         if (value is Collection<*>) {
-            return CollectionValueDesc(value, arrayType = type, elementType = type.arguments.first().type!!)
+            return CollectionValueDesc(null, value, arrayType = type, elementType = type.arguments.first().type!!)
         } else if (value is Map<*, *>) {
             return MapValueDesc(
+                null,
                 value.cast(),
                 value.cast(),
                 type,
@@ -61,12 +62,12 @@ object ConstructorCallCodegenFacade {
 
         return when (value) {
             is CharSequence -> {
-                PlainValueDesc('"' + value.toString() + '"', value)
+                PlainValueDesc(null, '"' + value.toString() + '"', value)
             }
             is Char -> {
-                PlainValueDesc("'$value'", value)
+                PlainValueDesc(null, "'$value'", value)
             }
-            else -> PlainValueDesc(value.toString(), value)
+            else -> PlainValueDesc(null, value.toString(), value)
         }
     }
 

@@ -11,11 +11,17 @@ package net.mamoe.mirai.internal.notice
 
 import kotlinx.serialization.decodeFromString
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.internal.notice.Desensitizer.Companion.generateAndDesensitize
 import net.mamoe.mirai.internal.utils.codegen.*
+import net.mamoe.mirai.internal.utils.io.NestedStructure
+import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
 import kotlin.reflect.KType
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
 private val logger: MiraiLogger by lazy { MiraiLogger.Factory.create(Desensitizer::class) }
@@ -177,6 +183,22 @@ private class DesensitizationVisitor(
     override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc) {
         if (desc.value is ByteArray) {
             desc.value = desensitizer.desensitize(desc.value as ByteArray)
+        }
+    }
+
+    override fun <T : Any> visitClass(desc: ClassValueDesc<T>) {
+        super.visitClass(desc)
+        desc.properties.replaceAll() { key, value ->
+            val annotation = key.findAnnotation<NestedStructure>()
+            if (annotation != null && value.origin is ByteArray) {
+                val instance = annotation.serializer.objectInstance ?: annotation.serializer.createInstance()
+
+                val result = instance.cast<NestedStructureDesensitizer<ProtocolStruct, ProtocolStruct>>()
+                    .deserialize(desc.origin as ProtocolStruct, value.origin as ByteArray)
+
+                val generate = ConstructorCallCodegenFacade.generateAndDesensitize(result)
+                PlainValueDesc(desc, "$generate.toByteArray()", value.origin)
+            } else value
         }
     }
 }

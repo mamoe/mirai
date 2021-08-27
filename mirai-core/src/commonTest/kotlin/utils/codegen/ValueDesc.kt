@@ -17,9 +17,22 @@ import kotlin.reflect.typeOf
 
 sealed interface ValueDesc {
     val origin: Any?
+    val parent: ValueDesc?
 
     fun accept(visitor: ValueDescVisitor)
 }
+
+val ValueDesc.parents
+    get() = sequence {
+        var parent = parent
+        do {
+            parent ?: return@sequence
+            yield(parent)
+            parent = parent.parent
+        } while (true);
+    }
+
+inline fun <reified T : ValueDesc> ValueDesc.findParent(): T? = parents.filterIsInstance<T>().firstOrNull()
 
 sealed interface ArrayValueDesc : ValueDesc {
     val value: Any
@@ -30,17 +43,27 @@ sealed interface ArrayValueDesc : ValueDesc {
 
     companion object {
         @OptIn(ExperimentalStdlibApi::class)
-        fun createOrNull(array: Any, type: KType): ArrayValueDesc? {
-            if (array is Array<*>) return ObjectArrayValueDesc(array, arrayType = type)
+        fun createOrNull(array: Any, type: KType, parent: ValueDesc?): ArrayValueDesc? {
+            if (array is Array<*>) return ObjectArrayValueDesc(parent, array, arrayType = type)
             return when (array) {
-                is IntArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Int>())
-                is ByteArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Byte>())
-                is ShortArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Short>())
-                is CharArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Char>())
-                is LongArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Long>())
-                is FloatArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Float>())
-                is DoubleArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Double>())
-                is BooleanArray -> PrimitiveArrayValueDesc(array, arrayType = type, elementType = typeOf<Boolean>())
+                is IntArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Int>())
+                is ByteArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Byte>())
+                is ShortArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Short>())
+                is CharArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Char>())
+                is LongArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Long>())
+                is FloatArray -> PrimitiveArrayValueDesc(parent, array, arrayType = type, elementType = typeOf<Float>())
+                is DoubleArray -> PrimitiveArrayValueDesc(
+                    parent,
+                    array,
+                    arrayType = type,
+                    elementType = typeOf<Double>()
+                )
+                is BooleanArray -> PrimitiveArrayValueDesc(
+                    parent,
+                    array,
+                    arrayType = type,
+                    elementType = typeOf<Boolean>()
+                )
                 else -> return null
             }
         }
@@ -48,10 +71,11 @@ sealed interface ArrayValueDesc : ValueDesc {
 }
 
 class ObjectArrayValueDesc(
+    override val parent: ValueDesc?,
     override var value: Array<*>,
     override val origin: Array<*> = value,
     override val arrayType: KType,
-    override val elementType: KType = arrayType.arguments.first().type ?: Any::class.createType()
+    override val elementType: KType = arrayType.arguments.first().type ?: Any::class.createType(),
 ) : ArrayValueDesc {
     override val elements: MutableList<ValueDesc> by lazy {
         value.mapTo(mutableListOf()) {
@@ -65,6 +89,7 @@ class ObjectArrayValueDesc(
 }
 
 class CollectionValueDesc(
+    override val parent: ValueDesc?,
     override var value: Collection<*>,
     override val origin: Collection<*> = value,
     override val arrayType: KType,
@@ -82,6 +107,7 @@ class CollectionValueDesc(
 }
 
 class MapValueDesc(
+    override val parent: ValueDesc?,
     var value: Map<Any?, Any?>,
     override val origin: Map<Any?, Any?> = value,
     val mapType: KType,
@@ -103,6 +129,7 @@ class MapValueDesc(
 }
 
 class PrimitiveArrayValueDesc(
+    override val parent: ValueDesc?,
     override var value: Any,
     override val origin: Any = value,
     override val arrayType: KType,
@@ -128,6 +155,7 @@ class PrimitiveArrayValueDesc(
 }
 
 class PlainValueDesc(
+    override val parent: ValueDesc?,
     var value: String,
     override val origin: Any?
 ) : ValueDesc {
@@ -141,6 +169,7 @@ class PlainValueDesc(
 }
 
 class ClassValueDesc<T : Any>(
+    override val parent: ValueDesc?,
     override val origin: T,
     val properties: MutableMap<KParameter, ValueDesc>,
 ) : ValueDesc {
