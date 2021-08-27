@@ -14,10 +14,14 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.NormalMemberImpl
+import net.mamoe.mirai.internal.contact.StrangerImpl
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.network.components.LoggingPacketHandlerAdapter
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipelineImpl
@@ -91,6 +95,18 @@ internal interface GroupExtensions {
 
     fun Bot.addFriend(friend: Friend) {
         friends.delegate.add(friend)
+    }
+
+    fun Bot.addFriend(id: Long, nick: String = "friend$id", remark: String = ""): FriendImpl {
+        return FriendImpl(bot.cast(), bot.coroutineContext, FriendInfoImpl(id, nick, remark)).also {
+            friends.delegate.add(it)
+        }
+    }
+
+    fun Bot.addStranger(id: Long, nick: String = "stranger$id", fromGroupId: Long = 0): StrangerImpl {
+        return StrangerImpl(bot.cast(), bot.coroutineContext, StrangerInfoImpl(id, nick, fromGroupId)).also {
+            strangers.delegate.add(it)
+        }
     }
 
     fun Group.addMember(member: NormalMember) {
