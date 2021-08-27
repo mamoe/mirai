@@ -91,6 +91,7 @@ Mirai 支持多种消息类型。
 [`LightApp`]: ../mirai-core-api/src/commonMain/kotlin/message/data/RichMessage.kt
 [`SimpleServiceMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/RichMessage.kt
 [`Voice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
+[`Audio`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Audio.kt
 [`ForwardMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ForwardMessage.kt
 [`ShowImageFlag`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ShowImageFlag.kt
 [`RichMessageOrigin`]: ../mirai-core-api/src/commonMain/kotlin/message/data/MessageOrigin.kt
@@ -108,13 +109,14 @@ Mirai 支持多种消息类型。
 |     [`PokeMessage`]      | 戳一戳消息（消息非动作） | `[戳一戳]`               |          2.0          |
 |       [`VipFace`]        | VIP 表情             | `[${kind.name}]x$count` |          2.0          |
 |       [`LightApp`]       | 小程序               | `$content`              |          2.0          |
-|        [`Voice`]         | 语音                 | `[语音消息]`              |          2.0          |
+|        [`Voice`]         | 语音（已弃用）         | `[语音消息]`              | 2.0  *<sup>(3)</sup>* |
 |      [`MarketFace`]      | 商城表情              | `[表情对应的中文名]`       |          2.0          |
 |    [`ForwardMessage`]    | 合并转发              | `[转发消息]`             | 2.0  *<sup>(1)</sup>* |
 | [`SimpleServiceMessage`] | （不稳定）服务消息      | `$content`              |          2.0          |
 |      [`MusicShare`]      | 音乐分享              | `[分享]曲名`             |          2.1          |
 |         [`Dice`]         | 魔法表情骰子           | `[骰子:$value]`         |          2.5          |
 |     [`FileMessage`]      | 文件消息              | `[文件]文件名称`          |          2.5          |
+|        [`Audio`]         | 语音                 | `[语音消息]`              |          2.7          |
 
 
 
@@ -129,6 +131,7 @@ Mirai 支持多种消息类型。
 
 > *(1):* [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收  
 > *(2):* [`RichMessageOrigin`] 在 2.3 增加, 在 2.6 弃用并以 [`MessageOrigin`] 替换
+> *(3):* [`Voice`] 在 2.0 增加, 在 2.7 弃用并以 [`Audio`] 替换
 
 
 ### 用法
@@ -315,7 +318,7 @@ MessageChain result = chain.plus(face); // 右侧的 VipFace 替换掉所有的 
 // 结果为 [VipFace, QuoteReply]
 ```
 
-简单来说，这符合现实的逻辑：一条消息如果包含了语音，就不能同时包含群文件、提及全体成员、文字内容等元素。进行 `chain.plus(voice)` 时，如果消息内容冲突则会发生替换，且总是右侧元素替换左侧元素。  
+简单来说，这符合现实的逻辑：一条消息如果包含了语音，就不能同时包含群文件、提及全体成员、文字内容等元素。进行 `chain.plus(audio)` 时，如果消息内容冲突则会发生替换，且总是右侧元素替换左侧元素。  
 而如果消息可以同时存在，比如一个纯文本和一个或多个图片相连 `plainText.plus(image1).plus(image2)` 时没有冲突，不会发生替换。结果将会是 `[PlainText, Image, Image]` 的 `MessageChain`。
 
 ### 获取消息链中的消息元素
