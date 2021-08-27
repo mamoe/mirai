@@ -33,7 +33,10 @@ internal abstract class TestNettyNH(
     address: SocketAddress,
 ) : NettyNetworkHandler(context, address), ITestNetworkHandler {
 
-    abstract override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel
+    protected abstract suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel
+    override suspend fun createConnection(): Channel {
+        return createConnection(createDummyDecodePipeline())
+    }
 
     override fun setStateClosed(exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
         return setState { StateClosed(exception) }
