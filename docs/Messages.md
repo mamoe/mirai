@@ -130,7 +130,7 @@ Mirai 支持多种消息类型。
 |    [`MessageOrigin`]    | 富文本消息源   |         2.6         |
 
 > *(1):* [`ForwardMessage`] 在 2.0 支持发送, 在 2.3 支持接收  
-> *(2):* [`RichMessageOrigin`] 在 2.3 增加, 在 2.6 弃用并以 [`MessageOrigin`] 替换
+> *(2):* [`RichMessageOrigin`] 在 2.3 增加, 在 2.6 弃用并以 [`MessageOrigin`] 替换  
 > *(3):* [`Voice`] 在 2.0 增加, 在 2.7 弃用并以 [`Audio`] 替换
 
 
