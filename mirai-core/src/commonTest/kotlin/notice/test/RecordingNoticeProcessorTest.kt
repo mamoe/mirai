@@ -12,16 +12,9 @@ package net.mamoe.mirai.internal.notice.test
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.internal.MockBot
-import net.mamoe.mirai.internal.network.components.AbstractNoticePipelineContext
-import net.mamoe.mirai.internal.network.components.ProcessResult
 import net.mamoe.mirai.internal.notice.Desensitizer
-import net.mamoe.mirai.internal.notice.Desensitizer.Companion.generateAndDesensitize
 import net.mamoe.mirai.internal.test.AbstractTest
-import net.mamoe.mirai.internal.utils.codegen.ConstructorCallCodegenFacade
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
-import net.mamoe.mirai.utils.MutableTypeSafeMap
-import net.mamoe.mirai.utils.TypeSafeMap
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
 import kotlin.test.Test
@@ -29,36 +22,10 @@ import kotlin.test.assertEquals
 
 internal class RecordingNoticeProcessorTest : AbstractTest() {
 
-    class MyContext(attributes: TypeSafeMap) : AbstractNoticePipelineContext(MockBot(), attributes) {
-        override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
-            throw UnsupportedOperationException()
-        }
-    }
-
     @Serializable
     data class MyProtocolStruct(
         val value: String
     ) : ProtocolStruct
-
-    @Test
-    fun `can serialize and deserialize reflectively`() {
-        val context = MyContext(MutableTypeSafeMap(mapOf("test" to "value")))
-        val struct = MyProtocolStruct("vvv")
-
-        val serialize = ConstructorCallCodegenFacade.generateAndDesensitize(struct)
-        assertEquals(
-            """
-                net.mamoe.mirai.internal.notice.test.RecordingNoticeProcessorTest.MyProtocolStruct(
-                value="vvv",
-                )
-            """.trimIndent(),
-            serialize
-        )
-//        val deserialized = KotlinScriptExternalDependencies
-//
-//        assertEquals(context.attributes, deserialized.attributes)
-//        assertEquals(struct, deserialized.struct)
-    }
 
     @Test
     fun `test plain desensitization`() {
