@@ -34,7 +34,7 @@ internal abstract class TestNettyNH(
 ) : NettyNetworkHandler(context, address), ITestNetworkHandler {
 
     protected abstract suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel
-    override suspend fun createConnection(): Channel {
+    final override suspend fun createConnection(): Channel {
         return createConnection(createDummyDecodePipeline())
     }
 
