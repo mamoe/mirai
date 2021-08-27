@@ -275,6 +275,10 @@ internal class GroupOrMemberListNoticeProcessor(
                         // > 这是历史的群系统消息，实际上可以直接进行忽略，其实只是因为缺失了忽略的处理而已
                         // https://github.com/mamoe/mirai/issues/1171#issuecomment-907075637
                     }
+                    16 -> {
+                        // #1467
+                        // 历史消息同步
+                    }
                     else -> {
                         throw contextualBugReportException(
                             "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
