@@ -41,7 +41,8 @@ val snapshotVersion by lazy { getSnapshotVersionImpl() }
 fun getSnapshotVersionImpl(): String {
     val branch = System.getenv("CURRENT_BRANCH_NAME")
     logger.info("Current branch name is '$branch'")
-    return "${Versions.project}-$branch-${getSha()}".also {
+    val sha = getSha().trim().take(8)
+    return "${Versions.project}-$branch-${sha}".also {
         logger.info("Snapshot version is '$it'")
     }
 }
