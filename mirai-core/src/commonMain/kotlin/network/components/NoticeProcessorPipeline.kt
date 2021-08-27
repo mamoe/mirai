@@ -42,6 +42,8 @@ internal typealias ProcessResult = Collection<Packet>
  * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
  */
 internal interface NoticeProcessorPipeline {
+    val processors: Collection<NoticeProcessor>
+
     fun interface DisposableRegistry : Closeable {
         fun dispose()
 
@@ -193,11 +195,11 @@ private val traceLogging: MiraiLogger by lazy {
         .withSwitch(systemProp("mirai.network.notice.pipeline.log.full", false))
 }
 
-internal open class NoticeProcessorPipelineImpl private constructor() : NoticeProcessorPipeline {
+internal open class NoticeProcessorPipelineImpl protected constructor() : NoticeProcessorPipeline {
     /**
      * Must be ordered
      */
-    private val processors = ConcurrentLinkedQueue<NoticeProcessor>()
+    override val processors = ConcurrentLinkedQueue<NoticeProcessor>()
 
     override fun registerProcessor(processor: NoticeProcessor): NoticeProcessorPipeline.DisposableRegistry {
         processors.add(processor)
