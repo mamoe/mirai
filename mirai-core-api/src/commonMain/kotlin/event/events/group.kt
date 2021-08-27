@@ -10,7 +10,7 @@
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
 @file:Suppress(
-    "unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
+    "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
     "MemberVisibilityCanBePrivate"
 )
 
@@ -426,6 +426,7 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
     )
 
     internal companion object {
+        @Suppress("unused")
         @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
         @JvmStatic
         @JvmName("copy\$default") // avoid being mangled

@@ -202,21 +202,21 @@ internal class GroupOrMemberListNoticeProcessor(
             1 -> when (groupMsgType) {
                 1 -> {
                     // 成员申请入群
-                    MemberJoinRequestEvent(
+                    collected += MemberJoinRequestEvent(
                         bot, data.msgSeq, msgAdditional,
                         data.reqUin, groupCode, groupName, reqUinNick
                     )
                 }
                 2 -> {
                     // Bot 被邀请入群
-                    BotInvitedJoinGroupRequestEvent(
+                    collected += BotInvitedJoinGroupRequestEvent(
                         bot, data.msgSeq, actionUin,
                         groupCode, groupName, actionUinNick
                     )
                 }
                 22 -> {
                     // 成员邀请入群
-                    MemberJoinRequestEvent(
+                    collected += MemberJoinRequestEvent(
                         bot, data.msgSeq, msgAdditional,
                         data.reqUin, groupCode, groupName, reqUinNick, actionUin
                     )
@@ -250,7 +250,7 @@ internal class GroupOrMemberListNoticeProcessor(
                     }
                     7 -> { // 机器人被踢
                         val operator = group[actionUin] ?: return
-                        BotLeaveEvent.Kick(operator)
+                        collected += BotLeaveEvent.Kick(operator)
                     }
                     else -> {
                         throw contextualBugReportException(

@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
 @file:JvmBlockingBridge
 
 package net.mamoe.mirai.internal.notice.processors
