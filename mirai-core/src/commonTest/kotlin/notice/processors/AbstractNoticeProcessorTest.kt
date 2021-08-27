@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.notice.processors
 
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.serializer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -22,14 +24,13 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
-import net.mamoe.mirai.internal.network.components.LoggingPacketHandlerAdapter
+import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
-import net.mamoe.mirai.internal.network.components.NoticeProcessorPipelineImpl
-import net.mamoe.mirai.internal.network.components.PacketLoggingStrategyImpl
-import net.mamoe.mirai.internal.network.components.ProcessResult
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
+import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.utils.TypeSafeMap
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -47,19 +48,38 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
     protected object UseTestContext {
         val EMPTY_BYTE_ARRAY get() = net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
         fun String.hexToBytes() = hexToUBytes().toByteArray()
+
+        internal inline fun <reified T : JceStruct> T.toByteArray(
+            serializer: SerializationStrategy<T> = serializer(),
+        ): ByteArray = Tars.UTF_8.encodeToByteArray(serializer, this)
+
     }
 
     protected suspend inline fun use(
         attributes: TypeSafeMap = TypeSafeMap(),
+        pipeline: NoticeProcessorPipeline = bot.components.noticeProcessorPipeline,
         block: UseTestContext.() -> ProtocolStruct
     ): ProcessResult {
         val handler = LoggingPacketHandlerAdapter(PacketLoggingStrategyImpl(bot), bot.logger)
-        return bot.components.noticeProcessorPipeline.process(bot, block(UseTestContext), attributes).also { list ->
+        return pipeline.process(bot, block(UseTestContext), attributes).also { list ->
             for (packet in list) {
                 handler.handlePacket(IncomingPacket("test", packet))
             }
         }
     }
+
+    protected suspend inline fun use(
+        attributes: TypeSafeMap = TypeSafeMap(),
+        crossinline createContext: NoticeProcessorPipelineImpl.(bot: QQAndroidBot, attributes: TypeSafeMap) -> NoticeProcessorPipelineImpl.ContextImpl,
+        block: UseTestContext.() -> ProtocolStruct
+    ): ProcessResult = use(attributes, pipeline = object : NoticeProcessorPipelineImpl() {
+        init {
+            bot.components.noticeProcessorPipeline.processors.forEach { registerProcessor(it) }
+        }
+
+        override fun createContext(bot: QQAndroidBot, attributes: TypeSafeMap): NoticePipelineContext =
+            createContext(this, bot, attributes)
+    }, block)
 
     fun setBot(id: Long): QQAndroidBot {
         bot = createBot(BotAccount(id, "a"))
