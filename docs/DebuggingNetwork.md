@@ -21,6 +21,7 @@
 | `mirai.network.packet.logger`                       | `true`/`false`                   | 启用数据包日志 (将为展示所有接收的数据包的 id, sequenceId, extraData 以及内容 hex)                                                                                                        |
 | `mirai.network.show.verbose.packets`                | `true`/`false`                   | 在日志记录数据包时包含冗长的数据包 (如 `MessageSvc.PbGetMsg`, `OnlinePush.ReqPush`, `StatSvc.SimpleGet`)                                                                               |
 | `mirai.network.show.packet.details`                 | `true`/`false`                   | 在日志记录数据包时包含 mirai 解析结果                                                                                                                                                 |
+| `mirai.event.show.verbose.events`                   | `true`/`false`                   | 在日志记录事件时包含冗长的事件 (如 `GroupMessagePreSendEvent`, `GroupMessagePostSendEvent`)                                                                                            |
 
 修改示例：
 
