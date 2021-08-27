@@ -252,6 +252,13 @@ internal class GroupOrMemberListNoticeProcessor(
                         val operator = group[actionUin] ?: return
                         collected += BotLeaveEvent.Kick(operator)
                     }
+                    6 -> {
+                        // 其他管理员踢出了一个群成员, 测试时能正常解析但没有收到 groupMsgType=6 的消息, 但有 issue 收到这些消息
+                        // #1429, #1171, #1263
+
+                        // > 这是历史的群系统消息，实际上可以直接进行忽略，其实只是因为缺失了忽略的处理而已
+                        // https://github.com/mamoe/mirai/issues/1171#issuecomment-907075637
+                    }
                     else -> {
                         throw contextualBugReportException(
                             "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
