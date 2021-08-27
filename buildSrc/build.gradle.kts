@@ -13,9 +13,9 @@ plugins {
 
 repositories {
     mavenLocal()
-    jcenter()
     google()
     mavenCentral()
+    gradlePluginPortal()
 }
 
 kotlin {
