@@ -266,6 +266,12 @@ internal fun QQAndroidBot.getGroupByUin(uin: Long) = groups.firstOrNull { it.uin
 internal fun QQAndroidBot.getGroupByUinOrCode(uinOrCode: Long) =
     groups.firstOrNull { it.uin == uinOrCode } ?: groups.firstOrNull { it.id == uinOrCode }
 
+/**
+ * uin first
+ */
+internal fun QQAndroidBot.getGroupByUinOrCodeOrFail(uinOrCode: Long) =
+    getGroupByUinOrCode(uinOrCode) ?: throw NoSuchElementException("group.code or uin=$uinOrCode")
+
 
 /**
  * code first
