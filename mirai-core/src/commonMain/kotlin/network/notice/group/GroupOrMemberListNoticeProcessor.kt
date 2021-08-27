@@ -346,6 +346,7 @@ internal class GroupOrMemberListNoticeProcessor(
                     member.cancel(CancellationException("Left actively"))
                 }
             }
+            // 03 包括 bot 是群主, 管理员踢出群成员
             3, 0x83 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
                 if (target == bot.id) {
                     val member = group.members[operator] ?: return
