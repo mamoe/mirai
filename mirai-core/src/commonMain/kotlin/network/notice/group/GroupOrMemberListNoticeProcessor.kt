@@ -198,6 +198,22 @@ internal class GroupOrMemberListNoticeProcessor(
         if (this == null) return
         markAsConsumed()
         when (subType) {
+            0 -> {
+                if (groupMsgType == 8) {
+                    // #1388: 使用手机TIM邀请入群，我为管理员，成功邀请 bot 入群
+
+                    // 能正常解析 BotInvitedJoinGroupRequestEvent 和 BotJoinGroupEvent.Active, 因此忽略该通知
+                    return
+                } else {
+                    throw contextualBugReportException(
+                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
+                        data._miraiContentToString(),
+                        null,
+                        "并描述此时机器人是否被邀请加入群等其他",
+                    )
+                }
+            }
+
             // 处理被邀请入群 或 处理成员入群申请
             1 -> when (groupMsgType) {
                 1 -> {
