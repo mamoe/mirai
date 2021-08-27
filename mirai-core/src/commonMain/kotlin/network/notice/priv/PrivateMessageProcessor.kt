@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.notice.priv
 
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.getGroupByUin
+import net.mamoe.mirai.internal.getGroupByUinOrCode
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
@@ -59,7 +59,7 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             141, // group temp
             -> {
                 val tmpHead = msgHead.c2cTmpMsgHead ?: return
-                val group = bot.getGroupByUin(tmpHead.groupUin) ?: return
+                val group = bot.getGroupByUinOrCode(tmpHead.groupUin) ?: return
                 handlePrivateMessage(data, group[senderUin] ?: return)
             }
             else -> markNotConsumed()

@@ -30,16 +30,15 @@ object ConstructorCallCodegenFacade {
         val clazz = value::class
 
         if (clazz.isData || clazz.hasAnnotation<Serializable>()) {
-            val clazz1 = value::class
             val primaryConstructor =
-                clazz1.primaryConstructor ?: error("$value does not have a primary constructor.")
-            val properties = clazz1.declaredMemberProperties
+                clazz.primaryConstructor ?: error("$value does not have a primary constructor.")
+            val properties = clazz.declaredMemberProperties
 
             val map = mutableMapOf<KParameter, ValueDesc>()
 
             for (valueParameter in primaryConstructor.valueParameters) {
                 val prop = properties.find { it.name == valueParameter.name }
-                    ?: error("Could not find corresponding property for parameter ${valueParameter.name}")
+                    ?: error("Could not find corresponding property for parameter ${clazz.qualifiedName}.${valueParameter.name}")
 
                 prop.cast<KProperty1<Any, Any?>>()
                 map[valueParameter] = analyze(prop.get(value), prop.returnType)
