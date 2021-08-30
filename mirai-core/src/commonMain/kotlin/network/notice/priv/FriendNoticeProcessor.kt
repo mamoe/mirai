@@ -226,8 +226,9 @@ internal class FriendNoticeProcessor(
     private fun NoticePipelineContext.handleAvatarChanged(body: ModCustomFace) {
         if (body.uin == bot.id) {
             collect(BotAvatarChangedEvent(bot))
+        } else {
+            collect(FriendAvatarChangedEvent(bot.getFriend(body.uin) ?: return))
         }
-        collect(FriendAvatarChangedEvent(bot.getFriend(body.uin) ?: return))
     }
 
     private fun NoticePipelineContext.handleFriendDeleted(body: DelFriend) {
