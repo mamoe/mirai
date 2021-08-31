@@ -59,6 +59,4 @@ dependencies {
     api(asm("commons"))
 
     api(gradleApi())
-
-    implementation("net.mamoe:snapshots-publishing") // included from /buildSrc/snapshots-publishing
 }
