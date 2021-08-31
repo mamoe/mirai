@@ -37,9 +37,11 @@ tasks.register("updateSnapshotVersion") {
 }
 
 if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
-    rootProject.allprojects.forEach { project ->
-        project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
-            shadow.enabled = false // they are too big
+    afterEvaluate {
+        rootProject.allprojects.forEach { project ->
+            project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
+                shadow.enabled = false // they are too big
+            }
         }
     }
     logger.info("Disabled all shadow tasks.")
