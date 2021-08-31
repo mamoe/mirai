@@ -60,15 +60,6 @@ configure<kotlinx.validation.ApiValidationExtension> {
 
 GpgSigner.setup(project)
 
-tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
-    group = "mirai"
-    dependsOn(
-        project(":mirai-core-api").tasks.getByName("publishToMavenLocal"),
-        project(":mirai-core-utils").tasks.getByName("publishToMavenLocal"),
-        project(":mirai-core").tasks.getByName("publishToMavenLocal")
-    )
-}
-
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
 allprojects {
