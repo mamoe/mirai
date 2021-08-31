@@ -11,11 +11,11 @@
 [Version]: https://img.shields.io/maven-central/v/net.mamoe/mirai-core-api.svg?label=Maven%20Central
 [Central Download]: https://search.maven.org/search?q=net.mamoe%20mirai
 
-| 版本类型 |             版本号              |
-|:------:|:------------------------------:|
-|  稳定   |             2.7.0              |
-|  预览   |               -                |
-|  开发   |               -                |
+| 版本类型 |                 版本号                  |
+|:------:|:--------------------------------------:|
+|  稳定   |                2.7.0                   |
+|  预览   |                   -                    |
+|  开发   | [UsingSnapshots.md](UsingSnapshots.md) |
 
 ### 配置项目
 
