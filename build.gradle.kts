@@ -102,6 +102,13 @@ allprojects {
             configureFlattenSourceSets()
         }
         configureJarManifest()
+
+        if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
+            project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
+                shadow.enabled = false // they are too big
+            }
+            logger.info("Disabled all shadow tasks.")
+        }
     }
 }
 

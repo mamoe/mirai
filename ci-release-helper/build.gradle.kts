@@ -6,7 +6,6 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import keys.SecretKeys
 import java.io.ByteArrayOutputStream
 
@@ -36,16 +35,6 @@ tasks.register("updateSnapshotVersion") {
     }
 }
 
-if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
-    afterEvaluate {
-        rootProject.allprojects.forEach { project ->
-            project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
-                shadow.enabled = false // they are too big
-            }
-        }
-    }
-    logger.info("Disabled all shadow tasks.")
-}
 
 val snapshotVersion by lazy { getSnapshotVersionImpl() }
 
