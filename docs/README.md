@@ -88,7 +88,7 @@
 | `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
 | `PHP`                     | [nkxingxh/miraiez]                          |
-| `Python`                  | [Graia Framework][GraiaProject/Application] |
+| `Python`                  | [Avilla][GraiaProject/Avilla]               |
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
 | `Python`                  | [YiriMirai]                                 |
