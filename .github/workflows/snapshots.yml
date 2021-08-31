@@ -5,6 +5,9 @@ on:
     branches:
       - dev
       - snapshots-publishing
+    paths-ignore:
+      - 'docs/**'
+      - '**/README*.md'
 
 jobs:
   publish-mirai:
