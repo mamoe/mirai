@@ -25,7 +25,6 @@ nexusStaging {
 
 tasks.register("updateSnapshotVersion") {
     group = "mirai"
-    dependsOn(gradle.includedBuild("snapshots-publishing").task(":check"))
 
     doLast {
         rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
