@@ -31,7 +31,6 @@ include(":mirai-core-all")
 include(":binary-compatibility-validator")
 include(":binary-compatibility-validator-android")
 project(":binary-compatibility-validator-android").projectDir = file("binary-compatibility-validator/android")
-include(":ci-release-helper")
 
 includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
 includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
@@ -82,3 +81,5 @@ if (isMiraiConsoleCloned()) {
         """.trimIndent()
     )
 }
+
+include(":ci-release-helper")

@@ -1,19 +1,11 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Release Publish
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
-# events but only for the master branch
 on:
   push:
     tags:
-      - '*-dev*'
-      - '*-release'
-      - 'v*'
+      - 'v*' # 正式版本
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   publish-mirai:
     runs-on: ubuntu-latest
     steps:
@@ -69,39 +61,39 @@ jobs:
 
       - name: Gradle :mirai-core-utils:publish
         run: >
-          ./gradlew :mirai-core-utils:publish --scan
+          ./gradlew :mirai-core-utils:publish --scan --scan
 
       - name: Gradle :mirai-core-api:publish
         run: >
-          ./gradlew :mirai-core-api:publish --scan
+          ./gradlew :mirai-core-api:publish --scan --scan
 
       - name: Gradle :mirai-core:publish
         run: >
-          ./gradlew :mirai-core:publish --scan
+          ./gradlew :mirai-core:publish --scan --scan
 
       - name: Gradle :mirai-core-all:publish
         run: >
-          ./gradlew :mirai-core-all:publish --info
+          ./gradlew :mirai-core-all:publish --info --scan
 
       - name: Gradle :mirai-console:publish
         run: >
           ./gradlew
-          :mirai-console:publish --info
+          :mirai-console:publish --info --scan
 
       - name: Gradle :mirai-console-terminal:publish
         run: >
           ./gradlew
-          :mirai-console-terminal:publish --info
+          :mirai-console-terminal:publish --info --scan
 
       - name: Gradle :mirai-console-compiler-common:publish
         run: >
           ./gradlew
-          :mirai-console-compiler-common:publish --info
+          :mirai-console-compiler-common:publish --info --scan
 
       - name: Gradle :mirai-console-compiler-annotations:publish
         run: >
           ./gradlew
-          :mirai-console-compiler-annotations:publish --info
+          :mirai-console-compiler-annotations:publish --info --scan
 
       - name: Publish Gradle plugin
         run: >
@@ -110,7 +102,7 @@ jobs:
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
           -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
 
-      - name: Gradle :ci-release-helper:closeAndReleaseRepository
+      - name: Gradle :ci-release-helper:closeRepository
         run: >
           ./gradlew
-          :ci-release-helper:closeAndReleaseRepository --info
+          :ci-release-helper:closeRepository --info --scan

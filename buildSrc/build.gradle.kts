@@ -26,10 +26,10 @@ kotlin {
 }
 
 
+private val versionsText = project.projectDir.resolve("src/main/kotlin/Versions.kt").readText()
 fun version(name: String): String {
-    val versions = project.projectDir.resolve("src/main/kotlin/Versions.kt").readText()
 
-    return versions.lineSequence()
+    return versionsText.lineSequence()
         .map { it.trim() }
         .single { it.startsWith("const val $name") }
         .substringAfter('"', "")
@@ -52,6 +52,7 @@ dependencies {
     api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
     api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
     api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
+    api(ktor("client-okhttp", "1.4.3"))
     api("com.android.tools.build", "gradle", version("androidGradlePlugin"))
     api(asm("tree"))
     api(asm("util"))
