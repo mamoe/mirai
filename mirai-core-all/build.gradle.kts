@@ -9,6 +9,14 @@
 
 @file:Suppress("UnusedImport")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+buildscript {
+    dependencies {
+        classpath("com.guardsquare:proguard-gradle:${Versions.proguard}")
+    }
+}
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -26,3 +34,57 @@ dependencies {
 }
 
 configurePublishing("mirai-core-all")
+
+afterEvaluate {
+    tasks.register<proguard.gradle.ProGuardTask>("proguard") {
+        group = "mirai"
+
+        verbose()
+
+        injars(tasks.getByName<ShadowJar>("shadowJar"))
+
+        kotlin.runCatching {
+            file("build/libs/${project.name}-${project.version}-all-min.jar").delete()
+        }.exceptionOrNull()?.printStackTrace()
+        outjars("build/libs/${project.name}-${project.version}-all-min.jar")
+
+        val kotlinLibraries = kotlin.target.compilations["main"].compileDependencyFiles
+        //        .plus(kotlin.target.compilations["main"].runtimeDependencyFiles)
+
+        kotlinLibraries.distinctBy { it.normalize().name }.forEach { file ->
+            if (file.name.contains("-common")) return@forEach
+            if (file.name.contains("-metadata")) return@forEach
+            if (file.extension == "jar") libraryjars(file)
+        }
+
+        val javaHome = System.getProperty("java.home")
+        // Automatically handle the Java version of this build.
+        if (System.getProperty("java.version").startsWith("1.")) {
+            // Before Java 9, the runtime classes were packaged in a single jar file.
+            libraryjars("$javaHome/lib/rt.jar")
+        } else {
+            File(javaHome, "jmods").listFiles().orEmpty().forEach { file ->
+                libraryjars(
+                    mapOf(
+                        "jarfilter" to "!**.jar",
+                        "filter" to "!module-info.class"
+                    ), file
+                )
+            }
+//        // As of Java 9, the runtime classes are packaged in modular jmod files.
+//        libraryjars(
+//            // filters must be specified first, as a map
+//            mapOf("jarfilter" to "!**.jar",
+//                "filter" to "!module-info.class"),
+//            "$javaHome/jmods/java.base.jmod"
+//        )
+        }
+
+        configuration("mirai.pro")
+        configuration("kotlinx-serialization.pro")
+
+        dontobfuscate()
+        // keepattributes("*Annotation*,synthetic")
+    }
+
+}
