@@ -55,32 +55,29 @@ kotlin {
     jvm("android") {
         attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "android")
     }*/
-
     sourceSets.apply {
 
         val commonMain by getting {
             dependencies {
                 api(project(":mirai-core-api"))
+                api(`kotlinx-serialization-core-jvm`)
+                api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`)
+
                 implementation(project(":mirai-core-utils"))
-                api1(`kotlinx-serialization-core`)
-                api1(`kotlinx-serialization-json`)
-                implementation1(`kotlinx-serialization-protobuf`)
-
-                api1(`kotlinx-atomicfu`)
-                api1(`kotlinx-coroutines-core`)
-
-                api1(`kotlinx-io-jvm`)
-                implementation1(`kotlinx-coroutines-io`)
+                implementation(`kotlinx-serialization-protobuf-jvm`)
+                implementation(`kotlinx-atomicfu-jvm`)
                 implementation(`netty-all`)
                 implementation(`log4j-api`)
                 implementation(bouncycastle)
+                implementationKotlinxIoJvm()
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
-                api(yamlkt)
+                api(`yamlkt-jvm`)
             }
         }
 
@@ -111,7 +108,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                api1(`kotlinx-coroutines-debug`)
+                api(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }
@@ -132,23 +129,5 @@ if (isAndroidSDKAvailable) {
     }
     tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 }
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
-    implementation(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNotation: String) =
-    api(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
 
 configureMppPublishing()

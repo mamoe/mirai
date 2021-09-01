@@ -159,13 +159,12 @@ fun Project.configureKotlinExperimentalUsages() {
 
 fun KotlinSourceSet.configureKotlinExperimentalUsages() {
     languageSettings.progressiveMode = true
-    languageSettings.enableLanguageFeature("InlineClasses")
     experimentalAnnotations.forEach { a ->
-        languageSettings.useExperimentalAnnotation(a)
+        languageSettings.optIn(a)
     }
     if (name.contains("test", ignoreCase = true)) {
         testExperimentalAnnotations.forEach { a ->
-            languageSettings.useExperimentalAnnotation(a)
+            languageSettings.optIn(a)
         }
     }
 }

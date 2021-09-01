@@ -74,6 +74,7 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
     )
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToFriendImpl.Serializer::class)
 internal class OnlineMessageSourceToFriendImpl(
     override val sequenceIds: IntArray,
@@ -94,6 +95,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceToStrangerImpl(
     override val sequenceIds: IntArray,
@@ -120,6 +122,7 @@ internal class OnlineMessageSourceToStrangerImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToTempImpl.Serializer::class)
 internal class OnlineMessageSourceToTempImpl(
     override val sequenceIds: IntArray,
@@ -145,6 +148,7 @@ internal class OnlineMessageSourceToTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToGroupImpl.Serializer::class)
 internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,

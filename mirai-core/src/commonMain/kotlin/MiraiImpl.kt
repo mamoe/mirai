@@ -14,7 +14,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.http.*
+import io.ktor.util.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
@@ -582,6 +582,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         parameter("page", page)
                     }
                     headers {
+                        @OptIn(InternalAPI::class) // ktor bug
                         append(
                             "cookie",
                             "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id};"
@@ -605,6 +606,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 parameter("gc", groupId)
                 parameter("type", type.value)
                 headers {
+                    @OptIn(InternalAPI::class) // ktor bug
                     append(
                         "cookie",
                         "uin=o${bot.id};" +
@@ -690,9 +692,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return resId
     }
 
-
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveNewFriendRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -717,8 +716,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -738,8 +735,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -797,6 +792,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 append("bkn", bot.client.wLoginSigInfo.bkn)
             })
             headers {
+                @OptIn(InternalAPI::class) // ktor bug
                 append(
                     "cookie",
                     "uin=o${bot.id}; skey=${bot.sKey};"

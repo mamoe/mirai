@@ -97,6 +97,7 @@ allprojects {
             configureFlattenSourceSets()
         }
         configureJarManifest()
+        substituteDependenciesUsingExpectedVersion()
 
         if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
             project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->

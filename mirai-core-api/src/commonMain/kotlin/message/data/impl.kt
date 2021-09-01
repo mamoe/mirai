@@ -170,6 +170,7 @@ internal fun createMessageChainImplOptimized(delegate: List<SingleMessage>): Mes
 /**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(MessageChain.Serializer::class)
 internal data class MessageChainImpl constructor(
     @JvmField

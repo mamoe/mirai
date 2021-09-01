@@ -35,6 +35,7 @@ import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
 internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
@@ -59,6 +60,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
@@ -122,6 +124,7 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
     }
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
@@ -150,6 +153,7 @@ internal class OnlineMessageSourceFromTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
 internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,

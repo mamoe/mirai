@@ -30,7 +30,7 @@ import kotlin.annotation.AnnotationTarget.*
 @MiraiExperimentalApi
 @RequiresOptIn
 @Retention(AnnotationRetention.BINARY)
-@Target(CLASS, TYPE, FUNCTION, PROPERTY, CONSTRUCTOR)
+@Target(CLASS, FUNCTION, PROPERTY, CONSTRUCTOR)
 public annotation class LowLevelApi
 
 /**

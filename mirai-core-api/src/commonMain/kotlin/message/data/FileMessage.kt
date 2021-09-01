@@ -85,7 +85,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
      */
     public companion object Key :
-        AbstractPolymorphicMessageKey<@MiraiExperimentalApi MessageContent, FileMessage>(
+        AbstractPolymorphicMessageKey<MessageContent, FileMessage>(
             MessageContent, { it.safeCast() }) {
 
         public const val SERIAL_NAME: String = "FileMessage"

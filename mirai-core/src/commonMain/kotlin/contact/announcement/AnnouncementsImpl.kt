@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.contact.announcement
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
@@ -166,6 +167,7 @@ internal object AnnouncementProtocol {
         bot: Bot,
         resource: ExternalResource
     ): AnnouncementImage = bot.asQQAndroidBot().run {
+        @OptIn(InternalAPI::class) // ktor bug
         val resp = Mirai.Http.post<String> {
             url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
             body = MultiPartFormDataContent(formData {

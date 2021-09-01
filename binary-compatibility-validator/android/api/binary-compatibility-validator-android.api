@@ -601,6 +601,7 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
 	public final fun getWidth ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -640,6 +641,7 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters {
 	public fun hashCode ()I
 	public final fun isPinned ()Z
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -811,6 +813,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo {
 	public fun hashCode ()I
 	public final fun isEnd ()Ljava/lang/Integer;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -844,6 +847,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GActNum {
 	public final fun getNum ()Ljava/lang/Integer;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GActNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -877,6 +881,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum {
 	public final fun getNum ()Ljava/lang/Integer;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -910,6 +915,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum {
 	public final fun getNum ()Ljava/lang/Integer;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -943,6 +949,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum {
 	public final fun getNum ()Ljava/lang/Integer;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -980,6 +987,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct {
 	public final fun getUin ()Ljava/lang/Long;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1013,6 +1021,7 @@ public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence {
 	public final fun getNum ()Ljava/lang/Integer;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1067,6 +1076,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Actor {
 	public final fun getUin ()Ljava/lang/Long;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Actor;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$Actor$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1110,6 +1120,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$CurrentTalkative {
 	public final fun getUin ()Ljava/lang/Long;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$CurrentTalkative$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1156,6 +1167,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Language {
 	public final fun getScript ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Language;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$Language$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1197,6 +1209,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$LevelName {
 	public final fun getLv6 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$LevelName$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1240,6 +1253,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Tag {
 	public final fun getUin ()Ljava/lang/Long;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Tag;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$Tag$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1281,6 +1295,7 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Talkative {
 	public final fun getUin ()Ljava/lang/Long;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/GroupHonorListData$Talkative$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1356,6 +1371,7 @@ public abstract class net/mamoe/mirai/data/RequestEventData {
 	public abstract fun getEventId ()J
 	public fun reject (Lnet/mamoe/mirai/Bot;)V
 	public abstract fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/RequestEventData;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest : net/mamoe/mirai/data/RequestEventData {
@@ -1369,6 +1385,7 @@ public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequ
 	public final fun getInvitorNick ()Ljava/lang/String;
 	public fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1412,6 +1429,7 @@ public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest : net
 	public final fun reject (Lnet/mamoe/mirai/Bot;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun reject$default (Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;Lnet/mamoe/mirai/Bot;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -1442,6 +1460,7 @@ public final class net/mamoe/mirai/data/RequestEventData$NewFriendRequest : net/
 	public fun reject (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reject (Lnet/mamoe/mirai/Bot;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/data/RequestEventData$NewFriendRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -3244,6 +3263,7 @@ public final class net/mamoe/mirai/message/data/At : net/mamoe/mirai/message/cod
 	public final fun getTarget ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/At;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/At$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -3308,6 +3328,7 @@ public final class net/mamoe/mirai/message/data/AudioCodec$Companion {
 	public final fun fromFormatNameOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/AudioCodec;
 	public final fun fromId (I)Lnet/mamoe/mirai/message/data/AudioCodec;
 	public final fun fromIdOrNull (I)Lnet/mamoe/mirai/message/data/AudioCodec;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class net/mamoe/mirai/message/data/ConstrainSingle : net/mamoe/mirai/message/data/SingleMessage {
@@ -3364,6 +3385,7 @@ public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/c
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/message/data/Dice;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Dice;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/Dice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -3416,6 +3438,7 @@ public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/Li
 	public fun replaceAll (Ljava/util/function/UnaryOperator;)V
 	public fun retainAll (Ljava/util/Collection;)Z
 	public fun serializeToMiraiCode ()Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
 	public fun set (ILnet/mamoe/mirai/message/data/SingleMessage;)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public final fun size ()I
@@ -3947,6 +3970,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public final fun getName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Face;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/Face$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4012,6 +4036,7 @@ public final class net/mamoe/mirai/message/data/FlashImage : net/mamoe/mirai/mes
 	public fun hashCode ()I
 	public fun serializeToMiraiCode ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/FlashImage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/FlashImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4061,6 +4086,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessage : net/mamoe/mirai
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/ForwardMessage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/ForwardMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4109,6 +4135,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessage$Node : net/mamoe/
 	public fun getTime ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/ForwardMessage$Node;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/ForwardMessage$Node$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4318,6 +4345,7 @@ public final class net/mamoe/mirai/message/data/LightApp : net/mamoe/mirai/messa
 	public fun getContent ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/LightApp;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/LightApp$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4741,6 +4769,7 @@ public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/mes
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/MusicShare;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/MusicShare$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -4951,6 +4980,7 @@ public final class net/mamoe/mirai/message/data/PlainText : net/mamoe/mirai/mess
 	public final fun getContent ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/PlainText;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/PlainText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5003,6 +5033,7 @@ public final class net/mamoe/mirai/message/data/PokeMessage : net/mamoe/mirai/me
 	public final fun getPokeType ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/PokeMessage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/PokeMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5039,6 +5070,7 @@ public final class net/mamoe/mirai/message/data/QuoteReply : net/mamoe/mirai/mes
 	public final fun getSource ()Lnet/mamoe/mirai/message/data/MessageSource;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/QuoteReply;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/QuoteReply$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5069,6 +5101,7 @@ public final class net/mamoe/mirai/message/data/RawForwardMessage {
 	public fun hashCode ()I
 	public final fun render (Lnet/mamoe/mirai/message/data/ForwardMessage$DisplayStrategy;)Lnet/mamoe/mirai/message/data/ForwardMessage;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/RawForwardMessage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/RawForwardMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5089,6 +5122,7 @@ public final class net/mamoe/mirai/message/data/RawForwardMessage$Companion {
 
 public abstract interface class net/mamoe/mirai/message/data/RichMessage : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/RichMessage$Key;
+	public fun contentToString ()Ljava/lang/String;
 	public abstract fun getContent ()Ljava/lang/String;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 }
@@ -5115,6 +5149,7 @@ public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mi
 	public final fun getResourceId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/RichMessageOrigin;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/RichMessageOrigin$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5146,6 +5181,7 @@ public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/ShowImageFlag;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -5227,6 +5263,7 @@ public final class net/mamoe/mirai/message/data/VipFace : net/mamoe/mirai/messag
 	public final fun getKind ()Lnet/mamoe/mirai/message/data/VipFace$Kind;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/VipFace;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/VipFace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5258,6 +5295,7 @@ public final class net/mamoe/mirai/message/data/VipFace$Kind {
 	public final fun getName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/VipFace$Kind;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/VipFace$Kind$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5292,6 +5330,7 @@ public class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/P
 	public fun hashCode ()I
 	public final fun toAudio ()Lnet/mamoe/mirai/message/data/Audio;
 	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Voice;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/message/data/Voice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5511,6 +5550,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getWifiBSSID ()[B
 	public final fun getWifiSSID ()[B
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -5543,6 +5583,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version {
 	public final fun getIncremental ()[B
 	public final fun getRelease ()[B
 	public final fun getSdk ()I
+	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo$Version;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Version$$serializer : kotlinx/serialization/internal/GeneratedSerializer {

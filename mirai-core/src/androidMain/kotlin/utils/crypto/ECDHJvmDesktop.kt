@@ -38,6 +38,7 @@ internal actual class ECDHKeyPairImpl(
  * https://cs.android.com/android/platform/superproject/+/master:libcore/ojluni/src/main/java/sun/security/jca/Providers.java;l=371;bpv=1;bpt=1
  * https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html
  * */
+@Suppress("DEPRECATION") // since JDK 9
 private class AndroidProvider : Provider("sbAndroid", 1.0, "") {
     override fun getService(type: String?, algorithm: String?): Service? {
         if (type == "KeyFactory" && algorithm == "EC") {
