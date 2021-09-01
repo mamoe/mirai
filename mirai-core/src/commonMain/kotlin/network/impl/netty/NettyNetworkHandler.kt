@@ -113,12 +113,18 @@ internal open class NettyNetworkHandler(
             .addLast(RawIncomingPacketCollector(decodePipeline))
     }
 
+    protected open fun createDummyDecodePipeline() = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)
+
     // can be overridden for tests
-    protected open suspend fun createConnection(decodePipeline: PacketDecodePipeline): NettyChannel {
+    protected open suspend fun createConnection(): NettyChannel {
         packetLogger.debug { "Connecting to $address" }
 
         val contextResult = CompletableDeferred<NettyChannel>()
         val eventLoopGroup = NioEventLoopGroup()
+        val decodePipeline = PacketDecodePipeline(
+            this@NettyNetworkHandler.coroutineContext
+                .plus(eventLoopGroup.asCoroutineDispatcher())
+        )
 
         val future = Bootstrap().group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
@@ -158,8 +164,6 @@ internal open class NettyNetworkHandler(
 
         return contextResult.await()
     }
-
-    protected val decodePipeline = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)
 
     protected inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
@@ -241,7 +245,7 @@ internal open class NettyNetworkHandler(
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
         private val connection = async {
-            createConnection(decodePipeline)
+            createConnection()
         }
 
         @Suppress("JoinDeclarationAndAssignment")
