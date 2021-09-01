@@ -479,9 +479,48 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         host: ListenerHost,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
     ) {
+        val jobOfListenerHost: Job?
+        val coroutineContext0 = if (host is SimpleListenerHost) {
+            val listenerCoroutineContext = host.coroutineContext
+            val listenerJob = listenerCoroutineContext[Job]
+
+            val rsp = listenerCoroutineContext.minusKey(Job) +
+                    coroutineContext +
+                    (listenerCoroutineContext[CoroutineExceptionHandler] ?: EmptyCoroutineContext)
+
+            val registerCancelHook = when {
+                listenerJob === null -> false
+
+                // Registering cancellation hook is needless
+                // if [Job] of [EventChannel] is same as [Job] of [SimpleListenerHost]
+                (rsp[Job] ?: this.defaultCoroutineContext[Job]) === listenerJob -> false
+
+                else -> true
+            }
+
+            jobOfListenerHost = if (registerCancelHook) {
+                listenerCoroutineContext[Job]
+            } else {
+                null
+            }
+            rsp
+        } else {
+            jobOfListenerHost = null
+            coroutineContext
+        }
         for (method in host.javaClass.declaredMethods) {
             method.getAnnotation(EventHandler::class.java)?.let {
-                method.registerEventHandler(host, this, it, coroutineContext)
+                val listener = method.registerEventHandler(host, this, it, coroutineContext0)
+                // For [SimpleListenerHost.cancelAll]
+                jobOfListenerHost?.invokeOnCompletion { exception ->
+                    listener.cancel(
+                        when (exception) {
+                            is CancellationException -> exception
+                            is Throwable -> CancellationException(null, exception)
+                            else -> null
+                        }
+                    )
+                }
             }
         }
     }
