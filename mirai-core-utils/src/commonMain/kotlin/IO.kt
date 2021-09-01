@@ -14,10 +14,10 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.charsets.*
+import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import java.io.File
-import kotlin.text.Charsets
+import kotlin.text.String
 
 public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
 
@@ -115,7 +115,7 @@ public fun Input._readTLVMap(
 }
 
 public inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String =
-    String(this.readBytes(length), charset = charset)
+    String(this.readBytes(length), charset = charset) // stdlib
 
 public inline fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
