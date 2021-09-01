@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 internal val JsonForCache = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
-    isLenient = true
+//    isLenient = true // "null" will become null and cause errors
     prettyPrint = true
 }
 
