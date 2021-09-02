@@ -45,7 +45,7 @@ public value class Either<out L : Any, out R : Any?> private constructor(
          * Create a [Either] whose value is [left].
          * @throws IllegalArgumentException if [left] satisfies both types [L] and [R].
          */
-        @JvmName("left")
+        @JvmName("left1")
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         @kotlin.internal.LowPriorityInOverloadResolution
         public inline operator fun <reified L : Any, reified R> invoke(left: L): Either<L, R> =
@@ -57,8 +57,24 @@ public value class Either<out L : Any, out R : Any?> private constructor(
          */
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         @kotlin.internal.LowPriorityInOverloadResolution
-        @JvmName("right")
+        @JvmName("right1")
         public inline operator fun <reified L : Any, reified R> invoke(right: R): Either<L, R> =
+            checkTypes<L, R>(right).new(right)
+
+        /**
+         * Create a [Either] whose value is [left].
+         * @throws IllegalArgumentException if [left] satisfies both types [L] and [R].
+         */
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        public inline fun <reified L : Any, reified R> left(left: L): Either<L, R> =
+            checkTypes<L, R>(left).new(left)
+
+        /**
+         * Create a [Either] whose value is [right].
+         * @throws IllegalArgumentException if [right] satisfies both types [L] and [R].
+         */
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        public inline fun <reified L : Any, reified R> right(right: R): Either<L, R> =
             checkTypes<L, R>(right).new(right)
 
 
