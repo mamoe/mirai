@@ -22,7 +22,7 @@
 [iTXTech/mirai-native]: https://github.com/iTXTech/mirai-native
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
-[GraiaProject/Application]: https://github.com/GraiaProject/Application
+[Avilla]: https://github.com/GraiaProject/Avilla
 [NoneBot]: https://github.com/nonebot/nonebot2
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
