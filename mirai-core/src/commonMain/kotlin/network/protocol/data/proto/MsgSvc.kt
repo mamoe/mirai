@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.utils.CheckableResponseB
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 @Serializable
@@ -650,14 +651,14 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbGetRoamMsgResp(
-        @ProtoNumber(1) @JvmField val result: Int = 0,
-        @ProtoNumber(2) @JvmField val errmsg: String = "",
+        @ProtoNumber(1) override val result: Int = 0,
+        @ProtoNumber(2) override val errmsg: String = "",
         @ProtoNumber(3) @JvmField val peerUin: Long = 0L,
         @ProtoNumber(4) @JvmField val lastMsgtime: Long = 0L,
         @ProtoNumber(5) @JvmField val random: Long = 0L,
         @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
         @ProtoNumber(7) @JvmField val sig: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf, CheckableResponseB()
 
     @Serializable
     internal class PbDiscussReadedReportReq(

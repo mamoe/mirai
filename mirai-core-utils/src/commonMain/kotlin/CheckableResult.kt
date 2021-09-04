@@ -28,6 +28,17 @@ public abstract class CheckableResponseA : CheckableResponse {
     final override val _errorMessage: String? get() = errorMessage
 }
 
+@Serializable
+public abstract class CheckableResponseB : CheckableResponse {
+    public abstract val result: Int
+
+    @Suppress("SpellCheckingInspection")
+    public abstract val errmsg: String
+
+    final override val _errorCode: Int get() = result
+    final override val _errorMessage: String get() = errmsg
+}
+
 public class DeserializationFailure(
     structType: KType,
     public val json: String,
@@ -40,17 +51,42 @@ public class DeserializationFailure(
     }
 }
 
-public fun <T : CheckableResponse> T.checked(): T {
+/*
+ * `check`: throws exception, or returns succeed value.
+ * `checked`: do `check` and wrap result into an `Either`.
+ */
+
+public fun <T : CheckableResponse> T.check(): T {
     check(_errorCode == 0) { "Error code: $_errorCode, Error message: $_errorMessage" }
     return this
 }
 
-public fun DeserializationFailure.checked(): Nothing = throw this.createException()
-
-public inline fun <reified T : CheckableResponse> Either<DeserializationFailure, T>.checked(): T {
-    return this.fold(onLeft = { it.checked() }, onRight = { it.checked() })
+public open class FailureResponse(
+    public val errorCode: Int,
+    public val errorMessage: String,
+) {
+    public fun createException(): Exception {
+        return IllegalStateException("Error code: $errorCode, Error message: $errorMessage")
+    }
 }
 
-public inline fun <reified T> Either<DeserializationFailure, T>.checked(): T {
-    return this.fold(onLeft = { it.checked() }, onRight = { it })
+public inline fun <reified T : CheckableResponse> T.checked(): Either<FailureResponse, T> {
+    if (_errorCode == 0) return Either<FailureResponse, T>(this)
+    return Either(FailureResponse(_errorCode, _errorMessage.toString()))
+}
+
+public fun DeserializationFailure.check(): Nothing = throw this.createException()
+public fun FailureResponse.check(): Nothing = throw this.createException()
+
+public inline fun <reified T : CheckableResponse> Either<DeserializationFailure, T>.check(): T {
+    return this.fold(onLeft = { it.check() }, onRight = { it.check() })
+}
+
+public inline fun <reified T> Either<DeserializationFailure, T>.check(): T {
+    return this.fold(onLeft = { it.check() }, onRight = { it })
+}
+
+@JvmName("checkedFailureResponseT")
+public inline fun <reified T> Either<FailureResponse, T>.check(): T {
+    return this.fold(onLeft = { it.check() }, onRight = { it })
 }

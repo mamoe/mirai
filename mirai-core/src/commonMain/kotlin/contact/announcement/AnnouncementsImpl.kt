@@ -188,8 +188,8 @@ internal object AnnouncementProtocol {
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(UploadImageResp.serializer()).checked()
-        return resp.id.replace("&quot;", "\"").loadSafelyAs(GroupAnnouncementImage.serializer()).checked().toPublic()
+        }.loadSafelyAs(UploadImageResp.serializer()).check()
+        return resp.id.replace("&quot;", "\"").loadSafelyAs(GroupAnnouncementImage.serializer()).check().toPublic()
     }
 
     @Serializable
@@ -233,7 +233,7 @@ internal object AnnouncementProtocol {
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(SendGroupAnnouncementResp.serializer()).checked().fid
+        }.loadSafelyAs(SendGroupAnnouncementResp.serializer()).check().fid
     }
 
     suspend fun QQAndroidBot.getRawGroupAnnouncements(
@@ -271,7 +271,7 @@ internal object AnnouncementProtocol {
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(DeleteResp.serializer()).checked()
+        }.loadSafelyAs(DeleteResp.serializer()).check()
         return true
     }
 
