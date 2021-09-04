@@ -17,10 +17,12 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
 import net.mamoe.mirai.internal.message.OfflineAudioImpl
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
@@ -61,8 +63,8 @@ internal class FriendImpl(
     override val info: FriendInfoImpl,
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override suspend fun delete() {
-        check(bot.friends[this.id] != null) {
-            "Friend ${this.id} had already been deleted"
+        check(bot.friends[id] != null) {
+            "Friend $id had already been deleted"
         }
         bot.network.run {
             FriendList.DelFriend.invoke(bot.client, this@FriendImpl).sendAndExpect().also {
@@ -145,4 +147,6 @@ internal class FriendImpl(
 
         return audio!!
     }
+
+    override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplFriend(this) }
 }

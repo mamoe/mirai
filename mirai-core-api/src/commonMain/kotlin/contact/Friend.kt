@@ -15,6 +15,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.FriendNudge
@@ -34,7 +35,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @see FriendMessageEvent
  */
 @NotStableForInheritance
-public interface Friend : User, CoroutineScope, AudioSupported {
+public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported {
     /**
      * 向这个对象发送消息.
      *
