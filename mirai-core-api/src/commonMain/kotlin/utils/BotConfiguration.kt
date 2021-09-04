@@ -20,8 +20,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
-import net.mamoe.mirai.contact.roaming.RoamingAuthenticator
-import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import java.io.File
 import java.io.InputStream
@@ -319,13 +317,6 @@ public open class BotConfiguration { // open for Java
     public fun fileBasedDeviceInfo(filepath: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier { workingDir.resolve(filepath) }
     }
-
-    /**
-     * 漫游消息验证器.
-     * @see RoamingSupported
-     * @since 2.8
-     */
-    public var roamingAuthenticator: RoamingAuthenticator? = null
 
     ///////////////////////////////////////////////////////////////////////////
     // Logging

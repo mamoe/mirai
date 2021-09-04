@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.utils.BotConfiguration
 import java.util.stream.Stream
 
 /**
@@ -30,7 +29,7 @@ public interface RoamingMessages {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 查询指定时间段内的漫游消息记录. 将会调用 [BotConfiguration.roamingAuthenticator] 获取漫游消息独立密码.
+     * 查询指定时间段内的漫游消息记录.
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
      * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
@@ -48,7 +47,7 @@ public interface RoamingMessages {
     ): Flow<MessageChain>
 
     /**
-     * 查询所有漫游消息记录. 将会调用 [BotConfiguration.roamingAuthenticator] 获取漫游消息独立密码.
+     * 查询所有漫游消息记录.
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
      * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
@@ -62,7 +61,7 @@ public interface RoamingMessages {
     ): Flow<MessageChain> = getMessagesIn(0, Long.MAX_VALUE, filter)
 
     /**
-     * 查询指定时间段内的漫游消息记录. 将会调用 [BotConfiguration.roamingAuthenticator] 获取漫游消息独立密码.
+     * 查询指定时间段内的漫游消息记录.
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
      * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
@@ -82,7 +81,7 @@ public interface RoamingMessages {
     ): Stream<MessageChain>
 
     /**
-     * 查询所有漫游消息记录. 将会调用 [BotConfiguration.roamingAuthenticator] 获取漫游消息独立密码.
+     * 查询所有漫游消息记录.
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
      * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
