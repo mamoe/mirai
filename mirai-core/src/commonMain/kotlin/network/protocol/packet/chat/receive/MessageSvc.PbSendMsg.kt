@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncCookie
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -35,7 +36,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getRandomUnsignedInt
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
@@ -215,7 +215,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         internalIds = randIds.get(),
                         sender = client.bot,
                         target = target,
-                        time = currentTimeSeconds().toInt(),
+                        time = client.bot.clock.server.currentTimeSeconds().toInt(),
                         sequenceIds = sequenceIds.get(),
                         originalMessage = message,
                     ),
@@ -275,7 +275,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         internalIds = randIds.get(),
                         sender = client.bot,
                         target = targetFriend,
-                        time = currentTimeSeconds().toInt(),
+                        time = client.bot.clock.server.currentTimeSeconds().toInt(),
                         sequenceIds = sequenceIds.get(),
                         originalMessage = message,
                     ),
@@ -400,7 +400,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         internalIds = randIds.get(),
                         sender = client.bot,
                         target = targetGroup,
-                        time = currentTimeSeconds().toInt(),
+                        time = client.bot.clock.server.currentTimeSeconds().toInt(),
                         originalMessage = message, //,
                         //   sourceMessage = message
                     ),
@@ -488,7 +488,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = member,
-        time = currentTimeSeconds().toInt(),
+        time = client.bot.clock.server.currentTimeSeconds().toInt(),
         sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
         originalMessage = message,
     )

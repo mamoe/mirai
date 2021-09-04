@@ -27,9 +27,12 @@ import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.contact.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.internal.network.components.ContactCacheService
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.ServerList
+import net.mamoe.mirai.internal.network.getRandomByteArray
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
@@ -41,10 +44,7 @@ import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.toIpV4Long
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.toReadPacket
+import net.mamoe.mirai.utils.*
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
@@ -150,11 +150,17 @@ internal class StatSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val packet = readUniPacket(SvcRespRegister.serializer())
-            packet.iHelloInterval.let {
+            return Response(packet)
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Response) {
+            packet.origin.iHelloInterval.let {
                 bot.configuration.statHeartbeatPeriodMillis = it.times(1000).toLong()
             }
 
-            return Response(packet)
+            val diffMillis = packet.origin.serverTime - currentTimeMillis()
+            bot.components[ClockHolder].server = Clock.SystemDefault.adjusted(diffMillis)
+            bot.network.logger.info { "Server time updated, diff: ${diffMillis}ms=${diffMillis.millisToHumanReadableString()}" }
         }
 
         fun online(

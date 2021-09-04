@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
@@ -399,7 +400,7 @@ internal open class GroupSendMessageHandler(
             providedSequenceIds = intArrayOf(receipt.sequenceId),
             sender = bot,
             target = contact,
-            time = currentTimeSeconds().toInt(),
+            time = bot.clock.server.currentTimeSeconds().toInt(),
             originalMessage = finalMessage
         )
     }

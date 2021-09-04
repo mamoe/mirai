@@ -149,7 +149,8 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     /**
      * 发送时间时间戳, 单位为秒.
      *
-     * 时间戳可能来自服务器, 也可能来自 mirai, 且无法保证两者时间同步.
+     * 自 2.8.0 起, 时间戳为服务器时区 (UTC+8).
+     * 在 2.8.0 以前, 时间戳可能来自服务器 (UTC+8), 也可能来自 mirai (本地), 且无法保证两者时间同步.
      */
     public abstract val time: Int
 

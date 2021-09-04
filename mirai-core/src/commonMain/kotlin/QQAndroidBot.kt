@@ -232,6 +232,7 @@ internal open class QQAndroidBot constructor(
         return ConcurrentComponentStorage {
             set(BotClientHolder, BotClientHolderImpl(bot, networkLogger.subLogger("BotClientHolder")))
             set(SyncController, SyncControllerImpl())
+            set(ClockHolder, ClockHolder())
         }.withFallback(defaultBotLevelComponents)
     }
 
