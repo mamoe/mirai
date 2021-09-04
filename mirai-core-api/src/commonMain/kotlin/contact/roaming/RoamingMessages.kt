@@ -12,7 +12,6 @@
 package net.mamoe.mirai.contact.roaming
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -97,23 +96,4 @@ public interface RoamingMessages {
     public suspend fun getAllMessagesStream(
         filter: RoamingMessageFilter? = null
     ): Stream<MessageChain> = getMessagesStream(0, Long.MAX_VALUE, filter)
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Get single
-    ///////////////////////////////////////////////////////////////////////////
-
-    /**
-     * 精确获取一条消息. 将会调用 [BotConfiguration.roamingAuthenticator] 获取漫游消息独立密码.
-     *
-     * 若该消息已过期, 返回 `null`.
-     *
-     * @param id [MessageSource.ids]
-     * @param internalId [MessageSource.internalIds]
-     * @param time [MessageSource.time] 服务器时间
-     */
-    public suspend fun getMessage(id: Int, internalId: Int, time: Long): MessageChain? {
-        return getMessagesIn(time, time) { message ->
-            id in message.ids && internalId in message.internalIds
-        }.firstOrNull()
-    }
 }
