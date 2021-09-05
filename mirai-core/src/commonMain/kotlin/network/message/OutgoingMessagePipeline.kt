@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.pipeline.PipelineConfiguration
 import net.mamoe.mirai.internal.network.pipeline.PipelineContext
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.*
@@ -62,7 +63,7 @@ internal class OutgoingMessagePipelineImpl(
     }
 }
 
-internal typealias MessagePipelineConfiguration<T> = PipelineConfiguration<MessagePipelineContext<T>, MessageChain, MessageReceipt<T>>
+internal typealias MessagePipelineConfiguration<T> = PipelineConfiguration<MessagePipelineContext<T>, Message, MessageReceipt<T>>
 
 internal interface MessagePipelineContext<out C : AbstractContact> : PipelineContext, BotAware, CoroutineScope {
     override val attributes: MutableTypeSafeMap
@@ -82,7 +83,10 @@ internal interface MessagePipelineContext<out C : AbstractContact> : PipelineCon
         val KEY_CAN_SEND_AS_FRAGMENTED = TypeKey<Boolean>("canSendAsFragmented")
 
         @JvmField
-        val KEY_ORIGINAL_MESSAGE = TypeKey<MessageChain>("originalMessage")
+        val KEY_SENDING_AS_FRAGMENTED = TypeKey<Boolean>("sendingAsFragmented")
+
+        @JvmField
+        val KEY_ORIGINAL_MESSAGE = TypeKey<Message>("originalMessage")
 
         @JvmField
         val KEY_FINAL_MESSAGE_CHAIN = TypeKey<MessageChain>("finalMessageChain")

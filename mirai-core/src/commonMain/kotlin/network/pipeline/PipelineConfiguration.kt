@@ -35,14 +35,25 @@ internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
         var value: Any? = initialIn
 
         /**
-         * Run [Node.Finally]s and throw [e] with [PipelineContext.exceptionCollector].
+         * Run [Node.Finally]s
          */
-        suspend fun fail(e: Throwable): Nothing {
+        suspend fun doAllFinally() {
             _nodes.forEach { node ->
                 if (node is Node.Finally) {
-                    node.run { context.doFinally() }
+                    try {
+                        node.run { context.doFinally() }
+                    } catch (e: Throwable) {
+                        context.exceptionCollector.collectThrow(ExceptionInFinallyPhaseException(node, e))
+                    }
                 }
             }
+        }
+
+        /**
+         * Run [Node.Finally]s and throw [e] with [PipelineContext.exceptionCollector].
+         */
+        suspend fun failAndExit(e: Throwable): Nothing {
+            doAllFinally()
             context.exceptionCollector.collectThrow(e)
         }
 
@@ -56,32 +67,45 @@ internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
                     afterEach(node, result)
                     result.fold(
                         onSuccess = { value = it },
-                        onFailure = { fail(it) }
+                        onFailure = { failAndExit(it) }
                     )
                 }
-                is Node.Finish -> return value.uncheckedCast()
+                is Node.Finish -> {
+                    doAllFinally()
+                    afterEach(node, Result.success(value))
+                    return value.uncheckedCast()
+                }
                 is Node.SavePoint -> {
                     afterEach(node, Result.success(value))
                     // nothing to do
                 }
                 is Node.Finally -> {
-                    val result = kotlin.runCatching {
-                        node.run { context.doFinally() }
-                    }
-                    afterEach(node, result)
+                    // ignored
                 }
                 is Node.JumpToSavepointOnFailure -> {
                     val result = kotlin.runCatching {
                         node.delegate.cast<Phase<C, Any?, Any?>>().doPhase(context, value)
                     }
                     afterEach(node.delegate, result)
-                    result.onFailure { e ->
-                        context.exceptionCollector.collect(e)
-                        setNextIndex(_nodes.indexOfFirst { it is Node.SavePoint && it.id == node.targetSavepointId })
-                    }
+                    result.fold(
+                        onSuccess = { value = it },
+                        onFailure = { e ->
+                            context.exceptionCollector.collect(e)
+                            setNextIndex(_nodes.indexOfFirst { it is Node.SavePoint && it.id == node.targetSavepointId })
+                        }
+                    )
                 }
             }
         }
         error("There is no finishing phase.")
     }
 }
+
+internal fun PipelineConfiguration<*, *, *>.validate() {
+    if (this.nodes.none() { it is Node.Finally<*> }) error("There is no Finally node in the configuration $this")
+}
+
+internal class ExceptionInFinallyPhaseException(
+    val phase: Node.Finally<*>,
+    override val cause: Throwable?
+) : RuntimeException("Exception in finally phase: $phase")

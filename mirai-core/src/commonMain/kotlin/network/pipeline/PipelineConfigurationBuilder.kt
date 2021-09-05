@@ -50,6 +50,9 @@ internal class PipelineConfigurationBuilder<C : PipelineContext, InitialIn, Fina
 
     infix fun <AIn, AOut, BOut, Next : Node<C, AOut, BOut>> Node<C, AIn, AOut>.then(next: Next): Next {
         configuration.addNode(this)
+        if (next is Node.Finish<*>) {
+            configuration.addNode(next)
+        }
         return next
     }
 

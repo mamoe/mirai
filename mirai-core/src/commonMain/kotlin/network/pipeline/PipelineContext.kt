@@ -29,10 +29,14 @@ internal abstract class AbstractPipelineContext(
 ) : PipelineContext {
     override val logger: MiraiLogger by lazy { MiraiLogger.Factory.create(this::class) }
     override val exceptionCollector: ExceptionCollector = ExceptionCollector()
-    override var executionResult: Result<Any?> =
-        Result.failure(object : IllegalStateException("executionResult is not yet initialized") {
-            override fun fillInStackTrace(): Throwable = this
-        })
+
+    @Volatile
+    override var executionResult: Result<Any?> = UNINITIALIZED
+
+    companion object {
+        private val UNINITIALIZED =
+            Result.failure<Any?>(IllegalStateException("executionResult is not yet initialized"))
+    }
 }
 
 internal inline val <T : PipelineContext> T.context get() = this
