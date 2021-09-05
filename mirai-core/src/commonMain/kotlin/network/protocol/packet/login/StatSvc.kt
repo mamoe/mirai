@@ -158,9 +158,10 @@ internal class StatSvc {
                 bot.configuration.statHeartbeatPeriodMillis = it.times(1000).toLong()
             }
 
-            val diffMillis = packet.origin.serverTime - currentTimeMillis()
+            val serverTime = packet.origin.serverTime
+            val diffMillis = if (serverTime == 0L) 0 else serverTime - currentTimeMillis()
             bot.components[ClockHolder].server = Clock.SystemDefault.adjusted(diffMillis)
-            bot.network.logger.info { "Server time updated, diff: ${diffMillis}ms=${diffMillis.millisToHumanReadableString()}" }
+            bot.network.logger.info { "Server time updated, serverTime: $serverTime, diff: ${diffMillis}ms=${diffMillis.millisToHumanReadableString()}" }
         }
 
         fun online(
