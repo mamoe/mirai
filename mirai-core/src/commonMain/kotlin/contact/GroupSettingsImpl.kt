@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.GroupOperation
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.SwitchAnonymousChat
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
 @Suppress("SetterBackingFieldAssignment")
 internal class GroupSettingsImpl(
@@ -97,9 +98,7 @@ internal class GroupSettingsImpl(
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 launch {
                     //Handle it in NoticePipelineContext#processAllowAnonymousChat
-                    bot.network.run {
-                        SwitchAnonymousChat(bot.client, id, newValue).sendAndExpect()
-                    }
+                    SwitchAnonymousChat(bot.client, id, newValue).sendAndExpect(bot.network)
                 }
             }
         }
