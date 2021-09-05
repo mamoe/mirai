@@ -152,6 +152,7 @@ internal object KnownPacketFactories {
         //  TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,
+        TroopManagement.SwitchAnonymousChat,
         TroopEssenceMsgManager.SetEssence,
         NudgePacket,
         Heartbeat.Alive,
