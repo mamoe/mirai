@@ -132,8 +132,7 @@ internal open class QQAndroidBot constructor(
                     cause is NetworkException && cause.recoverable -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))
                     }
-                    cause == null ->{
-                        eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, null))
+                    cause is BotClosedByEvent -> {
                     }
                     else -> {
                         // any other unexpected exceptions considered as an error
