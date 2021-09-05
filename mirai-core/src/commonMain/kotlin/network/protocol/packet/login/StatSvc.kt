@@ -159,7 +159,7 @@ internal class StatSvc {
             }
 
             val serverTime = packet.origin.serverTime
-            val diffMillis = if (serverTime == 0L) 0 else serverTime - currentTimeMillis()
+            val diffMillis = if (serverTime == 0L) 0 else serverTime - currentTimeSeconds()
             bot.components[ClockHolder].server = Clock.SystemDefault.adjusted(diffMillis)
             bot.network.logger.info { "Server time updated, serverTime: $serverTime, diff: ${diffMillis}ms=${diffMillis.millisToHumanReadableString()}" }
         }
