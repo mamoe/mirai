@@ -361,6 +361,11 @@ internal class GroupOrMemberListNoticeProcessor(
         groupUin: Long,
     ) {
         when (kind) {
+            1, 0x81 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
+                collect(BotLeaveEvent.Disband(group))
+                bot.groups.delegate.remove(group)
+                group.cancel(CancellationException("Being Disband"))
+            }
             2, 0x82 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
                 if (target == bot.id) {
                     collect(BotLeaveEvent.Active(group))
