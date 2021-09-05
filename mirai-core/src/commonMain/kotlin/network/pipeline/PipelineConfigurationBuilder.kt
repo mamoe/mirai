@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.internal.network.pipeline
 
+import net.mamoe.mirai.internal.network.message.PhaseMarker
 import net.mamoe.mirai.internal.network.message.buildPhaseConfiguration
+import net.mamoe.mirai.message.data.Message
 
 @DslMarker
 internal annotation class CriticalPointMarker
@@ -20,6 +22,14 @@ internal annotation class CriticalPointMarker
 internal class PipelineConfigurationBuilder<C : PipelineContext, InitialIn, FinalOut>(
     val configuration: PipelineConfiguration<C, InitialIn, FinalOut> = PipelineConfiguration()
 ) {
+
+    @Suppress("PropertyName")
+    @PhaseMarker
+    val Begin = object : AbstractPhase<C, Message, Message>("Begin") {
+        override suspend fun C.doPhase(input: Message): Message {
+            return input
+        }
+    }
 
     @Suppress("PropertyName")
     @CriticalPointMarker

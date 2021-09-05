@@ -19,30 +19,36 @@ import net.mamoe.mirai.utils.recoverCatchingSuppressed
  * @see JumpToSavepointOnFailure
  * @see Phase
  */
-internal sealed class Node<in C : PipelineContext, in In, out Out>(
+internal sealed interface Node<in C : PipelineContext, in In, out Out> {
     val name: String
-) {
-    class Finish<FinalOut>(name: String = "Finish") : Node<PipelineContext, FinalOut, FinalOut>(name)
-    abstract class Finally<C : PipelineContext>(name: String) : Node<C, Any?, Nothing>(name) {
+
+    class Finish<FinalOut>(override val name: String = "Finish") : Node<PipelineContext, FinalOut, FinalOut>
+    abstract class Finally<C : PipelineContext>(override val name: String) : Node<C, Any?, Nothing> {
         abstract suspend fun C.doFinally()
     }
 
-    internal class SavePoint<C : PipelineContext, T>(val id: Any) : Node<C, T, T>("Savepoint $id")
+    class SavePoint<C : PipelineContext, T>(val id: Any) : Node<C, T, T> {
+        override val name: String = "Savepoint $id"
+    }
 
-    internal class JumpToSavepointOnFailure<C : PipelineContext, AIn, AOut>(
+    class JumpToSavepointOnFailure<C : PipelineContext, AIn, AOut>(
         val delegate: Phase<C, AIn, AOut>,
         val targetSavepointId: Any,
-    ) : Node<C, AIn, AOut>(delegate.name)
+    ) : Node<C, AIn, AOut> {
+        override val name: String get() = delegate.name
+    }
 }
 
 /**
  * Runnable [Node]
  */
-internal abstract class Phase<in C : PipelineContext, in In, out Out>(
-    name: String
-) : Node<C, In, Out>(name) {
-    abstract suspend fun C.doPhase(input: In): Out
+internal interface Phase<in C : PipelineContext, in In, out Out> : Node<C, In, Out> {
+    suspend fun C.doPhase(input: In): Out
 }
+
+internal abstract class AbstractPhase<in C : PipelineContext, in In, out Out>(
+    override val name: String
+) : Phase<C, In, Out>
 
 internal suspend inline fun <C : PipelineContext, In, Out> Phase<C, In, Out>.doPhase(
     context: C,
@@ -54,7 +60,7 @@ internal suspend inline fun <C : PipelineContext, In, Out> Phase<C, In, Out>.doP
 internal class RecoverablePhase<C : PipelineContext, AIn, AOut>(
     val delegate: Phase<C, AIn, AOut>,
     val onFailure: Array<Phase<C, AIn, AOut>>,
-) : Phase<C, AIn, AOut>(delegate.name) {
+) : AbstractPhase<C, AIn, AOut>(delegate.name) {
     override suspend fun C.doPhase(input: AIn): AOut {
         val context = this
 

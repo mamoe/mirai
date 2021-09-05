@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_LONG
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_SIMPLE
 import net.mamoe.mirai.internal.network.notice.BotAware
+import net.mamoe.mirai.internal.network.pipeline.AbstractPipelineContext
 import net.mamoe.mirai.internal.network.pipeline.PipelineConfiguration
 import net.mamoe.mirai.internal.network.pipeline.PipelineContext
 import net.mamoe.mirai.internal.utils.subLogger
@@ -64,6 +65,7 @@ internal class OutgoingMessagePipelineImpl(
 internal typealias MessagePipelineConfiguration<T> = PipelineConfiguration<MessagePipelineContext<T>, MessageChain, MessageReceipt<T>>
 
 internal interface MessagePipelineContext<out C : AbstractContact> : PipelineContext, BotAware, CoroutineScope {
+    override val attributes: MutableTypeSafeMap
     val contact: C
     val time: TimeSource
 
@@ -102,6 +104,5 @@ internal class MessagePipelineContextImpl<out C : AbstractContact>(
         set(KEY_CAN_SEND_AS_LONG, true)
         set(KEY_CAN_SEND_AS_SIMPLE, true)
     },
-    override val exceptionCollector: ExceptionCollector = ExceptionCollector(),
     override val time: TimeSource = TimeSource.System
-) : MessagePipelineContext<C>
+) : MessagePipelineContext<C>, AbstractPipelineContext(attributes)

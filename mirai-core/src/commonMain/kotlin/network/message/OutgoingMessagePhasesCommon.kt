@@ -30,7 +30,6 @@ import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_MESSAGE_SOURCE_RESULT
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_ORIGINAL_MESSAGE
 import net.mamoe.mirai.internal.network.pipeline.*
-import net.mamoe.mirai.internal.network.pipeline.PipelineContext.Companion.KEY_EXECUTION_RESULT
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
@@ -97,24 +96,26 @@ internal abstract class OutgoingMessagePhasesCommon {
     companion object : OutgoingMessagePhasesCommon()
 
     @PhaseMarker
-    val Begin = object : Phase<MessagePipelineContext<AbstractContact>, Message, Message>("Begin") {
+    val Begin = object : AbstractPhase<MessagePipelineContext<AbstractContact>, Message, Message>("Begin") {
         override suspend fun MessagePipelineContextRaw.doPhase(input: Message): Message {
             return input
         }
     }
 
     @PhaseMarker
-    val Preconditions = object : Phase<MessagePipelineContext<AbstractContact>, Message, Message>("Preconditions") {
-        override suspend fun MessagePipelineContextRaw.doPhase(input: Message): Message {
-            require(!input.isContentEmpty()) { "message is empty" }
+    val Preconditions =
+        object : AbstractPhase<MessagePipelineContext<AbstractContact>, Message, Message>("Preconditions") {
+            override suspend fun MessagePipelineContextRaw.doPhase(input: Message): Message {
+                require(!input.isContentEmpty()) { "message is empty" }
 
-            return input
+                return input
+            }
         }
-    }
 
     @PhaseMarker
     val MessageToMessageChain =
-        object : Phase<MessagePipelineContext<AbstractContact>, Message, MessageChain>("MessageToMessageChain") {
+        object :
+            AbstractPhase<MessagePipelineContext<AbstractContact>, Message, MessageChain>("MessageToMessageChain") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: Message): MessageChain {
                 return input.toMessageChain()
             }
@@ -122,7 +123,7 @@ internal abstract class OutgoingMessagePhasesCommon {
 
     @PhaseMarker
     val CheckLength =
-        object : Phase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("CheckLength") {
+        object : AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("CheckLength") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: MessageChain): MessageChain {
                 if (input.contains(IgnoreLengthCheck)) return input
 
@@ -148,7 +149,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     @PhaseMarker
     class BroadcastPreSendEvent<C : AbstractContact> @PhaseMarker constructor(
         private val constructor: (C, Message) -> MessagePreSendEvent
-    ) : Phase<MessagePipelineContext<C>, MessageChain, MessageChain>("BroadcastPreSendEvent") {
+    ) : AbstractPhase<MessagePipelineContext<C>, MessageChain, MessageChain>("BroadcastPreSendEvent") {
         override suspend fun MessagePipelineContext<C>.doPhase(input: MessageChain): MessageChain {
             constructor(contact, input).broadcast()
             return input
@@ -159,7 +160,7 @@ internal abstract class OutgoingMessagePhasesCommon {
         private val constructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<in C>
     ) : Node.Finally<MessagePipelineContext<C>>("BroadcastPreSendEvent") {
         override suspend fun MessagePipelineContext<C>.doFinally() {
-            val result = attributes[KEY_EXECUTION_RESULT]
+            val result = executionResult
             if (result.isFailure) return
             val chain = attributes[KEY_FINAL_MESSAGE_CHAIN]
             constructor(contact, chain, result.exceptionOrNull(), result.getOrNull()?.cast()).broadcast()
@@ -167,7 +168,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     }
 
     @PhaseMarker
-    fun <T> LogMessageSent() = object : Phase<MessagePipelineContext<AbstractContact>, T, T>("LogMessageSent") {
+    fun <T> LogMessageSent() = object : AbstractPhase<MessagePipelineContext<AbstractContact>, T, T>("LogMessageSent") {
         override suspend fun MessagePipelineContext<AbstractContact>.doPhase(input: T): T {
             contact.logMessageSent(attributes[KEY_ORIGINAL_MESSAGE])
             return input
@@ -176,7 +177,8 @@ internal abstract class OutgoingMessagePhasesCommon {
 
     @PhaseMarker
     val UploadForwardMessages =
-        object : Phase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("UploadForwardMessages") {
+        object :
+            AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("UploadForwardMessages") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: MessageChain): MessageChain {
                 return input.replaced<ForwardMessage> { uploadForward(it) }
             }
@@ -197,7 +199,7 @@ internal abstract class OutgoingMessagePhasesCommon {
 
     @PhaseMarker
     val FixGroupImages =
-        object : Phase<MessagePipelineContext<GroupImpl>, MessageChain, MessageChain>("FixGroupImages") {
+        object : AbstractPhase<MessagePipelineContext<GroupImpl>, MessageChain, MessageChain>("FixGroupImages") {
             override suspend fun MessagePipelineContext<GroupImpl>.doPhase(input: MessageChain): MessageChain {
                 input.forEach {
                     if (it is OfflineGroupImage) contact.fixImageFileId(it)
@@ -262,7 +264,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     @PhaseMarker
     val EnsureSequenceIdAvailable =
         object :
-            Phase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("EnsureSequenceIdAvailable") {
+            AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("EnsureSequenceIdAvailable") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: MessageChain): MessageChain {
                 input.findIsInstance<QuoteReply>()?.source?.ensureSequenceIdAvailable()
                 return input
@@ -271,7 +273,8 @@ internal abstract class OutgoingMessagePhasesCommon {
 
     @PhaseMarker
     val ConvertToLongMessage =
-        object : Phase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("ConvertToLongMessage") {
+        object :
+            AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("ConvertToLongMessage") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: MessageChain): MessageChain {
                 if (ForceAsLongMessage in input) {
                     return convertToLongMessageImpl(input)
@@ -326,7 +329,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     @PhaseMarker
     val StartCreatePackets =
         object :
-            Phase<MessagePipelineContext<AbstractContact>, MessageChain, List<OutgoingPacket>?>("CreateMessagePackets") {
+            AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, List<OutgoingPacket>?>("CreateMessagePackets") {
             override suspend fun MessagePipelineContext<AbstractContact>.doPhase(input: MessageChain): List<OutgoingPacket>? {
                 attributes[KEY_FINAL_MESSAGE_CHAIN] = input
                 return null
@@ -335,7 +338,7 @@ internal abstract class OutgoingMessagePhasesCommon {
 
     abstract class CreatePacketsPhase<in C : AbstractContact>(
         name: String
-    ) : Phase<MessagePipelineContext<C>, List<OutgoingPacket>?, List<OutgoingPacket>?>(name) {
+    ) : AbstractPhase<MessagePipelineContext<C>, List<OutgoingPacket>?, List<OutgoingPacket>?>(name) {
         override suspend fun MessagePipelineContext<C>.doPhase(input: List<OutgoingPacket>?): List<OutgoingPacket>? {
             return doPhase(attributes[KEY_FINAL_MESSAGE_CHAIN])
         }
@@ -387,7 +390,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     @PhaseMarker
     fun <C : AbstractContact> SendPacketsAndCreateReceipt() =
         object :
-            Phase<MessagePipelineContext<C>, List<OutgoingPacket>?, MessageReceipt<C>>("EnsureSequenceIdAvailable") {
+            AbstractPhase<MessagePipelineContext<C>, List<OutgoingPacket>?, MessageReceipt<C>>("EnsureSequenceIdAvailable") {
             override suspend fun MessagePipelineContext<C>.doPhase(input: List<OutgoingPacket>?): MessageReceipt<C> {
                 checkNotNull(input) { "Internal error: packets are null." }
                 val finalMessage = attributes[KEY_FINAL_MESSAGE_CHAIN]
@@ -443,7 +446,7 @@ internal abstract class OutgoingMessagePhasesCommon {
     fun <Ctx : MessagePipelineContext<AbstractContact>> ThrowExceptions() =
         object : Node.Finally<Ctx>("ThrowExceptions") {
             override suspend fun Ctx.doFinally() {
-                attributes[KEY_EXECUTION_RESULT].onFailure {
+                executionResult.onFailure {
                     exceptionCollector.collectThrow(it)
                 }
             }

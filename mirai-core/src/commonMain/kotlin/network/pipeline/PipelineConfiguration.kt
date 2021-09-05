@@ -16,12 +16,22 @@ import net.mamoe.mirai.utils.uncheckedCast
 internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
     private val _nodes: ArrayList<Node<C, *, *>> = ArrayList() // must be ordered
     val nodes: List<Node<C, *, *>> get() = _nodes
+    val mutableNodes: MutableList<Node<C, *, *>> get() = _nodes
 
     fun addNode(node: Node<C, *, *>) {
         _nodes.add(node)
     }
 
-    suspend fun execute(context: C, initialIn: InitialIn): FinalOut {
+    fun addNodeBeforeFinish(node: Node<C, *, *>) {
+        val index = _nodes.indexOfFirst { it is Node.Finish } - 1
+        _nodes.add(index.coerceAtLeast(0), node)
+    }
+
+    suspend fun execute(
+        context: C,
+        initialIn: InitialIn,
+        afterEach: (node: Node<C, *, *>, result: Result<Any?>) -> Unit = { _, _ -> }
+    ): FinalOut {
         var value: Any? = initialIn
 
         /**
@@ -37,24 +47,35 @@ internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
         }
 
         _nodes.forEachWithIndexer { node ->
-            context.attributes[PipelineContext.KEY_EXECUTION_RESULT] = Result.success(value)
+            context.executionResult = Result.success(value)
             when (node) {
                 is Phase<*, *, *> -> {
-                    try {
-                        value = node.cast<Phase<C, Any?, Any?>>().doPhase(context, value)
-                    } catch (e: Throwable) {
-                        fail(e)
+                    val result = kotlin.runCatching {
+                        node.cast<Phase<C, Any?, Any?>>().doPhase(context, value)
                     }
+                    afterEach(node, result)
+                    result.fold(
+                        onSuccess = { value = it },
+                        onFailure = { fail(it) }
+                    )
                 }
                 is Node.Finish -> return value.uncheckedCast()
                 is Node.SavePoint -> {
+                    afterEach(node, Result.success(value))
                     // nothing to do
                 }
-                is Node.Finally -> node.run { context.doFinally() }
+                is Node.Finally -> {
+                    val result = kotlin.runCatching {
+                        node.run { context.doFinally() }
+                    }
+                    afterEach(node, result)
+                }
                 is Node.JumpToSavepointOnFailure -> {
-                    try {
+                    val result = kotlin.runCatching {
                         node.delegate.cast<Phase<C, Any?, Any?>>().doPhase(context, value)
-                    } catch (e: Throwable) {
+                    }
+                    afterEach(node.delegate, result)
+                    result.onFailure { e ->
                         context.exceptionCollector.collect(e)
                         setNextIndex(_nodes.indexOfFirst { it is Node.SavePoint && it.id == node.targetSavepointId })
                     }
