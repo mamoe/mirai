@@ -9,10 +9,14 @@
 
 package net.mamoe.mirai.internal.network.message
 
+import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_SENDING_AS_FRAGMENTED
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -40,4 +44,19 @@ internal object OutgoingMessagePhasesGroup : OutgoingMessagePhasesCommon(), Outg
                 )
             }
         }
+
+    @Suppress("FunctionName")
+    @PhaseMarker
+    fun CreatePacketsNormal() = object : CreatePacketsFallback<GroupImpl>() {
+        override suspend fun MessagePipelineContext<GroupImpl>.createPacketsImpl(chain: MessageChain): List<OutgoingPacket>? {
+            return MessageSvcPbSendMsg.createToGroupImpl(
+                bot.client,
+                contact,
+                chain,
+                fragmented = attributes[KEY_SENDING_AS_FRAGMENTED]
+            ) {
+                attributes[MessagePipelineContext.KEY_MESSAGE_SOURCE_RESULT] = CompletableDeferred(it)
+            }
+        }
+    }
 }

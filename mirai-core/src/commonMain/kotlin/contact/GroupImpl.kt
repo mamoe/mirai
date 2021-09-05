@@ -33,6 +33,10 @@ import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_AUDIO
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
+import net.mamoe.mirai.internal.network.message.MessagePipelineContextImpl
+import net.mamoe.mirai.internal.network.message.OutgoingMessagePhasesCommon
+import net.mamoe.mirai.internal.network.message.OutgoingMessagePhasesGroup
+import net.mamoe.mirai.internal.network.message.buildPhaseConfiguration
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
@@ -147,21 +151,40 @@ internal class GroupImpl constructor(
         return bot.id == id || members.firstOrNull { it.id == id } != null
     }
 
+    val sendMessagePipeline = OutgoingMessagePhasesGroup.run {
+        buildPhaseConfiguration {
+            Begin then
+                    Preconditions then
+                    MessageToMessageChain then
+                    OutgoingMessagePhasesCommon.BroadcastPreSendEvent(::GroupMessagePreSendEvent) then
+                    CheckLength then
+                    EnsureSequenceIdAvailable then
+                    UploadForwardMessages then
+                    FixGroupImages then
+
+                    Savepoint(1) then
+
+                    ConvertToLongMessage onFailureJumpTo 1 then
+                    StartCreatePackets then
+                    OutgoingMessagePhasesCommon.CreatePacketsForMusicShare(specialMessageSourceStrategy) then
+                    OutgoingMessagePhasesCommon.CreatePacketsForFileMessage(specialMessageSourceStrategy) then
+                    CreatePacketsNormal() then
+                    LogMessageSent() then
+                    SendPacketsAndCreateReceipt() onFailureJumpTo 1 then
+
+                    Finish finally
+
+                    OutgoingMessagePhasesCommon.BroadcastPostSendEvent(::GroupMessagePostSendEvent) finally
+                    CloseContext() finally
+                    ThrowExceptions()
+        }
+    }
+
+
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         require(!message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
-
-        val chain = broadcastMessagePreSendEvent(message, ::GroupMessagePreSendEvent)
-
-        val result = GroupSendMessageHandler(this)
-            .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
-
-        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-        logMessageSent(chain)
-
-        GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
-
-        return result.getOrThrow()
+        return sendMessagePipeline.execute(MessagePipelineContextImpl(this), message)
     }
 
     @OptIn(ExperimentalTime::class)
