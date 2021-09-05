@@ -194,7 +194,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
          */
         @JvmStatic
         public val instancesSequence: Sequence<Bot>
-            get() = _instances.values.asSequence().filterNotNull()
+            get() = _instances.values.asSequence()
 
         /**
          * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
