@@ -64,6 +64,39 @@ internal class MiraiProtocolInternal(
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 1571193922L
             )
+            protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
+                "com.tencent.minihd.qq",
+                537065739,
+                "5.8.9",
+                "6.0.0.2433",
+                150470524,
+                66560,
+                1970400,
+                "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
+                1595836208L,
+            )
+            protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
+                "com.tencent.minihd.qq",
+                537064315,
+                "5.8.9",
+                "6.0.0.2433",
+                150470524,
+                66560,
+                1970400,
+                "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
+                1595836208L,
+            )
+            protocols[MiraiProtocol.QIDIAN] = MiraiProtocolInternal(
+                "com.tencent.qidian",
+                537061386,
+                "3.8.6",
+                "6.0.0.2365",
+                49807228,
+                66560,
+                34869472,
+                "A0 1E EC AB 85 E9 E3 BA 2B F 6A 15 8C 85 5C 29",
+                1556628836L,
+            )
         }
     }
 }

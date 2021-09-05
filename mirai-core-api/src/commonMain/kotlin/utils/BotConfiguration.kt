@@ -245,6 +245,21 @@ public open class BotConfiguration { // open for Java
          */
         ANDROID_WATCH,
 
+        /**
+         * iPad
+         */
+        IPAD,
+
+        /**
+         * MacOS
+         */
+        MACOS,
+
+        /**
+         * 企点
+         */
+        QIDIAN,
+
     }
 
     /**
