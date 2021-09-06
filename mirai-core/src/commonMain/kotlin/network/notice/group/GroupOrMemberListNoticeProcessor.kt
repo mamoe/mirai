@@ -361,6 +361,7 @@ internal class GroupOrMemberListNoticeProcessor(
         groupUin: Long,
     ) {
         when (kind) {
+            // 01 为bot为群主时解散群
             1, 0x81 -> bot.getGroupByUinOrCode(groupUin)?.let { group ->
                 collect(BotLeaveEvent.Disband(group))
                 bot.groups.delegate.remove(group)
