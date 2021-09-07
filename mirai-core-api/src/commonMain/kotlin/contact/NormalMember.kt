@@ -49,13 +49,13 @@ public interface NormalMember : Member {
     public override var nameCard: String
 
     /**
-     * 群头衔.
+     * 群特殊头衔.
      *
-     * 仅群主可以修改群头衔.
+     * 仅群主可以修改群特殊头衔.
      *
      * 在修改时将会异步上传至服务器.
      *
-     * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
+     * @see MemberSpecialTitleChangeEvent 群特殊头衔被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
     public override var specialTitle: String

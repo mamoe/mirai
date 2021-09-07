@@ -36,11 +36,12 @@ internal fun MessageData.toMemberInfo() = MemberInfoImpl(
 
 @Suppress("RegExpRedundantEscape")
 internal val extraJsonPattern = Regex("<(\\{.*?\\})>")
+internal val jsonInstance = Json { ignoreUnknownKeys = true }
 
 @MiraiInternalApi
 internal fun String.parseToMessageDataList(): Sequence<MessageData> {
     return extraJsonPattern.findAll(this).filter { it.groups.size == 2 }.mapNotNull { result ->
-        Json.decodeFromString(MessageData.serializer(), result.groups[1]!!.value)
+        jsonInstance.decodeFromString(MessageData.serializer(), result.groups[1]!!.value)
     }
 }
 
