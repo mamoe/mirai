@@ -139,7 +139,10 @@ internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
-        oldData = this.oldVerSendFile
+        oldData = oldData,
+        bizType = 66,
+        useful = 1,
+        origin = 1,
     )
 }
 
@@ -184,9 +187,10 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
-        oldData = oldData,
         //        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
-        //        useful = 1,
+        bizType = 66,
+        useful = 1,
+        origin = 1,
         //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
     )
 }

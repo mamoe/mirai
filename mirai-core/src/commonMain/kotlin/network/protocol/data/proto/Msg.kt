@@ -262,7 +262,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(3) @JvmField val shortcut: String = "",
         @ProtoNumber(4) @JvmField val buffer: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val flag: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(6) @JvmField val oldData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(6) @JvmField val oldData: ByteArray? = null,
         @ProtoNumber(7) @JvmField val fileId: Int = 0,
         @ProtoNumber(8) @JvmField val serverIp: Int = 0,
         @ProtoNumber(9) @JvmField val serverPort: Int = 0,
