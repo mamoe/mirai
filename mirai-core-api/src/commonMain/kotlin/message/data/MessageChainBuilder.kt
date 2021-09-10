@@ -186,7 +186,9 @@ public class MessageChainBuilder private constructor(
      * 将所有已有元素引用复制到一个新的 [MessageChainBuilder]
      */
     public fun copy(): MessageChainBuilder {
-        return MessageChainBuilder(container.toMutableList())
+        return MessageChainBuilder(container.toMutableList()).also {
+            it.cache.append(this.cache)
+        }
     }
 
     public override fun remove(element: SingleMessage): Boolean {
