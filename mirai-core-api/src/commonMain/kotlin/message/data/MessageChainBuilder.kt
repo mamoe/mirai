@@ -204,6 +204,7 @@ public class MessageChainBuilder private constructor(
     }
 
     public override fun clear() {
+        cache.setLength(0)
         return container.clear()
     }
 
