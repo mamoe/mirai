@@ -82,7 +82,7 @@ internal class FriendNoticeProcessor(
 
         msgHead.context {
             // 对方 qq
-            val id = sequenceOf(fromUin, authUin).firstOrNull { it != 0L && it != bot.id }
+            val id = longArrayOf(fromUin, authUin).firstOrNull { it != 0L && it != bot.id }
             if (id == null) {
                 logger.error { "Could not determine uin for new stranger" }
                 return
