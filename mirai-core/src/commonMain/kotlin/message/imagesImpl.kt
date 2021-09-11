@@ -35,6 +35,13 @@ internal class OnlineGroupImageImpl(
 ) : OnlineGroupImage() {
     object Serializer : Image.FallbackSerializer("OnlineGroupImage")
 
+    override val size: Long get() = delegate.size.toLong()
+    override val width: Int
+        get() = delegate.width
+    override val height: Int
+        get() = delegate.height
+    override val imageType: ImageType
+        get() = getImageTypeById(delegate.imageType)
 
     override val imageId: String = generateImageId(
         delegate.picMd5,
@@ -69,6 +76,13 @@ internal class OnlineFriendImageImpl(
 OnlineFriendImage() {
     object Serializer : Image.FallbackSerializer("OnlineFriendImage")
 
+    override val size: Long get() = delegate.fileLen
+    override val width: Int
+        get() = delegate.picWidth
+    override val height: Int
+        get() = delegate.picHeight
+    override val imageType: ImageType
+        get() = getImageTypeById(delegate.imgType)
     override val imageId: String = kotlin.run {
         val imageType = getImageType(delegate.imgType)
         generateImageIdFromResourceId(delegate.resId, imageType)
@@ -109,14 +123,34 @@ OnlineFriendImage() {
 
 internal val UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED = systemProp("mirai.unknown.image.type.logging", false)
 
+internal fun getImageTypeById(id: Int): ImageType {
+    return ImageType.match(getImageType(id))
+}
+
+internal fun getIdByImageType(imageType: ImageType): Int {
+    return when (imageType) {
+        ImageType.JPG -> 1000
+        ImageType.PNG -> 1001
+        ImageType.WEBP -> 1002
+        ImageType.BMP -> 1005
+        ImageType.GIF -> 2000
+        //default to jpg
+        else -> 1000
+    }
+}
+
+internal data class ImageInfo(val width: Int, val height: Int, val imageType: ImageType)
+
+internal expect fun ExternalResource.getImageInfo(): ImageInfo
 internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"
         1001 -> "png"
         1002 -> "webp"
         1005 -> "bmp"
-        2000 -> "gif"
-        2001, 3 -> "png"
+        2000, 3, 4 -> "gif"
+        //apng
+        2001 -> "png"
         else -> {
             if (UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED) {
                 Image.logger.debug(
@@ -134,16 +168,20 @@ internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = generateImageId(picMd5, getImageType(imgType)),
         picMd5 = picMd5,
+        bizType = 5,
+        fileType = 66,
+        useful = 1,
         flag = ByteArray(4),
         bigUrl = bigUrl,
         origUrl = origUrl,
+        width = picWidth,
+        height = picHeight,
+        imageType = imgType,
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
-        oldData = oldData,
-        bizType = 66,
-        useful = 1,
-        origin = 1,
+        origin = original,
+        size = fileLen.toInt()
     )
 }
 
@@ -171,9 +209,15 @@ internal fun ImMsgBody.CustomFace.toNotOnlineImage(): ImMsgBody.NotOnlineImage {
         filePath = filePath,
         resId = resId,
         oldPicMd5 = false,
+        picWidth = width,
+        picHeight = height,
+        imgType = imageType,
         picMd5 = picMd5,
+        fileLen = size.toLong(),
+        oldVerSendFile = oldData,
         downloadPath = resId,
-        original = 1,
+        original = origin,
+        bizType = bizType,
         pbReserve = byteArrayOf(0x78, 0x02),
     )
 }
@@ -185,19 +229,25 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         filePath = this.imageId,
         picMd5 = this.md5,
         flag = ByteArray(4),
+        size = size.toInt(),
+        width = width,
+        height = height,
+        imageType = getIdByImageType(imageType),
+        origin = if (imageType == ImageType.GIF) {
+            0
+        } else {
+            1
+        },
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
         //_400Width = 351,
         //        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
-        bizType = 66,
+        bizType = 5,
+        fileType = 66,
         useful = 1,
-        origin = 1,
         //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
     )
 }
-
-private val oldData: ByteArray =
-    "15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41".hexToBytes()
 
 
 @Suppress("DEPRECATION")
@@ -208,8 +258,16 @@ internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
         resId = friendImageId,
         oldPicMd5 = false,
         picMd5 = this.md5,
+        fileLen = size,
         downloadPath = friendImageId,
-        original = 1,
+        original = if (imageType == ImageType.GIF) {
+            0
+        } else {
+            1
+        },
+        picWidth = width,
+        picHeight = height,
+        imgType = getIdByImageType(imageType),
         pbReserve = byteArrayOf(0x78, 0x02)
     )
 }
@@ -246,6 +304,10 @@ internal interface OfflineImage : Image
 @Serializable(with = OfflineGroupImage.Serializer::class)
 internal data class OfflineGroupImage(
     override val imageId: String,
+    override val width: Int = 0,
+    override val height: Int = 0,
+    override val size: Long = 0L,
+    override val imageType: ImageType = ImageType.UNKNOWN
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
     @Transient
     internal var fileId: Int? = null
@@ -288,6 +350,10 @@ internal val Image.friendImageId: String
 @Serializable(with = OfflineFriendImage.Serializer::class)
 internal data class OfflineFriendImage(
     override val imageId: String,
+    override val width: Int = 0,
+    override val height: Int = 0,
+    override val size: Long = 0L,
+    override val imageType: ImageType = ImageType.UNKNOWN
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
     object Serializer : Image.FallbackSerializer("OfflineFriendImage")
 

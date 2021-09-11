@@ -85,6 +85,28 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val imageId: String
 
+    /**
+     * 图片的宽度 (px), 当无法获取时为 0
+     */
+    public val width: Int
+
+    /**
+     * 图片的高度 (px), 当无法获取时为 0
+     */
+    public val height: Int
+
+    /**
+     * 图片的大小（字节）, 当无法获取时为 0
+     */
+    public val size: Long
+
+    /**
+     * 图片的类型, 当无法获取时为未知 [ImageType.UNKNOWN]
+     *
+     * @see ImageType
+     */
+    public val imageType: ImageType
+
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
@@ -211,6 +233,15 @@ public val Image.md5: ByteArray
 public sealed class AbstractImage : Image {
     private val _stringValue: String? by lazy(NONE) { "[mirai:image:$imageId]" }
 
+    override val size: Long
+        get() = 0L
+    override val width: Int
+        get() = 0
+    override val height: Int
+        get() = 0
+    override val imageType: ImageType
+        get() = ImageType.UNKNOWN
+
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
     override fun appendMiraiCodeTo(builder: StringBuilder) {
@@ -249,4 +280,20 @@ public abstract class FriendImage @MiraiInternalApi public constructor() :
 public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object
+}
+
+public enum class ImageType {
+    PNG,
+    BMP,
+    JPG,
+    GIF,
+    WEBP,
+    UNKNOWN;
+
+    public companion object {
+        public fun match(str: String): ImageType {
+            val input = str.uppercase()
+            return values().firstOrNull { it.name == input } ?: UNKNOWN
+        }
+    }
 }

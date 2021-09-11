@@ -682,7 +682,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(1) @JvmField val filePath: String = "",
         @ProtoNumber(2) @JvmField val fileLen: Long = 0L, // originally int
         @ProtoNumber(3) @JvmField val downloadPath: String = "",
-        @ProtoNumber(4) @JvmField val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(4) @JvmField val oldVerSendFile: ByteArray? = null,
         @ProtoNumber(5) @JvmField val imgType: Int = 0,
         @ProtoNumber(6) @JvmField val previewsImage: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(7) override val picMd5: ByteArray = EMPTY_BYTE_ARRAY,

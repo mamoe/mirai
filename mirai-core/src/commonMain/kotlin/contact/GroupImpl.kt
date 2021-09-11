@@ -23,8 +23,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.message.OfflineAudioImpl
-import net.mamoe.mirai.internal.message.OfflineGroupImage
+import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
@@ -170,6 +169,7 @@ internal class GroupImpl constructor(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
+        val imageInfo = resource.getImageInfo()
         bot.network.run<NetworkHandler, Image> {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
@@ -177,6 +177,11 @@ internal class GroupImpl constructor(
                 groupCode = id,
                 md5 = resource.md5,
                 size = resource.size,
+                filename = resource.md5.toUHexString("") + resource.formatName,
+                picWidth = imageInfo.width,
+                picHeight = imageInfo.height,
+                picType = getIdByImageType(imageInfo.imageType),
+                originalPic = 1
             ).sendAndExpect()
 
             when (response) {
@@ -187,8 +192,18 @@ internal class GroupImpl constructor(
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = resource.calculateResourceId()
-                    return OfflineGroupImage(imageId = resourceId)
-                        .also { it.fileId = response.fileId.toInt() }
+                    return response.fileInfo.let {
+                        OfflineGroupImage(
+                            imageId = resourceId,
+                            height = it.fileHeight,
+                            width = it.fileWidth,
+                            imageType = getImageTypeById(it.fileType),
+                            size = resource.size
+                        )
+                    }
+                        .also {
+                            it.fileId = response.fileId.toInt()
+                        }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
@@ -208,8 +223,15 @@ internal class GroupImpl constructor(
                         },
                     )
 
-                    return OfflineGroupImage(imageId = resource.calculateResourceId())
-                        .also { it.fileId = response.fileId.toInt() }
+                    return imageInfo.let {
+                        OfflineGroupImage(
+                            imageId = resource.calculateResourceId(),
+                            width = it.width,
+                            height = it.height,
+                            imageType = it.imageType,
+                            size = resource.size
+                        )
+                    }.also { it.fileId = response.fileId.toInt() }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
