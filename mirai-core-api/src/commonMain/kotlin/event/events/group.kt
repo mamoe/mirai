@@ -57,6 +57,18 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent(), GroupMemb
         public override fun toString(): String = "BotLeaveEvent.Kick(group=${group.id},operator=${operator.id})"
     }
 
+    /**
+     * 机器人因群主解散群而退出群. 操作人一定是群主
+     * @since 2.8
+     */
+    @MiraiExperimentalApi("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
+    public data class Disband @MiraiInternalApi constructor(
+        public override val group: Group
+    ) : BotLeaveEvent(), GroupOperableEvent {
+        public override val operator: NormalMember = group.owner
+        public override fun toString(): String = "BotLeaveEvent.Disband(group=${group.id})"
+    }
+
     public override val bot: Bot get() = group.bot
 }
 
