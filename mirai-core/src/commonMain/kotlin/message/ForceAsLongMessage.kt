@@ -17,9 +17,24 @@ import net.mamoe.mirai.utils.safeCast
 /**
  * 内部 flag, 放入 chain 强制作为 long 发送
  */
-internal object ForceAsLongMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+internal object ForceAsLongMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage, ForceAsSomeMessage,
     AbstractMessageKey<ForceAsLongMessage>({ it.safeCast() }) {
     override val key: MessageKey<ForceAsLongMessage> get() = this
+
+    override fun toString(): String = ""
+}
+
+internal sealed interface ForceAsSomeMessage : MessageMetadata {
+    companion object Key : AbstractMessageKey<ForceAsSomeMessage>({ it.safeCast() })
+}
+
+/**
+ * 内部 flag, 放入 chain 强制作为 long 发送
+ */
+internal object ForceAsFragmentedMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    ForceAsSomeMessage,
+    AbstractMessageKey<ForceAsFragmentedMessage>({ it.safeCast() }) {
+    override val key: MessageKey<ForceAsFragmentedMessage> get() = this
 
     override fun toString(): String = ""
 }

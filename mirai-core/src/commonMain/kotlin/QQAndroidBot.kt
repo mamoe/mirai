@@ -223,6 +223,8 @@ internal open class QQAndroidBot constructor(
             AccountSecretsManager,
             configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager")),
         )
+
+        set(OutgoingMessagePipelineFactory, OutgoingMessagePipelineFactoryImpl())
     }
 
     /**

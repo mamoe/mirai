@@ -23,14 +23,11 @@ import net.mamoe.mirai.event.events.MessagePreSendEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_FRAGMENTED
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_LONG
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_SIMPLE
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_FINAL_MESSAGE_CHAIN
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_MESSAGE_SOURCE_RESULT
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_ORIGINAL_MESSAGE
 import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_PACKET_TRACE
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_SENDING_AS_FRAGMENTED
+import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_STATE_CONTROLLER
 import net.mamoe.mirai.internal.network.pipeline.*
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
@@ -43,7 +40,8 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.Either
 import net.mamoe.mirai.utils.Either.Companion.fold
-import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.assertUnreachable
+import net.mamoe.mirai.utils.castOrNull
 
 
 internal typealias MessagePipelineConfigurationBuilder<C> = PipelineConfigurationBuilder<MessagePipelineContext<C>, Message, MessageReceipt<C>>
@@ -155,11 +153,16 @@ internal abstract class OutgoingMessagePhasesCommon {
     @PhaseMarker
     fun <C : AbstractContact> BroadcastPostSendEvent(
         constructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<in C>
-    ) = object : Node.Finally<MessagePipelineContext<C>>("BroadcastPreSendEvent") {
+    ) = object : Node.Finally<MessagePipelineContext<C>>("BroadcastPostSendEvent") {
         override suspend fun MessagePipelineContext<C>.doFinally() {
             val result = executionResult
             val chain = attributes[KEY_FINAL_MESSAGE_CHAIN]
-            constructor(contact, chain, result.exceptionOrNull(), result.getOrNull()?.cast()).broadcast()
+            constructor(
+                contact,
+                chain,
+                result.exceptionOrNull(),
+                result.getOrNull()?.castOrNull() ?: return
+            ).broadcast() // if cast failed, execution was failed.
         }
     }
 
@@ -271,29 +274,22 @@ internal abstract class OutgoingMessagePhasesCommon {
         object :
             AbstractPhase<MessagePipelineContext<AbstractContact>, MessageChain, MessageChain>("ConvertToLongMessage") {
             override suspend fun MessagePipelineContextRaw.doPhase(input: MessageChain): MessageChain {
-                if (ForceAsLongMessage in input) {
-                    return convertToLongMessageImpl(input)
-                }
+                val controller = attributes[KEY_STATE_CONTROLLER]
 
                 when {
-                    attributes[KEY_CAN_SEND_AS_SIMPLE] -> { // fastest
-                        attributes[KEY_CAN_SEND_AS_SIMPLE] = false
-                        attributes[KEY_SENDING_AS_FRAGMENTED] = false
-                        return input
+                    ForceAsLongMessage in input -> return convertToLongMessageImpl(input)
+                    ForceAsFragmentedMessage in input -> return input
+                    DontAsLongMessage in input -> {
+                        controller.stateAvailability[SendMessageState.LONG] = false
                     }
-                    attributes[KEY_CAN_SEND_AS_LONG] && DontAsLongMessage !in input -> {
-                        attributes[KEY_CAN_SEND_AS_LONG] = false
-                        attributes[KEY_SENDING_AS_FRAGMENTED] = false
-                        return convertToLongMessageImpl(input)
-                    }
-                    attributes[KEY_CAN_SEND_AS_FRAGMENTED] -> { // slowest
-                        attributes[KEY_CAN_SEND_AS_FRAGMENTED] = false
-                        attributes[KEY_SENDING_AS_FRAGMENTED] = true
-                        return input
-                    }
-                    else -> {
-                        error("Failed to send message: all strategies tried out.")
-                    }
+                }
+
+                controller.nextState()
+                return when (controller.state) {
+                    SendMessageState.UNINITIALIZED -> assertUnreachable()
+                    SendMessageState.ORIGIN -> input
+                    SendMessageState.LONG -> convertToLongMessageImpl(input)
+                    SendMessageState.FRAGMENTED -> input
                 }
             }
 

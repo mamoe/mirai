@@ -19,12 +19,16 @@ import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.BeforeImageUploadEvent
+import net.mamoe.mirai.event.events.BotLeaveEvent
+import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.components.BdhSession
+import net.mamoe.mirai.internal.network.components.OutgoingMessagePipelineFactory
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -35,8 +39,6 @@ import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.message.MessagePipelineConfiguration
 import net.mamoe.mirai.internal.network.message.MessagePipelineContextImpl
-import net.mamoe.mirai.internal.network.message.OutgoingMessagePhasesGroup
-import net.mamoe.mirai.internal.network.message.buildPhaseConfiguration
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
@@ -151,35 +153,11 @@ internal class GroupImpl constructor(
         return bot.id == id || members.firstOrNull { it.id == id } != null
     }
 
-    val sendMessagePipeline: MessagePipelineConfiguration<GroupImpl> = OutgoingMessagePhasesGroup.run {
-        buildPhaseConfiguration {
-            Begin then
-                    Preconditions then
-                    MessageToMessageChain then
-                    BroadcastPreSendEvent(::GroupMessagePreSendEvent) then
-                    CheckLength then
-                    EnsureSequenceIdAvailable then
-                    UploadForwardMessages then
-                    FixGroupImages then
-
-                    Savepoint(1) then
-
-                    ConvertToLongMessage onFailureJumpTo 1 then
-                    StartCreatePackets then
-                    CreatePacketsForMusicShare(specialMessageSourceStrategy) then
-                    CreatePacketsForFileMessage(specialMessageSourceStrategy) then
-                    CreatePacketsNormal() then
-                    LogMessageSent() then
-                    SendPacketsAndCreateReceipt() onFailureJumpTo 1 then
-
-                    Finish finally
-
-                    BroadcastPostSendEvent(::GroupMessagePostSendEvent) finally
-                    CloseContext() finally
-                    ThrowExceptions()
-        }
+    val sendMessagePipeline: MessagePipelineConfiguration<GroupImpl> by lazy {
+        bot.components[OutgoingMessagePipelineFactory].createForGroup(
+            this
+        )
     }
-
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         require(!message.isContentEmpty()) { "message is empty" }

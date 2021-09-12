@@ -14,10 +14,7 @@ import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.broadcastMessagePreSendEvent
-import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_FRAGMENTED
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_LONG
-import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_CAN_SEND_AS_SIMPLE
+import net.mamoe.mirai.internal.network.message.MessagePipelineContext.Companion.KEY_STATE_CONTROLLER
 import net.mamoe.mirai.internal.network.notice.BotAware
 import net.mamoe.mirai.internal.network.pipeline.AbstractPipelineContext
 import net.mamoe.mirai.internal.network.pipeline.PipelineConfiguration
@@ -29,7 +26,6 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.reflect.KClass
 
 /**
  * Steps:
@@ -45,24 +41,8 @@ import kotlin.reflect.KClass
  * 9. Post transformation
  * 10. Send packet
  *
- * @since 2.8-M1
+ * @since 2.8.0-M1
  */
-internal interface OutgoingMessagePipeline {
-    suspend fun <C : AbstractContact> sendMessage(contact: C, message: MessageChain): MessageReceipt<C>
-
-    companion object : ComponentKey<OutgoingMessagePipeline>
-}
-
-internal class OutgoingMessagePipelineImpl(
-    private val pipelineConfigurations: Map<KClass<out AbstractContact>, MessagePipelineConfiguration<out AbstractContact>>, // must be exhaustive ---- covering all AbstractContact
-) : OutgoingMessagePipeline {
-    override suspend fun <C : AbstractContact> sendMessage(contact: C, message: MessageChain): MessageReceipt<C> {
-        val context = MessagePipelineContextImpl<AbstractContact>(contact)
-        return pipelineConfigurations[contact::class]?.execute(context, message)?.cast()
-            ?: error("Internal error: Could")
-    }
-}
-
 internal typealias MessagePipelineConfiguration<T> = PipelineConfiguration<MessagePipelineContext<T>, Message, MessageReceipt<T>>
 
 internal interface MessagePipelineContext<out C : AbstractContact> : PipelineContext, BotAware, CoroutineScope {
@@ -74,16 +54,7 @@ internal interface MessagePipelineContext<out C : AbstractContact> : PipelineCon
 
     companion object {
         @JvmField
-        val KEY_CAN_SEND_AS_SIMPLE = TypeKey<Boolean>("canSendAsSimple")
-
-        @JvmField
-        val KEY_CAN_SEND_AS_LONG = TypeKey<Boolean>("canSendAsLong")
-
-        @JvmField
-        val KEY_CAN_SEND_AS_FRAGMENTED = TypeKey<Boolean>("canSendAsFragmented")
-
-        @JvmField
-        val KEY_SENDING_AS_FRAGMENTED = TypeKey<Boolean>("sendingAsFragmented")
+        val KEY_STATE_CONTROLLER = TypeKey<SendMessageStateController>("stateController")
 
         @JvmField
         val KEY_ORIGINAL_MESSAGE = TypeKey<Message>("originalMessage")
@@ -110,9 +81,7 @@ internal class MessagePipelineContextImpl<out C : AbstractContact>(
         .addNameHierarchically("MessagePipelineContext"),
     override val logger: MiraiLogger = contact.bot.logger.subLogger("MessagePipelineContext"), // TODO: 2021/8/15 use contact's logger
     override val attributes: MutableTypeSafeMap = buildTypeSafeMap {
-        set(KEY_CAN_SEND_AS_FRAGMENTED, true)
-        set(KEY_CAN_SEND_AS_LONG, true)
-        set(KEY_CAN_SEND_AS_SIMPLE, true)
+        set(KEY_STATE_CONTROLLER, SendMessageStateController())
     },
     override val time: TimeSource = TimeSource.System
 ) : MessagePipelineContext<C>, AbstractPipelineContext(attributes)

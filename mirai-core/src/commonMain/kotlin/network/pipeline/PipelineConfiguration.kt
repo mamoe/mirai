@@ -54,8 +54,9 @@ internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
          * Run [Node.Finally]s and throw [e] with [PipelineContext.exceptionCollector].
          */
         suspend fun failAndExit(e: Throwable): Nothing {
+            context.exceptionCollector.collect(e)
             doAllFinally()
-            context.exceptionCollector.collectThrow(e)
+            context.exceptionCollector.throwLast()
         }
 
         _nodes.forEachWithIndexer { node ->
@@ -127,6 +128,12 @@ internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C,
         return doPhase.invoke(this, input)
     }
 })
+
+@TestOnly
+internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.replacePhase(
+    name: String,
+    doPhase: suspend C.(input: Any?) -> Any?
+): Boolean = replacePhase({ it.name == name }, name, doPhase)
 
 @TestOnly
 internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.insertPhase(

@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.framework
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
@@ -57,6 +58,9 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
     }
 
     fun NetworkHandler.assertState(state: NetworkHandler.State) {
-        assertEquals(state, state)
+        assertEquals(state, this.state)
     }
 }
+
+internal fun <T : Any> ConcurrentComponentStorage.replace(key: ComponentKey<T>, block: (origin: T?) -> T) =
+    set(key, block(getOrNull(key)))
