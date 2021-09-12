@@ -86,7 +86,7 @@ internal abstract class AbstractBot constructor(
      */
     abstract val components: ComponentStorage
 
-    final override val isOnline: Boolean get() = network.state == State.OK
+    final override val isOnline: Boolean get() = if (!networkInitialized) false else network.state == State.OK
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
@@ -119,7 +119,12 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    val network: NetworkHandler by lazy { createNetworkHandler() } // the selector handles renewal of [NetworkHandler]
+    @Volatile
+    private var networkInitialized = false
+    val network: NetworkHandler by lazy {
+        networkInitialized = true
+        createNetworkHandler()
+    } // the selector handles renewal of [NetworkHandler]
 
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")
