@@ -6,7 +6,6 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
-@file:JvmName("ImagesImplKtJvm.kt")
 
 package net.mamoe.mirai.internal.message
 
