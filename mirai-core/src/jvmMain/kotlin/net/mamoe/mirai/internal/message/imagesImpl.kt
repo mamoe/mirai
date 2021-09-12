@@ -10,26 +10,29 @@
 
 package net.mamoe.mirai.internal.message
 
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.runBIO
 import javax.imageio.ImageIO
 
-internal actual fun ExternalResource.getImageInfo(): ImageInfo {
-    //Preload
-    val imageType = ImageType.match(formatName)
-    inputStream().use {
-        ImageIO.createImageInputStream(it).use { stream ->
-            ImageIO.getImageReaders(stream).forEach { imageReader ->
-                try {
-                    imageReader.input = stream
-                    return ImageInfo(
-                        height = imageReader.getHeight(0),
-                        width = imageReader.getWidth(0),
-                        imageType = imageType
-                    )
-                } finally {
-                    imageReader.dispose()
-                }
+internal actual suspend fun ExternalResource.getImageInfo(): ImageInfo {
+    return runBIO {
+        //Preload
+        val imageType = ImageType.match(formatName)
+        inputStream().use {
+            ImageIO.createImageInputStream(it).use { stream ->
+                ImageIO.getImageReaders(stream).forEach { imageReader ->
+                    try {
+                        imageReader.input = stream
+                        return@runBIO ImageInfo(
+                            height = imageReader.getHeight(0),
+                            width = imageReader.getWidth(0),
+                            imageType = imageType
+                        )
+                    } finally {
+                        imageReader.dispose()
+                    }
 
             }
         }

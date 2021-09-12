@@ -13,19 +13,22 @@ package net.mamoe.mirai.internal.message
 import android.graphics.BitmapFactory
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.runBIO
 
-internal actual fun ExternalResource.getImageInfo(): ImageInfo {
-    //Preload
-    val imageType = ImageType.match(formatName)
-    inputStream().use {
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeStream(it, null, options)
-        return ImageInfo(
-            width = options.outWidth,
-            height = options.outHeight,
-            imageType = imageType
-        )
+internal actual suspend fun ExternalResource.getImageInfo(): ImageInfo {
+    return runBIO {
+        //Preload
+        val imageType = ImageType.match(formatName)
+        inputStream().use {
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeStream(it, null, options)
+            ImageInfo(
+                width = options.outWidth,
+                height = options.outHeight,
+                imageType = imageType
+            )
+        }
     }
 
 }

@@ -27,6 +27,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
+import java.io.IOException
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(with = OnlineGroupImageImpl.Serializer::class)
@@ -141,7 +142,8 @@ internal fun getIdByImageType(imageType: ImageType): Int {
 
 internal data class ImageInfo(val width: Int, val height: Int, val imageType: ImageType)
 
-internal expect fun ExternalResource.getImageInfo(): ImageInfo
+@Throws(IOException::class)
+internal expect suspend fun ExternalResource.getImageInfo(): ImageInfo
 internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"
