@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.io.core.readIntLittleEndian
 import kotlinx.io.core.readShortLittleEndian
 import kotlinx.io.streams.readPacketExact
 import kotlinx.serialization.Serializable
@@ -149,7 +150,7 @@ internal fun getIdByImageType(imageType: ImageType): Int {
 
 internal data class ImageInfo(val width: Int = 0, val height: Int = 0, val imageType: ImageType = ImageType.UNKNOWN)
 
-@Throws(IOException::class)
+@Throws(IOException::class, IllegalArgumentException::class)
 internal fun ExternalResource.getImageInfo(): ImageInfo {
     //Preload
     val imageType = ImageType.match(formatName)
@@ -160,8 +161,6 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     require(read() == 0xFF && read() == 0XD8) {
                         "It's not a valid jpg file"
                     }
-                    var height = 0
-                    var width = 0
                     //0XFF Segment Start
                     while (read() == 0XFF) {
                         //SOF0 Segment
@@ -170,14 +169,20 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                             skip(2)
                             //Data precision
                             skip(1)
-                            height = readPacketExact(2).withUse { readShort() }.toInt()
-                            width = readPacketExact(2).withUse { readShort() }.toInt()
+                            val height = readPacketExact(2).withUse { readShort() }.toInt()
+                            val width = readPacketExact(2).withUse { readShort() }.toInt()
+                            return ImageInfo(width = width, height = height, imageType = imageType)
                         } else {
                             //Other segment, skip
-                            skip(readPacketExact(2).withUse { readShort().toLong() })
+                            skip(readPacketExact(2).withUse {
+                                //Skip size=segment length - 2 (length data itself)
+                                // - 1 (not including 0xff) + 1 (Start from 0)
+                                readShort().toLong() - 2
+                            })
                         }
                     }
-                    ImageInfo(width = width, height = height, imageType = imageType)
+                    throw IllegalArgumentException("It's not a valid jpg file, failed to find SOF0 segment")
+
                 }
                 ImageType.BMP -> {
                     require(size > 26 && readPacketExact(2).withUse { readText() == "BM" }) {
@@ -198,8 +203,8 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     //Size
                     skip(4)
                     ImageInfo(
-                        width = readPacketExact(4).withUse { readInt() },
-                        height = readPacketExact(4).withUse { readInt() },
+                        width = readPacketExact(4).withUse { readIntLittleEndian() },
+                        height = readPacketExact(4).withUse { readIntLittleEndian() },
                         imageType = imageType
                     )
                 }
