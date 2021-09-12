@@ -4345,12 +4345,15 @@ public final class net/mamoe/mirai/message/data/ImageType : java/lang/Enum {
 	public static final field PNG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field UNKNOWN Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field WEBP Lnet/mamoe/mirai/message/data/ImageType;
+	public static final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public static final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static fun values ()[Lnet/mamoe/mirai/message/data/ImageType;
 }
 
 public final class net/mamoe/mirai/message/data/ImageType$Companion {
 	public final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 }
 
 public final class net/mamoe/mirai/message/data/LightApp : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/RichMessage {
