@@ -271,7 +271,7 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     )
                 }
                 else -> {
-                    Image.logger.warning("Failed to read image type $imageType for ExternalResource $this, return zero width and height instead.")
+                    Image.logger.warning("Unable to read unsupported image type $imageType for ExternalResource $this, return zero width and height instead.")
                     ImageInfo(imageType = imageType)
                 }
             }
