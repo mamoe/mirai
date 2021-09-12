@@ -169,7 +169,7 @@ internal class GroupImpl constructor(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        val imageInfo = resource.getImageInfo()
+        val imageInfo = runBIO { resource.getImageInfo() }
         bot.network.run<NetworkHandler, Image> {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,

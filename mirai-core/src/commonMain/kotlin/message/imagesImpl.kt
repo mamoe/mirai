@@ -143,7 +143,7 @@ internal fun getIdByImageType(imageType: ImageType): Int {
 internal data class ImageInfo(val width: Int = 0, val height: Int = 0, val imageType: ImageType = ImageType.UNKNOWN)
 
 @Throws(IOException::class)
-internal expect suspend fun ExternalResource.getImageInfo(): ImageInfo
+internal expect fun ExternalResource.getImageInfo(): ImageInfo
 internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"

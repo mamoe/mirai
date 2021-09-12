@@ -12,33 +12,39 @@ package net.mamoe.mirai.internal.message
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.runBIO
 import javax.imageio.ImageIO
 
-internal actual suspend fun ExternalResource.getImageInfo(): ImageInfo {
-    return runBIO {
-        //Preload
-        val imageType = ImageType.match(formatName)
-        inputStream().use {
-            ImageIO.createImageInputStream(it).use { stream ->
-                ImageIO.getImageReaders(stream).forEach { imageReader ->
-                    try {
-                        imageReader.input = stream
-                        return@runBIO ImageInfo(
-                            height = imageReader.getHeight(0),
-                            width = imageReader.getWidth(0),
-                            imageType = imageType
-                        )
-                    } finally {
-                        imageReader.dispose()
-                    }
+internal actual fun ExternalResource.getImageInfo(): ImageInfo {
 
-                }
+    //Preload
+    val imageType = ImageType.match(formatName)
+    //Save previous value
+    val previousValue = ImageIO.getUseCache();
+    //We don't need to use cache since we won't load the whole file
+    ImageIO.setUseCache(false)
+    val imageInputStream = inputStream().use {
+        ImageIO.createImageInputStream(it)
+    }
+    return imageInputStream.use { stream ->
+        val readers = ImageIO.getImageReaders(stream)
+        if (readers.hasNext()) {
+            val imageReader = readers.next()
+            try {
+                imageReader.input = stream
+                ImageInfo(
+                    height = imageReader.getHeight(0),
+                    width = imageReader.getWidth(0),
+                    imageType = imageType
+                )
+            } finally {
+                imageReader.dispose()
             }
+        } else {
+            Image.logger.warning("Failed to find image readers for ExternalResource $this, return zero width and height instead.")
+            ImageInfo(imageType = imageType)
         }
-        Image.logger.warning(
-            "Failed to find image readers for ExternalResource $this, return zero width and height instead.",
-        )
-        return@runBIO ImageInfo(imageType = imageType)
+    }.also {
+        //Set it back in case other code using this
+        ImageIO.setUseCache(previousValue)
     }
 }
