@@ -193,7 +193,7 @@ public class GroupMessageEvent(
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempMessageEvent 已更改为 GroupTempMessageEvent",
     replaceWith = ReplaceWith("GroupTempMessageEvent", "net.mamoe.mirai.event.events.GroupTempMessageEvent"),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public sealed class TempMessageEvent constructor(
     public override val sender: NormalMember,

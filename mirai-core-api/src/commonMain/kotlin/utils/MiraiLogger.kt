@@ -94,7 +94,7 @@ public interface MiraiLogger {
          */
         @MiraiInternalApi
         @MiraiExperimentalApi
-        @Deprecated("Deprecated.")
+        @Deprecated("Deprecated.") // deprecated since 2.7
         public val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
 
         /**
@@ -104,7 +104,7 @@ public interface MiraiLogger {
         @Deprecated(
             "Please set factory by providing an service of type net.mamoe.mirai.utils.MiraiLogger.Factory",
             level = DeprecationLevel.WARNING
-        )
+        ) // deprecated since 2.7
         @JvmStatic
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
             DefaultFactoryOverrides.override { _, identity -> creator(identity) }
@@ -120,7 +120,7 @@ public interface MiraiLogger {
                 "MiraiLogger.Factory.create(YourClass::class, identity)",
                 "net.mamoe.mirai.utils.MiraiLogger"
             ), level = DeprecationLevel.WARNING
-        )
+        ) // deprecated since 2.7
         @JvmStatic
         public fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
     }

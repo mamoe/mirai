@@ -149,7 +149,7 @@ public fun <R> EventChannel<*>.subscribeUserMessages(
         "GroupTempMessageSubscribersBuilder",
         "net.mamoe.mirai.event.GroupTempMessageSubscribersBuilder"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
@@ -165,7 +165,7 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<Group
         "subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)",
         "net.mamoe.mirai.event.subscribeGroupTempMessages"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

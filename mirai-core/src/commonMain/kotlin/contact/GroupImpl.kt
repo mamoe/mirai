@@ -297,22 +297,6 @@ internal class GroupImpl constructor(
     override fun toString(): String = "Group($id)"
 }
 
-@Deprecated("use addNewNormalMember or newAnonymousMember")
-internal fun Group.newMember(memberInfo: MemberInfo): Member {
-    this.checkIsGroupImpl()
-    memberInfo.anonymousId?.let {
-        return AnonymousMemberImpl(
-            this, this.coroutineContext,
-            memberInfo
-        )
-    }
-    return NormalMemberImpl(
-        this,
-        this.coroutineContext,
-        memberInfo
-    )
-}
-
 internal fun Group.addNewNormalMember(memberInfo: MemberInfo): NormalMemberImpl? {
     if (members.contains(memberInfo.uin)) return null
     return newNormalMember(memberInfo).also {

@@ -114,7 +114,7 @@ internal suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
 @Deprecated(
     "Kept for binary compatibility.",
     ReplaceWith("PacketCodec.PacketLogger", "net.mamoe.mirai.internal.network.components.PacketCodec"),
-    level = DeprecationLevel.ERROR,
+    level = DeprecationLevel.HIDDEN,
 )
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch

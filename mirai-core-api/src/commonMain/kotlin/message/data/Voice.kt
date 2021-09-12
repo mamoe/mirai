@@ -73,7 +73,7 @@ public abstract class PttMessage : MessageContent {
     "Please use Audio instead.",
     replaceWith = ReplaceWith("Audio", "net.mamoe.mirai.message.data.Audio"),
     level = DeprecationLevel.WARNING
-)
+) // deprecated since 2.7
 public open class Voice @MiraiInternalApi constructor(
     @MiraiExperimentalApi public override val fileName: String,
     @MiraiExperimentalApi public override val md5: ByteArray,
@@ -96,7 +96,7 @@ public open class Voice @MiraiInternalApi constructor(
         @Deprecated(
             "Please consider migrating to Audio",
             level = DeprecationLevel.WARNING
-        )
+        ) // deprecated since 2.7
         @JvmStatic
         public fun fromAudio(audio: Audio): Voice {
             audio.run {
@@ -179,6 +179,6 @@ public open class Voice @MiraiInternalApi constructor(
 @Deprecated(
     "Please migrate to Audio",
     level = DeprecationLevel.WARNING
-)
+) // deprecated since 2.7
 @JvmSynthetic
 public inline fun Audio.toVoice(): Voice = Voice.fromAudio(this)

@@ -83,7 +83,7 @@ public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
         "GroupTempMessagePreSendEvent",
         "net.mamoe.mirai.event.events.GroupTempMessagePreSendEvent"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public sealed class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */

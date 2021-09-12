@@ -272,7 +272,7 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
 
     /** 如果是群临时会话消息 */
     @MessageDsl
-    @Deprecated("use sentByGroupTemp()", ReplaceWith("sentByGroupTemp()"), DeprecationLevel.ERROR)
+    @Deprecated("use sentByGroupTemp()", ReplaceWith("sentByGroupTemp()"), DeprecationLevel.HIDDEN)
     public fun sentByTemp(): ListeningFilter = sentByGroupTemp()
 
     /** 如果是群临时会话消息 */

@@ -1829,7 +1829,7 @@ public class net/mamoe/mirai/event/MessageSubscribersBuilder {
 	public final fun sentByOwner ()Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
 	public final fun sentByStranger ()Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
 	public final fun sentByStranger (Lkotlin/jvm/functions/Function3;)Ljava/lang/Object;
-	public final fun sentByTemp ()Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
+	public final synthetic fun sentByTemp ()Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
 	public final fun sentFrom (J)Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
 	public final fun sentFrom (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
 	public final fun startsWith (Ljava/lang/String;Z)Lnet/mamoe/mirai/event/MessageSubscribersBuilder$ListeningFilter;
@@ -1890,7 +1890,7 @@ public final class net/mamoe/mirai/event/SubscribeMessagesKt {
 	public static synthetic fun subscribeOtherClientMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun subscribeStrangerMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun subscribeStrangerMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final fun subscribeTempMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final synthetic fun subscribeTempMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun subscribeTempMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun subscribeUserMessages (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun subscribeUserMessages$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
@@ -5139,7 +5139,7 @@ public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mi
 	public static final field Key Lnet/mamoe/mirai/message/data/RichMessageOrigin$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Lnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/message/data/RichMessage;Ljava/lang/String;Lnet/mamoe/mirai/message/data/RichMessageKind;)V
 	public fun contentToString ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;

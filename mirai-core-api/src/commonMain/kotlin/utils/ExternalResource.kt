@@ -450,7 +450,10 @@ public interface ExternalResource : Closeable {
         @Suppress("DEPRECATION")
         @JvmBlockingBridge
         @JvmStatic
-        @Deprecated("Use `contact.uploadAudio(resource)` instead", level = DeprecationLevel.WARNING)
+        @Deprecated(
+            "Use `contact.uploadAudio(resource)` instead",
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.7
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): net.mamoe.mirai.message.data.Voice {
             @Suppress("DEPRECATION")
             if (contact is Group) return contact.uploadVoice(this)

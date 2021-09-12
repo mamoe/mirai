@@ -35,7 +35,7 @@ import net.mamoe.mirai.utils.safeCast
         "MessageOrigin",
         "net.mamoe.mirai.message.data.MessageOrigin",
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 public class RichMessageOrigin
 @Deprecated(
@@ -44,7 +44,7 @@ public class RichMessageOrigin
         "MessageOrigin(origin, resourceId, kind)",
         "net.mamoe.mirai.message.data.MessageOrigin",
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 constructor(
     /**
@@ -104,7 +104,7 @@ constructor(
             "MessageOrigin",
             "net.mamoe.mirai.message.data.MessageOrigin",
         ),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
     @Suppress("DEPRECATION_ERROR")
     public companion object Key : AbstractMessageKey<RichMessageOrigin>({ it.safeCast() }) {
@@ -120,7 +120,7 @@ constructor(
 @Deprecated(
     "Use MessageOriginKind",
     ReplaceWith("MessageOriginKind", "net.mamoe.mirai.message.data.MessageOriginKind"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 public enum class RichMessageKind {
     /**

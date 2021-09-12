@@ -193,7 +193,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
         "use uploadAudio",
         replaceWith = ReplaceWith("uploadAudio(resource)"),
         level = DeprecationLevel.WARNING
-    )
+    ) // deprecated since 2.7
     public suspend fun uploadVoice(resource: ExternalResource): Voice
 
     /**
@@ -241,7 +241,7 @@ public interface GroupSettings {
     @Deprecated(
         level = DeprecationLevel.WARNING,
         message = "group.announcements.asFlow().filter { it.parameters.sendToNewMember }.firstOrNull()",
-    )
+    ) // deprecated since 2.7
     public var entranceAnnouncement: String
 
     /**

@@ -22,7 +22,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Deprecated(
     message = "Use runBIO which delegates to `runInterruptible`. " +
             "Technically remove suspend call in `block` and remove CoroutineScope parameter usages.",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.HIDDEN
 )
 @kotlin.internal.LowPriorityInOverloadResolution
 public suspend inline fun <R> runBIO(
