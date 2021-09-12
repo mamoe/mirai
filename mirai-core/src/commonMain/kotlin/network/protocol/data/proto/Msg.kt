@@ -760,7 +760,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(17) @JvmField val pttUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(18) @JvmField val groupFileKey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(19) @JvmField val time: Int = 0,
-        @ProtoNumber(20) @JvmField val downPara: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(20) @JvmField var downPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(29) @JvmField val format: Int = 0,
         @ProtoNumber(30) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(31) @JvmField val bytesPttUrls: List<ByteArray> = emptyList(),

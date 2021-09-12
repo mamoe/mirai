@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
@@ -48,6 +49,16 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             166, 167, // 单向好友
             208, // friend ptt, maybe also support stranger
             -> {
+                data.msgBody.richText.ptt?.let { ptt ->
+                    if (ptt.downPara.isEmpty()) {
+                        val rsp = bot.network.sendAndExpect(
+                            PttStore.C2CPttDown(bot.client, senderUin, ptt.fileUuid)
+                        )
+                        if (rsp is PttStore.C2CPttDown.Response.Success) {
+                            ptt.downPara = rsp.downloadUrl.encodeToByteArray()
+                        }
+                    }
+                }
                 handlePrivateMessage(
                     data,
                     bot.getFriend(senderUin)?.impl()
