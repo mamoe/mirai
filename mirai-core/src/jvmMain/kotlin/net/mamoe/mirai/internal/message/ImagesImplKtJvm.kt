@@ -14,10 +14,14 @@ import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource
 import javax.imageio.ImageIO
 
+internal val isSupportJavax = runCatching { Class.forName("javax.imageio.ImageIO") }.isSuccess
 internal actual fun ExternalResource.getImageInfo(): ImageInfo {
-
     //Preload
     val imageType = ImageType.match(formatName)
+    if (!isSupportJavax) {
+        Image.logger.error("Failed to find java.desktop module use for reading images, return zero width and height instead.")
+        return ImageInfo(imageType = imageType)
+    }
     //Save previous value
     val previousValue = ImageIO.getUseCache();
     //We don't need to use cache since we won't load the whole file
