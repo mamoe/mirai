@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.io.core.readShortLittleEndian
+import kotlinx.io.streams.readPacketExact
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -135,6 +137,7 @@ internal fun getIdByImageType(imageType: ImageType): Int {
         ImageType.WEBP -> 1002
         ImageType.BMP -> 1005
         ImageType.GIF -> 2000
+        ImageType.APNG -> 2001
         //default to jpg
         else -> 1000
     }
@@ -143,7 +146,128 @@ internal fun getIdByImageType(imageType: ImageType): Int {
 internal data class ImageInfo(val width: Int = 0, val height: Int = 0, val imageType: ImageType = ImageType.UNKNOWN)
 
 @Throws(IOException::class)
-internal expect fun ExternalResource.getImageInfo(): ImageInfo
+internal fun ExternalResource.getImageInfo(): ImageInfo {
+    //Preload
+    val imageType = ImageType.match(formatName)
+    return inputStream().use { stream ->
+        stream.run {
+            when (imageType) {
+                ImageType.JPG -> {
+                    require(read() == 0xFF && read() == 0XD8) {
+                        "It's not a valid jpg file"
+                    }
+                    var height = 0
+                    var width = 0
+                    //0XFF Segment Start
+                    while (read() == 0XFF) {
+                        //SOF0 Segment
+                        if (read() == 0XC0) {
+                            //Length
+                            skip(2)
+                            //Data precision
+                            skip(1)
+                            height = readPacketExact(2).withUse { readShort() }.toInt()
+                            width = readPacketExact(2).withUse { readShort() }.toInt()
+                        } else {
+                            //Other segment, skip
+                            skip(readPacketExact(2).withUse { readShort().toLong() })
+                        }
+                    }
+                    ImageInfo(width, height, imageType)
+                }
+                ImageType.BMP -> {
+                    require(size > 26 && readPacketExact(2).withUse { readText() == "BM" }) {
+                        "It's not a valid bmp file"
+                    }
+                    //==========
+                    //FILE HEADER
+                    //==========
+                    //Size
+                    skip(4)
+                    //Reserve 2*2bytes
+                    skip(4)
+                    //Offset for image data
+                    skip(4)
+                    //==========
+                    //INFO HEADER
+                    //==========
+                    //Size
+                    skip(4)
+                    ImageInfo(
+                        width = readPacketExact(4).withUse { readInt() },
+                        height = readPacketExact(4).withUse { readInt() },
+                        imageType = imageType
+                    )
+                }
+                ImageType.GIF -> {
+                    require(readPacketExact(6).withUse { readText().run { startsWith("GIF") && endsWith("a") } }) {
+                        "It's not a valid gif file"
+                    }
+                    ImageInfo(
+                        width = readPacketExact(2).withUse { readShortLittleEndian().toInt() },
+                        height = readPacketExact(2).withUse { readShortLittleEndian().toInt() },
+                        imageType = imageType
+                    )
+                }
+                ImageType.PNG, ImageType.APNG -> {
+                    require(
+                        size > 8 && readBytes(8).contentEquals(
+                            byteArrayOf(
+                                0x89.toByte(),
+                                0x50,
+                                0x4e,
+                                0x47,
+                                0x0d,
+                                0x0a,
+                                0x1a,
+                                0x0a
+                            )
+                        )
+                    ) {
+                        "It's not a valid png file"
+                    }
+                    //Chunk length
+                    skip(4)
+                    //Chunk type
+                    var type = readPacketExact(4).withUse { readText() }
+                    //First chunk must be IHDR
+                    require(type == "IHDR") {
+                        "It's not a valid png file, First chunk must be IHDR"
+                    }
+                    val height = readPacketExact(4).withUse { readInt() }
+                    val width = readPacketExact(4).withUse { readInt() }
+                    //Skip to next chunk
+                    //Bit depth (1 byte) + color type (1 byte)
+                    // + compression method (1 byte) + filter method (1 byte)
+                    // + interlace method (1 byte) + CRC(4 bytes) = 9 bytes
+                    skip(9)
+
+                    //Chunk length
+                    skip(4)
+                    //Chunk type
+                    type = readPacketExact(4).withUse { readText() }
+
+                    ImageInfo(
+                        width = width,
+                        height = height,
+                        //Correct the image type
+                        //If is apng, it has to be an acTL chunk
+                        imageType = if (type == "acTL") {
+                            ImageType.APNG
+                        } else {
+                            ImageType.PNG
+                        }
+                    )
+                }
+                else -> {
+                    Image.logger.warning("Failed to read image type $imageType for ExternalResource $this, return zero width and height instead.")
+                    ImageInfo(imageType = imageType)
+                }
+            }
+        }
+    }
+}
+
 internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"

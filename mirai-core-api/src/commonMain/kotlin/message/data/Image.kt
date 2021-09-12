@@ -216,6 +216,7 @@ public enum class ImageType {
     JPG,
     GIF,
     WEBP,
+    APNG,
     UNKNOWN;
 
     public companion object {
