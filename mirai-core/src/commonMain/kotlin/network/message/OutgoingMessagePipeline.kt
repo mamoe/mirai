@@ -93,6 +93,12 @@ internal interface MessagePipelineContext<out C : AbstractContact> : PipelineCon
 
         @JvmField
         val KEY_MESSAGE_SOURCE_RESULT = TypeKey<Deferred<OnlineMessageSource.Outgoing>>("messageSourceResult")
+
+        /**
+         * Origin phase name
+         */
+        @JvmField
+        val KEY_PACKET_TRACE = TypeKey<String>("packetTrace")
     }
 }
 

@@ -48,7 +48,7 @@ internal object OutgoingMessagePhasesGroup : OutgoingMessagePhasesCommon(), Outg
     @Suppress("FunctionName")
     @PhaseMarker
     fun CreatePacketsNormal() = object : CreatePacketsFallback<GroupImpl>() {
-        override suspend fun MessagePipelineContext<GroupImpl>.createPacketsImpl(chain: MessageChain): List<OutgoingPacket>? {
+        override suspend fun MessagePipelineContext<GroupImpl>.createPacketsImpl(chain: MessageChain): List<OutgoingPacket> {
             return MessageSvcPbSendMsg.createToGroupImpl(
                 bot.client,
                 contact,

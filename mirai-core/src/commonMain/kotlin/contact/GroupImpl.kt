@@ -33,8 +33,8 @@ import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_AUDIO
 import net.mamoe.mirai.internal.network.highway.ResourceKind.GROUP_IMAGE
 import net.mamoe.mirai.internal.network.highway.postPtt
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
+import net.mamoe.mirai.internal.network.message.MessagePipelineConfiguration
 import net.mamoe.mirai.internal.network.message.MessagePipelineContextImpl
-import net.mamoe.mirai.internal.network.message.OutgoingMessagePhasesCommon
 import net.mamoe.mirai.internal.network.message.OutgoingMessagePhasesGroup
 import net.mamoe.mirai.internal.network.message.buildPhaseConfiguration
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
@@ -151,12 +151,12 @@ internal class GroupImpl constructor(
         return bot.id == id || members.firstOrNull { it.id == id } != null
     }
 
-    val sendMessagePipeline = OutgoingMessagePhasesGroup.run {
+    val sendMessagePipeline: MessagePipelineConfiguration<GroupImpl> = OutgoingMessagePhasesGroup.run {
         buildPhaseConfiguration {
             Begin then
                     Preconditions then
                     MessageToMessageChain then
-                    OutgoingMessagePhasesCommon.BroadcastPreSendEvent(::GroupMessagePreSendEvent) then
+                    BroadcastPreSendEvent(::GroupMessagePreSendEvent) then
                     CheckLength then
                     EnsureSequenceIdAvailable then
                     UploadForwardMessages then
@@ -166,15 +166,15 @@ internal class GroupImpl constructor(
 
                     ConvertToLongMessage onFailureJumpTo 1 then
                     StartCreatePackets then
-                    OutgoingMessagePhasesCommon.CreatePacketsForMusicShare(specialMessageSourceStrategy) then
-                    OutgoingMessagePhasesCommon.CreatePacketsForFileMessage(specialMessageSourceStrategy) then
+                    CreatePacketsForMusicShare(specialMessageSourceStrategy) then
+                    CreatePacketsForFileMessage(specialMessageSourceStrategy) then
                     CreatePacketsNormal() then
                     LogMessageSent() then
                     SendPacketsAndCreateReceipt() onFailureJumpTo 1 then
 
                     Finish finally
 
-                    OutgoingMessagePhasesCommon.BroadcastPostSendEvent(::GroupMessagePostSendEvent) finally
+                    BroadcastPostSendEvent(::GroupMessagePostSendEvent) finally
                     CloseContext() finally
                     ThrowExceptions()
         }

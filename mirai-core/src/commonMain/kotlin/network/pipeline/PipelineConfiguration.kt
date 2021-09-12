@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.pipeline
 
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.forEachWithIndexer
 import net.mamoe.mirai.utils.uncheckedCast
@@ -99,6 +100,57 @@ internal class PipelineConfiguration<C : PipelineContext, InitialIn, FinalOut> {
         }
         error("There is no finishing phase.")
     }
+}
+
+@TestOnly
+internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.replaceNode(
+    target: (node: Node<C, *, *>) -> Boolean,
+    node: Node<C, *, *>
+): Boolean {
+    mutableNodes.forEachIndexed { index, old ->
+        if (target(old)) {
+            mutableNodes.removeAt(index)
+            mutableNodes.add(index, node)
+            return true
+        }
+    }
+    return false
+}
+
+@TestOnly
+internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.replacePhase(
+    target: (node: Node<C, *, *>) -> Boolean,
+    name: String,
+    doPhase: suspend C.(input: Any?) -> Any?
+): Boolean = replaceNode(target, object : AbstractPhase<C, Any?, Any?>(name) {
+    override suspend fun C.doPhase(input: Any?): Any? {
+        return doPhase.invoke(this, input)
+    }
+})
+
+@TestOnly
+internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.insertPhase(
+    before: (node: Node<C, *, *>) -> Boolean,
+    name: String,
+    doPhase: suspend C.(input: Any?) -> Any?
+): Boolean = insertNode(before, object : AbstractPhase<C, Any?, Any?>(name) {
+    override suspend fun C.doPhase(input: Any?): Any? {
+        return doPhase.invoke(this, input)
+    }
+})
+
+@TestOnly
+internal fun <C : PipelineContext, InitialIn, FinalOut> PipelineConfiguration<C, InitialIn, FinalOut>.insertNode(
+    before: (node: Node<C, *, *>) -> Boolean,
+    node: Node<C, *, *>
+): Boolean {
+    mutableNodes.forEachIndexed { index, old ->
+        if (before(old)) {
+            mutableNodes.add(index, node)
+            return true
+        }
+    }
+    return false
 }
 
 internal fun PipelineConfiguration<*, *, *>.validate() {
