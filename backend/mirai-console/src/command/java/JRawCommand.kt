@@ -9,16 +9,18 @@
 
 package net.mamoe.mirai.console.command.java
 
-import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
+import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.utils.runBIO
 
 /**
  * 供 Java 用户继承
@@ -76,4 +78,31 @@ public abstract class JRawCommand
     @ExperimentalCommandDescriptors
     public final override var prefixOptional: Boolean = false
         protected set
+
+    @ExperimentalCommandDescriptors
+    override val overloads: List<@JvmWildcard CommandSignature> = listOf(
+        CommandSignatureImpl(
+            receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
+            valueParameters = listOf(
+                AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>(
+                    "args",
+                    true
+                )
+            )
+        ) { call ->
+            val sender = call.caller
+            val arguments = call.rawValueArguments
+            runBIO { onCommand(sender, buildMessageChain { arguments.forEach { +it.value } }) }
+        }
+    )
+
+    /**
+     * 在指令被执行时调用.
+     *
+     * @param args 指令参数.
+     *
+     * @see CommandManager.executeCommand 查看更多信息
+     * @since 2.8
+     */
+    public open fun onCommand(sender: CommandSender, args: MessageChain) {}
 }
