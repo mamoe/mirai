@@ -34,8 +34,12 @@ internal actual suspend fun ExternalResource.getImageInfo(): ImageInfo {
                         imageReader.dispose()
                     }
 
+                }
             }
         }
+        Image.logger.warning(
+            "Failed to find image readers for ExternalResource $this, return zero width and height instead.",
+        )
+        return@runBIO ImageInfo(imageType = imageType)
     }
-    throw IllegalStateException("Failed to find image readers for ExternalResource $this")
 }
