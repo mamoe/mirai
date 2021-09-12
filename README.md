@@ -6,7 +6,6 @@
 ----
 
 ![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
-[![Maven Central](https://img.shields.io/maven-central/v/net.mamoe/mirai-core-api.svg?label=Maven%20Central)](https://search.maven.org/search?q=net.mamoe%20mirai)
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net)
 
