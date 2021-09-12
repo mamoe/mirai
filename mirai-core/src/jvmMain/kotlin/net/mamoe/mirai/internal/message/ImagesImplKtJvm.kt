@@ -22,29 +22,29 @@ internal actual fun ExternalResource.getImageInfo(): ImageInfo {
     val previousValue = ImageIO.getUseCache();
     //We don't need to use cache since we won't load the whole file
     ImageIO.setUseCache(false)
-    val imageInputStream = inputStream().use {
-        ImageIO.createImageInputStream(it)
-    }
-    return imageInputStream.use { stream ->
-        val readers = ImageIO.getImageReaders(stream)
-        if (readers.hasNext()) {
-            val imageReader = readers.next()
-            try {
-                imageReader.input = stream
-                ImageInfo(
-                    height = imageReader.getHeight(0),
-                    width = imageReader.getWidth(0),
-                    imageType = imageType
-                )
-            } finally {
-                imageReader.dispose()
+    inputStream().use {
+        val imageInputStream = ImageIO.createImageInputStream(it)
+        return imageInputStream.use { stream ->
+            val readers = ImageIO.getImageReaders(stream)
+            if (readers.hasNext()) {
+                val imageReader = readers.next()
+                try {
+                    imageReader.input = stream
+                    ImageInfo(
+                        height = imageReader.getHeight(0),
+                        width = imageReader.getWidth(0),
+                        imageType = imageType
+                    )
+                } finally {
+                    imageReader.dispose()
+                }
+            } else {
+                Image.logger.warning("Failed to find image readers for ExternalResource $this, return zero width and height instead.")
+                ImageInfo(imageType = imageType)
             }
-        } else {
-            Image.logger.warning("Failed to find image readers for ExternalResource $this, return zero width and height instead.")
-            ImageInfo(imageType = imageType)
+        }.also {
+            //Set it back in case other code using this
+            ImageIO.setUseCache(previousValue)
         }
-    }.also {
-        //Set it back in case other code using this
-        ImageIO.setUseCache(previousValue)
     }
 }
