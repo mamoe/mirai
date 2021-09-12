@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.json.Json
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
@@ -33,7 +32,8 @@ internal open class MultiFilePluginDataStorageImpl(
     public override fun load(holder: PluginDataHolder, instance: PluginData) {
         instance.onInit(holder, this)
 
-        val text = getPluginDataFile(holder, instance).readText()
+        // 0xFEFF is BOM, handle UTF8-BOM
+        val text = getPluginDataFile(holder, instance).readText().removePrefix("\uFEFF")
         if (text.isNotBlank()) {
             logger.warning { "Deserializing $text" }
             Yaml.decodeFromString(instance.updaterSerializer, text)
@@ -78,8 +78,7 @@ internal open class MultiFilePluginDataStorageImpl(
                     yaml.decodeAnyFromString(it) // test yaml
                 }
             }.recoverCatching {
-                // Just use mainLogger for convenience.
-                MiraiConsole.mainLogger.warning(
+                logger.warning(
                     "Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. " +
                             "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new",
                     it
