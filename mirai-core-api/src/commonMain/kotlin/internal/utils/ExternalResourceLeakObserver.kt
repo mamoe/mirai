@@ -21,7 +21,7 @@ internal object ExternalResourceLeakObserver : Runnable {
     private val queue = ReferenceQueue<Any>()
     private val references = ConcurrentLinkedDeque<ERReference>()
     private val logger by lazy {
-        MiraiLogger.Factory.create(ExternalResourceLeakObserver::class)
+        MiraiLogger.Factory.create(ExternalResourceLeakObserver::class, "ExternalResourceLeakObserver")
     }
 
     internal class ERReference(
