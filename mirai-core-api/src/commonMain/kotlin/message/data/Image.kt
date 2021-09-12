@@ -210,6 +210,27 @@ public interface Image : Message, MessageContent, CodableMessage {
 @JvmSynthetic
 public inline fun Image(imageId: String): Image = Image.fromId(imageId)
 
+public enum class ImageType {
+    PNG,
+    BMP,
+    JPG,
+    GIF,
+    WEBP,
+    UNKNOWN;
+
+    public companion object {
+        @JvmStatic
+        public fun match(str: String): ImageType {
+            return matchOrNull(str) ?: UNKNOWN
+        }
+
+        @JvmStatic
+        public fun matchOrNull(str: String): ImageType? {
+            val input = str.uppercase()
+            return values().firstOrNull { it.name == input }
+        }
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // Internals
@@ -280,20 +301,4 @@ public abstract class FriendImage @MiraiInternalApi public constructor() :
 public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object
-}
-
-public enum class ImageType {
-    PNG,
-    BMP,
-    JPG,
-    GIF,
-    WEBP,
-    UNKNOWN;
-
-    public companion object {
-        public fun match(str: String): ImageType {
-            val input = str.uppercase()
-            return values().firstOrNull { it.name == input } ?: UNKNOWN
-        }
-    }
 }
