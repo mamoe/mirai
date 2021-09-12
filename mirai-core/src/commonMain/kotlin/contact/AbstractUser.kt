@@ -88,7 +88,7 @@ internal sealed class AbstractUser(
                     imgWidth = imageInfo.width,
                     imgHeight = imageInfo.height,
                     imgType = getIdByImageType(imageInfo.imageType),
-                    fileName = resource.md5.toUHexString("") + "." + resource.formatName,
+                    fileName = "${resource.md5.toUHexString("")}.${resource.formatName}",
                     imgOriginal = true,
                     buildVer = bot.client.buildVer,
                 ),
