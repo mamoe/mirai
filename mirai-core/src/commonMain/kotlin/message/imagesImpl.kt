@@ -127,7 +127,11 @@ OnlineFriendImage() {
 internal val UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED = systemProp("mirai.unknown.image.type.logging", false)
 
 internal fun getImageTypeById(id: Int): ImageType {
-    return ImageType.match(getImageType(id))
+    return if (id == 2001) {
+        ImageType.APNG
+    } else {
+        ImageType.match(getImageType(id))
+    }
 }
 
 internal fun getIdByImageType(imageType: ImageType): Int {
@@ -173,7 +177,7 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                             skip(readPacketExact(2).withUse { readShort().toLong() })
                         }
                     }
-                    ImageInfo(width, height, imageType)
+                    ImageInfo(width = width, height = height, imageType = imageType)
                 }
                 ImageType.BMP -> {
                     require(size > 26 && readPacketExact(2).withUse { readText() == "BM" }) {
@@ -211,7 +215,9 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                 }
                 ImageType.PNG, ImageType.APNG -> {
                     require(
-                        size > 8 && readBytes(8).contentEquals(
+                        size > 8 && ByteArray(8).also {
+                            read(it)
+                        }.contentEquals(
                             byteArrayOf(
                                 0x89.toByte(),
                                 0x50,
@@ -234,8 +240,8 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     require(type == "IHDR") {
                         "It's not a valid png file, First chunk must be IHDR"
                     }
-                    val height = readPacketExact(4).withUse { readInt() }
                     val width = readPacketExact(4).withUse { readInt() }
+                    val height = readPacketExact(4).withUse { readInt() }
                     //Skip to next chunk
                     //Bit depth (1 byte) + color type (1 byte)
                     // + compression method (1 byte) + filter method (1 byte)
