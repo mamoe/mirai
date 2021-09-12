@@ -23,7 +23,7 @@ internal actual fun ExternalResource.getImageInfo(): ImageInfo {
         return ImageInfo(imageType = imageType)
     }
     //Save previous value
-    val previousValue = ImageIO.getUseCache();
+    val previousValue = ImageIO.getUseCache()
     //We don't need to use cache since we won't load the whole file
     ImageIO.setUseCache(false)
     inputStream().use {
