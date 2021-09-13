@@ -17,8 +17,6 @@ package net.mamoe.mirai.utils
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import java.io.File
-import java.io.IOException
-import java.io.InputStream
 import kotlin.text.String
 
 public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
@@ -134,31 +132,6 @@ public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF
 
 public fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 public fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
-
-@Throws(IOException::class)
-public fun InputStream.skipExact(n: Long) {
-
-    var remaining = n
-    while (remaining != 0L) {
-        if (read() == -1) {
-            break
-        }
-        remaining--
-    }
-
-    if (remaining != 0L) {
-        throw EOFException("Cannot skip exactly $n bytes, remaining $remaining bytes")
-    }
-}
-
-@Throws(IOException::class)
-public fun InputStream.readExact(): Int {
-    val result = read()
-    if (result == -1) {
-        throw EOFException("Cannot read exactly 1 bytes, reach end of the stream")
-    }
-    return result
-}
 
 public fun File.createFileIfNotExists() {
     if (!this.exists()) {

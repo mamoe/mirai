@@ -75,7 +75,7 @@ internal sealed class AbstractUser(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        val imageInfo = runBIO { resource.getImageInfo() }
+        val imageInfo = runBIO { resource.calculateImageInfo() }
         val resp = bot.network.run {
             LongConn.OffPicUp(
                 bot.client,
