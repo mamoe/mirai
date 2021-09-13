@@ -139,7 +139,7 @@ internal fun getIdByImageType(imageType: ImageType): Int {
     return when (imageType) {
         ImageType.JPG -> 1000
         ImageType.PNG -> 1001
-        ImageType.WEBP -> 1002
+        //ImageType.WEBP -> 1002 //Unsupported by pc client
         ImageType.BMP -> 1005
         ImageType.GIF -> 2000
         ImageType.APNG -> 2001
@@ -271,8 +271,7 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     )
                 }
                 else -> {
-                    Image.logger.warning("Unable to read unsupported image type $imageType for ExternalResource $this, return zero width and height instead.")
-                    ImageInfo(imageType = imageType)
+                    throw IllegalArgumentException("Unsupported image type for ExternalResource $this, considering use gif/png/bmp/jpg format.")
                 }
             }
         }
@@ -283,7 +282,7 @@ internal fun getImageType(id: Int): String {
     return when (id) {
         1000 -> "jpg"
         1001 -> "png"
-        1002 -> "webp"
+        //1002 -> "webp" //Unsupported by pc client
         1005 -> "bmp"
         2000, 3, 4 -> "gif"
         //apng
