@@ -17,6 +17,14 @@ import net.mamoe.mirai.utils.readString
 import net.mamoe.mirai.utils.withUse
 import java.io.IOException
 
+//SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
+// (0xC4, 0xC8 and 0xCC not included due to is not an SOF)
+private val JPG_SOF_RANGE = listOf(
+    0xC0.toByte()..0xC3.toByte(),
+    0xC5.toByte()..0xC7.toByte(),
+    0xC9.toByte()..0xCB.toByte(),
+    0xCD.toByte()..0xCF.toByte()
+)
 
 private fun Input.getJPGImageInfo(): ImageInfo {
     require(readBytes(2).contentEquals(byteArrayOf(0xFF.toByte(), 0xD8.toByte()))) {
@@ -25,9 +33,8 @@ private fun Input.getJPGImageInfo(): ImageInfo {
     //0xFF Segment Start
     while (readByte() == 0xFF.toByte()) {
         val type = readByte()
-        //SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
-        // (0xC4, 0xC8 and 0xCC not included due to is not an SOF)
-        if (type.let { it in 0xC0.toByte()..0xC3.toByte() || it in 0xC5.toByte()..0xC7.toByte() || it in 0xC9.toByte()..0xCB.toByte() || it in 0xCD.toByte()..0xCF.toByte() }) {
+        //Find SOF
+        if (JPG_SOF_RANGE.any { it.contains(type) }) {
             //Length
             discardExact(2)
             //Data precision
