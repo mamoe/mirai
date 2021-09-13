@@ -19,14 +19,15 @@ import java.io.IOException
 
 
 private fun Input.getJPGImageInfo(): ImageInfo {
-    require(readBytes(2).contentEquals(byteArrayOf(0xFF.toByte(), 0XD8.toByte()))) {
+    require(readBytes(2).contentEquals(byteArrayOf(0xFF.toByte(), 0xD8.toByte()))) {
         "It's not a valid jpg file"
     }
-    //0XFF Segment Start
-    while (readByte() == 0XFF.toByte()) {
+    //0xFF Segment Start
+    while (readByte() == 0xFF.toByte()) {
         val type = readByte()
-        //SOF0/SOF2 Segment
-        if (type == 0XC0.toByte() || type == 0XC2.toByte()) {
+        //SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
+        // (0xC4, 0xC8 and 0xCC not included due to is not an SOF)
+        if (type.let { it in 0xC0.toByte()..0xC3.toByte() || it in 0xC5.toByte()..0xC7.toByte() || it in 0xC9.toByte()..0xCB.toByte() || it in 0xCD.toByte()..0xCF.toByte() }) {
             //Length
             discardExact(2)
             //Data precision
@@ -36,7 +37,7 @@ private fun Input.getJPGImageInfo(): ImageInfo {
             return ImageInfo(width = width, height = height, imageType = ImageType.JPG)
         } else {
             //SOS Segment, header is ended
-            if (type == 0XDA.toByte()) {
+            if (type == 0xDA.toByte()) {
                 break
             }
             //Other segment, skip
@@ -46,7 +47,7 @@ private fun Input.getJPGImageInfo(): ImageInfo {
             )
         }
     }
-    throw IllegalArgumentException("It's not a valid jpg file, failed to find SOF0/SOF2 segment")
+    throw IllegalArgumentException("It's not a valid jpg file, failed to find an SOF segment")
 }
 
 private fun Input.getBMPImageInfo(): ImageInfo {
