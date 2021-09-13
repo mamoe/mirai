@@ -176,7 +176,6 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                             //Other segment, skip
                             skip(readPacketExact(2).withUse {
                                 //Skip size=segment length - 2 (length data itself)
-                                // - 1 (not including 0xff) + 1 (Start from 0)
                                 readShort().toLong() - 2
                             })
                         }

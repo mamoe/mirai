@@ -64,6 +64,13 @@ internal class ImageReadingTest : AbstractTest() {
         }
     }
 
+    @Test
+    fun `test read fail`() {
+        assertFailsWith(IllegalArgumentException::class) {
+            "CA FE FE".testMatch(ImageType.BMP)
+        }
+    }
+
     private fun String.testMatch(type: ImageType) {
         this.hexToBytes().toExternalResource().use {
             it.getImageInfo().run {
