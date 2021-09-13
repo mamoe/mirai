@@ -220,6 +220,7 @@ public enum class ImageType {
     UNKNOWN;
 
     public companion object {
+        private val IMAGE_TYPE_ENUM_LIST = values()
         @JvmStatic
         public fun match(str: String): ImageType {
             return matchOrNull(str) ?: UNKNOWN
@@ -228,7 +229,7 @@ public enum class ImageType {
         @JvmStatic
         public fun matchOrNull(str: String): ImageType? {
             val input = str.uppercase()
-            return values().firstOrNull { it.name == input }
+            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input }
         }
     }
 }
