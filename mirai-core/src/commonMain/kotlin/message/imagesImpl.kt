@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.io.core.readFully
 import kotlinx.io.core.readIntLittleEndian
 import kotlinx.io.core.readShortLittleEndian
 import kotlinx.io.streams.readPacketExact
@@ -158,23 +159,23 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
         stream.run {
             when (imageType) {
                 ImageType.JPG -> {
-                    require(read() == 0xFF && read() == 0XD8) {
+                    require(readExact() == 0xFF && readExact() == 0XD8) {
                         "It's not a valid jpg file"
                     }
                     //0XFF Segment Start
-                    while (read() == 0XFF) {
+                    while (readExact() == 0XFF) {
                         //SOF0 Segment
-                        if (read() == 0XC0) {
+                        if (readExact() == 0XC0) {
                             //Length
-                            skip(2)
+                            skipExact(2)
                             //Data precision
-                            skip(1)
+                            skipExact(1)
                             val height = readPacketExact(2).withUse { readShort() }.toInt()
                             val width = readPacketExact(2).withUse { readShort() }.toInt()
                             return ImageInfo(width = width, height = height, imageType = imageType)
                         } else {
                             //Other segment, skip
-                            skip(readPacketExact(2).withUse {
+                            skipExact(readPacketExact(2).withUse {
                                 //Skip size=segment length - 2 (length data itself)
                                 readShort().toLong() - 2
                             })
@@ -191,16 +192,16 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     //FILE HEADER
                     //==========
                     //Size
-                    skip(4)
+                    skipExact(4)
                     //Reserve 2*2bytes
-                    skip(4)
+                    skipExact(4)
                     //Offset for image data
-                    skip(4)
+                    skipExact(4)
                     //==========
                     //INFO HEADER
                     //==========
                     //Size
-                    skip(4)
+                    skipExact(4)
                     ImageInfo(
                         width = readPacketExact(4).withUse { readIntLittleEndian() },
                         height = readPacketExact(4).withUse { readIntLittleEndian() },
@@ -219,25 +220,26 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                 }
                 ImageType.PNG, ImageType.APNG -> {
                     require(
-                        size > 8 && ByteArray(8).also {
-                            read(it)
-                        }.contentEquals(
-                            byteArrayOf(
-                                0x89.toByte(),
-                                0x50,
-                                0x4e,
-                                0x47,
-                                0x0d,
-                                0x0a,
-                                0x1a,
-                                0x0a
+                        size > 8 && readPacketExact(8).withUse {
+                            ByteArray(8).also {
+                                readFully(it)
+                            }.contentEquals(
+                                byteArrayOf(
+                                    0x89.toByte(),
+                                    0x50,
+                                    0x4e,
+                                    0x47,
+                                    0x0d,
+                                    0x0a,
+                                    0x1a,
+                                    0x0a
+                                )
                             )
-                        )
-                    ) {
+                        }) {
                         "It's not a valid png file"
                     }
                     //Chunk length
-                    skip(4)
+                    skipExact(4)
                     //Chunk type
                     var type = readPacketExact(4).withUse { readText() }
                     //First chunk must be IHDR
@@ -250,10 +252,10 @@ internal fun ExternalResource.getImageInfo(): ImageInfo {
                     //Bit depth (1 byte) + color type (1 byte)
                     // + compression method (1 byte) + filter method (1 byte)
                     // + interlace method (1 byte) + CRC(4 bytes) = 9 bytes
-                    skip(9)
+                    skipExact(9)
 
                     //Chunk length
-                    skip(4)
+                    skipExact(4)
                     //Chunk type
                     type = readPacketExact(4).withUse { readText() }
 
