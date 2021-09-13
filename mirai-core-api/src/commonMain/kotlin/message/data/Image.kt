@@ -215,7 +215,7 @@ public enum class ImageType {
     BMP,
     JPG,
     GIF,
-    WEBP,
+    //WEBP, //Unsupported by pc client
     APNG,
     UNKNOWN;
 
