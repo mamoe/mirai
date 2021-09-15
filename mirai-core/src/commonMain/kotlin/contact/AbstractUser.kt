@@ -101,7 +101,7 @@ internal sealed class AbstractUser(
                     .takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
                     ?: resource.formatName
 
-                resp.imageInfo.let {
+                resp.imageInfo.run {
                     OfflineFriendImage(
                         imageId = generateImageIdFromResourceId(
                             resourceId = resp.resourceId,
@@ -117,9 +117,9 @@ internal sealed class AbstractUser(
                                 )
                             }
                         },
-                        width = it.fileWidth,
-                        height = it.fileHeight,
-                        imageType = getImageTypeById(it.fileType),
+                        width = fileWidth,
+                        height = fileHeight,
+                        imageType = getImageTypeById(fileType),
                         size = resource.size
                     )
                 }.also {
@@ -216,13 +216,13 @@ internal sealed class AbstractUser(
                     )
                 }.getOrThrow()
 
-                imageInfo.let {
+                imageInfo.run {
                     OfflineFriendImage(
                         imageId = generateImageIdFromResourceId(resp.resourceId, resource.formatName)
                             ?: resp.resourceId,
-                        width = it.width,
-                        height = it.height,
-                        imageType = it.imageType,
+                        width = width,
+                        height = height,
+                        imageType = imageType,
                         size = resource.size
                     )
                 }.also {

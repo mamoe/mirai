@@ -192,12 +192,12 @@ internal class GroupImpl constructor(
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = resource.calculateResourceId()
-                    return response.fileInfo.let {
+                    return response.fileInfo.run {
                         OfflineGroupImage(
                             imageId = resourceId,
-                            height = it.fileHeight,
-                            width = it.fileWidth,
-                            imageType = getImageTypeById(it.fileType),
+                            height = fileHeight,
+                            width = fileWidth,
+                            imageType = getImageTypeById(fileType),
                             size = resource.size
                         )
                     }
@@ -223,12 +223,12 @@ internal class GroupImpl constructor(
                         },
                     )
 
-                    return imageInfo.let {
+                    return imageInfo.run {
                         OfflineGroupImage(
                             imageId = resource.calculateResourceId(),
-                            width = it.width,
-                            height = it.height,
-                            imageType = it.imageType,
+                            width = width,
+                            height = height,
+                            imageType = imageType,
                             size = resource.size
                         )
                     }.also { it.fileId = response.fileId.toInt() }
