@@ -440,9 +440,19 @@ internal open class GroupSendMessageHandler(
                     uin = bot.id,
                     groupCode = id,
                     md5 = image.md5,
-                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
+                    size = image.size
                 ).sendAndExpect()
-                return OfflineGroupImage(image.imageId).also { img ->
+                return OfflineGroupImage(
+                    imageId = image.imageId,
+                    width = image.width,
+                    height = image.height,
+                    size = if (response is ImgStore.GroupPicUp.Response.FileExists) {
+                        response.fileInfo.fileSize
+                    } else {
+                        image.size
+                    },
+                    imageType = image.imageType
+                ).also { img ->
                     when (response) {
                         is ImgStore.GroupPicUp.Response.FileExists -> {
                             img.fileId = response.fileId.toInt()

@@ -4297,10 +4297,14 @@ public abstract interface class net/mamoe/mirai/message/data/Image : net/mamoe/m
 	public static final field Key Lnet/mamoe/mirai/message/data/Image$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public static fun fromId (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
+	public abstract fun getHeight ()I
 	public abstract fun getImageId ()Ljava/lang/String;
 	public static fun getImageIdRegex ()Lkotlin/text/Regex;
 	public static fun getImageResourceIdRegex1 ()Lkotlin/text/Regex;
 	public static fun getImageResourceIdRegex2 ()Lkotlin/text/Regex;
+	public abstract fun getImageType ()Lnet/mamoe/mirai/message/data/ImageType;
+	public abstract fun getSize ()J
+	public abstract fun getWidth ()I
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -4331,6 +4335,25 @@ public final class net/mamoe/mirai/message/data/Image$Serializer : kotlinx/seria
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/Image;)V
+}
+
+public final class net/mamoe/mirai/message/data/ImageType : java/lang/Enum {
+	public static final field APNG Lnet/mamoe/mirai/message/data/ImageType;
+	public static final field BMP Lnet/mamoe/mirai/message/data/ImageType;
+	public static final field Companion Lnet/mamoe/mirai/message/data/ImageType$Companion;
+	public static final field GIF Lnet/mamoe/mirai/message/data/ImageType;
+	public static final field JPG Lnet/mamoe/mirai/message/data/ImageType;
+	public static final field PNG Lnet/mamoe/mirai/message/data/ImageType;
+	public static final field UNKNOWN Lnet/mamoe/mirai/message/data/ImageType;
+	public static final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public static final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/ImageType;
+}
+
+public final class net/mamoe/mirai/message/data/ImageType$Companion {
+	public final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
+	public final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 }
 
 public final class net/mamoe/mirai/message/data/LightApp : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/RichMessage {

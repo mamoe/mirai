@@ -85,6 +85,28 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val imageId: String
 
+    /**
+     * 图片的宽度 (px), 当无法获取时为 0
+     */
+    public val width: Int
+
+    /**
+     * 图片的高度 (px), 当无法获取时为 0
+     */
+    public val height: Int
+
+    /**
+     * 图片的大小（字节）, 当无法获取时为 0
+     */
+    public val size: Long
+
+    /**
+     * 图片的类型, 当无法获取时为未知 [ImageType.UNKNOWN]
+     *
+     * @see ImageType
+     */
+    public val imageType: ImageType
+
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
@@ -188,6 +210,29 @@ public interface Image : Message, MessageContent, CodableMessage {
 @JvmSynthetic
 public inline fun Image(imageId: String): Image = Image.fromId(imageId)
 
+public enum class ImageType {
+    PNG,
+    BMP,
+    JPG,
+    GIF,
+    //WEBP, //Unsupported by pc client
+    APNG,
+    UNKNOWN;
+
+    public companion object {
+        private val IMAGE_TYPE_ENUM_LIST = values()
+        @JvmStatic
+        public fun match(str: String): ImageType {
+            return matchOrNull(str) ?: UNKNOWN
+        }
+
+        @JvmStatic
+        public fun matchOrNull(str: String): ImageType? {
+            val input = str.uppercase()
+            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input }
+        }
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // Internals
@@ -210,6 +255,15 @@ public val Image.md5: ByteArray
 @MiraiInternalApi
 public sealed class AbstractImage : Image {
     private val _stringValue: String? by lazy(NONE) { "[mirai:image:$imageId]" }
+
+    override val size: Long
+        get() = 0L
+    override val width: Int
+        get() = 0
+    override val height: Int
+        get() = 0
+    override val imageType: ImageType
+        get() = ImageType.UNKNOWN
 
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"

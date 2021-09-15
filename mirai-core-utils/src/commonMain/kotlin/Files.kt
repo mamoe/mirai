@@ -19,8 +19,9 @@ public val FILE_TYPES: MutableMap<String, String> = mutableMapOf(
     "FFD8FF" to "jpg",
     "89504E47" to "png",
     "47494638" to "gif",
-    "49492A00" to "tif",
+    //"49492A00" to "tif", // client doesn't support
     "424D" to "bmp",
+    //"52494646" to "webp", // pc client doesn't support
 
     // "57415645" to "wav", // server doesn't support
 
