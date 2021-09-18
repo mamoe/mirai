@@ -67,41 +67,9 @@ jobs:
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
 
-      - name: Gradle :mirai-core-utils:publish
+      - name: Gradle Publish all artifacts
         run: >
-          ./gradlew :mirai-core-utils:publish --scan
-
-      - name: Gradle :mirai-core-api:publish
-        run: >
-          ./gradlew :mirai-core-api:publish --scan
-
-      - name: Gradle :mirai-core:publish
-        run: >
-          ./gradlew :mirai-core:publish --scan
-
-      - name: Gradle :mirai-core-all:publish
-        run: >
-          ./gradlew :mirai-core-all:publish --info
-
-      - name: Gradle :mirai-console:publish
-        run: >
-          ./gradlew
-          :mirai-console:publish --info
-
-      - name: Gradle :mirai-console-terminal:publish
-        run: >
-          ./gradlew
-          :mirai-console-terminal:publish --info
-
-      - name: Gradle :mirai-console-compiler-common:publish
-        run: >
-          ./gradlew
-          :mirai-console-compiler-common:publish --info
-
-      - name: Gradle :mirai-console-compiler-annotations:publish
-        run: >
-          ./gradlew
-          :mirai-console-compiler-annotations:publish --info
+          ./gradlew publish --scan --info
 
       - name: Publish Gradle plugin
         run: >
