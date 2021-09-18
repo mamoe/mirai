@@ -331,7 +331,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User {
+public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
@@ -746,6 +746,57 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
 	public static final fun getBot (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;)Lnet/mamoe/mirai/Bot;
+}
+
+public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessage {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getContact ()Lnet/mamoe/mirai/contact/Contact;
+	public abstract fun getIds ()[I
+	public abstract fun getInternalIds ()[I
+	public abstract fun getSender ()J
+	public abstract fun getTarget ()J
+	public abstract fun getTime ()J
+}
+
+public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessageFilter {
+	public static final field ANY Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+	public static final field Companion Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter$Companion;
+	public static final field RECEIVED Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+	public static final field SENT Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+	public fun and (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+	public abstract fun invoke (Lnet/mamoe/mirai/contact/roaming/RoamingMessage;)Z
+	public fun not ()Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+	public fun or (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;
+}
+
+public final class net/mamoe/mirai/contact/roaming/RoamingMessageFilter$Companion {
+}
+
+public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages {
+	public fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
+	public fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun getAllMessagesStream ()Ljava/util/stream/Stream;
+	public fun getAllMessagesStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAllMessagesStream (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Ljava/util/stream/Stream;
+	public fun getAllMessagesStream (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Ljava/util/stream/Stream;
+	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getMessagesIn$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun getMessagesIn$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun getMessagesStream (JJ)Ljava/util/stream/Stream;
+	public fun getMessagesStream (JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getMessagesStream (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Ljava/util/stream/Stream;
+	public abstract fun getMessagesStream (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Ljava/util/stream/Stream;
+	public static synthetic fun getMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported : net/mamoe/mirai/contact/Contact {
+	public abstract fun getRoamingMessages ()Lnet/mamoe/mirai/contact/roaming/RoamingMessages;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {

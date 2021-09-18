@@ -135,6 +135,7 @@ internal object KnownPacketFactories {
         MessageSvcPushForceOffline,
         MessageSvcPbSendMsg,
         MessageSvcPbDeleteMsg,
+        MessageSvcPbGetRoamMsgReq,
         FriendList.GetFriendGroupList,
         FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
