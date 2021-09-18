@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import java.util.stream.Stream
 
 /**
@@ -74,6 +75,7 @@ public interface RoamingMessages {
      */
     @Suppress("OVERLOADS_INTERFACE")
     @JvmOverloads
+    @JavaFriendlyAPI
     public suspend fun getMessagesStream(
         timeStart: Long,
         timeEnd: Long,
@@ -92,6 +94,7 @@ public interface RoamingMessages {
      */
     @Suppress("OVERLOADS_INTERFACE")
     @JvmOverloads
+    @JavaFriendlyAPI
     public suspend fun getAllMessagesStream(
         filter: RoamingMessageFilter? = null
     ): Stream<MessageChain> = getMessagesStream(0, Long.MAX_VALUE, filter)

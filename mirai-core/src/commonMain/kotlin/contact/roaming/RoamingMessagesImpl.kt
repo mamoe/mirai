@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package net.mamoe.mirai.internal.contact.roaming
 
 import kotlinx.coroutines.currentCoroutineContext
@@ -25,10 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.check
-import net.mamoe.mirai.utils.mapToIntArray
-import net.mamoe.mirai.utils.stream
-import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.*
 import java.util.stream.Stream
 
 internal sealed class RoamingMessagesImpl : RoamingMessages {
@@ -77,6 +76,8 @@ internal sealed class RoamingMessagesImpl : RoamingMessages {
         }
     }
 
+
+    @JavaFriendlyAPI
     override suspend fun getMessagesStream(
         timeStart: Long,
         timeEnd: Long,
