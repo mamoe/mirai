@@ -12,7 +12,9 @@ package net.mamoe.mirai.internal.message
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineMessageSource
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.safeCast
 
 /**
  * 在接收解析消息后会经过一层转换的消息.
@@ -142,6 +144,16 @@ internal class SimpleRefineContext(
  * 执行不需要 `suspend` 的 refine. 用于 [MessageSource.originalMessage].
  */
 internal object LightMessageRefiner : MessageRefiner() {
+    fun MessageChain.refineMessageSource(): MessageChain {
+        val source = this.sourceOrNull?.safeCast<IncomingMessageSourceInternal>() ?: return this
+        val originalMessage = this
+        source.originalMessageLazy = lazy {
+            @Suppress("INVISIBLE_MEMBER")
+            createMessageChainImplOptimized(originalMessage.filterNot { it is MessageSource })
+        }
+        return this
+    }
+
     fun MessageChain.refineLight(
         bot: Bot,
         refineContext: RefineContext = EmptyRefineContext,
@@ -159,5 +171,6 @@ internal object DeepMessageRefiner : MessageRefiner() {
         refineContext: RefineContext = EmptyRefineContext,
     ): MessageChain {
         return refineImpl(bot) { it.refine(bot, this, refineContext) }
+            .refineMessageSource()
     }
 }

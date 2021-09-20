@@ -59,6 +59,20 @@ internal interface OutgoingMessageSourceInternal : MessageSourceInternal {
     var originalMessage: MessageChain
 }
 
+/**
+ * All [OnlineMessageSource.Incoming] should implement this interface.
+ *
+ */
+internal interface IncomingMessageSourceInternal : MessageSourceInternal {
+    // #1532, #1289
+    // 问题描述: 解析 Incoming 时存在中间元素 (如 ForwardMessageInternal) 等,
+    // MessageChain.source.originMessage 中可能因为各种原因而存在这些中间元素
+
+    // 于是在广播 MessageEvent 前将 originalMessage 改成 refined 后的 MessageChain
+
+    var originalMessageLazy: Lazy<MessageChain>
+}
+
 @Suppress("DEPRECATION_ERROR")
 internal fun <C : Contact> OnlineMessageSource.Outgoing.createMessageReceipt(
     target: C,
