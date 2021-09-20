@@ -103,6 +103,7 @@
 
 特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：
 
+- `Java`: [MiraiMC](https://github.com/DreamVoid/MiraiMC)
 - `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
 
 ## JVM 平台 Mirai 开发
