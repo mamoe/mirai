@@ -144,6 +144,12 @@ internal class SimpleRefineContext(
  * 执行不需要 `suspend` 的 refine. 用于 [MessageSource.originalMessage].
  */
 internal object LightMessageRefiner : MessageRefiner() {
+    /* note:
+     * 不在 refineLight 中处理的原因是 refineMessageSource
+     * 需要的是 **最终处理完成后** 的 MessageChain (即 refineDeep 后的 MessageChain)
+     *
+     * 在 refineLight/RefinableMessage.(try)refine 中直接处理将导致获取不到最终结果导致逻辑错误
+     */
     fun MessageChain.refineMessageSource(): MessageChain {
         val source = this.sourceOrNull?.safeCast<IncomingMessageSourceInternal>() ?: return this
         val originalMessage = this
