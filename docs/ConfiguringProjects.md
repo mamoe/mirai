@@ -8,14 +8,15 @@
 
 有关各类版本的区别，参考 [版本规范](Evolution.md#版本规范)。通常建议选择最新稳定版本。
 
-[Version]: https://img.shields.io/maven-central/v/net.mamoe/mirai-core-api.svg?label=Maven%20Central
-[Central Download]: https://search.maven.org/search?q=net.mamoe%20mirai
+[Maven Central Version]: https://img.shields.io/maven-central/v/net.mamoe/mirai-core-api.svg?label=Maven%20Central
+[Maven Central]: https://search.maven.org/search?q=net.mamoe%20mirai
+[GitHub Releases]: https://github.com/mamoe/mirai/releases/latest
 
-| 版本类型 |                 版本号                  |
-|:------:|:--------------------------------------:|
-|  稳定   |                2.7.0                   |
-|  预览   |                   -                    |
-|  开发   | [UsingSnapshots.md](UsingSnapshots.md) |
+| 版本类型 |                    版本号                     |
+|:------:|:--------------------------------------------:|
+|  稳定   | ![Maven Central Version] / [GitHub Releases] |
+|  预览   |                      -                       |
+|  开发   |     [UsingSnapshots](UsingSnapshots.md)      |
 
 ### 配置项目
 
