@@ -15,7 +15,7 @@
 | 版本类型 |                    版本号                     |
 |:------:|:--------------------------------------------:|
 |  稳定   | ![Maven Central Version] / [GitHub Releases] |
-|  预览   |                      -                       |
+|  预览   |                   2.8.0-M1                    |
 |  开发   |     [UsingSnapshots](UsingSnapshots.md)      |
 
 ### 配置项目
