@@ -23,6 +23,7 @@
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
 [GraiaProject/Avilla]: https://github.com/GraiaProject/Avilla
+[Elaina]: https://github.com/wyapx/Elaina
 [NoneBot]: https://github.com/nonebot/nonebot2
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
@@ -89,6 +90,7 @@
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
 | `PHP`                     | [nkxingxh/miraiez]                          |
 | `Python`                  | [Avilla][GraiaProject/Avilla]               |
+| `Python`                  | [Elaina]                                    |
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
 | `Python`                  | [YiriMirai]                                 |
