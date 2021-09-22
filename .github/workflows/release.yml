@@ -58,6 +58,10 @@ jobs:
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
+      
+      - name: Ensure all compilations completed before publish
+        run: >
+          ./gradlew publishToMavenLocal --info --scan
 
       - name: Publish all artifacts
         run: >
