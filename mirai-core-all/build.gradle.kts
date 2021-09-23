@@ -25,4 +25,6 @@ dependencies {
     api(project(":mirai-core-utils"))
 }
 
-configurePublishing("mirai-core-all")
+if (!System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING").toBoolean()) {
+    configurePublishing("mirai-core-all")
+}

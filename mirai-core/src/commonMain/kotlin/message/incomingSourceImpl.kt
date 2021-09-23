@@ -17,8 +17,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.newAnonymous
+import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -33,6 +35,7 @@ import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
 internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
@@ -57,6 +60,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
@@ -120,6 +124,7 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
     }
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
@@ -136,13 +141,19 @@ internal class OnlineMessageSourceFromTempImpl(
         msg.toMessageChainNoSource(bot, groupIdOrZero = 0, MessageSourceKind.TEMP)
     }
     override val sender: Member = with(msg.first().msgHead) {
-        bot.getGroupOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
+        // it must be uin, see #1410
+        // corresponding test: net.mamoe.mirai.internal.notice.processors.MessageTest.group temp message test 2
+
+        // search for group code also is for tests. code may be passed as uin in tests.
+        // clashing is unlikely possible in real time, so it would not be a problem.
+        bot.asQQAndroidBot().getGroupByUinOrCodeOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
     }
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
 internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,

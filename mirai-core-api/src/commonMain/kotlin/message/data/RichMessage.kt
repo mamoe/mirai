@@ -41,7 +41,6 @@ public interface RichMessage : MessageContent, ConstrainSingle {
     /**
      * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
      */
-    @MiraiExperimentalApi
     public override fun contentToString(): String = this.content
 
     /**
@@ -230,7 +229,7 @@ public class XmlMessageBuilder(
      */
     public var brief: String = "",
     public var flag: Int = 3,
-    public var url: String = "", // TODO: 2019/12/3 unknown
+    public var url: String = "",
     public var sourceName: String = "",
     public var sourceIconURL: String = ""
 ) {

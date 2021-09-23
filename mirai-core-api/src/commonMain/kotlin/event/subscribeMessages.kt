@@ -16,6 +16,7 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.Stranger
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.content
@@ -119,13 +120,36 @@ public fun <R> EventChannel<*>.subscribeFriendMessages(
     return createBuilder(::FriendMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
+/**
+ * @since 2.7
+ */
+public typealias UserMessageSubscribersBuilder = MessageSubscribersBuilder<UserMessageEvent, Listener<UserMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所 [User] 消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ *
+ * @since 2.7
+ */
+public fun <R> EventChannel<*>.subscribeUserMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: UserMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::UserMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
+}
+
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此定义会变动. 请使用 GroupTempMessageSubscribersBuilder",
     ReplaceWith(
         "GroupTempMessageSubscribersBuilder",
         "net.mamoe.mirai.event.GroupTempMessageSubscribersBuilder"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
@@ -141,7 +165,7 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<Group
         "subscribeGroupTempMessages(coroutineContext, concurrencyKind, priority, listeners)",
         "net.mamoe.mirai.event.subscribeGroupTempMessages"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

@@ -341,7 +341,7 @@ public sealed interface MessageChain :
 /**
  * 不含任何元素的 [MessageChain].
  */
-@Serializable(MessageChain.Serializer::class)
+//@Serializable(MessageChain.Serializer::class)
 public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList() {
     override val size: Int get() = 0
 
@@ -357,6 +357,14 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
     override fun hashCode(): Int = 1
 
     override fun iterator(): Iterator<SingleMessage> = EmptyMessageChainIterator
+
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated(
+        "Serializers for EmptyMessageChain is not provided any more. " +
+                "Please specify your serial property as MessageChain and use contextual and polymorphic serializers from MessageSerializers.serializersModule.",
+        level = DeprecationLevel.WARNING
+    ) // deprecated since 2.8-M1
+    public fun serializer(): KSerializer<MessageChain> = MessageChain.Serializer
 
     private object EmptyMessageChainIterator : Iterator<SingleMessage> {
         override fun hasNext(): Boolean = false

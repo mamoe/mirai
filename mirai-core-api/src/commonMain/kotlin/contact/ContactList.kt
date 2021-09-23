@@ -21,11 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * @see ContactList.asSequence
  */
 @Suppress("unused")
-public class ContactList<C : Contact>
-@MiraiInternalApi public constructor(@JvmField @MiraiInternalApi public val delegate: ConcurrentLinkedQueue<C>) :
+public class ContactList<out C : Contact>
+@MiraiInternalApi public constructor(@JvmField @MiraiInternalApi public val delegate: MutableCollection<@UnsafeVariance C>) :
     Collection<C> by delegate {
-    @MiraiInternalApi
-    public constructor(collection: Collection<C>) : this(ConcurrentLinkedQueue(collection))
 
     @MiraiInternalApi
     public constructor() : this(ConcurrentLinkedQueue())

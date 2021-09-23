@@ -18,23 +18,24 @@ import kotlin.reflect.full.allSupertypes
  * @param T is a type hint.
  */
 internal interface ComponentKey<T : Any> {
-    /**
-     * Get name of `T`.
-     *
-     * - If [qualified] is `false`, example: `PacketCodec`.
-     * - If [qualified] is `true`, example: `net.mamoe.mirai.internal.network.components.PacketCodec`.
-     */
-    fun componentName(qualified: Boolean = false): String {
-        val argument = getComponentTypeArgument()
-        argument?.render(qualified)?.let { return it }
-        return argument?.type?.classifier.renderClassifier(qualified)
-    }
-
-    fun smartToString(qualified: Boolean = false): String {
-        return "ComponentKey<${componentName(qualified)}>"
-    }
 
     companion object {
+        /**
+         * Get name of `T`.
+         *
+         * - If [qualified] is `false`, example: `PacketCodec`.
+         * - If [qualified] is `true`, example: `net.mamoe.mirai.internal.network.components.PacketCodec`.
+         */
+        fun <T : Any> ComponentKey<T>.componentName(qualified: Boolean = false): String {
+            val argument = getComponentTypeArgument()
+            argument?.render(qualified)?.let { return it }
+            return argument?.type?.classifier.renderClassifier(qualified)
+        }
+
+        fun <T : Any> ComponentKey<T>.smartToString(qualified: Boolean = false): String {
+            return "ComponentKey<${componentName(qualified)}>"
+        }
+
         // reflection is slow, but it is initialized once only (if memory sufficient).
 
         private fun KTypeProjection.render(

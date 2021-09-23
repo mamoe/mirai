@@ -37,8 +37,8 @@ public interface SingleMessage : Message {
             "kotlinx.serialization.PolymorphicSerializer",
             "net.mamoe.mirai.message.data.SingleMessage",
         ),
-        level = DeprecationLevel.WARNING
-    )
+        level = DeprecationLevel.ERROR // ERROR since 2.8
+    ) // error since 2.8
     public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 

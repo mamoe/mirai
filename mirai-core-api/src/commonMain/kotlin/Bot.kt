@@ -50,19 +50,9 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public val configuration: BotConfiguration
 
     /**
-     * QQ 号码. 实际类型为 uint
-     */
-    public override val id: Long
-
-    /**
      * 返回 `this`
      */
     public override val bot: Bot get() = this
-
-    /**
-     * 昵称
-     */
-    public override val nick: String
 
     /**
      * 日志记录器

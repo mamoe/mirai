@@ -34,7 +34,7 @@ internal actual class PlatformInitializationTest : AbstractTest() {
     actual fun test() {
         assertTrue {
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            MiraiLogger.create("1") is net.mamoe.mirai.internal.utils.StdoutLogger
+            MiraiLogger.Factory.create(this::class, "1") is net.mamoe.mirai.internal.utils.StdoutLogger
         }
     }
 }

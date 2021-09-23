@@ -13,16 +13,17 @@ package net.mamoe.mirai.internal
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
-import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.impl.netty.asCoroutineExceptionHandler
 import net.mamoe.mirai.network.LoginFailedException
@@ -85,17 +86,22 @@ internal abstract class AbstractBot constructor(
      */
     abstract val components: ComponentStorage
 
-    final override val isOnline: Boolean get() = network.isOk()
+    final override val isOnline: Boolean get() = if (!networkInitialized) false else network.state == State.OK
     final override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
-    final override val otherClients: ContactList<OtherClient> = ContactList()
-    final override val friends: ContactList<Friend> = ContactList()
-    final override val groups: ContactList<Group> = ContactList()
-    final override val strangers: ContactList<Stranger> = ContactList()
+    final override val otherClients: ContactList<OtherClientImpl> = ContactList()
+    final override val friends: ContactList<FriendImpl> = ContactList()
+    final override val groups: ContactList<GroupImpl> = ContactList()
+    final override val strangers: ContactList<StrangerImpl> = ContactList()
 
-    final override val asFriend: Friend by lazy { Mirai.newFriend(this, FriendInfoImpl(uin, nick, "")) }
-    final override val asStranger: Stranger by lazy { Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)) }
+    final override val asFriend: FriendImpl by lazy {
+        Mirai.newFriend(this, FriendInfoImpl(uin, "", "")).cast()
+    } // nick is initialized later on login
+    final override val asStranger: StrangerImpl by lazy {
+        Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)).cast()
+    }
+    final override var nick: String by asFriend.info::nick
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) return
@@ -113,7 +119,12 @@ internal abstract class AbstractBot constructor(
     // network
     ///////////////////////////////////////////////////////////////////////////
 
-    val network: NetworkHandler by lazy { createNetworkHandler() } // the selector handles renewal of [NetworkHandler]
+    @Volatile
+    private var networkInitialized = false
+    val network: NetworkHandler by lazy {
+        networkInitialized = true
+        createNetworkHandler()
+    } // the selector handles renewal of [NetworkHandler]
 
     final override suspend fun login() {
         if (!isActive) error("Bot is already closed and cannot relogin. Please create a new Bot instance then do login.")

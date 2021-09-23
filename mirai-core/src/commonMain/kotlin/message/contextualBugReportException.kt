@@ -9,26 +9,26 @@
 
 package net.mamoe.mirai.internal.message
 
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+internal data class ContextualBugReportException(
+    override val message: String,
+    override val cause: Throwable?,
+) : IllegalStateException()
 
 internal fun contextualBugReportException(
     context: String,
     forDebug: String,
     e: Throwable? = null,
     additional: String = "",
-): IllegalStateException {
-    return IllegalStateException(
+): ContextualBugReportException {
+    return ContextualBugReportException(
         "在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new   $additional 调试信息: $forDebug",
-        e
+        e,
     )
 }
 
-@OptIn(ExperimentalContracts::class)
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
 internal inline fun <R> runWithBugReport(context: String, forDebug: () -> String, block: () -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

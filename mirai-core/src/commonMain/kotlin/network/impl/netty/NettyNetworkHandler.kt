@@ -18,8 +18,6 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder
 import io.netty.handler.codec.MessageToByteEncoder
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.trySendBlocking
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
@@ -115,12 +113,18 @@ internal open class NettyNetworkHandler(
             .addLast(RawIncomingPacketCollector(decodePipeline))
     }
 
+    protected open fun createDummyDecodePipeline() = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)
+
     // can be overridden for tests
-    protected open suspend fun createConnection(decodePipeline: PacketDecodePipeline): NettyChannel {
+    protected open suspend fun createConnection(): NettyChannel {
         packetLogger.debug { "Connecting to $address" }
 
         val contextResult = CompletableDeferred<NettyChannel>()
         val eventLoopGroup = NioEventLoopGroup()
+        val decodePipeline = PacketDecodePipeline(
+            this@NettyNetworkHandler.coroutineContext
+                .plus(eventLoopGroup.asCoroutineDispatcher())
+        )
 
         val future = Bootstrap().group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
@@ -155,41 +159,25 @@ internal open class NettyNetworkHandler(
 
         future.channel().closeFuture().addListener {
             if (_state.correspondingState == State.CLOSED) return@addListener
-            close(it.cause())
+            close(NettyChannelException(cause = it.cause()))
         }
 
         return contextResult.await()
     }
 
-    protected val decodePipeline = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)
-
     protected inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
-        private val channel: Channel<RawIncomingPacket> = Channel(Channel.BUFFERED)
         private val packetCodec: PacketCodec by lazy { context[PacketCodec] }
 
-        init {
-            coroutineContext.job.invokeOnCompletion {
-                channel.close() // normally close
+        fun send(raw: RawIncomingPacket) {
+            launch {
+                packetLogger.debug { "Packet Handling Processor: receive packet ${raw.commandName}" }
+                val result = packetCodec.processBody(context.bot, raw)
+                if (result == null) {
+                    collectUnknownPacket(raw)
+                } else collectReceived(result)
             }
         }
-
-        init {
-            repeat(4) { processorId ->
-                launch(CoroutineName("PacketDecodePipeline processor #$processorId")) {
-                    while (isActive) {
-                        val raw = channel.receiveCatching().getOrNull() ?: return@launch
-                        packetLogger.debug { "Packet Handling Processor #$processorId: receive packet ${raw.commandName}" }
-                        val result = packetCodec.processBody(context.bot, raw)
-                        if (result == null) {
-                            collectUnknownPacket(raw)
-                        } else collectReceived(result)
-                    }
-                }
-            }
-        }
-
-        fun send(raw: RawIncomingPacket) = channel.trySendBlocking(raw)
     }
 
 
@@ -257,7 +245,7 @@ internal open class NettyNetworkHandler(
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
         private val connection = async {
-            createConnection(decodePipeline)
+            createConnection()
         }
 
         @Suppress("JoinDeclarationAndAssignment")

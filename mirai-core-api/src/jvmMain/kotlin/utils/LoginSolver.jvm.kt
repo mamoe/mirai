@@ -10,17 +10,12 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.client.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.io.ByteWriteChannel
-import kotlinx.coroutines.io.close
-import kotlinx.coroutines.io.jvm.nio.copyTo
-import kotlinx.coroutines.io.reader
-import kotlinx.coroutines.io.writeFully
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
 import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.LoginFailedException
@@ -30,9 +25,7 @@ import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocki
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
-import java.io.RandomAccessFile
 import javax.imageio.ImageIO
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -150,7 +143,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
             logger.info { "[PicCaptcha] 需要图片验证码登录, 验证码为 4 字母" }
             logger.info { "[PicCaptcha] Picture captcha required. Captcha consists of 4 letters." }
             try {
-                tempFile.writeChannel().apply { writeFully(data); close() }
+                tempFile.writeBytes(data)
                 logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}" }
                 logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}" }
             } catch (e: Exception) {
@@ -250,18 +243,6 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         }
     }
 }
-
-// Copied from Ktor CIO
-@OptIn(DelicateCoroutinesApi::class)
-private fun File.writeChannel(
-    coroutineContext: CoroutineContext = Dispatchers.IO
-): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
-    @Suppress("BlockingMethodInNonBlockingContext")
-    RandomAccessFile(this@writeChannel, "rw").use { file ->
-        val copied = channel.copyTo(file.channel)
-        file.setLength(copied) // truncate tail that could remain from the previously written data
-    }
-}.channel
 
 private val loginSolverLock = Mutex()
 

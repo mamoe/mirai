@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.component
 
+import net.mamoe.mirai.internal.network.component.ComponentKey.Companion.componentName
 import net.mamoe.mirai.utils.systemProp
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.LazyThreadSafetyMode.NONE
@@ -63,10 +64,10 @@ internal inline fun ConcurrentComponentStorage(builderAction: ConcurrentComponen
     return ConcurrentComponentStorage().apply(builderAction)
 }
 
-private val SHOW_ALL_COMPONENTS: Boolean by lazy(NONE) { systemProp("mirai.debug.network.show.all.components", false) }
+private val SHOW_ALL_COMPONENTS: Boolean by lazy(NONE) { systemProp("mirai.network.show.all.components", false) }
 private val SHOW_COMPONENTS_CREATION_STACKTRACE: Boolean by lazy(NONE) {
     systemProp(
-        "mirai.debug.network.show.components.creation.stacktrace",
+        "mirai.network.show.components.creation.stacktrace",
         false
     )
 }

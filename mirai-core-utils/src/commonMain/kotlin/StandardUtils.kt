@@ -13,13 +13,27 @@
 package net.mamoe.mirai.utils
 
 import java.util.*
-import kotlin.reflect.KClass
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-public inline fun <reified T> Any?.cast(): T = this as T
+public inline fun <reified T> Any?.cast(): T {
+    contract { returns() implies (this@cast is T) }
+    return this as T
+}
 
-public inline fun <reified T> Any?.safeCast(): T? = this as? T
+public inline fun <reified T> Any?.safeCast(): T? {
+    contract { returnsNotNull() implies (this@safeCast is T) }
+    return this as? T
+}
 
-public inline fun <reified T> Any?.castOrNull(): T? = this as? T
+public inline fun <reified T> Any?.castOrNull(): T? {
+    contract { returnsNotNull() implies (this@castOrNull is T) }
+    return this as? T
+}
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+public inline fun <T> Any?.uncheckedCast(): T = this as T
+
 
 public inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
     for (it in this) {
@@ -29,152 +43,12 @@ public inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 }
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-@kotlin.internal.LowPriorityInOverloadResolution
-public inline fun <R, T : R> Result<T>.recoverCatchingSuppressed(transform: (exception: Throwable) -> R): Result<R> {
-    return when (val exception = exceptionOrNull()) {
-        null -> this
-        else -> {
-            try {
-                Result.success(transform(exception))
-            } catch (e: Throwable) {
-                e.addSuppressed(exception)
-                Result.failure(e)
-            }
-        }
-    }
-}
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-@kotlin.internal.LowPriorityInOverloadResolution
-public inline fun <R> retryCatching(
-    n: Int,
-    except: KClass<out Throwable>? = null,
-    block: (count: Int, lastException: Throwable?) -> R
-): Result<R> {
-    require(n >= 0) {
-        "param n for retryCatching must not be negative"
-    }
-    var exception: Throwable? = null
-    repeat(n) {
-        try {
-            return Result.success(block(it, exception))
-        } catch (e: Throwable) {
-            if (except?.isInstance(e) == true) {
-                return Result.failure(e)
-            }
-            exception?.addSuppressed(e)
-            exception = e
-        }
-    }
-    return Result.failure(exception!!)
-}
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-@kotlin.internal.LowPriorityInOverloadResolution
-public inline fun <R> retryCatchingExceptions(
-    n: Int,
-    except: KClass<out Exception>? = null,
-    block: (count: Int, lastException: Throwable?) -> R
-): Result<R> {
-    require(n >= 0) {
-        "param n for retryCatching must not be negative"
-    }
-    var exception: Throwable? = null
-    repeat(n) {
-        try {
-            return Result.success(block(it, exception))
-        } catch (e: Exception) {
-            if (except?.isInstance(e) == true) {
-                return Result.failure(e)
-            }
-            exception?.addSuppressed(e)
-            exception = e
-        }
-    }
-    return Result.failure(exception!!)
-}
-
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-public inline fun <R> retryCatching(
-    n: Int,
-    except: KClass<out Throwable>? = null,
-    block: () -> R
-): Result<R> {
-    require(n >= 0) {
-        "param n for retryCatching must not be negative"
-    }
-    var exception: Throwable? = null
-    repeat(n) {
-        try {
-            return Result.success(block())
-        } catch (e: Throwable) {
-            if (except?.isInstance(e) == true) {
-                return Result.failure(e)
-            }
-            exception?.addSuppressed(e)
-            exception = e
-        }
-    }
-    return Result.failure(exception!!)
-}
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-public inline fun <R> retryCatchingExceptions(
-    n: Int,
-    except: KClass<out Exception>? = null,
-    block: () -> R
-): Result<R> {
-    require(n >= 0) {
-        "param n for retryCatching must not be negative"
-    }
-    var exception: Throwable? = null
-    repeat(n) {
-        try {
-            return Result.success(block())
-        } catch (e: Exception) {
-            if (except?.isInstance(e) == true) {
-                return Result.failure(e)
-            }
-            exception?.addSuppressed(e)
-            exception = e
-        }
-    }
-    return Result.failure(exception!!)
-}
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
-@kotlin.internal.InlineOnly
-public inline fun <R> runCatchingExceptions(block: () -> R): Result<R> {
-    return try {
-        Result.success(block())
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-}
-
 public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     val li: MutableListIterator<E> = this.listIterator()
     while (li.hasNext()) {
         li.set(operator(li.next()))
     }
 }
-
-public fun systemProp(name: String, default: String): String =
-    System.getProperty(name, default) ?: default
-
-public fun systemProp(name: String, default: Boolean): Boolean =
-    System.getProperty(name, default.toString())?.toBoolean() ?: default
-
-
-public fun systemProp(name: String, default: Long): Long =
-    System.getProperty(name, default.toString())?.toLongOrNull() ?: default
 
 
 public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
@@ -213,9 +87,59 @@ public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) ->
     }
 }
 
+/**
+ * Run [block] and do [finally], catching exception thrown in [finally] and add it to the exception from [block].
+ */
+public inline fun <R> trySafely(
+    block: () -> R,
+    finally: () -> Unit,
+): R {
+//    contract {
+//        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//        callsInPlace(finally, InvocationKind.EXACTLY_ONCE)
+//    }
+    var eInBlock: Throwable? = null
+    try {
+        return block()
+    } catch (e: Throwable) {
+        eInBlock = e
+    } finally {
+        try {
+            finally()
+        } catch (eInFinally: Throwable) {
+            if (eInBlock != null) {
+                eInBlock.addSuppressed(eInFinally)
+                throw eInBlock
+            } else throw eInFinally
+        }
+        if (eInBlock != null) throw eInBlock
+    }
+    throw AssertionError()
+}
+
 public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable =
     findCause(maxDepth, filter) ?: this
 
 public fun String.capitalize(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }
+
+public fun String.truncated(length: Int, truncated: String = "..."): String {
+    return if (this.length > length) {
+        this.take(10) + truncated
+    } else this
+}
+
+/**
+ * Similar to [run] bot with [Unit] return type.
+ *
+ * You should not reference to [T] directly in the [block].
+ */
+// can convert to contextual receiver in the future, or there might be a stdlib function which we can delegate to.
+public inline fun <T> T.context(block: T.() -> Unit) {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return block()
+}
+
+public fun assertUnreachable(hint: String? = null): Nothing =
+    error("This clause should not be reached. " + hint.orEmpty())

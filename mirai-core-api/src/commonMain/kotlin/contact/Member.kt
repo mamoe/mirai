@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
  * 代表一位群成员.
@@ -41,11 +40,12 @@ public interface Member : User {
     /**
      * 所在的群.
      */
-    @WeakRefProperty
     public val group: Group
 
     /**
-     * 成员的权限, 动态更新.
+     * 成员的权限, 将会随服务器通知动态更新.
+     *
+     * [Member] 可能是 [普通成员][NormalMember] 或 [匿名成员][AnonymousMember], 要修改群成员权限, 请检查类型为 [NormalMember] 然后使用 [NormalMember.modifyAdmin]
      *
      * @see MemberPermissionChangeEvent 权限变更事件. 由群主或机器人的操作触发.
      */

@@ -14,15 +14,15 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
-import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
 import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
@@ -157,7 +157,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                         }
                         if (resp is MessageSvcPbSendMsg.Response.Failed) {
                             val contact = contact
-                            when (resp.errorCode) {
+                            when (resp.resultType) {
                                 120 -> if (contact is Group) throw BotIsBeingMutedException(contact)
                             }
                         }
@@ -391,9 +391,8 @@ internal open class GroupSendMessageHandler(
         fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
 
-        val receipt: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt =
-            nextEventOrNull(3000) { it.fromAppId == fromAppId }
-                ?: OnlinePushPbPushGroupMsg.SendGroupMessageReceipt.EMPTY
+        val receipt: SendGroupMessageReceipt =
+            nextEventOrNull(3000) { it.fromAppId == fromAppId } ?: SendGroupMessageReceipt.EMPTY
 
         return OnlineMessageSourceToGroupImpl(
             contact,
@@ -401,7 +400,7 @@ internal open class GroupSendMessageHandler(
             providedSequenceIds = intArrayOf(receipt.sequenceId),
             sender = bot,
             target = contact,
-            time = currentTimeSeconds().toInt(),
+            time = bot.clock.server.currentTimeSeconds().toInt(),
             originalMessage = finalMessage
         )
     }
@@ -441,9 +440,19 @@ internal open class GroupSendMessageHandler(
                     uin = bot.id,
                     groupCode = id,
                     md5 = image.md5,
-                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
-                ).sendAndExpect<ImgStore.GroupPicUp.Response>()
-                return OfflineGroupImage(image.imageId).also { img ->
+                    size = image.size
+                ).sendAndExpect()
+                return OfflineGroupImage(
+                    imageId = image.imageId,
+                    width = image.width,
+                    height = image.height,
+                    size = if (response is ImgStore.GroupPicUp.Response.FileExists) {
+                        response.fileInfo.fileSize
+                    } else {
+                        image.size
+                    },
+                    imageType = image.imageType
+                ).also { img ->
                     when (response) {
                         is ImgStore.GroupPicUp.Response.FileExists -> {
                             img.fileId = response.fileId.toInt()

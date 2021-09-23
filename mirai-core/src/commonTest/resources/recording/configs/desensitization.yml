@@ -1,0 +1,20 @@
+# Template for Desensitization in recordings
+#
+# Format:
+# ```
+# <sensitive value>: <replacement>
+# ```
+#
+# If key is a number, its group uin counterpart will also be processed, with calculated replacer.
+# WARNING: Ensure the <replacement> is not longer than <sensitive value>.
+#
+# For example, if your account id is 147258369, you may add:
+# ```
+# 147258369: 123456
+# ```
+# Then your id will be replaced with 123456.
+#
+#
+# To use desensitization, duplicate this file into name "local.desensitization.yml".
+
+123456789: 111

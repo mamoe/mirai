@@ -76,7 +76,7 @@ internal class LoggingStateObserver(
          * - `full` for logging with stacktrace
          */
         var ENABLED = systemProp(
-            "mirai.debug.network.state.observer.logging",
+            "mirai.network.state.observer.logging",
             "off"
         ).lowercase()
 
@@ -84,14 +84,14 @@ internal class LoggingStateObserver(
             return when (ENABLED) {
                 "full" -> {
                     SafeStateObserver(
-                        LoggingStateObserver(MiraiLogger.create("States"), true),
-                        MiraiLogger.create("LoggingStateObserver errors")
+                        LoggingStateObserver(MiraiLogger.Factory.create(LoggingStateObserver::class, "States"), true),
+                        MiraiLogger.Factory.create(LoggingStateObserver::class, "LoggingStateObserver errors")
                     )
                 }
                 "on", "true" -> {
                     SafeStateObserver(
-                        LoggingStateObserver(MiraiLogger.create("States"), false),
-                        MiraiLogger.create("LoggingStateObserver errors")
+                        LoggingStateObserver(MiraiLogger.Factory.create(LoggingStateObserver::class, "States"), false),
+                        MiraiLogger.Factory.create(LoggingStateObserver::class, "LoggingStateObserver errors")
                     )
                 }
                 else -> null

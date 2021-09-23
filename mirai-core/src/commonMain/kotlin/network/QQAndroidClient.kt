@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.internal.network
 
-import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.String
@@ -19,11 +18,11 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.network.context.AccountSecrets
-import net.mamoe.mirai.internal.network.context.SsoSession
-import net.mamoe.mirai.internal.network.protocol.SyncingCacheList
+import net.mamoe.mirai.internal.network.components.AccountSecrets
+import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
+import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.utils.*
@@ -124,13 +123,10 @@ internal open class QQAndroidClient(
 
     internal var strangerSeq: Int = 0
 
-    // TODO: 2021/4/14 investigate whether they can be minimized
-    private val friendSeq: AtomicInt = atomic(getRandomUnsignedInt())
-    internal fun getFriendSeq(): Int = friendSeq.value
-
-    internal fun nextFriendSeq(): Int = friendSeq.incrementAndGet()
-
-    internal fun setFriendSeq(compare: Int, id: Int): Boolean = friendSeq.compareAndSet(compare, id % 65535)
+    /**
+     * for send
+     */
+    val sendFriendMessageSeq = AtomicIntSeq.forPrivateSync()
 
     internal val groupConfig: GroupConfig = GroupConfig()
 
@@ -143,60 +139,6 @@ internal open class QQAndroidClient(
             return robotUinRangeList.any { range -> range.contains(uin) }
         }
     }
-
-    class MessageSvcSyncData {
-        val firstNotify: AtomicBoolean = atomic(true)
-        var latestMsgNewGroupTime: Long = currentTimeSeconds()
-        var latestMsgNewFriendTime: Long = currentTimeSeconds()
-
-        @Volatile
-        var syncCookie: ByteArray? = null
-        var pubAccountCookie = EMPTY_BYTE_ARRAY
-        var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
-
-
-        internal data class PbGetMessageSyncId(
-            val uid: Long,
-            val sequence: Int,
-            val time: Int
-        )
-
-        val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
-
-        internal data class SystemMsgNewSyncId(
-            val sequence: Long,
-            val time: Long
-        )
-
-        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
-        val systemMsgNewFriendCacheList = SyncingCacheList<SystemMsgNewSyncId>(10)
-
-
-        internal data class PbPushTransMsgSyncId(
-            val uid: Long,
-            val sequence: Int,
-            val time: Int
-        )
-
-        val pbPushTransMsgCacheList = SyncingCacheList<PbPushTransMsgSyncId>(10)
-
-        internal data class OnlinePushReqPushSyncId(
-            val uid: Long,
-            val sequence: Short,
-            val time: Long
-        )
-
-        val onlinePushReqPushCacheList = SyncingCacheList<OnlinePushReqPushSyncId>(50)
-
-        internal data class PendingGroupMessageReceiptSyncId(
-            val messageRandom: Int,
-        )
-
-        val pendingGroupMessageReceiptCacheList = SyncingCacheList<PendingGroupMessageReceiptSyncId>(50)
-    }
-
-
-    val syncingController = MessageSvcSyncData()
 
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null

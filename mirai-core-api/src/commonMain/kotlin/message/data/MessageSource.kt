@@ -28,7 +28,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.utils.LazyProperty
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -150,7 +149,8 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     /**
      * 发送时间时间戳, 单位为秒.
      *
-     * 时间戳可能来自服务器, 也可能来自 mirai, 且无法保证两者时间同步.
+     * 自 2.8.0 起, 时间戳为服务器时区 (UTC+8).
+     * 在 2.8.0 以前, 时间戳可能来自服务器 (UTC+8), 也可能来自 mirai (本地), 且无法保证两者时间同步.
      */
     public abstract val time: Int
 
@@ -177,7 +177,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
-    @LazyProperty
     public abstract val originalMessage: MessageChain
 
     /**

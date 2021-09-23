@@ -17,12 +17,11 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.JavaFriendlyAPI
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.verbose
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -156,6 +155,8 @@ internal open class _EventBroadcast {
         @Volatile
         @JvmStatic
         var implementation: _EventBroadcast = _EventBroadcast()
+
+        private val SHOW_VERBOSE_EVENT_ALWAYS = systemProp("mirai.event.show.verbose.events", false)
     }
 
     open suspend fun <E : Event> broadcastPublic(event: E): E = event.apply { Mirai.broadcastEvent(this) }
@@ -177,11 +178,23 @@ internal open class _EventBroadcast {
         return event
     }
 
+    private fun isVerboseEvent(event: Event): Boolean {
+        if (SHOW_VERBOSE_EVENT_ALWAYS) return false
+        if (event is VerboseEvent) {
+            if (event is BotEvent) {
+                return !event.bot.configuration.isShowingVerboseEventLog
+            }
+            return true
+        }
+        return false
+    }
+
     private fun logEvent(event: Event) {
         if (event is Packet.NoEventLog) return
         if (event is Packet.NoLog) return
         if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
 //        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
+        if (isVerboseEvent(event)) return
 
         if (event is BotEvent) {
             event.bot.logger.verbose { "Event: $event" }
@@ -190,7 +203,7 @@ internal open class _EventBroadcast {
         }
     }
 
-    private val topLevelEventLogger by lazy { MiraiLogger.create("EventPipeline") }
+    private val topLevelEventLogger by lazy { MiraiLogger.Factory.create(Event::class, "EventPipeline") }
 }
 
 /**

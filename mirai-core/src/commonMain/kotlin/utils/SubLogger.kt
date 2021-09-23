@@ -11,7 +11,8 @@ package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.coroutineName
 
 
 internal fun CoroutineExceptionHandler.Key.fromMiraiLogger(
@@ -25,54 +26,5 @@ internal fun CoroutineExceptionHandler.Key.fromMiraiLogger(
     }
 }
 
-internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
-    return SubLogger(name, this)
-}
-
-private class SubLogger(
-    private val name: String,
-    private val main: MiraiLogger,
-) : MiraiLoggerPlatformBase() {
-    override val identity: String? get() = main.identity
-    override val isEnabled: Boolean get() = main.isEnabled
-
-    override fun verbose0(message: String?, e: Throwable?) {
-        if (message != null) {
-            main.verbose({ "[$name] $message" }, e)
-        } else {
-            main.verbose(null, e)
-        }
-    }
-
-    override fun debug0(message: String?, e: Throwable?) {
-        if (message != null) {
-            main.debug({ "[$name] $message" }, e)
-        } else {
-            main.debug(null, e)
-        }
-    }
-
-    override fun info0(message: String?, e: Throwable?) {
-        if (message != null) {
-            main.info({ "[$name] $message" }, e)
-        } else {
-            main.info(null, e)
-        }
-    }
-
-    override fun warning0(message: String?, e: Throwable?) {
-        if (message != null) {
-            main.warning({ "[$name] $message" }, e)
-        } else {
-            main.warning(null, e)
-        }
-    }
-
-    override fun error0(message: String?, e: Throwable?) {
-        if (message != null) {
-            main.error({ "[$name] $message" }, e)
-        } else {
-            main.error(null, e)
-        }
-    }
-}
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+internal fun MiraiLogger.subLogger(name: String): MiraiLogger = subLoggerImpl(this, name)

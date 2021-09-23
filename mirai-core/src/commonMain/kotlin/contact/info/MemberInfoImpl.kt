@@ -21,11 +21,11 @@ internal data class MemberInfoImpl(
     override val uin: Long,
     override var nick: String,
     override var permission: MemberPermission,
-    override var remark: String,
-    override val nameCard: String,
-    override val specialTitle: String,
-    override val muteTimestamp: Int,
-    override val anonymousId: String?,
+    override var remark: String = "",
+    override val nameCard: String = "",
+    override val specialTitle: String = "",
+    override val muteTimestamp: Int = 0,
+    override val anonymousId: String? = null,
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
     override var lastSpeakTimestamp: Int = 0,
     override val isOfficialBot: Boolean = false,
@@ -37,10 +37,9 @@ internal data class MemberInfoImpl(
     ) : this(
         uin = jceInfo.memberUin,
         nick = jceInfo.nick,
-        // 管理员将在 MiraiImpl.kt:359
-        // TroopManagement.GetAdmin 处理
-        permission = when (jceInfo.memberUin) {
-            groupOwnerId -> MemberPermission.OWNER
+        permission = when {
+            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+            jceInfo.dwFlag?.takeLowestOneBit() == 1L -> MemberPermission.ADMINISTRATOR
             else -> MemberPermission.MEMBER
         },
         remark = jceInfo.autoRemark.orEmpty(),

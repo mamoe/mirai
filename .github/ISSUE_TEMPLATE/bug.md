@@ -34,8 +34,10 @@ assignees: ''
 
 
 
-#### 版本
+#### 版本及相关选项选择
+
 - mirai-core: `2.6.7` <!--在 `` 中填写你正在使用的版本号，如 `2.6.7`-->
+- bot-protocol: `ANDROID_PHONE` <!-- 在 `` 中填写你正在使用的登录协议，如 `ANDROID_PHONE` -->
 
 <!--如果你正在通过 mirai-console 或其他间接使用 mirai-core 的中间件（如 mirai-native、mirai-api-http 或者其他第三方 SDK）, 请同样提供版本号-->
 

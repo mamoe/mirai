@@ -13,6 +13,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
@@ -38,6 +39,7 @@ internal fun ExternalResource.consumeAsWriteChannelContent(contentType: ContentT
 
 internal val FALLBACK_HTTP_SERVER = "htdata2.qq.com" to 0
 
+@OptIn(InternalAPI::class) // ktor bug
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     serverIp: String,

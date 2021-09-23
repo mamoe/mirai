@@ -125,4 +125,10 @@ internal class NettyBotLifecycleTest : AbstractNettyNHTest() {
         assertFalse { network.isActive }
         network.assertState(CLOSED) // we do not use selector in this test so it will be CLOSED. It will recover (reconnect) instead in real.
     }
+
+
+    @Test
+    fun `isOnline returns false if network not initialized`() = runBlockingUnit {
+        assertFalse { bot.isOnline }
+    }
 }

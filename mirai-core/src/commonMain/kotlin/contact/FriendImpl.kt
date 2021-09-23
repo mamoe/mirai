@@ -1,49 +1,42 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:OptIn(LowLevelApi::class)
 @file:Suppress(
-    "EXPERIMENTAL_API_USAGE",
-    "DEPRECATION_ERROR",
     "NOTHING_TO_INLINE",
-    "INVISIBLE_MEMBER",
-    "INVISIBLE_REFERENCE"
 )
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
+import net.mamoe.mirai.internal.message.OfflineAudioImpl
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
-import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.recoverCatchingSuppressed
-import net.mamoe.mirai.utils.toByteArray
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.message.data.OfflineAudio
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -56,9 +49,9 @@ internal fun net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo.toMir
     )
 
 @OptIn(ExperimentalContracts::class)
-internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
+internal inline fun Friend.impl(): FriendImpl {
     contract {
-        returns() implies (this@checkIsFriendImpl is FriendImpl)
+        returns() implies (this@impl is FriendImpl)
     }
     check(this is FriendImpl) { "A Friend instance is not instance of FriendImpl. Your instance: ${this::class.qualifiedName}" }
     return this
@@ -66,22 +59,17 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 
 internal class FriendImpl(
     bot: QQAndroidBot,
-    coroutineContext: CoroutineContext,
-    internal val friendInfo: FriendInfo,
-) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
-    @Suppress("unused") // bug
-    val lastMessageSequence: AtomicInt = atomic(-1)
-    val friendPkgMsgParsingCache = C2CPkgMsgParsingCache()
-
+    parentCoroutineContext: CoroutineContext,
+    override val info: FriendInfoImpl,
+) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override suspend fun delete() {
-        check(bot.friends[this.id] != null) {
-            "Friend ${this.id} had already been deleted"
+        check(bot.friends[id] != null) {
+            "Friend $id had already been deleted"
         }
         bot.network.run {
-            FriendList.DelFriend.invoke(bot.client, this@FriendImpl)
-                .sendAndExpect<FriendList.DelFriend.Response>().also {
-                    check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
-                }
+            FriendList.DelFriend.invoke(bot.client, this@FriendImpl).sendAndExpect().also {
+                check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
+            }
         }
     }
 
@@ -95,19 +83,13 @@ internal class FriendImpl(
 
     override fun toString(): String = "Friend($id)"
 
-    override suspend fun uploadVoice(resource: ExternalResource): Voice = bot.network.run {
-        val voice = Voice(
-            "${resource.md5.toUHexString("")}.amr",
-            resource.md5,
-            resource.size,
-            resource.voiceCodec,
-            ""
-        )
+    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = resource.withAutoClose {
+        var audio: OfflineAudioImpl? = null
         kotlin.runCatching {
             val resp = Highway.uploadResourceBdh(
                 bot = bot,
                 resource = resource,
-                kind = ResourceKind.PRIVATE_VOICE,
+                kind = ResourceKind.PRIVATE_AUDIO,
                 commandId = 26,
                 extendInfo = PttStore.C2C.createC2CPttStoreBDHExt(bot, this@FriendImpl.uin, resource)
                     .toByteArray(Cmd0x346.ReqBody.serializer())
@@ -117,40 +99,54 @@ internal class FriendImpl(
             if (c346resp.msgApplyUploadRsp == null) {
                 error("Upload failed")
             }
-            voice.pttInternalInstance = ImMsgBody.Ptt(
-                fileType = 4,
-                srcUin = bot.uin,
-                fileUuid = c346resp.msgApplyUploadRsp.uuid,
+            audio = OfflineAudioImpl(
+                filename = "${resource.md5.toUHexString("")}.amr",
                 fileMd5 = resource.md5,
-                fileName = resource.md5 + ".amr".toByteArray(),
-                fileSize = resource.size.toInt(),
-                boolValid = true,
+                fileSize = resource.size,
+                codec = resource.audioCodec,
+                originalPtt = ImMsgBody.Ptt(
+                    fileType = 4,
+                    srcUin = bot.uin,
+                    fileUuid = c346resp.msgApplyUploadRsp.uuid,
+                    fileMd5 = resource.md5,
+                    fileName = resource.md5 + ".amr".toByteArray(),
+                    fileSize = resource.size.toInt(),
+                    boolValid = true,
+                )
             )
         }.recoverCatchingSuppressed {
-            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect<Any>()) {
+            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect(bot)) {
                 is PttStore.GroupPttUp.Response.RequireUpload -> {
                     tryServersUpload(
                         bot,
                         resp.uploadIpList.zip(resp.uploadPortList),
                         resource.size,
-                        ResourceKind.GROUP_VOICE,
+                        ResourceKind.GROUP_AUDIO,
                         ChannelKind.HTTP
                     ) { ip, port ->
                         Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
                     }
-                    voice.pttInternalInstance = ImMsgBody.Ptt(
-                        fileType = 4,
-                        srcUin = bot.uin,
-                        fileUuid = resp.fileId.toByteArray(),
+                    audio = OfflineAudioImpl(
+                        filename = "${resource.md5.toUHexString("")}.amr",
                         fileMd5 = resource.md5,
-                        fileName = resource.md5 + ".amr".toByteArray(),
-                        fileSize = resource.size.toInt(),
-                        boolValid = true,
+                        fileSize = resource.size,
+                        codec = resource.audioCodec,
+                        originalPtt = ImMsgBody.Ptt(
+                            fileType = 4,
+                            srcUin = bot.uin,
+                            fileUuid = resp.fileId.toByteArray(),
+                            fileMd5 = resource.md5,
+                            fileName = resource.md5 + ".amr".toByteArray(),
+                            fileSize = resource.size.toInt(),
+                            boolValid = true,
+                        )
                     )
                 }
             }
         }.getOrThrow()
 
-        return voice
+        return audio!!
     }
+
+    override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplFriend(this) }
 }

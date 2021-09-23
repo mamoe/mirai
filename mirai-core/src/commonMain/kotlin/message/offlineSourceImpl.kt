@@ -24,6 +24,7 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OfflineMessageSourceImplData.Serializer::class)
 internal class OfflineMessageSourceImplData(
     override val kind: MessageSourceKind,

@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -16,8 +17,6 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.components.*
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
@@ -45,8 +44,10 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
 
-    var bot: QQAndroidBot by lateinitMutableProperty {
-        object : QQAndroidBot(MockAccount, MockConfiguration.copy()) {
+    var bot: QQAndroidBot by lateinitMutableProperty { createBot() }
+
+    protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
+        return object : QQAndroidBot(account, MockConfiguration.copy()) {
             override fun createBotLevelComponents(): ConcurrentComponentStorage =
                 super.createBotLevelComponents().apply { setAll(overrideComponents) }
 
@@ -55,7 +56,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         }
     }
 
-    open val networkLogger = MiraiLogger.create("network")
+    open val networkLogger = MiraiLogger.Factory.create(NetworkHandler::class, "network")
 
     sealed class NHEvent {
         object Login : NHEvent()

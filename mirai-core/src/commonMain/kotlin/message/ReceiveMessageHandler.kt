@@ -18,15 +18,12 @@ import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toVoice
+import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.*
 
 /**
  * 只在手动构造 [OfflineMessageSource] 时调用
@@ -51,6 +48,27 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot, refineContext)
+}
+
+internal suspend fun MsgComm.Msg.toMessageChainOnline(
+    bot: Bot,
+    refineContext: RefineContext = EmptyRefineContext,
+): MessageChain {
+    fun getSourceKind(c2cCmd: Int): MessageSourceKind {
+        return when (c2cCmd) {
+            11 -> MessageSourceKind.FRIEND // bot 给其他人发消息
+            4 -> MessageSourceKind.FRIEND // bot 给自己作为好友发消息 (非 other client)
+            1 -> MessageSourceKind.GROUP
+            else -> error("Could not get source kind from c2cCmd: $c2cCmd")
+        }
+    }
+
+    val kind = getSourceKind(msgHead.c2cCmd)
+    val groupId = when (kind) {
+        MessageSourceKind.GROUP -> msgHead.groupInfo?.groupCode ?: 0
+        else -> 0
+    }
+    return listOf(this).toMessageChainOnline(bot, groupId, kind, refineContext)
 }
 
 //internal fun List<MsgComm.Msg>.toMessageChainOffline(
@@ -91,7 +109,7 @@ private fun List<MsgComm.Msg>.toMessageChain(
     joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, builder)
 
     for (msg in messageList) {
-        msg.msgBody.richText.ptt?.toVoice()?.let { builder.add(it) }
+        msg.msgBody.richText.ptt?.toAudio()?.let { builder.add(it) }
     }
 
     return builder.build().cleanupRubbishMessageElements()
@@ -162,6 +180,7 @@ internal object ReceiveMessageTransformer {
             element.elemFlags2 != null
                     || element.extraInfo != null
                     || element.generalFlags != null
+                    || element.anonGroupMsg != null
             -> {
                 // ignore
             }
@@ -516,11 +535,13 @@ internal object ReceiveMessageTransformer {
         }
     }
 
-    fun ImMsgBody.Ptt.toVoice() = Voice(
-        kotlinx.io.core.String(fileName),
-        fileMd5,
-        fileSize.toLong(),
-        format,
-        kotlinx.io.core.String(downPara)
-    ).also { it.pttInternalInstance = this }
+    fun ImMsgBody.Ptt.toAudio() = OnlineAudioImpl(
+        filename = fileName.encodeToString(),
+        fileMd5 = fileMd5,
+        fileSize = fileSize.toLongUnsigned(),
+        codec = AudioCodec.fromId(format),
+        url = downPara.encodeToString(),
+        length = time.toLongUnsigned(),
+        originalPtt = this,
+    )
 }

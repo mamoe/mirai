@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal
@@ -14,14 +14,15 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.http.*
+import io.ktor.util.*
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -30,7 +31,9 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
+import net.mamoe.mirai.internal.contact.info.FriendInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
@@ -47,6 +50,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.internal.network.psKey
+import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -59,7 +64,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -124,6 +128,14 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             MessageSerializers.registerSerializer(
                 UnsupportedMessageImpl::class,
                 UnsupportedMessageImpl.serializer()
+            )
+            MessageSerializers.registerSerializer(
+                OnlineAudioImpl::class,
+                OnlineAudioImpl.serializer()
+            )
+            MessageSerializers.registerSerializer(
+                OfflineAudioImpl::class,
+                OfflineAudioImpl.serializer()
             )
         }
     }
@@ -298,7 +310,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
         if (event is BotEvent) {
             val bot = event.bot
-            if (bot is QQAndroidBot) {
+            if (bot is AbstractBot) {
                 bot.components[EventDispatcher].broadcast(event)
             }
         } else {
@@ -326,20 +338,20 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     @LowLevelApi
-    override fun newFriend(bot: Bot, friendInfo: FriendInfo): Friend {
+    override fun newFriend(bot: Bot, friendInfo: FriendInfo): FriendImpl {
         return FriendImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo
+            bot.coroutineContext,
+            friendInfo.impl(),
         )
     }
 
     @LowLevelApi
-    override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger {
+    override fun newStranger(bot: Bot, strangerInfo: StrangerInfo): StrangerImpl {
         return StrangerImpl(
             bot.asQQAndroidBot(),
-            bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            strangerInfo
+            bot.coroutineContext,
+            strangerInfo.impl(),
         )
     }
 
@@ -376,15 +388,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 if (nextUin == 0L) {
                     break
                 }
-            }
-            bot.network.run {
-                val resp =
-                    TroopManagement.GetAdmin(bot.client, groupCode).sendAndExpect<TroopManagement.GetAdmin.Response>()
-                check(resp is TroopManagement.GetAdmin.Response.Success) { "Failed to get admin info" }
-                sequence.filter { member -> member.permission == MemberPermission.MEMBER && resp.memberList.any { member.uin == it.memberUin } }
-                    .forEach { memberInfoImpl ->
-                        memberInfoImpl.permission = MemberPermission.ADMINISTRATOR
-                    }
             }
             return sequence
         }
@@ -561,219 +564,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids.contentToString()}: $response" }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getRawGroupAnnouncements(
-        bot: Bot,
-        groupId: Long,
-        page: Int,
-        amount: Int
-    ): GroupAnnouncementList = bot.asQQAndroidBot().run {
-        val rep = bot.asQQAndroidBot().network.run {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bot.bkn)
-                    append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                    append("n", amount)
-                    append("ni", if (page == 1) 1 else 0)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()};"
-                    )
-                }
-            }
-        }
-//        bot.network.logger.error(rep)
-        return json.decodeFromString(GroupAnnouncementList.serializer(), rep)
-    }
-
     private val json = Json {
-        ignoreUnknownKeys = true
         isLenient = true
+        ignoreUnknownKeys = true
     }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun uploadGroupAnnouncementImage(
-        bot: Bot,
-        groupId: Long,
-        resource: ExternalResource
-    ): GroupAnnouncementImage = bot.asQQAndroidBot().run {
-        //https://youtrack.jetbrains.com/issue/KTOR-455
-        val rep = Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
-            body = MultiPartFormDataContent(formData {
-                append("\"bkn\"", bkn)
-                append("\"source\"", "troopNotice")
-                append("m", "0")
-                append(
-                    "\"pic_up\"",
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Image.PNG)
-                        append(HttpHeaders.ContentDisposition, "filename=\"temp_uploadFile.png\"")
-                    }
-                ) {
-                    writeFully(resource.inputStream().withUse { readBytes() })
-                }
-            })
-            headers {
-                append(
-                    "cookie",
-                    " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error("cookie parse p_skey error")}; "
-                )
-            }
-        }
-        val jsonObj = json.parseToJsonElement(rep)
-        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int != 0) {
-            throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
-        }
-        val id = jsonObj.jsonObject["id"]?.jsonPrimitive?.content
-            ?: throw IllegalStateException("Upload group announcement image fail group:$groupId msg:${jsonObj.jsonObject["em"]}")
-        return json.decodeFromString(GroupAnnouncementImage.serializer(), id)
-    }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun sendGroupAnnouncement(bot: Bot, groupId: Long, announcement: GroupAnnouncement): String =
-        bot.asQQAndroidBot().run {
-            val rep = Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bkn)
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append(
-                        "settings",
-                        json.encodeToString(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-            val jsonObj = json.parseToJsonElement(rep)
-            return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-                ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-        }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun sendGroupAnnouncementWithImage(
-        bot: Bot,
-        groupId: Long,
-        image: GroupAnnouncementImage,
-        announcement: GroupAnnouncement
-    ): String = bot.asQQAndroidBot().run {
-        val rep = withContext(network.coroutineContext) {
-            Mirai.Http.post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", groupId)
-                    append("bkn", bkn)
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append("pic", image.id)
-                    append("imgWidth", image.width)
-                    append("imgHeight", image.height)
-                    append(
-                        "settings",
-                        json.encodeToString(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        " p_uin=o${id};" +
-                                " p_skey=${
-                                    client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString() ?: error(
-                                        "parse error"
-                                    )
-                                }; "
-                    )
-                }
-
-            }
-        }
-        val jsonObj = json.parseToJsonElement(rep)
-        return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
-            ?: throw throw IllegalStateException("Send Announcement with image fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-    }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun deleteGroupAnnouncement(bot: Bot, groupId: Long, fid: String) = bot.asQQAndroidBot().run {
-        val data = Mirai.Http.post<String> {
-            url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-            body = MultiPartFormDataContent(formData {
-                append("qid", groupId)
-                append("bkn", bkn)
-                append("fid", fid)
-                append("format", "json")
-            })
-            headers {
-                append(
-                    "cookie",
-                    "uin=o${id};" +
-                            " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                            " p_uin=o${id};" +
-                            " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                )
-            }
-        }
-        val jsonObj = json.parseToJsonElement(data)
-        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
-            throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
-        }
-    }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getGroupAnnouncement(bot: Bot, groupId: Long, fid: String): GroupAnnouncement =
-        bot.asQQAndroidBot().run {
-            val rep = network.run {
-                Mirai.Http.post<String> {
-                    url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
-                    body = MultiPartFormDataContent(formData {
-                        append("qid", groupId)
-                        append("bkn", bkn)
-                        append("fid", fid)
-                        append("format", "json")
-                    })
-                    headers {
-                        append(
-                            "cookie",
-                            "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
-                        )
-                    }
-                }
-            }
-
-//        bot.network.logger.error(rep)
-            return json.decodeFromString(GroupAnnouncement.serializer(), rep)
-
-        }
 
     @LowLevelApi
     @MiraiExperimentalApi
@@ -782,15 +576,16 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             val rep = network.run {
                 Mirai.Http.get<String> {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
-                    parameter("bkn", bkn)
+                    parameter("bkn", client.wLoginSigInfo.bkn)
                     parameter("gc", groupId)
                     if (page != -1) {
                         parameter("page", page)
                     }
                     headers {
+                        @OptIn(InternalAPI::class) // ktor bug
                         append(
                             "cookie",
-                            "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
+                            "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id};"
                         )
                     }
                 }
@@ -811,12 +606,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 parameter("gc", groupId)
                 parameter("type", type.value)
                 headers {
+                    @OptIn(InternalAPI::class) // ktor bug
                     append(
                         "cookie",
-                        "uin=o${id};" +
-                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${id};" +
-                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                        "uin=o${bot.id};" +
+                                " skey=${bot.sKey};" +
+                                " p_uin=o${bot.id};" +
+                                " p_skey=${bot.psKey("qun.qq.com")}; "
                     )
                 }
             }
@@ -896,9 +692,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return resId
     }
 
-
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveNewFriendRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -923,8 +716,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -944,8 +735,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
     override suspend fun solveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -1000,12 +789,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 append("group_code", groupId)
                 append("seconds", seconds)
                 append("anony_nick", anonymousNick)
-                append("bkn", bot.bkn)
+                append("bkn", bot.client.wLoginSigInfo.bkn)
             })
             headers {
+                @OptIn(InternalAPI::class) // ktor bug
                 append(
                     "cookie",
-                    "uin=o${bot.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};"
+                    "uin=o${bot.id}; skey=${bot.sKey};"
                 )
             }
         }
@@ -1069,6 +859,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     nudgeTargetId = nudge.target.id,
                 ).sendAndExpect<NudgePacket.Response>().success
             }
+        }
+    }
+
+    override fun getUin(contactOrBot: ContactOrBot): Long {
+        return when (contactOrBot) {
+            is Group -> contactOrBot.uin
+            is User -> contactOrBot.uin
+            is Bot -> contactOrBot.uin
+            else -> contactOrBot.id
         }
     }
 
@@ -1183,15 +982,5 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 error("Message is too large and cannot download")
             }
         }
-    }
-
-    override fun serializePttElem(ptt: Any?): String {
-        if (ptt !is ImMsgBody.Ptt) return ""
-        return ptt.toByteArray(ImMsgBody.Ptt.serializer()).toUHexString()
-    }
-
-    override fun deserializePttElem(ptt: String): Any? {
-        if (ptt.isBlank()) return null
-        return ptt.hexToBytes().loadAs(ImMsgBody.Ptt.serializer())
     }
 }

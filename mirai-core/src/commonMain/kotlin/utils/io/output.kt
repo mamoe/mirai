@@ -13,9 +13,13 @@
 
 package net.mamoe.mirai.internal.utils.io
 
+import io.ktor.utils.io.streams.*
 import kotlinx.io.core.*
+import kotlinx.io.streams.outputStream
 import net.mamoe.mirai.internal.utils.coerceAtMostOrFail
 import net.mamoe.mirai.internal.utils.crypto.TEA
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.withUse
 
 internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
     if (array.size <= maxLength) {
@@ -28,6 +32,17 @@ internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArr
         }
     }
 }
+
+internal fun BytePacketBuilder.writeResource(
+    resource: ExternalResource,
+    close: Boolean = false,
+): Long = resource.inputStream().withUse { copyTo(outputStream()) }.also {
+    if (close) resource.close()
+}
+
+internal fun io.ktor.utils.io.core.BytePacketBuilder.writeResource(
+    resource: ExternalResource,
+): Long = resource.inputStream().withUse { copyTo(outputStream()) }
 
 internal inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     this.writeShort(byteArray.size.toShort())

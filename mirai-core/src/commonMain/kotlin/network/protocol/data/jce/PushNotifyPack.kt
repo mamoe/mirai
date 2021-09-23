@@ -12,6 +12,10 @@ package net.mamoe.mirai.internal.network.protocol.data.jce
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.io.NestedStructure
+import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
@@ -46,6 +50,7 @@ internal class MsgInfo(
     @TarsId(3) @JvmField val shMsgSeq: Short,
     @TarsId(4) @JvmField val strMsg: String?,
     @TarsId(5) @JvmField val uRealMsgTime: Int?,
+    @param:NestedStructure(VMsgDesensitizationSerializer::class)
     @TarsId(6) @JvmField val vMsg: ByteArray,
     @TarsId(7) @JvmField val uAppShareID: Long?,
     @TarsId(8) @JvmField val vMsgCookies: ByteArray? = EMPTY_BYTE_ARRAY,
@@ -61,6 +66,15 @@ internal class MsgInfo(
     @TarsId(18) @JvmField val vNickName: List<String>?, //,
     //@SerialId(19) @JvmField val stC2CTmpMsgHead: TempMsgHead?
 ) : JceStruct
+
+internal object VMsgDesensitizationSerializer : NestedStructureDesensitizer<MsgInfo, ProtocolStruct> {
+    override fun deserialize(context: MsgInfo, byteArray: ByteArray): ProtocolStruct? {
+        return when (context.shMsgType.toUShort().toInt()) {
+            0x210 -> byteArray.loadAs(MsgType0x210.serializer())
+            else -> null
+        }
+    }
+}
 
 
 @Serializable

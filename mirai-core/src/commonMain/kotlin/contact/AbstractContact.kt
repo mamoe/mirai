@@ -9,20 +9,14 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.childScopeContext
 import kotlin.coroutines.CoroutineContext
 
 internal abstract class AbstractContact(
-    bot: Bot,
-    coroutineContext: CoroutineContext,
+    final override val bot: QQAndroidBot,
+    parentCoroutineContext: CoroutineContext,
 ) : Contact {
-    final override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
-    final override val bot: QQAndroidBot by bot.cast<QQAndroidBot>().unsafeWeakRef()
+    final override val coroutineContext: CoroutineContext = parentCoroutineContext.childScopeContext()
 }

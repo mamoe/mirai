@@ -193,11 +193,17 @@ public open class BotConfiguration { // open for Java
     public var heartbeatTimeoutMillis: Long = 5.secondsToMillis
 
     /** 心跳失败后的第一次重连前的等待时间. */
-    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "Useless since new network. Please just remove this.",
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.7, error since 2.8
     public var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
     /** 重连失败后, 继续尝试的每次等待时间 */
-    @Deprecated("Useless since new network. Please just remove this.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "Useless since new network. Please just remove this.",
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.7, error since 2.8
     public var reconnectPeriodMillis: Long = 5.secondsToMillis
 
     /** 最多尝试多少次重连 */
@@ -326,7 +332,9 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Bot ${it.id}") }
+    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = {
+        MiraiLogger.Factory.create(Bot::class, "Bot ${it.id}")
+    }
 
     /**
      * 网络层日志构造器
@@ -338,7 +346,9 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Net ${it.id}") }
+    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = {
+        MiraiLogger.Factory.create(Bot::class, "Net ${it.id}")
+    }
 
 
     /**
@@ -424,6 +434,15 @@ public open class BotConfiguration { // open for Java
     public fun noBotLog() {
         botLoggerSupplier = { _ -> SilentLogger }
     }
+
+    /**
+     * 是否显示过于冗长的事件日志
+     *
+     * 默认为 `false`
+     *
+     * @since 2.8
+     */
+    public var isShowingVerboseEventLog: Boolean = false
 
     ///////////////////////////////////////////////////////////////////////////
     // Cache
@@ -565,6 +584,7 @@ public open class BotConfiguration { // open for Java
             new.cacheDir = cacheDir
             new.contactListCache = contactListCache
             new.convertLineSeparator = convertLineSeparator
+            new.isShowingVerboseEventLog = isShowingVerboseEventLog
         }
     }
 

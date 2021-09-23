@@ -19,6 +19,7 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
+import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -35,7 +36,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
     public val source: ExternalResource
-) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
+) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent, VerboseEvent {
     public override val bot: Bot
         get() = target.bot
 }
@@ -51,7 +52,7 @@ public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
  * @see Succeed
  * @see Failed
  */
-public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
+public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent(), VerboseEvent {
     public abstract val target: Contact
     public abstract val source: ExternalResource
     public override val bot: Bot
@@ -61,12 +62,20 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
         override val target: Contact,
         override val source: ExternalResource,
         val image: Image
-    ) : ImageUploadEvent()
+    ) : ImageUploadEvent() {
+        override fun toString(): String {
+            return "ImageUploadEvent.Succeed(target=$target, source=$source, image=$image)"
+        }
+    }
 
     public data class Failed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalResource,
         val errno: Int,
         val message: String
-    ) : ImageUploadEvent()
+    ) : ImageUploadEvent() {
+        override fun toString(): String {
+            return "ImageUploadEvent.Failed(target=$target, source=$source, errno=$errno, message='$message')"
+        }
+    }
 }

@@ -14,19 +14,14 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.components.*
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
-import net.mamoe.mirai.internal.network.context.SsoProcessorContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
@@ -42,6 +37,18 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
+import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
+import net.mamoe.mirai.internal.network.notice.decoders.MsgInfoDecoder
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupNotificationProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
+import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -119,6 +126,9 @@ internal open class QQAndroidBot constructor(
                     cause is ForceOfflineException -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Force(bot, cause.title, cause.message))
                     }
+                    cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {
+                        eventDispatcher.broadcastAsync(BotOfflineEvent.MsfOffline(bot, cause))
+                    }
                     cause is NetworkException && cause.recoverable -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))
                     }
@@ -151,6 +161,25 @@ internal open class QQAndroidBot constructor(
         // There's no need to interrupt a broadcasting event when network handler closed.
         set(EventDispatcher, EventDispatcherImpl(bot.coroutineContext, logger.subLogger("EventDispatcher")))
 
+        val pipelineLogger = networkLogger.subLogger("NoticeProcessor") //  shorten name
+        set(
+            NoticeProcessorPipeline,
+            NoticeProcessorPipelineImpl.create(
+                MsgInfoDecoder(pipelineLogger.subLogger("MsgInfoDecoder")),
+                GroupNotificationDecoder(),
+
+                FriendNoticeProcessor(pipelineLogger.subLogger("FriendNoticeProcessor")),
+                GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
+                GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
+                GroupNotificationProcessor(pipelineLogger.subLogger("GroupNotificationProcessor")),
+                PrivateMessageProcessor(),
+                OtherClientNoticeProcessor(),
+                GroupRecallProcessor(),
+                UnconsumedNoticesAlerter(pipelineLogger.subLogger("UnconsumedNoticesAlerter")),
+                TraceLoggingNoticeProcessor(pipelineLogger.subLogger("TraceLoggingNoticeProcessor"))
+            )
+        )
+
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
         set(HeartbeatProcessor, HeartbeatProcessorImpl())
@@ -164,34 +193,35 @@ internal open class QQAndroidBot constructor(
         set(ContactUpdater, ContactUpdaterImpl(bot, components, networkLogger.subLogger("ContactUpdater")))
         set(
             BdhSessionSyncer,
-            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer"))
+            BdhSessionSyncerImpl(configuration, components, networkLogger.subLogger("BotSessionSyncer")),
         )
         set(
             MessageSvcSyncer,
-            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer"))
+            MessageSvcSyncerImpl(bot, bot.coroutineContext, networkLogger.subLogger("MessageSvcSyncer")),
         )
         set(
             EcdhInitialPublicKeyUpdater,
-            EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater"))
+            EcdhInitialPublicKeyUpdaterImpl(bot, networkLogger.subLogger("ECDHInitialPublicKeyUpdater")),
         )
         set(ServerList, ServerListImpl(networkLogger.subLogger("ServerList")))
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
         set(
-            PacketHandler, PacketHandlerChain(
-                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
+            PacketHandler,
+            PacketHandlerChain(
                 EventBroadcasterPacketHandler(components),
-                CallPacketFactoryPacketHandler(bot)
-            )
+                CallPacketFactoryPacketHandler(bot),
+                LoggingPacketHandlerAdapter(get(PacketLoggingStrategy), networkLogger),
+            ),
         )
         set(PacketCodec, PacketCodecImpl())
         set(
             OtherClientUpdater,
-            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater"))
+            OtherClientUpdaterImpl(bot, components, networkLogger.subLogger("OtherClientUpdater")),
         )
         set(ConfigPushSyncer, ConfigPushSyncerImpl())
         set(
             AccountSecretsManager,
-            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager"))
+            configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager")),
         )
     }
 
@@ -201,6 +231,8 @@ internal open class QQAndroidBot constructor(
     open fun createNetworkLevelComponents(): ComponentStorage {
         return ConcurrentComponentStorage {
             set(BotClientHolder, BotClientHolderImpl(bot, networkLogger.subLogger("BotClientHolder")))
+            set(SyncController, SyncControllerImpl())
+            set(ClockHolder, ClockHolder())
         }.withFallback(defaultBotLevelComponents)
     }
 
@@ -213,37 +245,37 @@ internal open class QQAndroidBot constructor(
                 val context = NetworkHandlerContextImpl(
                     bot,
                     networkLogger,
-                    createNetworkLevelComponents()
+                    createNetworkLevelComponents(),
                 )
                 NettyNetworkHandlerFactory.create(
                     context,
-                    context[ServerList].pollAny().toSocketAddress()
+                    context[ServerList].pollAny().toSocketAddress(),
                 )
-            }
+            },
         ) // We can move the factory to configuration but this is not necessary for now.
     }
-
-    /**
-     * 获取 获取群公告 所需的 bkn 参数
-     * */ // TODO: 2021/4/26 extract it after #1141 merged
-    val bkn: Int
-        get() = client.wLoginSigInfo.sKey.data
-            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
-            .and(Int.MAX_VALUE)
-
-    ///////////////////////////////////////////////////////////////////////////
-    // contacts
-    ///////////////////////////////////////////////////////////////////////////
-
-    override lateinit var nick: String
-
-    // internally visible only
-    fun getGroupByUin(uin: Long): Group {
-        return getGroupByUinOrNull(uin)
-            ?: throw NoSuchElementException("Group ${Mirai.calculateGroupCodeByGroupUin(uin)} not found")
-    }
-
-    fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
-    }
 }
+
+internal fun QQAndroidBot.getGroupByUinOrFail(uin: Long) =
+    getGroupByUin(uin) ?: throw NoSuchElementException("group.uin=$uin")
+
+internal fun QQAndroidBot.getGroupByUin(uin: Long) = groups.firstOrNull { it.uin == uin }
+
+/**
+ * uin first
+ */
+internal fun QQAndroidBot.getGroupByUinOrCode(uinOrCode: Long) =
+    groups.firstOrNull { it.uin == uinOrCode } ?: groups.firstOrNull { it.id == uinOrCode }
+
+/**
+ * uin first
+ */
+internal fun QQAndroidBot.getGroupByUinOrCodeOrFail(uinOrCode: Long) =
+    getGroupByUinOrCode(uinOrCode) ?: throw NoSuchElementException("group.code or uin=$uinOrCode")
+
+
+/**
+ * code first
+ */
+internal fun QQAndroidBot.getGroupByCodeOrUin(uinOrCode: Long) =
+    groups.firstOrNull { it.id == uinOrCode } ?: groups.firstOrNull { it.uin == uinOrCode }

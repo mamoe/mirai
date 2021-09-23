@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
@@ -158,6 +157,10 @@ internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSecon
 }
 
 
+private fun String.xmlEnc():String {
+    return this.replace("&", "&amp;")
+}
+
 internal fun RichMessage.Key.forwardMessage(
     resId: String,
     timeSeconds: Long,
@@ -165,29 +168,29 @@ internal fun RichMessage.Key.forwardMessage(
 ): ForwardMessageInternal = with(forwardMessage) {
     val template = """
         <?xml version="1.0" encoding="utf-8"?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30)}"
+        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30).xmlEnc()}"
              m_resid="$resId" m_fileName="$timeSeconds"
              tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
             <item layout="1" advertiser_id="0" aid="0">
-                <title size="34" maxLines="2" lineSpace="12">${title.take(50)}</title>
+                <title size="34" maxLines="2" lineSpace="12">${title.take(50).xmlEnc()}</title>
                 ${
         when {
             preview.size > 4 -> {
                 preview.take(3).joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.xmlEnc()}</title>"""
                 } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
             }
             else -> {
                 preview.joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.xmlEnc()}</title>"""
                 }
             }
         }
     }
                 <hr hidden="false" style="0"/>
-                <summary size="26" color="#777777">${summary.take(50)}</summary>
+                <summary size="26" color="#777777">${summary.take(50).xmlEnc()}</summary>
             </item>
-            <source name="${source.take(50)}" icon="" action="" appid="-1"/>
+            <source name="${source.take(50).xmlEnc()}" icon="" action="" appid="-1"/>
         </msg>
     """.trimIndent().replace("\n", " ").trim()
     return ForwardMessageInternal(template, resId, null, forwardMessage)

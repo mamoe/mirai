@@ -19,13 +19,12 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.FileSupported
-import net.mamoe.mirai.contact.VoiceSupported
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -33,6 +32,8 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.RemoteFile.Companion.sendFile
 import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 /**
@@ -67,6 +68,19 @@ import java.io.*
  * @see FileCacheStrategy
  */
 public interface ExternalResource : Closeable {
+
+    /**
+     * 是否在 _使用一次_ 后自动 [close].
+     *
+     * 该属性仅供调用方参考. 如 [Contact.uploadImage] 会在方法结束时关闭 [isAutoClose] 为 `true` 的 [ExternalResource], 无论上传图片是否成功.
+     *
+     * 所有 mirai 内置的上传图片, 上传语音等方法都支持该行为.
+     *
+     * @since 2.8
+     */
+    @MiraiExperimentalApi
+    public val isAutoClose: Boolean
+        get() = false
 
     /**
      * 文件内容 MD5. 16 bytes
@@ -188,6 +202,23 @@ public interface ExternalResource : Closeable {
         @Throws(IOException::class) // not in BIO context so propagate IOException
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
+
+        /**
+         * 创建一个在 _使用一次_ 后就会自动 [close] 的 [ExternalResource].
+         *
+         * @since 2.8
+         */
+        @JvmName("createAutoCloseable")
+        @JvmStatic
+        public fun ExternalResource.toAutoCloseable(): ExternalResource {
+            return if (isAutoClose) this else {
+                val delegate = this
+                object : ExternalResource by delegate {
+                    override val isAutoClose: Boolean get() = true
+                    override fun toString(): String = "ExternalResourceWithAutoClose(delegate=$delegate)"
+                }
+            }
+        }
 
         // endregion
 
@@ -416,58 +447,56 @@ public interface ExternalResource : Closeable {
         // region uploadAsVoice
         ///////////////////////////////////////////////////////////////////////////
 
-        /**
-         * 将文件作为语音上传后构造 [Voice]. 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友.
-         *
-         * **服务器仅支持音频格式 `silk` 或 `amr`**. 需要调用方手动[关闭资源][ExternalResource.close].
-         *
-         * @throws OverFileSizeMaxException
-         * @since 2.7
-         * @see VoiceSupported.uploadVoice
-         */
+        @Suppress("DEPRECATION")
         @JvmBlockingBridge
         @JvmStatic
-        public suspend fun ExternalResource.uploadAsVoice(contact: VoiceSupported): Voice {
-            return contact.uploadVoice(this)
-        }
-
-        @JvmBlockingBridge
-        @JvmStatic
-        @Deprecated("For binary compatibility", level = DeprecationLevel.WARNING)
-        @JvmName("uploadAsVoice")
-        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): Voice {
-            if (contact is VoiceSupported) return contact.uploadVoice(this)
+        @Deprecated(
+            "Use `contact.uploadAudio(resource)` instead",
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.7
+        public suspend fun ExternalResource.uploadAsVoice(contact: Contact): net.mamoe.mirai.message.data.Voice {
+            @Suppress("DEPRECATION")
+            if (contact is Group) return contact.uploadVoice(this)
             else throw UnsupportedOperationException("Contact `$contact` is not supported uploading voice")
         }
-
-        /**
-         * 读取 [InputStream] 到临时文件并将其作为语音上传至 [contact] 后构造 [Voice],
-         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
-         *
-         * 注意：本函数不会关闭流.
-         *
-         * @since 2.7
-         * @throws OverFileSizeMaxException
-         * @see VoiceSupported.uploadVoice
-         */
-        @JvmStatic
-        @JvmBlockingBridge
-        public suspend fun InputStream.uploadAsVoice(contact: VoiceSupported): Voice =
-            runBIO { toExternalResource() }.withUse { uploadAsVoice(contact) }
-
-        /**
-         * 将文件作为语音上传后构造 [Voice].
-         * 上传后只会得到 [Voice] 实例, 而不会将语音发送到目标群或好友
-         *
-         * @since 2.7
-         * @throws OverFileSizeMaxException
-         * @see VoiceSupported.uploadVoice
-         */
-        @JvmStatic
-        @JvmBlockingBridge
-        public suspend fun File.uploadAsVoice(contact: VoiceSupported): Voice =
-            toExternalResource().withUse { uploadAsVoice(contact) }
-
         // endregion
     }
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+// Continuing mark it as experimental until Kotlin's contextual receivers design is published.
+// We might be able to make `action` a type `context(ExternalResource) () -> R`.
+public inline fun <T : ExternalResource, R> T.withAutoClose(action: () -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    trySafely(
+        block = { return action() },
+        finally = { if (isAutoClose) close() }
+    )
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+public inline fun <T : ExternalResource, R> T.runAutoClose(action: T.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return withAutoClose { action() }
+}
+
+/**
+ * 执行 [action], 如果 [ExternalResource.isAutoClose], 在执行完成后调用 [ExternalResource.close].
+ *
+ * @since 2.8
+ */
+@MiraiExperimentalApi
+public inline fun <T : ExternalResource, R> T.useAutoClose(action: (resource: T) -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return runAutoClose(action)
 }

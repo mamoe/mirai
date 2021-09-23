@@ -10,82 +10,126 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
-import org.slf4j.Logger
-import java.util.logging.Level
+import org.apache.logging.log4j.Marker
+import org.apache.logging.log4j.MarkerManager
+import java.util.logging.Level as JulLevel
+import java.util.logging.Logger as JulLogger
 
-internal class Log4jLogger(private val logger: org.apache.logging.log4j.Logger) : MiraiLoggerPlatformBase() {
+internal class Log4jLoggerAdapter(
+    private val logger: org.apache.logging.log4j.Logger,
+    override val marker: Marker?,
+) : MiraiLoggerPlatformBase(), MarkedMiraiLogger {
 
     override fun verbose0(message: String?, e: Throwable?) {
-        logger.trace(message, e)
+        val marker = marker
+        if (marker != null) logger.trace(marker, message, e)
+        else logger.trace(message, e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        logger.debug(message, e)
+        val marker = marker
+        if (marker != null) logger.debug(marker, message, e)
+        else logger.debug(message, e)
     }
 
     override fun info0(message: String?, e: Throwable?) {
-        logger.info(message, e)
+        val marker = marker
+        if (marker != null) logger.info(marker, message, e)
+        else logger.info(message, e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        logger.warn(message, e)
+        val marker = marker
+        if (marker != null) logger.warn(marker, message, e)
+        else logger.warn(message, e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        logger.error(message, e)
+        val marker = marker
+        if (marker != null) logger.error(marker, message, e)
+        else logger.error(message, e)
     }
 
-    override val identity: String?
-        get() = logger.name
+    override val isVerboseEnabled: Boolean get() = logger.isTraceEnabled
+    override val isDebugEnabled: Boolean get() = logger.isDebugEnabled
+    override val isInfoEnabled: Boolean get() = logger.isInfoEnabled
+    override val isWarningEnabled: Boolean get() = logger.isWarnEnabled
+    override val isErrorEnabled: Boolean get() = logger.isErrorEnabled
+
+    override val identity: String? get() = logger.name
+
+    override fun subLogger(name: String): MarkedMiraiLogger {
+        return Log4jLoggerAdapter(logger, Marker(name, marker))
+    }
 
 }
 
-internal class Slf4jLogger(private val logger: Logger) : MiraiLoggerPlatformBase() {
+internal val MARKER_MIRAI by lazy { MarkerManager.getMarker("mirai") }
+
+internal class Slf4jLoggerAdapter(private val logger: org.slf4j.Logger, private val marker: org.slf4j.Marker?) :
+    MiraiLoggerPlatformBase() {
     override fun verbose0(message: String?, e: Throwable?) {
-        logger.trace(message, e)
+        if (marker == null) logger.trace(message, e)
+        else logger.trace(marker, message, e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        logger.debug(message, e)
+        if (marker == null) logger.debug(message, e)
+        else logger.debug(marker, message, e)
     }
 
     override fun info0(message: String?, e: Throwable?) {
-        logger.info(message, e)
+        if (marker == null) logger.info(message, e)
+        else logger.info(marker, message, e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        logger.warn(message, e)
+        if (marker == null) logger.warn(message, e)
+        else logger.warn(marker, message, e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        logger.error(message, e)
+        if (marker == null) logger.error(message, e)
+        else logger.error(marker, message, e)
     }
+
+    override val isVerboseEnabled: Boolean get() = logger.isTraceEnabled
+    override val isDebugEnabled: Boolean get() = logger.isDebugEnabled
+    override val isInfoEnabled: Boolean get() = logger.isInfoEnabled
+    override val isWarningEnabled: Boolean get() = logger.isWarnEnabled
+    override val isErrorEnabled: Boolean get() = logger.isErrorEnabled
 
     override val identity: String?
         get() = logger.name
 }
 
-internal class JdkLogger(private val logger: java.util.logging.Logger) : MiraiLoggerPlatformBase() {
+internal class JdkLoggerAdapter(private val logger: JulLogger) : MiraiLoggerPlatformBase() {
     override fun verbose0(message: String?, e: Throwable?) {
-        logger.log(Level.FINER, message, e)
+        logger.log(JulLevel.FINEST, message, e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        logger.log(Level.FINEST, message, e)
+        logger.log(JulLevel.FINER, message, e)
 
     }
 
     override fun info0(message: String?, e: Throwable?) {
-        logger.log(Level.INFO, message, e)
+        logger.log(JulLevel.INFO, message, e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        logger.log(Level.WARNING, message, e)
+        logger.log(JulLevel.WARNING, message, e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        logger.log(Level.SEVERE, message, e)
+        logger.log(JulLevel.SEVERE, message, e)
     }
+
+    override val isVerboseEnabled: Boolean get() = logger.isLoggable(JulLevel.FINE)
+    override val isDebugEnabled: Boolean get() = logger.isLoggable(JulLevel.FINEST)
+    override val isInfoEnabled: Boolean get() = logger.isLoggable(JulLevel.INFO)
+    override val isWarningEnabled: Boolean get() = logger.isLoggable(JulLevel.WARNING)
+    override val isErrorEnabled: Boolean get() = logger.isLoggable(JulLevel.SEVERE)
 
     override val identity: String?
         get() = logger.name

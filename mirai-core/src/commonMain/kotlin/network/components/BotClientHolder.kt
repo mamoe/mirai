@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.components
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.network.context.SsoProcessorContext
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.lateinitMutableProperty
 

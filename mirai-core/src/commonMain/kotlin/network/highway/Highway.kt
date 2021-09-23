@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.highway
@@ -22,8 +22,8 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.components.BdhSessionSyncer
-import net.mamoe.mirai.internal.network.context.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.subAppId
@@ -122,13 +122,15 @@ internal enum class ResourceKind(
 ) {
     PRIVATE_IMAGE("private image"),
     GROUP_IMAGE("group image"),
-    PRIVATE_VOICE("private voice"),
-    GROUP_VOICE("group voice"),
+    PRIVATE_AUDIO("private audio"),
+    GROUP_AUDIO("group audio"),
 
     GROUP_FILE("group file"),
 
     LONG_MESSAGE("long message"),
     FORWARD_MESSAGE("forward message"),
+
+    ANNOUNCEMENT_IMAGE("announcement image"),
     ;
 
     override fun toString(): String = display

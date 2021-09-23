@@ -26,10 +26,6 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-//        apply(from = rootProject.file("gradle/android.gradle"))
-//        android("android") {
-//            publishAllLibraryVariants()
-//        }
         jvm("android") {
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
             //   publishAllLibraryVariants()
@@ -44,26 +40,23 @@ kotlin {
 
     jvm("jvm")
 
-//    jvm("android") {
-//        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "android")
-//    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(kotlin("reflect"))
+                api(`kotlinx-serialization-core-jvm`)
+                api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`)
 
-                api1(`kotlinx-serialization-core`)
-                api1(`kotlinx-serialization-json`)
-                implementation1(`kotlinx-serialization-protobuf`)
-                api1(`kotlinx-io-jvm`)
-                api1(`kotlinx-coroutines-io-jvm`)
-                api(`kotlinx-coroutines-core`)
+                implementation(`kotlinx-atomicfu-jvm`)
+                implementation(`kotlinx-serialization-protobuf-jvm`)
+                implementationKotlinxIoJvm()
+            }
+        }
 
-                implementation1(`kotlinx-atomicfu`)
-
-                api1(`ktor-client-core`)
-                api1(`ktor-network`)
+        val commonTest by getting {
+            dependencies {
+                api(`yamlkt-jvm`)
             }
         }
 
@@ -72,7 +65,7 @@ kotlin {
                 //
                 dependencies {
                     compileOnly(`android-runtime`)
-                    api1(`ktor-client-android`)
+//                    api1(`ktor-client-android`)
                 }
             }
         }

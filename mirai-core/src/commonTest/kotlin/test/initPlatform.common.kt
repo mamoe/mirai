@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.test
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit
@@ -26,16 +27,22 @@ abstract class AbstractTest {
     init {
         initPlatform()
 
+        restoreLoggerFactory()
+
+        System.setProperty("mirai.network.packet.logger", "true")
+        System.setProperty("mirai.network.state.observer.logging", "true")
+        System.setProperty("mirai.network.show.all.components", "true")
+        System.setProperty("mirai.network.show.components.creation.stacktrace", "true")
+        System.setProperty("mirai.network.handle.selector.logging", "true")
+
+    }
+
+    @AfterEach
+    protected fun restoreLoggerFactory() {
+        @Suppress("DEPRECATION")
         MiraiLogger.setDefaultLoggerCreator {
             SynchronizedStdoutLogger(it)
         }
-
-        System.setProperty("mirai.debug.network.packet.logger", "true")
-        System.setProperty("mirai.debug.network.state.observer.logging", "true")
-        System.setProperty("mirai.debug.network.show.all.components", "true")
-        System.setProperty("mirai.debug.network.show.components.creation.stacktrace", "true")
-        System.setProperty("mirai.network.handle.selector.logging", "true")
-
     }
 
     companion object {

@@ -50,6 +50,10 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public override val cause: Throwable?
     ) : BotOfflineEvent(), BotActiveEvent, CauseAware {
         override val reconnect: Boolean get() = false
+
+        override fun toString(): String {
+            return "BotOfflineEvent.Active(bot=$bot, cause=$cause, reconnect=$reconnect)"
+        }
     }
 
     /**
@@ -61,6 +65,10 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public val message: String,
     ) : BotOfflineEvent(), Packet, BotPassiveEvent {
         override var reconnect: Boolean = bot.configuration.autoReconnectOnForceOffline
+
+        override fun toString(): String {
+            return "BotOfflineEvent.Force(bot=$bot, title='$title', message='$message', reconnect=$reconnect)"
+        }
     }
 
     /**
@@ -72,6 +80,10 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public override val cause: Throwable?
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
         override var reconnect: Boolean = true
+
+        override fun toString(): String {
+            return "BotOfflineEvent.MsfOffline(bot=$bot, cause=$cause, reconnect=$reconnect)"
+        }
     }
 
     /**
@@ -82,6 +94,10 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public override val cause: Throwable?
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
         override var reconnect: Boolean = true
+
+        override fun toString(): String {
+            return "BotOfflineEvent.Dropped(bot=$bot, cause=$cause, reconnect=$reconnect)"
+        }
     }
 
     /**
@@ -92,6 +108,10 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public override val bot: Bot, override val cause: Throwable?,
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware {
         override var reconnect: Boolean = true
+
+        override fun toString(): String {
+            return "BotOfflineEvent.RequireReconnect(bot=$bot, cause=$cause, reconnect=$reconnect)"
+        }
     }
 
     @MiraiExperimentalApi

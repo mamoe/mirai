@@ -27,9 +27,9 @@ jobs:
       - name: mirai-core Tests
         run: >
           ./gradlew check --scan
-          -Dmirai.debug.network.show.all.components=true
+          -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
-          -Dmirai.debug.network.show.packet.details=true
+          -Dmirai.network.show.packet.details=true
   build-all:
     runs-on: ubuntu-latest
     steps:
@@ -56,6 +56,6 @@ jobs:
       - name: All Tests
         run: >
           ./gradlew check --scan
-          -Dmirai.debug.network.show.all.components=true
+          -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
-          -Dmirai.debug.network.show.packet.details=true
+          -Dmirai.network.show.packet.details=true

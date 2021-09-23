@@ -216,7 +216,7 @@ val channel = GlobalEventChannel
 ## 在 `EventChannel` 监听事件
 
 使用：
-- `EventChannel.subscribe`：监听事件并自行觉得何时停止
+- `EventChannel.subscribe`：监听事件并自行决定何时停止
 - `EventChannel.subscribeAlways`：一直监听事件
 - `EventChannel.subscribeOnce`：只监听一次事件
 

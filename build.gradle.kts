@@ -15,11 +15,13 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 buildscript {
     repositories {
-//        mavenLocal()
-        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        if (System.getProperty("use.maven.local") == "true") {
+            mavenLocal()
+        }
+
         mavenCentral()
+        gradlePluginPortal()
         google()
-        jcenter()
     }
 
     dependencies {
@@ -60,15 +62,6 @@ configure<kotlinx.validation.ApiValidationExtension> {
 
 GpgSigner.setup(project)
 
-tasks.register("publishMiraiCoreArtifactsToMavenLocal") {
-    group = "mirai"
-    dependsOn(
-        project(":mirai-core-api").tasks.getByName("publishToMavenLocal"),
-        project(":mirai-core-utils").tasks.getByName("publishToMavenLocal"),
-        project(":mirai-core").tasks.getByName("publishToMavenLocal")
-    )
-}
-
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
 allprojects {
@@ -76,11 +69,13 @@ allprojects {
     version = Versions.project
 
     repositories {
-        // mavenLocal() // cheching issue cause compiler exception
-        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
-        jcenter()
-        google()
+        if (System.getProperty("use.maven.local") == "true") {
+            mavenLocal()
+        }
+
         mavenCentral()
+        gradlePluginPortal()
+        google()
     }
 
     afterEvaluate {
@@ -102,6 +97,14 @@ allprojects {
             configureFlattenSourceSets()
         }
         configureJarManifest()
+        substituteDependenciesUsingExpectedVersion()
+
+        if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
+            project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
+                shadow.enabled = false // they are too big
+            }
+            logger.info("Disabled all shadow tasks.")
+        }
     }
 }
 

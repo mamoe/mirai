@@ -44,17 +44,6 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @NotStableForInheritance
 public interface Stranger : User, CoroutineScope {
     /**
-     * QQ 号码
-     */
-    public override val id: Long
-
-    /**
-     * 昵称
-     */
-    public override val nick: String
-
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

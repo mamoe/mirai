@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.internal.network.protocol.data.proto.GetImgUrlReq
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
@@ -78,20 +77,18 @@ internal class LongConn {
 
     }
 
-    object OffPicDown : OutgoingPacketFactory<OffPicDown.ImageDownPacketResponse>("LongConn.OffPicDown") {
-        operator fun invoke(client: QQAndroidClient, @Suppress("UNUSED_PARAMETER") req: GetImgUrlReq): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                TODO()
-            }
-        }
-
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ImageDownPacketResponse {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-
-        sealed class ImageDownPacketResponse : Packet {
-            object Success : ImageDownPacketResponse()
-        }
-    }
+//    object OffPicDown : OutgoingPacketFactory<OffPicDown.ImageDownPacketResponse>("LongConn.OffPicDown") {
+//        operator fun invoke(client: QQAndroidClient, @Suppress("UNUSED_PARAMETER") req: GetImgUrlReq): OutgoingPacket {
+//            return buildOutgoingUniPacket(client) {
+//            }
+//        }
+//
+//        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ImageDownPacketResponse {
+//        }
+//
+//
+//        sealed class ImageDownPacketResponse : Packet {
+//            object Success : ImageDownPacketResponse()
+//        }
+//    }
 }

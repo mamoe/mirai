@@ -14,6 +14,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.network.components.BotClientHolder
 import net.mamoe.mirai.utils.*
 
 
@@ -125,6 +127,14 @@ internal data class WLoginSigInfo(
     var encryptedDownloadSession: EncryptedDownloadSession? = null,
 ) {
 
+    /**
+     * 获取 获取群公告 所需的 bkn 参数
+     * */
+    val bkn: Int
+        get() = sKey.data
+            .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
+            .and(Int.MAX_VALUE)
+
     //图片加密下载
     //是否加密从bigdatachannel处得知
     @Serializable
@@ -136,6 +146,10 @@ internal data class WLoginSigInfo(
 
     override fun toString(): String {
         return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
+    }
+
+    fun getPsKey(name: String): String {
+        return psKeyMap[name]?.data?.encodeToString() ?: error("Cannot find PsKey $name")
     }
 }
 
@@ -172,6 +186,11 @@ internal open class KeyWithExpiry(
         return "KeyWithExpiry(data=${data.toUHexString()}, creationTime=$creationTime)"
     }
 }
+
+internal val KeyWithExpiry.str get() = data.encodeToString()
+internal val AbstractBot.sKey get() = client.wLoginSigInfo.sKey.str
+internal fun AbstractBot.psKey(name: String) = client.wLoginSigInfo.getPsKey(name)
+internal val AbstractBot.client get() = components[BotClientHolder].client
 
 @Serializable
 internal open class KeyWithCreationTime(

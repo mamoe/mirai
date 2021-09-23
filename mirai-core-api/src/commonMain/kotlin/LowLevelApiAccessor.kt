@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmBlockingBridge
@@ -15,8 +15,9 @@ import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -29,7 +30,7 @@ import kotlin.annotation.AnnotationTarget.*
 @MiraiExperimentalApi
 @RequiresOptIn
 @Retention(AnnotationRetention.BINARY)
-@Target(CLASS, TYPE, FUNCTION, PROPERTY, CONSTRUCTOR)
+@Target(CLASS, FUNCTION, PROPERTY, CONSTRUCTOR)
 public annotation class LowLevelApi
 
 /**
@@ -129,82 +130,6 @@ public interface LowLevelApiAccessor {
         ownerId: Long
     ): Sequence<MemberInfo>
 
-    /**
-     * 获取群公告列表
-     * @param page 页码
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getRawGroupAnnouncements(
-        bot: Bot,
-        groupId: Long,
-        page: Int = 1,
-        amount: Int = 10
-    ): GroupAnnouncementList
-
-    /**
-     * 上传群公告的所需要的一个图片，但不发送
-     *
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun uploadGroupAnnouncementImage(
-        bot: Bot,
-        groupId: Long,
-        resource: ExternalResource
-    ): GroupAnnouncementImage
-
-    /**
-     * 发送群公告
-     *
-     * @return 公告的fid
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun sendGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        announcement: GroupAnnouncement
-    ): String
-
-    /**
-     * 发送包含图片的群公告
-     *
-     * @return 公告的fid
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun sendGroupAnnouncementWithImage(
-        bot: Bot,
-        groupId: Long,
-        image: GroupAnnouncementImage,
-        announcement: GroupAnnouncement
-    ): String
-
-    /**
-     * 删除群公告
-     * @param fid [GroupAnnouncement.fid]
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun deleteGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        fid: String
-    )
-
-    /**
-     * 获取一条群公告
-     * @param fid [GroupAnnouncement.fid]
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getGroupAnnouncement(
-        bot: Bot,
-        groupId: Long,
-        fid: String
-    ): GroupAnnouncement
-
 
     /**
      * 获取群活跃信息
@@ -292,18 +217,4 @@ public interface LowLevelApiAccessor {
         groupId: Long,
         seconds: Int,
     )
-
-    /**
-     * 序列化 [Voice.pttInternalInstance]
-     */
-    @LowLevelApi
-    @MiraiInternalApi // For Voice serialize
-    public fun serializePttElem(ptt: Any?): String
-
-    /**
-     * 反序列化 [Voice.pttInternalInstance]
-     */
-    @LowLevelApi
-    @MiraiInternalApi // For Voice serialize
-    public fun deserializePttElem(ptt: String): Any?
 }

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import kotlin.internal.InlineOnly
 
@@ -19,6 +18,8 @@ import kotlin.internal.InlineOnly
  * 群成员的权限.
  *
  * 可通过 [compareTo] 判断是否有更高的权限.
+ *
+ * 若要获得成员的权限, 使用 [Member.permission]. 若要获得 [Bot] 在某个群的权限, 使用 [Group.botPermission], 或 [Group.botAsMember] 再获取其 [Member.permission].
  *
  * @see isOwner 判断权限是否为群主
  * @see isOperator 判断权限是否为管理员或群主

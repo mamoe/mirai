@@ -36,9 +36,12 @@ private class LateinitMutableProperty<T>(
                 val initializer = initializer
                 if (initializer != null && this.value.value === UNINITIALIZED) {
                     val value = initializer()
-                    this.value.compareAndSet(UNINITIALIZED, value) // setValue prevails
                     this.initializer = null
-                    value
+                    this.value.compareAndSet(UNINITIALIZED, value) // setValue prevails
+                    this.value.value.let {
+                        assert(it !== UNINITIALIZED)
+                        return it as T
+                    }
                 } else this.value.value as T
             }
             else -> v as T

@@ -97,25 +97,34 @@ public class MessageChainBuilder private constructor(
         return when (element) {
             // is ConstrainSingle -> container.add(element)
             is SingleMessage -> container.add(element) // no need to constrain
-            is Iterable<*> -> this.addAll(element.toMessageChain().asSequence())
+            is MessageChain -> addAll(element)
+            is Iterable<*> -> this.addAll(element.toMessageChain())
             else -> error("stub")
         }
     }
 
     public override fun addAll(elements: Collection<SingleMessage>): Boolean {
         flushCache()
-        return addAll(elements.asSequence())
+        return addAll(elements.asIterable())
     }
 
     public fun addAll(elements: Iterable<SingleMessage>): Boolean {
         flushCache()
-        return addAll(elements.asSequence())
+        var result = false
+        for (item in elements) {
+            if (add(item)) result = true
+        }
+        return result
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
     public fun addAll(elements: Iterable<Message>): Boolean {
         flushCache()
-        return addAll(elements.toMessageChain().asSequence())
+        var result = false
+        for (item in elements) {
+            if (add(item)) result = true
+        }
+        return result
     }
 
     @JvmSynthetic
@@ -177,7 +186,9 @@ public class MessageChainBuilder private constructor(
      * 将所有已有元素引用复制到一个新的 [MessageChainBuilder]
      */
     public fun copy(): MessageChainBuilder {
-        return MessageChainBuilder(container.toMutableList())
+        return MessageChainBuilder(container.toMutableList()).also {
+            it.cache.append(this.cache)
+        }
     }
 
     public override fun remove(element: SingleMessage): Boolean {
@@ -193,6 +204,7 @@ public class MessageChainBuilder private constructor(
     }
 
     public override fun clear() {
+        cache.setLength(0)
         return container.clear()
     }
 

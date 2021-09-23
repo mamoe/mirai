@@ -22,7 +22,8 @@
 [iTXTech/mirai-native]: https://github.com/iTXTech/mirai-native
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
-[GraiaProject/Application]: https://github.com/GraiaProject/Application
+[GraiaProject/Avilla]: https://github.com/GraiaProject/Avilla
+[Elaina]: https://github.com/wyapx/Elaina
 [NoneBot]: https://github.com/nonebot/nonebot2
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
@@ -38,11 +39,15 @@
 [drinkal/Mirai-js]:https://github.com/drinkal/Mirai-js
 [Coloryr/ColorMirai]: https://github.com/Coloryr/ColorMirai
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
+[Miyakowww/CocoaFramework2]: https://github.com/Miyakowww/CocoaFramework2
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
+[Excaive/miraicle]: https://github.com/Excaive/miraicle
+[nkxingxh/miraiez]: https://github.com/nkxingxh/miraiez
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
 [jerrita/saaya]: https://github.com/jerrita/saaya
+[YiriMirai]: https://github.com/YiriMiraiProject/YiriMirai
 
 ### 原生接口
 
@@ -72,25 +77,30 @@
 
 | 语言和技术                  | 维护者及项目地址                               |
 |:--------------------------|:--------------------------------------------|
-| `Python`                  | [Graia Framework][GraiaProject/Application] |
-| `Python`                  | [NoneBot]                                   |
-| `Python`                  | [jerrita/saaya]                             |
-| `C++`                     | [cyanray/mirai-cpp]                         |
-| `C++`                     | [Chlorie/miraipp]                           |
 | `C#`                      | [Executor-Cheng/mirai-CSharp]               |
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai]        |
 | `C#`                      | [Coloryr/ColorMirai]                        |
 | `C#`                      | [AhpxChina/Mirai.Net]                       |
+| `C#`                      | [Miyakowww/CocoaFramework2]                 |
+| `C++`                     | [cyanray/mirai-cpp]                         |
+| `C++`                     | [Chlorie/miraipp]                           |
+| `Go`                      | [Logiase/gomirai]                           |
+| `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
+| `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
+| `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
+| `PHP`                     | [nkxingxh/miraiez]                          |
+| `Python`                  | [Avilla][GraiaProject/Avilla]               |
+| `Python`                  | [Elaina]                                    |
+| `Python`                  | [NoneBot]                                   |
+| `Python`                  | [jerrita/saaya]                             |
+| `Python`                  | [YiriMirai]                                 |
+| `Python`                  | [Excaive/miraicle]                          |
 | `Ruby`                    | [Shimogawa/rubirai]                         |
 | `Rust`                    | [HoshinoTented/mirai-rs]                    |
-| `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
-| `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
-| `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
-| `Go`                      | [Logiase/gomirai]                           |
 | `易语言`                   | [only52607/e-mirai]                         |
 
 
-> 排名不分先后  
+> 按字母顺序排序，排序不代表排名  
 > *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
 
 特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：

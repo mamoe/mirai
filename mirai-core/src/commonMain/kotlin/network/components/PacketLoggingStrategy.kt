@@ -53,23 +53,24 @@ internal class PacketLoggingStrategyImpl(
             onRight = { packet ->
                 packet ?: return
                 if (!bot.logger.isEnabled && !logger.isEnabled) return
-                if (packet is ParseErrorPacket) {
-                    packet.direction.getLogger(bot).error("Exception in parsing packet.", packet.error)
-                }
 
-                if (packet is MultiPacket<*>) {
-                    for (d in packet) {
+                if (packet is MultiPacket) {
+                    if (packet.isMeaningful) logReceivedImpl(packet, incomingPacket, logger)
+                    for (d in packet.children()) {
                         logReceivedImpl(d, incomingPacket, logger)
                     }
                 }
 
                 logReceivedImpl(packet, incomingPacket, logger)
-            }
+            },
         )
     }
 
     private fun logReceivedImpl(packet: Packet, incomingPacket: IncomingPacket, logger: MiraiLogger) {
         when (packet) {
+            is ParseErrorPacket -> {
+                packet.direction.getLogger(bot).error("Exception on parsing packet.", packet.error)
+            }
             is MessageEvent -> packet.logMessageReceived()
             is Packet.NoLog -> {
                 // nothing to do
@@ -90,7 +91,7 @@ internal class PacketLoggingStrategyImpl(
 
     companion object {
         fun getDefaultBlacklist(): Set<String> {
-            if (systemProp("mirai.debug.network.show.verbose.packets", false)) return emptySet()
+            if (systemProp("mirai.network.show.verbose.packets", false)) return emptySet()
             return DEFAULT_BLACKLIST
         }
 
@@ -112,6 +113,6 @@ internal class PacketLoggingStrategyImpl(
         }
 
         @JvmField
-        var SHOW_PACKET_DETAILS = systemProp("mirai.debug.network.show.packet.details", false)
+        var SHOW_PACKET_DETAILS = systemProp("mirai.network.show.packet.details", false)
     }
 }

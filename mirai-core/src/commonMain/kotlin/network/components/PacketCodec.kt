@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketLogger
-import net.mamoe.mirai.internal.network.context.SsoSession
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
@@ -43,10 +42,10 @@ internal interface PacketCodec {
     suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket?
 
     companion object : ComponentKey<PacketCodec> {
-        val PACKET_DEBUG = systemProp("mirai.debug.network.packet.logger", false)
+        val PACKET_DEBUG = systemProp("mirai.network.packet.logger", false)
 
         internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
-            MiraiLogger.create("Packet").withSwitch(PACKET_DEBUG)
+            MiraiLogger.Factory.create(PacketCodec::class, "Packet").withSwitch(PACKET_DEBUG)
         }
     }
 }
@@ -209,11 +208,12 @@ internal class PacketCodecImpl : PacketCodec {
             (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()
         return when (encryptionMethod) {
             4 -> {
+                val size = (this.remaining - 1).toInt()
                 val data =
                     TEA.decrypt(
                         this.readBytes(),
                         ecdhWithPublicKey.keyPair.maskedShareKey,
-                        length = (this.remaining - 1).toInt()
+                        length = size
                     )
 
                 val peerShareKey =
@@ -221,11 +221,12 @@ internal class PacketCodecImpl : PacketCodec {
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
+                val size = (this.remaining - 1).toInt();
                 // session
                 TEA.decrypt(
                     this.readBytes(),
                     client.wLoginSigInfo.wtSessionTicketKey,
-                    length = (this.remaining - 1).toInt()
+                    length = size
                 )
             }
             0 -> {
@@ -239,7 +240,8 @@ internal class PacketCodecImpl : PacketCodec {
                         TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
                     }
                 } else {
-                    TEA.decrypt(this.readBytes(), client.randomKey, length = (this.remaining - 1).toInt())
+                    val size = (this.remaining - 1).toInt()
+                    TEA.decrypt(this.readBytes(), client.randomKey, length = size)
                 }
             }
             else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")

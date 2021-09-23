@@ -408,8 +408,8 @@ internal class Submsgtype0x122 {
 
         @Serializable
         internal class TemplParam(
-            @ProtoNumber(1) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(2) @JvmField val value: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoNumber(1) @JvmField val name: String = "",
+            @ProtoNumber(2) @JvmField val value: String = "",
         ) : ProtoBuf
     }
 }
@@ -952,7 +952,7 @@ internal class Submsgtype0x27 {
         @Serializable
         internal class ProfileInfo(
             @ProtoNumber(1) @JvmField val field: Int = 0,
-            @ProtoNumber(2) @JvmField val value: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoNumber(2) @JvmField val value: String = "",
         ) : ProtoBuf
 
         @Serializable

@@ -13,25 +13,47 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.data.Announcement
-import net.mamoe.mirai.data.AnnouncementParameters
-import net.mamoe.mirai.data.ReceiveAnnouncement
-import net.mamoe.mirai.data.covertToGroupAnnouncement
+import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群.
+ *
+ * ## 群员操作
+ *
+ * ### 获取群成员
+ *
+ * 使用 [Group.members] 可获取除 [Bot] 自身外的所有群成员 (包括管理员和群主) 列表. [Bot] 自身在群内的对象可通过 [botAsMember] 获取.
+ *
+ * [get] 可以按 QQ 号码获取一个群成员对象, 在不存在时返回 `null`. [getOrFail] 则在不存在时抛出 [NoSuchElementException].
+ *
+ * ### 判断管理员权限
+ *
+ * 首先获取到目标群成员对象, 然后使用 [NormalMember.permission] 获取其权限.
+ *
+ * [Bot] 在群内的权限可通过 [Group.botPermission] 或其 [Member 对象][botAsMember] 的 [NormalMember.permission] 获取.
+ *
+ * ### 其他动作
+ *
+ * - 设置管理员权限: [NormalMember.modifyAdmin]
+ * - 禁言: [NormalMember.mute]
+ * - 戳一戳: [NormalMember.nudge]
+ *
+ * ## 群公告
+ *
+ * 可通过 [Group.announcements] 获取公告支持. 可在 [Announcements] 查看详细文档.
+ *
+ * ##
  */
 @NotStableForInheritance
-public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported {
+public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {
     /**
      * 群名称.
      *
@@ -97,6 +119,12 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
     public val members: ContactList<NormalMember>
 
     /**
+     * 获取群公告相关功能接口
+     * @since 2.7
+     */
+    public val announcements: Announcements
+
+    /**
      * 获取群成员实例. 不存在时返回 `null`.
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
@@ -158,6 +186,17 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
 
 
     /**
+     * 上传一个语音消息以备发送. 该方法已弃用且将在未来版本删除, 请使用 [uploadAudio].
+     */
+    @Suppress("DEPRECATION")
+    @Deprecated(
+        "use uploadAudio",
+        replaceWith = ReplaceWith("uploadAudio(resource)"),
+        level = DeprecationLevel.WARNING
+    ) // deprecated since 2.7
+    public suspend fun uploadVoice(resource: ExternalResource): Voice
+
+    /**
      * 将一条消息设置为群精华消息, 需要管理员或群主权限.
      * 操作成功返回 `true`.
      *
@@ -166,28 +205,6 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
      * @since 2.2
      */
     public suspend fun setEssenceMessage(source: MessageSource): Boolean
-
-    /**
-     * 获取所有群公告列表
-     */
-    @MiraiExperimentalApi
-    public suspend fun getAnnouncements(): Flow<Announcement>
-
-    /**
-     * 删除一条群公告
-     * @param fid 公告的id [ReceiveAnnouncement.fid]
-     *
-     * @throws PermissionDeniedException 没有权限时抛出
-     */
-    @MiraiExperimentalApi
-    public suspend fun deleteAnnouncement(fid: String)
-
-    /**
-     * 获取一条群公告
-     * @param fid 公告的id [ReceiveAnnouncement.fid]
-     */
-    @MiraiExperimentalApi
-    public suspend fun getAnnouncement(fid: String): ReceiveAnnouncement
 
     public companion object {
         /**
@@ -202,39 +219,6 @@ public interface Group : Contact, CoroutineScope, FileSupported, VoiceSupported 
         @JvmBlockingBridge
         @JvmStatic
         public suspend fun Group.setEssenceMessage(chain: MessageChain): Boolean = setEssenceMessage(chain.source)
-
-        /**
-         * 发送一个 [Announcement]
-         *
-         * @param title 公告标题
-         * @param msg 公告内容
-         * @param announcementParameters 公告设置
-         */
-        @MiraiExperimentalApi
-        @JvmBlockingBridge
-        @JvmStatic
-        public suspend fun Group.sendAnnouncement(
-            title: String,
-            msg: String,
-            announcementParameters: AnnouncementParameters = AnnouncementParameters()
-        ) {
-            checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to send group announcement" }
-            Mirai.sendGroupAnnouncement(
-                bot,
-                id,
-                Announcement(bot.id, title, msg, announcementParameters).covertToGroupAnnouncement()
-            )
-        }
-
-        /**
-         * 删除一条群公告
-         * @param receiveAnnouncement 公告 [ReceiveAnnouncement]
-         */
-        @MiraiExperimentalApi
-        @JvmBlockingBridge
-        @JvmStatic
-        public suspend fun Group.deleteAnnouncement(receiveAnnouncement: ReceiveAnnouncement): Unit =
-            deleteAnnouncement(receiveAnnouncement.fid)
     }
 }
 
@@ -251,7 +235,13 @@ public interface GroupSettings {
      *
      * @see GroupEntranceAnnouncementChangeEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     * @see Announcements
+     * @see Group.announcements
      */
+    @Deprecated(
+        level = DeprecationLevel.WARNING,
+        message = "group.announcements.asFlow().filter { it.parameters.sendToNewMember }.firstOrNull()",
+    ) // deprecated since 2.7
     public var entranceAnnouncement: String
 
     /**

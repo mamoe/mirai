@@ -30,7 +30,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  *
  * @see isContextIdenticalWith 判断语境相同
  */
-public interface MessageEvent : Event, Packet, BotPassiveEvent { // TODO: 2021/1/11 Make sealed interface in Kotlin 1.5
+public sealed interface MessageEvent : Event, Packet, BotPassiveEvent {
     /**
      * 与这个消息事件相关的 [Bot]
      */
@@ -85,7 +85,7 @@ public interface MessageEvent : Event, Packet, BotPassiveEvent { // TODO: 2021/1
  * @see FriendMessageEvent
  * @see GroupTempMessageEvent
  */
-public interface UserMessageEvent : MessageEvent {
+public sealed interface UserMessageEvent : MessageEvent {
     public override val subject: User
 }
 
@@ -149,7 +149,7 @@ public class OtherClientMessageEvent constructor(
  * @see FriendMessageEvent
  * @see GroupTempMessageEvent
  */
-public interface GroupAwareMessageEvent : MessageEvent {
+public sealed interface GroupAwareMessageEvent : MessageEvent {
     public val group: Group
 }
 
@@ -193,7 +193,7 @@ public class GroupMessageEvent(
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempMessageEvent 已更改为 GroupTempMessageEvent",
     replaceWith = ReplaceWith("GroupTempMessageEvent", "net.mamoe.mirai.event.events.GroupTempMessageEvent"),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
 public sealed class TempMessageEvent constructor(
     public override val sender: NormalMember,

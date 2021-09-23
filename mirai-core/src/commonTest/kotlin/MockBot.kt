@@ -45,9 +45,9 @@ internal class MockBotBuilder(
 }
 
 @Suppress("TestFunctionName")
-internal fun MockBot(conf: MockBotBuilder.() -> Unit = {}): QQAndroidBot {
+internal fun MockBot(account: BotAccount = MockAccount, conf: MockBotBuilder.() -> Unit = {}): QQAndroidBot {
     return MockBotBuilder(MockConfiguration.copy()).apply(conf).run {
-        object : QQAndroidBot(MockAccount, this.conf) {
+        object : QQAndroidBot(account, this.conf) {
             override fun createBotLevelComponents(): ConcurrentComponentStorage {
                 return super.createBotLevelComponents().apply {
                     val componentsProvider = additionalComponentsProvider

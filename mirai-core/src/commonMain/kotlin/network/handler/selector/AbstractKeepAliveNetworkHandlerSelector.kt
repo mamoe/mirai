@@ -85,30 +85,48 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
         private tailrec suspend fun runImpl(): H {
             if (attempted >= maxAttempts) {
                 logIfEnabled { "Max attempt $maxAttempts reached." }
-                throw exceptionCollector.getLast()?.apply { addSuppressed(MaxAttemptsReachedException(null)) }
-                    ?: MaxAttemptsReachedException(null)
+                throw MaxAttemptsReachedException(exceptionCollector.getLast())
+//                throw exceptionCollector.getLast()?.apply { addSuppressed(MaxAttemptsReachedException(null)) }
+//                    ?: MaxAttemptsReachedException(null)
             }
             if (!currentCoroutineContext().isActive) {
-                logIfEnabled { "Cancellation detected." }
-                yield() // throw canonical CancellationException if cancelled
+                yield() // check cancellation
             }
             val current = getCurrentInstanceOrNull()
             lastNetwork = current
 
-            suspend fun H.resumeInstanceCatchingException() {
+            /**
+             * @return `false` if failed
+             */
+            suspend fun H.resumeInstanceCatchingException(): Boolean {
                 logIfEnabled { "Try resumeConnection" }
                 try {
                     resumeConnection() // once finished, it should has been LOADING or OK
+                    return true
                 } catch (e: LoginFailedException) {
                     logIfEnabled { "... failed with LoginFailedException $e" }
                     logIfEnabled { "CLOSING SELECTOR" }
                     close(e)
                     logIfEnabled { "... CLOSED" }
+                    exceptionCollector.collect(e)
                     if (e is RetryLaterException) {
-                        return
+                        return false
                     }
                     // LoginFailedException is not resumable
-                    exceptionCollector.collectThrow(e)
+                    exceptionCollector.throwLast()
+                } catch (e: NetworkException) {
+                    logIfEnabled { "... failed with NetworkException $e" }
+                    logIfEnabled { "... recoverable=${e.recoverable}" }
+                    exceptionCollector.collect(e)
+                    if (e.recoverable) {
+                        logIfEnabled { "IGNORING" }
+                        // allow recoverable NetworkException, see #1361
+                    } else {
+                        logIfEnabled { "CLOSING SELECTOR" }
+                        close(e)
+                        logIfEnabled { "... CLOSED" }
+                    }
+                    return false
                 } catch (e: Exception) {
                     logIfEnabled { "... failed with $e" }
                     logIfEnabled { "CLOSING SELECTOR" }
@@ -116,6 +134,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     logIfEnabled { "... CLOSED" }
                     // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
                     // so that duplicated exceptions are ignored in logging
+                    return false
                 }
             }
 
@@ -141,8 +160,10 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     NetworkHandler.State.CONNECTING,
                     NetworkHandler.State.INITIALIZED,
                     -> {
-                        current.resumeInstanceCatchingException()
-                        return runImpl() // does not count for an attempt.
+                        if (!current.resumeInstanceCatchingException()) {
+                            attempted += 1
+                        }
+                        return runImpl()
                     }
                     NetworkHandler.State.LOADING -> {
                         logIfEnabled { "RETURN" }
@@ -179,7 +200,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
          * millis
          */
         @JvmField
-        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000)
+        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000L)
+            .coerceIn(0..Long.MAX_VALUE)
 
         @JvmField
         var SELECTOR_LOGGING = systemProp("mirai.network.handle.selector.logging", false)

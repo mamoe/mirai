@@ -9,9 +9,6 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -34,9 +31,8 @@ internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("Message
             )
         }
 
-    internal suspend fun delete(bot: QQAndroidBot, messages: Flow<MsgComm.Msg>) =
+    internal suspend fun delete(bot: QQAndroidBot, messages: List<MsgComm.Msg>) =
         bot.network.run {
-
             val map = messages.map {
                 MsgSvc.PbDeleteMsgReq.MsgItem(
                     fromUin = it.msgHead.fromUin,
@@ -44,9 +40,9 @@ internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("Message
                     // 群为84、好友为187。群通过其他方法删除，但测试结果显示通过187也能删除群消息。
                     msgType = 187,
                     msgSeq = it.msgHead.msgSeq,
-                    msgUid = it.msgHead.msgUid
+                    msgUid = it.msgHead.msgUid,
                 )
-            }.toList()
+            }
 
             MessageSvcPbDeleteMsg(bot.client, map).sendWithoutExpect()
         }

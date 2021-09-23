@@ -300,7 +300,7 @@ public interface RemoteFile {
         "Use moveTo(RemoteFile) instead.",
         replaceWith = ReplaceWith("this.moveTo(this.resolveSibling(path))"),
         level = DeprecationLevel.WARNING
-    )
+    ) // deprecated since 2.7
     public suspend fun moveTo(path: String): Boolean {
         // Impl notes:
         // if `path` is absolute, this works as intended.

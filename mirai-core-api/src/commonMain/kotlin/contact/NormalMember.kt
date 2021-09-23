@@ -26,10 +26,11 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 /**
- * 代表一位正常的群成员.
+ * 代表一位普通的群成员.
  *
- * 群成员可能也是好友, 但他们在对象类型上不同.
- * 群成员可以通过 [asFriend] 得到相关好友对象.
+ * 要查询更多用户信息, 使用 [NormalMember.queryProfile].
+ *
+ * @see AnonymousMember
  */
 @NotStableForInheritance
 public interface NormalMember : Member {
@@ -106,11 +107,25 @@ public interface NormalMember : Member {
      *
      * 管理员可踢出成员, 群主可踢出管理员和群员.
      *
+     * @param block 为 `true` 时拉黑成员
+     *
+     * @see MemberLeaveEvent.Kick 成员被踢出事件.
+     * @throws PermissionDeniedException 无权限修改时
+     *
+     */
+    public suspend fun kick(message: String, block: Boolean)
+
+    /**
+     * 踢出该成员, 默认不拉黑
+     *
+     * 管理员可踢出成员, 群主可踢出管理员和群员.
+     *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      *
      */
     public suspend fun kick(message: String)
+
 
     /**
      * 给予或移除群成员的管理员权限。
@@ -121,6 +136,8 @@ public interface NormalMember : Member {
      *
      * @see MemberPermissionChangeEvent 群成员权限变更事件
      * @throws PermissionDeniedException 无权限修改时抛出
+     *
+     * @since 2.7
      */
     public suspend fun modifyAdmin(operation: Boolean)
 

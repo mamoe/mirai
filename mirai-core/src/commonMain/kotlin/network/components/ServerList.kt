@@ -13,8 +13,8 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ServerList.Companion.DEFAULT_SERVER_LIST
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.info
-import org.jetbrains.annotations.TestOnly
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -105,10 +105,10 @@ internal class ServerListImpl(
     initial: Collection<ServerAddress> = emptyList()
 ) : ServerList {
     @TestOnly
-    constructor(initial: Collection<ServerAddress>) : this(MiraiLogger.TopLevel, initial)
+    constructor(initial: Collection<ServerAddress>) : this(MiraiLogger.Factory.create(ServerListImpl::class), initial)
 
     @TestOnly
-    constructor() : this(MiraiLogger.TopLevel)
+    constructor() : this(MiraiLogger.Factory.create(ServerListImpl::class))
 
     @Volatile
     private var preferred: Set<ServerAddress> = DEFAULT_SERVER_LIST

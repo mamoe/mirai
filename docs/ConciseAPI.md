@@ -111,7 +111,7 @@ ExternalResource.sendAsImage(/*...*/);
 发送语音与发送图片的区别不大，都是先 `upload` 然后 `send`
 
 > - 在 2.7.0 之前，只有群聊 (`Group`) 支持语音, 2.7.0 之后支持私聊语音
-> - 每次发送新语言都重新 `upload`, 避免复用 `Voice` 对象
+> - 每次发送新语音前最好重新 `upload`, 避免复用 `Voice` 对象
 > - **只支持 `amr` 和 `silk` 格式**
 
 要得到一个语音对象, 需要先 `uploadVoice`

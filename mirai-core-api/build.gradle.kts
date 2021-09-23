@@ -52,28 +52,26 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":mirai-core-utils"))
                 api(kotlin("reflect"))
-
-                api(`kotlinx-serialization-core`)
-                api(`kotlinx-serialization-json`)
-                implementation(`kotlinx-serialization-protobuf`)
+                api(`kotlinx-serialization-core-jvm`)
+                api(`kotlinx-serialization-json-jvm`)
                 api(`kotlinx-coroutines-jdk8`)
-                implementation(`jetbrains-annotations`)
-                // api(`kotlinx-coroutines-jdk8`)
-
                 api(`ktor-client-okhttp`)
-                api(`ktor-client-core`)
-                api(`ktor-network`)
 
-                compileOnly(`log4j-api`)
-                compileOnly(slf4j)
+                implementation(project(":mirai-core-utils"))
+                implementation(`kotlinx-serialization-protobuf-jvm`)
+                implementation(`jetbrains-annotations`)
+                implementation(`log4j-api`)
+                implementation(`kotlinx-atomicfu-jvm`)
+                implementationKotlinxIoJvm()
 
+                compileOnly(`slf4j-api`)
+            }
+        }
 
-                // they use Kotlin 1.3 so we need to ignore transitive dependencies
-                api1(`kotlinx-io-jvm`)
-                api1(`kotlinx-coroutines-io-jvm`)
-                implementation1(`kotlinx-atomicfu`)
+        commonTest {
+            dependencies {
+                runtimeOnly(`log4j-core`)
             }
         }
 
@@ -82,7 +80,7 @@ kotlin {
                 dependsOn(commonMain)
                 dependencies {
                     compileOnly(`android-runtime`)
-                    api1(`ktor-client-android`)
+//                    api(`ktor-client-android`)
                 }
             }
         }
@@ -113,24 +111,6 @@ if (isAndroidSDKAvailable) {
     }
     tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 }
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
-    implementation(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNotation: String) =
-    api(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
 
 configureMppPublishing()
 

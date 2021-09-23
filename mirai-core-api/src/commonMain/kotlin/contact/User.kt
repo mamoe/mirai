@@ -46,11 +46,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
     public override val id: Long
 
     /**
-     * 昵称
-     */
-    public override val nick: String
-
-    /**
      * 备注信息
      *
      * 仅 [Bot] 与 [User] 存在好友关系的时候才可能存在备注

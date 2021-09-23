@@ -114,7 +114,7 @@ internal suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
 @Deprecated(
     "Kept for binary compatibility.",
     ReplaceWith("PacketCodec.PacketLogger", "net.mamoe.mirai.internal.network.components.PacketCodec"),
-    level = DeprecationLevel.ERROR,
+    level = DeprecationLevel.HIDDEN,
 )
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch
@@ -135,6 +135,7 @@ internal object KnownPacketFactories {
         MessageSvcPushForceOffline,
         MessageSvcPbSendMsg,
         MessageSvcPbDeleteMsg,
+        MessageSvcPbGetRoamMsgReq,
         FriendList.GetFriendGroupList,
         FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
@@ -142,14 +143,14 @@ internal object KnownPacketFactories {
         ImgStore.GroupPicUp,
         PttStore.GroupPttUp,
         PttStore.GroupPttDown,
+        PttStore.C2CPttDown,
         LongConn.OffPicUp,
-        LongConn.OffPicDown,
+//        LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
         TroopManagement.GroupOperation,
         TroopManagement.GetTroopConfig,
         TroopManagement.ModifyAdmin,
-        TroopManagement.GetAdmin,
         //  TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,

@@ -20,10 +20,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.asyncFromEventOrNull
+import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -74,6 +74,7 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
     )
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToFriendImpl.Serializer::class)
 internal class OnlineMessageSourceToFriendImpl(
     override val sequenceIds: IntArray,
@@ -94,6 +95,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceToStrangerImpl(
     override val sequenceIds: IntArray,
@@ -120,6 +122,7 @@ internal class OnlineMessageSourceToStrangerImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToTempImpl.Serializer::class)
 internal class OnlineMessageSourceToTempImpl(
     override val sequenceIds: IntArray,
@@ -145,6 +148,7 @@ internal class OnlineMessageSourceToTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceToGroupImpl.Serializer::class)
 internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
@@ -209,9 +213,9 @@ internal class OnlineMessageSourceToGroupImpl(
                     toUin = Mirai.calculateGroupUinByGroupCode(targetId), // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
-                    msgSeq = sequenceIds.single(), // TODO !!
+                    msgSeq = sequenceIds.single(),
                     msgTime = time,
-                    msgUid = internalIds.single().toLongUnsigned(), //  TODO !!
+                    msgUid = internalIds.single().toLongUnsigned(),
                     groupInfo = MsgComm.GroupInfo(groupCode = targetId),
                     isSrcMsg = true
                 ),

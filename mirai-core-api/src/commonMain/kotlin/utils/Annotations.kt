@@ -47,7 +47,7 @@ public annotation class MiraiInternalFile
  */
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR, TYPE)
+@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
 public annotation class MiraiExperimentalApi(
     public val message: String = ""
@@ -91,12 +91,5 @@ internal annotation class EventListenerLikeJava
  * 一般有一定的性能损失, 且不能在 JVM/Android 以外平台使用. 不要在 Kotlin 调用它.
  */
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
-@Target(PROPERTY, FUNCTION, TYPE, CLASS)
+@Target(PROPERTY, FUNCTION, CLASS)
 internal annotation class JavaFriendlyAPI
-
-/**
- * 表示这个属性由 [lazy] 委托, 即它只会在被需要的时候才初始化.
- */
-@Target(PROPERTY)
-@Retention(AnnotationRetention.BINARY)
-internal annotation class LazyProperty

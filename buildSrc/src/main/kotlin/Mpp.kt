@@ -10,6 +10,9 @@
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
+import org.gradle.api.artifacts.DependencySubstitutions
+import org.gradle.api.artifacts.ResolutionStrategy
+import org.gradle.api.artifacts.component.ComponentSelector
 import java.util.*
 
 /*
@@ -73,4 +76,44 @@ fun Project.printAndroidNotInstalled() {
         """Android SDK might not be installed. Android target of $name will not be compiled. It does no influence on the compilation of other platforms.
             """.trimIndent()
     )
+}
+
+inline fun forMppModules(action: (suffix: String) -> Unit) {
+    arrayOf(
+        "",
+        "-common",
+        "-metadata",
+        "-jvm",
+        "-jdk7",
+        "-jdk8"
+    ).forEach(action)
+}
+
+fun Project.substituteDependenciesUsingExpectedVersion() {
+    configurations.all {
+        resolutionStrategy.substituteDependencies {
+            forMppModules { suffix ->
+                module("org.jetbrains.kotlin:kotlin-stdlib$suffix") using module("org.jetbrains.kotlin:kotlin-stdlib$suffix:${Versions.kotlinStdlib}")
+                module("org.jetbrains.kotlin:kotlin-reflect$suffix") using module("org.jetbrains.kotlin:kotlin-reflect$suffix:${Versions.kotlinStdlib}")
+                module("org.jetbrains.kotlinx:kotlinx-coroutines-core$suffix") using
+                        module(kotlinx("coroutines-core$suffix", Versions.coroutines))
+                module("org.jetbrains.kotlinx:kotlinx-coroutines-debug$suffix") using
+                        module(kotlinx("coroutines-debug$suffix", Versions.coroutines))
+            }
+        }
+    }
+}
+
+class ResolutionStrategyDsl(
+    private val origin: DependencySubstitutions
+) : DependencySubstitutions by origin {
+    infix fun ComponentSelector.using(notation: ComponentSelector): DependencySubstitutions.Substitution {
+        return substitute(this).using(notation)
+    }
+}
+
+fun ResolutionStrategy.substituteDependencies(action: ResolutionStrategyDsl.() -> Unit) {
+    dependencySubstitution {
+        action(ResolutionStrategyDsl(this))
+    }
 }

@@ -12,8 +12,6 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.client.*
-import io.ktor.client.features.*
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import java.io.*

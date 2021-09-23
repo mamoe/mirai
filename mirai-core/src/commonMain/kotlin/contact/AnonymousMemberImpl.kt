@@ -19,10 +19,15 @@ import kotlin.coroutines.CoroutineContext
 
 internal class AnonymousMemberImpl(
     group: GroupImpl,
-    coroutineContext: CoroutineContext,
+    parentCoroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
-    override val anonymousId: String,
-) : AnonymousMember, AbstractMember(group, coroutineContext, memberInfo) {
+) : AnonymousMember, AbstractMember(group, parentCoroutineContext, memberInfo) {
+    init {
+        requireNotNull(memberInfo.anonymousId) { "anonymousId must not be null" }
+    }
+
+    override val anonymousId: String get() = info.anonymousId!!
+
     override suspend fun mute(durationSeconds: Int) {
         checkBotPermissionHigherThanThis("mute")
         getMiraiImpl().muteAnonymousMember(bot, anonymousId, nameCard, group.uin, durationSeconds)
