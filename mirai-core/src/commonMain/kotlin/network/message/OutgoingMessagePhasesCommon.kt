@@ -236,14 +236,25 @@ internal abstract class OutgoingMessagePhasesCommon {
              * Ensures server holds the cache
              */
             suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage): OfflineGroupImage {
+                // #1536
                 val response = ImgStore.GroupPicUp(
                     bot.client,
                     uin = bot.id,
                     groupCode = id,
                     md5 = image.md5,
-                    size = if (image is OnlineFriendImageImpl) image.delegate.fileLen else 0
-                ).sendAndExpect(bot.network)
-                return OfflineGroupImage(image.imageId).also { img ->
+                    size = image.size
+                ).sendAndExpect(bot)
+                return OfflineGroupImage(
+                    imageId = image.imageId,
+                    width = image.width,
+                    height = image.height,
+                    size = if (response is ImgStore.GroupPicUp.Response.FileExists) {
+                        response.fileInfo.fileSize
+                    } else {
+                        image.size
+                    },
+                    imageType = image.imageType
+                ).also { img ->
                     when (response) {
                         is ImgStore.GroupPicUp.Response.FileExists -> {
                             img.fileId = response.fileId.toInt()
