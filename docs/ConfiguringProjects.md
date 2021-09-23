@@ -12,11 +12,11 @@
 [Maven Central]: https://search.maven.org/search?q=net.mamoe%20mirai
 [GitHub Releases]: https://github.com/mamoe/mirai/releases/latest
 
-| 版本类型 |                    版本号                     |
-|:------:|:--------------------------------------------:|
-|  稳定   | ![Maven Central Version] / [GitHub Releases] |
-|  预览   |                      -                       |
-|  开发   |     [UsingSnapshots](UsingSnapshots.md)      |
+| 版本类型 |                版本号                |
+|:------:|:-----------------------------------:|
+|  稳定   |          [GitHub Releases]          |
+|  预览   |                  -                  |
+|  开发   | [UsingSnapshots](UsingSnapshots.md) |
 
 ### 配置项目
 
