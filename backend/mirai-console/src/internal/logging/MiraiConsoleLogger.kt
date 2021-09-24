@@ -20,6 +20,18 @@ internal class MiraiConsoleLogger(
 ) : MiraiLoggerPlatformBase() {
     override val identity: String? get() = logger.identity
     override val isEnabled: Boolean get() = logger.isEnabled
+
+    override val isInfoEnabled: Boolean
+        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.INFO)
+    override val isWarningEnabled: Boolean
+        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.WARNING)
+    override val isDebugEnabled: Boolean
+        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.DEBUG)
+    override val isErrorEnabled: Boolean
+        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.ERROR)
+    override val isVerboseEnabled: Boolean
+        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.VERBOSE)
+
     override fun info0(message: String?, e: Throwable?) {
         if (controller.shouldLog(identity, SimpleLogger.LogPriority.INFO))
             logger.info(message, e)
