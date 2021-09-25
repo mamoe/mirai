@@ -32,6 +32,7 @@
 [Executor-Cheng/mirai-CSharp]: https://github.com/Executor-Cheng/mirai-CSharp
 [HoshinoTented/mirai-rs]: https://github.com/HoshinoTented/mirai-rs
 [YunYouJun/mirai-ts]: https://github.com/YunYouJun/mirai-ts
+[nepsyn/miraipie]: https://github.com/nepsyn/miraipie
 [only52607/e-mirai]: https://github.com/only52607/e-mirai
 [theGravityLab/ProjHyperai]: https://github.com/theGravityLab/ProjHyperai
 [yyuueexxiinngg/onebot-kotlin]: https://github.com/yyuueexxiinngg/onebot-kotlin
@@ -88,6 +89,7 @@
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
+| `JavaScript` / TypeScript | [nepsyn/miraipie]
 | `PHP`                     | [nkxingxh/miraiez]                          |
 | `Python`                  | [Avilla][GraiaProject/Avilla]               |
 | `Python`                  | [Elaina]                                    |
