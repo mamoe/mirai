@@ -101,6 +101,57 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
+    suspend fun `invited join, accepted`() {
+        // https://github.com/mamoe/mirai/issues/1213
+        suspend fun runTest() = use(
+            createContext = { bot, attributes ->
+                object : NoticeProcessorPipelineImpl.ContextImpl(bot, attributes) {
+                    override suspend fun QQAndroidBot.addNewGroupByUin(groupUin: Long): GroupImpl {
+                        assertEquals(204230203, groupUin) // uin of 2230203
+                        return bot.addGroup(2230203, 1230001, name = "testtest").apply {
+                            addMember(1230003, permission = MemberPermission.MEMBER)
+                            addMember(1230001, permission = MemberPermission.OWNER)
+                        }
+                    }
+                }
+            }
+        ) {
+            net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
+                msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
+                    fromUin = 2230203,
+                    toUin = 1230002,
+                    msgType = 33,
+                    msgSeq = 593,
+                    msgTime = 1632,
+                    msgUid = 14411518,
+                    authUin = 1230002,
+                    authNick = "user2",
+                    extGroupKeyInfo = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.ExtGroupKeyInfo(
+                        curMaxSeq = 1652,
+                        curTime = 16327,
+                    ),
+                    authSex = 2,
+                ),
+                msgBody = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MsgBody(
+                    msgContent = "00 22 07 BB 01 00 12 C4 B2 03 00 12 C4 B1 06 B4 B4 BD A8 D5 DF 00 30 31 39 37 31 44 32 34 34 31 44 30 42 30 45 41 44 42 35 35 32 46 43 33 31 35 32 36 33 43 45 39 39 43 45 43 43 35 46 30 35 45 32 46 38 39 44 41 33".hexToBytes(),
+                ),
+            )
+        }
+
+        setBot(1230002)
+
+        runTest().toList().run {
+            assertEquals(1, size, toString())
+            get(0).run {
+                assertIs<BotJoinGroupEvent.Invite>(this)
+                assertEquals(1230001, invitor.id)
+            }
+        }
+
+    }
+
+
+    @Test
     suspend fun `invitation accepted`() {
         suspend fun runTest() =
             use(createContext = { bot, attributes ->

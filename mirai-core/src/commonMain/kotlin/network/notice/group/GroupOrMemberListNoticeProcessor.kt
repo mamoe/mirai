@@ -137,9 +137,13 @@ internal class GroupOrMemberListNoticeProcessor(
     private suspend fun NoticePipelineContext.processGroupJoin33(data: MsgComm.Msg) = data.context {
         msgBody.msgContent.read {
             val groupUin = Mirai.calculateGroupUinByGroupCode(readUInt().toLong())
-            val group = bot.getGroupByUin(groupUin) ?: bot.addNewGroupByUin(groupUin) ?: return
+            if (remaining < 5) return
             discardExact(1)
             val joinedMemberUin = readUInt().toLong()
+
+            if (joinedMemberUin == bot.id && bot.getGroupByUin(groupUin) != null) return // duplicate
+
+            val group = bot.getGroupByUin(groupUin) ?: bot.addNewGroupByUin(groupUin) ?: return
             val joinType = readByte().toInt()
             val invitorUin = readUInt().toLong()
             when (joinType) {
