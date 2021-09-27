@@ -47,9 +47,10 @@ internal interface NewContactSupport { // can be a marker interface when context
         return getNewGroup(code)?.apply { groups.delegate.add(this) }
     }
 
+    // final
     suspend fun QQAndroidBot.addNewGroupByUin(groupUin: Long): GroupImpl? {
         if (getGroupByUin(groupUin) != null) return null
-        return getNewGroup(Mirai.calculateGroupCodeByGroupUin(groupUin))?.apply { groups.delegate.add(this) }
+        return addNewGroupByCode(Mirai.calculateGroupCodeByGroupUin(groupUin))
     }
 
     suspend fun QQAndroidBot.addNewGroup(stTroopNum: StTroopNum): GroupImpl? {

@@ -106,8 +106,8 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
         suspend fun runTest() = use(
             createContext = { bot, attributes ->
                 object : NoticeProcessorPipelineImpl.ContextImpl(bot, attributes) {
-                    override suspend fun QQAndroidBot.addNewGroupByUin(groupUin: Long): GroupImpl {
-                        assertEquals(204230203, groupUin) // uin of 2230203
+                    override suspend fun QQAndroidBot.addNewGroupByCode(code: Long): GroupImpl {
+                        assertEquals(2230203, code)
                         return bot.addGroup(2230203, 1230001, name = "testtest").apply {
                             addMember(1230003, permission = MemberPermission.MEMBER)
                             addMember(1230001, permission = MemberPermission.OWNER)
@@ -156,8 +156,8 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
         suspend fun runTest() =
             use(createContext = { bot, attributes ->
                 object : NoticeProcessorPipelineImpl.ContextImpl(bot, attributes) {
-                    override suspend fun QQAndroidBot.addNewGroupByUin(groupUin: Long): GroupImpl {
-                        assertEquals(204230203, groupUin) // uin of 2230203
+                    override suspend fun QQAndroidBot.addNewGroupByCode(code: Long): GroupImpl {
+                        assertEquals(2230203, code)
                         return bot.addGroup(2230203, 1230002, name = "testtest").apply {
                             addMember(1230001, permission = MemberPermission.MEMBER)
                         }
