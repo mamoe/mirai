@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
+import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.NormalMemberImpl
 import net.mamoe.mirai.internal.contact.info
@@ -124,6 +125,14 @@ internal class GroupMessageProcessor(
         sender.info?.castOrNull<MemberInfoImpl>()?.run {
             lastSpeakTimestamp = currentTimeSeconds().toInt()
         }
+        sender.castOrNull<NormalMemberImpl>()?.run {
+            val specialTitleNow = extraInfo?.senderTitle?.decodeToString().orEmpty()
+            if (specialTitle != specialTitleNow) {
+                //群特殊头衔 只有群主才能进行操作
+                collect(MemberSpecialTitleChangeEvent(specialTitle, specialTitleNow, this, group.owner))
+                _specialTitle = specialTitleNow
+            }
+        }
 
         if (isFromSelfAccount) {
             collect(
@@ -137,7 +146,6 @@ internal class GroupMessageProcessor(
             )
             return
         } else {
-
             broadcastNameCardChangedEventIfNecessary(sender, nameCard)
 
             collect(

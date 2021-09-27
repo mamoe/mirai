@@ -85,7 +85,7 @@
 
 ##### 名片和头衔
 - 成员群名片改动: MemberCardChangeEvent
-- 成员群头衔改动: MemberSpecialTitleChangeEvent
+- 成员群特殊头衔改动: MemberSpecialTitleChangeEvent
 
 ##### 成员权限
 - 成员权限改变: MemberPermissionChangeEvent

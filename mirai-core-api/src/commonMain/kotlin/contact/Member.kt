@@ -57,7 +57,7 @@ public interface Member : User {
     public val nameCard: String
 
     /**
-     * 群头衔.
+     * 群特殊头衔.
      *
      * 为 [AnonymousMember] 时一定是 `"匿名"`
      *

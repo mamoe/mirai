@@ -73,7 +73,7 @@ public interface GroupInfo {
 
     /*
     /**
-     * 机器人的头衔
+     * 机器人的特殊头衔
      */
     val botSpecialTitle: String
 

@@ -492,7 +492,9 @@ public data class MemberCardChangeEvent @MiraiInternalApi constructor(
 ) : GroupMemberEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
- * 成员群头衔改动. 一定为群主操作
+ * 成员群特殊头衔改动. 一定为群主操作
+ *
+ * 由于服务器并不会告知特殊头衔的重置, 因此此事件在特殊头衔重置后只能由 mirai 在发现变动时才广播
  */
 public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
     /**
@@ -513,7 +515,7 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
      * 为 null 时则是机器人操作.
      */
     public override val operator: NormalMember?
-) : GroupMemberEvent, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
+) : GroupMemberEvent, GroupOperableEvent, AbstractEvent(), Packet, GroupMemberInfoChangeEvent
 
 // endregion
 
