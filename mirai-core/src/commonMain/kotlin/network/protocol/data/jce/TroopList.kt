@@ -32,6 +32,7 @@ internal class StTroopNumSimplify(
     @TarsId(1) @JvmField val dwGroupInfoSeq: Long? = null,
     @TarsId(2) @JvmField val dwGroupFlagExt: Long? = null,
     @TarsId(3) @JvmField val dwGroupRankSeq: Long? = null,
+    @TarsId(4) @JvmField val dwGroupInfoExtSeq: Long? = 0L,
 ) : JceStruct
 
 
@@ -47,6 +48,7 @@ internal class GetTroopListRespV2(
     @TarsId(7) @JvmField val vecTroopRank: List<StGroupRankInfo>? = null,
     @TarsId(8) @JvmField val vecFavGroup: List<StFavoriteGroup>? = null,
     @TarsId(9) @JvmField val vecTroopListExt: List<StTroopNum>? = null,
+    @TarsId(10) @JvmField val vecGroupInfoExt: List<Long>? = null,
 ) : JceStruct
 
 
@@ -87,23 +89,25 @@ internal class StTroopNum(
     @TarsId(32) @JvmField val udwHLGuildSubType: Long? = null,
     @TarsId(33) @JvmField val udwCmdUinRingtoneID: Long? = null,
     @TarsId(34) @JvmField val udwCmdUinFlagEx2: Long? = null,
+    @TarsId(35) @JvmField val dwGroupFlagExt4: Long? = 0L,
+    @TarsId(36) @JvmField val dwAppealDeadline: Long? = 0L,
+    @TarsId(37) @JvmField val dwGroupFlag: Long? = 0L,
+    @TarsId(38) @JvmField val vecGroupRemark: ByteArray? = null,
 ) : JceStruct
 
 @Serializable
 internal class StGroupRankInfo(
-    @TarsId(0) @JvmField val dwGroupCode: Long,
-    @TarsId(1) @JvmField val groupRankSysFlag: Byte? = null,
-    @TarsId(2) @JvmField val groupRankUserFlag: Byte? = null,
+    @TarsId(0) @JvmField val dwGroupCode: Long = 0L,
+    @TarsId(1) @JvmField val groupRankSysFlag: Byte? = 0,
+    @TarsId(2) @JvmField val groupRankUserFlag: Byte? = 0,
     @TarsId(3) @JvmField val vecRankMap: List<StLevelRankPair>? = null,
-    @TarsId(4) @JvmField val dwGroupRankSeq: Long? = null,
+    @TarsId(4) @JvmField val dwGroupRankSeq: Long? = 0L,
     @TarsId(5) @JvmField val ownerName: String? = "",
     @TarsId(6) @JvmField val adminName: String? = "",
-    @TarsId(7) @JvmField val dwOfficeMode: Long? = null,
-    @TarsId(9) @JvmField val fuckIssue405: List<FuckIssue405?>? = null, // fake
+    @TarsId(7) @JvmField val dwOfficeMode: Long? = 0L,
+    @TarsId(8) @JvmField val groupRankUserFlagNew: Byte? = 0,
+    @TarsId(9) @JvmField val vecRankMapNew: List<StLevelRankPair>? = null,
 ) : JceStruct
-
-@Serializable
-internal class FuckIssue405
 
 @Serializable
 internal class StFavoriteGroup(
@@ -186,6 +190,8 @@ internal class StTroopMemberInfo(
     @TarsId(37) @JvmField val dwBigClubFlag: Long? = null,
     @TarsId(38) @JvmField val dwNameplate: Long? = null,
     @TarsId(39) @JvmField val vecGroupHonor: ByteArray? = null,
+    @TarsId(40) @JvmField val vecName: ByteArray? = null,
+    @TarsId(41) @JvmField val richFlag: Byte? = 0,
 ) : JceStruct
 
 @Serializable

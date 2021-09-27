@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("SpellCheckingInspection")
+@file:Suppress("unused", "SpellCheckingInspection")
 
 package net.mamoe.mirai.internal.network.protocol.data.proto
 
@@ -18,6 +18,7 @@ import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
+@Serializable
 internal class GroupOpenSysMsg : ProtoBuf {
     @Serializable
     internal class LightApp(
@@ -126,8 +127,34 @@ internal class TroopTips0x857 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
+    internal class GrayData(
+        @ProtoNumber(1) @JvmField val allRead: Int = 0,
+        @ProtoNumber(2) @JvmField val feedId: String = "",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class GroupAnnounceTBCInfo(
+        @ProtoNumber(1) @JvmField val feedsId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val groupId: Long = 0L,
+        @ProtoNumber(3) @JvmField val action: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class GroupAsyncNotify(
+        @ProtoNumber(1) @JvmField val msgType: Int = 0,
+        @ProtoNumber(2) @JvmField val msgSeq: Long = 0L,
+    ) : ProtoBuf
+
+    @Serializable
     internal class GroupInfoChange(
         @ProtoNumber(1) @JvmField val groupHonorSwitch: Int = 0,
+        @ProtoNumber(2) @JvmField val groupMemberLevelSwitch: Int = 0,
+        @ProtoNumber(3) @JvmField val groupFlagext4: Int = 0,
+        @ProtoNumber(4) @JvmField val appealDeadline: Int = 0,
+        @ProtoNumber(5) @JvmField val groupFlag: Int = 0,
+        @ProtoNumber(7) @JvmField val groupFlagext3: Int = 0,
+        @ProtoNumber(8) @JvmField val groupClassExt: Int = 0,
+        @ProtoNumber(9) @JvmField val groupInfoExtSeq: Int = 0,
     ) : ProtoBuf
 
     @Serializable
@@ -187,6 +214,7 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(8) @JvmField val joinNums: Int = 0,
         @ProtoNumber(9) @JvmField val msgPerSetting: PersonalSetting? = null,
         @ProtoNumber(10) @JvmField val playMode: Int = 0,
+        @ProtoNumber(11) @JvmField val isJoinWhenStart: Boolean = false,
         @ProtoNumber(99) @JvmField val mediaType: Int = 0,
         @ProtoNumber(100) @JvmField val extInfo: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf {
@@ -214,6 +242,8 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val groupType: Int = 0,
         @ProtoNumber(7) @JvmField val opType: Int = 0,
+        @ProtoNumber(8) @JvmField val adminUin: Long = 0L,
+        @ProtoNumber(9) @JvmField val msgWordingInfo: WithDrawWordingInfo? = null,
     ) : ProtoBuf {
         @Serializable
         internal class MessageMeta(
@@ -223,6 +253,13 @@ internal class TroopTips0x857 : ProtoBuf {
             @ProtoNumber(4) @JvmField val msgType: Int = 0,
             @ProtoNumber(5) @JvmField val msgFlag: Int = 0,
             @ProtoNumber(6) @JvmField val authorUin: Long = 0L,
+            @ProtoNumber(7) @JvmField val isAnonyMsg: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class WithDrawWordingInfo(
+            @ProtoNumber(1) @JvmField val int32ItemId: Int = 0,
+            @ProtoNumber(2) @JvmField val itemName: String = "",
         ) : ProtoBuf
     }
 
@@ -248,8 +285,8 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(13) @JvmField val serviceType: Int = 0,
         @ProtoNumber(14) @JvmField val optMsgObjmsgUpdate: NotifyObjmsgUpdate? = null,
         @ProtoNumber(15) @JvmField val optMsgWerewolfPush: WereWolfPush? = null,
-        // @SerialId(16) @JvmField val optStcmGameState: ApolloGameStatus.STCMGameMessage? = null,
-        // @SerialId(17) @JvmField val aplloMsgPush: ApolloPushMsgInfo.STPushMsgElem? = null,
+        //@ProtoNumber(16) @JvmField val optStcmGameState: ApolloGameStatus.STCMGameMessage? = null,
+        //@ProtoNumber(17) @JvmField val aplloMsgPush: ApolloPushMsgInfo.STPushMsgElem? = null,
         @ProtoNumber(18) @JvmField val optMsgGoldtips: GoldMsgTipsElem? = null,
         @ProtoNumber(20) @JvmField val optMsgMiniappNotify: MiniAppNotify? = null,
         @ProtoNumber(21) @JvmField val optUint64SenderUin: Long = 0L,
@@ -261,6 +298,14 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(28) @JvmField val optLbsShareChangePlusInfo: LbsShareChangePushInfo? = null,
         @ProtoNumber(29) @JvmField val optMsgSingPush: SingChangePushInfo? = null,
         @ProtoNumber(30) @JvmField val optMsgGroupInfoChange: GroupInfoChange? = null,
+        @ProtoNumber(31) @JvmField val optGroupAnnounceTbcInfo: GroupAnnounceTBCInfo? = null,
+        @ProtoNumber(32) @JvmField val optQqVedioGamePushInfo: QQVedioGamePushInfo? = null,
+        @ProtoNumber(33) @JvmField val optQqGroupDigestMsg: QQGroupDigestMsg? = null,
+        @ProtoNumber(34) @JvmField val optStudyRoomMemberMsg: StudyRoomMemberChangePush? = null,
+        @ProtoNumber(35) @JvmField val optQqLiveNotify: QQVaLiveNotifyMsg? = null,
+        @ProtoNumber(36) @JvmField val optGroupAsyncNotidy: GroupAsyncNotify? = null,
+        @ProtoNumber(37) @JvmField val optUint64GroupCurMsgSeq: Long = 0L,
+        @ProtoNumber(38) @JvmField val optGroupDigestMsgSummary: QQGroupDigestMsgSummary? = null
     ) : ProtoBuf
 
     @Serializable
@@ -268,6 +313,56 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(1) @JvmField val objmsgId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val updateType: Int = 0,
         @ProtoNumber(3) @JvmField val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QQGroupDigestMsg(
+        @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
+        @ProtoNumber(2) @JvmField val msgSeq: Int = 0,
+        @ProtoNumber(3) @JvmField val msgRandom: Int = 0,
+        @ProtoNumber(4) @JvmField val opType: Int = 0,
+        @ProtoNumber(5) @JvmField val msgSender: Long = 0L,
+        @ProtoNumber(6) @JvmField val digestOper: Long = 0L,
+        @ProtoNumber(7) @JvmField val opTime: Int = 0,
+        @ProtoNumber(8) @JvmField val lastestMsgSeq: Int = 0,
+        @ProtoNumber(9) @JvmField val operNick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(10) @JvmField val senderNick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(11) @JvmField val extInfo: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QQGroupDigestMsgSummary(
+        @ProtoNumber(1) @JvmField val digestOper: Long = 0L,
+        @ProtoNumber(2) @JvmField val opType: Int = 0,
+        @ProtoNumber(3) @JvmField val opTime: Int = 0,
+        @ProtoNumber(4) @JvmField val digestNick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(5) @JvmField val succCnt: Int = 0,
+        @ProtoNumber(6) @JvmField val summaryInfo: List<QQGroupDigestSummaryInfo> = emptyList(),
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QQGroupDigestSummaryInfo(
+        @ProtoNumber(1) @JvmField val msgSeq: Int = 0,
+        @ProtoNumber(2) @JvmField val msgRandom: Int = 0,
+        @ProtoNumber(3) @JvmField val errorCode: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QQVaLiveNotifyMsg(
+        @ProtoNumber(1) @JvmField val uid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val notifyType: Int = 0,
+        @ProtoNumber(3) @JvmField val ext1: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(4) @JvmField val ext2: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(5) @JvmField val ext3: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QQVedioGamePushInfo(
+        @ProtoNumber(1) @JvmField val msgType: Int = 0,
+        @ProtoNumber(2) @JvmField val groupCode: Long = 0L,
+        @ProtoNumber(3) @JvmField val operUin: Long = 0L,
+        @ProtoNumber(4) @JvmField val versionCtrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(5) @JvmField val extInfo: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -291,6 +386,8 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(17) @JvmField val idiomSeq: Int = 0,
         @ProtoNumber(18) @JvmField val idiomAlpha: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(19) @JvmField val jumpurl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(20) @JvmField val subchannel: Int = 0,
+        @ProtoNumber(21) @JvmField val poemRule: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
     @Serializable
@@ -316,6 +413,11 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(4) @JvmField val operUin: Long = 0L,
         @ProtoNumber(5) @JvmField val grayTips: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val joinNums: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class StudyRoomMemberChangePush(
+        @ProtoNumber(1) @JvmField val memberCount: Int = 0
     ) : ProtoBuf
 
     @Serializable
@@ -350,6 +452,7 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(4) @JvmField val operUin: Long = 0L,
         @ProtoNumber(5) @JvmField val grayTips: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val joinNums: Int = 0,
+        @ProtoNumber(7) @JvmField val joinState: Int = 0,
         @ProtoNumber(100) @JvmField val extInfo: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 

@@ -134,6 +134,21 @@ internal class Submsgtype0x111 {
         ) : ProtoBuf
 
         @Serializable
+        internal class Color(
+            @ProtoNumber(1) @JvmField val r: Int = 0,
+            @ProtoNumber(2) @JvmField val g: Int = 0,
+            @ProtoNumber(3) @JvmField val b: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class Label(
+            @ProtoNumber(1) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoNumber(2) @JvmField val textColor: Color? = null,
+            @ProtoNumber(3) @JvmField val edgingColor: Color? = null,
+            @ProtoNumber(4) @JvmField val labelType: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
         internal class MayKnowPerson(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
             @ProtoNumber(2) @JvmField val msgIosSource: AddFriendSource? = null,
@@ -153,6 +168,7 @@ internal class Submsgtype0x111 {
             @ProtoNumber(16) @JvmField val gender: Int = 0,
             @ProtoNumber(17) @JvmField val mobileName: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(18) @JvmField val token: String = "",
+            @ProtoNumber(19) @JvmField val msgLabels: List<Label> = emptyList(),
         ) : ProtoBuf
 
         @Serializable
@@ -494,6 +510,8 @@ internal class Submsgtype0x128 {
             @ProtoNumber(5) @JvmField val timeStamp: Long = 0L,
             @ProtoNumber(6) @JvmField val matchExpiredTime: Int = 0,
             @ProtoNumber(7) @JvmField val reportId: String = "",
+            //@ProtoNumber(8) @JvmField val msgTag: Oidb0xe03.TagInfo? = null,
+            //@ProtoNumber(9) @JvmField val msgMatchUinData: Oidb0xe03.MatchUinData? = null
         ) : ProtoBuf
     }
 }
@@ -513,6 +531,100 @@ internal class Submsgtype0x129 {
     }
 }
 
+
+internal class Submsgtype0x133 {
+    internal class Submsgtype0x133 : ProtoBuf {
+        @Serializable
+        internal class FaceFriend(
+            @ProtoNumber(1) @JvmField val friend: Long = 0L,
+            @ProtoNumber(2) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoNumber(3) @JvmField val type: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class MsgBody(
+            @ProtoNumber(1) @JvmField val uin: Long = 0L,
+            @ProtoNumber(2) @JvmField val msgFriends: List<FaceFriend> = emptyList(),
+            @ProtoNumber(3) @JvmField val sessionId: String = "",
+        ) : ProtoBuf
+    }
+}
+
+internal class Submsgtype0x135 {
+    @Serializable
+    internal class ModulePushPb : ProtoBuf {
+        @Serializable
+        internal class Content(
+            @ProtoNumber(1) @JvmField val fromUin: Long = 0L,
+            @ProtoNumber(2) @JvmField val title: String = "",
+            @ProtoNumber(3) @JvmField val desc: String = "",
+            @ProtoNumber(4) @JvmField val msgImage: Image? = null,
+            @ProtoNumber(5) @JvmField val msgForward: Forward? = null,
+            @ProtoNumber(6) @JvmField val extData: ByteArray = EMPTY_BYTE_ARRAY,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class Forward(
+            @ProtoNumber(1) @JvmField val url: String = "",
+            @ProtoNumber(2) @JvmField val type: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class Image(
+            @ProtoNumber(1) @JvmField val url: String = "",
+            @ProtoNumber(2) @JvmField val width: Int = 0,
+            @ProtoNumber(3) @JvmField val height: Int = 0,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class MsgBody(
+            @ProtoNumber(1) @JvmField val int32ServiceId: Int = 0,
+            @ProtoNumber(2) @JvmField val int32SubServiceId: Int = 0,
+            @ProtoNumber(3) @JvmField val int32NotifyId: Int = 0,
+            @ProtoNumber(4) @JvmField val int32PushId: Int = 0,
+            @ProtoNumber(5) @JvmField val int32Type: Int = 0,
+            @ProtoNumber(6) @JvmField val int32RecallFlag: Int = 0,
+            @ProtoNumber(7) @JvmField val msgContent: Content? = null,
+        ) : ProtoBuf
+    }
+}
+
+@Serializable
+internal class Submsgtype0x13a : ProtoBuf {
+    @Serializable
+    internal class MsgBody(
+        @ProtoNumber(1) @JvmField val pushType: Int = 0,
+        @ProtoNumber(2) @JvmField val pushData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(3) @JvmField val timestamp: Int = 0,
+        @ProtoNumber(4) @JvmField val msgSystemNotify: SystemNotify? = null,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class SystemNotify(
+        @ProtoNumber(1) @JvmField val msgSummary: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val filterFlag: Int = 0,
+        @ProtoNumber(3) @JvmField val extendContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(4) @JvmField val ignorePcActive: Int = 0,
+        @ProtoNumber(5) @JvmField val filterVersion: Int = 0,
+        @ProtoNumber(6) @JvmField val countFlag: Int = 0,
+        @ProtoNumber(7) @JvmField val filterVersionUpperlimitFlag: Int = 0,
+        @ProtoNumber(8) @JvmField val filterVersionUpperlimit: Int = 0,
+        @ProtoNumber(9) @JvmField val customSound: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(10) @JvmField val admnFlag: Int = 0,
+        @ProtoNumber(11) @JvmField val ignoreWithoutContent: Int = 0,
+        @ProtoNumber(12) @JvmField val msgTitle: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+}
+
+
+@Serializable
+internal class Submsgtype0x13b : ProtoBuf {
+    @Serializable
+    internal class MsgBody(
+        @ProtoNumber(1) @JvmField val op: Int /* enum */ = 2,
+        @ProtoNumber(2) @JvmField val muteFriend: Long = 0L,
+    ) : ProtoBuf
+}
 
 /*
 internal class Submsgtype0x1a {
@@ -545,6 +657,11 @@ internal class Submsgtype0x26 {
         internal class AppNotifyContent(
             @ProtoNumber(1) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(2) @JvmField val optMsgAppNotifyUser: List<AppNotifyUser> = emptyList(),
+            @ProtoNumber(3) @JvmField val onlineCount: Int = 0,
+            @ProtoNumber(4) @JvmField val expireTs: Int = 0,
+            @ProtoNumber(5) @JvmField val roomMode: Int = 0,
+            @ProtoNumber(6) @JvmField val liveExtraMode: Int = 0,
+            @ProtoNumber(7) @JvmField val gameId: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -1017,6 +1134,7 @@ internal class Submsgtype0x28 {
             @ProtoNumber(2) @JvmField val uin: Long = 0L,
             @ProtoNumber(3) @JvmField val type: Int = 0,
             @ProtoNumber(4) @JvmField val seqno: Int = 0,
+            @ProtoNumber(135) @JvmField val disableCancelChat: Int = 0,
         ) : ProtoBuf
 
         @Serializable
@@ -1102,6 +1220,7 @@ internal class Submsgtype0x3b {
             @ProtoNumber(3) @JvmField val userShowFlag: Int = 0,
             @ProtoNumber(4) @JvmField val memberLevelChanged: Int = 0,
             @ProtoNumber(5) @JvmField val officemode: Int = 0,
+            @ProtoNumber(7) @JvmField val memberLevelNewChanged: Int = 0,
         ) : ProtoBuf
     }
 }
@@ -1113,6 +1232,16 @@ internal class Submsgtype0x3d {
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val subCmd: Int = 0,
             @ProtoNumber(2) @JvmField val msgPttResp: TransPttResp? = null,
+            @ProtoNumber(3) @JvmField val msgPttShardResp: TransPttShardRsp? = null,
+        ) : ProtoBuf
+
+        @Serializable
+        internal class TextRsp(
+            @ProtoNumber(4) @JvmField val totalLen: Int = 0,
+            @ProtoNumber(5) @JvmField val seq: Int = 0,
+            @ProtoNumber(6) @JvmField val pos: Int = 0,
+            @ProtoNumber(7) @JvmField val len: Int = 0,
+            @ProtoNumber(8) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY
         ) : ProtoBuf
 
         @Serializable
@@ -1130,6 +1259,23 @@ internal class Submsgtype0x3d {
             @ProtoNumber(11) @JvmField val fileID: Int = 0,
             @ProtoNumber(12) @JvmField val filemd5: String = "",
             @ProtoNumber(13) @JvmField val filePath: String = "",
+        ) : ProtoBuf
+
+        @Serializable
+        internal class TransPttShardRsp(
+            @ProtoNumber(1) @JvmField val sessionid: Long = 0L,
+            @ProtoNumber(2) @JvmField val pttType: Int = 0,
+            @ProtoNumber(3) @JvmField val errorCode: Int = 0,
+            @ProtoNumber(9) @JvmField val senderUin: Long = 0L,
+            @ProtoNumber(10) @JvmField val receiverUin: Long = 0L,
+            @ProtoNumber(11) @JvmField val fileID: Int = 0,
+            @ProtoNumber(12) @JvmField val filemd5: String = "",
+            @ProtoNumber(13) @JvmField val filePath: String = "",
+            @ProtoNumber(21) @JvmField val totalSeq: Int = 0,
+            @ProtoNumber(22) @JvmField val boolIsTotalEnd: Boolean = false,
+            @ProtoNumber(23) @JvmField val boolIsCurEnd: Boolean = false,
+            @ProtoNumber(30) @JvmField val curTextRsp: TextRsp? = null,
+            @ProtoNumber(31) @JvmField val allTextRsp: TextRsp? = null
         ) : ProtoBuf
     }
 }
@@ -1226,6 +1372,11 @@ internal class Submsgtype0x44 {
         ) : ProtoBuf
 
         @Serializable
+        internal class DelMsgNotify(
+            @ProtoNumber(1) @JvmField val sequence: Long = 0L
+        ) : ProtoBuf
+
+        @Serializable
         internal class FriendSyncMsg(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
             @ProtoNumber(2) @JvmField val fuin: Long = 0L,
@@ -1235,6 +1386,12 @@ internal class Submsgtype0x44 {
             @ProtoNumber(6) @JvmField val sourceid: Int = 0,
             @ProtoNumber(7) @JvmField val sourcesubid: Int = 0,
             @ProtoNumber(8) @JvmField val strWording: List<String> = emptyList(),
+        ) : ProtoBuf
+
+        @Serializable
+        internal class GeneralNotify(
+            @ProtoNumber(1) @JvmField val msgType: Int = 0,
+            @ProtoNumber(2) @JvmField val msgSeq: Long = 0L
         ) : ProtoBuf
 
         @Serializable
@@ -1272,6 +1429,8 @@ internal class Submsgtype0x44 {
             @ProtoNumber(3) @JvmField val msgCleanCountMsg: ClearCountMsg? = null,
             @ProtoNumber(4) @JvmField val msgModifyMsgSync: ModifySyncMsg? = null,
             @ProtoNumber(5) @JvmField val msgWaitingMsgSync: WaitingSyncMsg? = null,
+            @ProtoNumber(7) @JvmField val msgDelMsgNotify: DelMsgNotify? = null,
+            @ProtoNumber(8) @JvmField val msgGeneralNotify: GeneralNotify? = null
         ) : ProtoBuf
 
         @Serializable
@@ -2791,6 +2950,7 @@ internal class Submsgtype0xc5 {
             @ProtoNumber(4) @JvmField val articleId: Long = 0L,
             @ProtoNumber(5) @JvmField val pushTime: Int = 0,
             @ProtoNumber(6) @JvmField val seq: Long = 0L,
+            @ProtoNumber(7) @JvmField val msgid: String = "",
             @ProtoNumber(10) @JvmField val msgNotifyInfos: NotifyBody? = null,
             @ProtoNumber(11) @JvmField val diandianCookie: ByteArray = EMPTY_BYTE_ARRAY,
         ) : ProtoBuf
