@@ -273,7 +273,7 @@ public interface GroupSettings {
     /**
      * 匿名聊天
      */
-    public val isAnonymousChatEnabled: Boolean
+    public var isAnonymousChatEnabled: Boolean
 }
 
 /**

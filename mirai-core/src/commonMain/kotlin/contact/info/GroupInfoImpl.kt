@@ -35,7 +35,7 @@ internal data class GroupInfoImpl(
         memo = stTroopNum.groupMemo,
         name = stTroopNum.groupName,
         allowMemberInvite = stTroopNum.dwGroupFlagExt?.and(0x000000c0) != 0L,
-        allowAnonymousChat = stTroopNum.dwGroupFlagExt?.and(0x40000000) == 0L,
+        allowAnonymousChat = stTroopNum.dwGroupFlagExt?.and(0x40000000) != 0L,
         autoApprove = stTroopNum.dwGroupFlagExt3?.and(0x00100000) == 0L,
         confessTalk = stTroopNum.dwGroupFlagExt3?.and(0x00002000) == 0L,
         muteAll = stTroopNum.dwShutUpTimestamp != 0L,

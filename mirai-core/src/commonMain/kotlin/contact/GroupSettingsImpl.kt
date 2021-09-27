@@ -23,6 +23,8 @@ import net.mamoe.mirai.event.events.GroupNameChangeEvent
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.GroupOperation
+import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.SwitchAnonymousChat
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
 @Suppress("SetterBackingFieldAssignment")
 internal class GroupSettingsImpl(
@@ -91,9 +93,14 @@ internal class GroupSettingsImpl(
     @Deprecated("Don't use public var internally", level = DeprecationLevel.HIDDEN)
     override var isAnonymousChatEnabled: Boolean
         get() = isAnonymousChatEnabledField
-        @Suppress("UNUSED_PARAMETER")
         set(newValue) {
-            throw UnsupportedOperationException()
+            group.run {
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
+                launch {
+                    //Handle it in NoticePipelineContext#processAllowAnonymousChat
+                    SwitchAnonymousChat(bot.client, id, newValue).sendAndExpect(bot.network)
+                }
+            }
         }
 
     @Deprecated("Don't use public var internally", level = DeprecationLevel.HIDDEN)
