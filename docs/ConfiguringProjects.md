@@ -11,16 +11,19 @@
 [Maven Central Version]: https://img.shields.io/maven-central/v/net.mamoe/mirai-core-api.svg?label=Maven%20Central
 [Maven Central]: https://search.maven.org/search?q=net.mamoe%20mirai
 [GitHub Releases]: https://github.com/mamoe/mirai/releases/latest
+[GR all]: https://github.com/mamoe/mirai/releases/
 
-| 版本类型 |                版本号                |
+| 版本类型 |              版本号链接              |
 |:------:|:-----------------------------------:|
 |  稳定   |          [GitHub Releases]          |
-|  预览   |                  -                  |
+|  预览   |     [GitHub Releases][GR all]       |
 |  开发   | [UsingSnapshots](UsingSnapshots.md) |
 
 ### 配置项目
 
 本文提供如下三种配置方法。推荐使用 Gradle 构建。
+
+**注意，下文版本号可能过旧，请自行参照上述表格更新版本号**
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)
@@ -88,7 +91,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.7.0</version>
+        <version>2.7.0</version> 
     </dependency>
 </dependencies>
 ```
