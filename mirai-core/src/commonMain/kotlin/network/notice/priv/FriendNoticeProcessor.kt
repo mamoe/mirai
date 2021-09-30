@@ -206,7 +206,7 @@ internal class FriendNoticeProcessor(
                         bot.nick = to
                     } else {
                         val friend = bot.getFriend(body.uin)?.impl() ?: continue
-                        val from = bot.nick
+                        val from = friend.nick
                         if (from == to) continue
                         collect(FriendNickChangedEvent(friend, from, to))
                         friend.info.nick = to

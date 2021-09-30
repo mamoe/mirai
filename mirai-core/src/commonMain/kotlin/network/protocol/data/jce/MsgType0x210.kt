@@ -10,7 +10,12 @@
 package net.mamoe.mirai.internal.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27
 import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.io.NestedStructure
+import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
+import net.mamoe.mirai.internal.utils.io.ProtocolStruct
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
@@ -72,8 +77,18 @@ internal class MsgType0x210(
     @TarsId(7) @JvmField val stMsgInfo0x20: MsgType0x210SubMsgType0x20? = null,
     @TarsId(8) @JvmField val stMsgInfo0x1d: MsgType0x210SubMsgType0x1d? = null,
     @TarsId(9) @JvmField val stMsgInfo0x24: MsgType0x210SubMsgType0x24? = null,
-    @TarsId(10) @JvmField val vProtobuf: ByteArray = EMPTY_BYTE_ARRAY,
-) : JceStruct
+    @NestedStructure(Deserializer::class) @TarsId(10) @JvmField val vProtobuf: ByteArray = EMPTY_BYTE_ARRAY,
+) : JceStruct {
+    object Deserializer : NestedStructureDesensitizer<MsgType0x210, ProtocolStruct> {
+        override fun deserialize(context: MsgType0x210, byteArray: ByteArray): ProtocolStruct? {
+            return when (context.uSubMsgType) {
+                0x27L -> byteArray.loadAs(Submsgtype0x27.SubMsgType0x27.SubMsgType0x27MsgBody.serializer())
+                else -> null
+            }
+        }
+
+    }
+}
 
 @Serializable
 internal class MsgType0x210SubMsgType0x13(
