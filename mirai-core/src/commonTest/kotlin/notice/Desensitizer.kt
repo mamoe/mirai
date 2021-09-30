@@ -195,9 +195,14 @@ private class DesensitizationVisitor(
 
                 val result = instance.cast<NestedStructureDesensitizer<ProtocolStruct, ProtocolStruct>>()
                     .deserialize(desc.origin as ProtocolStruct, value.origin as ByteArray)
+                    ?: desc.origin
 
                 val generate = ConstructorCallCodegenFacade.generateAndDesensitize(result)
-                PlainValueDesc(desc, "$generate.toByteArray()", value.origin)
+                PlainValueDesc(
+                    desc,
+                    "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
+                    value.origin
+                )
             } else value
         }
     }
