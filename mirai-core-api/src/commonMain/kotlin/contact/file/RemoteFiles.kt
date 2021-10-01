@@ -80,7 +80,6 @@ public interface RemoteFiles {
      * @param filename 目标文件名
      * @param content 文件内容
      * @param keepExisting 为 `false` 时删除远程目录内所有同名文件 (**谨慎操作**, 有可能意想不到地删除多个同名文件), 为 `true` 时则不作操作 (将有可能产生同名文件).
-     * @param quietly 为 `false` 时将会在群内发送一条 "新文件" 消息 (标准行为). 为 `true` 时则只上传到群文件而不告知群成员.
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
@@ -90,7 +89,6 @@ public interface RemoteFiles {
         filename: String,
         content: ExternalResource,
         keepExisting: Boolean = true,
-        quietly: Boolean = false,
     ): AbsoluteFile
 
     /**
@@ -99,7 +97,6 @@ public interface RemoteFiles {
      * @param fileId 绝对文件标识.
      * @param content 文件内容
      * @param keepExisting 为 `false` 时删除远程目录内所有同名文件 (**谨慎操作**, 有可能意想不到地删除多个同名文件), 为 `true` 时则不作操作 (将有可能产生同名文件).
-     * @param quietly 为 `false` 时将会在群内发送一条 "新文件" 消息 (标准行为). 为 `true` 时则只上传到群文件而不告知群成员.
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
@@ -108,7 +105,6 @@ public interface RemoteFiles {
         fileId: AbsoluteFile,
         content: ExternalResource,
         keepExisting: Boolean = true,
-        quietly: Boolean = false,
     ): AbsoluteFile
 
     /**
@@ -122,7 +118,6 @@ public interface RemoteFiles {
      * @param absolutePath 绝对文件路径, **包含目标文件名**. 如 `/foo/bar.txt`.
      * @param content 文件内容
      * @param keepExisting 为 `false` 时删除远程目录内所有同名文件 (**谨慎操作**, 有可能意想不到地删除多个同名文件), 为 `true` 时则不作操作 (将有可能产生同名文件).
-     * @param quietly 为 `false` 时将会在群内发送一条 "新文件" 消息 (标准行为). 为 `true` 时则只上传到群文件而不告知群成员.
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
@@ -131,7 +126,6 @@ public interface RemoteFiles {
         absolutePath: String,
         content: ExternalResource,
         keepExisting: Boolean = true,
-        quietly: Boolean = false,
     ): AbsoluteFile
 }
 
@@ -347,7 +341,6 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      * @param filename 目标文件名
      * @param content 文件内容
      * @param keepExisting 为 `false` 时删除远程目录内所有同名文件 (**谨慎操作**, 有可能意想不到地删除多个同名文件), 为 `true` 时则不作操作 (将有可能产生同名文件).
-     * @param quietly 为 `false` 时将会在群内发送一条 "新文件" 消息 (标准行为). 为 `true` 时则只上传到群文件而不告知群成员.
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
@@ -356,7 +349,6 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
         filename: String,
         content: ExternalResource,
         keepExisting: Boolean = true,
-        quietly: Boolean = false,
     ): AbsoluteFile
 
     public companion object {
@@ -426,7 +418,7 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     /**
      * 得到表示远程文件的可以发送的 [FileMessage].
      *
-     * 在 [上传文件][RemoteFiles.uploadNewFile] 时若 `quietly` 参数为 `false` 则已经发送了文件消息, 无需手动调用 [toMessage] 并发送.
+     * 在 [上传文件][RemoteFiles.uploadNewFile] 时就已经发送了文件消息. [toMessage] 可供之后再次发送使用.
      */
     public fun toMessage(): FileMessage
 }
