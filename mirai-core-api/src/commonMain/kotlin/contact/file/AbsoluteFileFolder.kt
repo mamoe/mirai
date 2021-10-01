@@ -83,6 +83,13 @@ public sealed interface AbsoluteFileFolder {
 
 
     /**
+     * 查询该远程文件或目录是否还存在于服务器. 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`.
+     *
+     * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
+     */
+    public suspend fun exists(): Boolean
+
+    /**
      * 重命名远程文件或目录, **并且**修改当前(`this`) [AbsoluteFileFolder] 的 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 注意该操作有可能产生同名文件或目录 (当服务器已经存在一个名称为 [newName] 的文件或目录时).
@@ -109,7 +116,7 @@ public sealed interface AbsoluteFileFolder {
      *
      * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
      */
-    public suspend fun refresh()
+    public suspend fun refresh(): Boolean
 
     /**
      * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
