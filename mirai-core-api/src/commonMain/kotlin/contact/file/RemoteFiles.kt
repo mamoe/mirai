@@ -417,12 +417,14 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     /**
      * 覆盖远程文件内容为 [content]. 当远程文件不存在时返回 `false`.
      *
+     * @param content 新文件内容
+     *
      * @throws IOException 当发生网络错误时可能抛出
      * @throws IllegalStateException 当发生已知的协议错误时抛出
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
     @JvmOverloads
-    public suspend fun overrideWith(content: ExternalResource, condoneMissing: Boolean = true): Boolean
+    public suspend fun overrideWith(content: ExternalResource): Boolean
 
     /**
      * 将在线文件转换为 [ExternalResource]. 注意该函数不会立即下载文件. 若在之后的使用中远程文件被删除, 则无法确定 [ExternalResource.inputStream] 是否还可用 (不可用时会抛出异常).
