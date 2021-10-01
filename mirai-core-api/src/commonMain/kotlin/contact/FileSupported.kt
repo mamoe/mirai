@@ -10,6 +10,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.RemoteFile
 
@@ -27,5 +28,13 @@ public interface FileSupported : Contact {
      *
      * @since 2.5
      */
+//    @Deprecated("Please use filesRootInstant instead.", replaceWith = ReplaceWith("filesRootInstant"))
     public val filesRoot: RemoteFile
+
+    /**
+     * 获取远程文件列表 (管理器).
+     *
+     * @since 2.8
+     */
+    public val files: RemoteFiles
 }
