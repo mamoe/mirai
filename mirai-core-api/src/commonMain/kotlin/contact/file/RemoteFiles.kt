@@ -194,7 +194,7 @@ public sealed interface AbsoluteFileFolder {
 
 
     /**
-     * 重命名远程文件或目录, 但不修改 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
+     * 重命名远程文件或目录, 但不会修改当前(`this`) [AbsoluteFileFolder] 的 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 注意该操作有可能产生同名文件或目录 (当服务器已经存在一个名称为 [newName] 的文件或目录时).
      *
@@ -203,17 +203,6 @@ public sealed interface AbsoluteFileFolder {
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
     public suspend fun renameTo(newName: String): Boolean
-
-    /**
-     * 移动远程文件或目录成为 [folderId] 的子文件或子目录. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
-     *
-     * 注意该操作有可能产生同名文件或目录 (当 [folderId] 中已经存在一个名称为 [name] 的文件或目录时).
-     *
-     * @throws IOException 当发生网络错误时可能抛出
-     * @throws IllegalStateException 当发生已知的协议错误时抛出
-     * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
-     */
-    public suspend fun moveTo(folderId: AbsoluteFolder): Boolean
 
     /**
      * 删除远程文件或目录. 只会根据 [id] 精确地删除一个文件或目录, 不会删除其他同名文件或目录.
@@ -394,6 +383,17 @@ public interface AbsoluteFile : AbsoluteFileFolder {
      * 文件内容 MD5.
      */
     public val md5: ByteArray
+
+    /**
+     * 移动远程文件到 [folder] 目录下. 成功时返回 `true`, 当远程文件不存在时返回 `false`.
+     *
+     * 注意该操作有可能产生同名文件或目录 (当 [folder] 中已经存在一个名称为 [name] 的文件或目录时).
+     *
+     * @throws IOException 当发生网络错误时可能抛出
+     * @throws IllegalStateException 当发生已知的协议错误时抛出
+     * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
+     */
+    public suspend fun moveTo(folder: AbsoluteFolder): Boolean
 
     /**
      * 覆盖远程文件内容为 [content]. 当远程文件不存在时返回 `false`.
