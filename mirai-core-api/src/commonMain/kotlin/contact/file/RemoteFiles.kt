@@ -318,11 +318,30 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     ): Flow<AbsoluteFile>
 
     /**
+     * 根据路径获取指向的所有名称为 [name] 的文件列表.
+     *
+     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveFiles], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveFiles].
+     */
+    public suspend fun resolveFilesStream(
+        name: String
+    ): Stream<AbsoluteFile>
+
+    /**
      * 根据路径获取指向的所有名称为 [name] 的文件和目录列表.
      */
     public suspend fun resolveAll(
         name: String
     ): Flow<AbsoluteFileFolder>
+
+    /**
+     * 根据路径获取指向的所有名称为 [name] 的文件和目录列表.
+     *
+     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveAll], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveAll].
+     */
+    @JavaFriendlyAPI
+    public suspend fun resolveAllStream(
+        name: String
+    ): Stream<AbsoluteFileFolder>
 
     /**
      * 上传一个文件到该目录, 返回上传成功的文件标识.
