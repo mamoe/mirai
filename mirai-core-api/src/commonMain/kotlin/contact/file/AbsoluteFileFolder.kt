@@ -94,7 +94,7 @@ public sealed interface AbsoluteFileFolder {
     public suspend fun renameTo(newName: String): Boolean
 
     /**
-     * 删除远程文件或目录. 只会根据 [id] 精确地删除一个文件或目录, 不会删除其他同名文件或目录.
+     * 删除远程文件或目录. 只会根据 [id] 精确地删除一个文件或目录, 不会删除其他同名文件或目录. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 若目录非空, 则会删除目录中的所有文件. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时抛出异常.
      *
