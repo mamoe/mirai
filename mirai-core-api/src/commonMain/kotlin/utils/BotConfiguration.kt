@@ -251,6 +251,20 @@ public open class BotConfiguration { // open for Java
          */
         ANDROID_WATCH,
 
+        /**
+         * iPad - 来自MiraiGo
+         * 
+         * @since 2.8
+         */
+        IPAD,
+
+        /**
+         * MacOS - 来自MiraiGo
+         * 
+         * @since 2.8
+         */
+        MACOS,
+
     }
 
     /**
