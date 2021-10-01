@@ -92,4 +92,4 @@ internal annotation class EventListenerLikeJava
  */
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(PROPERTY, FUNCTION, CLASS)
-internal annotation class JavaFriendlyAPI
+public annotation class JavaFriendlyAPI // made public since 2.8.0-RC

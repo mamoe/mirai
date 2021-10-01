@@ -5850,6 +5850,9 @@ public final class net/mamoe/mirai/utils/FileCacheStrategy$TempCache : net/mamoe
 	public fun newCache (Ljava/io/InputStream;Ljava/lang/String;)Lnet/mamoe/mirai/utils/ExternalResource;
 }
 
+public abstract interface annotation class net/mamoe/mirai/utils/JavaFriendlyAPI : java/lang/annotation/Annotation {
+}
+
 public final class net/mamoe/mirai/utils/LoggerAdapters {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/LoggerAdapters;
 	public static final fun asMiraiLogger (Ljava/util/logging/Logger;)Lnet/mamoe/mirai/utils/MiraiLogger;
