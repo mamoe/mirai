@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.NotStableForInheritance
 import java.util.stream.Stream
 
@@ -66,6 +67,7 @@ public interface RemoteFiles {
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [asFlow], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [asFlow].
      */
     @JvmOverloads
+    @JavaFriendlyAPI
     public fun asStream(deep: Boolean = true): Stream<AbsoluteFileFolder>
 
 
@@ -280,6 +282,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [folders], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [folders].
      */
+    @JavaFriendlyAPI
     public suspend fun foldersStream(): Stream<AbsoluteFolder>
 
 
@@ -293,6 +296,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [files], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [files].
      */
+    @JavaFriendlyAPI
     public suspend fun filesStream(): Stream<AbsoluteFile>
 
 
@@ -306,6 +310,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [children], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [children].
      */
+    @JavaFriendlyAPI
     public suspend fun childrenStream(): Stream<AbsoluteFileFolder>
 
     ///////////////////////////////////////////////////////////////////////////
