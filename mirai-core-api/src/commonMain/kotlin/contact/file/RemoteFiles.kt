@@ -194,7 +194,7 @@ public sealed interface AbsoluteFileFolder {
 
 
     /**
-     * 重命名远程文件或目录, 但不会修改当前(`this`) [AbsoluteFileFolder] 的 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
+     * 重命名远程文件或目录, **并且**修改当前(`this`) [AbsoluteFileFolder] 的 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 注意该操作有可能产生同名文件或目录 (当服务器已经存在一个名称为 [newName] 的文件或目录时).
      *
