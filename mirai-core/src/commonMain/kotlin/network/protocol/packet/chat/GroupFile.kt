@@ -73,6 +73,28 @@ internal inline fun <T> CommonOidbResponse<T>.toResult(actionName: String, check
     }
 }
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <T> CommonOidbResponse<T>.toResult(
+    actionName: String,
+    checkResp: CheckableStruct.(Int) -> Boolean
+): Result<T> {
+    return if (this is CommonOidbResponse.Failure) {
+        Result.failure(this.createException(actionName))
+    } else {
+        this as CommonOidbResponse.Success<T>
+        val result = this.resp
+        if (result is CheckableStruct) {
+            if (!checkResp(
+                    result,
+                    result.int32RetCode
+                )
+            ) return Result.failure(IllegalStateException("Failed $actionName, result=${result.int32RetCode}, msg=${result.retMsg}"))
+        }
+        Result.success(this.resp)
+    }
+}
+
 /**
  * @param respMapper may throw any exception, which will be wrapped to CommonOidbResponse.Failure
  */

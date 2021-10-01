@@ -46,6 +46,10 @@ internal object FileSystem {
         }
     }
 
+    fun isLegal(path: String): Boolean {
+        return path.firstOrNull { it in """:*?"<>|""" } == null
+    }
+
     fun normalize(path: String): String {
         checkLegitimacy(path)
         return path.replace('\\', '/')

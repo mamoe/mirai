@@ -18,6 +18,7 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.ProgressionCallback
 import java.util.stream.Stream
 
 /**
@@ -27,18 +28,19 @@ import java.util.stream.Stream
  */
 @NotStableForInheritance
 public interface AbsoluteFolder : AbsoluteFileFolder {
-    override val isFile: Boolean get() = false
-    override val isFolder: Boolean get() = true
-
     /**
-     * 目录内文件数量. 若该目录表示根目录, [contentsCount] 返回 `0`. (无法快速获取)
+     * 当前快照中文件数量, 当有文件更新时(上传/删除文件) 该属性不会更新.
+     *
+     * 只可能通过 [refresh] 手动刷新
+     *
+     * 特别的, 若该目录表示根目录, [contentsCount] 返回 `0`. (无法快速获取)
      */
-    public val contentsCount: Long
+    public val contentsCount: Int
 
     /**
      * 当该目录为空时返回 `true`.
      */
-    public suspend fun isEmpty(): Boolean
+    public fun isEmpty(): Boolean = contentsCount == 0
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -92,8 +94,10 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
 
     /**
      * 创建一个名称为 [name] 的子目录. 返回成功创建的或已有的子目录.
+     *
+     * @throws PermissionDeniedException 当权限不足时抛出
      */
-    public suspend fun createFolder(mame: String): AbsoluteFolder
+    public suspend fun createFolder(name: String): AbsoluteFolder
 
     /**
      * 获取一个已存在的名称为 [name] 的子目录. 当该名称的子目录不存在时返回 `null`.
@@ -101,44 +105,47 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
 
     /**
-     * 根据路径获取指向的所有名称为 [name] 的文件列表.
+     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径.
      */
     public suspend fun resolveFiles(
-        name: String
+        path: String
     ): Flow<AbsoluteFile>
 
     /**
-     * 根据路径获取指向的所有名称为 [name] 的文件列表.
+     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径.
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveFiles], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveFiles].
      */
+    @JavaFriendlyAPI
     public suspend fun resolveFilesStream(
-        name: String
+        path: String
     ): Stream<AbsoluteFile>
 
     /**
-     * 根据路径获取指向的所有名称为 [name] 的文件和目录列表.
+     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径.
      */
     public suspend fun resolveAll(
-        name: String
+        path: String
     ): Flow<AbsoluteFileFolder>
 
     /**
-     * 根据路径获取指向的所有名称为 [name] 的文件和目录列表.
+     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径.
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveAll], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveAll].
      */
     @JavaFriendlyAPI
     public suspend fun resolveAllStream(
-        name: String
+        path: String
     ): Stream<AbsoluteFileFolder>
 
     /**
      * 上传一个文件到该目录, 返回上传成功的文件标识.
      *
+     * 会在必要时尝试创建远程目录.
+     *
      * @param filename 目标文件名
      * @param content 文件内容
-     * @param keepExisting 为 `false` 时删除远程目录内所有同名文件 (**谨慎操作**, 有可能意想不到地删除多个同名文件), 为 `true` 时则不作操作 (将有可能产生同名文件).
+     * @param callback 下载进度回调, 传递的 `progression` 是已下载字节数.
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
@@ -146,7 +153,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     public suspend fun uploadNewFile(
         filename: String,
         content: ExternalResource,
-        keepExisting: Boolean = true,
+        callback: ProgressionCallback<AbsoluteFile, Long>? = null,
     ): AbsoluteFile
 
     public companion object {

@@ -72,20 +72,23 @@ public sealed interface AbsoluteFileFolder {
     public val isFolder: Boolean
 
     /**
-     * 远程文件或目录的创建时间, UTC+8 时间戳秒.
+     * 远程文件或目录的创建时间, 时间戳秒.
      */
-    public val creationTime: Long
+    public val uploadTime: Long
 
     /**
-     * 远程文件或目录的最后修改时间, UTC+8 时间戳秒.
+     * 远程文件或目录的最后修改时间, 时间戳秒.
      */
     public val lastModifiedTime: Long
+
+    /**
+     * 上传者 ID.
+     */
+    public val uploaderId: Long
 
 
     /**
      * 查询该远程文件或目录是否还存在于服务器. 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`.
-     *
-     * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
      */
     public suspend fun exists(): Boolean
 
@@ -112,7 +115,7 @@ public sealed interface AbsoluteFileFolder {
     public suspend fun delete(): Boolean
 
     /**
-     * 更新当前 [AbsoluteFileFolder] 对象的文件或目录信息 ([lastModifiedTime] 等).
+     * 更新当前 [AbsoluteFileFolder] 对象的文件或目录信息 ([lastModifiedTime] 等). 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
      */
@@ -121,8 +124,10 @@ public sealed interface AbsoluteFileFolder {
     /**
      * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
      *
+     * 当远程文件或目录不存在时返回 `null`.
+     *
      * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
      */
-    public suspend fun refreshed(): AbsoluteFileFolder
+    public suspend fun refreshed(): AbsoluteFileFolder?
 }
 

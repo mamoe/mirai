@@ -1,0 +1,148 @@
+/*
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
+ */
+
+@file:Suppress("MemberVisibilityCanBePrivate")
+
+package net.mamoe.mirai.internal.contact.file
+
+import kotlinx.coroutines.flow.firstOrNull
+import net.mamoe.mirai.contact.FileSupported
+import net.mamoe.mirai.contact.file.AbsoluteFile
+import net.mamoe.mirai.contact.file.AbsoluteFileFolder
+import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.contact.isOperator
+import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
+import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
+import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.internal.utils.FileSystem
+import net.mamoe.mirai.utils.cast
+
+internal fun AbsoluteFileFolder.impl(): AbstractAbsoluteFileFolder = this.cast()
+internal fun AbsoluteFile.impl(): AbsoluteFileImpl = this.cast()
+
+internal val AbsoluteFolder?.idOrRoot get() = this?.id ?: AbsoluteFolder.ROOT_FOLDER_ID
+
+internal val AbstractAbsoluteFileFolder.parentOrRoot get() = parent ?: contact.files.root
+
+/**
+ * @see AbsoluteFileFolder
+ */
+internal abstract class AbstractAbsoluteFileFolder(
+    // overriding AbsFileFolder
+    val contact: FileSupported,
+    val parent: AbsoluteFolder?,
+    val id: String, // uuid-like
+    var name: String,
+    val uploadTime: Long,
+    val uploaderId: Long,
+    var lastModifiedTime: Long,
+    // end
+
+    val busId: Int, // protocol internal
+) {
+    protected inline val bot get() = contact.bot.asQQAndroidBot()
+    protected inline val client get() = bot.client
+
+    protected fun checkPermission(): Boolean {
+        if (uploaderId == bot.id) return true
+        if (contact is GroupImpl && !contact.botPermission.isOperator()) return false
+        return true
+    }
+
+    protected fun parentOrFail() = parent ?: error("Cannot rename the root folder.")
+
+    ///////////////////////////////////////////////////////////////////////////
+    // overriding AbsFileFolder
+    ///////////////////////////////////////////////////////////////////////////
+
+    protected abstract val isFile: Boolean
+    protected abstract val isFolder: Boolean
+
+    val absolutePath get() = "${parent?.absolutePath}/$name"
+
+    suspend fun renameTo(newName: String): Boolean {
+        FileSystem.checkLegitimacy(newName)
+        parentOrFail()
+
+        val result = if (isFile) {
+            FileManagement.RenameFile(client, contact.id, busId, id, parent.idOrRoot, newName)
+        } else {
+            FileManagement.RenameFolder(client, contact.id, id, newName)
+        }.sendAndExpect(bot)
+
+        result.toResult("AbstractAbsoluteFileFolder.renameTo") {
+            when (it) {
+                0 -> return true
+                1 -> return false
+                else -> false
+            }
+        }.getOrThrow()
+
+        return true
+    }
+
+    suspend fun delete(): Boolean {
+        checkPermission()
+        return if (isFile) {
+            FileManagement.DeleteFile(client, contact.id, busId, id, parent.idOrRoot).sendAndExpect(bot)
+        } else {
+            // natively 'recursive'
+            FileManagement.DeleteFolder(client, contact.id, id).sendAndExpect(bot)
+        }.toResult("AbstractAbsoluteFileFolder.delete", checkResp = false).getOrThrow().int32RetCode == 0
+    }
+
+    suspend fun refresh(): Boolean {
+        val new = refreshed() ?: return false
+        this.name = new.name
+        this.lastModifiedTime = new.lastModifiedTime
+        return true
+    }
+
+    suspend fun refreshed(): AbsoluteFileFolder? {
+        val flow = if (isFile) parentOrRoot.files() else parentOrRoot.folders()
+        return flow.firstOrNull { it.id == this.id }
+    }
+
+    @Suppress("DuplicatedCode")
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AbstractAbsoluteFileFolder
+
+        if (contact != other.contact) return false
+        if (parent != other.parent) return false
+        if (id != other.id) return false
+        if (name != other.name) return false
+        if (uploadTime != other.uploadTime) return false
+        if (uploaderId != other.uploaderId) return false
+        if (lastModifiedTime != other.lastModifiedTime) return false
+        if (busId != other.busId) return false
+        if (isFile != other.isFile) return false
+        if (isFolder != other.isFolder) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = contact.hashCode()
+        result = 31 * result + (parent?.hashCode() ?: 0)
+        result = 31 * result + id.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + uploadTime.hashCode()
+        result = 31 * result + uploaderId.hashCode()
+        result = 31 * result + lastModifiedTime.hashCode()
+        result = 31 * result + busId
+        result = 31 * result + isFile.hashCode()
+        result = 31 * result + isFolder.hashCode()
+        return result
+    }
+}

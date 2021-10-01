@@ -16,7 +16,6 @@ import kotlinx.io.errors.IOException
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
@@ -26,18 +25,10 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  */
 @NotStableForInheritance
 public interface AbsoluteFile : AbsoluteFileFolder {
-    override val isFile: Boolean get() = true
-    override val isFolder: Boolean get() = false
-
     /**
-     * 文件到期时间, UTC+8 时间戳秒.
+     * 文件到期时间, 时间戳秒.
      */
     public val expiryTime: Long
-
-    /**
-     * 上传者 ID.
-     */
-    public val uploaderId: Long
 
     /**
      * 文件大小 (占用空间) bytes.
@@ -66,26 +57,9 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     public suspend fun moveTo(folder: AbsoluteFolder): Boolean
 
     /**
-     * 覆盖远程文件内容为 [content]. 当远程文件不存在时返回 `false`.
-     *
-     * @param content 新文件内容
-     *
-     * @throws IOException 当发生网络错误时可能抛出
-     * @throws IllegalStateException 当发生已知的协议错误时抛出
-     * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
-     */
-    @JvmOverloads
-    public suspend fun overrideWith(content: ExternalResource): Boolean
-
-    /**
-     * 将在线文件转换为 [ExternalResource]. 注意该函数不会立即下载文件. 若在之后的使用中远程文件被删除, 则无法确定 [ExternalResource.inputStream] 是否还可用 (不可用时会抛出异常).
-     */
-    public suspend fun asResource(): ExternalResource
-
-    /**
      * 获得下载链接 URL 字符串.
      */
-    public suspend fun getUrl(): String
+    public suspend fun getUrl(): String?
 
     /**
      * 得到表示远程文件的可以发送的 [FileMessage].
