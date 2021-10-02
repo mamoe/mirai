@@ -133,6 +133,27 @@ public interface ExternalResource : Closeable {
         return generateImageId(md5, formatName.ifEmpty { DEFAULT_FORMAT_NAME })
     }
 
+    /**
+     * 该 [ExternalResource] 的数据来源, 可能有以下的返回
+     *
+     * - [File] 本地文件
+     * - [java.nio.file.Path] 某个具体文件路径
+     * - [java.nio.ByteBuffer] RAM
+     * - [java.net.URI] uri
+     * - [ByteArray] RAN
+     * - Or more...
+     *
+     * implementation note:
+     *
+     * - 对于无法二次读取的数据来源 (如 [InputStream]), 返回 `null`
+     * - 对于一个来自网络的资源, 请返回 [java.net.URI] (not URL, 或者其他库的 URI/URL 类型)
+     * - 不要返回 [String], 没有约定 [String] 代表什么
+     * - 数据源外漏会严重影响 [inputStream] 等的执行的可以返回 `null` (如 [RandomAccessFile])
+     *
+     * @since TODO
+     */
+    public val origin: Any? get() = null
+
     public companion object {
         /**
          * 在无法识别文件格式时使用的默认格式名. "mirai".
@@ -157,7 +178,9 @@ public interface ExternalResource : Closeable {
         @JvmName("create")
         public fun File.toExternalResource(formatName: String? = null): ExternalResource =
             // although RandomAccessFile constructor throws IOException, actual performance influence is minor so not propagating IOException
-            RandomAccessFile(this, "r").toExternalResource(formatName)
+            RandomAccessFile(this, "r").toExternalResource(formatName).also {
+                it.cast<ExternalResourceImplByFile>().origin = this@toExternalResource
+            }
 
         /**
          * 创建 [ExternalResource].

@@ -47,6 +47,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.spi.AudioToSilkService
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
@@ -239,19 +240,21 @@ internal class GroupImpl constructor(
     }
 
     @Suppress("OverridingDeprecatedMember", "DEPRECATION")
-    override suspend fun uploadVoice(resource: ExternalResource): Voice = resource.withAutoClose {
+    override suspend fun uploadVoice(resource: ExternalResource): Voice = AudioToSilkService.convert(
+        resource
+    ).useAutoClose { res ->
         return bot.network.run {
-            uploadAudioResource(resource)
+            uploadAudioResource(res)
 
             // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
             //     ?.msgTryupPttRsp
             //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
 
             Voice(
-                "${resource.md5.toUHexString("")}.amr",
-                resource.md5,
-                resource.size,
-                resource.voiceCodec,
+                "${res.md5.toUHexString("")}.amr",
+                res.md5,
+                res.size,
+                res.voiceCodec,
                 ""
             )
         }
@@ -284,19 +287,21 @@ internal class GroupImpl constructor(
         }.getOrThrow()
     }
 
-    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = resource.withAutoClose {
+    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.convert(
+        resource
+    ).useAutoClose { res ->
         return bot.network.run {
-            uploadAudioResource(resource)
+            uploadAudioResource(res)
 
             // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
             //     ?.msgTryupPttRsp
             //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
 
             OfflineAudioImpl(
-                filename = "${resource.md5.toUHexString("")}.amr",
-                fileMd5 = resource.md5,
-                fileSize = resource.size,
-                codec = resource.audioCodec,
+                filename = "${res.md5.toUHexString("")}.amr",
+                fileMd5 = res.md5,
+                fileSize = res.size,
+                codec = res.audioCodec,
                 originalPtt = null,
             )
         }

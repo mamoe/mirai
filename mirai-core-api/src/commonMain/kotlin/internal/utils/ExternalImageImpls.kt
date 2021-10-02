@@ -40,6 +40,10 @@ internal class ExternalResourceImplByFileWithMd5(
         }
     }
 
+    override var origin: Any? = null
+        internal set
+
+
     override val holder: ResourceHolder = ResourceHolder(file)
 
     override val sha1: ByteArray by lazy { inputStream().sha1() }
@@ -97,8 +101,11 @@ internal interface ExternalResourceInternal : ExternalResource {
 internal class ExternalResourceImplByFile(
     private val file: RandomAccessFile,
     formatName: String?,
-    closeOriginalFileOnClose: Boolean = true
+    closeOriginalFileOnClose: Boolean = true,
 ) : ExternalResourceInternal {
+    override var origin: Any? = null
+        internal set
+
     internal class ResourceHolder(
         @JvmField internal val closeOriginalFileOnClose: Boolean,
         @JvmField internal val file: RandomAccessFile,
@@ -146,6 +153,8 @@ internal class ExternalResourceImplByByteArray(
         ?: ExternalResource.DEFAULT_FORMAT_NAME
     }
     override val closed: CompletableDeferred<Unit> = CompletableDeferred()
+    override val origin: Any
+        get() = data//.clone()
 
     override fun inputStream(): InputStream = data.inputStream()
     override fun close() {
