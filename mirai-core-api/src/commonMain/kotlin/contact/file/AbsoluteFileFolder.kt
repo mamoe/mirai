@@ -45,7 +45,7 @@ public sealed interface AbsoluteFileFolder {
     public val parent: AbsoluteFolder?
 
     /**
-     * 文件或目录的 ID, 即 `fileId` 和 `folderId`. 该属性由服务器维护, 通常唯一且持久.
+     * 文件或目录的 ID, 即 `fileId` 或 `folderId`. 该属性由服务器维护, 通常唯一且持久.
      */
     public val id: String
 

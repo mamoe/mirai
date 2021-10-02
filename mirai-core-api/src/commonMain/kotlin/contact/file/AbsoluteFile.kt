@@ -57,7 +57,7 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     public suspend fun moveTo(folder: AbsoluteFolder): Boolean
 
     /**
-     * 获得下载链接 URL 字符串.
+     * 获得下载链接 URL 字符串. 当远程文件不存在时返回 `null`.
      */
     public suspend fun getUrl(): String?
 
