@@ -81,7 +81,7 @@ public interface ProgressionCallback<in S, in P> {
          *   }
          * }
          *
-         * group.filesRoot.resolve("/foo.txt").upload(resource, progress.asProgressionCallback(true))
+         * group.files.uploadNewFile("/foo.txt", resource, callback = progress.asProgressionCallback(true))
          * group.sendMessage("File uploaded successfully.")
          * ```
          *
