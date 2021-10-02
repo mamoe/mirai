@@ -100,7 +100,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 }
 
                 if (!contains(IgnoreLengthCheck)) {
-                    verityLength(this, contact)
+                    verifyLength(this, contact)
                 }
 
                 this
@@ -274,6 +274,14 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
                     "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
                 )
             }
+            val tmp = ArrayList<SingleMessage>(
+                forward.nodeList.sumOf { it.messageChain.size }
+            )
+            forward.nodeList.forEach { tmp.addAll(it.messageChain) }
+
+            // toMessageChain will lose some element
+            @Suppress("INVISIBLE_MEMBER")
+            createMessageChainImplOptimized(tmp).verifyLength(forward, contact)
         }
 
         val resId = getMiraiImpl().uploadMessageHighway(

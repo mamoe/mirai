@@ -177,12 +177,12 @@ internal fun RichMessage.Key.forwardMessage(
         when {
             preview.size > 4 -> {
                 preview.take(3).joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.xmlEnc()}</title>"""
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.take(50).xmlEnc()}</title>"""
                 } + """<title size="26" color="#777777" maxLines="2" lineSpace="12">...</title>"""
             }
             else -> {
                 preview.joinToString("") {
-                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.xmlEnc()}</title>"""
+                    """<title size="26" color="#777777" maxLines="2" lineSpace="12">${it.take(50).xmlEnc()}</title>"""
                 }
             }
         }

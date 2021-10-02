@@ -33,7 +33,7 @@ internal fun Contact.logMessageSent(message: Message) {
 
 internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
-internal fun MessageChain.verityLength(
+internal fun MessageChain.verifyLength(
     originalMessage: Message, target: Contact,
 ): Int {
     val chain = this
@@ -42,7 +42,11 @@ internal fun MessageChain.verityLength(
         throw MessageTooLargeException(
             target, originalMessage, this,
             "message(${
-                chain.joinToString("", limit = 10)
+                chain.joinToString("", limit = 10).let { rsp ->
+                    if (rsp.length > 100) {
+                        rsp.take(100) + "..."
+                    } else rsp
+                }
             }) is too large. Allow up to 50 images or 5000 chars"
         )
     }

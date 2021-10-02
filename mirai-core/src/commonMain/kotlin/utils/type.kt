@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.contact.ContactOrBot
+import net.mamoe.mirai.internal.message.ForwardMessageInternal
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.toLongUnsigned
@@ -65,6 +66,7 @@ internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int 
         is PlainText -> content.chineseLength(upTo)
         is At -> 60 //Magic number
         is AtAll -> 60 //Magic number
+        is ForwardMessageInternal -> 0 // verified in SendMessageHandler<C>.transformSpecialMessages(message: Message)
         else -> this.toString().chineseLength(upTo)
     }
 }
