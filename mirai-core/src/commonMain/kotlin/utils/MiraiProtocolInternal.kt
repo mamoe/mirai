@@ -22,6 +22,7 @@ internal class MiraiProtocolInternal(
     @JvmField internal val mainSigMap: Int,
     @JvmField internal val sign: String,
     @JvmField internal val buildTime: Long,
+    @JvmField internal val ssoVersion: Int,
 ) {
     internal companion object {
         internal val protocols = EnumMap<MiraiProtocol, MiraiProtocolInternal>(
@@ -42,6 +43,7 @@ internal class MiraiProtocolInternal(
                 16724722,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 1609322643L,
+                15,
             )
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
@@ -52,6 +54,7 @@ internal class MiraiProtocolInternal(
                 34869472,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 1604580615L,
+                15,
             )
             protocols[MiraiProtocol.ANDROID_WATCH] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
@@ -62,7 +65,8 @@ internal class MiraiProtocolInternal(
                 0x10400,
                 34869472,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                1571193922L
+                1571193922L,
+                15,
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 "com.tencent.minihd.qq",
@@ -74,6 +78,7 @@ internal class MiraiProtocolInternal(
                 1970400,
                 "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
                 1595836208L,
+                12,
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
                 "com.tencent.minihd.qq",
@@ -85,6 +90,7 @@ internal class MiraiProtocolInternal(
                 1970400,
                 "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
                 1595836208L,
+                12,
             )
         }
     }
