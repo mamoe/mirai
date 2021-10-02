@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact.file
 
+import kotlinx.coroutines.flow.firstOrNull
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
@@ -17,6 +18,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.toUHexString
 
 internal class AbsoluteFileImpl(
@@ -29,7 +31,7 @@ internal class AbsoluteFileImpl(
     uploaderId: Long,
 
     override val expiryTime: Long,
-    override val size: Long,
+    override val size: Long, // when file is changed, its id will also be changed, so no need to be var
     override val sha1: ByteArray,
     override val md5: ByteArray,
 
@@ -75,6 +77,15 @@ internal class AbsoluteFileImpl(
     override fun toMessage(): FileMessage {
         return FileMessageImpl(id, busId, name, size)
     }
+
+    override suspend fun refresh(): Boolean {
+        val new = refreshed() ?: return false
+        this.name = new.name
+        this.lastModifiedTime = new.lastModifiedTime
+        return true
+    }
+
+    override suspend fun refreshed(): AbsoluteFile? = parentOrRoot.files().firstOrNull { it.id == this.id }.cast()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -67,4 +67,6 @@ public interface AbsoluteFile : AbsoluteFileFolder {
      * 在 [上传文件][RemoteFiles.uploadNewFile] 时就已经发送了文件消息. [toMessage] 可供之后再次发送使用.
      */
     public fun toMessage(): FileMessage
+
+    override suspend fun refreshed(): AbsoluteFile?
 }

@@ -42,6 +42,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      */
     public fun isEmpty(): Boolean = contentsCount == 0
 
+    override suspend fun refreshed(): AbsoluteFolder?
 
     ///////////////////////////////////////////////////////////////////////////
     // list children

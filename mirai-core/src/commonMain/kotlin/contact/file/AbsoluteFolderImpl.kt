@@ -32,7 +32,7 @@ import kotlin.streams.asStream
 internal class AbsoluteFolderImpl(
     contact: FileSupported, parent: AbsoluteFolder?, id: String, name: String,
     uploadTime: Long, uploaderId: Long, lastModifiedTime: Long,
-    override val contentsCount: Int,
+    override var contentsCount: Int,
 ) : AbstractAbsoluteFileFolder(
     contact,
     parent, id, name, uploadTime, uploaderId, lastModifiedTime, 0
@@ -307,6 +307,16 @@ internal class AbsoluteFolderImpl(
         // TODO: 2021/10/1 try optimize exists
         return parentOrFail().files().firstOrNull { it.id == this.id } != null
     }
+
+    override suspend fun refresh(): Boolean {
+        val new = refreshed() ?: return false
+        this.name = new.name
+        this.lastModifiedTime = new.lastModifiedTime
+        this.contentsCount = new.contentsCount
+        return true
+    }
+
+    override suspend fun refreshed(): AbsoluteFolder? = parentOrRoot.folders().firstOrNull { it.id == this.id }.cast()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.internal.contact.file
 
-import kotlinx.coroutines.flow.firstOrNull
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
@@ -97,18 +96,6 @@ internal abstract class AbstractAbsoluteFileFolder(
             // natively 'recursive'
             FileManagement.DeleteFolder(client, contact.id, id).sendAndExpect(bot)
         }.toResult("AbstractAbsoluteFileFolder.delete", checkResp = false).getOrThrow().int32RetCode == 0
-    }
-
-    suspend fun refresh(): Boolean {
-        val new = refreshed() ?: return false
-        this.name = new.name
-        this.lastModifiedTime = new.lastModifiedTime
-        return true
-    }
-
-    suspend fun refreshed(): AbsoluteFileFolder? {
-        val flow = if (isFile) parentOrRoot.files() else parentOrRoot.folders()
-        return flow.firstOrNull { it.id == this.id }
     }
 
     @Suppress("DuplicatedCode")
