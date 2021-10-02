@@ -43,7 +43,18 @@ internal class AbsoluteFileImpl(
     override val isFile: Boolean get() = true
     override val isFolder: Boolean get() = false
 
-    override suspend fun exists(): Boolean = getUrl() != null
+    override suspend fun exists(): Boolean {
+        return FileManagement.GetFileInfo(
+            client,
+            groupCode = contact.id,
+            busId = busId,
+            fileId = id
+        ).sendAndExpect(bot)
+            .toResult("AbsoluteFileImpl.exists", checkResp = false)
+            .getOrThrow()
+            .fileInfo != null
+    }
+
 
     override suspend fun moveTo(folder: AbsoluteFolder): Boolean {
         if (folder.contact != this.contact) {
@@ -51,13 +62,13 @@ internal class AbsoluteFileImpl(
         }
         if (folder.absolutePath == this.parentOrRoot.absolutePath) return true
         checkPermission()
-        return if (this.isFile) {
-            FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
-                .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
-        } else {
-            return FileManagement.RenameFolder(client, contact.id, id, name).sendAndExpect(bot)
-                .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
-        }
+//        if (this.isFile) {
+        return FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
+            .sendAndExpect(bot).toResult("AbsoluteFileImpl.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
+//        } else {
+//            return FileManagement.RenameFolder(client, contact.id, id, name).sendAndExpect(bot)
+//                .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
+//        }
     }
 
     override suspend fun getUrl(): String? {
@@ -66,7 +77,7 @@ internal class AbsoluteFileImpl(
             groupCode = contact.id,
             busId = busId,
             fileId = id
-        ).sendAndExpect(bot).toResult("RemoteFile.getDownloadInfo").getOrThrow()
+        ).sendAndExpect(bot).toResult("AbsoluteFileImpl.getUrl").getOrThrow()
 
         // TODO: 2021/10/1 handle file not exists to return null
 

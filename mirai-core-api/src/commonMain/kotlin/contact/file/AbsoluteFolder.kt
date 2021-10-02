@@ -96,12 +96,14 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     /**
      * 创建一个名称为 [name] 的子目录. 返回成功创建的或已有的子目录.
      *
+     * @throws IllegalArgumentException 当 [name] 为空或包含非法字符 (`:*?"<>|`) 时抛出
      * @throws PermissionDeniedException 当权限不足时抛出
      */
     public suspend fun createFolder(name: String): AbsoluteFolder
 
     /**
      * 获取一个已存在的名称为 [name] 的子目录. 当该名称的子目录不存在时返回 `null`.
+     * @throws IllegalArgumentException 当 [name] 为空或包含非法字符 (`:*?"<>|`) 时抛出
      */
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
 

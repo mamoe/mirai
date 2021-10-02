@@ -38,7 +38,11 @@ internal class RemoteFilesImpl(
         content: ExternalResource,
         callback: ProgressionCallback<AbsoluteFile, Long>?
     ): AbsoluteFile {
+        if (absolutePath.isBlank()) throw IllegalArgumentException("absolutePath cannot be blank.")
         val normalized = fs.normalize(absolutePath)
+        if (!normalized.contains('/')) {
+            throw IllegalArgumentException("Invalid absolutePath: '$absolutePath'. If you wanted to upload file to root directory, please add a leading '/'.")
+        }
         val folder = root.createFolder(normalized.substringBeforeLast("/"))
         val filename = normalized.substringAfterLast('/')
         return folder.uploadNewFile(filename, content, callback)
