@@ -346,13 +346,13 @@ public class MyEventHandlers extends SimpleListenerHost {
     }
     @EventHandler
     public void onMessage(@NotNull MessageEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
-        event.subject.sendMessage("received");
+        event.getSubject().sendMessage("received");
         // 无返回值, 表示一直监听事件.
     }
     @NotNull
     @EventHandler
     public ListeningStatus onMessage(@NotNull MessageEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
-        event.subject.sendMessage("received");
+        event.getSubject().sendMessage("received");
         return ListeningStatus.LISTENING; // 表示继续监听事件
         // return ListeningStatus.STOPPED; // 表示停止监听事件
     }
