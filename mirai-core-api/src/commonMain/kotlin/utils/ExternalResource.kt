@@ -140,7 +140,7 @@ public interface ExternalResource : Closeable {
      * - [java.nio.file.Path] 某个具体文件路径
      * - [java.nio.ByteBuffer] RAM
      * - [java.net.URI] uri
-     * - [ByteArray] RAN
+     * - [ByteArray] RAM
      * - Or more...
      *
      * implementation note:
