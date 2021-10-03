@@ -14,6 +14,7 @@ import kotlinx.io.streams.asInput
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.readString
+import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.withUse
 import java.io.IOException
 
@@ -156,7 +157,11 @@ internal fun ExternalResource.calculateImageInfo(): ImageInfo {
             ImageType.GIF -> getGIFImageInfo()
             ImageType.PNG, ImageType.APNG -> getPNGImageInfo()
             else -> {
-                throw IllegalArgumentException("Unsupported image type for ExternalResource $this, considering use gif/png/bmp/jpg format.")
+                throw IllegalArgumentException(
+                    "Unsupported image type (${formatName}) for ExternalResource ${this@calculateImageInfo}, " +
+                            "considering use gif/png/bmp/jpg format. " +
+                            "image header: ${readBytesOf(max = 30).toUHexString()}"
+                )
             }
         }
     }
