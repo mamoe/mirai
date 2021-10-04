@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -29,6 +30,49 @@ import net.mamoe.mirai.utils.*
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
+internal fun Oidb0x6d8.GetFileListRspBody.Item.resolved(parent: AbsoluteFolderImpl): AbsoluteFileFolder? {
+    val item = this
+    return when {
+        item.fileInfo != null -> {
+            parent.createChildFile(item.fileInfo)
+        }
+        item.folderInfo != null -> {
+            parent.createChildFolder(item.folderInfo)
+        }
+        else -> null
+    }
+}
+
+internal fun AbsoluteFolderImpl.createChildFolder(
+    folderInfo: GroupFileCommon.FolderInfo
+): AbsoluteFolderImpl = AbsoluteFolderImpl(
+    contact = contact,
+    parent = this,
+    id = folderInfo.folderId,
+    name = folderInfo.folderName,
+    uploadTime = folderInfo.createTime.toLongUnsigned(),
+    uploaderId = folderInfo.createUin,
+    lastModifiedTime = folderInfo.modifyTime.toLongUnsigned(),
+    contentsCount = folderInfo.totalFileCount
+)
+
+internal fun AbsoluteFolderImpl.createChildFile(
+    info: GroupFileCommon.FileInfo
+): AbsoluteFileImpl = AbsoluteFileImpl(
+    contact = contact,
+    parent = this,
+    id = info.fileId,
+    name = info.fileName,
+    uploadTime = info.uploadTime.toLongUnsigned(),
+    lastModifiedTime = info.modifyTime.toLongUnsigned(),
+    uploaderId = info.uploaderUin,
+    expiryTime = info.deadTime.toLongUnsigned(),
+    size = info.fileSize,
+    sha1 = info.sha,
+    md5 = info.md5,
+    busId = info.busId
+)
+
 internal class AbsoluteFolderImpl(
     contact: FileSupported, parent: AbsoluteFolder?, id: String, name: String,
     uploadTime: Long, uploaderId: Long, lastModifiedTime: Long,
@@ -40,25 +84,33 @@ internal class AbsoluteFolderImpl(
     override val isFile: Boolean get() = false
     override val isFolder: Boolean get() = true
 
-    private suspend fun getItemsFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
-        return flow {
-            var index = 0
-            while (true) {
-                val list = FileManagement.GetFileList(
-                    client,
-                    groupCode = contact.id,
-                    folderId = id,
-                    startIndex = index
-                ).sendAndExpect(bot).toResult("AbsoluteFolderImpl.getFilesFlow").getOrThrow()
-                index += list.itemList.size
+    companion object {
+        suspend fun getItemsFlow(
+            client: QQAndroidClient,
+            contact: FileSupported,
+            folderId: String
+        ): Flow<Oidb0x6d8.GetFileListRspBody.Item> {
+            return flow {
+                var index = 0
+                while (true) {
+                    val list = FileManagement.GetFileList(
+                        client,
+                        groupCode = contact.id,
+                        folderId = folderId,
+                        startIndex = index
+                    ).sendAndExpect(client.bot).toResult("AbsoluteFolderImpl.getFilesFlow").getOrThrow()
+                    index += list.itemList.size
 
-                if (list.int32RetCode != 0) return@flow
-                if (list.itemList.isEmpty()) return@flow
+                    if (list.int32RetCode != 0) return@flow
+                    if (list.itemList.isEmpty()) return@flow
 
-                emitAll(list.itemList.asFlow())
+                    emitAll(list.itemList.asFlow())
+                }
             }
         }
     }
+
+    suspend fun getItemsFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> = Companion.getItemsFlow(client, contact, id)
 
     @JavaFriendlyAPI
     private suspend fun getItemsSequence(): Sequence<Oidb0x6d8.GetFileListRspBody.Item> {
@@ -83,42 +135,7 @@ internal class AbsoluteFolderImpl(
         }
     }
 
-    private fun Oidb0x6d8.GetFileListRspBody.Item.resolve(): AbsoluteFileFolder? {
-        val item = this
-        return when {
-            item.fileInfo != null -> {
-                val i = item.fileInfo
-                AbsoluteFileImpl(
-                    contact = contact,
-                    parent = this@AbsoluteFolderImpl,
-                    id = i.fileId,
-                    name = i.fileName,
-                    uploadTime = i.uploadTime.toLongUnsigned(),
-                    lastModifiedTime = i.modifyTime.toLongUnsigned(),
-                    uploaderId = i.uploaderUin,
-                    expiryTime = i.deadTime.toLongUnsigned(),
-                    size = i.fileSize,
-                    sha1 = i.sha,
-                    md5 = i.md5,
-                    busId = i.busId
-                )
-            }
-            item.folderInfo != null -> {
-                val i = item.folderInfo
-                AbsoluteFolderImpl(
-                    contact = contact,
-                    parent = this@AbsoluteFolderImpl,
-                    id = i.folderId,
-                    name = i.folderName,
-                    uploadTime = i.createTime.toLongUnsigned(),
-                    uploaderId = i.createUin,
-                    lastModifiedTime = i.modifyTime.toLongUnsigned(),
-                    contentsCount = i.totalFileCount
-                )
-            }
-            else -> null
-        }
-    }
+    private fun Oidb0x6d8.GetFileListRspBody.Item.resolve(): AbsoluteFileFolder? = resolved(this@AbsoluteFolderImpl)
 
     override suspend fun folders(): Flow<AbsoluteFolder> {
         return getItemsFlow().filter { it.folderInfo != null }.map { it.resolve() as AbsoluteFolder }

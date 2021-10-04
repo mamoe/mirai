@@ -28,7 +28,8 @@ public interface FileSupported : Contact {
      *
      * @since 2.5
      */
-//    @Deprecated("Please use filesRootInstant instead.", replaceWith = ReplaceWith("filesRootInstant"))
+    @Suppress("DEPRECATION")
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
     public val filesRoot: RemoteFile
 
     /**

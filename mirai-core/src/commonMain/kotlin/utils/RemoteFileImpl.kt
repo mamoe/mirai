@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("DEPRECATION", "OverridingDeprecatedMember")
+
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.flow.*

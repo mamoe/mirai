@@ -97,6 +97,7 @@ import java.io.File
  * @see FileSupported
  * @since 2.5
  */
+@Deprecated("Please use RemoteFiles and AbsoluteFileFolder form fileSupported.files") // deprecated since 2.8.0-RC
 @NotStableForInheritance
 public interface RemoteFile {
     /**
