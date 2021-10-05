@@ -107,6 +107,11 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val imageType: ImageType
 
+    /**
+     * 判断该图片是否为 `动画表情`
+     */
+    public val isEmoji: Boolean get() = false
+
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
@@ -166,9 +171,8 @@ public interface Image : Message, MessageContent, CodableMessage {
         @Suppress("RegExpRedundantEscape") // This is required on Android
         @JvmStatic
         @get:JvmName("getImageIdRegex")
-        // inline because compilation error
-        public inline val IMAGE_ID_REGEX: Regex
-            get() = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
+        public val IMAGE_ID_REGEX: Regex =
+            Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
 
         /**
          * 图片资源 ID 正则表达式 1. mirai 内部使用.
@@ -179,9 +183,8 @@ public interface Image : Message, MessageContent, CodableMessage {
         @JvmStatic
         @MiraiInternalApi
         @get:JvmName("getImageResourceIdRegex1")
-        // inline because compilation error
-        public inline val IMAGE_RESOURCE_ID_REGEX_1: Regex
-            get() = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
+        public val IMAGE_RESOURCE_ID_REGEX_1: Regex =
+            Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
         /**
          * 图片资源 ID 正则表达式 2. mirai 内部使用.
@@ -192,9 +195,8 @@ public interface Image : Message, MessageContent, CodableMessage {
         @JvmStatic
         @MiraiInternalApi
         @get:JvmName("getImageResourceIdRegex2")
-        // inline because compilation error
-        public inline val IMAGE_RESOURCE_ID_REGEX_2: Regex
-            get() = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
+        public val IMAGE_RESOURCE_ID_REGEX_2: Regex =
+            Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
     }
 }
 
@@ -266,7 +268,12 @@ public sealed class AbstractImage : Image {
         get() = ImageType.UNKNOWN
 
     final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = "[图片]"
+    final override fun contentToString(): String = if (isEmoji) {
+        "[动画表情]"
+    } else {
+        "[图片]"
+    }
+
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:image:").append(imageId).append("]")
     }

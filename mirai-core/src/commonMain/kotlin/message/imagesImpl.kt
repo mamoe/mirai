@@ -19,9 +19,12 @@ import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.network.protocol.data.proto.CustomFaceExtPb
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.NotOnlineImageExtPb
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
@@ -63,6 +66,14 @@ internal class OnlineGroupImageImpl(
             }/0?term=2"
         } else "http://gchat.qpic.cn" + delegate.origUrl
 
+    override val isEmoji: Boolean by lazy {
+        kotlin.runCatching {
+            delegate.pbReserve.takeIf { it.isNotEmpty() }?.let { pb ->
+                val ext = pb.loadAs(CustomFaceExtPb.ResvAttr.serializer())
+                ext.imageBizType == 1 || ext.textSummary.encodeToString() == "[动画表情]"
+            }
+        }.getOrNull() ?: false
+    }
 }
 
 private val imageLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(Image::class) }
@@ -108,6 +119,14 @@ OnlineFriendImage() {
             "http://c2cpicdw.qpic.cn/offpic_new/0/" + delegate.resId + "/0?term=2"
         }
 
+    override val isEmoji: Boolean by lazy {
+        kotlin.runCatching {
+            delegate.pbReserve.takeIf { it.isNotEmpty() }?.let { pb ->
+                val ext = pb.loadAs(NotOnlineImageExtPb.ResvAttr.serializer())
+                ext.imageBizType == 1 || ext.textSummary.encodeToString() == "[动画表情]"
+            }
+        }.getOrNull() ?: false
+    }
 }
 
 /*
