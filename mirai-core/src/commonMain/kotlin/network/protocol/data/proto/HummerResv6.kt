@@ -19,19 +19,19 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 internal class NotOnlineImageExtPb : ProtoBuf {
     @Serializable
     internal class ResvAttr(
-        @JvmField @ProtoNumber(1) val imageBizType: Int = 0,
+        @ProtoNumber(1) override val imageBizType: Int = 0,
         @JvmField @ProtoNumber(2) val customfaceType: Int = 0,
         @JvmField @ProtoNumber(3) val emojiPackageid: Int = 0,
         @JvmField @ProtoNumber(4) val emojiId: Int = 0,
         @JvmField @ProtoNumber(5) val text: String = "",
         @JvmField @ProtoNumber(6) val doutuSuppliers: String = "",
-        @JvmField @ProtoNumber(8) val textSummary: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(8) override val textSummary: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(10) val emojiFrom: Int = 0,
         @JvmField @ProtoNumber(11) val emojiSource: String = "",
         @JvmField @ProtoNumber(12) val emojiWebUrl: String = "",
         @JvmField @ProtoNumber(13) val emojiIconUrl: String = "",
         @JvmField @ProtoNumber(14) val emojiMarketFaceName: String = "",
         @JvmField @ProtoNumber(15) val source: Int = 0
-    ) : ProtoBuf
+    ) : ProtoBuf, ImgExtPbResvAttrCommon
 }
         

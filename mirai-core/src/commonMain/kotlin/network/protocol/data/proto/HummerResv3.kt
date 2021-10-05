@@ -29,14 +29,14 @@ internal class CustomFaceExtPb : ProtoBuf {
 
     @Serializable
     internal class ResvAttr(
-        @JvmField @ProtoNumber(1) val imageBizType: Int = 0,
+        @ProtoNumber(1) override val imageBizType: Int = 0,
         @JvmField @ProtoNumber(2) val customfaceType: Int = 0,
         @JvmField @ProtoNumber(3) val emojiPackageid: Int = 0,
         @JvmField @ProtoNumber(4) val emojiId: Int = 0,
         @JvmField @ProtoNumber(5) val text: String = "",
         @JvmField @ProtoNumber(6) val doutuSuppliers: String = "",
         @JvmField @ProtoNumber(7) val msgImageShow: AnimationImageShow? = null,
-        @JvmField @ProtoNumber(9) val textSummary: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(9) override val textSummary: ByteArray = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(10) val emojiFrom: Int = 0,
         @JvmField @ProtoNumber(11) val emojiSource: String = "",
         @JvmField @ProtoNumber(12) val emojiWebUrl: String = "",
@@ -47,6 +47,6 @@ internal class CustomFaceExtPb : ProtoBuf {
         @JvmField @ProtoNumber(17) val cameraCaptureMaterialname: String = "",
         @JvmField @ProtoNumber(18) val adEmoJumpUrl: String = "",
         @JvmField @ProtoNumber(19) val adEmoDescStr: String = "",
-    ) : ProtoBuf
+    ) : ProtoBuf, ImgExtPbResvAttrCommon
 }
         
