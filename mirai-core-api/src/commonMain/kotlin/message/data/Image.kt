@@ -109,6 +109,8 @@ public interface Image : Message, MessageContent, CodableMessage {
 
     /**
      * 判断该图片是否为 `动画表情`
+     *
+     * @since 2.8.0
      */
     public val isEmoji: Boolean get() = false
 
