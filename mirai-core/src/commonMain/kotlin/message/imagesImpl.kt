@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -19,9 +20,9 @@ import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
-import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
@@ -63,6 +64,18 @@ internal class OnlineGroupImageImpl(
             }/0?term=2"
         } else "http://gchat.qpic.cn" + delegate.origUrl
 
+    override val isEmoji: Boolean by lazy {
+        delegate.pbReserve.pbImageResv_checkIsEmoji(CustomFaceExtPb.ResvAttr.serializer())
+    }
+}
+
+private fun <T : ImgExtPbResvAttrCommon> ByteArray.pbImageResv_checkIsEmoji(serializer: KSerializer<T>): Boolean {
+    val data = this
+    return kotlin.runCatching {
+        data.takeIf { it.isNotEmpty() }?.loadAs(serializer)?.let { ext ->
+            ext.imageBizType == 1 || ext.textSummary.encodeToString() == "[动画表情]"
+        }
+    }.getOrNull() ?: false
 }
 
 private val imageLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(Image::class) }
@@ -108,6 +121,9 @@ OnlineFriendImage() {
             "http://c2cpicdw.qpic.cn/offpic_new/0/" + delegate.resId + "/0?term=2"
         }
 
+    override val isEmoji: Boolean by lazy {
+        delegate.pbReserve.pbImageResv_checkIsEmoji(NotOnlineImageExtPb.ResvAttr.serializer())
+    }
 }
 
 /*

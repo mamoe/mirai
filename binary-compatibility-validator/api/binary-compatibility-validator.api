@@ -4357,6 +4357,7 @@ public abstract interface class net/mamoe/mirai/message/data/Image : net/mamoe/m
 	public abstract fun getImageType ()Lnet/mamoe/mirai/message/data/ImageType;
 	public abstract fun getSize ()J
 	public abstract fun getWidth ()I
+	public fun isEmoji ()Z
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
