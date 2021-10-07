@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
+import java.io.File
 import kotlin.reflect.KType
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.findAnnotation
@@ -53,7 +54,8 @@ internal class Desensitizer private constructor(
                         systemProp("mirai.network.recording.desensitization.filepath", "local.desensitization.yml")
 
                     val file =
-                        Thread.currentThread().contextClassLoader.getResource(filename)
+                        File(filename).takeIf { it.isFile }?.toURI()?.toURL()
+                            ?: Thread.currentThread().contextClassLoader.getResource(filename)
                             ?: Thread.currentThread().contextClassLoader.getResource("recording/configs/$filename")
                             ?: error("Could not find desensitization configuration!")
 
