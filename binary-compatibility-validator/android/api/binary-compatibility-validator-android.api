@@ -5482,21 +5482,6 @@ public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : n
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
-public abstract interface class net/mamoe/mirai/spi/AudioToSilkService : net/mamoe/mirai/spi/BaseService {
-	public static final field Companion Lnet/mamoe/mirai/spi/AudioToSilkService$Companion;
-	public abstract fun convert (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun setService (Lnet/mamoe/mirai/spi/AudioToSilkService;)V
-}
-
-public final class net/mamoe/mirai/spi/AudioToSilkService$Companion : net/mamoe/mirai/spi/AudioToSilkService {
-	public fun convert (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setService (Lnet/mamoe/mirai/spi/AudioToSilkService;)V
-}
-
-public abstract interface class net/mamoe/mirai/spi/BaseService {
-	public fun getPriority ()I
-}
-
 public class net/mamoe/mirai/utils/BotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V

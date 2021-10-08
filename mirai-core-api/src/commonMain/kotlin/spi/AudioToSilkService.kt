@@ -9,17 +9,15 @@
 
 package net.mamoe.mirai.spi
 
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.runAutoClose
-import net.mamoe.mirai.utils.useAutoClose
-import net.mamoe.mirai.utils.withAutoClose
+import net.mamoe.mirai.utils.*
 import java.io.IOException
 
 /**
  * 将源音频文件转换为 silk v3 with tencent 格式
  *
- * @since TODO
+ * @since 2.8.0
  */
+@MiraiExperimentalApi
 public interface AudioToSilkService : BaseService {
     /**
      * implementation note:
@@ -38,6 +36,7 @@ public interface AudioToSilkService : BaseService {
     @Throws(IOException::class)
     public suspend fun convert(source: ExternalResource): ExternalResource
 
+    @MiraiExperimentalApi
     public companion object : AudioToSilkService {
         private val loader = SPIServiceLoader(object : AudioToSilkService {
             override suspend fun convert(source: ExternalResource): ExternalResource = source

@@ -9,9 +9,15 @@
 
 package net.mamoe.mirai.spi
 
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.*
 
+/**
+ * 基本 SPI 接口
+ * @since 2.8.0
+ */
+@MiraiExperimentalApi
 public interface BaseService {
     /** 使用优先级, 值越小越先使用 */
     public val priority: Int get() = 5
