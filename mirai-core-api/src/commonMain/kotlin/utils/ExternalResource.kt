@@ -150,7 +150,7 @@ public interface ExternalResource : Closeable {
      * - 不要返回 [String], 没有约定 [String] 代表什么
      * - 数据源外漏会严重影响 [inputStream] 等的执行的可以返回 `null` (如 [RandomAccessFile])
      *
-     * @since TODO
+     * @since 2.8.0
      */
     public val origin: Any? get() = null
 
@@ -226,21 +226,23 @@ public interface ExternalResource : Closeable {
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
-        /**
-         * 创建一个在 _使用一次_ 后就会自动 [close] 的 [ExternalResource].
-         *
-         * @since 2.8
+
+        /* note:
+        于 2.8.0-M1 添加 (#1392)
+
+        于 2.8.0-RC 移动至 `toExternalResource`(#1588)
+
+        Fixme: 在 2.8.0 标为 HIDDEN
          */
         @JvmName("createAutoCloseable")
         @JvmStatic
-        public fun ExternalResource.toAutoCloseable(): ExternalResource {
-            return if (isAutoClose) this else {
-                val delegate = this
-                object : ExternalResource by delegate {
-                    override val isAutoClose: Boolean get() = true
-                    override fun toString(): String = "ExternalResourceWithAutoClose(delegate=$delegate)"
-                }
-            }
+        @Deprecated(
+            level = DeprecationLevel.ERROR,
+            message = "Moved to `toExternalResource()`",
+            replaceWith = ReplaceWith("resource.toAutoCloseable()"),
+        )
+        public fun createAutoCloseable(resource: ExternalResource): ExternalResource {
+            return resource.toAutoCloseable()
         }
 
         // endregion
@@ -484,6 +486,33 @@ public interface ExternalResource : Closeable {
         }
         // endregion
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // region Java Friendly Functions
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 创建一个在 _使用一次_ 后就会自动 [close] 的 [ExternalResource].
+     *
+     * @since 2.8.0
+     */
+    public fun toAutoCloseable(): ExternalResource {
+        return if (isAutoClose) this else {
+            val delegate = this
+            object : ExternalResource by delegate {
+                override val isAutoClose: Boolean get() = true
+                override fun toString(): String = "ExternalResourceWithAutoClose(delegate=$delegate)"
+                override fun toAutoCloseable(): ExternalResource {
+                    return this
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // endregion
+    ///////////////////////////////////////////////////////////////////////////
+
 }
 
 /**
