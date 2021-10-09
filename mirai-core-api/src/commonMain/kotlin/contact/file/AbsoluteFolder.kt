@@ -42,6 +42,13 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      */
     public fun isEmpty(): Boolean = contentsCount == 0
 
+    /**
+     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
+     *
+     * 当远程文件或目录不存在时返回 `null`.
+     *
+     * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
+     */
     override suspend fun refreshed(): AbsoluteFolder?
 
     ///////////////////////////////////////////////////////////////////////////

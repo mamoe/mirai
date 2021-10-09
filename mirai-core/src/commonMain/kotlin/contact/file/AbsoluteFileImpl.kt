@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact.file
 
-import kotlinx.coroutines.flow.firstOrNull
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
@@ -18,7 +17,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.toUHexString
 
 internal class AbsoluteFileImpl(
@@ -30,7 +28,7 @@ internal class AbsoluteFileImpl(
     lastModifiedTime: Long,
     uploaderId: Long,
 
-    override val expiryTime: Long,
+    override var expiryTime: Long,
     override val size: Long, // when file is changed, its id will also be changed, so no need to be var
     override val sha1: ByteArray,
     override val md5: ByteArray,
@@ -63,8 +61,14 @@ internal class AbsoluteFileImpl(
         if (folder.absolutePath == this.parentOrRoot.absolutePath) return true
         checkPermission()
 //        if (this.isFile) {
-        return FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
-            .sendAndExpect(bot).toResult("AbsoluteFileImpl.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
+        return (FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
+            .sendAndExpect(bot).toResult("AbsoluteFileImpl.moveTo", checkResp = false)
+            .getOrThrow().int32RetCode == 0)
+            .also {
+                if (it) {
+                    parent = folder
+                }
+            }
 //        } else {
 //            return FileManagement.RenameFolder(client, contact.id, id, name).sendAndExpect(bot)
 //                .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
@@ -91,12 +95,26 @@ internal class AbsoluteFileImpl(
 
     override suspend fun refresh(): Boolean {
         val new = refreshed() ?: return false
+        this.parent = new.parent
+        this.expiryTime = new.expiryTime
         this.name = new.name
         this.lastModifiedTime = new.lastModifiedTime
         return true
     }
 
-    override suspend fun refreshed(): AbsoluteFile? = parentOrRoot.files().firstOrNull { it.id == this.id }.cast()
+    override suspend fun refreshed(): AbsoluteFile? {
+        val result = FileManagement.GetFileInfo(client, contact.id, id, busId)
+            .sendAndExpect(bot)
+            .toResult("AbsoluteFile.refreshed")
+            .getOrNull()?.fileInfo
+            ?: return null
+
+        return if (result.parentFolderId == this.parentOrRoot.id) {
+            this.parentOrRoot.impl().createChildFile(result)
+        } else {
+            null
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

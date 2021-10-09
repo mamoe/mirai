@@ -38,7 +38,7 @@ internal val AbstractAbsoluteFileFolder.parentOrRoot get() = parent ?: contact.f
 internal abstract class AbstractAbsoluteFileFolder(
     // overriding AbsFileFolder
     val contact: FileSupported,
-    val parent: AbsoluteFolder?,
+    var parent: AbsoluteFolder?,
     val id: String, // uuid-like
     var name: String,
     val uploadTime: Long,
@@ -80,13 +80,16 @@ internal abstract class AbstractAbsoluteFileFolder(
 
         result.toResult("AbstractAbsoluteFileFolder.renameTo") {
             when (it) {
-                0 -> return true
+                0 -> {
+                    name = newName
+                    return true
+                }
                 1 -> return false
                 else -> false
             }
         }.getOrThrow()
 
-        return true
+        error("unreachable")
     }
 
     suspend fun delete(): Boolean {

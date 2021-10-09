@@ -328,7 +328,7 @@ internal class AbsoluteFolderImpl(
 
     override suspend fun exists(): Boolean {
         // TODO: 2021/10/1 try optimize exists
-        return parentOrFail().files().firstOrNull { it.id == this.id } != null
+        return parentOrFail().folders().firstOrNull { it.id == this.id } != null
     }
 
     override suspend fun refresh(): Boolean {
@@ -339,7 +339,7 @@ internal class AbsoluteFolderImpl(
         return true
     }
 
-    override suspend fun refreshed(): AbsoluteFolder? = parentOrRoot.folders().firstOrNull { it.id == this.id }.cast()
+    override suspend fun refreshed(): AbsoluteFolder? = parentOrRoot.folders().firstOrNull { it.id == this.id }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
