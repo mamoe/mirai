@@ -299,7 +299,7 @@ internal interface OnlineImage : Image, ConstOriginUrlAware {
  *
  * 一般由 [Contact.uploadImage] 得到
  */
-internal interface OfflineImage : Image
+internal sealed interface OfflineImage : Image
 
 /**
  * @param imageId 参考 [Image.imageId]

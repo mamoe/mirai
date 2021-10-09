@@ -621,18 +621,48 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
+    private class MutableNode(
+        override val senderId: Long,
+        override val time: Int,
+        override val senderName: String,
+        override var messageChain: MessageChain
+    ) : ForwardMessage.INode
+
     internal open suspend fun uploadMessageHighway(
-        bot: Bot,
+        contact: Contact,
         sendMessageHandler: SendMessageHandler<*>,
         message: Collection<ForwardMessage.INode>,
         isLong: Boolean,
-    ): String = with(bot.asQQAndroidBot()) {
+    ): String = with(contact.bot.asQQAndroidBot()) {
+        var offlineImagesCount = 0
         message.forEach {
             it.messageChain.ensureSequenceIdAvailable()
+            offlineImagesCount += it.messageChain.count { it is OfflineImage }
+        }
+
+        val fixer = ImageIdFixer()
+
+        // https://github.com/mamoe/mirai/issues/1507
+        val refined: Collection<ForwardMessage.INode>
+        if (offlineImagesCount > 2) {
+            refined = message.mapTo(mutableListOf()) {
+                MutableNode(it.senderId, it.time, it.senderName, it.messageChain)
+            }
+            refined.forEach { node ->
+                node.messageChain.forEach { single ->
+                    when (single) {
+                        is OfflineGroupImage -> {
+                            fixer.fix(single, contact.cast())
+                        }
+                    }
+                }
+            }
+        } else {
+            refined = message
         }
 
 
-        val data = message.calculateValidationData(
+        val data = refined.calculateValidationData(
             client = client,
             random = Random.nextInt().absoluteValue,
             sendMessageHandler,

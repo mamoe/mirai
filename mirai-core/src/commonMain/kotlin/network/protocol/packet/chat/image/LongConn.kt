@@ -54,22 +54,33 @@ internal class LongConn {
             }
 
             return if (imgRsp.boolFileExit) {
-                Response.FileExists(imgRsp.upResid, imgRsp.msgImgInfo!!)
+                Response.FileExists(imgRsp.upResid, imgRsp.msgImgInfo!!, imgRsp.fileId)
             } else {
-                Response.RequireUpload(imgRsp.upResid, imgRsp.uint32UpIp, imgRsp.uint32UpPort, imgRsp.upUkey)
+                Response.RequireUpload(
+                    imgRsp.upResid,
+                    imgRsp.uint32UpIp,
+                    imgRsp.uint32UpPort,
+                    imgRsp.upUkey,
+                    imgRsp.fileId
+                )
             }
         }
 
 
         sealed class Response : Packet {
-            data class FileExists(val resourceId: String, val imageInfo: Cmd0x352.ImgInfo) : Response()
+            data class FileExists(
+                val resourceId: String,
+                val imageInfo: Cmd0x352.ImgInfo,
+                val fileId: Long,
+            ) : Response()
 
             @Suppress("ArrayInDataClass")
             data class RequireUpload(
                 val resourceId: String,
                 val serverIp: List<Int>,
                 val serverPort: List<Int>,
-                val uKey: ByteArray
+                val uKey: ByteArray,
+                val fileId: Long,
             ) : Response()
 
             data class Failed(val message: String) : Response()

@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.message.data
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.contact.*
@@ -31,7 +31,7 @@ import kotlin.test.assertSame
 
 internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
     override suspend fun uploadMessageHighway(
-        bot: Bot,
+        contact: Contact,
         sendMessageHandler: SendMessageHandler<*>,
         message: Collection<ForwardMessage.INode>,
         isLong: Boolean,
