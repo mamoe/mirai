@@ -172,15 +172,19 @@ public interface ExternalResource : Closeable {
          * 将以只读模式打开这个文件 (因此文件会处于被占用状态), 直到 [ExternalResource.close].
          *
          * @param formatName 查看 [ExternalResource.formatName]
+         * @param autoClose 为 `true` 时调用 [toAutoCloseable]
          */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
-        public fun File.toExternalResource(formatName: String? = null): ExternalResource =
+        public fun File.toExternalResource(
+            formatName: String? = null,
+            autoClose: Boolean = false
+        ): ExternalResource =
             // although RandomAccessFile constructor throws IOException, actual performance influence is minor so not propagating IOException
             RandomAccessFile(this, "r").toExternalResource(formatName).also {
                 it.cast<ExternalResourceImplByFile>().origin = this@toExternalResource
-            }
+            }.run { if (autoClose) toAutoCloseable() else this }
 
         /**
          * 创建 [ExternalResource].
@@ -190,6 +194,7 @@ public interface ExternalResource : Closeable {
          * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
          *
          * @param formatName 查看 [ExternalResource.formatName]
+         * @param autoClose 为 `true` 时调用 [toAutoCloseable]
          */
         @JvmStatic
         @JvmOverloads
@@ -197,8 +202,13 @@ public interface ExternalResource : Closeable {
         public fun RandomAccessFile.toExternalResource(
             formatName: String? = null,
             closeOriginalFileOnClose: Boolean = true,
+            autoClose: Boolean = false
         ): ExternalResource =
-            ExternalResourceImplByFile(this, formatName, closeOriginalFileOnClose)
+            ExternalResourceImplByFile(
+                this,
+                formatName,
+                closeOriginalFileOnClose
+            ).run { if (autoClose) toAutoCloseable() else this }
 
         /**
          * 创建 [ExternalResource].
@@ -209,7 +219,7 @@ public interface ExternalResource : Closeable {
         @JvmOverloads
         @JvmName("create")
         public fun ByteArray.toExternalResource(formatName: String? = null): ExternalResource =
-            ExternalResourceImplByByteArray(this, formatName)
+            ExternalResourceImplByByteArray(this, formatName) // does not need auto closure
 
 
         /**
@@ -218,13 +228,17 @@ public interface ExternalResource : Closeable {
          * **注意**：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
+         * @param autoClose 为 `true` 时调用 [toAutoCloseable]
          */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
         @Throws(IOException::class) // not in BIO context so propagate IOException
-        public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
-            Mirai.FileCacheStrategy.newCache(this, formatName)
+        public fun InputStream.toExternalResource(
+            formatName: String? = null,
+            autoClose: Boolean = false
+        ): ExternalResource =
+            Mirai.FileCacheStrategy.newCache(this, formatName).run { if (autoClose) toAutoCloseable() else this }
 
         /**
          * 创建一个在 _使用一次_ 后就会自动 [close] 的 [ExternalResource].
