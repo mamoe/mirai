@@ -30,6 +30,7 @@ include(":mirai-core-utils")
 include(":mirai-core-api")
 include(":mirai-core")
 include(":mirai-core-all")
+include(":mirai-bom")
 
 include(":binary-compatibility-validator")
 include(":binary-compatibility-validator-android")

@@ -72,15 +72,25 @@ dependencies {
 
 ### 分离 API 和实现（可选）
 
-mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。
+Mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mamoe:mirai-core`。可以在开发和编译时只依赖 `mirai-core-api`，会减轻对 IDE 的负担。  
+在 2.8.0 起 Mirai 提供 `mirai-bom` 用于自动协调 Mirai 不同组件的版本信息，这是引用 Mirai 平台的首选方式。
+使用 `mirai-bom` 也会对 Dependabot 等自动化依赖管理程序更加友好。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.7.0"
+    api(platform("net.mamoe:mirai-bom:2.8.0"))
+    api("net.mamoe:mirai-core-api")     // 编译代码使用
+    runtimeOnly("net.mamoe:mirai-core") // 运行时使用
+}
+```
+也可以继续使用如下传统方式，但务必保证 `mirai-core-api` 和 `mirai-core` 的版本号相一致，以避免潜在的异常。  
+尤其注意 Dependabot 等依赖管理程序可能会导致模块版本不同。
+```kotlin
+dependencies {
+    val miraiVersion = "2.8.0"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
 ```
-
 
 ## B. 使用 Maven
 
