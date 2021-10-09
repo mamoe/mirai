@@ -5709,6 +5709,7 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public abstract fun getClosed ()Lkotlinx/coroutines/Deferred;
 	public abstract fun getFormatName ()Ljava/lang/String;
 	public abstract fun getMd5 ()[B
+	public fun getOrigin ()Ljava/lang/Object;
 	public fun getSha1 ()[B
 	public abstract fun getSize ()J
 	public abstract fun inputStream ()Ljava/io/InputStream;
