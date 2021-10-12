@@ -10,13 +10,10 @@
 package net.mamoe.mirai.internal.contact.file
 
 import net.mamoe.mirai.contact.FileSupported
-import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.internal.contact.ContactAware
 import net.mamoe.mirai.internal.utils.FileSystem
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.ProgressionCallback
 
 internal class RemoteFilesImpl(
     override val contact: FileSupported,
@@ -31,22 +28,21 @@ internal class RemoteFilesImpl(
         0
     ),
 ) : RemoteFiles, ContactAware {
-    private val fs get() = FileSystem
+    companion object {
+        suspend fun AbsoluteFolder.findFileByPath(path: String): Pair<AbsoluteFolder, String> {
+            if (path.isBlank()) throw IllegalArgumentException("absolutePath cannot be blank.")
+            val normalized = FileSystem.normalize(path)
+//            if (!normalized.contains('/')) {
+//                throw IllegalArgumentException("Invalid absolutePath: '$path'. If you wanted to upload file to root directory, please add a leading '/'.")
+//            }
+            val folder = when (normalized.count { it == '/' }) {
+                0, 1 -> this
+                else -> this.createFolder(normalized.substringBeforeLast("/"))
+            }
 
-    override suspend fun uploadNewFile(
-        absolutePath: String,
-        content: ExternalResource,
-        callback: ProgressionCallback<AbsoluteFile, Long>?
-    ): AbsoluteFile {
-        if (absolutePath.isBlank()) throw IllegalArgumentException("absolutePath cannot be blank.")
-        val normalized = fs.normalize(absolutePath)
-        if (!normalized.contains('/')) {
-            throw IllegalArgumentException("Invalid absolutePath: '$absolutePath'. If you wanted to upload file to root directory, please add a leading '/'.")
+            val filename = normalized.substringAfterLast('/')
+            return folder to filename
         }
-        val folder = root.createFolder(normalized.substringBeforeLast("/"))
-        val filename = normalized.substringAfterLast('/')
-        return folder.uploadNewFile(filename, content, callback)
     }
-
 
 }

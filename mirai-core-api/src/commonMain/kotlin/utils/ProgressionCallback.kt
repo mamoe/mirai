@@ -76,7 +76,7 @@ public interface ProgressionCallback<in S, in P> {
          *
          * launch {
          *   // 每 3 秒发送一次操作进度百分比
-         *   progress.receiveAsFlow().sample(3.seconds).collect { bytes ->
+         *   progress.receiveAsFlow().sample(Duration.seconds(3)).collect { bytes ->
          *     group.sendMessage("File upload: ${(bytes.toDouble() / resource.size * 100).toInt() / 100}%.") // 保留 2 位小数
          *   }
          * }

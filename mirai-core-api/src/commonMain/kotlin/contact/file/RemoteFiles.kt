@@ -49,7 +49,7 @@ public interface RemoteFiles {
      *
      * 也可以使用 [AbsoluteFolder.uploadNewFile].
      *
-     * @param absolutePath 绝对文件路径, **包含目标文件名**. 如 `/foo/bar.txt`. 若要上传到根目录, 路径需包含起始 '/', 如 `/foo.txt`
+     * @param filepath 文件路径, **包含目标文件名**. 如 `/foo/bar.txt`. 若是相对目录则基于 [根目录][root] 处理.
      * @param content 文件内容
      * @param callback 下载进度回调, 传递的 `progression` 是已下载字节数.
      *
@@ -57,9 +57,9 @@ public interface RemoteFiles {
      */
     @JvmOverloads
     public suspend fun uploadNewFile(
-        absolutePath: String,
+        filepath: String,
         content: ExternalResource,
         callback: ProgressionCallback<AbsoluteFile, Long>? = null,
-    ): AbsoluteFile
+    ): AbsoluteFile = root.uploadNewFile(filepath, content, callback)
 }
 

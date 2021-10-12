@@ -153,7 +153,13 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * 会在必要时尝试创建远程目录.
      *
-     * @param filename 目标文件名
+     * ### [filepath]
+     *
+     * - 可以是 `foo.txt` 表示该目录下的文件 "foo.txt"
+     * - 也可以是 `sub/foo.txt` 表示该目录的子目录 "sub" 下的文件 "foo.txt".
+     * - 或是绝对路径 `/sub/foo.txt` 表示根目录的 "sub" 目录下的文件 "foo.txt"
+     *
+     * @param filepath 目标文件名
      * @param content 文件内容
      * @param callback 下载进度回调, 传递的 `progression` 是已下载字节数.
      *
@@ -161,7 +167,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      */
     @JvmOverloads
     public suspend fun uploadNewFile(
-        filename: String,
+        filepath: String,
         content: ExternalResource,
         callback: ProgressionCallback<AbsoluteFile, Long>? = null,
     ): AbsoluteFile

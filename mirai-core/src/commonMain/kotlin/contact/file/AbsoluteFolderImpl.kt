@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl.Companion.findFileByPath
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -108,6 +109,107 @@ internal class AbsoluteFolderImpl(
                 }
             }
         }
+
+        suspend fun uploadNewFileImpl(
+            folder: AbsoluteFolderImpl,
+            filepath: String,
+            content: ExternalResource,
+            callback: ProgressionCallback<AbsoluteFile, Long>?
+        ): AbsoluteFile {
+            if (filepath.isBlank()) throw IllegalArgumentException("filename cannot be blank.")
+            // TODO: 12/10/2021 checkPermission for AbsoluteFolderImpl.upload
+
+            content.withAutoClose {
+                val resp = FileManagement.RequestUpload(
+                    folder.client,
+                    groupCode = folder.contact.id,
+                    folderId = folder.id,
+                    resource = content,
+                    filename = filepath
+                ).sendAndExpect(folder.bot).toResult("AbsoluteFolderImpl.upload").getOrThrow()
+
+                val file = AbsoluteFileImpl(
+                    contact = folder.contact,
+                    parent = folder,
+                    id = resp.fileId,
+                    name = filepath,
+                    uploadTime = folder.bot.clock.server.currentTimeSeconds(),
+                    lastModifiedTime = folder.bot.clock.server.currentTimeSeconds(),
+                    expiryTime = 0,
+                    uploaderId = folder.bot.id,
+                    size = content.size,
+                    sha1 = content.sha1,
+                    md5 = content.md5,
+                    busId = resp.busId
+                )
+
+                if (resp.boolFileExist) {
+                    return file
+                }
+
+                val ext = GroupFileUploadExt(
+                    u1 = 100,
+                    u2 = 1,
+                    entry = GroupFileUploadEntry(
+                        business = ExcitingBusiInfo(
+                            busId = resp.busId,
+                            senderUin = folder.bot.id,
+                            receiverUin = folder.contact.id, // TODO: 2021/3/1 code or uin?
+                            groupCode = folder.contact.id,
+                        ),
+                        fileEntry = ExcitingFileEntry(
+                            fileSize = content.size,
+                            md5 = content.md5,
+                            sha1 = content.sha1,
+                            fileId = resp.fileId.toByteArray(),
+                            uploadKey = resp.checkKey,
+                        ),
+                        clientInfo = ExcitingClientInfo(
+                            clientType = 2,
+                            appId = folder.client.protocol.id.toString(),
+                            terminalType = 2,
+                            clientVer = "9e9c09dc",
+                            unknown = 4,
+                        ),
+                        fileNameInfo = ExcitingFileNameInfo(filepath),
+                        host = ExcitingHostConfig(
+                            hosts = listOf(
+                                ExcitingHostInfo(
+                                    url = ExcitingUrlInfo(
+                                        unknown = 1,
+                                        host = resp.uploadIpLanV4.firstOrNull()
+                                            ?: resp.uploadIpLanV6.firstOrNull()
+                                            ?: resp.uploadIp,
+                                    ),
+                                    port = resp.uploadPort,
+                                ),
+                            ),
+                        ),
+                    ),
+                    u3 = 0,
+                ).toByteArray(GroupFileUploadExt.serializer())
+
+                callback?.onBegin(file, content)
+
+                kotlin.runCatching {
+                    Highway.uploadResourceBdh(
+                        bot = folder.bot,
+                        resource = content,
+                        kind = ResourceKind.GROUP_FILE,
+                        commandId = 71,
+                        extendInfo = ext,
+                        dataFlag = 0,
+                        callback = if (callback == null) null else fun(it: Long) {
+                            callback.onProgression(file, content, it)
+                        }
+                    )
+                }.let {
+                    callback?.onFinished(file, content, it.map { content.size })
+                }
+
+                return file
+            }
+        }
     }
 
     suspend fun getItemsFlow(): Flow<Oidb0x6d8.GetFileListRspBody.Item> = Companion.getItemsFlow(client, contact, id)
@@ -156,18 +258,20 @@ internal class AbsoluteFolderImpl(
     }
 
     override suspend fun children(): Flow<AbsoluteFileFolder> {
-        return getItemsFlow().map { it.resolve() as AbsoluteFile }
+        return getItemsFlow().mapNotNull { it.resolve() }
     }
 
     @JavaFriendlyAPI
     override suspend fun childrenStream(): Stream<AbsoluteFileFolder> {
-        return getItemsSequence().map { it.resolve() as AbsoluteFile }.asStream()
+        return getItemsSequence().mapNotNull { it.resolve() }.asStream()
     }
 
     override suspend fun createFolder(name: String): AbsoluteFolder {
         if (name.isBlank()) throw IllegalArgumentException("folder name cannot be blank.")
         checkPermission()
         FileSystem.checkLegitimacy(name)
+
+        // server only support nesting depth level of 1 so we don't need to check the name
 
         FileManagement.CreateFolder(client, contact.id, this.id, name)
             .sendAndExpect(bot).toResult("AbsoluteFolderImpl.mkdir", checkResp = false)
@@ -228,104 +332,12 @@ internal class AbsoluteFolderImpl(
     }
 
     override suspend fun uploadNewFile(
-        filename: String,
+        filepath: String,
         content: ExternalResource,
         callback: ProgressionCallback<AbsoluteFile, Long>?
     ): AbsoluteFile {
-        if (filename.isBlank()) throw IllegalArgumentException("filename cannot be blank.")
-
-        // TODO: 12/10/2021 checkPermission
-
-        content.withAutoClose {
-            val resp = FileManagement.RequestUpload(
-                client,
-                groupCode = contact.id,
-                folderId = this.id,
-                resource = content,
-                filename = filename
-            ).sendAndExpect(bot).toResult("AbsoluteFolderImpl.upload").getOrThrow()
-
-            val file = AbsoluteFileImpl(
-                contact = contact,
-                parent = this,
-                id = resp.fileId,
-                name = filename,
-                uploadTime = bot.clock.server.currentTimeSeconds(),
-                lastModifiedTime = bot.clock.server.currentTimeSeconds(),
-                expiryTime = 0,
-                uploaderId = bot.id,
-                size = content.size,
-                sha1 = content.sha1,
-                md5 = content.md5,
-                busId = resp.busId
-            )
-
-            if (resp.boolFileExist) {
-                return file
-            }
-
-            val ext = GroupFileUploadExt(
-                u1 = 100,
-                u2 = 1,
-                entry = GroupFileUploadEntry(
-                    business = ExcitingBusiInfo(
-                        busId = resp.busId,
-                        senderUin = bot.id,
-                        receiverUin = contact.id, // TODO: 2021/3/1 code or uin?
-                        groupCode = contact.id,
-                    ),
-                    fileEntry = ExcitingFileEntry(
-                        fileSize = content.size,
-                        md5 = content.md5,
-                        sha1 = content.sha1,
-                        fileId = resp.fileId.toByteArray(),
-                        uploadKey = resp.checkKey,
-                    ),
-                    clientInfo = ExcitingClientInfo(
-                        clientType = 2,
-                        appId = client.protocol.id.toString(),
-                        terminalType = 2,
-                        clientVer = "9e9c09dc",
-                        unknown = 4,
-                    ),
-                    fileNameInfo = ExcitingFileNameInfo(filename),
-                    host = ExcitingHostConfig(
-                        hosts = listOf(
-                            ExcitingHostInfo(
-                                url = ExcitingUrlInfo(
-                                    unknown = 1,
-                                    host = resp.uploadIpLanV4.firstOrNull()
-                                        ?: resp.uploadIpLanV6.firstOrNull()
-                                        ?: resp.uploadIp,
-                                ),
-                                port = resp.uploadPort,
-                            ),
-                        ),
-                    ),
-                ),
-                u3 = 0,
-            ).toByteArray(GroupFileUploadExt.serializer())
-
-            callback?.onBegin(file, content)
-
-            kotlin.runCatching {
-                Highway.uploadResourceBdh(
-                    bot = bot,
-                    resource = content,
-                    kind = ResourceKind.GROUP_FILE,
-                    commandId = 71,
-                    extendInfo = ext,
-                    dataFlag = 0,
-                    callback = if (callback == null) null else fun(it: Long) {
-                        callback.onProgression(file, content, it)
-                    }
-                )
-            }.let {
-                callback?.onFinished(file, content, it.map { content.size })
-            }
-
-            return file
-        }
+        val (actualFolder, actualFilename) = findFileByPath(filepath)
+        return uploadNewFileImpl(actualFolder.impl(), actualFilename, content, callback)
     }
 
     override suspend fun exists(): Boolean {
