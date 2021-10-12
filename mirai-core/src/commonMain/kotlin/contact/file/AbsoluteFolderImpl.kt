@@ -234,6 +234,8 @@ internal class AbsoluteFolderImpl(
     ): AbsoluteFile {
         if (filename.isBlank()) throw IllegalArgumentException("filename cannot be blank.")
 
+        // TODO: 12/10/2021 checkPermission
+
         content.withAutoClose {
             val resp = FileManagement.RequestUpload(
                 client,

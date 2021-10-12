@@ -71,6 +71,7 @@ internal abstract class AbstractAbsoluteFileFolder(
     suspend fun renameTo(newName: String): Boolean {
         FileSystem.checkLegitimacy(newName)
         parentOrFail()
+        checkPermission()
 
         val result = if (isFile) {
             FileManagement.RenameFile(client, contact.id, busId, id, parent.idOrRoot, newName)
