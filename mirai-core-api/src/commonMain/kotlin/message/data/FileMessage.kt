@@ -76,6 +76,8 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
      */
+    @Suppress("DEPRECATION")
+    @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
         @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)

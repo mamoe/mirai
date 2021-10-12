@@ -29,7 +29,7 @@ public interface FileSupported : Contact {
      * @since 2.5
      */
     @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root")) // deprecated since 2.8.0-RC
     public val filesRoot: RemoteFile
 
     /**

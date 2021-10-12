@@ -4034,6 +4034,8 @@ public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/m
 	public synthetic fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getSize ()J
+	public fun toAbsoluteFile (Lnet/mamoe/mirai/contact/FileSupported;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public abstract fun toAbsoluteFile (Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toRemoteFile (Lnet/mamoe/mirai/contact/FileSupported;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public fun toRemoteFile (Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

@@ -16,12 +16,14 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
+import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.components.BdhSession
@@ -106,7 +108,10 @@ internal class GroupImpl constructor(
     override lateinit var owner: NormalMemberImpl
     override lateinit var botAsMember: NormalMemberImpl
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
+    override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
 
     override val announcements: Announcements by lazy {
