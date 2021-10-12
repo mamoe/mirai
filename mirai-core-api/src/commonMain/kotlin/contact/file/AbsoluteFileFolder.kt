@@ -52,12 +52,13 @@ public sealed interface AbsoluteFileFolder {
     /**
      * 文件名或目录名. 注意, 当远程文件或目录被 (其他人) 改名时, [name] 不会变动. 只有在调用 [renameTo] 和 [refresh] 时才会更新.
      *
-     * 不能包含 `:*?"<>|/\` 任一字符.
+     * 不会包含 `:*?"<>|/\` 任一字符.
      */
     public val name: String
 
     /**
-     * 绝对路径, 如 `/foo/bar.txt`. 注意, 当远程文件或目录被 (其他人) 移动到其他位置或其父目录名称改名时, [absolutePath] 不会变动. 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
+     * 绝对路径, 如 `/foo/bar.txt`. 注意, 当远程文件或目录被 (其他人) 移动到其他位置或其父目录名称改名时, [absolutePath] 不会变动.
+     * 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
      */
     public val absolutePath: String
 
@@ -77,7 +78,8 @@ public sealed interface AbsoluteFileFolder {
     public val uploadTime: Long
 
     /**
-     * 远程文件或目录的最后修改时间, 时间戳秒. 注意, 当远程文件或目录被 (其他人) 改动时, [lastModifiedTime] 不会变动. 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
+     * 远程文件或目录的最后修改时间, 时间戳秒. 注意, 当远程文件或目录被 (其他人) 改动时, [lastModifiedTime] 不会变动.
+     * 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
      */
     public val lastModifiedTime: Long
 
@@ -88,12 +90,14 @@ public sealed interface AbsoluteFileFolder {
 
 
     /**
-     * 查询该远程文件或目录是否还存在于服务器. 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`. 该操作不会更新 [absolutePath] 等属性.
+     * 查询该远程文件或目录是否还存在于服务器. 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`.
+     * 该操作不会更新 [absolutePath] 等属性.
      */
     public suspend fun exists(): Boolean
 
     /**
-     * 重命名远程文件或目录, **并且**修改当前(`this`) [AbsoluteFileFolder] 的 [name]. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
+     * 重命名远程文件或目录, **并且**修改当前(`this`) [AbsoluteFileFolder] 的 [name].
+     * 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 注意该操作有可能产生同名文件或目录 (当服务器已经存在一个名称为 [newName] 的文件或目录时).
      *
@@ -104,7 +108,8 @@ public sealed interface AbsoluteFileFolder {
     public suspend fun renameTo(newName: String): Boolean
 
     /**
-     * 删除远程文件或目录. 只会根据 [id] 精确地删除一个文件或目录, 不会删除其他同名文件或目录. 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
+     * 删除远程文件或目录. 只会根据 [id] 精确地删除一个文件或目录, 不会删除其他同名文件或目录.
+     * 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      *
      * 若目录非空, 则会删除目录中的所有文件. 操作目录或非 Bot 自己上传的文件时需要管理员权限, 无管理员权限时抛出异常.
      *
@@ -115,12 +120,14 @@ public sealed interface AbsoluteFileFolder {
     public suspend fun delete(): Boolean
 
     /**
-     * 更新当前 [AbsoluteFileFolder] 对象的文件或目录信息 ([lastModifiedTime], [absolutePath] 等). 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
+     * 更新当前 [AbsoluteFileFolder] 对象的文件或目录信息 ([lastModifiedTime], [absolutePath] 等).
+     * 成功时返回 `true`, 当远程文件或目录不存在时返回 `false`.
      */
     public suspend fun refresh(): Boolean
 
     /**
-     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
+     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder].
+     * 不会更新当前 [AbsoluteFileFolder] 对象.
      *
      * 当远程文件或目录不存在时返回 `null`.
      *
