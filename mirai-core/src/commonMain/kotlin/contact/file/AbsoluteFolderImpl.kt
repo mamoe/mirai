@@ -85,6 +85,15 @@ internal class AbsoluteFolderImpl(
     override val isFile: Boolean get() = false
     override val isFolder: Boolean get() = true
 
+    override val absolutePath: String
+        get() {
+            val parent = parent
+            return when {
+                parent == null || this.id == "/" -> "/"
+                else -> "${parent.absolutePath}/$name"
+            }
+        }
+
     companion object {
         suspend fun getItemsFlow(
             client: QQAndroidClient,

@@ -41,6 +41,15 @@ internal class AbsoluteFileImpl(
     override val isFile: Boolean get() = true
     override val isFolder: Boolean get() = false
 
+    override val absolutePath: String
+        get() {
+            val parent = parent
+            return when {
+                parent == null || parent.name == "/" -> "/$name"
+                else -> "${parent.absolutePath}/$name"
+            }
+        }
+
     override suspend fun exists(): Boolean {
         return FileManagement.GetFileInfo(
             client,

@@ -66,8 +66,6 @@ internal abstract class AbstractAbsoluteFileFolder(
     protected abstract val isFile: Boolean
     protected abstract val isFolder: Boolean
 
-    val absolutePath get() = "${parent?.absolutePath}/$name"
-
     suspend fun renameTo(newName: String): Boolean {
         FileSystem.checkLegitimacy(newName)
         parentOrFail()
