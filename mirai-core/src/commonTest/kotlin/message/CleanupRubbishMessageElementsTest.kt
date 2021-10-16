@@ -58,17 +58,17 @@ internal class CleanupRubbishMessageElementsTest {
     }
 
     @Test
-    fun testCleanupNoSource() {
+    fun testQuoteAtSpace() {
         // Windows PC QQ
         assertCleanup(
-            messageChainOf(QuoteReply(replySource), PlainText("Hello!")),
-            messageChainOf(At(123), PlainText(" "), QuoteReply(replySource), PlainText("Hello!")),
+            messageChainOf(source, QuoteReply(replySource), PlainText("Hello!")),
+            messageChainOf(source, At(123), PlainText(" "), QuoteReply(replySource), PlainText("Hello!")),
         )
 
         // QQ Android
         assertCleanup(
-            messageChainOf(QuoteReply(replySource), PlainText("Hello!")),
-            messageChainOf(QuoteReply(replySource), At(1234567890), PlainText(" Hello!")),
+            messageChainOf(source, QuoteReply(replySource), PlainText("Hello!")),
+            messageChainOf(source, QuoteReply(replySource), At(1234567890), PlainText(" Hello!")),
         )
     }
 
