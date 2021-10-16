@@ -58,10 +58,7 @@ internal class OnlineGroupImageImpl(
 
     override val originUrl: String
         get() = if (delegate.origUrl.isBlank()) {
-            "http://gchat.qpic.cn/gchatpic_new/0/0-0-${
-                imageId.substring(1..36)
-                    .replace("-", "")
-            }/0?term=2"
+            gchatImageUrlByImageId(imageId)
         } else "http://gchat.qpic.cn" + delegate.origUrl
 
     override val isEmoji: Boolean by lazy {
@@ -77,6 +74,13 @@ private fun <T : ImgExtPbResvAttrCommon> ByteArray.pbImageResv_checkIsEmoji(seri
         }
     }.getOrNull() ?: false
 }
+
+private fun gchatImageUrlByImageId(imageId: String) =
+    "http://gchat.qpic.cn/gchatpic_new/0/0-0-${
+        imageId.substring(1..36)
+            .replace("-", "")
+    }/0?term=2"
+
 
 private val imageLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(Image::class) }
 internal val Image.Key.logger get() = imageLogger
@@ -117,6 +121,9 @@ OnlineFriendImage() {
     override val originUrl: String
         get() = if (delegate.origUrl.isNotBlank()) {
             "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
+        } else if (delegate.resId.isNotEmpty() && delegate.resId[0] == '{') {
+            // https://github.com/mamoe/mirai/issues/1600
+            gchatImageUrlByImageId(imageId)
         } else {
             "http://c2cpicdw.qpic.cn/offpic_new/0/" + delegate.resId + "/0?term=2"
         }
