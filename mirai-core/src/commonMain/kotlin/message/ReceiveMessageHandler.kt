@@ -241,7 +241,7 @@ internal object ReceiveMessageTransformer {
 
         kotlin.run quote@{
             val quoteReplyIndex = builder.indexOfFirst { it is QuoteReply }
-            if (quoteReplyIndex > 0) {
+            if (quoteReplyIndex >= 0) {
                 // QuoteReply + At + PlainText(space 1)
                 if (quoteReplyIndex < builder.size - 1) {
                     if (builder[quoteReplyIndex + 1] is At) {
@@ -269,7 +269,7 @@ internal object ReceiveMessageTransformer {
 
         kotlin.run { // VipFace
             val vipFaceIndex = builder.indexOfFirst { it is VipFace }
-            if (vipFaceIndex > 0 && vipFaceIndex < builder.size - 1) {
+            if (vipFaceIndex >= 0 && vipFaceIndex < builder.size - 1) {
                 val l = builder[vipFaceIndex] as VipFace
                 val text = builder[vipFaceIndex + 1]
                 if (text is PlainText) {
@@ -281,7 +281,7 @@ internal object ReceiveMessageTransformer {
         }
 
         fun removeSuffixText(index: Int, text: PlainText) {
-            if (index > 0 && index < builder.size - 1) {
+            if (index >= 0 && index < builder.size - 1) {
                 if (builder[index + 1] == text) {
                     builder.removeAt(index + 1)
                 }
