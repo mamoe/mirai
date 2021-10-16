@@ -22,6 +22,7 @@
 [iTXTech/mirai-native]: https://github.com/iTXTech/mirai-native
 [iTXTech/mirai-js]: https://github.com/iTXTech/mirai-js
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
+[GraiaProject/Argon]: https://github.com/GraiaProject/Argon
 [GraiaProject/Avilla]: https://github.com/GraiaProject/Avilla
 [Elaina]: https://github.com/wyapx/Elaina
 [NoneBot]: https://github.com/nonebot/nonebot2
@@ -91,6 +92,7 @@
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                        |
 | `JavaScript` / TypeScript | [nepsyn/miraipie]
 | `PHP`                     | [nkxingxh/miraiez]                          |
+| `Python`                  | [Argon][GraiaProject/Argon]                 |
 | `Python`                  | [Avilla][GraiaProject/Avilla]               |
 | `Python`                  | [Elaina]                                    |
 | `Python`                  | [NoneBot]                                   |
