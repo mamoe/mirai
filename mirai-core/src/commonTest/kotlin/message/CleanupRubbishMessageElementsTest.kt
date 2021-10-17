@@ -41,11 +41,6 @@ internal class CleanupRubbishMessageElementsTest {
     )
     //endregion
 
-    private fun noMessageSource(c: MessageChain): MessageChain {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        return createMessageChainImplOptimized(c.filterNot { it is MessageSource })
-    }
-
     private fun assertCleanup(excepted: MessageChain, source: MessageChain) {
         assertEquals(
             excepted,
@@ -114,6 +109,10 @@ internal class CleanupRubbishMessageElementsTest {
             messageChainOf(PlainText("1234567890")),
             "12 3   45 6  789 0".split(" ").map(::PlainText).toMessageChain(),
         )
+        assertCleanup(
+            msg(source, At(123456), "Hello! How are you?"),
+            msg(source, At(123456), "Hello", "!", " ", "How", " ", "are ", "you?"),
+        )
     }
 
     @Test
@@ -122,5 +121,36 @@ internal class CleanupRubbishMessageElementsTest {
             messageChainOf(),
             "                     ".split(" ").map(::PlainText).toMessageChain(),
         )
+        assertCleanup(
+            msg(AtAll),
+            msg("", AtAll, "", "", ""),
+        )
     }
+
+    @Test
+    fun testBlankPlainTextLiving() {
+        assertCleanup(
+            msg("    "),
+            msg("", " ", "  ", " "),
+        )
+    }
+
+    //region
+
+    private fun msg(vararg msgs: Any?): MessageChain {
+        return msgs.map { elm ->
+            when (elm) {
+                is Message -> elm
+                is String -> PlainText(elm)
+                else -> PlainText(elm.toString())
+            }
+        }.toMessageChain()
+    }
+
+    private fun noMessageSource(c: MessageChain): MessageChain {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        return createMessageChainImplOptimized(c.filterNot { it is MessageSource })
+    }
+
+    //endregion
 }
