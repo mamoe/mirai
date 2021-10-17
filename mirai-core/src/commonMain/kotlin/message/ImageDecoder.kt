@@ -12,10 +12,7 @@ package net.mamoe.mirai.internal.message
 import kotlinx.io.core.*
 import kotlinx.io.streams.asInput
 import net.mamoe.mirai.message.data.ImageType
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.readString
-import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.withUse
+import net.mamoe.mirai.utils.*
 import java.io.IOException
 
 //SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
@@ -27,6 +24,7 @@ private val JPG_SOF_RANGE = listOf(
     0xCD.toByte()..0xCF.toByte()
 )
 
+// https://docs.fileformat.com/image/jpeg/
 private fun Input.getJPGImageInfo(): ImageInfo {
     require(readBytes(2).contentEquals(byteArrayOf(0xFF.toByte(), 0xD8.toByte()))) {
         "It's not a valid jpg file"
@@ -51,7 +49,7 @@ private fun Input.getJPGImageInfo(): ImageInfo {
             //Other segment, skip
             discardExact(
                 //Skip size=segment length - 2 (length data itself)
-                readShort().toInt() - 2
+                readShort().toIntUnsigned() - 2
             )
         }
     }
