@@ -2,3 +2,7 @@
 * eol=lf
 *.png binary
 *.jar binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.bin binary
