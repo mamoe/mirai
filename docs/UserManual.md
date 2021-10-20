@@ -94,6 +94,24 @@ Mirai Console 内置一些指令，输入 `?` 并回车可以查看指令列表�
 
 一些常用指令介绍在[这里](https://github.com/mamoe/mirai-console/blob/master/docs/BuiltInCommands.md#mirai-console---builtin-commands)。
 
+#### 在群聊中使用命令 (权限授予)
+
+要允许从 QQ 聊天环境中使用各种命令, 你 **必须** 完成以下的配置
+
+1. 安装 [chat-command](https://github.com/project-mirai/chat-command)
+2. 完成命令执行权限授予
+
+> 关于不同的权限系统, 授予权限的方式, 或者授予权限的命令格式, 可能有所不一样
+>
+> 当使用 `非内置权限系统` 时, 具体的权限管理相关命令以相关的权限系统的文档为准
+> > 如 `LuckPerms-Mirai` 的权限管理命令为 `/lp` 而不是 `/permission`
+
+要完成权限授予, 你必须通过在控制台执行
+[`/permission permit [target] [permission]`](https://github.com/mamoe/mirai-console/blob/master/docs/BuiltInCommands.md#permissioncommand)
+来授予其他人执行相关命令的权限, 需要执行的权限一般情况在插件的介绍页都会给明
+
+`@see` [`PermissionCommand`](https://github.com/mamoe/mirai-console/blob/master/docs/BuiltInCommands.md#permissioncommand)
+
 ## 解决问题
 
 如果遇到使用问题或想提建议，可以在 [issues](https://github.com/mamoe/mirai/issues) 发表。也可以在[论坛](https://mirai.mamoe.net/)交流想法。
