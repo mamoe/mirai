@@ -328,6 +328,7 @@ public final class net/mamoe/mirai/contact/ExceptionsKt {
 }
 
 public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamoe/mirai/contact/Contact {
+	public abstract fun getFiles ()Lnet/mamoe/mirai/contact/file/RemoteFiles;
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
 }
 
@@ -747,6 +748,97 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
 	public static final fun getBot (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;)Lnet/mamoe/mirai/Bot;
+}
+
+public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFile : net/mamoe/mirai/contact/file/AbsoluteFileFolder {
+	public abstract fun getExpiryTime ()J
+	public abstract fun getMd5 ()[B
+	public abstract fun getSha1 ()[B
+	public abstract fun getSize ()J
+	public fun getUrl ()Ljava/lang/String;
+	public abstract fun getUrl (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun moveTo (Lnet/mamoe/mirai/contact/file/AbsoluteFolder;)Z
+	public abstract fun moveTo (Lnet/mamoe/mirai/contact/file/AbsoluteFolder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun refreshed ()Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public abstract fun refreshed (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun toMessage ()Lnet/mamoe/mirai/message/data/FileMessage;
+}
+
+public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFileFolder {
+	public fun delete ()Z
+	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun exists ()Z
+	public abstract fun exists (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAbsolutePath ()Ljava/lang/String;
+	public abstract fun getContact ()Lnet/mamoe/mirai/contact/FileSupported;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getLastModifiedTime ()J
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getParent ()Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun getUploadTime ()J
+	public abstract fun getUploaderId ()J
+	public abstract fun isFile ()Z
+	public abstract fun isFolder ()Z
+	public fun refresh ()Z
+	public abstract fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun refreshed ()Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder;
+	public abstract fun refreshed (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renameTo (Ljava/lang/String;)Z
+	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFolder : net/mamoe/mirai/contact/file/AbsoluteFileFolder {
+	public static final field Companion Lnet/mamoe/mirai/contact/file/AbsoluteFolder$Companion;
+	public static final field ROOT_FOLDER_ID Ljava/lang/String;
+	public fun children ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun children (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun childrenStream ()Ljava/util/stream/Stream;
+	public abstract fun childrenStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun createFolder (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun createFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun files ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun files (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun filesStream ()Ljava/util/stream/Stream;
+	public abstract fun filesStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun folders ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun folders (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun foldersStream ()Ljava/util/stream/Stream;
+	public abstract fun foldersStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getContentsCount ()I
+	public fun isEmpty ()Z
+	public fun refreshed ()Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun refreshed (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveAll (Ljava/lang/String;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun resolveAll (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveAllStream (Ljava/lang/String;)Ljava/util/stream/Stream;
+	public abstract fun resolveAllStream (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveFiles (Ljava/lang/String;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun resolveFiles (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveFilesStream (Ljava/lang/String;)Ljava/util/stream/Stream;
+	public abstract fun resolveFilesStream (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveFolder (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun resolveFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public abstract fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/AbsoluteFolder;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/AbsoluteFolder;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/file/AbsoluteFolder$Companion {
+	public static final field ROOT_FOLDER_ID Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/contact/file/RemoteFiles {
+	public abstract fun getContact ()Lnet/mamoe/mirai/contact/FileSupported;
+	public abstract fun getRoot ()Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
+	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessage {
@@ -5977,6 +6069,21 @@ public abstract interface annotation class net/mamoe/mirai/utils/NotStableForInh
 
 public final class net/mamoe/mirai/utils/OverFileSizeMaxException : java/lang/IllegalStateException {
 	public fun <init> ()V
+}
+
+public abstract interface class net/mamoe/mirai/utils/ProgressionCallback {
+	public static final field Companion Lnet/mamoe/mirai/utils/ProgressionCallback$Companion;
+	public static fun asProgressionCallback (Lkotlinx/coroutines/channels/SendChannel;Z)Lnet/mamoe/mirai/utils/ProgressionCallback;
+	public fun onBegin (Ljava/lang/Object;Lnet/mamoe/mirai/utils/ExternalResource;)V
+	public fun onFailure (Ljava/lang/Object;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/Throwable;)V
+	public fun onFinished (Ljava/lang/Object;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/Object;)V
+	public fun onProgression (Ljava/lang/Object;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/Object;)V
+	public fun onSuccess (Ljava/lang/Object;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/Object;)V
+}
+
+public final class net/mamoe/mirai/utils/ProgressionCallback$Companion {
+	public final fun asProgressionCallback (Lkotlinx/coroutines/channels/SendChannel;Z)Lnet/mamoe/mirai/utils/ProgressionCallback;
+	public static synthetic fun asProgressionCallback$default (Lnet/mamoe/mirai/utils/ProgressionCallback$Companion;Lkotlinx/coroutines/channels/SendChannel;ZILjava/lang/Object;)Lnet/mamoe/mirai/utils/ProgressionCallback;
 }
 
 public abstract interface class net/mamoe/mirai/utils/RemoteFile {
