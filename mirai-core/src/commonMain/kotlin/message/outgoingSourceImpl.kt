@@ -172,6 +172,7 @@ internal class OnlineMessageSourceToGroupImpl(
         coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, IntArray>(
             timeoutMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
         ) {
+            if (it.bot !== this.bot) return@asyncFromEventOrNull null
             if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
                 multi[it.messageRandom] = it.sequenceId
                 if (multi.size == this@OnlineMessageSourceToGroupImpl.internalIds.size) {

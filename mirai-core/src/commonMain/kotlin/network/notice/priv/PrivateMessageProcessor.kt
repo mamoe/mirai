@@ -9,10 +9,14 @@
 
 package net.mamoe.mirai.internal.network.notice.priv
 
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.AbstractEvent
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCode
 import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
@@ -36,8 +40,35 @@ import net.mamoe.mirai.utils.context
  * @see GroupTempMessageSyncEvent
  */
 internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type()) {
+
+    internal data class SendPrivateMessageReceipt(
+        val bot: Bot?,
+        val messageRandom: Int,
+        val sequenceId: Int,
+        val fromAppId: Int,
+    ) : Packet, Event, Packet.NoLog, AbstractEvent() {
+        override fun toString(): String {
+            return "OnlinePush.PbC2CMsgSync.SendPrivateMessageReceipt(messageRandom=$messageRandom, sequenceId=$sequenceId)"
+        }
+
+        companion object {
+            val EMPTY = SendPrivateMessageReceipt(null, 0, 0, 0)
+        }
+    }
+
     override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         markAsConsumed()
+
+        if (fromSync) {
+            val msgFromAppid = msgHead.fromAppid
+            // 3116 = music share
+            // message sent by bot
+            if (msgFromAppid == 3116) {
+                handleSpecialMessageSendingResponse(data, msgFromAppid)
+                return
+            }
+        }
+
         if (msgHead.fromUin == bot.id && fromSync) {
             // Bot send message to himself? or from other client? I am not the implementer.
             bot.client.sendFriendMessageSeq.updateIfSmallerThan(msgHead.msgSeq)
@@ -106,5 +137,17 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 is AnonymousMemberImpl -> assertUnreachable()
             }
         }
+    }
+
+    private fun NoticePipelineContext.handleSpecialMessageSendingResponse(
+        data: MsgComm.Msg,
+        fromAppId: Int,
+    ) = data.context {
+        val messageRandom = data.msgBody.richText.attr?.random ?: return
+        collect(
+            SendPrivateMessageReceipt(
+                bot, messageRandom, data.msgHead.msgSeq, fromAppId
+            )
+        )
     }
 }
