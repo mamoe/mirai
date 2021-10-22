@@ -26,12 +26,12 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @NotStableForInheritance
 public interface AbsoluteFile : AbsoluteFileFolder {
     /**
-     * 文件到期时间, 时间戳秒.
+     * 文件到期时间戳, 单位秒.
      */
     public val expiryTime: Long
 
     /**
-     * 文件大小 (占用空间) bytes.
+     * 文件大小 (占用空间), 单位 byte.
      */
     public val size: Long
 
@@ -69,7 +69,8 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     public fun toMessage(): FileMessage
 
     /**
-     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
+     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder].
+     * 不会更新当前 [AbsoluteFileFolder] 对象.
      *
      * 当远程文件或目录不存在时返回 `null`.
      *

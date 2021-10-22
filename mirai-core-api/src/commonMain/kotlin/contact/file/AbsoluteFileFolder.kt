@@ -50,14 +50,19 @@ public sealed interface AbsoluteFileFolder {
     public val id: String
 
     /**
-     * 文件名或目录名. 注意, 当远程文件或目录被 (其他人) 改名时, [name] 不会变动. 只有在调用 [renameTo] 和 [refresh] 时才会更新.
+     * 文件名或目录名.
+     *
+     * 注意, 当远程文件或目录被 (其他人) 改名时, [name] 不会变动.
+     * 只有在调用 [renameTo] 和 [refresh] 时才会更新.
      *
      * 不会包含 `:*?"<>|/\` 任一字符.
      */
     public val name: String
 
     /**
-     * 绝对路径, 如 `/foo/bar.txt`. 注意, 当远程文件或目录被 (其他人) 移动到其他位置或其父目录名称改名时, [absolutePath] 不会变动.
+     * 绝对路径, 如 `/foo/bar.txt`.
+     *
+     * 注意, 当远程文件或目录被 (其他人) 移动到其他位置或其父目录名称改名时, [absolutePath] 不会变动.
      * 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
      */
     public val absolutePath: String
@@ -78,7 +83,9 @@ public sealed interface AbsoluteFileFolder {
     public val uploadTime: Long
 
     /**
-     * 远程文件或目录的最后修改时间, 时间戳秒. 注意, 当远程文件或目录被 (其他人) 改动时, [lastModifiedTime] 不会变动.
+     * 远程文件或目录的最后修改时间戳, 单位秒.
+     *
+     * 注意, 当远程文件或目录被 (其他人) 改动时, [lastModifiedTime] 不会变动.
      * 只有在调用 [renameTo] 和 [refresh] 等时才会更新.
      */
     public val lastModifiedTime: Long
@@ -90,7 +97,10 @@ public sealed interface AbsoluteFileFolder {
 
 
     /**
-     * 查询该远程文件或目录是否还存在于服务器. 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`.
+     * 查询该远程文件或目录是否还存在于服务器.
+     *
+     * 只会精确地按 [id] 检查, 而不会考虑同名文件或目录. 当文件或目录存在时返回 `true`.
+     *
      * 该操作不会更新 [absolutePath] 等属性.
      */
     public suspend fun exists(): Boolean

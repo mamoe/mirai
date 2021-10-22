@@ -43,7 +43,8 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     public fun isEmpty(): Boolean = contentsCount == 0
 
     /**
-     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder]. 不会更新当前 [AbsoluteFileFolder] 对象.
+     * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder].
+     * 不会更新当前 [AbsoluteFileFolder] 对象.
      *
      * 当远程文件或目录不存在时返回 `null`.
      *
@@ -110,6 +111,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
 
     /**
      * 获取一个已存在的名称为 [name] 的子目录. 当该名称的子目录不存在时返回 `null`.
+     *
      * @throws IllegalArgumentException 当 [name] 为空或包含非法字符 (`:*?"<>|`) 时抛出
      */
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
