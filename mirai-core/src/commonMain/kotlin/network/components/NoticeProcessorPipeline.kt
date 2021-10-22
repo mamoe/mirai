@@ -141,6 +141,7 @@ internal interface NoticePipelineContext : BotAware, NewContactSupport {
         val KEY_MSG_INFO = TypeKey<MsgInfo>("msgInfo")
 
         val NoticePipelineContext.fromSync get() = attributes[KEY_FROM_SYNC]
+        val NoticePipelineContext.fromSyncSafely get() = attributes[KEY_FROM_SYNC, false]
 
         /**
          * 来自 [MsgInfo] 的数据, 即 [MsgType0x210], [MsgType0x2DC] 的处理过程之中可以使用

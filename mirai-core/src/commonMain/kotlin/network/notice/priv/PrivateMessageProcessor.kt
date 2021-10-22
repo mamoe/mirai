@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSyncSafely
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
@@ -59,7 +60,7 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
     override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         markAsConsumed()
 
-        if (fromSync) {
+        if (fromSyncSafely) {
             val msgFromAppid = msgHead.fromAppid
             // 3116 = music share
             // message sent by bot
