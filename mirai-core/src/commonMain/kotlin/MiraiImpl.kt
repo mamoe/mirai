@@ -585,7 +585,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         @OptIn(InternalAPI::class) // ktor bug
                         append(
                             "cookie",
-                            "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id};"
+                            "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id}; p_skey=${bot.psKey("qqweb.qq.com")};"
                         )
                     }
                 }
