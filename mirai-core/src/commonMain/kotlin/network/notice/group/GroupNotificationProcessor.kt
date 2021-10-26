@@ -277,7 +277,14 @@ internal class GroupNotificationProcessor(
                                     return
                                 }
                             }
-                            collect(GroupAllowConfessTalkEvent(new, !new, group, false))
+                            collect(
+                                GroupAllowConfessTalkEvent(
+                                    origin = !new,
+                                    new = new,
+                                    group = group,
+                                    isByBot = false
+                                )
+                            )
                             //群特殊头衔授予
                         } else if (message.endsWith(">头衔")) {
                             message.parseToMessageDataList().let { seq ->
