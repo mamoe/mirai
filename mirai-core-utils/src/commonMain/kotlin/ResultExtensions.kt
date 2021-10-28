@@ -151,3 +151,12 @@ public inline fun <R> Result<R>.mapFailure(
 ): Result<R> = onFailure {
     return Result.failure(block(it))
 }
+
+public inline fun <R> Result<R>.onSuccessCatching(block: () -> Unit): Result<R> {
+    if (isSuccess) {
+        runCatching(block).onFailure {
+            return@onSuccessCatching Result.failure(it)
+        }
+    }
+    return this
+}
