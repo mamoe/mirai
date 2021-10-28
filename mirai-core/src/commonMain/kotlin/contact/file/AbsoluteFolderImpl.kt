@@ -153,6 +153,14 @@ internal class AbsoluteFolderImpl(
                 )
 
                 if (resp.boolFileExist) {
+                    // resp.boolFileExist:
+                    //      服务器是否存在相同的内容, 只是用来判断可不可以跳过上传
+                    //      当为 true 时跳过上传, 但仍然需要完成 `sendMessage(FileMessage)` 才是正常逻辑
+                    callback?.onBegin(file, content)
+                    val result = kotlin.runCatching {
+                        folder.contact.sendMessage(file.toMessage())
+                    }.map { content.size }
+                    callback?.onFinished(file, content, result)
                     return file
                 }
 
@@ -212,8 +220,11 @@ internal class AbsoluteFolderImpl(
                             callback.onProgression(file, content, it)
                         }
                     )
-                }.let {
-                    callback?.onFinished(file, content, it.map { content.size })
+                }.let { result0 ->
+                    val result = result0.onSuccessCatching {
+                        folder.contact.sendMessage(file.toMessage())
+                    }
+                    callback?.onFinished(file, content, result.map { content.size })
                 }
 
                 return file
