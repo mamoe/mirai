@@ -85,14 +85,19 @@ internal class AbsoluteFileImpl(
     }
 
     override suspend fun getUrl(): String? {
+        // Known error
+        // java.lang.IllegalStateException: Failed AbsoluteFileImpl.getUrl, result=-303, msg=param error: bus_id
+        // java.lang.IllegalStateException: Failed AbsoluteFileImpl.getUrl, result=-103, msg=GetFileAttrAction file not exist
+
         val resp = FileManagement.RequestDownload(
             client,
             groupCode = contact.id,
             busId = busId,
             fileId = id
-        ).sendAndExpect(bot).toResult("AbsoluteFileImpl.getUrl").getOrThrow()
+        ).sendAndExpect(bot)
+            .toResult("AbsoluteFileImpl.getUrl")
+            .getOrElse { return null }
 
-        // TODO: 2021/10/1 handle file not exists to return null
 
         return "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
                 id.toByteArray().toUHexString("")
