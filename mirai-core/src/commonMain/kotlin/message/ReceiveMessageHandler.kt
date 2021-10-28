@@ -218,76 +218,82 @@ internal object ReceiveMessageTransformer {
             }
             index++
         }
+
+        // delete empty plain text
+        removeAll { it is PlainText && it.content.isEmpty() }
     }
 
     fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
-        var previousLast: SingleMessage? = null
-        var last: SingleMessage? = null
-        return buildMessageChain(initialSize = this.count()) {
-            this@cleanupRubbishMessageElements.forEach { element ->
-                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                if (last is LongMessageInternal && element is PlainText) {
-                    if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
-                        previousLast = last
-                        last = element
-                        return@forEach
-                    }
-                }
-                if (last is PokeMessage && element is PlainText) {
-                    if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
-                        previousLast = last
-                        last = element
-                        return@forEach
-                    }
-                }
-                if (last is VipFace && element is PlainText) {
-                    val l = last as VipFace
-                    if (element.content.length == 4 + (l.count / 10) + l.kind.name.length) {
-                        previousLast = last
-                        last = element
-                        return@forEach
-                    }
-                }
-                // 解决tim发送的语音无法正常识别
-                if (element is PlainText) {
-                    if (element == UNSUPPORTED_VOICE_MESSAGE_PLAIN) {
-                        previousLast = last
-                        last = element
-                        return@forEach
-                    }
-                }
+        val builder = MessageChainBuilder(initialSize = count()).also {
+            it.addAll(this)
+        }
 
-                if (element is PlainText && last is At && previousLast is QuoteReply
-                    && element.content.startsWith(' ')
-                ) {
-                    // Android QQ 发送, 是 Quote+At+PlainText(" xxx") // 首空格
-                    removeLastOrNull() // At
-                    val new = PlainText(element.content.substring(1))
-                    add(new)
-                    previousLast = null
-                    last = new
-                    return@forEach
-                }
+        kotlin.run moveQuoteReply@{ // Move QuoteReply after MessageSource
+            val exceptedQuoteReplyIndex = builder.indexOfFirst { it is MessageSource } + 1
+            val quoteReplyIndex = builder.indexOfFirst { it is QuoteReply }
+            if (quoteReplyIndex < 1) return@moveQuoteReply
+            if (quoteReplyIndex != exceptedQuoteReplyIndex) {
+                val qr = builder[quoteReplyIndex]
+                builder.removeAt(quoteReplyIndex)
+                builder.add(exceptedQuoteReplyIndex, qr)
+            }
+        }
 
-                if (element is QuoteReply) {
-                    // 客户端为兼容早期不支持 QuoteReply 的客户端而添加的 At
-                    removeLastOrNull()?.let { rm ->
-                        if ((rm as? PlainText)?.content != " ") add(rm)
-                        else removeLastOrNull()?.let { rm2 ->
-                            if (rm2 !is At) add(rm2)
+        kotlin.run quote@{
+            val quoteReplyIndex = builder.indexOfFirst { it is QuoteReply }
+            if (quoteReplyIndex >= 0) {
+                // QuoteReply + At + PlainText(space 1)
+                if (quoteReplyIndex < builder.size - 1) {
+                    if (builder[quoteReplyIndex + 1] is At) {
+                        builder.removeAt(quoteReplyIndex + 1)
+                    }
+                    if (quoteReplyIndex < builder.size - 1) {
+                        val elm = builder[quoteReplyIndex + 1]
+                        if (elm is PlainText && elm.content.startsWith(' ')) {
+                            if (elm.content.length == 1) {
+                                builder.removeAt(quoteReplyIndex + 1)
+                            } else {
+                                builder[quoteReplyIndex + 1] = PlainText(elm.content.substring(1))
+                            }
                         }
                     }
+                    return@quote
                 }
-
-                append(element)
-
-                previousLast = last
-                last = element
             }
-
-            // 处理分片信息
-            compressContinuousPlainText()
         }
+
+        // TIM audios
+        if (builder.any { it is Audio }) {
+            builder.remove(UNSUPPORTED_VOICE_MESSAGE_PLAIN)
+        }
+
+        kotlin.run { // VipFace
+            val vipFaceIndex = builder.indexOfFirst { it is VipFace }
+            if (vipFaceIndex >= 0 && vipFaceIndex < builder.size - 1) {
+                val l = builder[vipFaceIndex] as VipFace
+                val text = builder[vipFaceIndex + 1]
+                if (text is PlainText) {
+                    if (text.content.length == 4 + (l.count / 10) + l.kind.name.length) {
+                        builder.removeAt(vipFaceIndex + 1)
+                    }
+                }
+            }
+        }
+
+        fun removeSuffixText(index: Int, text: PlainText) {
+            if (index >= 0 && index < builder.size - 1) {
+                if (builder[index + 1] == text) {
+                    builder.removeAt(index + 1)
+                }
+            }
+        }
+
+        removeSuffixText(builder.indexOfFirst { it is LongMessageInternal }, UNSUPPORTED_MERGED_MESSAGE_PLAIN)
+        removeSuffixText(builder.indexOfFirst { it is PokeMessage }, UNSUPPORTED_POKE_MESSAGE_PLAIN)
+
+        builder.compressContinuousPlainText()
+
+        return builder.asMessageChain()
     }
 
     private fun decodeText(text: ImMsgBody.Text, list: MessageChainBuilder) {
