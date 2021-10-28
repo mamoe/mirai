@@ -31,6 +31,7 @@ public sealed interface TypeSafeMap {
     public val size: Int
 
     public operator fun <T> get(key: TypeKey<T>): T
+    public operator fun <T> get(key: TypeKey<T>, defaultValue: T): T
     public operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
 
     public fun toMapBoxed(): Map<TypeKey<*>, Any?>
@@ -80,7 +81,10 @@ internal open class TypeSafeMapImpl(
     override operator fun <T> get(key: TypeKey<T>): T =
         map[key.name]?.uncheckedCast() ?: throw NoSuchElementException(key.toString())
 
-    override operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
+    override operator fun <T> get(key: TypeKey<T>, defaultValue: T): T =
+        map[key.name]?.uncheckedCast() ?: defaultValue
+
+    override operator fun <T> contains(key: TypeKey<T>): Boolean = map.containsKey(key.name)
 
     override fun toMapBoxed(): Map<TypeKey<*>, Any?> = map.mapKeys { TypeKey<Any?>(it.key) }
     override fun toMap(): Map<String, Any?> = map

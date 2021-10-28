@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.components.MessageSvcSyncer
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
+import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor.SendPrivateMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
@@ -357,6 +358,25 @@ internal class FriendSendMessageHandler(
 ) : UserSendMessageHandler<FriendImpl>(contact) {
     override val messageSvcSendMessage: (client: QQAndroidClient, contact: FriendImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
         MessageSvcPbSendMsg::createToFriend
+
+    override suspend fun constructSourceForSpecialMessage(
+        finalMessage: MessageChain,
+        fromAppId: Int
+    ): OnlineMessageSource.Outgoing {
+
+        val receipt: SendPrivateMessageReceipt = nextEventOrNull(3000) {
+            it.bot === bot && it.fromAppId == fromAppId
+        } ?: SendPrivateMessageReceipt.EMPTY
+
+        return OnlineMessageSourceToFriendImpl(
+            internalIds = intArrayOf(receipt.messageRandom),
+            sequenceIds = intArrayOf(receipt.sequenceId),
+            sender = bot,
+            target = contact,
+            time = bot.clock.server.currentTimeSeconds().toInt(),
+            originalMessage = finalMessage
+        )
+    }
 }
 
 internal class StrangerSendMessageHandler(
@@ -399,8 +419,9 @@ internal open class GroupSendMessageHandler(
         fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
 
-        val receipt: SendGroupMessageReceipt =
-            nextEventOrNull(3000) { it.fromAppId == fromAppId } ?: SendGroupMessageReceipt.EMPTY
+        val receipt: SendGroupMessageReceipt = nextEventOrNull(3000) {
+            it.bot === bot && it.fromAppId == fromAppId
+        } ?: SendGroupMessageReceipt.EMPTY
 
         return OnlineMessageSourceToGroupImpl(
             contact,

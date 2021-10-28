@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.notice.group
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
@@ -44,6 +45,7 @@ internal class GroupMessageProcessor(
     private val logger: MiraiLogger,
 ) : SimpleNoticeProcessor<MsgOnlinePush.PbPushMsg>(type()) {
     internal data class SendGroupMessageReceipt(
+        val bot: Bot?,
         val messageRandom: Int,
         val sequenceId: Int,
         val fromAppId: Int,
@@ -53,7 +55,7 @@ internal class GroupMessageProcessor(
         }
 
         companion object {
-            val EMPTY = SendGroupMessageReceipt(0, 0, 0)
+            val EMPTY = SendGroupMessageReceipt(null, 0, 0, 0)
         }
     }
 
@@ -81,7 +83,7 @@ internal class GroupMessageProcessor(
                 // 3116=group music share
                 // 2021=group file
                 // message sent by bot
-                collect(SendGroupMessageReceipt(messageRandom, msgHead.msgSeq, msgHead.fromAppid))
+                collect(SendGroupMessageReceipt(bot, messageRandom, msgHead.msgSeq, msgHead.fromAppid))
                 return
             }
             // else: sync form other device
