@@ -42,8 +42,6 @@ public enum class GroupHonorType(public val value: Int) {
 @MiraiExperimentalApi
 @Serializable
 public data class GroupHonorListData(
-    @SerialName("acceptLanguages")
-    val acceptLanguages: List<Language?>? = null,
 
     @SerialName("gc")
     val gc: String?,
@@ -106,7 +104,19 @@ public data class GroupHonorListData(
     @SerialName("hwExcellentList")
     val hwExcellentList: List<Actor?>? = null
 ) {
-    @Serializable
+
+    @Deprecated(
+        message = "Meaningless response",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("error(\"Delete me\")"),
+    )
+    @Suppress("DEPRECATION_ERROR")
+    val acceptLanguages: List<Language?>? get() = null
+
+    @Deprecated(
+        message = "Meaningless response",
+        level = DeprecationLevel.ERROR,
+    )
     public data class Language(
         @SerialName("code")
         val code: String? = null,
