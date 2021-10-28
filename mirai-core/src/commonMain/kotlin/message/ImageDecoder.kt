@@ -18,20 +18,21 @@ import java.io.IOException
 //SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
 // (0xC4, 0xC8 and 0xCC not included due to is not an SOF)
 private val JPG_SOF_RANGE = listOf(
-    0xC0.toByte()..0xC3.toByte(),
-    0xC5.toByte()..0xC7.toByte(),
-    0xC9.toByte()..0xCB.toByte(),
-    0xCD.toByte()..0xCF.toByte()
+    0xC0..0xC3,
+    0xC5..0xC7,
+    0xC9..0xCB,
+    0xCD..0xCF
 )
 
 // https://docs.fileformat.com/image/jpeg/
+// http://www.vip.sugovica.hu/Sardi/kepnezo/JPEG%20File%20Layout%20and%20Format.htm
 private fun Input.getJPGImageInfo(): ImageInfo {
     require(readBytes(2).contentEquals(byteArrayOf(0xFF.toByte(), 0xD8.toByte()))) {
         "It's not a valid jpg file"
     }
     //0xFF Segment Start
     while (readByte() == 0xFF.toByte()) {
-        val type = readByte()
+        val type = readByte().toIntUnsigned()
         //Find SOF
         if (JPG_SOF_RANGE.any { it.contains(type) }) {
             //Length
@@ -42,15 +43,16 @@ private fun Input.getJPGImageInfo(): ImageInfo {
             val width = readShort().toInt()
             return ImageInfo(width = width, height = height, imageType = ImageType.JPG)
         } else {
-            //SOS Segment, header is ended
-            if (type == 0xDA.toByte()) {
-                break
+            when (type) {
+                //SOS Segment, header is ended
+                0xDA -> break
+                //0x00 (Byte alignment) and 0x01 (TEM)
+                in 0x00..0x01 -> continue
+                //RST[0-7] no length and content, skip
+                in 0xD0..0xD7 -> continue
+                //Normal segment, Skipped size=Segment Length - 2 (Length data itself)
+                else -> discardExact(readShort().toIntUnsigned() - 2)
             }
-            //Other segment, skip
-            discardExact(
-                //Skip size=segment length - 2 (length data itself)
-                readShort().toIntUnsigned() - 2
-            )
         }
     }
     throw IllegalArgumentException("It's not a valid jpg file, failed to find an SOF segment")
