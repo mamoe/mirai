@@ -90,6 +90,7 @@ internal class AbsoluteFolderImpl(
             val parent = parent
             return when {
                 parent == null || this.id == "/" -> "/"
+                parent.parent == null || parent.id == "/" -> "/$name"
                 else -> "${parent.absolutePath}/$name"
             }
         }
