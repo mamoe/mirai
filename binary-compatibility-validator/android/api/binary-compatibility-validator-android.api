@@ -785,6 +785,7 @@ public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFileFolder 
 	public abstract fun refreshed (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameTo (Ljava/lang/String;)Z
 	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFolder : net/mamoe/mirai/contact/file/AbsoluteFileFolder {

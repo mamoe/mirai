@@ -144,5 +144,7 @@ public sealed interface AbsoluteFileFolder {
      * 该函数会遍历上级目录的所有文件并匹配当前文件, 因此可能会非常慢, 请不要频繁使用.
      */
     public suspend fun refreshed(): AbsoluteFileFolder?
+
+    public override fun toString(): String
 }
 

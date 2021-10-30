@@ -379,6 +379,8 @@ internal class AbsoluteFolderImpl(
         return true
     }
 
+    override fun toString(): String = "AbsoluteFolder(name=$name, absolutePath=$absolutePath, id=$id)"
+
     override suspend fun refreshed(): AbsoluteFolder? = parentOrRoot.folders().firstOrNull { it.id == this.id }
 
     override fun equals(other: Any?): Boolean {

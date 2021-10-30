@@ -116,6 +116,8 @@ internal class AbsoluteFileImpl(
         return true
     }
 
+    override fun toString(): String = "AbsoluteFile(name=$name, absolutePath=$absolutePath, id=$id)"
+
     override suspend fun refreshed(): AbsoluteFile? {
         val result = FileManagement.GetFileInfo(client, contact.id, id, busId)
             .sendAndExpect(bot)
