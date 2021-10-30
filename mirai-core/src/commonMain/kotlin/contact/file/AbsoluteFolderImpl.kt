@@ -428,7 +428,6 @@ internal class AbsoluteFolderImpl(
     }
 
     override suspend fun exists(): Boolean {
-        // TODO: 2021/10/1 try optimize exists
         return parentOrFail().folders().firstOrNull { it.id == this.id } != null
     }
 
