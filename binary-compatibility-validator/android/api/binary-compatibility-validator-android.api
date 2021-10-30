@@ -765,15 +765,18 @@ public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFile : net/
 }
 
 public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFileFolder {
+	public static final field Companion Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder$Companion;
 	public fun delete ()Z
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun exists ()Z
 	public abstract fun exists (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getAbsolutePath ()Ljava/lang/String;
 	public abstract fun getContact ()Lnet/mamoe/mirai/contact/FileSupported;
+	public static fun getExtension (Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder;)Ljava/lang/String;
 	public abstract fun getId ()Ljava/lang/String;
 	public abstract fun getLastModifiedTime ()J
 	public abstract fun getName ()Ljava/lang/String;
+	public static fun getNameWithoutExtension (Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder;)Ljava/lang/String;
 	public abstract fun getParent ()Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
 	public abstract fun getUploadTime ()J
 	public abstract fun getUploaderId ()J
@@ -786,6 +789,11 @@ public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFileFolder 
 	public fun renameTo (Ljava/lang/String;)Z
 	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/contact/file/AbsoluteFileFolder$Companion {
+	public final fun getExtension (Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder;)Ljava/lang/String;
+	public final fun getNameWithoutExtension (Lnet/mamoe/mirai/contact/file/AbsoluteFileFolder;)Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFolder : net/mamoe/mirai/contact/file/AbsoluteFileFolder {

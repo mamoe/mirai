@@ -17,6 +17,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.NotStableForInheritance
+import java.io.File
 
 /**
  * 绝对文件或目录标识. 精确表示一个远程文件. 不会受同名文件或目录的影响.
@@ -146,5 +147,34 @@ public sealed interface AbsoluteFileFolder {
     public suspend fun refreshed(): AbsoluteFileFolder?
 
     public override fun toString(): String
-}
 
+    public companion object {
+        /**
+         * 返回去掉文件后缀的文件名. 如 `foo.txt` 返回 `foo`.
+         *
+         * 注意, 当远程文件或目录被 (其他人) 改名时, [nameWithoutExtension] 不会变动.
+         * 只有在调用 [renameTo] 和 [refresh] 时才会更新.
+         *
+         * 不会包含 `:*?"<>|/\` 任一字符.
+         *
+         * @see File.nameWithoutExtension
+         */
+        @get:JvmStatic
+        public val AbsoluteFileFolder.nameWithoutExtension: String
+            get() = name.substringBeforeLast('.')
+
+        /**
+         * 返回文件的后缀名. 如 `foo.txt` 返回 `txt`.
+         *
+         * 注意, 当远程文件或目录被 (其他人) 改名时, [extension] 不会变动.
+         * 只有在调用 [renameTo] 和 [refresh] 时才会更新.
+         *
+         * 不会包含 `:*?"<>|/\` 任一字符.
+         *
+         * @see File.extension
+         */
+        @get:JvmStatic
+        public val AbsoluteFileFolder.extension: String
+            get() = name.substringAfterLast('.')
+    }
+}
