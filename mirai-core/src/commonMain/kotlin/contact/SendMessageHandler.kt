@@ -15,6 +15,8 @@ import kotlinx.coroutines.async
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.nextEventOrNull
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.contact.GroupSendMessageHandler.Companion.fixImageFileId
+import net.mamoe.mirai.internal.contact.GroupSendMessageHandler.Companion.updateFriendImageForGroupMessage
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
@@ -279,6 +281,17 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
                 forward.nodeList.sumOf { it.messageChain.size }
             )
             forward.nodeList.forEach { tmp.addAll(it.messageChain) }
+            tmp.forEach {
+                val tmpContact = contact;
+                if (tmpContact is GroupImpl) {
+                    if (it is OfflineGroupImage) {
+                        tmpContact.fixImageFileId(it)
+                    }
+                    if (it is FriendImage) {
+                        tmpContact.updateFriendImageForGroupMessage(it)
+                    }
+                }
+            }
 
             // toMessageChain will lose some element
             @Suppress("INVISIBLE_MEMBER")
@@ -435,7 +448,7 @@ internal open class GroupSendMessageHandler(
     }
 
     companion object {
-        private suspend fun GroupImpl.fixImageFileId(image: OfflineGroupImage) {
+        suspend fun GroupImpl.fixImageFileId(image: OfflineGroupImage) {
             if (image.fileId == null) {
                 val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                     bot.client,
@@ -462,7 +475,7 @@ internal open class GroupSendMessageHandler(
         /**
          * Ensures server holds the cache
          */
-        private suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage): OfflineGroupImage {
+        suspend fun GroupImpl.updateFriendImageForGroupMessage(image: FriendImage): OfflineGroupImage {
             bot.network.run {
                 val response = ImgStore.GroupPicUp(
                     bot.client,
@@ -497,4 +510,6 @@ internal open class GroupSendMessageHandler(
             }
         }
     }
+
+
 }
