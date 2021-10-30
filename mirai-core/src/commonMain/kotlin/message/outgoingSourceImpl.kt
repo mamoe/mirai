@@ -17,9 +17,9 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.asyncFromEventOrNull
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -200,7 +200,7 @@ internal class OnlineMessageSourceToGroupImpl(
         ImMsgBody.SourceMsg(
             origSeqs = sequenceIds,
             senderUin = fromId,
-            toUin = Mirai.calculateGroupUinByGroupCode(targetId),
+            toUin = target.uin,
             flag = 1,
             elems = elements,
             type = 0,
@@ -211,7 +211,7 @@ internal class OnlineMessageSourceToGroupImpl(
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = fromId, // qq
-                    toUin = Mirai.calculateGroupUinByGroupCode(targetId), // group
+                    toUin = target.uin, // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
                     msgSeq = sequenceIds.single(),

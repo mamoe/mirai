@@ -113,6 +113,7 @@ public interface IMirai : LowLevelApiAccessor {
      */
     public fun getUin(contactOrBot: ContactOrBot): Long {
         return if (contactOrBot is Group)
+            @Suppress("DEPRECATION")
             calculateGroupUinByGroupCode(contactOrBot.id)
         else contactOrBot.id
     }
@@ -121,6 +122,10 @@ public interface IMirai : LowLevelApiAccessor {
      * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
      * @see getUin
      */
+    @Deprecated(
+        "The result might be wrong. Consider using getUin",
+        level = DeprecationLevel.WARNING
+    ) // deprecated since 2.8.0-RC, see #1479
     public fun calculateGroupUinByGroupCode(groupCode: Long): Long {
         var left: Long = groupCode / 1000000L
         when (left) {

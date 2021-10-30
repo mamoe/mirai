@@ -134,6 +134,7 @@ internal class Desensitizer private constructor(
             rules.forEach { (t, u) ->
                 if (t.toLongOrNull() != null && u.toLongOrNull() != null) {
                     addExtraRulesForNumber(t.toLong(), u.toLong())
+                    @Suppress("DEPRECATION")
                     addExtraRulesForNumber(
                         Mirai.calculateGroupUinByGroupCode(t.toLong()),
                         Mirai.calculateGroupUinByGroupCode(u.toLong())

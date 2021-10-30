@@ -150,6 +150,7 @@ internal interface GroupExtensions {
         val impl = GroupImpl(
             bot.cast(), coroutineContext, id,
             GroupInfo(
+                @Suppress("DEPRECATION")
                 Mirai.calculateGroupUinByGroupCode(id), owner, id, memo, name, allowMemberInvite,
                 allowAnonymousChat, autoApprove, confessTalk, muteAll, botMuteTimestamp
             ),
