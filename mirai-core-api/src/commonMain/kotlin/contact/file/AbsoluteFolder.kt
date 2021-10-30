@@ -117,10 +117,12 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
 
     /**
-     * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`.
+     * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`. 当 [deep] 为 `true` 时还会深入子目录查找.
      */
+    @JvmOverloads
     public suspend fun resolveFileById(
-        id: String
+        id: String,
+        deep: Boolean = false
     ): AbsoluteFile?
 
     /**
