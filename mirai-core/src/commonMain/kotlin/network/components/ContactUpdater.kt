@@ -201,6 +201,7 @@ internal class ContactUpdaterImpl(
             } else refreshGroupMemberList().also { sequence ->
                 cache.troopMemberNumSeq = dwMemberNumSeq ?: 0
                 cache.list = sequence.mapTo(ArrayList()) { it as MemberInfoImpl }
+                cacheService.groupMemberListCaches!!.map[groupCode] = cache
                 cacheService.groupMemberListCaches!!.reportChanged(groupCode)
             }
         } else {
