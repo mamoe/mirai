@@ -17,9 +17,11 @@ import net.mamoe.mirai.utils.RemoteFile
 /**
  * 支持文件操作的 [Contact]. 目前仅 [Group].
  *
- * 获取文件操作相关示例: [RemoteFile]
+ * 获取文件操作相关示例: [RemoteFiles]
  *
  * @since 2.5
+ *
+ * @see RemoteFiles
  */
 @NotStableForInheritance
 public interface FileSupported : Contact {

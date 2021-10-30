@@ -23,6 +23,9 @@ import java.io.File
  * 绝对文件或目录标识. 精确表示一个远程文件. 不会受同名文件或目录的影响.
  *
  * @since 2.8
+ * @see RemoteFiles
+ * @see AbsoluteFile
+ * @see AbsoluteFolder
  */
 @NotStableForInheritance
 public sealed interface AbsoluteFileFolder {

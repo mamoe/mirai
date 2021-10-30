@@ -22,6 +22,9 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * 绝对文件标识. 精确表示一个远程文件. 不会受同名文件或目录的影响.
  *
  * @since 2.8
+ * @see RemoteFiles
+ * @see AbsoluteFolder
+ * @see AbsoluteFileFolder
  */
 @NotStableForInheritance
 public interface AbsoluteFile : AbsoluteFileFolder {

@@ -25,6 +25,9 @@ import java.util.stream.Stream
  * 绝对目录标识. 精确表示一个远程目录. 不会受同名文件或目录的影响.
  *
  * @since 2.8
+ * @see RemoteFiles
+ * @see AbsoluteFile
+ * @see AbsoluteFileFolder
  */
 @NotStableForInheritance
 public interface AbsoluteFolder : AbsoluteFileFolder {
