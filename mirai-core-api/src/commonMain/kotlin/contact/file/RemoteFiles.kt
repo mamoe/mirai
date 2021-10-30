@@ -94,10 +94,10 @@ import java.util.stream.Stream
  * 服务器允许同名目录和文件存在. 如下同名的三个文件与一个目录是允许的, 但它们的 [AbsoluteFileFolder.id] 都互不相同:
  * ```
  * foo
- *  | test (目录)
- *  | test (文件)
- *  | test (文件)
- *  | test (文件)
+ *  |- test (目录)
+ *  |- test (文件)
+ *  |- test (文件)
+ *  |- test (文件)
  * ```
  * 注意, 目录不允许同名.
  *
