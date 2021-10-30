@@ -19,6 +19,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.FileSupported
+import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
@@ -40,6 +41,7 @@ import net.mamoe.mirai.utils.*
 @Serializable(FileMessage.Serializer::class)
 @SerialName(FileMessage.SERIAL_NAME)
 @NotStableForInheritance
+@JvmBlockingBridge
 public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 服务器需要的某种 ID.
@@ -74,10 +76,19 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
      */
-    @JvmBlockingBridge
+    @Suppress("DEPRECATION")
+    @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
+        @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)
     }
+
+    /**
+     * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
+     *
+     * @since 2.8
+     */
+    public suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile?
 
     override val key: Key get() = Key
 

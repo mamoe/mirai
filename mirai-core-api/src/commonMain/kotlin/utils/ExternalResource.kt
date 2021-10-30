@@ -437,6 +437,11 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.uploadAndSend
          */
+        @Suppress("DEPRECATION")
+        @Deprecated(
+            "Deprecated. Please use AbsoluteFolder.uploadNewFile",
+            ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+        ) // deprecated since 2.8.0-RC
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
@@ -456,6 +461,11 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.uploadAndSend
          */
+        @Suppress("DEPRECATION")
+        @Deprecated(
+            "Deprecated. Please use AbsoluteFolder.uploadNewFile",
+            ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+        ) // deprecated since 2.8.0-RC
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsFile")

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "DEPRECATION")
 @file:JvmBlockingBridge
 
 package net.mamoe.mirai.utils
@@ -97,6 +97,7 @@ import java.io.File
  * @see FileSupported
  * @since 2.5
  */
+@Deprecated("Please use RemoteFiles and AbsoluteFileFolder form fileSupported.files") // deprecated since 2.8.0-RC
 @NotStableForInheritance
 public interface RemoteFile {
     /**
@@ -348,6 +349,10 @@ public interface RemoteFile {
      * 上传进度回调, 可供前端使用, 以提供进度显示.
      * @see asProgressionCallback
      */
+    @Deprecated(
+        "Deprecated without replacement. Please use AbsoluteFolder.uploadNewFile",
+        ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+    ) // deprecated since 2.8.0-RC
     public interface ProgressionCallback {
         /**
          * 当上传开始时调用
@@ -610,6 +615,11 @@ public interface RemoteFile {
          */
         @JvmStatic
         @JvmOverloads
+        @Deprecated(
+            "Deprecated. Please use AbsoluteFolder.uploadNewFile or RemoteFiles.uploadNewFile",
+            ReplaceWith("this.files.uploadNewFile(path, resource, callback)"),
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.8.0-RC
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             resource: ExternalResource,
@@ -624,6 +634,11 @@ public interface RemoteFile {
          */
         @JvmStatic
         @JvmOverloads
+        @Deprecated(
+            "Deprecated. Please use AbsoluteFolder.uploadNewFile or RemoteFiles.uploadNewFile",
+            ReplaceWith("file.toExternalResource().use { this.files.uploadNewFile(path, it, callback) }"),
+            level = DeprecationLevel.WARNING
+        ) // deprecated since 2.8.0-RC
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             file: File,

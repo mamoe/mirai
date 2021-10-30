@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("DEPRECATION", "OverridingDeprecatedMember")
+
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.coroutines.flow.*
@@ -44,6 +46,10 @@ internal object FileSystem {
         if (char != null) {
             throw IllegalArgumentException("""Chars ':*?"<>|' are not allowed in path. RemoteFile path contains illegal char: '$char'. path='$path'""")
         }
+    }
+
+    fun isLegal(path: String): Boolean {
+        return path.firstOrNull { it in """:*?"<>|""" } == null
     }
 
     fun normalize(path: String): String {
