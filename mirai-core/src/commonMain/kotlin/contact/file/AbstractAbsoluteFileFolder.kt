@@ -12,18 +12,18 @@
 package net.mamoe.mirai.internal.contact.file
 
 import net.mamoe.mirai.contact.FileSupported
+import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
-import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.FileSystem
 import net.mamoe.mirai.utils.cast
 
+internal fun AbstractAbsoluteFileFolder.api(): AbsoluteFileFolder = this.cast()
 internal fun AbsoluteFileFolder.impl(): AbstractAbsoluteFileFolder = this.cast()
 internal fun AbsoluteFile.impl(): AbsoluteFileImpl = this.cast()
 internal fun AbsoluteFolder.impl(): AbsoluteFolderImpl = this.cast()
@@ -51,10 +51,10 @@ internal abstract class AbstractAbsoluteFileFolder(
     protected inline val bot get() = contact.bot.asQQAndroidBot()
     protected inline val client get() = bot.client
 
-    protected fun checkPermission(): Boolean {
-        if (uploaderId == bot.id) return true
-        if (contact is GroupImpl && !contact.botPermission.isOperator()) return false
-        return true
+    protected abstract fun checkPermission(operationHint: String)
+
+    fun throwPermissionDeniedException(operationHint: String): Nothing {
+        throw PermissionDeniedException("Permission denied: '$operationHint' on file '${this.api().absolutePath}' requires an operator permission.")
     }
 
     protected fun parentOrFail() = parent ?: error("Cannot rename the root folder.")
@@ -69,7 +69,7 @@ internal abstract class AbstractAbsoluteFileFolder(
     suspend fun renameTo(newName: String): Boolean {
         FileSystem.checkLegitimacy(newName)
         parentOrFail()
-        checkPermission()
+        checkPermission("renameTo")
 
         val result = if (isFile) {
             FileManagement.RenameFile(client, contact.id, busId, id, parent.idOrRoot, newName)
@@ -92,13 +92,22 @@ internal abstract class AbstractAbsoluteFileFolder(
     }
 
     suspend fun delete(): Boolean {
-        checkPermission()
-        return if (isFile) {
+        checkPermission("delete")
+        val result = if (isFile) {
             FileManagement.DeleteFile(client, contact.id, busId, id, parent.idOrRoot).sendAndExpect(bot)
         } else {
             // natively 'recursive'
             FileManagement.DeleteFolder(client, contact.id, id).sendAndExpect(bot)
-        }.toResult("AbstractAbsoluteFileFolder.delete", checkResp = false).getOrThrow().int32RetCode == 0
+        }.toResult("AbstractAbsoluteFileFolder.delete", checkResp = false).getOrThrow()
+
+        return when (result.int32RetCode) {
+            -36 -> throwPermissionDeniedException("delete")
+            0 -> true
+            else -> {
+                // files not exists or other errors.
+                false
+            }
+        }
     }
 
     @Suppress("DuplicatedCode")

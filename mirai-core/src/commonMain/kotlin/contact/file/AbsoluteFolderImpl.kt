@@ -15,6 +15,8 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.contact.isOperator
+import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl.Companion.findFileByPath
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
@@ -82,6 +84,12 @@ internal class AbsoluteFolderImpl(
     contact,
     parent, id, name, uploadTime, uploaderId, lastModifiedTime, 0
 ), AbsoluteFolder {
+    override fun checkPermission(operationHint: String) {
+        // 目录权限不受 '允许任何人上传' 设置的影响
+        if (contact is GroupImpl && !contact.botPermission.isOperator()) throwPermissionDeniedException(operationHint)
+        return
+    }
+
     override val isFile: Boolean get() = false
     override val isFolder: Boolean get() = true
 
@@ -137,6 +145,10 @@ internal class AbsoluteFolderImpl(
                     resource = content,
                     filename = filepath
                 ).sendAndExpect(folder.bot).toResult("AbsoluteFolderImpl.upload").getOrThrow()
+
+                when (resp.int32RetCode) {
+                    -36 -> folder.throwPermissionDeniedException("uploadNewFile")
+                }
 
                 val file = AbsoluteFileImpl(
                     contact = folder.contact,
@@ -289,16 +301,62 @@ internal class AbsoluteFolderImpl(
 
     override suspend fun createFolder(name: String): AbsoluteFolder {
         if (name.isBlank()) throw IllegalArgumentException("folder name cannot be blank.")
-        checkPermission()
+        checkPermission("createFolder")
         FileSystem.checkLegitimacy(name)
 
         // server only support nesting depth level of 1 so we don't need to check the name
 
-        FileManagement.CreateFolder(client, contact.id, this.id, name)
+        val result = FileManagement.CreateFolder(client, contact.id, this.id, name)
             .sendAndExpect(bot).toResult("AbsoluteFolderImpl.mkdir", checkResp = false)
             .getOrThrow() // throw protocol errors
 
-        return this.resolveFolder(name) ?: error("Failed to create dir '$name'.")
+        /*
+        2021-10-30 13:06:33 D/soutv: unnamed = CreateFolderRspBody#-941698272 {
+            folderInfo=FolderInfo#1879610684 {
+                    createTime=0x617D3548(1635595592)
+                    createUin=xxx
+                    folderId=/49a18e46-cf24-4362-b0d0-13235c0e7862
+                    folderName=myFolder
+                    modifyTime=0x617D3548(1635595592)
+                    modifyUin=xxx
+                    parentFolderId=/
+                    usedSpace=0x0000000000000000(0)
+            }
+            retMsg=ok
+        }
+         */
+
+        /*
+        2021-10-30 13:03:44 D/soutv: unnamed = CreateFolderRspBody#-941698272 {
+            clientWording=只允许群主和管理员操作
+            int32RetCode=0xFFFFFFDC(-36)
+            retMsg=not group admin
+        }
+         */
+
+        /*
+        2021-10-30 13:10:32 D/soutv: unnamed = CreateFolderRspBody#-941698272 {
+            clientWording=同名文件夹已存在
+            int32RetCode=0xFFFFFEC7(-313)
+            retMsg=folder name has exist
+        }
+         */
+
+        return when (result.int32RetCode) {
+            -36 -> throwPermissionDeniedException("createFolder")
+            -313 -> this.resolveFolder(name) // already exists
+            0 -> {
+                if (result.folderInfo != null) {
+                    this.createChildFolder(result.folderInfo)
+                } else {
+                    this.resolveFolder(name)
+                }
+            }
+            else -> {
+                // unexpected errors
+                error("Failed to create folder '$name': ${result.int32RetCode} ${result.clientWording}.")
+            }
+        } ?: error("Failed to create folder '$name': server returned success but failed to find folder.")
     }
 
     override suspend fun resolveFolder(name: String): AbsoluteFolder? {

@@ -38,6 +38,14 @@ internal class AbsoluteFileImpl(
     contact, parent, id, name, uploadTime, uploaderId, lastModifiedTime,
     busId
 ) {
+    override fun checkPermission(operationHint: String) {
+        // TODO: 30/10/2021  checkPermission: 群可以设置允许任何人上传而目前没有检测这个属性, 因此不能实现权限判定
+
+//        if (uploaderId == bot.id) return
+//        if (contact is GroupImpl && !contact.botPermission.isOperator()) throwPermissionDeniedException(operationHint)
+//        return
+    }
+
     override val isFile: Boolean get() = true
     override val isFolder: Boolean get() = false
 
@@ -68,16 +76,22 @@ internal class AbsoluteFileImpl(
             error("Cross-group file operation is not yet supported.")
         }
         if (folder.absolutePath == this.parentOrRoot.absolutePath) return true
-        checkPermission()
-//        if (this.isFile) {
-        return (FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
+        checkPermission("moveTo")
+
+        val result = FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
             .sendAndExpect(bot).toResult("AbsoluteFileImpl.moveTo", checkResp = false)
-            .getOrThrow().int32RetCode == 0)
-            .also {
-                if (it) {
-                    parent = folder
-                }
+            .getOrThrow()
+
+        return when (result.int32RetCode) {
+            -36 -> throwPermissionDeniedException("moveTo")
+            0 -> {
+                parent = folder
+                true
             }
+            else -> {
+                false
+            }
+        }
 //        } else {
 //            return FileManagement.RenameFolder(client, contact.id, id, name).sendAndExpect(bot)
 //                .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
