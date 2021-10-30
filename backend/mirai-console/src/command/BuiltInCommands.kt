@@ -306,7 +306,7 @@ public object BuiltInCommands {
             })
         }
 
-        @Description("添加自动登录")
+        @Description("添加自动登录, passwordKind 可选 PLAIN 或 MD5")
         @SubCommand
         public suspend fun CommandSender.add(account: Long, password: String, passwordKind: PasswordKind = PLAIN) {
             val accountStr = account.toString()
