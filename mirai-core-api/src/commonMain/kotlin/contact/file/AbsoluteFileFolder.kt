@@ -175,6 +175,6 @@ public sealed interface AbsoluteFileFolder {
          */
         @get:JvmStatic
         public val AbsoluteFileFolder.extension: String
-            get() = name.substringAfterLast('.')
+            get() = name.substringAfterLast('.', "")
     }
 }
