@@ -10,11 +10,11 @@
 @file:Suppress("ObjectPropertyName", "ObjectPropertyName", "unused", "MemberVisibilityCanBePrivate")
 
 import org.gradle.api.attributes.Attribute
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.8.0-M1"
+    const val project = "2.8.0-RC"
 
     const val core = project
     const val console = project
