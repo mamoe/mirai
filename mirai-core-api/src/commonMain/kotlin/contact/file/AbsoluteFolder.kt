@@ -102,7 +102,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * 创建一个名称为 [name] 的子目录. 返回成功创建的或已有的子目录.
+     * 创建一个名称为 [name] 的子目录. 返回成功创建的或已有的子目录. 当目标目录已经存在时则直接返回该目录.
      *
      * @throws IllegalArgumentException 当 [name] 为空或包含非法字符 (`:*?"<>|`) 时抛出
      * @throws PermissionDeniedException 当权限不足时抛出
@@ -117,14 +117,21 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
 
     /**
-     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径.
+     * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`.
+     */
+    public suspend fun resolveFileById(
+        id: String
+    ): AbsoluteFile?
+
+    /**
+     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件.
      */
     public suspend fun resolveFiles(
         path: String
     ): Flow<AbsoluteFile>
 
     /**
-     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径.
+     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件.
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveFiles], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveFiles].
      */
@@ -134,14 +141,14 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     ): Stream<AbsoluteFile>
 
     /**
-     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径.
+     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件和目录.
      */
     public suspend fun resolveAll(
         path: String
     ): Flow<AbsoluteFileFolder>
 
     /**
-     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径.
+     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件和目录.
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveAll], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveAll].
      */

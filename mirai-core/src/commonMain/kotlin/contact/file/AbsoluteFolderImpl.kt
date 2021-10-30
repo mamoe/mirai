@@ -307,6 +307,11 @@ internal class AbsoluteFolderImpl(
         return getItemsFlow().firstOrNull { it.folderInfo?.folderName == name }?.resolve() as AbsoluteFolder?
     }
 
+    override suspend fun resolveFileById(id: String): AbsoluteFile? {
+        if (id == "/" || id.isEmpty()) throw IllegalArgumentException("Illegal file id: $id")
+        return getItemsFlow().filter { it.fileInfo?.fileId == id }.map { it.resolve() as AbsoluteFile }.firstOrNull()
+    }
+
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
         if (!FileSystem.isLegal(path)) return emptyFlow()
