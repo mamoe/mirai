@@ -370,6 +370,8 @@ internal class AbsoluteFolderImpl(
         getItemsFlow().filter { it.fileInfo?.fileId == id }.map { it.resolve() as AbsoluteFile }.firstOrNull()
             ?.let { return it }
 
+        if (!deep) return null
+
         return folders().map { it.resolveFileById(id, deep) }.firstOrNull()
     }
 
