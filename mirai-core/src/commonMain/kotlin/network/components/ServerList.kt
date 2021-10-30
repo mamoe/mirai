@@ -86,10 +86,7 @@ internal interface ServerList {
 
     companion object : ComponentKey<ServerList> {
         val DEFAULT_SERVER_LIST: Set<ServerAddress> =
-            """msfwifi.3g.qq.com:8080, 14.215.138.110:8080, 113.96.12.224:8080,
-                |157.255.13.77:14000, 120.232.18.27:443, 
-                |183.3.235.162:14000, 163.177.89.195:443, 183.232.94.44:80, 
-                |203.205.255.224:8080, 203.205.255.221:8080""".trimMargin()
+            """msfwifi.3g.qq.com:8080""".trimMargin()
                 .splitToSequence(",").filterNot(String::isBlank)
                 .map { it.trim() }
                 .map {
