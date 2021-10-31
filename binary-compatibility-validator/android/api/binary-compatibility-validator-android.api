@@ -5572,6 +5572,23 @@ public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : n
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
+public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe/mirai/utils/ExternalResource {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close ()V
+	public final fun getClosed ()Lkotlinx/coroutines/Deferred;
+	public fun getFormatName ()Ljava/lang/String;
+	public fun getMd5 ()[B
+	public fun getSha1 ()[B
+	public final fun inputStream ()Ljava/io/InputStream;
+	protected abstract fun inputStream0 ()Ljava/io/InputStream;
+}
+
+public abstract interface class net/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback {
+	public abstract fun cleanup ()V
+}
+
 public class net/mamoe/mirai/utils/BotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V

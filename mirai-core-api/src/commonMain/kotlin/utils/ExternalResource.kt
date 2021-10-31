@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import net.mamoe.kjbb.JvmBlockingBridge
@@ -20,12 +21,12 @@ import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
-import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
+import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.utils.AbstractExternalResource.ResourceCleanCallback
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
@@ -523,6 +524,130 @@ public interface ExternalResource : Closeable {
     // endregion
     ///////////////////////////////////////////////////////////////////////////
 
+}
+
+/**
+ * 一个实现了基本方法的外部资源
+ *
+ * ## 实现
+ *
+ * [AbstractExternalResource] 实现了大部分必要的方法,
+ * 只有 [ExternalResource.inputStream], [ExternalResource.size] 还未实现
+ *
+ * 其中 [ExternalResource.inputStream] 要求每次读取的内容都是一致的
+ *
+ * Example:
+ * ```
+ * class MyCustomExternalResource: AbstractExternalResource() {
+ *      override fun inputStream0(): InputStream = FileInputStream("/test.txt")
+ *      override val size: Long get() = File("/test.txt").length()
+ * }
+ * ```
+ *
+ * ## 资源释放
+ *
+ * 如同 mirai 内置的 [ExternalResource] 实现一样,
+ * [AbstractExternalResource] 也会被注册进入资源泄露监视器
+ * (即意味着 [AbstractExternalResource] 也要求手动关闭)
+ *
+ * 为了确保逻辑正确性, [AbstractExternalResource] 不允许覆盖其 [close] 方法,
+ * 必须在构造 [AbstractExternalResource] 的时候给定一个 [ResourceCleanCallback] 以进行资源释放
+ *
+ * 对于 [ResourceCleanCallback], 有以下要求
+ *
+ * - 没有对 [AbstractExternalResource] 的访问 (即没有 [AbstractExternalResource] 的任何引用)
+ *
+ * Example:
+ * ```
+ * class MyRes(
+ *      cleanup: ResourceCleanCallback,
+ *      val delegate: Closable,
+ * ): AbstractExternalResource(cleanup) {
+ * }
+ *
+ * // 错误, 该写法会导致 Resource 永远也不会被自动释放
+ * lateinit var myRes: MyRes
+ * val cleanup = object: ResourceCleanCallback {
+ *      override fun cleanup() = myRes.delegate.close()
+ * }
+ * myRes = MyRes(cleanup, fetchDelegate())
+ *
+ * // 正确
+ * val delegate: Closable
+ * val cleanup = object: ResourceCleanCallback {
+ *      override fun cleanup() = delegate.close()
+ * }
+ * val myRes = MyRes(cleanup, delegate)
+ * ```
+ * @since TODO
+ *
+ * @see ExternalResource
+ */
+public abstract class AbstractExternalResource
+@JvmOverloads
+@Throws(Throwable::class)
+public constructor(
+    cleanup: ResourceCleanCallback? = null,
+) : ExternalResource {
+
+    public interface ResourceCleanCallback {
+        @Throws(IOException::class)
+        public fun cleanup()
+    }
+
+    override val md5: ByteArray by lazy { inputStream().md5() }
+    override val sha1: ByteArray by lazy { inputStream().sha1() }
+    override val formatName: String by lazy {
+        inputStream().detectFileTypeAndClose() ?: ExternalResource.DEFAULT_FORMAT_NAME
+    }
+
+    private val leakObserverRegistered = atomic(false)
+
+    private fun preERCall() {
+        // 用户自定义 AbstractExternalResource 也许会在 <init> 的时候失败
+        // 于是在第一次使用 ExternalResource 相关的函数的时候注册 LeakObserver
+        if (leakObserverRegistered.compareAndSet(expect = false, update = true)) {
+            ExternalResourceLeakObserver.register(this, holder)
+        }
+    }
+
+    final override fun inputStream(): InputStream {
+        preERCall()
+        return inputStream0()
+    }
+
+    protected abstract fun inputStream0(): InputStream
+
+    private class UsrCustomResHolder(
+        private val cleanup: ResourceCleanCallback?,
+        private val resourceName: String,
+    ) : ExternalResourceHolder() {
+
+        override val closed: Deferred<Unit> = CompletableDeferred()
+
+        override fun closeImpl() {
+            cleanup?.cleanup()
+        }
+
+        // display on logger of ExternalResourceLeakObserver
+        override fun toString(): String = resourceName
+    }
+
+    @Suppress("LeakingThis")
+    private val holder = UsrCustomResHolder(cleanup, buildString {
+        append("CustomExternResourceHolder<")
+        append(this@AbstractExternalResource.javaClass.name)
+        append('@')
+        append(System.identityHashCode(this@AbstractExternalResource))
+        append('>')
+    })
+
+    final override val closed: Deferred<Unit> get() = holder.closed.also { preERCall() }
+
+    @Throws(IOException::class)
+    final override fun close() {
+        holder.close()
+    }
 }
 
 /**
