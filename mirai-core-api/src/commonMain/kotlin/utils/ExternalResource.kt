@@ -633,9 +633,8 @@ public constructor(
         override fun toString(): String = resourceName
     }
 
-    @Suppress("LeakingThis")
     private val holder = UsrCustomResHolder(cleanup, buildString {
-        append("CustomExternResourceHolder<")
+        append("ExternalResourceHolder<")
         append(this@AbstractExternalResource.javaClass.name)
         append('@')
         append(System.identityHashCode(this@AbstractExternalResource))
