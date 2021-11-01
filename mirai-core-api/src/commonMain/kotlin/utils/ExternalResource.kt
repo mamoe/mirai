@@ -583,10 +583,12 @@ public interface ExternalResource : Closeable {
  * @since TODO
  *
  * @see ExternalResource
+ * @see AbstractExternalResource.setResourceCleanCallback
+ * @see AbstractExternalResource.registerToLeakObserver
  */
+@Suppress("MemberVisibilityCanBePrivate")
 public abstract class AbstractExternalResource
 @JvmOverloads
-@Throws(Throwable::class)
 public constructor(
     displayName: String? = null,
     cleanup: ResourceCleanCallback? = null,
@@ -609,7 +611,46 @@ public constructor(
 
     private val leakObserverRegistered = atomic(false)
 
-    private fun preERCall() {
+    /**
+     * 注册 [ExternalResource] 资源泄露监视器
+     *
+     * 受限于类继承构造器调用顺序, [AbstractExternalResource] 无法做到在完成初始化后马上注册监视器.
+     * 该方法以允许 sub-implementation 在完成初始化后直接注册资源监视器以避免意外的资源泄露
+     *
+     * 受限于构造器调用顺序, [AbstractExternalResource] 只能做到在调用相关资源方法的时候注册监视器,
+     * 在不调用本方法的前提下, 如果没有相关的资源访问操作, `this` 就会被意外泄露
+     *
+     * Example
+     * ```
+     * // Kotlin
+     * public class MyResource: AbstractExternalResource(
+     *      cleanup = // ....
+     * ) {
+     *      init {
+     *          val res: SomeResource
+     *          // 一些资源初始化
+     *          registerToLeakObserver()
+     *          setResourceCleanCallback(Releaser(res))
+     *      }
+     *
+     *      private class Releaser : AbstractExternalResource.ResourceCleanCallback {
+     *      }
+     * }
+     *
+     * // Java
+     * public class MyResource extends AbstractExternalResource {
+     *      public MyResource() throws IOException {
+     *          SomeResource res;
+     *          // 一些资源初始化
+     *          registerToLeakObserver();
+     *          setResourceCleanCallback(new Releaser(res));
+     *      }
+     *
+     *      private static class Releaser implements AbstractExternalResource.ResourceCleanCallback {}
+     * }
+     * ```
+     */
+    protected fun registerToLeakObserver() {
         // 用户自定义 AbstractExternalResource 也许会在 <init> 的时候失败
         // 于是在第一次使用 ExternalResource 相关的函数的时候注册 LeakObserver
         if (leakObserverRegistered.compareAndSet(expect = false, update = true)) {
@@ -617,15 +658,74 @@ public constructor(
         }
     }
 
+    /**
+     * 该方法用于告知 [AbstractExternalResource] 不需要注册资源泄露监视器。
+     * **仅在我知道我在干什么的前提下调用此方法**
+     *
+     * 不建议取消注册监视器, 这可能带来意外的错误
+     *
+     * @see registerToLeakObserver
+     */
+    protected fun dontRegisterLeakObserver() {
+        leakObserverRegistered.value = true
+    }
+
     final override fun inputStream(): InputStream {
-        preERCall()
+        registerToLeakObserver()
         return inputStream0()
     }
 
     protected abstract fun inputStream0(): InputStream
 
+    /**
+     * 修改 `this` 的资源释放回调
+     * **仅在我知道我在干什么的前提下调用此方法**
+     *
+     * ```
+     * class MyRes {
+     * // region kotlin
+     *
+     *      private inner class Releaser : ResourceCleanCallback
+     *
+     *      private class NotInnerReleaser : ResourceCleanCallback
+     *
+     *      init {
+     *          // 错误, 内部类, Releaser 存在对 MyRes 的引用
+     *          setResourceCleanCallback(Releaser())
+     *          // 错误, 匿名对象, 可能存在对 MyRes 的引用, 取决于编译器
+     *          setResourceCleanCallback(object : ResourceCleanCallback {})
+     *          // OK, 无 inner 修饰, 等同于 java 的 private static class
+     *          setResourceCleanCallback(NotInnerReleaser(directResource))
+     *      }
+     *
+     * // endregion kotlin
+     *
+     * // region java
+     *
+     *      private class Releaser implements ResourceCleanCallback {}
+     *      private static class StaticReleaser implements ResourceCleanCallback {}
+     *
+     *      MyRes() {
+     *          // 错误, 内部类, 存在对 MyRes 的引用
+     *          setResourceCleanCallback(new Releaser());
+     *          // 错误, 匿名对象, 取决于 javac
+     *          setResourceCleanCallback(new ResourceCleanCallback() {});
+     *          // 正确
+     *          setResourceCleanCallback(new StaticReleaser(directResource));
+     *      }
+     *
+     * // endregion java
+     * }
+     * ```
+     *
+     * Example 见 [registerToLeakObserver]
+     */
+    protected fun setResourceCleanCallback(cleanup: ResourceCleanCallback?) {
+        holder.cleanup = cleanup
+    }
+
     private class UsrCustomResHolder(
-        private val cleanup: ResourceCleanCallback?,
+        @JvmField var cleanup: ResourceCleanCallback?,
         private val resourceName: String,
     ) : ExternalResourceHolder() {
 
@@ -647,7 +747,7 @@ public constructor(
         append('>')
     })
 
-    final override val closed: Deferred<Unit> get() = holder.closed.also { preERCall() }
+    final override val closed: Deferred<Unit> get() = holder.closed.also { registerToLeakObserver() }
 
     @Throws(IOException::class)
     final override fun close() {

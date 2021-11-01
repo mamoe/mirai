@@ -5580,12 +5580,15 @@ public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe
 	public fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun close ()V
+	protected final fun dontRegisterLeakObserver ()V
 	public final fun getClosed ()Lkotlinx/coroutines/Deferred;
 	public fun getFormatName ()Ljava/lang/String;
 	public fun getMd5 ()[B
 	public fun getSha1 ()[B
 	public final fun inputStream ()Ljava/io/InputStream;
 	protected abstract fun inputStream0 ()Ljava/io/InputStream;
+	protected final fun registerToLeakObserver ()V
+	protected final fun setResourceCleanCallback (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;)V
 }
 
 public abstract interface class net/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback {
