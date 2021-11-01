@@ -588,8 +588,13 @@ public abstract class AbstractExternalResource
 @JvmOverloads
 @Throws(Throwable::class)
 public constructor(
+    displayName: String? = null,
     cleanup: ResourceCleanCallback? = null,
 ) : ExternalResource {
+
+    public constructor(
+        cleanup: ResourceCleanCallback? = null,
+    ): this(null, cleanup)
 
     public fun interface ResourceCleanCallback {
         @Throws(IOException::class)
@@ -634,7 +639,7 @@ public constructor(
         override fun toString(): String = resourceName
     }
 
-    private val holder = UsrCustomResHolder(cleanup, buildString {
+    private val holder = UsrCustomResHolder(cleanup, displayName ?: buildString {
         append("ExternalResourceHolder<")
         append(this@AbstractExternalResource.javaClass.name)
         append('@')

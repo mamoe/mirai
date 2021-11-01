@@ -5574,6 +5574,9 @@ public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mi
 
 public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe/mirai/utils/ExternalResource {
 	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/utils/AbstractExternalResource$ResourceCleanCallback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun close ()V
