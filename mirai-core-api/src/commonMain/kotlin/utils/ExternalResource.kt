@@ -567,18 +567,19 @@ public interface ExternalResource : Closeable {
  *
  * // 错误, 该写法会导致 Resource 永远也不会被自动释放
  * lateinit var myRes: MyRes
- * val cleanup = object: ResourceCleanCallback {
- *      override fun cleanup() = myRes.delegate.close()
+ * val cleanup = ResourceCleanCallback {
+ *      myRes.delegate.close()
  * }
  * myRes = MyRes(cleanup, fetchDelegate())
  *
  * // 正确
  * val delegate: Closable
- * val cleanup = object: ResourceCleanCallback {
- *      override fun cleanup() = delegate.close()
+ * val cleanup = ResourceCleanCallback {
+ *      delegate.close()
  * }
  * val myRes = MyRes(cleanup, delegate)
  * ```
+ *
  * @since TODO
  *
  * @see ExternalResource
@@ -590,7 +591,7 @@ public constructor(
     cleanup: ResourceCleanCallback? = null,
 ) : ExternalResource {
 
-    public interface ResourceCleanCallback {
+    public fun interface ResourceCleanCallback {
         @Throws(IOException::class)
         public fun cleanup()
     }
