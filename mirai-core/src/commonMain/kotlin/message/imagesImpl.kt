@@ -337,7 +337,7 @@ internal data class OfflineGroupImage(
     override val imageType: ImageType = ImageType.UNKNOWN
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
     @Transient
-    internal var fileId: Int? = null
+    internal var fileId: Int? = -1
 
     object Serializer : Image.FallbackSerializer("OfflineGroupImage")
 
