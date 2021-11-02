@@ -65,7 +65,7 @@ jobs:
 
       - name: Publish all artifacts
         run: >
-          ./gradlew publish --info --scan
+          ./gradlew publish --no-parallel --info --scan
 
       - name: Publish Gradle plugin
         run: >
