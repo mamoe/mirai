@@ -614,18 +614,16 @@ public constructor(
     /**
      * 注册 [ExternalResource] 资源泄露监视器
      *
-     * 受限于类继承构造器调用顺序, [AbstractExternalResource] 无法做到在完成初始化后马上注册监视器.
-     * 该方法以允许 sub-implementation 在完成初始化后直接注册资源监视器以避免意外的资源泄露
+     * 受限于类继承构造器调用顺序, [AbstractExternalResource] 无法做到在完成初始化后马上注册监视器
      *
-     * 受限于构造器调用顺序, [AbstractExternalResource] 只能做到在调用相关资源方法的时候注册监视器,
-     * 在不调用本方法的前提下, 如果没有相关的资源访问操作, `this` 就会被意外泄露
+     * 该方法以允许 实现类 在完成初始化后直接注册资源监视器以避免意外的资源泄露
      *
-     * Example
+     * 在不调用本方法的前提下, 如果没有相关的资源访问操作, `this` 可能会被意外泄露
+     *
+     * 正确示例:
      * ```
      * // Kotlin
-     * public class MyResource: AbstractExternalResource(
-     *      cleanup = // ....
-     * ) {
+     * public class MyResource: AbstractExternalResource() {
      *      init {
      *          val res: SomeResource
      *          // 一些资源初始化
@@ -633,7 +631,10 @@ public constructor(
      *          setResourceCleanCallback(Releaser(res))
      *      }
      *
-     *      private class Releaser : AbstractExternalResource.ResourceCleanCallback {
+     *      private class Releaser(
+     *          private val res: SomeResource,
+     *      ) : AbstractExternalResource.ResourceCleanCallback {
+     *          override fun cleanup() = res.close()
      *      }
      * }
      *
@@ -646,9 +647,16 @@ public constructor(
      *          setResourceCleanCallback(new Releaser(res));
      *      }
      *
-     *      private static class Releaser implements AbstractExternalResource.ResourceCleanCallback {}
+     *      private static class Releaser implements ResourceCleanCallback {
+     *          private final SomeResource res;
+     *          Releaser(SomeResource res) { this.res = res; }
+     *
+     *          public void cleanup() throws IOException { res.close(); }
+     *      }
      * }
      * ```
+     *
+     * @see setResourceCleanCallback
      */
     protected fun registerToLeakObserver() {
         // 用户自定义 AbstractExternalResource 也许会在 <init> 的时候失败
@@ -678,7 +686,7 @@ public constructor(
     protected abstract fun inputStream0(): InputStream
 
     /**
-     * 修改 `this` 的资源释放回调
+     * 修改 `this` 的资源释放回调。
      * **仅在我知道我在干什么的前提下调用此方法**
      *
      * ```
@@ -694,7 +702,7 @@ public constructor(
      *          setResourceCleanCallback(Releaser())
      *          // 错误, 匿名对象, 可能存在对 MyRes 的引用, 取决于编译器
      *          setResourceCleanCallback(object : ResourceCleanCallback {})
-     *          // OK, 无 inner 修饰, 等同于 java 的 private static class
+     *          // 正确, 无 inner 修饰, 等同于 java 的 private static class
      *          setResourceCleanCallback(NotInnerReleaser(directResource))
      *      }
      *
@@ -708,7 +716,7 @@ public constructor(
      *      MyRes() {
      *          // 错误, 内部类, 存在对 MyRes 的引用
      *          setResourceCleanCallback(new Releaser());
-     *          // 错误, 匿名对象, 取决于 javac
+     *          // 错误, 匿名对象, 可能存在对 MyRes 的引用, 取决于 javac
      *          setResourceCleanCallback(new ResourceCleanCallback() {});
      *          // 正确
      *          setResourceCleanCallback(new StaticReleaser(directResource));
@@ -718,7 +726,7 @@ public constructor(
      * }
      * ```
      *
-     * Example 见 [registerToLeakObserver]
+     * @see registerToLeakObserver
      */
     protected fun setResourceCleanCallback(cleanup: ResourceCleanCallback?) {
         holder.cleanup = cleanup
