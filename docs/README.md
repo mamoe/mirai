@@ -25,6 +25,7 @@
 [GraiaProject/Ariadne]: https://github.com/GraiaProject/Ariadne
 [GraiaProject/Avilla]: https://github.com/GraiaProject/Avilla
 [Elaina]: https://github.com/wyapx/Elaina
+[Cesloi]: https://github.com/RF-Tar-Railt/Cesloi
 [NoneBot]: https://github.com/nonebot/nonebot2
 [RedBeanN/node-mirai]: https://github.com/RedBeanN/node-mirai
 [Logiase/gomirai]: https://github.com/Logiase/gomirai
@@ -95,6 +96,7 @@
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]             |
 | `Python`                  | [Avilla][GraiaProject/Avilla]               |
 | `Python`                  | [Elaina]                                    |
+| `Python`                  | [Cesloi]                                    |
 | `Python`                  | [NoneBot]                                   |
 | `Python`                  | [jerrita/saaya]                             |
 | `Python`                  | [YiriMirai]                                 |
