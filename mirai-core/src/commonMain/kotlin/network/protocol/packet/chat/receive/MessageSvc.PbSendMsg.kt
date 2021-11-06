@@ -52,7 +52,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         object MessageTooLarge : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.MessageTooLarge"
         }
-        object ServerBusy : Response() {
+        object ServiceUnavailable : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.ServerBusy"
         }
 
@@ -466,7 +466,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         return when (response.result) {
             0 -> Response.SUCCESS
             10 -> Response.MessageTooLarge
-            32 -> Response.ServerBusy
+            32 -> Response.ServiceUnavailable
             else -> Response.Failed(
                 response.result,
                 response.errtype,

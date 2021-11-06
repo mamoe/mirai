@@ -156,8 +156,8 @@ internal abstract class SendMessageHandler<C : Contact> {
                                 }
                             }
                         }
-                        if (resp is MessageSvcPbSendMsg.Response.ServerBusy){
-                            throw IllegalStateException("Send message failed, server is busy.")
+                        if (resp is MessageSvcPbSendMsg.Response.ServiceUnavailable){
+                            throw ServiceUnavailableException(contact)
                         }
                         if (resp is MessageSvcPbSendMsg.Response.Failed) {
                             val contact = contact
