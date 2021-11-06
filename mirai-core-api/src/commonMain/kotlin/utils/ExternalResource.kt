@@ -29,8 +29,6 @@ import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import net.mamoe.mirai.utils.RemoteFile.Companion.sendFile
-import net.mamoe.mirai.utils.RemoteFile.Companion.uploadFile
 import java.io.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -385,7 +383,9 @@ public interface ExternalResource : Closeable {
             contact: FileSupported,
             path: String,
             callback: RemoteFile.ProgressionCallback? = null,
-        ): FileMessage = toExternalResource().use { contact.uploadFile(path, it, callback) }
+        ): FileMessage = toExternalResource().use {
+            contact.filesRoot.resolve(path).upload(it, callback)
+        }
 
         /**
          * 上传文件并获取文件消息.
@@ -419,7 +419,9 @@ public interface ExternalResource : Closeable {
             contact: FileSupported,
             path: String,
             callback: RemoteFile.ProgressionCallback? = null,
-        ): FileMessage = contact.uploadFile(path, this, callback)
+        ): FileMessage {
+            return contact.filesRoot.resolve(path).upload(this, callback)
+        }
 
         // endregion
 
@@ -449,7 +451,9 @@ public interface ExternalResource : Closeable {
             contact: C,
             path: String,
             callback: RemoteFile.ProgressionCallback? = null,
-        ): MessageReceipt<C> = toExternalResource().use { contact.sendFile(path, it, callback) }
+        ): MessageReceipt<C> = toExternalResource().use {
+            contact.filesRoot.resolve(path).upload(it, callback).sendTo(contact)
+        }
 
         /**
          * 上传文件并发送件消息.  如果要上传的文件格式是图片或者语音, 也会将它们作为文件上传而不会调整消息类型.
@@ -474,7 +478,9 @@ public interface ExternalResource : Closeable {
             contact: C,
             path: String,
             callback: RemoteFile.ProgressionCallback? = null,
-        ): MessageReceipt<C> = contact.sendFile(path, this, callback)
+        ): MessageReceipt<C> {
+            return contact.filesRoot.resolve(path).upload(this, callback).sendTo(contact)
+        }
 
         // endregion
 
