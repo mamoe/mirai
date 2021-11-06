@@ -67,7 +67,7 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     /**
      * 得到 [AbsoluteFile] 所对应的 [FileMessage].
      *
-     * 注: [FileMessage] 不可再次二次发送
+     * 注: 在 [上传文件][RemoteFiles.uploadNewFile] 时就已经发送了文件消息, [FileMessage] 不可手动发送
      */
     public fun toMessage(): FileMessage
 
