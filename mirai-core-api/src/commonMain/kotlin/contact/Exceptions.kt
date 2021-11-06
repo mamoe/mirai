@@ -47,15 +47,4 @@ public class BotIsBeingMutedException(
     } seconds"
 )
 
-/**
- * 发送消息时服务器拒绝服务而发出的异常.
- *
- * @see Group.sendMessage
- */
-@OptIn(ExperimentalTime::class)
-public class ServiceUnavailableException(
-    public val target: Contact
-) : RuntimeException(
-    "Send message to $target failed, server service is unavailable."
-)
 public inline val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining
