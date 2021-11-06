@@ -106,26 +106,26 @@ Contact.sendImage(/**/);
 ExternalResource.sendAsImage(/*...*/);
 ```
 
-## Send Voice
+## Send Audio
 
 发送语音与发送图片的区别不大，都是先 `upload` 然后 `send`
 
-> - 在 2.7.0 之前，只有群聊 (`Group`) 支持语音, 2.7.0 之后支持私聊语音
-> - 每次发送新语音前最好重新 `upload`, 避免复用 `Voice` 对象
+> - 在 2.7.0 之前，只有群聊 (`Group`) 支持语音（使用 `Voice`）, 2.7.0 之后支持私聊语音（使用 `Audio`）
+> - 每次发送新语音前最好重新 `upload`, 避免复用 `Audio` 对象
 > - **只支持 `amr` 和 `silk` 格式**
 
-要得到一个语音对象, 需要先 `uploadVoice`
+要得到一个语音对象, 需要先 `uploadAudio`
 
 Kotlin 可以使用自动补全得到相关方法
 
-> `contact.uploadVoice // IDEA 补全`
+> `contact.uploadAudio // IDEA 补全`
 
-Java 可以使用 `contact.uploadVoice(ExternalResource)` 来得到一个语音对象
+Java 可以使用 `contact.uploadAudio(ExternalResource)` 来得到一个语音对象
 (~~这也是为啥 ExternalResource 在前面~~)
-也可以使用 `ExternalResource` 定义的扩展方法
+也可以使用 `ExternalResource` 定义的扩展方法：
 
 ```java
-contact.sendMessage(ExternalResource.uploadAsVoice(/*...*/));
+contact.sendMessage(ExternalResource.uploadAsAudio(/*...*/));
 ```
 
 ## Members
