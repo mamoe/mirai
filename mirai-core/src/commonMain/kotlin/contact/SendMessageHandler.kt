@@ -331,6 +331,7 @@ private suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
     transformedMessage: MessageChain,
     step: SendMessageStep,
 ): MessageReceipt<C> { // Result cannot be in interface.
+    transformedMessage.verifySendingValid()
     val chain = transformedMessage.convertToLongMessageIfNeeded(step)
 
     chain.findIsInstance<QuoteReply>()?.source?.ensureSequenceIdAvailable()

@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.message.LongMessageInternal
+import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
@@ -32,6 +33,19 @@ internal fun Contact.logMessageSent(message: Message) {
 }
 
 internal fun MessageChain.countImages(): Int = this.count { it is Image }
+
+internal fun Message.verifySendingValid() {
+    fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
+    when (this) {
+        is MessageChain -> {
+            if (contains(MiraiInternalMessageFlag)) {
+                return
+            }
+            this.forEach { it.verifySendingValid() }
+        }
+        is FileMessage -> fail("Sending FileMessage is not in support")
+    }
+}
 
 internal fun MessageChain.verifyLength(
     originalMessage: Message, target: Contact,

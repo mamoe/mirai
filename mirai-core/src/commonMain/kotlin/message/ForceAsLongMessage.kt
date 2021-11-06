@@ -42,6 +42,15 @@ internal object IgnoreLengthCheck : MessageMetadata, ConstrainSingle, InternalFl
 }
 
 /**
+ * 代表来自 mirai 内部
+ */
+internal object MiraiInternalMessageFlag : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    AbstractMessageKey<MiraiInternalMessageFlag>({ it.safeCast() }) {
+    override val key: MessageKey<MiraiInternalMessageFlag> get() = this
+    override fun toString(): String = ""
+}
+
+/**
  * Ignore on transformation
  */
 internal interface InternalFlagOnlyMessage : SingleMessage
