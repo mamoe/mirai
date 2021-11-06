@@ -52,7 +52,7 @@ internal class Handler<in E : Event> internal constructor(
             subscriberContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: currentCoroutineContext()[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: kotlin.run {
-                    val logger = if (event is BotEvent) event.bot.logger else MiraiLogger.TopLevel
+                    val logger = if (event is BotEvent) event.bot.logger else logger
                     val subscriberName = subscriberContext[CoroutineName]?.name ?: "<unnamed>"
                     val broadcasterName = currentCoroutineContext()[CoroutineName]?.name ?: "<unnamed>"
                     val message =
@@ -66,6 +66,12 @@ internal class Handler<in E : Event> internal constructor(
 
             // not stopping listening.
             ListeningStatus.LISTENING
+        }
+    }
+
+    companion object {
+        private val logger by lazy {
+            MiraiLogger.Factory.create(Handler::class)
         }
     }
 }

@@ -20,9 +20,13 @@ internal val SeleniumLoginSolver: LoginSolver? by lazy {
     } catch (ignore: ClassNotFoundException) {
         null
     } catch (error: Throwable) {
-        MiraiLogger.TopLevel.warning("Error in loading mirai-login-solver-selenium, skip", error)
+        logger.warning("Error in loading mirai-login-solver-selenium, skip", error)
         null
     }
+}
+
+private val logger by lazy {
+    MiraiLogger.Factory.create(LoginSolver::class)
 }
 
 // null -> 该情况为 user 确认能自己传入 ticket, 不需要 Selenium 的帮助

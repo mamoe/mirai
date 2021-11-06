@@ -637,7 +637,11 @@ public inline fun BotConfiguration(block: BotConfiguration.() -> Unit): BotConfi
 }
 
 internal val deviceInfoStub: (Bot) -> DeviceInfo = {
-    MiraiLogger.TopLevel.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
-    MiraiLogger.TopLevel.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
+    logger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
+    logger.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
     DeviceInfo.random()
+}
+
+private val logger by lazy {
+    MiraiLogger.Factory.create(BotConfiguration::class)
 }
