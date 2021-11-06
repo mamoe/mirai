@@ -132,6 +132,8 @@ internal object WindowHelperJvm {
         CLI
     }
 
+    private val logger = MiraiLogger.Factory.create(this::class)
+
     internal val platformKind: PlatformKind = kotlin.run {
         if (kotlin.runCatching { Class.forName("android.util.Log") }.isSuccess) {
             // Android platform
@@ -162,8 +164,6 @@ internal object WindowHelperJvm {
             return@run PlatformKind.CLI
         }
     }
-
-    private val logger by lazy { MiraiLogger.Factory.create(this::class) }
 }
 
 
