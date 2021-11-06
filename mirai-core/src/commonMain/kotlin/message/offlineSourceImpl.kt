@@ -168,7 +168,9 @@ internal fun OfflineMessageSourceImplData(
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
             delegate.toUin != 0L -> delegate.toUin
-            delegate.srcMsg != null -> delegate.srcMsg.loadAs(MsgComm.Msg.serializer()).msgHead.toUin
+            delegate.srcMsg != null -> runCatching {
+                delegate.srcMsg.loadAs(MsgComm.Msg.serializer()).msgHead.toUin
+            }.getOrElse { 0L }
             else -> 0/*error("cannot find targetId. delegate=${delegate._miraiContentToString()}, delegate.srcMsg=${
             kotlin.runCatching { delegate.srcMsg?.loadAs(MsgComm.Msg.serializer())?._miraiContentToString() }
                 .fold(
