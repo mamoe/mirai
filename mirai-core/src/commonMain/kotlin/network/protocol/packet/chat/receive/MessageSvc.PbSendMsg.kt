@@ -53,7 +53,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             override fun toString(): String = "MessageSvcPbSendMsg.Response.MessageTooLarge"
         }
         object ServiceUnavailable : Response() {
-            override fun toString(): String = "MessageSvcPbSendMsg.Response.ServerBusy"
+            override fun toString(): String = "MessageSvcPbSendMsg.Response.ServiceUnavailable"
         }
 
         /**
