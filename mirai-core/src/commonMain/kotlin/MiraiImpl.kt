@@ -885,13 +885,21 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     )
 
     override suspend fun downloadLongMessage(bot: Bot, resourceId: String): MessageChain {
-        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.LONG_MESSAGE).msg
-            .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
-            .refineDeep(bot)
+        try {
+            return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.LONG_MESSAGE).msg
+                .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
+                .refineDeep(bot)
+        } catch (error: Throwable) {
+            throw IllegalStateException("Failed to download long message `$resourceId`", error)
+        }
     }
 
     override suspend fun downloadForwardMessage(bot: Bot, resourceId: String): List<ForwardMessage.Node> {
-        return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).toForwardMessageNodes(bot)
+        try {
+            return downloadMultiMsgTransmit(bot, resourceId, ResourceKind.FORWARD_MESSAGE).toForwardMessageNodes(bot)
+        } catch (error: Throwable) {
+            throw IllegalStateException("Failed to download forward message `$resourceId`", error)
+        }
     }
 
     internal open suspend fun MsgTransmit.PbMultiMsgNew.toForwardMessageNodes(
