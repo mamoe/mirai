@@ -162,8 +162,10 @@ internal class GroupImpl constructor(
         val result = GroupSendMessageHandler(this)
             .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
 
-        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-        logMessageSent(chain)
+        if (result.isSuccess) {
+            // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+            logMessageSent(chain)
+        }
 
         GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
 

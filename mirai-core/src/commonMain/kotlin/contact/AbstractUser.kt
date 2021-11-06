@@ -250,8 +250,10 @@ internal suspend fun <C : User> SendMessageHandler<out C>.sendMessageImpl(
     val result = this
         .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
 
-    // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-    contact.logMessageSent(chain)
+    if (result.isSuccess) {
+        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+        contact.logMessageSent(chain)
+    }
 
     postSendEventConstructor(contact, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
 
