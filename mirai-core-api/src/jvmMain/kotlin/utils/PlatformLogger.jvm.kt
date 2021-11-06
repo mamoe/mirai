@@ -13,6 +13,8 @@ package net.mamoe.mirai.utils
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -106,9 +108,12 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
         else debug(message.toString())
     }
 
-    protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    @Deprecated("Use formatter instead.", level = DeprecationLevel.HIDDEN)
+    protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
 
-    private val currentTimeFormatted get() = timeFormat.format(Date())
+    protected open val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    private val currentTimeFormatted get() = formatter.format(LocalDateTime.now())
 
     @MiraiExperimentalApi("This is subject to change.")
     protected enum class Color(private val format: String) {
