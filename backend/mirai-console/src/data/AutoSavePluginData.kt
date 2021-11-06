@@ -119,7 +119,7 @@ public open class AutoSavePluginData private constructor(
 }
 
 internal val debuggingLogger1 by lazy {
-    MiraiLogger.create("console.debug").withSwitch(false)
+    MiraiLogger.Factory.create(AutoSavePluginData::class, "console.debug").withSwitch(false)
 }
 
 @Suppress("RESULT_CLASS_IN_RETURN_TYPE")

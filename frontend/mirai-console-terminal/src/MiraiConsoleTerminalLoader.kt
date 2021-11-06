@@ -169,7 +169,8 @@ internal fun overrideSTD() {
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.create("stdout").run { ({ line: String? -> info(line) }) }
+                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stdout")
+                    .run { ({ line: String? -> info(line) }) }
             ),
             false,
             "UTF-8"
@@ -178,7 +179,8 @@ internal fun overrideSTD() {
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.create("stderr").run { ({ line: String? -> warning(line) }) }
+                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stderr")
+                    .run { ({ line: String? -> warning(line) }) }
             ),
             false,
             "UTF-8"

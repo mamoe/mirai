@@ -171,7 +171,7 @@ public interface MiraiConsole : CoroutineScope {
 
                 redirectNetworkLogToDirectory()
                 this.botLoggerSupplier = {
-                    MiraiLogger.create("Bot.${it.id}")
+                    MiraiLogger.Factory.create(Bot::class, "Bot.${it.id}")
                 }
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
                 autoReconnectOnForceOffline()

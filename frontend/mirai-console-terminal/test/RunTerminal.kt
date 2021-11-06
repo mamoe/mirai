@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.terminal
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
 import net.mamoe.mirai.console.logging.LoggerController
@@ -34,7 +35,7 @@ fun main() {
         BotConfigurationAlterer,
         mockPlugin,
         BotConfigurationAlterer { _, configuration ->
-            configuration.networkLoggerSupplier = { MiraiLogger.create("Net.${it.id}") } // deploy
+            configuration.networkLoggerSupplier = { MiraiLogger.Factory.create(Bot::class, "Net.${it.id}") } // deploy
             configuration
         }
     )

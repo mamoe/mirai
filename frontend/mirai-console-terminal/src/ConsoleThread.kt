@@ -33,7 +33,7 @@ import org.jline.reader.UserInterruptException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
-val consoleLogger by lazy { MiraiLogger.create("console") }
+val consoleLogger by lazy { MiraiLogger.Factory.create(MiraiConsole::class, "console") }
 
 @OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class, ExperimentalCommandDescriptors::class)
 internal fun startupConsoleThread() {
