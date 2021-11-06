@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.*
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -102,7 +101,9 @@ internal open class StdoutLogger constructor(
         else debug(message.toString())
     }
 
-    protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    protected open val timeFormat: SimpleDateFormat by threadLocal {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    }
 
     private val currentTimeFormatted get() = timeFormat.format(Date())
 
