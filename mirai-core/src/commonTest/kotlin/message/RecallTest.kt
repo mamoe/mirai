@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.hexToBytes
 import org.junit.jupiter.api.Test
@@ -90,21 +91,21 @@ internal class RecallTest : AbstractTest() {
         )
 
     @Test
-    fun `recall member message`() {
-        source(MockBot(), 1, 2, MemberPermission.MEMBER)
+    suspend fun `recall member message`() {
+        source(MockBot(), 1, 2, MemberPermission.MEMBER).recall()
     }
 
     @Test
-    fun `recall administrator message`() {
+    suspend fun `recall administrator message`() {
         assertThrows<PermissionDeniedException> {
-            source(MockBot(), 1, 2, MemberPermission.ADMINISTRATOR)
+            source(MockBot(), 1, 2, MemberPermission.ADMINISTRATOR).recall()
         }
     }
 
     @Test
-    fun `recall owner message`() {
+    suspend fun `recall owner message`() {
         assertThrows<PermissionDeniedException> {
-            source(MockBot(), 1, 2, MemberPermission.OWNER)
+            source(MockBot(), 1, 2, MemberPermission.OWNER).recall()
         }
     }
 }

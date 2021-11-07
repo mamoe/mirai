@@ -473,10 +473,11 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     else -> error("stub")
                 }
                 if (bot.id != source.fromId) {
-                    group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                     // if member leave, messageSource will throw exception(#1661)
-                    if ((group[source.fromId]?.permission ?: MemberPermission.MEMBER) != MemberPermission.MEMBER) {
-                        throw PermissionDeniedException("Permission denied: cannot recall message from administrator or owner")
+                    when (group[source.fromId]?.permission ?: MemberPermission.MEMBER) {
+                        MemberPermission.MEMBER -> group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+                        MemberPermission.ADMINISTRATOR -> group.checkBotPermission(MemberPermission.OWNER)
+                        MemberPermission.OWNER -> throw PermissionDeniedException("Permission denied: cannot recall message from owner")
                     }
                 }
 
