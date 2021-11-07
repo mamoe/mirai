@@ -30,10 +30,12 @@ import net.mamoe.mirai.utils.*
  *
  * [name] 与 [size] 只供本地使用, 发送消息时只会使用 [id] 和 [internalId].
  *
- * ### 文件操作
- * 要下载这个文件, 可通过 [toRemoteFile] 获取到 [RemoteFile] 然后操作.
+ * 注: [FileMessage] 不可二次发送
  *
- * 要获取到 [FileMessage], 可以通过 [MessageEvent.message] 获取, 或通过 [RemoteFile.upload] 上传.
+ * ### 文件操作
+ * 要下载这个文件, 可通过 [toAbsoluteFile] 获取到 [AbsoluteFile] 然后操作.
+ *
+ * 要获取到 [FileMessage], 可以通过 [MessageEvent.message] 获取, 或通过 [AbsoluteFile.toMessage] 得到.
  *
  * @since 2.5
  * @suppress [FileMessage] 的使用是稳定的, 但自行实现不稳定.

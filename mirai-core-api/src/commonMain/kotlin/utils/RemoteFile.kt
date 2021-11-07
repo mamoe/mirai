@@ -337,7 +337,7 @@ public interface RemoteFile {
     public suspend fun listFilesCollection(): List<RemoteFile> = listFiles().toList()
 
     /**
-     * 得到相应文件消息, 可以发送. 当 [RemoteFile] 表示一个目录或文件不存在时返回 `null`.
+     * 得到相应文件消息. 当 [RemoteFile] 表示一个目录或文件不存在时返回 `null`.
      */
     public suspend fun toMessage(): FileMessage?
 

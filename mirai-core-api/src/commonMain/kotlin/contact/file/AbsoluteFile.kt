@@ -65,9 +65,9 @@ public interface AbsoluteFile : AbsoluteFileFolder {
     public suspend fun getUrl(): String?
 
     /**
-     * 得到表示远程文件的可以发送的 [FileMessage].
+     * 得到 [AbsoluteFile] 所对应的 [FileMessage].
      *
-     * 在 [上传文件][RemoteFiles.uploadNewFile] 时就已经发送了文件消息. [toMessage] 可供之后再次发送使用.
+     * 注: 在 [上传文件][RemoteFiles.uploadNewFile] 时就已经发送了文件消息, [FileMessage] 不可手动发送
      */
     public fun toMessage(): FileMessage
 

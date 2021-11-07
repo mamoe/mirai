@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.message.FileMessageImpl
+import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol
@@ -29,7 +30,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.RemoteFile.Companion.ROOT_PATH
@@ -560,7 +560,7 @@ internal class RemoteFileImpl(
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         @Suppress("DEPRECATION")
-        return upload(resource).sendTo(contact)
+        return contact.sendMessage(upload(resource) + MiraiInternalMessageFlag)
     }
 
     // compiler bug
