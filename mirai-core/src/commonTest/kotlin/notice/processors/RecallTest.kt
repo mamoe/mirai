@@ -7,21 +7,21 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.notice.processors
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.PermissionDeniedException
-import net.mamoe.mirai.internal.MockBot
+import net.mamoe.mirai.internal.message.OnlineMessageSourceFromGroupImpl
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.test.AbstractTest
-import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.hexToBytes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class RecallTest : AbstractTest() {
+internal class RecallTest : AbstractNoticeProcessorTest() {
 
     fun source(b: Bot, senderid: Long, groupid: Long, permision: MemberPermission): OnlineMessageSource =
         OnlineMessageSourceFromGroupImpl(
@@ -51,9 +51,9 @@ internal class RecallTest : AbstractTest() {
                     contentHead = MsgComm.ContentHead(
                         pkgNum = 1,
                     ),
-                    msgBody = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MsgBody(
-                        richText = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.RichText(
-                            attr = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Attr(
+                    msgBody = ImMsgBody.MsgBody(
+                        richText = ImMsgBody.RichText(
+                            attr = ImMsgBody.Attr(
                                 codePage = 0,
                                 time = 162,
                                 random = -313,
@@ -64,20 +64,20 @@ internal class RecallTest : AbstractTest() {
                                 fontName = "微软雅黑",
                             ),
                             elems = mutableListOf(
-                                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                                ImMsgBody.Elem(
+                                    text = ImMsgBody.Text(
                                         str = "123123123",
                                     ),
-                                ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    elemFlags2 = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ElemFlags2(
+                                ), ImMsgBody.Elem(
+                                    elemFlags2 = ImMsgBody.ElemFlags2(
                                         msgRptCnt = 1,
                                     ),
-                                ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    generalFlags = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.GeneralFlags(
+                                ), ImMsgBody.Elem(
+                                    generalFlags = ImMsgBody.GeneralFlags(
                                         pbReserve = "08 01 20 CB 50 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 00 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 10 02 90 04 80 01 B8 04 00 C0 04 00 CA 04 00 F8 04 00 88 05 00".hexToBytes(),
                                     ),
-                                ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                                ), ImMsgBody.Elem(
+                                    extraInfo = ImMsgBody.ExtraInfo(
                                         nick = "user3",
                                         level = permision.level,
                                         groupMask = 1,
@@ -91,21 +91,52 @@ internal class RecallTest : AbstractTest() {
         )
 
     @Test
+    suspend fun `recall member message without permission`() {
+        val bot = setBot(2)
+        val group = bot.addGroup(2, 3, MemberPermission.MEMBER).apply {
+            // owner
+            addMember(3, permission = MemberPermission.OWNER)
+            // sender
+            addMember(1, permission = MemberPermission.MEMBER)
+        }
+        Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
+    }
+
+    @Test
     suspend fun `recall member message`() {
-        source(MockBot(), 1, 2, MemberPermission.MEMBER).recall()
+        val bot = setBot(2)
+        val group = bot.addGroup(2, 3, MemberPermission.ADMINISTRATOR).apply {
+            // owner
+            addMember(3, permission = MemberPermission.OWNER)
+            // sender
+            addMember(1, permission = MemberPermission.MEMBER)
+        }
+        Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
     }
 
     @Test
     suspend fun `recall administrator message`() {
+        val bot = setBot(2)
+        val group = bot.addGroup(2, 3, MemberPermission.ADMINISTRATOR).apply {
+            // owner
+            addMember(3, permission = MemberPermission.OWNER)
+            // sender
+            addMember(1, permission = MemberPermission.ADMINISTRATOR)
+        }
         assertThrows<PermissionDeniedException> {
-            source(MockBot(), 1, 2, MemberPermission.ADMINISTRATOR).recall()
+            Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
 
     @Test
     suspend fun `recall owner message`() {
+        val bot = setBot(2)
+        val group = bot.addGroup(2, 1, MemberPermission.ADMINISTRATOR).apply {
+            // sender
+            addMember(1, permission = MemberPermission.OWNER)
+        }
         assertThrows<PermissionDeniedException> {
-            source(MockBot(), 1, 2, MemberPermission.OWNER).recall()
+            Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
 }
