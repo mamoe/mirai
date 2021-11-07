@@ -474,8 +474,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 }
                 if (bot.id != source.fromId) {
                     group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-                    if (group.owner.id == source.fromId) {
-                        throw PermissionDeniedException("Permission denied: cannot recall message from owner")
+                    // if member leave, messageSource will throw exception(#1661)
+                    if ((group[source.fromId]?.permission ?: MemberPermission.MEMBER) != MemberPermission.MEMBER) {
+                        throw PermissionDeniedException("Permission denied: cannot recall message from administrator or owner")
                     }
                 }
 
