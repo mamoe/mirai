@@ -93,19 +93,21 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `recall member message without permission`() {
         val bot = setBot(2)
-        val group = bot.addGroup(2, 3, MemberPermission.MEMBER).apply {
+        val group = bot.addGroup(5, 3, MemberPermission.MEMBER).apply {
             // owner
             addMember(3, permission = MemberPermission.OWNER)
             // sender
             addMember(1, permission = MemberPermission.MEMBER)
         }
-        Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
+        assertThrows<PermissionDeniedException> {
+            Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
+        }
     }
 
     @Test
     suspend fun `recall member message`() {
         val bot = setBot(2)
-        val group = bot.addGroup(2, 3, MemberPermission.ADMINISTRATOR).apply {
+        val group = bot.addGroup(5, 3, MemberPermission.ADMINISTRATOR).apply {
             // owner
             addMember(3, permission = MemberPermission.OWNER)
             // sender
@@ -117,7 +119,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `recall administrator message`() {
         val bot = setBot(2)
-        val group = bot.addGroup(2, 3, MemberPermission.ADMINISTRATOR).apply {
+        val group = bot.addGroup(5, 3, MemberPermission.ADMINISTRATOR).apply {
             // owner
             addMember(3, permission = MemberPermission.OWNER)
             // sender
@@ -127,11 +129,21 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
             Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
+    
+    @Test
+    suspend fun `recall administrator message as owner`() {
+        val bot = setBot(2)
+        val group = bot.addGroup(5, 2, MemberPermission.OWNER).apply {
+            // sender
+            addMember(1, permission = MemberPermission.ADMINISTRATOR)
+        }
+        Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
+    }
 
     @Test
     suspend fun `recall owner message`() {
         val bot = setBot(2)
-        val group = bot.addGroup(2, 1, MemberPermission.ADMINISTRATOR).apply {
+        val group = bot.addGroup(5, 1, MemberPermission.ADMINISTRATOR).apply {
             // sender
             addMember(1, permission = MemberPermission.OWNER)
         }
