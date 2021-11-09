@@ -95,7 +95,7 @@ public object BuiltInCommands {
     ), BuiltInCommandInternal {
 
         /**
-         * @since 2.8.0-RC
+         * @since 2.8.0
          */
         // for https://github.com/mamoe/mirai-console/issues/416
         @JvmStatic
