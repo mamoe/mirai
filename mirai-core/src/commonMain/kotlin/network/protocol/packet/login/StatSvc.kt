@@ -239,9 +239,9 @@ internal class StatSvc {
                                 iOSVersion = client.device.version.sdk.toLong(),
                                 cNetType = if (client.networkType == NetworkType.WIFI) 1 else 0,
                                 vecGuid = client.device.guid,
-                                strDevName = client.device.model.encodeToString(),
-                                strDevType = client.device.model.encodeToString(),
-                                strOSVer = client.device.version.release.encodeToString(),
+                                strDevName = client.device.model.decodeToString(),
+                                strDevType = client.device.model.decodeToString(),
+                                strOSVer = client.device.version.release.decodeToString(),
                                 // register 时还需要
                                 /*
                                 var44.uNewSSOIp = field_127445;

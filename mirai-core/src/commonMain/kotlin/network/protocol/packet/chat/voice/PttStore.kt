@@ -25,7 +25,6 @@ import net.mamoe.mirai.internal.utils.toIpV4AddressString
 import net.mamoe.mirai.message.data.AudioCodec
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toUHexString
 
 internal inline val ExternalResource.voiceCodec: Int get() = audioCodec.id
@@ -118,7 +117,7 @@ internal class PttStore {
             val resp =
                 resp0.msgTryupPttRsp.firstOrNull() ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
             if (resp.failMsg != null) {
-                throw IllegalStateException(resp.failMsg.encodeToString())
+                throw IllegalStateException(resp.failMsg.decodeToString())
             }
             return Response.RequireUpload(
                 fileId = resp.fileid,
@@ -143,7 +142,7 @@ internal class PttStore {
                 val uint32DownPort: List<Int>
             ) : GroupPttDown.Response() {
                 override fun toString(): String {
-                    return "GroupPttDown(downPara=${downPara.encodeToString()},strDomain=$strDomain})"
+                    return "GroupPttDown(downPara=${downPara.decodeToString()},strDomain=$strDomain})"
                 }
             }
 
@@ -183,7 +182,7 @@ internal class PttStore {
             val resp =
                 resp0.msgGetpttUrlRsp.firstOrNull() ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
             if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)) {
-                throw IllegalStateException(resp.failMsg.encodeToString())
+                throw IllegalStateException(resp.failMsg.decodeToString())
             }
             return Response.DownLoadInfo(
                 downDomain = resp.downDomain,

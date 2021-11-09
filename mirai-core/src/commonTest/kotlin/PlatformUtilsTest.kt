@@ -11,7 +11,10 @@ package net.mamoe.mirai.internal
 
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.internal.test.AbstractTest
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.gzip
+import net.mamoe.mirai.utils.ungzip
+import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.zip
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,11 +22,11 @@ internal class PlatformUtilsTest : AbstractTest() {
 
     @Test
     fun testZip() {
-        assertEquals("test", "test".toByteArray().zip().unzip().encodeToString())
+        assertEquals("test", "test".toByteArray().zip().unzip().decodeToString())
     }
 
     @Test
     fun testGZip() {
-        assertEquals("test", "test".toByteArray().gzip().ungzip().encodeToString())
+        assertEquals("test", "test".toByteArray().gzip().ungzip().decodeToString())
     }
 }

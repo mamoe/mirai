@@ -13,7 +13,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.charsets.Charset
 import kotlinx.io.core.ByteReadPacket
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -174,9 +173,6 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
         }
     }
 }
-
-public inline fun ByteArray.encodeToString(offset: Int = 0, charset: Charset = Charsets.UTF_8): String =
-    String(this, charset = charset, offset = offset, length = this.size - offset)
 
 public expect fun ByteArray.encodeBase64(): String
 public expect fun String.decodeBase64(): ByteArray

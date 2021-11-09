@@ -23,7 +23,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.unzip
 
 /**
  * 只在手动构造 [OfflineMessageSource] 时调用
@@ -342,8 +345,8 @@ internal object ReceiveMessageTransformer {
         val content = runWithBugReport("解析 lightApp",
             { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {
             when (lightApp.data[0].toInt()) {
-                0 -> lightApp.data.encodeToString(offset = 1)
-                1 -> lightApp.data.unzip(1).encodeToString()
+                0 -> lightApp.data.decodeToString(startIndex = 1)
+                1 -> lightApp.data.unzip(1).decodeToString()
                 else -> error("unknown compression flag=${lightApp.data[0]}")
             }
         }
@@ -481,8 +484,8 @@ internal object ReceiveMessageTransformer {
     ) {
         val content = runWithBugReport("解析 richMsg", { richMsg.template1.toUHexString() }) {
             when (richMsg.template1[0].toInt()) {
-                0 -> richMsg.template1.encodeToString(offset = 1)
-                1 -> richMsg.template1.unzip(1).encodeToString()
+                0 -> richMsg.template1.decodeToString(startIndex = 1)
+                1 -> richMsg.template1.unzip(1).decodeToString()
                 else -> error("unknown compression flag=${richMsg.template1[0]}")
             }
         }
@@ -542,11 +545,11 @@ internal object ReceiveMessageTransformer {
     }
 
     fun ImMsgBody.Ptt.toAudio() = OnlineAudioImpl(
-        filename = fileName.encodeToString(),
+        filename = fileName.decodeToString(),
         fileMd5 = fileMd5,
         fileSize = fileSize.toLongUnsigned(),
         codec = AudioCodec.fromId(format),
-        url = downPara.encodeToString(),
+        url = downPara.decodeToString(),
         length = time.toLongUnsigned(),
         originalPtt = this,
     )

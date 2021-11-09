@@ -26,7 +26,7 @@ private val Char.isHumanReadable get() = this in '0'..'9' || this in 'a'..'z' ||
 
 internal fun TlvMap.smartToString(leadingLineBreak: Boolean = true, sorted: Boolean = true): String {
     fun ByteArray.valueToString(): String {
-        val str = this.encodeToString()
+        val str = this.decodeToString()
         return if (str.all { it.isHumanReadable }) str
         else this.toUHexString()
     }

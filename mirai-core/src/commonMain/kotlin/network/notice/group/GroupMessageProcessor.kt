@@ -114,7 +114,7 @@ internal class GroupMessageProcessor(
         val nameCard: MemberNick
 
         if (anonymous != null) { // anonymous member
-            sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeBase64())
+            sender = group.newAnonymous(anonymous.anonNick.decodeToString(), anonymous.anonId.encodeBase64())
             nameCard = sender.generateMemberNickFromMember()
         } else { // normal member chat
             sender = group[msgHead.fromUin] ?: kotlin.run {
@@ -200,9 +200,9 @@ internal class GroupMessageProcessor(
         if (this[0] == 0x0A.toByte()) {
             val nameBuf = loadAs(Oidb0x8fc.CommCardNameBuf.serializer())
             if (nameBuf.richCardName.isNotEmpty()) {
-                return@runCatching nameBuf.richCardName.joinToString("") { it.text.encodeToString() }
+                return@runCatching nameBuf.richCardName.joinToString("") { it.text.decodeToString() }
             }
         }
         return@runCatching null
-    }.getOrNull() ?: encodeToString()
+    }.getOrNull() ?: decodeToString()
 }

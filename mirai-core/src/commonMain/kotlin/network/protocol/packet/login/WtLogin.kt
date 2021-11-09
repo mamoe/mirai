@@ -205,7 +205,7 @@ internal class WtLogin {
         }
 
         private fun onUnsafeDeviceLogin(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {
-            return LoginPacketResponse.UnsafeLogin(bot, tlvMap.getOrFail(0x204).encodeToString())
+            return LoginPacketResponse.UnsafeLogin(bot, tlvMap.getOrFail(0x204).decodeToString())
         }
 
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
@@ -222,7 +222,7 @@ internal class WtLogin {
             // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
             bot.client.t104 = tlvMap.getOrFail(0x104)
             tlvMap[0x192]?.let {
-                return LoginPacketResponse.Captcha.Slider(bot, it.encodeToString())
+                return LoginPacketResponse.Captcha.Slider(bot, it.decodeToString())
             }
             tlvMap[0x165]?.let {
                 // if (question[18].toInt() == 0x36) {
@@ -275,7 +275,7 @@ internal class WtLogin {
                     tlvMap119[0x1c]?.read {
                         val bytes = readBytes()
                         bot.network.logger.debug("onLoginSuccess, tlvMap119[0x1c]: " + bytes.toUHexString())
-                        bot.network.logger.debug("onLoginSuccess, tlvMap119[0x1c]: " + bytes.encodeToString())
+                        bot.network.logger.debug("onLoginSuccess, tlvMap119[0x1c]: " + bytes.decodeToString())
                     }
 
                     tlvMap119[0x130]?.let { client.analysisTlv130(it) }

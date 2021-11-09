@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.utils.codegen
 
-import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.toUHexString
 
 class ValueCodegen(
@@ -80,11 +79,11 @@ class ValueCodegen(
                     context.append("net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY") // let IDE to shorten references.
                     return
                 } else {
-                    if (array.encodeToString().all { Character.isUnicodeIdentifierPart(it) || it.isWhitespace() }) {
+                    if (array.decodeToString().all { Character.isUnicodeIdentifierPart(it) || it.isWhitespace() }) {
                         // prefers to show readable string
                         context.append(
                             "\"${
-                                array.encodeToString().escapeQuotation()
+                                array.decodeToString().escapeQuotation()
                             }\".toByteArray() /* ${array.toUHexString()} */"
                         )
                     } else {

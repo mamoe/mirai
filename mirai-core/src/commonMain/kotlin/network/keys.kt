@@ -149,7 +149,7 @@ internal data class WLoginSigInfo(
     }
 
     fun getPsKey(name: String): String {
-        return psKeyMap[name]?.data?.encodeToString() ?: error("Cannot find PsKey $name")
+        return psKeyMap[name]?.data?.decodeToString() ?: error("Cannot find PsKey $name")
     }
 }
 
@@ -187,7 +187,7 @@ internal open class KeyWithExpiry(
     }
 }
 
-internal val KeyWithExpiry.str get() = data.encodeToString()
+internal val KeyWithExpiry.str get() = data.decodeToString()
 internal val AbstractBot.sKey get() = client.wLoginSigInfo.sKey.str
 internal fun AbstractBot.psKey(name: String) = client.wLoginSigInfo.getPsKey(name)
 internal val AbstractBot.client get() = components[BotClientHolder].client

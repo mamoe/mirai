@@ -63,7 +63,7 @@ internal class GroupNotificationProcessor(
             when (info.field) {
                 1 -> {
                     // 群名
-                    val new = info.value.encodeToString()
+                    val new = info.value.decodeToString()
 
                     val group = bot.getGroup(modGroupProfile.groupCode) ?: continue
                     group.checkIsGroupImpl()

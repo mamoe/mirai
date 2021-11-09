@@ -70,7 +70,7 @@ private fun <T : ImgExtPbResvAttrCommon> ByteArray.pbImageResv_checkIsEmoji(seri
     val data = this
     return kotlin.runCatching {
         data.takeIf { it.isNotEmpty() }?.loadAs(serializer)?.let { ext ->
-            ext.imageBizType == 1 || ext.textSummary.encodeToString() == "[动画表情]"
+            ext.imageBizType == 1 || ext.textSummary.decodeToString() == "[动画表情]"
         }
     }.getOrNull() ?: false
 }

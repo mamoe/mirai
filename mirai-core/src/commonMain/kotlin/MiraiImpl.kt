@@ -770,7 +770,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     ): String {
         bot.asQQAndroidBot().network.run {
             val response = PttStore.GroupPttDown(bot.client, groupId, dstUin, md5).sendAndExpect()
-            return "http://${response.strDomain}${response.downPara.encodeToString()}"
+            return "http://${response.strDomain}${response.downPara.decodeToString()}"
         }
     }
 
@@ -980,7 +980,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
                 val down = longResp.msgDownRsp.single()
                 check(down.result == 0) {
-                    "Message download failed, result=${down.result}, resId=${down.msgResid.encodeToString()}, msgContent=${down.msgContent.toUHexString()}"
+                    "Message download failed, result=${down.result}, resId=${down.msgResid.decodeToString()}, msgContent=${down.msgContent.toUHexString()}"
                 }
 
                 val content = down.msgContent.ungzip()
