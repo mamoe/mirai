@@ -36,6 +36,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
             账号配置. 可用配置列表 (注意大小写):
             "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH"
             "device": "device.json" 
+            "enable": true
         """
         )
         val configuration: Map<ConfigurationKey, @Serializable(with = YamlDynamicSerializer::class) Any> = mapOf(),
@@ -53,6 +54,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         public enum class ConfigurationKey {
             protocol,
             device,
+            enable,
 
             ;
 
@@ -89,7 +91,8 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
                 password = Account.Password(Account.PasswordKind.PLAIN, "pwd"),
                 configuration = mapOf(
                     Account.ConfigurationKey.protocol to "ANDROID_PHONE",
-                    Account.ConfigurationKey.device to "device.json"
+                    Account.ConfigurationKey.device to "device.json",
+                    Account.ConfigurationKey.enable to true
                 )
             )
         )
