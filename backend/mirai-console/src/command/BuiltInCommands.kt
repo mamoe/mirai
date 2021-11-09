@@ -93,18 +93,27 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "help",
         description = "查看指令帮助",
     ), BuiltInCommandInternal {
+
+        /**
+         * @since 2.8.0-RC
+         */
+        // for https://github.com/mamoe/mirai-console/issues/416
+        @JvmStatic
+        public fun generateDefaultHelp(permitteeId: PermitteeId): String {
+            return allRegisteredCommands
+                .asSequence()
+                .filter { permitteeId.hasPermission(it.permission) }
+                .joinToString("\n\n") { command ->
+                    val lines = command.usage.lines()
+                    if (lines.isEmpty()) "/${command.primaryName} ${command.description}"
+                    else
+                        "◆ " + lines.first() + "\n" + lines.drop(1).joinToString("\n") { "  $it" }
+                }.lines().filterNot(String::isBlank).joinToString("\n")
+        }
+
         @Handler
         public suspend fun CommandSender.handle() {
-            sendMessage(
-                allRegisteredCommands
-                    .filter { hasPermission(it.permission) }
-                    .joinToString("\n\n") { command ->
-                        val lines = command.usage.lines()
-                        if (lines.isEmpty()) "/${command.primaryName} ${command.description}"
-                        else
-                            "◆ " + lines.first() + "\n" + lines.drop(1).joinToString("\n") { "  $it" }
-                    }.lines().filterNot(String::isBlank).joinToString("\n")
-            )
+            sendMessage(generateDefaultHelp(this.permitteeId))
         }
     }
 
