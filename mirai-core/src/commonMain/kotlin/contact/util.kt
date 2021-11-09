@@ -38,9 +38,6 @@ internal fun Message.verifySendingValid() {
     fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
     when (this) {
         is MessageChain -> {
-            if (contains(MiraiInternalMessageFlag)) {
-                return
-            }
             this.forEach { it.verifySendingValid() }
         }
         is FileMessage -> fail("Sending FileMessage is not in support")

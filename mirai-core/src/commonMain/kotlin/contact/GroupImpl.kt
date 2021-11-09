@@ -154,21 +154,25 @@ internal class GroupImpl constructor(
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
-        require(!message.isContentEmpty()) { "message is empty" }
+        val isMiraiInternal = if (message is MessageChain) {
+            message.anyIsInstance<MiraiInternalMessageFlag>()
+        } else false
+
+        require(isMiraiInternal || !message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
-        val chain = broadcastMessagePreSendEvent(message, ::GroupMessagePreSendEvent)
+        val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, ::GroupMessagePreSendEvent)
 
         val result = GroupSendMessageHandler(this)
-            .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
+            .runCatching { sendMessage(message, chain, isMiraiInternal, SendMessageStep.FIRST) }
 
         if (result.isSuccess) {
             // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
             logMessageSent(chain)
         }
-
-        GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
-
+        if (!isMiraiInternal) {
+            GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
+        }
         return result.getOrThrow()
     }
 

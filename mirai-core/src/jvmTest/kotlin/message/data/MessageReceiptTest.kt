@@ -73,7 +73,7 @@ internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
                     listOf()
                 }
         }
-        val result = handler.sendMessage(message, message, SendMessageStep.FIRST)
+        val result = handler.sendMessage(message, message, false, SendMessageStep.FIRST)
 
         assertIs<ForwardMessage>(result.source.originalMessage[ForwardMessage])
         assertEquals(message, result.source.originalMessage)

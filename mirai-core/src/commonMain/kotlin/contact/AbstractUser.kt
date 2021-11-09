@@ -243,19 +243,25 @@ internal suspend fun <C : User> SendMessageHandler<out C>.sendMessageImpl(
     preSendEventConstructor: (C, Message) -> MessagePreSendEvent,
     postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<C>,
 ): MessageReceipt<C> {
-    require(!message.isContentEmpty()) { "message is empty" }
+    val isMiraiInternal = if (message is MessageChain) {
+        message.anyIsInstance<MiraiInternalMessageFlag>()
+    } else false
 
-    val chain = contact.broadcastMessagePreSendEvent(message, preSendEventConstructor)
+    require(isMiraiInternal || !message.isContentEmpty()) { "message is empty" }
+
+    val chain = contact.broadcastMessagePreSendEvent(message, isMiraiInternal, preSendEventConstructor)
 
     val result = this
-        .runCatching { sendMessage(message, chain, SendMessageStep.FIRST) }
+        .runCatching { sendMessage(message, chain, isMiraiInternal, SendMessageStep.FIRST) }
 
     if (result.isSuccess) {
         // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
         contact.logMessageSent(chain)
     }
 
-    postSendEventConstructor(contact, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
+    if (!isMiraiInternal) {
+        postSendEventConstructor(contact, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
+    }
 
     return result.getOrThrow()
 }

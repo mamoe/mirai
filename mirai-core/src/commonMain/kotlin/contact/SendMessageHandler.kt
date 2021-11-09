@@ -121,6 +121,7 @@ internal abstract class SendMessageHandler<C : Contact> {
         originalMessage: Message,
         transformedMessage: MessageChain,
         finalMessage: MessageChain,
+        isMiraiInternal: Boolean,
         step: SendMessageStep,
     ): MessageReceipt<C> {
         bot.components[MessageSvcSyncer].joinSync()
@@ -140,10 +141,10 @@ internal abstract class SendMessageHandler<C : Contact> {
                         if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                             return when (step) {
                                 SendMessageStep.FIRST -> {
-                                    sendMessageImpl(originalMessage, transformedMessage, SendMessageStep.LONG_MESSAGE)
+                                    sendMessageImpl(originalMessage, transformedMessage, isMiraiInternal, SendMessageStep.LONG_MESSAGE)
                                 }
                                 SendMessageStep.LONG_MESSAGE -> {
-                                    sendMessageImpl(originalMessage, transformedMessage, SendMessageStep.FRAGMENTED)
+                                    sendMessageImpl(originalMessage, transformedMessage, isMiraiInternal, SendMessageStep.FRAGMENTED)
 
                                 }
                                 else -> {
@@ -312,6 +313,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
 internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
     originalMessage: Message,
     transformedMessage: Message,
+    isMiraiInternal: Boolean,
     step: SendMessageStep,
 ): MessageReceipt<C> = sendMessageImpl(
     originalMessage,
@@ -320,6 +322,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
             preConversionTransformedMessage(transformedMessage)
         )
     ),
+    isMiraiInternal,
     step
 )
 
@@ -329,16 +332,19 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.sendMessage(
 private suspend fun <C : Contact> SendMessageHandler<C>.sendMessageImpl(
     originalMessage: Message,
     transformedMessage: MessageChain,
+    isMiraiInternal: Boolean,
     step: SendMessageStep,
 ): MessageReceipt<C> { // Result cannot be in interface.
-    transformedMessage.verifySendingValid()
+    if (!isMiraiInternal && step == SendMessageStep.FIRST) {
+        transformedMessage.verifySendingValid()
+    }
     val chain = transformedMessage.convertToLongMessageIfNeeded(step)
 
     chain.findIsInstance<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
     postTransformActions(chain)
 
-    return sendMessagePacket(originalMessage, transformedMessage, chain, step)
+    return sendMessagePacket(originalMessage, transformedMessage, chain, isMiraiInternal, step)
 }
 
 internal sealed class UserSendMessageHandler<C : AbstractUser>(
