@@ -580,7 +580,7 @@ public interface ExternalResource : Closeable {
  * val myRes = MyRes(cleanup, delegate)
  * ```
  *
- * @since TODO
+ * @since 2.9
  *
  * @see ExternalResource
  * @see AbstractExternalResource.setResourceCleanCallback
