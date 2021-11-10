@@ -18,7 +18,7 @@ import java.io.InputStream
 import java.io.RandomAccessFile
 
 
-private fun InputStream.detectFileTypeAndClose(): String? {
+internal fun InputStream.detectFileTypeAndClose(): String? {
     val buffer = ByteArray(COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE)
     return use {
         kotlin.runCatching { it.read(buffer) }.onFailure { return null }
