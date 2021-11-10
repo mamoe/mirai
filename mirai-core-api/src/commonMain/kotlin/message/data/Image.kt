@@ -87,21 +87,29 @@ public interface Image : Message, MessageContent, CodableMessage {
 
     /**
      * 图片的宽度 (px), 当无法获取时为 0
+     *
+     * @since 2.8.0
      */
     public val width: Int
 
     /**
      * 图片的高度 (px), 当无法获取时为 0
+     *
+     * @since 2.8.0
      */
     public val height: Int
 
     /**
      * 图片的大小（字节）, 当无法获取时为 0
+     *
+     * @since 2.8.0
      */
     public val size: Long
 
     /**
      * 图片的类型, 当无法获取时为未知 [ImageType.UNKNOWN]
+     *
+     * @since 2.8.0
      *
      * @see ImageType
      */
