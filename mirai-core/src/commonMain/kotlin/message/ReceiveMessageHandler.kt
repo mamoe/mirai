@@ -489,7 +489,23 @@ internal object ReceiveMessageTransformer {
                 else -> error("unknown compression flag=${richMsg.template1[0]}")
             }
         }
-        when (richMsg.serviceId) {
+
+        fun findStringProperty(name: String): String {
+            return content.substringAfter("$name=\"", "").substringBefore("\"", "")
+        }
+
+        val serviceId = when (val sid = richMsg.serviceId) {
+            0 -> {
+                val serviceIdStr = findStringProperty("serviceID")
+                if (serviceIdStr.isEmpty() || serviceIdStr.isBlank()) {
+                    0
+                } else {
+                    serviceIdStr.toIntOrNull() ?: 0
+                }
+            }
+            else -> sid
+        }
+        when (serviceId) {
             // 5: 使用微博长图转换功能分享到QQ群
             /*
                         <?xml version="1.0" encoding="utf-8"?><msg serviceID="5" templateID="12345" brief="[分享]想要沐浴阳光，就别钻进
@@ -507,9 +523,6 @@ internal object ReceiveMessageTransformer {
              * [LongMessageInternal], [ForwardMessage]
              */
             35 -> {
-                fun findStringProperty(name: String): String {
-                    return content.substringAfter("$name=\"", "").substringBefore("\"", "")
-                }
 
                 val resId = findStringProperty("m_resid")
 
@@ -539,7 +552,7 @@ internal object ReceiveMessageTransformer {
 
             // 104 新群员入群的消息
             else -> {
-                builder.add(SimpleServiceMessage(richMsg.serviceId, content))
+                builder.add(SimpleServiceMessage(serviceId, content))
             }
         }
     }
