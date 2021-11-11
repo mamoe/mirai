@@ -525,22 +525,22 @@ internal object ReceiveMessageTransformer {
             35 -> {
 
                 val resId = findStringProperty("m_resid")
+                val fileName = findStringProperty("m_fileName").takeIf { it.isNotEmpty() }
 
                 val msg = if (resId.isEmpty()) {
                     // Nested ForwardMessage
-                    val fileName = findStringProperty("m_fileName")
-                    if (fileName.isNotEmpty() && findStringProperty("action") == "viewMultiMsg") {
+                    if (fileName != null && findStringProperty("action") == "viewMultiMsg") {
                         ForwardMessageInternal(content, null, fileName)
                     } else {
                         SimpleServiceMessage(35, content)
                     }
                 } else when (findStringProperty("multiMsgFlag").toIntOrNull()) {
                     1 -> LongMessageInternal(content, resId)
-                    0 -> ForwardMessageInternal(content, resId, null)
+                    0 -> ForwardMessageInternal(content, resId, fileName)
                     else -> {
                         // from PC QQ
                         if (findStringProperty("action") == "viewMultiMsg") {
-                            ForwardMessageInternal(content, resId, null)
+                            ForwardMessageInternal(content, resId, fileName)
                         } else {
                             SimpleServiceMessage(35, content)
                         }

@@ -15,3 +15,4 @@ package net.mamoe.mirai.utils
 public fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
 public fun Short.toIntUnsigned(): Int = this.toUShort().toInt()
 public fun Byte.toIntUnsigned(): Int = toInt() and 0xFF
+public fun Int.concatAsLong(i2: Int): Long = this.toLongUnsigned().shl(Int.SIZE_BITS) or i2.toLongUnsigned()

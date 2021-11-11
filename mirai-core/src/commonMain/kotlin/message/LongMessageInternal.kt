@@ -80,12 +80,14 @@ internal data class ForwardMessageInternal(
         val preview = titles
         val source = xmlFoot.findField("name")
 
-        if (fileName != null) { // nested
-            val transmits = refineContext.getNotNull(MsgTransmits)[fileName]
-                ?: return SimpleServiceMessage(serviceId, content) // Refine failed
+        val resId = resId?.takeIf { it.isNotEmpty() }
+
+        if (fileName != null) kotlin.run nested@{ // nested
+            val transmits = refineContext[MsgTransmits]?.get(fileName)
+                ?: return@nested // Refine failed
             return MessageOrigin(
                 SimpleServiceMessage(serviceId, content),
-                null, // Nested don't have resource id
+                resId,
                 MessageOriginKind.FORWARD,
             ) + ForwardMessage(
                 preview = preview,
@@ -95,6 +97,11 @@ internal data class ForwardMessageInternal(
                 summary = summary.trim(),
                 nodeList = getMiraiImpl().run { transmits.toForwardMessageNodes(bot, refineContext) },
             )
+        }
+
+        // No id and no fileName
+        if (resId == null) {
+            return SimpleServiceMessage(serviceId, content)
         }
 
         return MessageOrigin(
@@ -107,7 +114,7 @@ internal data class ForwardMessageInternal(
             brief = brief,
             source = source,
             summary = summary.trim(),
-            nodeList = Mirai.downloadForwardMessage(bot, resId!!),
+            nodeList = Mirai.downloadForwardMessage(bot, resId),
         )
     }
 
@@ -157,19 +164,19 @@ internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSecon
 }
 
 
-private fun String.xmlEnc():String {
+private fun String.xmlEnc(): String {
     return this.replace("&", "&amp;")
 }
 
 internal fun RichMessage.Key.forwardMessage(
     resId: String,
-    timeSeconds: Long,
+    fileName: String,
     forwardMessage: ForwardMessage,
 ): ForwardMessageInternal = with(forwardMessage) {
     val template = """
         <?xml version="1.0" encoding="utf-8"?>
         <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="${brief.take(30).xmlEnc()}"
-             m_resid="$resId" m_fileName="$timeSeconds"
+             m_resid="$resId" m_fileName="$fileName"
              tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
             <item layout="1" advertiser_id="0" aid="0">
                 <title size="34" maxLines="2" lineSpace="12">${title.take(50).xmlEnc()}</title>

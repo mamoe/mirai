@@ -15,7 +15,6 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.util.*
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
@@ -38,13 +37,19 @@ import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.EventDispatcherScopeFlag
-import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.network.highway.ChannelKind
+import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.highway.tryDownload
+import net.mamoe.mirai.internal.network.highway.tryServersDownload
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
-import net.mamoe.mirai.internal.network.protocol.packet.chat.*
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MultiMsg
+import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
+import net.mamoe.mirai.internal.network.protocol.packet.chat.NudgePacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -55,7 +60,6 @@ import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
@@ -63,9 +67,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
 
@@ -632,70 +633,18 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         sendMessageHandler: SendMessageHandler<*>,
         message: Collection<ForwardMessage.INode>,
         isLong: Boolean,
-    ): String = with(bot.asQQAndroidBot()) {
+    ): String {
+        bot.asQQAndroidBot()
         message.forEach {
             it.messageChain.ensureSequenceIdAvailable()
         }
+        val uploader = MultiMsgUploader(
+            client = bot.client,
+            isLong = isLong,
+            handler = sendMessageHandler,
+        ).also { it.emitMain(message) }
 
-
-        val data = message.calculateValidationData(
-            client = client,
-            random = Random.nextInt().absoluteValue,
-            sendMessageHandler,
-            isLong,
-        )
-
-        val response = network.run {
-            MultiMsg.ApplyUp.createForGroup(
-                buType = if (isLong) 1 else 2,
-                client = bot.client,
-                messageData = data,
-                dstUin = sendMessageHandler.targetUin
-            ).sendAndExpect()
-        }
-
-        val resId: String
-        when (response) {
-            is MultiMsg.ApplyUp.Response.MessageTooLarge ->
-                error(
-                    "Internal error: message is too large, but this should be handled before sending. "
-                )
-            is MultiMsg.ApplyUp.Response.RequireUpload -> {
-                resId = response.proto.msgResid
-
-                val body = LongMsg.ReqBody(
-                    subcmd = 1,
-                    platformType = 9,
-                    termType = 5,
-                    msgUpReq = listOf(
-                        LongMsg.MsgUpReq(
-                            msgType = 3, // group
-                            dstUin = sendMessageHandler.targetUin,
-                            msgId = 0,
-                            msgUkey = response.proto.msgUkey,
-                            needCache = 0,
-                            storeType = 2,
-                            msgContent = data.data
-                        )
-                    )
-                ).toByteArray(LongMsg.ReqBody.serializer())
-
-                body.toExternalResource().use { resource ->
-                    Highway.uploadResourceBdh(
-                        bot = bot,
-                        resource = resource,
-                        kind = when (isLong) {
-                            true -> ResourceKind.LONG_MESSAGE
-                            false -> ResourceKind.FORWARD_MESSAGE
-                        },
-                        commandId = 27,
-                        initialTicket = response.proto.msgSig
-                    )
-                }
-            }
-        }
-
-        return resId
+        return uploader.uploadAndReturnResId()
     }
 
     override suspend fun solveNewFriendRequestEvent(

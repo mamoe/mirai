@@ -297,7 +297,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
         )
         return RichMessage.forwardMessage(
             resId = resId,
-            timeSeconds = currentTimeSeconds(),
+            fileName = currentTimeSeconds().toString(),
             forwardMessage = forward,
         )
     }
