@@ -57,6 +57,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
+import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -762,7 +763,20 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override fun createImage(imageId: String): Image {
         return when {
-            imageId matches IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+            imageId matches IMAGE_ID_REGEX -> {
+                Bot.instancesSequence.forEach { existsBot ->
+                    runCatching {
+                        val patcher = existsBot.asQQAndroidBot().components[ImagePatcher]
+
+                        patcher.findCacheByImageId(imageId)?.let { cache ->
+                            val rsp = cache.cacheOGI.value0
+                            cache.accessLock.release()
+                            if (rsp != null) return rsp
+                        }
+                    }
+                }
+                OfflineGroupImage(imageId)
+            }
             imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> OfflineFriendImage(imageId)
             imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> OfflineFriendImage(imageId)
             else ->

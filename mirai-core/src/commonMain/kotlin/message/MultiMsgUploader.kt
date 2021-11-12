@@ -125,6 +125,8 @@ internal open class MultiMsgUploader(
                 msgChain = convertNestedForwardMessage(nestedForward, msgChain)
             }
 
+            msgChain = handler.conversionMessageChain(msgChain)
+
             var seq: Int = -1
             var uid: Int = -1
             msg.messageChain.sourceOrNull?.let { source ->

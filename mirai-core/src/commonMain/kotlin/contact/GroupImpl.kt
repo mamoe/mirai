@@ -44,6 +44,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
+import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.subLogger
@@ -181,6 +182,12 @@ internal class GroupImpl constructor(
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
+
+        fun OfflineGroupImage.putIntoCache() {
+            // We can't understand wny Image(group.uploadImage().imageId)
+            bot.components[ImagePatcher].putCache(this)
+        }
+
         val imageInfo = runBIO { resource.calculateImageInfo() }
         bot.network.run<NetworkHandler, Image> {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
@@ -216,6 +223,7 @@ internal class GroupImpl constructor(
                         .also {
                             it.fileId = response.fileId.toInt()
                         }
+                        .also { it.putIntoCache() }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
@@ -244,6 +252,7 @@ internal class GroupImpl constructor(
                             size = resource.size
                         )
                     }.also { it.fileId = response.fileId.toInt() }
+                        .also { it.putIntoCache() }
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
