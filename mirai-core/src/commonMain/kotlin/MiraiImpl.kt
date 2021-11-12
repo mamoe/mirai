@@ -467,9 +467,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             is OnlineMessageSourceToGroupImpl,
             is OnlineMessageSourceFromGroupImpl
             -> {
-                val group = when (source) {
-                    is OnlineMessageSourceToGroupImpl -> source.target
-                    is OnlineMessageSourceFromGroupImpl -> source.group
+                val group: Group = when (source) {
+                    is OnlineMessageSourceToGroupImpl -> source.subject
+                    is OnlineMessageSourceFromGroupImpl -> source.subject
                     else -> error("stub")
                 }
                 if (bot.id != source.fromId) {

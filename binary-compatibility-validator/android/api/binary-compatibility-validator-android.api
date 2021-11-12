@@ -5027,7 +5027,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Member;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun getSubject ()Lnet/mamoe/mirai/contact/Group;
+	public fun getSubject ()Lnet/mamoe/mirai/contact/Group;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
 	public final fun getTarget ()Lnet/mamoe/mirai/contact/Group;
 }

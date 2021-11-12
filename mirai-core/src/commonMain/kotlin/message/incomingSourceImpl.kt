@@ -18,6 +18,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
@@ -174,12 +175,18 @@ internal class OnlineMessageSourceFromGroupImpl(
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
 
-    override val sender: Member by lazy {
+    override val subject: GroupImpl by lazy {
         val groupCode = msg.first().msgHead.groupInfo?.groupCode
             ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
 
         val group = bot.getGroup(groupCode)?.checkIsGroupImpl()
             ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
+
+        group
+    }
+
+    override val sender: Member by lazy {
+        val group = subject
 
         val member = group[msg.first().msgHead.fromUin]
         if (member != null) return@lazy member
