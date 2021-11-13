@@ -18,6 +18,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.ReqHead
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.internal.network.protocol.data.richstatus.RichStatus
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
@@ -94,6 +95,20 @@ internal object SummaryCard {
                 discardExact(1)
                 Tars.UTF_8.load(JceRespSummaryCard.serializer(), this)
             }
+
+            fun parseSignFromRichSign(): String? {
+                val vsign = response.vRichSign ?: return null
+                val richStatus = RichStatus.parseStatus(vsign)
+                val pt = richStatus.plainText
+                if (pt != null && pt.isNotEmpty()) {
+                    return pt.first()
+                }
+                return null
+            }
+
+            val sign = response.sign?.takeIf { it.isNotEmpty() }
+                ?: parseSignFromRichSign()
+                ?: ""
             return UserProfileImpl(
                 nickname = response.nick ?: "",
                 email = response.email ?: "",
@@ -104,7 +119,7 @@ internal object SummaryCard {
                     1 -> UserProfile.Sex.FEMALE
                     else -> UserProfile.Sex.UNKNOWN
                 },
-                sign = response.sign ?: ""
+                sign = sign
             )
         }
     }
