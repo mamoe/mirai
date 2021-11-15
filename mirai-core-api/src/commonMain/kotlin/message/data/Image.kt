@@ -180,26 +180,6 @@ public interface Image : Message, MessageContent, CodableMessage {
             imageId: String,
             size: Long,
             type: ImageType = ImageType.UNKNOWN,
-        ): Image = create(imageId, size, type, 0, 0)
-
-        /**
-         * 构造一个 [Image].
-         */
-        public fun create(
-            imageId: String,
-            size: Long,
-            type: ImageType = ImageType.UNKNOWN,
-            width: Int = 0,
-            height: Int = 0,
-        ): Image = create(imageId, size, type, width, height, false)
-
-        /**
-         * 构造一个 [Image].
-         */
-        public fun create(
-            imageId: String,
-            size: Long,
-            type: ImageType = ImageType.UNKNOWN,
             width: Int = 0,
             height: Int = 0,
             isEmoji: Boolean = false

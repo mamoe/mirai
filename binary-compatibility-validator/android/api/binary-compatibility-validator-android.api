@@ -4493,19 +4493,13 @@ public abstract interface class net/mamoe/mirai/message/data/Image$Factory {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Image$Factory$INSTANCE;
 	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public fun create (Ljava/lang/String;J)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;II)Lnet/mamoe/mirai/message/data/Image;
 	public abstract fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZ)Lnet/mamoe/mirai/message/data/Image;
-	public static synthetic fun create$default (Lnet/mamoe/mirai/message/data/Image$Factory;Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static synthetic fun create$default (Lnet/mamoe/mirai/message/data/Image$Factory;Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
-	public static synthetic fun create$default (Lnet/mamoe/mirai/message/data/Image$Factory;Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 }
 
 public final class net/mamoe/mirai/message/data/Image$Factory$INSTANCE : net/mamoe/mirai/message/data/Image$Factory {
 	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public fun create (Ljava/lang/String;J)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;II)Lnet/mamoe/mirai/message/data/Image;
 	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZ)Lnet/mamoe/mirai/message/data/Image;
 }
 
