@@ -122,6 +122,15 @@ public interface Image : Message, MessageContent, CodableMessage {
      */
     public val isEmoji: Boolean get() = false
 
+    /**
+     * 图片文件 MD5. 可用于 ]
+     *
+     * @return 16 bytes
+     * @see isUploaded
+     * @since 2.9.0
+     */ // was an extension on Image before 2.9.0-M1.
+    public val md5: ByteArray get() = calculateImageMd5ByImageId(imageId)
+
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
@@ -143,6 +152,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         )
     }
 
+    @JvmBlockingBridge
     public companion object Key : AbstractMessageKey<Image>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "Image"
 
@@ -166,12 +176,56 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
          */
         @JvmStatic
-        @JvmBlockingBridge
         public suspend fun Image.queryUrl(): String {
             val bot = Bot.instancesSequence.firstOrNull() ?: error("No Bot available to query image url")
             return Mirai.queryImageUrl(bot, this)
         }
 
+        /**
+         * 当图片在服务器上存在时返回 `true`, 这意味着图片可以直接发送给 [contact].
+         *
+         * 若返回 `false`, 则图片需要用 [ExternalResource] 重新上传 ([Contact.uploadImage]).
+         *
+         * @since 2.9.0
+         */
+        @JvmStatic
+        public suspend fun Image.isUploaded(bot: Bot): Boolean =
+            InternalImageProtocol.instance.isUploaded(bot, md5, size, null, imageType, width, height)
+
+        /**
+         * 当图片在服务器上存在时返回 `true`, 这意味着图片可以直接发送给 [contact].
+         *
+         * 若返回 `false`, 则图片需要用 [ExternalResource] 重新上传 ([Contact.uploadImage]).
+         *
+         * @param md5 图片文件 MD5. 可通过 [Image.md5] 获得.
+         * @param size 图片文件大小.
+         *
+         * @since 2.9.0
+         */
+        @JvmStatic
+        public suspend fun isUploaded(
+            bot: Bot,
+            md5: ByteArray,
+            size: Long,
+        ): Boolean = InternalImageProtocol.instance.isUploaded(bot, md5, size, null)
+
+        /**
+         * 由 [Image.imageId] 计算 [Image.md5].
+         *
+         * @since 2.9.0
+         */
+        public fun calculateImageMd5ByImageId(imageId: String): ByteArray {
+            @Suppress("DEPRECATION")
+            return when {
+                imageId matches IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+                imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
+                imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
+
+                else -> throw IllegalArgumentException(
+                    "Illegal imageId: '$imageId'. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
+                )
+            }
+        }
 
         /**
          * 统一 ID 正则表达式
@@ -222,17 +276,24 @@ public interface Image : Message, MessageContent, CodableMessage {
 @JvmSynthetic
 public inline fun Image(imageId: String): Image = Image.fromId(imageId)
 
-public enum class ImageType {
-    PNG,
-    BMP,
-    JPG,
-    GIF,
+public enum class ImageType(
+    /**
+     * @since 2.9.0
+     */
+    @MiraiInternalApi public val formatName: String,
+) {
+    PNG("png"),
+    BMP("bmp"),
+    JPG("jpg"),
+    GIF("gif"),
+
     //WEBP, //Unsupported by pc client
-    APNG,
-    UNKNOWN;
+    APNG("png"),
+    UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
 
     public companion object {
         private val IMAGE_TYPE_ENUM_LIST = values()
+
         @JvmStatic
         public fun match(str: String): ImageType {
             return matchOrNull(str) ?: UNKNOWN
@@ -250,15 +311,12 @@ public enum class ImageType {
 // Internals
 ///////////////////////////////////////////////////////////////////////////
 
-/**
- * 计算图片的 md5 校验值.
- *
- * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
- */
+@Deprecated("Use member function", level = DeprecationLevel.HIDDEN) // safe since it was internal
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 @MiraiInternalApi
 @get:JvmName("calculateImageMd5")
 public val Image.md5: ByteArray
-    get() = calculateImageMd5ByImageId(imageId)
+    get() = Image.calculateImageMd5ByImageId(imageId)
 
 
 /**
@@ -320,4 +378,35 @@ public abstract class FriendImage @MiraiInternalApi public constructor() :
 public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object
+}
+
+
+/**
+ * 内部图片协议实现
+ * @since 2.9.0-M1
+ */
+@MiraiInternalApi
+public interface InternalImageProtocol { // naming it Internal* to assign it a lower priority when resolving Image*
+    /**
+     * @param context 用于检查的 [Contact]. 群图片与好友图片是两个通道, 建议使用欲发送到的 [Contact] 对象作为 [contact] 参数, 但目前不提供此参数时也可以检查.
+     */
+    public suspend fun isUploaded(
+        bot: Bot,
+        md5: ByteArray,
+        size: Long,
+        context: Contact? = null,
+        type: ImageType = ImageType.UNKNOWN,
+        width: Int = 0,
+        height: Int = 0
+    ): Boolean
+
+    @MiraiInternalApi
+    public companion object {
+        public val instance: InternalImageProtocol by lazy {
+            loadService(
+                InternalImageProtocol::class,
+                "net.mamoe.mirai.internal.message.InternalImageProtocolImpl"
+            )
+        }
+    }
 }

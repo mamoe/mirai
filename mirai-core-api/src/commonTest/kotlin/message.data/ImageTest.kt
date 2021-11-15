@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
@@ -35,17 +35,17 @@ internal class ImageTest {
     fun testCalculateImageMd5ByImageId() {
         assertEquals(
             "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai").contentToString()
+            Image.calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai").contentToString()
         )
 
         assertEquals(
             "f8f1ab55-bf8e-4236-b55e-955848d7069f".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("/f8f1ab55-bf8e-4236-b55e-955848d7069f").contentToString()
+            Image.calculateImageMd5ByImageId("/f8f1ab55-bf8e-4236-b55e-955848d7069f").contentToString()
         )
 
         assertEquals(
             "BFB7027B9354B8F899A062061D74E206".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("/000000000-3814297509-BFB7027B9354B8F899A062061D74E206").contentToString()
+            Image.calculateImageMd5ByImageId("/000000000-3814297509-BFB7027B9354B8F899A062061D74E206").contentToString()
         )
 
     }

@@ -4445,9 +4445,14 @@ public abstract interface class net/mamoe/mirai/message/data/Image : net/mamoe/m
 	public static fun getImageResourceIdRegex1 ()Lkotlin/text/Regex;
 	public static fun getImageResourceIdRegex2 ()Lkotlin/text/Regex;
 	public abstract fun getImageType ()Lnet/mamoe/mirai/message/data/ImageType;
+	public fun getMd5 ()[B
 	public abstract fun getSize ()J
 	public abstract fun getWidth ()I
 	public fun isEmoji ()Z
+	public static fun isUploaded (Lnet/mamoe/mirai/Bot;[BJ)Z
+	public static fun isUploaded (Lnet/mamoe/mirai/Bot;[BJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;)Z
+	public static fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -4463,10 +4468,15 @@ public final class net/mamoe/mirai/message/data/Image$AsStringSerializer : kotli
 
 public final class net/mamoe/mirai/message/data/Image$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 	public static final field SERIAL_NAME Ljava/lang/String;
+	public final fun calculateImageMd5ByImageId (Ljava/lang/String;)[B
 	public final fun fromId (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public final fun getImageIdRegex ()Lkotlin/text/Regex;
 	public final fun getImageResourceIdRegex1 ()Lkotlin/text/Regex;
 	public final fun getImageResourceIdRegex2 ()Lkotlin/text/Regex;
+	public final fun isUploaded (Lnet/mamoe/mirai/Bot;[BJ)Z
+	public final fun isUploaded (Lnet/mamoe/mirai/Bot;[BJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;)Z
+	public final fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public final fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -4488,6 +4498,7 @@ public final class net/mamoe/mirai/message/data/ImageType : java/lang/Enum {
 	public static final field JPG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field PNG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field UNKNOWN Lnet/mamoe/mirai/message/data/ImageType;
+	public final fun getFormatName ()Ljava/lang/String;
 	public static final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
@@ -4853,7 +4864,7 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final fun buildMessageChain (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static final synthetic fun buildMessageSource (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
 	public static final synthetic fun buildMessageSource (Lnet/mamoe/mirai/IMirai;JLnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
-	public static final fun calculateImageMd5 (Lnet/mamoe/mirai/message/data/Image;)[B
+	public static final synthetic fun calculateImageMd5 (Lnet/mamoe/mirai/message/data/Image;)[B
 	public static final fun contentsList (Lnet/mamoe/mirai/message/data/MessageChain;)Ljava/util/List;
 	public static final synthetic fun contentsSequence (Lnet/mamoe/mirai/message/data/MessageChain;)Lkotlin/sequences/Sequence;
 	public static final fun copySource (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
