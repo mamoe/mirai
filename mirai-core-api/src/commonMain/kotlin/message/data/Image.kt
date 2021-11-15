@@ -220,9 +220,25 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @see Image.size
          */
         public var size: Long = 0
+
+        /**
+         * @see Image.imageType
+         */
         public var type: ImageType = ImageType.UNKNOWN
+
+        /**
+         * @see Image.width
+         */
         public var width: Int = 0
+
+        /**
+         * @see Image.height
+         */
         public var height: Int = 0
+
+        /**
+         * @see Image.isEmoji
+         */
         public var isEmoji: Boolean = false
 
         /**
