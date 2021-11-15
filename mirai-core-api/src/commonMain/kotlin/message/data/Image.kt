@@ -100,7 +100,7 @@ public interface Image : Message, MessageContent, CodableMessage {
     public val height: Int
 
     /**
-     * 图片的大小（字节）, 当无法获取时为 0
+     * 图片的大小（字节）, 当无法获取时为 0. 可用于 [isUploaded].
      *
      * @since 2.8.0
      */
@@ -123,7 +123,7 @@ public interface Image : Message, MessageContent, CodableMessage {
     public val isEmoji: Boolean get() = false
 
     /**
-     * 图片文件 MD5. 可用于 ]
+     * 图片文件 MD5. 可用于 [isUploaded].
      *
      * @return 16 bytes
      * @see isUploaded
