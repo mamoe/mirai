@@ -14,7 +14,7 @@
     "EXPERIMENTAL_API_USAGE",
     "unused",
     "UnusedImport",
-    "DEPRECATION_ERROR", "NOTHING_TO_INLINE"
+    "DEPRECATION_ERROR", "NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate"
 )
 
 package net.mamoe.mirai.message.data
@@ -32,6 +32,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.Image.Factory
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
@@ -152,16 +153,131 @@ public interface Image : Message, MessageContent, CodableMessage {
         )
     }
 
+    /**
+     * 用于构造 [Image] 实例.
+     *
+     * @see Builder
+     * @since 2.9.0
+     */
+    public interface Factory {
+        /**
+         * 构造一个 [Image]. 注意, 由于没有提供 [Image.size], [Image.isUploaded] 总是会返回 `false`. 但这不会影响图片的发送.
+         */
+        public fun create(imageId: String): Image = create(imageId, 0)
+
+        /**
+         * 构造一个 [Image].
+         */
+        public fun create(
+            imageId: String,
+            size: Long,
+        ): Image = create(imageId, size, ImageType.UNKNOWN)
+
+        /**
+         * 构造一个 [Image].
+         */
+        public fun create(
+            imageId: String,
+            size: Long,
+            type: ImageType = ImageType.UNKNOWN,
+        ): Image = create(imageId, size, type, 0, 0)
+
+        /**
+         * 构造一个 [Image].
+         */
+        public fun create(
+            imageId: String,
+            size: Long,
+            type: ImageType = ImageType.UNKNOWN,
+            width: Int = 0,
+            height: Int = 0,
+        ): Image = create(imageId, size, type, width, height, false)
+
+        /**
+         * 构造一个 [Image].
+         */
+        public fun create(
+            imageId: String,
+            size: Long,
+            type: ImageType = ImageType.UNKNOWN,
+            width: Int = 0,
+            height: Int = 0,
+            isEmoji: Boolean = false
+        ): Image
+
+        public companion object INSTANCE : Factory by loadService(
+            Factory::class,
+            "net.mamoe.mirai.internal.message.ImageFactoryImpl"
+        )
+    }
+
+
+    /**
+     * 用于构建 [Image] 实例.
+     *
+     * 示例:
+     *
+     * ```java
+     * Builder builder = Image.Builder.newBuilder("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.jpg")
+     * builder.setSize(123);
+     * builder.setType(ImageType.PNG);
+     *
+     * Image image = builder.build();
+     * ```
+     *
+     * @since 2.9.0
+     * @see Factory
+     */
+    public class Builder private constructor(
+        /**
+         * @see Image.imageId
+         */
+        public var imageId: String,
+    ) {
+        /**
+         * 图片大小字节数. 如果不提供改属性, 将无法 [Image.Key.isUploaded]
+         *
+         * @see Image.size
+         */
+        public var size: Long = 0
+        public var type: ImageType = ImageType.UNKNOWN
+        public var width: Int = 0
+        public var height: Int = 0
+        public var isEmoji: Boolean = false
+
+        /**
+         * 使用当前参数构造 [Image].
+         */
+        public fun build(): Image = Factory.create(
+            imageId = imageId,
+            size = size,
+            type = type,
+            width = width,
+            height = height,
+            isEmoji = isEmoji
+        )
+
+        public companion object {
+            /**
+             * 创建一个 [Builder]
+             */
+            @JvmStatic
+            public fun newBuilder(imageId: String): Builder = Builder(imageId)
+        }
+    }
+
     @JvmBlockingBridge
     public companion object Key : AbstractMessageKey<Image>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "Image"
 
         /**
-         * 通过 [Image.imageId] 构造一个 [Image] 以便发送. 这个图片必须是服务器已经存在的图片.
-         * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+         * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+         *
+         * 图片 ID 不一定会长时间保存, 因此不建议使用 ID 发送图片. 建议使用 [Factory.create], 可以指定更多参数 (以及用于查询图片是否存在于服务器的必要参数 size).
          *
          * @see Image 获取更多说明
          * @see Image.imageId 获取更多说明
+         * @see Factory.create
          */
         @JvmStatic
         public fun fromId(imageId: String): Image = Mirai.createImage(imageId)
@@ -265,16 +381,38 @@ public interface Image : Message, MessageContent, CodableMessage {
 }
 
 /**
- * 通过 [Image.imageId] 构造一个 [Image] 以便发送. 这个图片必须是服务器已经存在的图片.
- * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+ * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
  *
- * @see Image 获取更多说明
- * @see Image.imageId 获取更多说明
+ * 图片 ID 不一定会长时间保存, 因此不建议使用 ID 发送图片. 建议使用 [Factory.create], 可以指定更多参数 (以及用于查询图片是否存在于服务器的必要参数 size).
+ *
+ * @see Image 获取更多关于 [Image] 的说明
+ * @see Image.Factory 获取更多关于构造 [Image] 的方法
  *
  * @see IMirai.createImage
  */
 @JvmSynthetic
-public inline fun Image(imageId: String): Image = Image.fromId(imageId)
+public inline fun Image(imageId: String): Image = Factory.create(imageId)
+
+/**
+ * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+ *
+ * 图片 ID 不一定会长时间保存, 因此不建议使用 ID 发送图片. 建议使用 [Factory.create], 可以指定更多参数 (以及用于查询图片是否存在于服务器的必要参数 size).
+ *
+ * @see Image 获取更多关于 [Image] 的说明
+ * @see Image.Factory 获取更多关于构造 [Image] 的方法
+ *
+ * @see IMirai.createImage
+ * @since 2.9.0
+ */
+@JvmSynthetic
+public inline fun Image(
+    imageId: String,
+    size: Long,
+    type: ImageType = ImageType.UNKNOWN,
+    width: Int = 0,
+    height: Int = 0,
+    isEmoji: Boolean = false
+): Image = Factory.create(imageId, size, type, width, height, isEmoji)
 
 public enum class ImageType(
     /**
@@ -286,7 +424,6 @@ public enum class ImageType(
     BMP("bmp"),
     JPG("jpg"),
     GIF("gif"),
-
     //WEBP, //Unsupported by pc client
     APNG("png"),
     UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
