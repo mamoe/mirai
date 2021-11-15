@@ -58,6 +58,33 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     }
 }
 
+public fun <T> Collection<T>.asImmutable(): Collection<T> {
+    return when (this) {
+        is List<T> -> asImmutable()
+        is Set<T> -> asImmutable()
+        else -> Collections.unmodifiableCollection(this)
+    }
+}
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun <T> Collection<T>.asImmutableStrict(): Collection<T> {
+    return Collections.unmodifiableCollection(this)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun <T> List<T>.asImmutable(): List<T> {
+    return Collections.unmodifiableList(this)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun <T> Set<T>.asImmutable(): Set<T> {
+    return Collections.unmodifiableSet(this)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+public inline fun <K, V> Map<K, V>.asImmutable(): Map<K, V> {
+    return Collections.unmodifiableMap(this)
+}
 
 public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
     var depth = 0

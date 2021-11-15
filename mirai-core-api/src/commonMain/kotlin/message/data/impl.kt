@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.asImmutable
 import net.mamoe.mirai.utils.replaceAllKotlin
 import kotlin.native.concurrent.SharedImmutable
 
@@ -140,7 +141,7 @@ internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): Lis
         }
     }
 
-    return list.filterNotNull()
+    return list.filterNotNull().asImmutable()
 }
 
 @JvmSynthetic
