@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.data.richstatus
 
+import net.mamoe.mirai.utils.pos
 import net.mamoe.mirai.utils.toIntUnsigned
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -81,7 +82,7 @@ internal class RichStatus(
                 if (dataType in 1..127) {
                     val dataContent = String(rawData, dataStartPosition, dataLength)
                     lastPosition = dataStartPosition + dataLength
-                    byteBuffer.position(lastPosition)
+                    byteBuffer.pos = lastPosition
 
                     when (dataType) {
                         1 -> rsp.actionText = dataContent
@@ -157,7 +158,7 @@ internal class RichStatus(
                                 val var11 = ByteArray(dataLength)
                                 byteBuffer.get(var11)
                                  */
-                                byteBuffer.position(byteBuffer.position() + dataLength)
+                                byteBuffer.pos += dataLength
                                 // Parse richstatus_sticker$RichStatus_Sticker
                             }
                             162 -> {
@@ -170,7 +171,7 @@ internal class RichStatus(
                         }
                     }
                     lastPosition = dataStartPosition + dataLength
-                    byteBuffer.position(lastPosition)
+                    byteBuffer.pos = lastPosition
                 }
             }
 
