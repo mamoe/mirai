@@ -21,6 +21,8 @@ internal sealed class AbstractMember(
     parentCoroutineContext: CoroutineContext,
     memberInfo: MemberInfo,
 ) : AbstractUser(group.bot, parentCoroutineContext, memberInfo), Member {
+    override val nick: String by memberInfo::nick
+    override val remark: String by memberInfo::remark
     final override val info: MemberInfoImpl = memberInfo.cast()
 
     override val nameCard: String get() = info.nameCard
