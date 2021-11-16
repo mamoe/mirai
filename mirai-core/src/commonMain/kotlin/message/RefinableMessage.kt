@@ -166,6 +166,15 @@ internal object LightMessageRefiner : MessageRefiner() {
     ): MessageChain {
         return refineImpl(bot) { it.tryRefine(bot, this, refineContext) }
     }
+
+    /**
+     * 去除 [MessageChain] 携带的内部标识
+     *
+     * 用于 [createMessageReceipt] <- `RemoteFile.uploadAndSend` (文件操作API v1)
+     */
+    fun MessageChain.dropMiraiInternalFlags(): MessageChain {
+        return asSequence().filterNot { it is InternalFlagOnlyMessage }.toMessageChain()
+    }
 }
 
 /**
