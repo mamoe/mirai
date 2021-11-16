@@ -12,11 +12,11 @@ package net.mamoe.mirai.internal.message
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.contact.SendMessageHandler
+import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.cast
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -80,7 +80,9 @@ internal fun <C : Contact> OnlineMessageSource.Outgoing.createMessageReceipt(
 ): MessageReceipt<C> {
     if (doLightRefine) {
         check(this is OutgoingMessageSourceInternal) { "Internal error: source !is OutgoingMessageSourceInternal" }
-        this.originalMessage = this.originalMessage.refineLight(bot)
+        this.originalMessage = this.originalMessage
+            .dropMiraiInternalFlags()
+            .refineLight(bot)
     }
     return MessageReceipt(this, target)
 }
