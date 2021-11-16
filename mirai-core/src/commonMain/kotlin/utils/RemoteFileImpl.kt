@@ -528,14 +528,23 @@ internal class RemoteFileImpl(
         return resp
     }
 
+    private suspend fun uploadInternal(
+        resource: ExternalResource,
+        callback: RemoteFile.ProgressionCallback?,
+    ): FileMessage {
+        val resp = upload0(resource, callback) ?: error("Failed to upload file.")
+        return FileMessageImpl(
+            resp.fileId, resp.busId, name, resource.size
+        )
+    }
+
     override suspend fun upload(
         resource: ExternalResource,
         callback: RemoteFile.ProgressionCallback?,
     ): FileMessage {
-        val resp = upload0(resource, null) ?: error("Failed to upload file.")
-        return FileMessageImpl(
-            resp.fileId, resp.busId, name, resource.size
-        )
+        val msg = uploadInternal(resource, callback)
+        contact.sendMessage(msg + MiraiInternalMessageFlag)
+        return msg
     }
 
     // compiler bug
@@ -560,7 +569,7 @@ internal class RemoteFileImpl(
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         @Suppress("DEPRECATION")
-        return contact.sendMessage(upload(resource) + MiraiInternalMessageFlag)
+        return contact.sendMessage(uploadInternal(resource, null) + MiraiInternalMessageFlag)
     }
 
     // compiler bug
