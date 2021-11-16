@@ -20,7 +20,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.asImmutable
 import net.mamoe.mirai.utils.replaceAllKotlin
-import kotlin.native.concurrent.SharedImmutable
 
 // region image
 
@@ -201,7 +200,6 @@ internal fun MessageChainImplBySequence(
 //////////////////////
 
 
-@SharedImmutable
 @get:JvmSynthetic
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
@@ -245,20 +243,6 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
         }
     }
     error("Internal error: failed imageIdToMd5, no enough chars. Input=$this, offset=$offset")
-}
-
-@OptIn(ExperimentalStdlibApi::class)
-internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
-    @Suppress("DEPRECATION")
-    return when {
-        imageId matches IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
-        imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
-        imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
-
-        else -> error(
-            "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
-        )
-    }
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE: String =
