@@ -62,8 +62,8 @@ internal sealed class AbstractUser(
 ) : User, AbstractContact(bot, parentCoroutineContext) {
 
     final override val id: Long = userInfo.uin
-    final override var nick: String = userInfo.nick
-    final override val remark: String = userInfo.remark
+    abstract override val nick: String
+    abstract override val remark: String
 
     val messageSeq = AtomicIntSeq.forMessageSeq()
     val fragmentedMessageMerger = C2CPkgMsgParsingCache()

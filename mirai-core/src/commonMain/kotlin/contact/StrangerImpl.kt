@@ -48,6 +48,8 @@ internal class StrangerImpl(
     parentCoroutineContext: CoroutineContext,
     override val info: StrangerInfo,
 ) : Stranger, AbstractUser(bot, parentCoroutineContext, info) {
+    override val nick: String by info::nick
+    override val remark: String by info::remark
     override suspend fun delete() {
         check(bot.strangers[this.id] != null) {
             "Stranger ${this.id} had already been deleted"
