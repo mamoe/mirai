@@ -19,6 +19,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
+import net.mamoe.mirai.internal.utils.ImagePatcher
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.message.data.InternalImageProtocol
 import net.mamoe.mirai.utils.cast
@@ -135,6 +137,41 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
             ).sendAndExpect(bot)
 
             return response is ImgStore.GroupPicUp.Response.FileExists
+        }
+    }
+
+    override fun createImage(
+        imageId: String,
+        size: Long,
+        type: ImageType,
+        width: Int,
+        height: Int,
+        isEmoji: Boolean
+    ): Image {
+        return when {
+            imageId matches Image.IMAGE_ID_REGEX -> {
+                Bot.instancesSequence.forEach { existsBot ->
+                    runCatching {
+                        val patcher = existsBot.asQQAndroidBot().components[ImagePatcher]
+
+                        patcher.findCacheByImageId(imageId)?.let { cache ->
+                            val rsp = cache.cacheOGI.value0
+                            cache.accessLock.release()
+                            if (rsp != null) return rsp
+                        }
+                    }
+                }
+                OfflineGroupImage(imageId)
+            }
+            imageId matches Image.IMAGE_RESOURCE_ID_REGEX_1 -> {
+                OfflineFriendImage(imageId, width, height, size, type, isEmoji)
+            }
+            imageId matches Image.IMAGE_RESOURCE_ID_REGEX_2 -> {
+                OfflineFriendImage(imageId, width, height, size, type, isEmoji)
+            }
+            else ->
+                @Suppress("INVISIBLE_MEMBER")
+                throw IllegalArgumentException("Illegal imageId: $imageId. ${net.mamoe.mirai.message.data.ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE}")
         }
     }
 

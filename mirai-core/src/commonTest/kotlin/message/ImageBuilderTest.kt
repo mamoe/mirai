@@ -10,71 +10,54 @@
 package message
 
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.message.ImageFactoryImpl
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
-import net.mamoe.mirai.utils.loadService
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 
-internal class ImageFactoryImplTest {
+internal class ImageBuilderTest {
     companion object {
         private const val IMAGE_ID = "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.jpg"
-    }
-
-    @Test
-    fun serviceBinding() {
-        assertIs<ImageFactoryImpl>(loadService(Image.Factory::class))
     }
 
     @Test
     fun create() {
         // five overloads
 
-        Image.Factory.create(IMAGE_ID).run {
+        Image(IMAGE_ID) {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(false, isEmoji)
+        }
+
+        Image.newBuilder(IMAGE_ID).run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(false, isEmoji)
+        }
+
+        Image.Builder.newBuilder(IMAGE_ID).run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(false, isEmoji)
+        }
+
+        Image.Builder.newBuilder(IMAGE_ID).build().run {
             assertEquals(IMAGE_ID, imageId)
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
             assertEquals(ImageType.UNKNOWN, imageType)
             assertEquals(false, isEmoji)
-        }
-
-        Image.Factory.create(IMAGE_ID, 1).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(0, width)
-            assertEquals(0, height)
-            assertEquals(1, size)
-            assertEquals(ImageType.UNKNOWN, imageType)
-            assertEquals(false, isEmoji)
-        }
-
-        Image.Factory.create(IMAGE_ID, 1, ImageType.JPG).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(0, width)
-            assertEquals(0, height)
-            assertEquals(1, size)
-            assertEquals(ImageType.JPG, imageType)
-            assertEquals(false, isEmoji)
-        }
-
-        Image.Factory.create(IMAGE_ID, 1, ImageType.JPG, 2, 3).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(2, width)
-            assertEquals(3, height)
-            assertEquals(1, size)
-            assertEquals(ImageType.JPG, imageType)
-            assertEquals(false, isEmoji)
-        }
-
-        Image.Factory.create(IMAGE_ID, 1, ImageType.JPG, 2, 3, true).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(2, width)
-            assertEquals(3, height)
-            assertEquals(1, size)
-            assertEquals(ImageType.JPG, imageType)
-            assertEquals(true, isEmoji)
         }
     }
 
@@ -105,6 +88,20 @@ internal class ImageFactoryImplTest {
             assertEquals(0, size)
             assertEquals(ImageType.UNKNOWN, imageType)
             assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID) {
+            width = 1
+            height = 2
+            size = 3
+            type = ImageType.GIF
+            isEmoji = true
+        }.run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(1, width)
+            assertEquals(2, height)
+            assertEquals(3, size)
+            assertEquals(ImageType.GIF, imageType)
+            assertEquals(true, isEmoji)
         }
     }
 }

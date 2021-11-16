@@ -186,7 +186,7 @@ public interface IMirai : LowLevelApiAccessor {
      * @see Image.fromId
      * @see Image.Factory.create
      */
-    public fun createImage(imageId: String): Image = Image.Factory.create(imageId)
+    public fun createImage(imageId: String): Image = Image.Builder.newBuilder(imageId).build()
 
     /**
      * 创建一个 [FileMessage]. [name] 与 [size] 只供本地使用, 发送消息时只会使用 [id] 和 [internalId].

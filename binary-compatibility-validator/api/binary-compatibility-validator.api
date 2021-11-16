@@ -4453,6 +4453,7 @@ public abstract interface class net/mamoe/mirai/message/data/Image : net/mamoe/m
 	public static fun isUploaded (Lnet/mamoe/mirai/Bot;[BJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;)Z
 	public static fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun newBuilder (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image$Builder;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public static fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -4489,20 +4490,6 @@ public final class net/mamoe/mirai/message/data/Image$Builder$Companion {
 	public final fun newBuilder (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image$Builder;
 }
 
-public abstract interface class net/mamoe/mirai/message/data/Image$Factory {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Image$Factory$INSTANCE;
-	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;J)Lnet/mamoe/mirai/message/data/Image;
-	public abstract fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZ)Lnet/mamoe/mirai/message/data/Image;
-	public static synthetic fun create$default (Lnet/mamoe/mirai/message/data/Image$Factory;Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
-}
-
-public final class net/mamoe/mirai/message/data/Image$Factory$INSTANCE : net/mamoe/mirai/message/data/Image$Factory {
-	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;J)Lnet/mamoe/mirai/message/data/Image;
-	public fun create (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZ)Lnet/mamoe/mirai/message/data/Image;
-}
-
 public final class net/mamoe/mirai/message/data/Image$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public final fun calculateImageMd5ByImageId (Ljava/lang/String;)[B
@@ -4514,6 +4501,7 @@ public final class net/mamoe/mirai/message/data/Image$Key : net/mamoe/mirai/mess
 	public final fun isUploaded (Lnet/mamoe/mirai/Bot;[BJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;)Z
 	public final fun isUploaded (Lnet/mamoe/mirai/message/data/Image;Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun newBuilder (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image$Builder;
 	public final fun queryUrl (Lnet/mamoe/mirai/message/data/Image;)Ljava/lang/String;
 	public final fun queryUrl (Lnet/mamoe/mirai/message/data/Image;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -4893,8 +4881,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun At (Lnet/mamoe/mirai/contact/UserOrBot;)Lnet/mamoe/mirai/message/data/At;
 	public static final synthetic fun FileMessage (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static final synthetic fun Image (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
-	public static final synthetic fun Image (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZ)Lnet/mamoe/mirai/message/data/Image;
-	public static synthetic fun Image$default (Ljava/lang/String;JLnet/mamoe/mirai/message/data/ImageType;IIZILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
+	public static final synthetic fun Image (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/Image;
+	public static synthetic fun Image$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/Image;
 	public static final synthetic fun OfflineAudio (Ljava/lang/String;[BJLnet/mamoe/mirai/message/data/AudioCodec;[B)Lnet/mamoe/mirai/message/data/OfflineAudio;
 	public static final synthetic fun OfflineAudio (Lnet/mamoe/mirai/message/data/OnlineAudio;)Lnet/mamoe/mirai/message/data/OfflineAudio;
 	public static final synthetic fun UnsupportedMessage ([B)Lnet/mamoe/mirai/message/data/UnsupportedMessage;
