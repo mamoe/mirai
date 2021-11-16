@@ -63,6 +63,8 @@ internal class FriendImpl(
     parentCoroutineContext: CoroutineContext,
     override val info: FriendInfoImpl,
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
+    override var nick: String by info::nick
+    override var remark: String by info::remark
     override suspend fun delete() {
         check(bot.friends[id] != null) {
             "Friend $id had already been deleted"
