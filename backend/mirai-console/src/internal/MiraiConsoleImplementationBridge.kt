@@ -96,6 +96,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val loggerController: LoggerController by instance::loggerController
 
     init {
+        @Suppress("DEPRECATION")
         MiraiLogger.setDefaultLoggerCreator(this::createLogger)
     }
 
