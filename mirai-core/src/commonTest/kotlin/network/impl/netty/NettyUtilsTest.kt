@@ -19,7 +19,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * @see awaitKt
@@ -36,7 +36,7 @@ internal class NettyUtilsTest : AbstractTest() {
     }
 
     @Test
-    fun canAwait() = runBlockingUnit(timeout = Duration.seconds(5)) {
+    fun canAwait() = runBlockingUnit(timeout = 5.seconds) {
         val future = DefaultChannelPromise(channel)
         launch(start = CoroutineStart.UNDISPATCHED) { future.awaitKt() }
         launch {
@@ -45,7 +45,7 @@ internal class NettyUtilsTest : AbstractTest() {
     }
 
     @Test
-    fun returnsImmediatelyIfCompleted() = runBlockingUnit(timeout = Duration.seconds(5)) {
+    fun returnsImmediatelyIfCompleted() = runBlockingUnit(timeout = 5.seconds) {
         val future = DefaultChannelPromise(channel)
         future.setSuccess()
         future.awaitKt()
@@ -55,7 +55,7 @@ internal class NettyUtilsTest : AbstractTest() {
     fun testAwait() {
         class MyError : AssertionError("My") // coroutine debugger will modify the exception if inside coroutine
 
-        runBlockingUnit(timeout = Duration.seconds(5)) {
+        runBlockingUnit(timeout = 5.seconds) {
             val future = DefaultChannelPromise(channel)
             launch(start = CoroutineStart.UNDISPATCHED) {
                 assertFailsWith<AssertionError> {

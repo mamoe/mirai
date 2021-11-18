@@ -27,6 +27,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -69,7 +70,10 @@ public open class BotConfiguration { // open for Java
             ignoreUnknownKeys = true
             prettyPrint = true
         }
-    }.getOrElse { Json {} }
+    }.getOrElse {
+        @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatible for older versions
+        Json {}
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Coroutines
@@ -253,14 +257,14 @@ public open class BotConfiguration { // open for Java
 
         /**
          * iPad - 来自MiraiGo
-         * 
+         *
          * @since 2.8
          */
         IPAD,
 
         /**
          * MacOS - 来自MiraiGo
-         * 
+         *
          * @since 2.8
          */
         MACOS,
@@ -503,7 +507,7 @@ public open class BotConfiguration { // open for Java
          */
         @ExperimentalTime
         public inline var saveInterval: Duration
-            @JvmSynthetic inline get() = Duration.milliseconds(saveIntervalMillis)
+            @JvmSynthetic inline get() = saveIntervalMillis.milliseconds
             @JvmSynthetic inline set(v) {
                 saveIntervalMillis = v.inWholeMilliseconds
             }

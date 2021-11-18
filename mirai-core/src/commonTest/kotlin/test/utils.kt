@@ -16,13 +16,14 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 fun runBlockingUnit(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit
 ) {
     return runBlocking(context) {
-        withTimeout(Duration.seconds(60)) { // always checks for infinite runs.
+        withTimeout(60.seconds) { // always checks for infinite runs.
             block()
         }
     }
