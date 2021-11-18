@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -23,7 +25,7 @@ import net.mamoe.mirai.utils.info
 import kotlin.coroutines.CoroutineContext
 
 internal interface MessageSvcSyncer {
-    fun startSync()
+    suspend fun startSync()
     suspend fun joinSync()
 
     companion object : ComponentKey<MessageSvcSyncer>
@@ -41,12 +43,13 @@ internal class MessageSvcSyncerImpl(
     @Volatile
     private var job: Job? = null
 
+    private val lock = Mutex()
+
     private fun initScope() {
         scope = parentContext.addNameHierarchically("MessageSvcSyncerImpl").childScope()
     }
 
-    @Synchronized
-    override fun startSync() {
+    override suspend fun startSync(): Unit = lock.withLock {
         scope?.cancel()
         initScope()
         job = scope!!.launch { syncMessageSvc() }
@@ -65,8 +68,7 @@ internal class MessageSvcSyncerImpl(
         logger.info { "Syncing friend message history: Success." }
     }
 
-    @Synchronized
-    override suspend fun joinSync() {
+    override suspend fun joinSync(): Unit = lock.withLock {
         job?.join()
     }
 }
