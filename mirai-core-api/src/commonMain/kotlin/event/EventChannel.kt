@@ -58,7 +58,7 @@ import kotlin.reflect.KClass
  *
  * @see subscribe
  */
-public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal constructor(
+public open class EventChannel<BaseEvent : Event> @JvmOverloads internal constructor(
     public val baseEventClass: KClass<out BaseEvent>,
     /**
      * 此事件通道的默认 [CoroutineScope.coroutineContext]. 将会被添加给所有注册的事件监听器.
@@ -198,14 +198,14 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see filter 获取更多信息
      */
     @JvmSynthetic
-    public inline fun <reified E : Event> filterIsInstance(): EventChannel<E> =
+    public inline fun <reified E : BaseEvent> filterIsInstance(): EventChannel<E> =
         filterIsInstance(E::class)
 
     /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<E> {
+    public fun <E : BaseEvent> filterIsInstance(kClass: KClass<out E>): EventChannel<E> {
         return filter { kClass.isInstance(it) }.cast()
     }
 
@@ -213,7 +213,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public fun <E : Event> filterIsInstance(clazz: Class<out E>): EventChannel<E> =
+    public fun <E : BaseEvent> filterIsInstance(clazz: Class<out E>): EventChannel<E> =
         filterIsInstance(clazz.kotlin)
 
 
