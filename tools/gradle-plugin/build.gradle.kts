@@ -111,20 +111,12 @@ tasks {
     val fillBuildConstants by registering {
         group = "mirai"
         doLast {
-            projectDir.resolve("src").walk().filter { it.name == "VersionConstants.kt" }.single()
-                .let { file ->
-                    file.writeText(
-                        file.readText()
-                            .replace(
-                                Regex("""const val CONSOLE_VERSION = ".*"""")
-                            ) {
-                                """const val CONSOLE_VERSION = "${Versions.console}""""
-                            }
-                            .replace(
-                                Regex("""const val CORE_VERSION = ".*"""")
-                            ) { """const val CORE_VERSION = "${Versions.core}"""" }
-                    )
-                }
+            projectDir.resolve("src/main/kotlin/VersionConstants.kt").apply { createNewFile() }
+                .writeText(
+                    projectDir.resolve("src/main/kotlin/VersionConstants.kt.template").readText()
+                        .replace("$\$CONSOLE_VERSION$$", Versions.console)
+                        .replace("$\$CORE_VERSION$$", Versions.core)
+                )
         }
     }
 
