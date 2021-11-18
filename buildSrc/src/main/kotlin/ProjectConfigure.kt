@@ -32,7 +32,7 @@ fun Project.configureJvmTarget() {
     val defaultVer = JavaVersion.VERSION_1_8
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.languageVersion = "1.5"
+        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
     }
@@ -151,7 +151,7 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.console.util.ConsoleInternalApi",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
 
-    "kotlinx.io.core.internal.DangerousInternalIoApi",
+    "kotlinx.io.core.internal.DangerousInternalIoApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

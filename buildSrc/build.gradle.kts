@@ -51,8 +51,8 @@ dependencies {
 
     api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
     api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
-    api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
-    api(ktor("client-okhttp", "1.4.3"))
+//    api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
+//    api(ktor("client-okhttp", "1.4.3"))
     api("com.android.tools.build", "gradle", version("androidGradlePlugin"))
     api(asm("tree"))
     api(asm("util"))
