@@ -1,44 +1,50 @@
 /*
  * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.gradle
 
-
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 abstract class AbstractTest {
+    @JvmField
     @TempDir
-    public File tempDir
-    File buildFile
-    File settingsFile
-    File propertiesFile
+    var tempDirField: File? = null
 
-    GradleRunner gradleRunner() {
+    val tempDir: File get() = tempDirField!!
+
+    lateinit var buildFile: File
+    lateinit var settingsFile: File
+    lateinit var propertiesFile: File
+
+
+    fun gradleRunner(): GradleRunner {
         println(PluginUnderTestMetadataReading.readImplementationClasspath())
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .forwardOutput()
-                .withEnvironment(System.getenv())
+        return GradleRunner.create()
+            .withProjectDir(tempDir)
+            .withPluginClasspath()
+            .withGradleVersion("7.2")
+            .forwardOutput()
+            .withEnvironment(System.getenv())
     }
 
     @BeforeEach
-    void setup() {
-        println('Temp path is ' + tempDir.absolutePath)
+    fun setup() {
+        println("Temp path is " + tempDir.absolutePath)
 
-        settingsFile = new File(tempDir, "settings.gradle")
+        settingsFile = File(tempDir, "settings.gradle")
         settingsFile.delete()
-        settingsFile << """
+        settingsFile.writeText(
+            """
             pluginManagement {
                 repositories {
                     gradlePluginPortal()
@@ -46,12 +52,14 @@ abstract class AbstractTest {
                 }
             }
         """
+        )
 
-        buildFile = new File(tempDir, "build.gradle")
+        buildFile = File(tempDir, "build.gradle")
         buildFile.delete()
-        buildFile << """
+        buildFile.writeText(
+            """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version "1.5.10"
+                id("org.jetbrains.kotlin.jvm") version "1.6.0"
                 id("net.mamoe.mirai-console")
             }
             
@@ -59,6 +67,7 @@ abstract class AbstractTest {
                 mavenCentral()
             }
         """
+        )
 
 
 //        buildFile = new File(tempDir, "build.gradle.kts")
@@ -72,10 +81,6 @@ abstract class AbstractTest {
 //                mavenCentral()
 //            }
 //        """
-    }
 
-    @AfterEach
-    void cleanup() {
-        tempDir.deleteDir()
     }
 }

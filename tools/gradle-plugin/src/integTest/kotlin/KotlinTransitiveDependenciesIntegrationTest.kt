@@ -38,7 +38,7 @@ class KotlinTransitiveDependenciesIntegrationTest {
 
         GradleRunner.create()
             .withProjectDir(dir)
-            .withGradleVersion("6.8.3")
+            .withGradleVersion("7.2")
             .withPluginClasspath()
             .forwardStdOutput(PrintWriter(stdout))
             .forwardStdError(PrintWriter(stderr))
