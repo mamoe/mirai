@@ -15,20 +15,20 @@ import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.8.0-M1"
+    const val project = "2.9.0-M1"
 
-    const val core = "2.7.0"
+    const val core = "2.8.0"
     const val console = project
     const val consoleTerminal = project
 
-    const val kotlinCompiler = "1.5.30"
-    const val kotlinStdlib = "1.5.30"
+    const val kotlinCompiler = "1.6.0"
+    const val kotlinStdlib = "1.6.0"
     const val dokka = "1.4.32"
 
-    const val coroutines = "1.5.1"
-    const val atomicFU = "0.16.3"
+    const val coroutines = "1.5.2"
+    const val atomicFU = "0.17.0"
     const val serialization = "1.2.2"
-    const val ktor = "1.5.4"
+    const val ktor = "1.6.5"
 
     const val binaryValidator = "0.4.0"
 
