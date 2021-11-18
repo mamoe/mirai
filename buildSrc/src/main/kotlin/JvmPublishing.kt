@@ -38,7 +38,7 @@ fun Project.configureRemoteRepos() {
         // sonatype
         val keys = SecretKeys.getCache(project)
         repositories {
-            if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING").toBoolean()) {
+            if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() == true) {
                 maven {
                     name = "MiraiRepo"
                     setUrl(System.getenv("SNAPSHOTS_PUBLISHING_URL"))
