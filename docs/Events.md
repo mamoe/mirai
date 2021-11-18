@@ -6,10 +6,10 @@
 - [快速指导](#快速指导)
 - [事件通道](#事件通道)
 - [通道操作](#通道操作)
-  - [过滤](#过滤)
-  - [添加 `CoroutineContext`](#添加-coroutinecontext)
-  - [限制作用域](#限制作用域)
-  - [链式调用](#链式调用)
+    - [过滤](#过滤)
+    - [添加 `CoroutineContext`](#添加-coroutinecontext)
+    - [限制作用域](#限制作用域)
+    - [链式调用](#链式调用)
 - [在 `EventChannel` 监听事件](#在-eventchannel-监听事件)
 - [监听事件的其他方法](#监听事件的其他方法)
   - [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
@@ -411,7 +411,88 @@ eventChannel.subscribeMessages {
 
 只要实现接口 `Event` 并继承 `AbstractEvent` 的对象就可以被广播。
 
-要广播一个事件，使用 `Event.broadcast()`（Kotlin）或 `EventKt.broadcast(Event)`（Java）。
+要广播一个事件，使用 `Event.broadcast()`（Kotlin）或 `EventKt.broadcast(Event)`
+（Java）。
+
+下列实现一个GroupFileUploadEvent(群文件上传事件)，完成新事件广播与订阅。
+
+### 定义新事件
+
+Java 使用示例:
+
+```java
+public class GroupFileUploadEvent extends AbstractEvent {
+ 
+//    发送者的权限
+    private MemberPermission permission;
+//    发送者
+    private Member sender;
+//    发送时间
+    private Integer time;
+//    事件发生所在群
+    private Group group;
+//    机器人
+    private Bot bot;
+//    群文件名称
+    private String fileName;
+//    群文件大小（byte）
+    private Long size;
+ 
+}
+```
+
+### 广播新事件
+
+使用EventKt.broadcast()广播新定义的事件
+
+Java 使用示例:
+
+```java
+GroupFileUploadEvent groupFileUploadEvent = new GroupFileUploadEvent();
+//balabala……
+EventKt.broadcast(groupFileUploadEvent);
+```
+
+### 定义handler
+
+这里我们定义一个GroupFileMessageHandler用来消费新事件
+
+Java 使用示例:
+
+```java
+public class GroupFileMessageHandler {
+
+    public void onMessage(@NotNull groupFileUploadEvent event) {
+    //balabala.....
+    }
+}
+```
+
+### 订阅新事件
+
+Java 使用示例:
+
+```java
+GlobalEventChannel.INSTANCE
+    .filterIsInstance(groupFileUploadEvent.class)
+    .subscribeAlways(GroupFileUploadEvent.class, groupFileMessageHandler::onMessage);
+```
+
+注意，一定要用GlobalEventChannel.INSTANCE，不然无法正确监听新事件!!!
+
+### 备注
+
+其实我本人不推荐单体APP使用自定义事件，何必多一层事件广播呢？不觉得鸡肋吗？
+在这里我推荐如果有相对应的message，可以使用[链式调用](#链式调用)这边的示例筛选出具备message的event
+
+Java 使用示例:
+
+```java
+GlobalEventChannel.INSTANCE
+        .filterIsInstance(GroupMessageEvent.class)
+        .filter(v -> v.getMessage().contains(FileMessage.Key))
+        .subscribeAlways(GroupMessageEvent.class, groupFileMessageHandler::onMessage);
+```
 
 > 回到 [目录](#目录)
 
