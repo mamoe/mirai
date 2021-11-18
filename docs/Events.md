@@ -412,7 +412,7 @@ eventChannel.subscribeMessages {
 
 > 回到 [目录](#目录)
 
-## 实现事件
+## 自定义事件
 
 只要实现接口 `Event` 并继承 `AbstractEvent` 的对象就可以被广播。
 
