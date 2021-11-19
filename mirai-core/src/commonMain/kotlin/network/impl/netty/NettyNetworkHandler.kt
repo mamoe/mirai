@@ -107,7 +107,7 @@ internal open class NettyNetworkHandler(
                     handlePipelineException(ctx, cause)
                 }
             })
-            .addLast(OutgoingPacketEncoder())
+            .addLast("outgoing-packet-encoder", OutgoingPacketEncoder())
             .addLast(LengthFieldBasedFrameDecoder(Int.MAX_VALUE, 0, 4, -4, 4))
             .addLast(ByteBufToIncomingPacketDecoder())
             .addLast("raw-packet-collector", RawIncomingPacketCollector(decodePipeline))

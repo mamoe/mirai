@@ -31,7 +31,9 @@ internal abstract class AbstractNettyNHTestWithSelector : AbstractRealNetworkHan
         overrideComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
     }
 
-    val channel = AbstractNettyNHTest.NettyNHTestChannel()
+    val channel = AbstractNettyNHTest.NettyNHTestChannel(
+        logger = lazy { bot.logger },
+    )
 
     val selector = TestSelector<TestNettyNH> {
         object : TestNettyNH(bot, createContext(), createAddress()) {

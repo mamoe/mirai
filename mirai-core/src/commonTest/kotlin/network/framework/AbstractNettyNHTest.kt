@@ -14,14 +14,26 @@ import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
+import net.mamoe.mirai.internal.network.components.RawIncomingPacket
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.ExceptionCollector
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.error
 import java.net.SocketAddress
 
 /**
@@ -72,8 +84,49 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
     }
 
     class NettyNHTestChannel(
+        val logger: Lazy<MiraiLogger>,
         var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)? = null,
     ) : EmbeddedChannel() {
+        @OptIn(InternalSerializationApi::class)
+        fun listen(listener: (OutgoingPacket) -> Any?) {
+            fakeServer = { packet ->
+                if (packet is OutgoingPacket) {
+                    val rsp0 = when (val rsp = listener(packet)) {
+                        null -> null
+                        is Unit -> null
+                        is ByteArray -> {
+                            RawIncomingPacket(
+                                commandName = packet.commandName,
+                                sequenceId = packet.sequenceId,
+                                body = rsp
+                            )
+                        }
+                        is RawIncomingPacket -> rsp
+                        is ProtoBuf -> {
+                            RawIncomingPacket(
+                                commandName = packet.commandName,
+                                sequenceId = packet.sequenceId,
+                                body = buildPacket {
+                                    writeProtoBuf(
+                                        rsp::class.serializer().cast<KSerializer<ProtoBuf>>(),
+                                        rsp
+                                    )
+                                }.readBytes()
+                            )
+                        }
+                        else -> {
+                            logger.value.error { "Failed to respond $rsp" }
+                            null
+                        }
+                    }
+                    if (rsp0 != null) {
+                        pipeline().fireChannelRead(rsp0)
+                    }
+                }
+                ReferenceCountUtil.release(packet)
+            }
+        }
+
         public /*internal*/ override fun doRegister() {
             super.doRegister() // Set channel state to ACTIVE
             // Drop old handlers
@@ -93,7 +146,9 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
         }
     }
 
-    val channel = NettyNHTestChannel()
+    val channel = NettyNHTestChannel(
+        logger = lazy { bot.logger },
+    )
 
     override val network: TestNettyNH get() = bot.network as TestNettyNH
 
@@ -107,4 +162,10 @@ internal abstract class AbstractNettyNHTest : AbstractRealNetworkHandlerTest<Tes
                     }
             }
         }
+
+    protected fun removeOutgoingPacketEncoder() {
+        kotlin.runCatching {
+            channel.pipeline().remove("outgoing-packet-encoder")
+        }
+    }
 }
