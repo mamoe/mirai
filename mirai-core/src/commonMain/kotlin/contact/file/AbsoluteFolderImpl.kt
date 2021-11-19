@@ -363,6 +363,9 @@ internal class AbsoluteFolderImpl(
     override suspend fun resolveFolder(name: String): AbsoluteFolder? {
         if (name.isBlank()) throw IllegalArgumentException("folder name cannot be blank.")
         if (!FileSystem.isLegal(name)) return null
+        if (name[0] == '/') {
+            return root.resolveFolder(name.substring(1))
+        }
         return getItemsFlow().firstOrNull { it.folderInfo?.folderName == name }?.resolve() as AbsoluteFolder?
     }
 
@@ -380,6 +383,10 @@ internal class AbsoluteFolderImpl(
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
         if (!FileSystem.isLegal(path)) return emptyFlow()
 
+        if (path[0] == '/') {
+            return root.resolveFiles(path.substring(1))
+        }
+
         if (!path.contains('/')) {
             return getItemsFlow().filter { it.fileInfo?.fileName == path }.map { it.resolve() as AbsoluteFile }
         }
@@ -392,8 +399,14 @@ internal class AbsoluteFolderImpl(
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
         if (!FileSystem.isLegal(path)) return Stream.empty()
 
+        if (path[0] == '/') {
+            return root.resolveFilesStream(path.substring(1))
+        }
+
         if (!path.contains('/')) {
-            return getItemsSequence().filter { it.fileInfo?.fileName == path }.map { it.resolve() as AbsoluteFile }
+            return getItemsSequence()
+                .filter { it.fileInfo?.fileName == path }
+                .map { it.resolve() as AbsoluteFile }
                 .asStream()
         }
 
@@ -403,6 +416,9 @@ internal class AbsoluteFolderImpl(
     override suspend fun resolveAll(path: String): Flow<AbsoluteFileFolder> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
         if (!FileSystem.isLegal(path)) return emptyFlow()
+        if (path[0] == '/') {
+            return root.resolveAll(path.substring(1))
+        }
         if (!path.contains('/')) {
             return getItemsFlow().mapNotNull { it.resolve() }
         }
@@ -414,6 +430,9 @@ internal class AbsoluteFolderImpl(
     override suspend fun resolveAllStream(path: String): Stream<AbsoluteFileFolder> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
         if (!FileSystem.isLegal(path)) return Stream.empty()
+        if (path[0] == '/') {
+            return root.resolveAllStream(path.substring(1))
+        }
         if (!path.contains('/')) {
             return getItemsSequence().mapNotNull { it.resolve() }.asStream()
         }
