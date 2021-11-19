@@ -90,7 +90,7 @@ gradlePlugin {
 kotlin.target.compilations.all {
     kotlinOptions {
         apiVersion = "1.3"
-        languageVersion = "1.4"
+        languageVersion = "1.3"
     }
 }
 
