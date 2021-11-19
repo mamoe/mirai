@@ -31,6 +31,7 @@ internal fun AbsoluteFolder.impl(): AbsoluteFolderImpl = this.cast()
 internal val AbsoluteFolder?.idOrRoot get() = this?.id ?: AbsoluteFolder.ROOT_FOLDER_ID
 
 internal val AbstractAbsoluteFileFolder.parentOrRoot get() = parent ?: contact.files.root
+internal val AbstractAbsoluteFileFolder.root get() = contact.files.root
 
 /**
  * @see AbsoluteFileFolder
