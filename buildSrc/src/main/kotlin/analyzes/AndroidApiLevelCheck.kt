@@ -12,9 +12,7 @@
 package analyzes
 
 import groovy.util.Node
-import groovy.util.XmlParser
 import org.gradle.api.Project
-import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
@@ -212,7 +210,8 @@ object AndroidApiLevelCheck {
         val apiVersionsFile =
             project.rootProject.projectDir.resolve("buildSrc/src/main/resources/androidutil/api-versions.xml")
         val classesInfos = mutableMapOf<String, ClassInfo>()
-        XmlParser().parse(apiVersionsFile).children().forEach { classNode ->
+        @Suppress("DEPRECATION")
+        groovy.util.XmlParser().parse(apiVersionsFile).children().forEach { classNode ->
             classNode as Node
             if (classNode.name() == "class") {
                 val fieldInfos = mutableMapOf<String, ClassInfo.MemberInfo>()
