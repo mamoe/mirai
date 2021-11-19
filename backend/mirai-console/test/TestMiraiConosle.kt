@@ -33,6 +33,7 @@ import kotlin.test.assertNotNull
 
 @OptIn(ConsoleInternalApi::class, kotlin.io.path.ExperimentalPathApi::class)
 fun initTestEnvironment() {
+    IS_GRADLE_TEST = true
     object : MiraiConsoleImplementation {
         override val rootPath: Path = createTempDirectory()
 
