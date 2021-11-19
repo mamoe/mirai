@@ -96,8 +96,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val loggerController: LoggerController by instance::loggerController
 
     init {
-        @Suppress("DEPRECATION")
-        MiraiLogger.setDefaultLoggerCreator(this::createLogger)
+        // TODO: Replace to standard api
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        DefaultFactoryOverrides.override { requester, identity ->
+            return@override createLogger(
+                identity ?: requester.kotlin.simpleName ?: requester.simpleName
+            )
+        }
     }
 
 
