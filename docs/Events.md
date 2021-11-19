@@ -14,7 +14,7 @@
 - [监听事件的其他方法](#监听事件的其他方法)
     - [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
     - [在 Kotlin 使用 DSL 监听事件](#在-kotlin-使用-dsl-监听事件)
-- [自定义事件](#自定义事件)
+- [实现事件](#实现事件)
     - [定义新事件](#定义新事件)
     - [广播新事件](#广播新事件)
     - [定义handler](#定义handler)
@@ -412,7 +412,7 @@ eventChannel.subscribeMessages {
 
 > 回到 [目录](#目录)
 
-## 自定义事件
+## 实现事件
 
 只要实现接口 `Event` 并继承 `AbstractEvent` 的对象就可以被广播。
 
