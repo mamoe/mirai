@@ -15,6 +15,9 @@
   - [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
   - [在 Kotlin 使用 DSL 监听事件](#在-kotlin-使用-dsl-监听事件)
 - [实现事件](#实现事件)
+  * [新建事件](#新建事件)
+  * [广播事件](#广播事件)
+  * [监听事件](#监听事件)
 - [工具函数（Kotlin）](#工具函数kotlin)
   - [线性同步（`syncFromEvent`）](#线性同步syncfromevent)
   - [线性同步（`nextEvent`）](#线性同步nextevent)
@@ -409,9 +412,76 @@ eventChannel.subscribeMessages {
 
 ## 实现事件
 
-只要实现接口 `Event` 并继承 `AbstractEvent` 的对象就可以被广播。
+相信你在使用 mirai 自带的事件时已经感到受益匪浅了，这种机制也可以作用在你的程序上，让其他人的程序也能像监听 mirai 自带的事件一样，对你程序的行为作出反应
 
-要广播一个事件，使用 `Event.broadcast()`（Kotlin）或 `EventKt.broadcast(Event)`（Java）。
+### 新建事件
+
+新建一个类，让类实现接口 `Event` 或继承 `AbstractEvent` 即可。`AbstractEvent` 实现了 `Event`，若无特殊需要建议继承 `AbstractEvent`。
+```kotlin
+// kotlin:
+class ExampleEvent(
+    public var action: String
+) : AbstractEvent {
+    
+}
+```
+```java
+// java:
+public class ExampleEvent extends AbstractEvent {
+    String action;
+    public ExampleEvent(String action) {
+        this.action = action;
+    }
+    public String getAction(){
+        return action;
+    }
+    public void setAction(String action){
+        this.action = action;
+    }
+}
+```
+### 广播事件
+
+事件需要被广播，才会被监听器接收到，从而使监听器端已监听事件的程序作出响应。以上文的 `ExampleEvent` 为例，在 kotlin 中使用 `Event.broadcast(Event)`，在 java 中使用 `EventKt.broadcast(Event)`
+
+```kotlin
+// kotlin:
+var action : String = "kill human"
+println("action value before call event: " + action)
+ExampleEvent event = Event.broadcast(ExampleEvent(action))
+action = event.action
+println("action value after call event: " + action)
+```
+```java
+// java
+String action = "kill human";
+System.out.println("action value before call event: " + action);
+ExampleEvent event = EventKt.broadcast(new ExampleEvent(action));
+action = event.getAction();
+System.out.println("action value after call event: " + action);
+```
+### 监听事件
+
+同上文监听事件的方式几乎一样。不过需要注意的是，从 bot 获取的消息通道 (`bot.eventChannel`)，只能监听 `BotEvent`，如果你的事件类没有继承 `BotEvent`，将无法通过这个通道来监听此事件。因此你可能需要使用 `GlobalEventChannel`
+
+以下的示例是 监听事件以影响上一个部分 `广播事件` 中的变量 `action` 的值
+
+```kotlin
+// kotlin:
+GlobalEventChannel.subscribeAlways<ExampleEvent> { event ->
+    if(event.action.equals("kill human")){
+        event.action = "none"
+    }
+}
+```
+```java
+// java:
+GlobalEventChannel.INSTANCE.subscribeAlways(ExampleEvent.class, event -> { 
+    if(event.getAction().equals("kill human")){
+        event.setAction("none");
+    }
+});
+```
 
 > 回到 [目录](#目录)
 
