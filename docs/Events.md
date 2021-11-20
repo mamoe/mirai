@@ -440,7 +440,7 @@ public class ExampleEvent extends AbstractEvent {
 ```
 ### 广播自定义事件
 
-事件需要被广播，才会被监听器接收到，从而使监听器端已监听事件的程序作出响应。以上文的 `ExampleEvent` 为例，
+事件需要被广播，才会被监听器接收到，使已监听事件的程序作出响应。以上文的 `ExampleEvent` 为例，
 
 kotlin：`event.broadcast()`
 
