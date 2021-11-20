@@ -1,0 +1,95 @@
+name: Bug 报告
+description: 提交一个 bug
+labels:
+  - "question"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你来到这里
+
+        在反馈前, 请确认你已经做了下面这些事情
+        - 对照 [Releases](https://github.com/mamoe/mirai/releases)，相关问题未在近期更新中解决
+        - 搜索了已有的 [issues](https://github.com/mamoe/mirai/issues) 列表中有没相关的信息
+        - 阅读了 [Mirai 的相关文档](https://github.com/mamoe/mirai/tree/dev/docs)
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 问题描述
+      description: 在此详细描述你遇到的问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现
+      description: 在这里简略说明如何让这个问题再次发生
+      placeholder: |
+        在这里简略说明如何让这个问题再次发生
+        可使用 1.  2.  3.  的列表格式，或其他任意恰当的格式
+        如果你不确定如何复现, 请尽量描述发生当时的情景
+    validations:
+      required: true
+
+  - type: input
+    id: version-mirai-core
+    attributes:
+      label: mirai-core 版本
+      description: "填写你正在使用的版本号，如 `2.8.2`"
+      placeholder: 2.8.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bot-protocol
+    attributes:
+      label: bot-protocol
+      options:
+        - ANDROID_PHONE
+        - ANDROID_PAD
+        - ANDROID_WATCH
+        - IPAD
+        - MACOS
+    validations:
+      required: true
+
+  - type: textarea
+    id: version-others
+    attributes:
+      label: 其他组件版本
+      description: 如果你正在通过 mirai-console 或其他间接使用 mirai-core 的中间件（如 mirai-native、mirai-api-http 或者其他第三方 SDK）, 请同样提供版本号
+      placeholder: |
+        mirai-api-http: `2.3.3`
+
+  - type: textarea
+    id: journal-system
+    attributes:
+      label: 系统日志
+      description: |
+        请提供全面的相关日志. 请不要截图.
+        如果日志过大, 可以在 `补充信息` 上传文件.
+      render: 'text'
+    validations:
+      required: true
+
+  - type: textarea
+    id: journal-network
+    attributes:
+      label: 网络日志
+      description: |
+        请提供全面的网络日志. 请不要截图.
+        一般网络日志位于 bots/<****>/logs 里
+        如果日志过大, 可以在 `补充信息` 上传文件.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充信息
+      description: 如有必要，你可以在下文继续添加其他信息
+
