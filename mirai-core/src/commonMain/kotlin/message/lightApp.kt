@@ -26,7 +26,7 @@ internal data class LightAppInternal(
         val struct = tryDeserialize() ?: return LightApp(content)
         struct.run {
             if (meta.music != null) {
-                MusicKind.values().find { it.appId.toInt() == meta.music.appid }?.let { musicType ->
+                MusicKind.values().find { it.appId == meta.music.appid }?.let { musicType ->
                     meta.music.run {
                         return MessageOrigin(
                             LightApp(content),
@@ -121,7 +121,7 @@ internal data class LightAppStruct(
         @SerialName("autosize")
         val autosize: Boolean = false,
         @SerialName("ctime")
-        val ctime: Int = 0,
+        val ctime: Long = 0,
         @SerialName("forward")
         val forward: Boolean = false,
         @SerialName("token")
@@ -133,11 +133,11 @@ internal data class LightAppStruct(
     @Serializable
     data class Extra(
         @SerialName("app_type")
-        val appType: Int = 0,
+        val appType: Long = 0,
         @SerialName("appid")
-        val appid: Int = 0,
+        val appid: Long = 0,
         @SerialName("uin")
-        val uin: Int = 0,
+        val uin: Long = 0,
     )
 
     @Serializable
@@ -152,9 +152,9 @@ internal data class LightAppStruct(
             @SerialName("android_pkg_name")
             val androidPkgName: String = "",
             @SerialName("app_type")
-            val appType: Int = 0,
+            val appType: Long = 0,
             @SerialName("appid")
-            val appid: Int = 0,
+            val appid: Long = 0,
             @SerialName("desc")
             val desc: String = "",
             @SerialName("jumpUrl")
