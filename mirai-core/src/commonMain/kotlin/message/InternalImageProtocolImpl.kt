@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.ImagePatcher
+import net.mamoe.mirai.internal.utils.ImagePatcher.Companion.withCache
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.message.data.InternalImageProtocol
@@ -140,6 +141,20 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
         }
     }
 
+    fun findExistImageByCache(imageId: String): Image? {
+        Bot.instancesSequence.forEach { existsBot ->
+            runCatching {
+                val patcher = existsBot.asQQAndroidBot().components[ImagePatcher]
+
+                patcher.findCacheByImageId(imageId)?.withCache { cache ->
+                    val rsp = cache.cacheOGI.value0
+                    if (rsp != null) return rsp
+                }
+            }
+        }
+        return null
+    }
+
     override fun createImage(
         imageId: String,
         size: Long,
@@ -150,18 +165,10 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
     ): Image {
         return when {
             imageId matches Image.IMAGE_ID_REGEX -> {
-                Bot.instancesSequence.forEach { existsBot ->
-                    runCatching {
-                        val patcher = existsBot.asQQAndroidBot().components[ImagePatcher]
-
-                        patcher.findCacheByImageId(imageId)?.let { cache ->
-                            val rsp = cache.cacheOGI.value0
-                            cache.accessLock.release()
-                            if (rsp != null) return rsp
-                        }
-                    }
+                if (size == 0L && width == 0 && height == 0) {
+                    findExistImageByCache(imageId)?.let { return it }
                 }
-                OfflineGroupImage(imageId)
+                OfflineGroupImage(imageId, width, height, size, type, isEmoji)
             }
             imageId matches Image.IMAGE_RESOURCE_ID_REGEX_1 -> {
                 OfflineFriendImage(imageId, width, height, size, type, isEmoji)
