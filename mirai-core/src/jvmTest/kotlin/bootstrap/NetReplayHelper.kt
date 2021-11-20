@@ -192,7 +192,7 @@ private fun attachNetReplayWView(channel: Channel) {
     frame.setLocationRelativeTo(null)
     frame.isVisible = true
 
-    channel.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
+    channel.pipeline().addFirst(object : ChannelInboundHandlerAdapter() {
         override fun channelInactive(ctx: ChannelHandlerContext?) {
             SwingUtilities.invokeLater {
                 frame.dispose()
