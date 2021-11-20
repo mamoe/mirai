@@ -14,7 +14,7 @@
     "EXPERIMENTAL_API_USAGE",
     "unused",
     "UnusedImport",
-    "DEPRECATION_ERROR", "NOTHING_TO_INLINE"
+    "DEPRECATION_ERROR", "NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate"
 )
 
 package net.mamoe.mirai.message.data
@@ -152,19 +152,99 @@ public interface Image : Message, MessageContent, CodableMessage {
         )
     }
 
+
+    /**
+     * [Image] 构建器.
+     *
+     * 示例:
+     *
+     * ```java
+     * Builder builder = Image.Builder.newBuilder("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.jpg")
+     * builder.setSize(123);
+     * builder.setType(ImageType.PNG);
+     *
+     * Image image = builder.build();
+     * ```
+     *
+     * @since 2.9.0
+     */
+    public class Builder private constructor(
+        /**
+         * @see Image.imageId
+         */
+        public var imageId: String,
+    ) {
+        /**
+         * 图片大小字节数. 如果不提供改属性, 将无法 [Image.Key.isUploaded]
+         *
+         * @see Image.size
+         */
+        public var size: Long = 0
+
+        /**
+         * @see Image.imageType
+         */
+        public var type: ImageType = ImageType.UNKNOWN
+
+        /**
+         * @see Image.width
+         */
+        public var width: Int = 0
+
+        /**
+         * @see Image.height
+         */
+        public var height: Int = 0
+
+        /**
+         * @see Image.isEmoji
+         */
+        public var isEmoji: Boolean = false
+
+        /**
+         * 使用当前参数构造 [Image].
+         */
+        public fun build(): Image = InternalImageProtocol.instance.createImage(
+            imageId = imageId,
+            size = size,
+            type = type,
+            width = width,
+            height = height,
+            isEmoji = isEmoji,
+        )
+
+        public companion object {
+            /**
+             * 创建一个 [Builder]
+             */
+            @JvmStatic
+            public fun newBuilder(imageId: String): Builder = Builder(imageId)
+        }
+    }
+
     @JvmBlockingBridge
     public companion object Key : AbstractMessageKey<Image>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "Image"
 
         /**
-         * 通过 [Image.imageId] 构造一个 [Image] 以便发送. 这个图片必须是服务器已经存在的图片.
-         * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+         * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+         *
+         * 图片 ID 不一定会长时间保存, 因此不建议使用 ID 发送图片. 建议使用 [Builder], 可以指定更多参数 (以及用于查询图片是否存在于服务器的必要参数 size).
          *
          * @see Image 获取更多说明
          * @see Image.imageId 获取更多说明
+         * @see Builder
          */
         @JvmStatic
         public fun fromId(imageId: String): Image = Mirai.createImage(imageId)
+
+        /**
+         * 构造一个 [Image.Builder] 实例.
+         *
+         * @since 2.9.0
+         */
+        @JvmStatic
+        public fun newBuilder(imageId: String): Builder = Builder.newBuilder(imageId)
 
         /**
          * 查询原图下载链接.
@@ -265,16 +345,27 @@ public interface Image : Message, MessageContent, CodableMessage {
 }
 
 /**
- * 通过 [Image.imageId] 构造一个 [Image] 以便发送. 这个图片必须是服务器已经存在的图片.
- * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+ * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
  *
- * @see Image 获取更多说明
- * @see Image.imageId 获取更多说明
+ * 图片 ID 不一定会长时间保存, 因此不建议使用 ID 发送图片. 建议使用 [Image.Builder], 可以指定更多参数 (以及用于查询图片是否存在于服务器的必要参数 size).
+ *
+ * @see Image 获取更多关于 [Image] 的说明
+ * @see Image.Builder 获取更多关于构造 [Image] 的方法
  *
  * @see IMirai.createImage
  */
 @JvmSynthetic
-public inline fun Image(imageId: String): Image = Image.fromId(imageId)
+public inline fun Image(imageId: String): Image = Image.Builder.newBuilder(imageId).build()
+
+/**
+ * 使用 [Image.Builder] 构建一个 [Image].
+ *
+ * @see Image.Builder
+ * @since 2.9.0
+ */
+@JvmSynthetic
+public inline fun Image(imageId: String, builderAction: Image.Builder.() -> Unit = {}): Image =
+    Image.Builder.newBuilder(imageId).apply(builderAction).build()
 
 public enum class ImageType(
     /**
@@ -286,7 +377,6 @@ public enum class ImageType(
     BMP("bmp"),
     JPG("jpg"),
     GIF("gif"),
-
     //WEBP, //Unsupported by pc client
     APNG("png"),
     UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
@@ -387,6 +477,15 @@ public abstract class GroupImage @MiraiInternalApi public constructor() :
  */
 @MiraiInternalApi
 public interface InternalImageProtocol { // naming it Internal* to assign it a lower priority when resolving Image*
+    public fun createImage(
+        imageId: String,
+        size: Long,
+        type: ImageType = ImageType.UNKNOWN,
+        width: Int = 0,
+        height: Int = 0,
+        isEmoji: Boolean = false
+    ): Image
+
     /**
      * @param context 用于检查的 [Contact]. 群图片与好友图片是两个通道, 建议使用欲发送到的 [Contact] 对象作为 [contact] 参数, 但目前不提供此参数时也可以检查.
      */

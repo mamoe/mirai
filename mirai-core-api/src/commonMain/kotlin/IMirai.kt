@@ -180,12 +180,13 @@ public interface IMirai : LowLevelApiAccessor {
     public suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean
 
     /**
-     * 构造 [Image]
+     * 构造 [Image]. 请优先使用 [Image.Factory.create].
      *
      * @see Image
      * @see Image.fromId
+     * @see Image.Factory.create
      */
-    public fun createImage(imageId: String): Image
+    public fun createImage(imageId: String): Image = Image.Builder.newBuilder(imageId).build()
 
     /**
      * 创建一个 [FileMessage]. [name] 与 [size] 只供本地使用, 发送消息时只会使用 [id] 和 [internalId].

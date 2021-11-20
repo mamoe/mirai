@@ -64,9 +64,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
-import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
@@ -758,30 +755,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         val jsonObj = Json.decodeFromString(JsonObject.serializer(), response)
         if ((jsonObj["retcode"] ?: jsonObj["cgicode"] ?: error("missing response code")).jsonPrimitive.long != 0L) {
             throw IllegalStateException(response)
-        }
-    }
-
-    override fun createImage(imageId: String): Image {
-        return when {
-            imageId matches IMAGE_ID_REGEX -> {
-                Bot.instancesSequence.forEach { existsBot ->
-                    runCatching {
-                        val patcher = existsBot.asQQAndroidBot().components[ImagePatcher]
-
-                        patcher.findCacheByImageId(imageId)?.let { cache ->
-                            val rsp = cache.cacheOGI.value0
-                            cache.accessLock.release()
-                            if (rsp != null) return rsp
-                        }
-                    }
-                }
-                OfflineGroupImage(imageId)
-            }
-            imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> OfflineFriendImage(imageId)
-            imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> OfflineFriendImage(imageId)
-            else ->
-                @Suppress("INVISIBLE_MEMBER")
-                throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
         }
     }
 

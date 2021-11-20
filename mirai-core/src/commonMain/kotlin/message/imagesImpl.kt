@@ -334,7 +334,8 @@ internal data class OfflineGroupImage(
     override val width: Int = 0,
     override val height: Int = 0,
     override val size: Long = 0L,
-    override val imageType: ImageType = ImageType.UNKNOWN
+    override val imageType: ImageType = ImageType.UNKNOWN,
+    override val isEmoji: Boolean = false,
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
     @Transient
     internal var fileId: Int? = null
@@ -380,7 +381,8 @@ internal data class OfflineFriendImage(
     override val width: Int = 0,
     override val height: Int = 0,
     override val size: Long = 0L,
-    override val imageType: ImageType = ImageType.UNKNOWN
+    override val imageType: ImageType = ImageType.UNKNOWN,
+    override val isEmoji: Boolean = false,
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
     object Serializer : Image.FallbackSerializer("OfflineFriendImage")
 
