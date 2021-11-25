@@ -46,6 +46,7 @@
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
 [Excaive/miraicle]: https://github.com/Excaive/miraicle
 [nkxingxh/miraiez]: https://github.com/nkxingxh/miraiez
+[Xwdit/RainyBot-Core]: https://github.com/Xwdit/RainyBot-Core
 
 [OneBot]: https://github.com/howmanybots/onebot
 [Mirai HTTP]: https://github.com/project-mirai/mirai-api-http
@@ -87,6 +88,7 @@
 | `C#`                      | [Miyakowww/CocoaFramework2]                 |
 | `C++`                     | [cyanray/mirai-cpp]                         |
 | `C++`                     | [Chlorie/miraipp]                           |
+| `GDScript`                | [Xwdit/RainyBot-Core]                       |
 | `Go`                      | [Logiase/gomirai]                           |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                       |
 | `JavaScript` / Node.js    | [drinkal/Mirai-js]                          |
