@@ -57,6 +57,24 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     @JvmName("reloadPluginConfig")
     public fun <T : PluginConfig> T.reload(): Unit = loader.configStorage.load(this@AbstractJvmPlugin, this)
 
+    /**
+     * 立即保存 [PluginData]
+     *
+     * @see reloadPluginData
+     * @since 2.9
+     */
+    @JvmName("savePluginData")
+    public fun <T : PluginData> T.save(): Unit = loader.dataStorage.store(this@AbstractJvmPlugin, this)
+
+    /**
+     * 立即保存 [PluginConfig]
+     *
+     * @see reloadPluginConfig
+     * @since 2.9
+     */
+    @JvmName("savePluginConfig")
+    public fun <T : PluginConfig> T.save(): Unit = loader.configStorage.store(this@AbstractJvmPlugin, this)
+
     @ConsoleExperimentalApi
     public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToMillis
 }
@@ -76,3 +94,21 @@ public inline fun AbstractJvmPlugin.reloadPluginData(instance: PluginData): Unit
  */
 @JvmSynthetic
 public inline fun AbstractJvmPlugin.reloadPluginConfig(instance: PluginConfig): Unit = this.run { instance.reload() }
+
+/**
+ * 立即保存 [PluginData]
+ *
+ * @see AbstractJvmPlugin.save
+ * @since 2.9
+ */
+@JvmSynthetic
+public inline fun AbstractJvmPlugin.savePluginData(instance: PluginData): Unit = this.run { instance.save() }
+
+/**
+ * 立即保存 [PluginConfig]
+ *
+ * @see AbstractJvmPlugin.save
+ * @since 2.9
+ */
+@JvmSynthetic
+public inline fun AbstractJvmPlugin.savePluginConfig(instance: PluginConfig): Unit = this.run { instance.save() }
