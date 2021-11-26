@@ -177,6 +177,8 @@ internal class NormalMemberImpl constructor(
                 ban = block
             ).sendAndExpect()
 
+            // Note: when member not found, result is still true.
+
             if (response.ret == 255) error("Operation too fast") // https://github.com/mamoe/mirai/issues/1503
             check(response.success) { "kick failed: ${response.ret}" }
 
