@@ -160,7 +160,7 @@ internal class GroupImpl constructor(
         } else false
 
         require(isMiraiInternal || !message.isContentEmpty()) { "message is empty" }
-        check(!isBotMuted) { throw BotIsBeingMutedException(this) }
+        check(!isBotMuted) { throw BotIsBeingMutedException(this, message) }
 
         val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, ::GroupMessagePreSendEvent)
 

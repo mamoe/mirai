@@ -172,7 +172,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                         if (resp is MessageSvcPbSendMsg.Response.Failed) {
                             val contact = contact
                             when (resp.resultType) {
-                                120 -> if (contact is Group) throw BotIsBeingMutedException(contact)
+                                120 -> if (contact is Group) throw BotIsBeingMutedException(contact, originalMessage)
                                 121 -> if (AtAll in finalMessage) throw IllegalStateException("Send message to $contact failed, reached maximum AtAll times limit.")
                             }
                         }
