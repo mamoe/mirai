@@ -171,6 +171,23 @@ public object BuiltInCommands {
         }
     }
 
+    public object LogoutCommand : SimpleCommand(
+        ConsoleCommandOwner, "logout", "登出",
+        description = "登出一个账号",
+    ), BuiltInCommandInternal {
+
+        @Handler
+        public suspend fun CommandSender.handle(
+            @Name("qq") id: Long
+        ){
+            if (Bot.getInstanceOrNull(id)?.close() == null) {
+                sendMessage("$id 未登录")
+            } else {
+                sendMessage("$id 已登出")
+            }
+        }
+    }
+
     public object LoginCommand : SimpleCommand(
         ConsoleCommandOwner, "login", "登录",
         description = "登录一个账号",
