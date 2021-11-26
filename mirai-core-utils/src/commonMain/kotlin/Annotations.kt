@@ -16,3 +16,12 @@ import kotlin.annotation.AnnotationTarget.*
 @RequiresOptIn("This can only be used in tests.", level = ERROR)
 @Target(CLASS, FUNCTION, PROPERTY, CLASS, CONSTRUCTOR, FUNCTION)
 public annotation class TestOnly
+
+/**
+ * @since 2.9.0-RC
+ */ // https://github.com/mamoe/mirai/issues/1669
+public annotation class DeprecatedSinceMirai(
+    val warningSince: String = "",
+    val errorSince: String = "",
+    val hiddenSince: String = ""
+)
