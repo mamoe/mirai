@@ -181,9 +181,11 @@ public abstract interface class net/mamoe/mirai/contact/AudioSupported : net/mam
 	public abstract fun uploadAudio (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class net/mamoe/mirai/contact/BotIsBeingMutedException : java/lang/RuntimeException {
+public final class net/mamoe/mirai/contact/BotIsBeingMutedException : net/mamoe/mirai/contact/SendMessageFailedException {
 	public fun <init> (Lnet/mamoe/mirai/contact/Group;)V
-	public final fun getTarget ()Lnet/mamoe/mirai/contact/Group;
+	public fun getMessage ()Ljava/lang/String;
+	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
+	public fun getTarget ()Lnet/mamoe/mirai/contact/Group;
 }
 
 public final class net/mamoe/mirai/contact/ClientKind : java/lang/Enum {
@@ -439,11 +441,11 @@ public final class net/mamoe/mirai/contact/MemberPermissionKt {
 	public static final fun isOwner (Lnet/mamoe/mirai/contact/Member;)Z
 }
 
-public final class net/mamoe/mirai/contact/MessageTooLargeException : java/lang/RuntimeException {
+public final class net/mamoe/mirai/contact/MessageTooLargeException : net/mamoe/mirai/contact/SendMessageFailedException {
 	public fun <init> (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/message/data/Message;Lnet/mamoe/mirai/message/data/Message;Ljava/lang/String;)V
+	public fun getMessage ()Ljava/lang/String;
 	public final fun getMessageAfterEvent ()Lnet/mamoe/mirai/message/data/Message;
-	public final fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/Message;
-	public final fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
+	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
 }
 
 public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe/mirai/contact/Member {
@@ -527,6 +529,19 @@ public final class net/mamoe/mirai/contact/Platform : java/lang/Enum {
 }
 
 public final class net/mamoe/mirai/contact/Platform$Companion {
+}
+
+public class net/mamoe/mirai/contact/SendMessageFailedException : java/lang/RuntimeException {
+	public final fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/Message;
+	public final fun getReason ()Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
+}
+
+public final class net/mamoe/mirai/contact/SendMessageFailedException$Reason : java/lang/Enum {
+	public static final field BOT_MUTED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public static final field MESSAGE_TOO_LARGE Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public static fun values ()[Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 }
 
 public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/User {
