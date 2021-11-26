@@ -85,5 +85,10 @@ public open class SendMessageFailedException @MiraiInternalApi constructor(
          * 机器人被禁言
          */
         BOT_MUTED,
+
+        /**
+         * 达到群每分钟发言次数限制
+         */
+        GROUP_CHAT_LIMITED,
     }
 }
