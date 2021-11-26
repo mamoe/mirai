@@ -124,7 +124,7 @@ public interface NormalMember : Member {
      * @throws PermissionDeniedException 无权限修改时
      *
      */
-    public suspend fun kick(message: String)
+    public suspend fun kick(message: String): Unit = kick(message, false)
 
 
     /**

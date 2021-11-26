@@ -163,10 +163,6 @@ internal class NormalMemberImpl constructor(
         this._muteTimestamp = 0
     }
 
-    override suspend fun kick(message: String) {
-        kick(message, false)
-    }
-
     override suspend fun kick(message: String, block: Boolean) {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
