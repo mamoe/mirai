@@ -171,7 +171,8 @@ internal class NormalMemberImpl constructor(
         bot.network.run {
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
-                member = this@NormalMemberImpl,
+                groupCode = group.groupCode,
+                memberId = id,
                 message = message,
                 ban = block
             ).sendAndExpect()

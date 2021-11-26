@@ -191,7 +191,8 @@ internal class TroopManagement {
 
         operator fun invoke(
             client: QQAndroidClient,
-            member: Member,
+            groupCode: Long,
+            memberId: Long,
             message: String,
             ban: Boolean
         ) = buildOutgoingUniPacket(client) {
@@ -202,11 +203,11 @@ internal class TroopManagement {
                     serviceType = 0,//或者1
                     result = 0,
                     bodybuffer = Oidb0x8a0.ReqBody(
-                        optUint64GroupCode = member.group.id,
+                        optUint64GroupCode = groupCode,
                         msgKickList = listOf(
                             Oidb0x8a0.KickMemberInfo(
                                 optUint32Operate = 5,
-                                optUint64MemberUin = member.id,
+                                optUint64MemberUin = memberId,
                                 optUint32Flag = if (ban) 1 else 0 //1为拉黑
                             )
                         ),
