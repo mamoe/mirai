@@ -5755,6 +5755,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfo$Companion;
 	public synthetic fun <init> (I[B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[BLkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B)V
+	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun getAndroidId ()[B
@@ -5780,7 +5781,9 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getVersion ()Lnet/mamoe/mirai/utils/DeviceInfo$Version;
 	public final fun getWifiBSSID ()[B
 	public final fun getWifiSSID ()[B
+	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
@@ -5801,6 +5804,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Companion {
 	public final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/utils/DeviceInfo$Companion;Ljava/io/File;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -5810,10 +5814,12 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version {
 	public synthetic fun <init> (I[B[B[BILkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([B[B[BI)V
 	public synthetic fun <init> ([B[B[BIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCodename ()[B
 	public final fun getIncremental ()[B
 	public final fun getRelease ()[B
 	public final fun getSdk ()I
+	public fun hashCode ()I
 	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo$Version;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 

@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import java.io.File
+import kotlin.random.Random
 
 @Serializable
 public class DeviceInfo(
@@ -57,7 +58,35 @@ public class DeviceInfo(
         public val release: ByteArray = "10".toByteArray(),
         public val codename: ByteArray = "REL".toByteArray(),
         public val sdk: Int = 29
-    )
+    ) {
+        /**
+         * @since 2.9
+         */
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Version
+
+            if (!incremental.contentEquals(other.incremental)) return false
+            if (!release.contentEquals(other.release)) return false
+            if (!codename.contentEquals(other.codename)) return false
+            if (sdk != other.sdk) return false
+
+            return true
+        }
+
+        /**
+         * @since 2.9
+         */
+        override fun hashCode(): Int {
+            var result = incremental.contentHashCode()
+            result = 31 * result + release.contentHashCode()
+            result = 31 * result + codename.contentHashCode()
+            result = 31 * result + sdk
+            return result
+        }
+    }
 
     public companion object {
         internal val logger = MiraiLogger.Factory.create(DeviceInfo::class, "DeviceInfo")
@@ -79,20 +108,36 @@ public class DeviceInfo(
             return json.decodeFromString(serializer(), this.readText())
         }
 
-
+        /**
+         * 生成随机 [DeviceInfo]
+         *
+         * @since 2.0
+         */
         @JvmStatic
-        public fun random(): DeviceInfo {
+        public fun random(): DeviceInfo = random(Random.Default)
+
+        /**
+         * 使用特定随机数生成器生成 [DeviceInfo]
+         *
+         * @since 2.9
+         */
+        @JvmStatic
+        public fun random(random: Random): DeviceInfo {
             return DeviceInfo(
-                display = "MIRAI.${getRandomString(6, '0'..'9')}.001".toByteArray(),
+                display = "MIRAI.${getRandomString(6, '0'..'9', random)}.001".toByteArray(),
                 product = "mirai".toByteArray(),
                 device = "mirai".toByteArray(),
                 board = "mirai".toByteArray(),
                 brand = "mamoe".toByteArray(),
                 model = "mirai".toByteArray(),
                 bootloader = "unknown".toByteArray(),
-                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${getRandomIntString(7)}:user/release-keys".toByteArray(),
-                bootId = generateUUID(getRandomByteArray(16).md5()).toByteArray(),
-                procVersion = "Linux version 3.0.31-${getRandomString(8)} (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
+                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${
+                    getRandomIntString(7, random)
+                }:user/release-keys".toByteArray(),
+                bootId = generateUUID(getRandomByteArray(16, random).md5()).toByteArray(),
+                procVersion = "Linux version 3.0.31-${
+                    getRandomString(8, random)
+                } (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
                 baseBand = byteArrayOf(),
                 version = Version(),
                 simInfo = "T-Mobile".toByteArray(),
@@ -100,11 +145,74 @@ public class DeviceInfo(
                 macAddress = "02:00:00:00:00:00".toByteArray(),
                 wifiBSSID = "02:00:00:00:00:00".toByteArray(),
                 wifiSSID = "<unknown ssid>".toByteArray(),
-                imsiMd5 = getRandomByteArray(16).md5(),
-                imei = getRandomIntString(15),
+                imsiMd5 = getRandomByteArray(16, random).md5(),
+                imei = getRandomIntString(15, random),
                 apn = "wifi".toByteArray()
             )
         }
+    }
+
+    /**
+     * @since 2.9
+     */
+    @Suppress("DuplicatedCode")
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as DeviceInfo
+
+        if (!display.contentEquals(other.display)) return false
+        if (!product.contentEquals(other.product)) return false
+        if (!device.contentEquals(other.device)) return false
+        if (!board.contentEquals(other.board)) return false
+        if (!brand.contentEquals(other.brand)) return false
+        if (!model.contentEquals(other.model)) return false
+        if (!bootloader.contentEquals(other.bootloader)) return false
+        if (!fingerprint.contentEquals(other.fingerprint)) return false
+        if (!bootId.contentEquals(other.bootId)) return false
+        if (!procVersion.contentEquals(other.procVersion)) return false
+        if (!baseBand.contentEquals(other.baseBand)) return false
+        if (version != other.version) return false
+        if (!simInfo.contentEquals(other.simInfo)) return false
+        if (!osType.contentEquals(other.osType)) return false
+        if (!macAddress.contentEquals(other.macAddress)) return false
+        if (!wifiBSSID.contentEquals(other.wifiBSSID)) return false
+        if (!wifiSSID.contentEquals(other.wifiSSID)) return false
+        if (!imsiMd5.contentEquals(other.imsiMd5)) return false
+        if (imei != other.imei) return false
+        if (!apn.contentEquals(other.apn)) return false
+        if (!guid.contentEquals(other.guid)) return false
+
+        return true
+    }
+
+    /**
+     * @since 2.9
+     */
+    override fun hashCode(): Int {
+        var result = display.contentHashCode()
+        result = 31 * result + product.contentHashCode()
+        result = 31 * result + device.contentHashCode()
+        result = 31 * result + board.contentHashCode()
+        result = 31 * result + brand.contentHashCode()
+        result = 31 * result + model.contentHashCode()
+        result = 31 * result + bootloader.contentHashCode()
+        result = 31 * result + fingerprint.contentHashCode()
+        result = 31 * result + bootId.contentHashCode()
+        result = 31 * result + procVersion.contentHashCode()
+        result = 31 * result + baseBand.contentHashCode()
+        result = 31 * result + version.hashCode()
+        result = 31 * result + simInfo.contentHashCode()
+        result = 31 * result + osType.contentHashCode()
+        result = 31 * result + macAddress.contentHashCode()
+        result = 31 * result + wifiBSSID.contentHashCode()
+        result = 31 * result + wifiSSID.contentHashCode()
+        result = 31 * result + imsiMd5.contentHashCode()
+        result = 31 * result + imei.hashCode()
+        result = 31 * result + apn.contentHashCode()
+        result = 31 * result + guid.contentHashCode()
+        return result
     }
 }
 
