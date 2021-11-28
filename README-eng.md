@@ -1,5 +1,4 @@
 # Mirai
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)  
 
 Mirai is a high-performance multi-platform library, as well as a framework, providing protocol support for Tencent QQ.
 
