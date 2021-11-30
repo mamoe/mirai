@@ -15,6 +15,9 @@
   - [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
   - [在 Kotlin 使用 DSL 监听事件](#在-kotlin-使用-dsl-监听事件)
 - [实现事件](#实现事件)
+  * [新建事件](#新建事件)
+  * [广播自定义事件](#广播自定义事件)
+  * [监听自定义事件](#监听自定义事件)
 - [工具函数（Kotlin）](#工具函数kotlin)
   - [线性同步（`syncFromEvent`）](#线性同步syncfromevent)
   - [线性同步（`nextEvent`）](#线性同步nextevent)
@@ -409,9 +412,78 @@ eventChannel.subscribeMessages {
 
 ## 实现事件
 
-只要实现接口 `Event` 并继承 `AbstractEvent` 的对象就可以被广播。
+相信你在使用 mirai 自带的事件时已经感到受益匪浅了，这种机制也可以作用在你的程序上，让其他人的程序也能像监听 mirai 自带的事件一样，对你程序的行为作出反应。
 
-要广播一个事件，使用 `Event.broadcast()`（Kotlin）或 `EventKt.broadcast(Event)`（Java）。
+### 新建事件
+
+新建一个类，让类实现接口 `Event` 并继承 `AbstractEvent` 即可。根据内部实现，事件必须继承 `AbstractEvent`，如下示例。
+```kotlin
+// kotlin:
+class ExampleEvent(
+    var action: String
+) : AbstractEvent()
+```
+```java
+// java:
+public class ExampleEvent extends AbstractEvent {
+    String action;
+    public ExampleEvent(String action) {
+        this.action = action;
+    }
+    public String getAction() {
+        return action;
+    }
+    public void setAction(String action) {
+        this.action = action;
+    }
+}
+```
+### 广播自定义事件
+
+事件需要被广播，才会被监听器接收到，使已监听事件的程序作出响应。以上文的 `ExampleEvent` 为例，
+
+kotlin：`event.broadcast()`
+
+java：`EventKt.broadcast(Event)`
+
+> 注: 在 kotlin 中进行事件的广播需要在协程上下文执行
+
+```kotlin
+// kotlin:
+var event = ExampleEvent("some action")
+var finalAction = event.broadcast().action
+println("action = $finalAction")
+```
+```java
+// java:
+ExampleEvent event = new ExampleEvent("some action");
+String finalAction = EventKt.broadcast(event).getAction();
+System.out.println("action = " + finalAction);
+```
+### 监听自定义事件
+
+同上文监听事件的方式几乎一样。不过需要注意的是，从 bot 获取的消息通道 (`bot.eventChannel`)，只能监听 `BotEvent`，如果你的事件类没有实现 `BotEvent`，将无法通过这个通道来监听此事件。因此你可能需要使用 `GlobalEventChannel` 来代替 `bot.eventChannel`。
+
+以下的示例是 监听事件以影响上一个部分 `广播自定义事件` 中的变量 `action` 的值。
+
+```kotlin
+// kotlin:
+GlobalEventChannel.subscribeAlways<ExampleEvent> { event ->
+    // 处理事件
+    if (event.action == "some action") {
+        event.action = "another action"
+    }
+}
+```
+```java
+// java:
+GlobalEventChannel.INSTANCE.subscribeAlways(ExampleEvent.class, event -> { 
+    // 处理事件
+    if (event.getAction().equals("some action")) {
+        event.setAction("another action");
+    }
+});
+```
 
 > 回到 [目录](#目录)
 
