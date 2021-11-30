@@ -462,13 +462,14 @@ System.out.println("action = " + finalAction);
 ```
 ### 监听自定义事件
 
-同上文监听事件的方式几乎一样。不过需要注意的是，从 bot 获取的消息通道 (`bot.eventChannel`)，只能监听 `BotEvent`，如果你的事件类没有实现 `BotEvent`，将无法通过这个通道来监听此事件。因此你可能需要使用 `GlobalEventChannel` 来代替 `bot.eventChannel`
+同上文监听事件的方式几乎一样。不过需要注意的是，从 bot 获取的消息通道 (`bot.eventChannel`)，只能监听 `BotEvent`，如果你的事件类没有实现 `BotEvent`，将无法通过这个通道来监听此事件。因此你可能需要使用 `GlobalEventChannel` 来代替 `bot.eventChannel`。
 
-以下的示例是 监听事件以影响上一个部分 `广播自定义事件` 中的变量 `action` 的值
+以下的示例是 监听事件以影响上一个部分 `广播自定义事件` 中的变量 `action` 的值。
 
 ```kotlin
 // kotlin:
 GlobalEventChannel.subscribeAlways<ExampleEvent> { event ->
+    // 处理事件
     if (event.action == "some action") {
         event.action = "another action"
     }
@@ -477,6 +478,7 @@ GlobalEventChannel.subscribeAlways<ExampleEvent> { event ->
 ```java
 // java:
 GlobalEventChannel.INSTANCE.subscribeAlways(ExampleEvent.class, event -> { 
+    // 处理事件
     if (event.getAction().equals("some action")) {
         event.setAction("another action");
     }
