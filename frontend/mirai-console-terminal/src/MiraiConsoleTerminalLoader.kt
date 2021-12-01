@@ -47,6 +47,10 @@ object MiraiConsoleTerminalLoader {
         startAsDaemon()
         try {
             runBlocking {
+                MiraiConsole.job.invokeOnCompletion {
+                    Thread.sleep(1000) // 保证错误信息打印完全
+                    exitProcess(0)
+                }
                 MiraiConsole.job.join()
             }
         } catch (e: CancellationException) {

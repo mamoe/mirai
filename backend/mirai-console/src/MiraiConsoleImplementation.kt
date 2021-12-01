@@ -36,7 +36,6 @@ import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.system.exitProcess
 
 
 /**
@@ -286,14 +285,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
                 }.onFailure {
                     it.printStackTrace()
                 }
-                Thread.sleep(3000L) // 保证信息打印完成
-                if (!IS_GRADLE_TEST) exitProcess(1)
-                // For gradle tests, killing the JVM also kills a Gradle worker which cause './gradlew test' to fail.
-                // See https://github.com/gradle/gradle/issues/11195 for more information.
             }
         }
     }
 }
-
-@JvmField
-internal var IS_GRADLE_TEST = false
