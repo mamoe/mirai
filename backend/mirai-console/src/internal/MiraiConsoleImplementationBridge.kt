@@ -70,7 +70,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     MiraiConsole {
     override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
-    private val instance: MiraiConsoleImplementation by MiraiConsoleImplementation.Companion::instance
+    private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.getInstance()
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
     override val version: SemVersion by MiraiConsoleBuildConstants::version
     override val rootPath: Path by instance::rootPath

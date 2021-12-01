@@ -11,9 +11,7 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.Testing
 import net.mamoe.mirai.console.Testing.withTesting
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.getRegisteredCommands
@@ -24,12 +22,10 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
-import net.mamoe.mirai.console.initTestEnvironment
+import net.mamoe.mirai.console.framework.AbstractConsoleTest
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.*
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.*
 
@@ -102,21 +98,7 @@ internal val owner by lazy { TestUnitCommandOwner }
 
 
 @OptIn(ExperimentalCommandDescriptors::class)
-internal class TestCommand {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun init() {
-            initTestEnvironment()
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun destroy() {
-            MiraiConsole.cancel()
-        }
-    }
-
+internal class TestCommand : AbstractConsoleTest() {
     @Test
     fun testRegister() {
         try {
@@ -352,8 +334,26 @@ internal class TestCommand {
             println(composite.overloads.joinToString())
 
             composite.withRegistration {
-                assertEquals(1, withTesting { assertSuccess(composite.execute(sender, "mute 123")) }) // one arg, resolves to mute(Int)
-                assertEquals(2, withTesting { assertSuccess(composite.execute(sender, "mute 123 1")) }) // two arg, resolved to mute(Int, Int)
+                assertEquals(
+                    1,
+                    withTesting {
+                        assertSuccess(
+                            composite.execute(
+                                sender,
+                                "mute 123"
+                            )
+                        )
+                    }) // one arg, resolves to mute(Int)
+                assertEquals(
+                    2,
+                    withTesting {
+                        assertSuccess(
+                            composite.execute(
+                                sender,
+                                "mute 123 1"
+                            )
+                        )
+                    }) // two arg, resolved to mute(Int, Int)
             }
         }
     }

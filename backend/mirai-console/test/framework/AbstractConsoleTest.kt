@@ -37,6 +37,8 @@ abstract class AbstractConsoleTest {
                 // ignored
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                MiraiConsoleImplementation.instance = null
             }
         }
     }

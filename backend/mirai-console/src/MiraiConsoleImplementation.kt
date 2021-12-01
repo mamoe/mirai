@@ -246,8 +246,9 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             override val resolvedPlugins: MutableList<Plugin> get() = PluginManagerImpl.resolvedPlugins
         }
 
-        internal lateinit var instance: MiraiConsoleImplementation
-        internal val instanceInitialized: Boolean get() = ::instance.isInitialized
+        @Volatile
+        internal var instance: MiraiConsoleImplementation? = null
+        internal val instanceInitialized: Boolean get() = instance != null
         private val initLock = ReentrantLock()
 
         /**
@@ -257,14 +258,15 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          */
         @JvmStatic
         @ConsoleFrontEndImplementation
-        public fun getInstance(): MiraiConsoleImplementation = instance
+        public fun getInstance(): MiraiConsoleImplementation = instance ?: throw UninitializedPropertyAccessException()
 
         /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
-            if (::instance.isInitialized && instance.isActive) {
+            val instance = instance
+            if (instance != null && instance.isActive) {
                 error(
                     "Mirai Console is already initialized and is currently running. " +
                             "Run MiraiConsole.cancel to kill old instance before starting another instance."
