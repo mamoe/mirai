@@ -76,9 +76,10 @@ fun initTestEnvironment() {
             return PlatformLogger(identity)
         }
 
-        override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
-            throwable.printStackTrace()
-        }
+        override val coroutineContext: CoroutineContext =
+            CoroutineName("Console Main") + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+                throwable.printStackTrace()
+            }
     }.start()
     CommandManager
 }

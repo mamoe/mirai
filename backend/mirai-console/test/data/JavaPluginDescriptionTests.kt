@@ -8,7 +8,7 @@
  */
 package data
 
-import net.mamoe.mirai.console.AbstractConsoleTest
+import net.mamoe.mirai.console.framework.AbstractConsoleTest
 
 @Suppress("unused")
 class JavaPluginDescriptionTests : AbstractConsoleTest() {
