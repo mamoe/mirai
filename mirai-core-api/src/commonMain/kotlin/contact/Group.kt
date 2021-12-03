@@ -50,7 +50,6 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * 可通过 [Group.announcements] 获取公告支持. 可在 [Announcements] 查看详细文档.
  *
- * ##
  */
 @NotStableForInheritance
 public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {

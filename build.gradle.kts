@@ -12,6 +12,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import java.time.LocalDateTime
 
 buildscript {
     repositories {
@@ -28,12 +31,14 @@ buildscript {
         classpath("com.android.tools.build:gradle:${Versions.androidGradlePlugin}")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicFU}")
         classpath("org.jetbrains.kotlinx:binary-compatibility-validator:${Versions.binaryValidator}")
+        classpath("org.jetbrains.dokka:dokka-base:${Versions.dokka}")
     }
 }
 
 plugins {
     kotlin("jvm") // version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
+    id("org.jetbrains.dokka") version Versions.dokka
 //    id("org.jetbrains.dokka") version Versions.dokka
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.gradle.plugin-publish") version "0.12.0" apply false
@@ -114,6 +119,7 @@ subprojects {
         if (project.name == "mirai-console") configureDokka()
     }
 }
+rootProject.configureDokka()
 
 tasks.register("cleanExceptIntellij") {
     group = "build"
@@ -140,36 +146,55 @@ fun Project.useIr() {
 }
 
 fun Project.configureDokka() {
-//    apply(plugin = "org.jetbrains.dokka")
-//    tasks {
-//        val dokkaHtml by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
-//            outputDirectory.set(buildDir.resolve("dokka"))
-//        }
-//        val dokkaGfm by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
-//            outputDirectory.set(buildDir.resolve("dokka-gfm"))
-//        }
-//    }
-//    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-//        dokkaSourceSets.configureEach {
-//            perPackageOption {
-//                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
-//                skipDeprecated.set(true)
-//            }
-//
-//            for (suppressedPackage in arrayOf(
-//                """net.mamoe.mirai.internal""",
-//                """net.mamoe.mirai.internal.message""",
-//                """net.mamoe.mirai.internal.network""",
-//                """net.mamoe.mirai.console.internal""",
-//                """net.mamoe.mirai.console.compiler.common"""
-//            )) {
-//                perPackageOption {
-//                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
-//                    suppress.set(true)
-//                }
-//            }
-//        }
-//    }
+    val isRoot = this@configureDokka == rootProject
+    if (!isRoot) {
+        apply(plugin = "org.jetbrains.dokka")
+    }
+
+    tasks.withType<org.jetbrains.dokka.gradle.AbstractDokkaTask>().configureEach {
+        pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+            this.footerMessage = """Copyright 2019-${
+                LocalDateTime.now().year
+            } <a href="https://github.com/mamoe">Mamoe Technologies</a> and contributors.
+            Source code:
+            <a href="https://github.com/mamoe/mirai">GitHub</a>
+            """.trimIndent()
+
+            this.customAssets = listOf(
+                rootProject.projectDir.resolve("mirai-dokka/frontend/ext.js"),
+            )
+        }
+    }
+
+    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+        dokkaSourceSets.configureEach {
+            perPackageOption {
+                matchingRegex.set("net\\.mamoe\\.mirai\\.*")
+                skipDeprecated.set(true)
+            }
+
+            for (suppressedPackage in arrayOf(
+                """net.mamoe.mirai.internal""",
+                """net.mamoe.mirai.internal.message""",
+                """net.mamoe.mirai.internal.network""",
+                """net.mamoe.mirai.console.internal""",
+                """net.mamoe.mirai.console.compiler.common"""
+            )) {
+                perPackageOption {
+                    matchingRegex.set(suppressedPackage.replace(".", "\\."))
+                    suppress.set(true)
+                }
+            }
+        }
+    }
+
+    if (isRoot) {
+        tasks.named<org.jetbrains.dokka.gradle.AbstractDokkaTask>("dokkaHtmlMultiModule").configure {
+            outputDirectory.set(
+                rootProject.projectDir.resolve("mirai-dokka/pages/snapshot")
+            )
+        }
+    }
 }
 
 fun Project.configureMppShadow() {

@@ -31,6 +31,7 @@ include(":mirai-core-api")
 include(":mirai-core")
 include(":mirai-core-all")
 include(":mirai-bom")
+include(":mirai-dokka")
 
 include(":binary-compatibility-validator")
 include(":binary-compatibility-validator-android")
