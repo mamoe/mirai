@@ -21,7 +21,7 @@ dependencies {
 
 fun Project.newExec(name: String, type: String, conf: JavaExec.() -> Unit) {
     tasks.create(name, JavaExec::class.java) {
-        this.classpath = configurations["runtimeClasspath"]
+        this.classpath = sourceSets["main"].runtimeClasspath
         this.mainClass.set("net.mamoe.mirai.dokka.${type}Kt")
         this.workingDir(rootProject.projectDir)
         this.environment("mirai_ver", rootProject.version.toString())
