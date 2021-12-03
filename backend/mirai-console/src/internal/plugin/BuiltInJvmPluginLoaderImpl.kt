@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
@@ -110,6 +111,33 @@ internal object BuiltInJvmPluginLoaderImpl :
             plugin.internalOnLoad()
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
+        }
+        val nameFolder = PluginManager.pluginsDataPath.resolve(plugin.description.name).toFile()
+        if (plugin.description.name != plugin.description.id && nameFolder.exists()) {
+            // need move
+            val idFolder = PluginManager.pluginsDataPath.resolve(plugin.description.id).toFile()
+            val moveDescription = "移动 ${plugin.description.smartToString()} 的配置目录(${nameFolder.path})到 ${idFolder.path}"
+            if (idFolder.exists()) {
+                if (idFolder.listFiles()?.size != 0) {
+                    logger.error("$moveDescription 失败, 原因:配置目录(${idFolder.path})被占用")
+                    logger.error("Mirai Console 将自动关闭, 请删除或移动该目录后再启动")
+                    MiraiConsole.job.cancel()
+                } else
+                    idFolder.delete()
+            }
+            kotlin.runCatching {
+                logger.info(moveDescription)
+                if (!nameFolder.renameTo(idFolder)) {
+                    logger.error("$moveDescription 失败")
+                    logger.error("Mirai Console 将自动关闭, 请手动移动该文件夹后再启动")
+                    MiraiConsole.job.cancel()
+                }
+            }.onFailure {
+                logger.error("$moveDescription 失败, 原因:\n", it)
+                logger.error("Mirai Console 将自动关闭, 请解决该错误后再启动")
+                MiraiConsole.job.cancel()
+            }
+            logger.info("$moveDescription 完成")
         }
     }
 

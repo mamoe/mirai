@@ -68,7 +68,7 @@ internal abstract class JvmPluginInternal(
     private var firstRun = true
 
     final override val dataFolderPath: Path by lazy {
-        PluginManager.pluginsDataPath.resolve(description.name).apply { mkdir() }
+        PluginManager.pluginsDataPath.resolve(description.id).apply { mkdir() }
     }
 
     final override val dataFolder: File by lazy {
