@@ -25,7 +25,6 @@ jobs:
           ./gradlew :mirai-dokka:prepare
           ./gradlew dokkaHtmlMultiModule
           ./gradlew :mirai-dokka:update-vers
-          find mirai-dokka/pages
           ./gradlew :mirai-dokka:deployPages
         env:
           gh_token: ${{ secrets.MAMOE_TOKEN }}

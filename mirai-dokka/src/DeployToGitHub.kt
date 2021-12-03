@@ -22,6 +22,8 @@ fun main() {
         "https://x-access-token:$token@github.com/project-mirai/mirai-doc.git"
     )
 
+    repoexec("git", "config", "--local", "user.email", "mamoebot@users.noreply.github.com")
+    repoexec("git", "config", "--local", "user.name", "mamoebot")
     repoexec("git", "add", "-A")
     repoexec("git", "commit", "-m", currentVersion)
     repoexec("git", "push", "HEAD:token")
