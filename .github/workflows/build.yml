@@ -59,3 +59,6 @@ jobs:
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
+
+      - name: Ensure KDoc valid
+        run: ./gradlew dokkaHtmlMultiModule
