@@ -22,7 +22,7 @@ object Versions {
 
     const val kotlinCompiler = "1.5.30"
     const val kotlinStdlib = "1.5.30"
-    const val dokka = "1.4.32"
+    const val dokka = "1.6.0"
 
     const val coroutines = "1.5.1"
     const val atomicFU = "0.16.3"
