@@ -18,6 +18,12 @@ val json = Json {
     prettyPrintIndent = "  "
 }
 
+private val FileDevNull = File(
+    if (System.getProperty("os.name")
+            .startsWith("Windows")
+    ) "NUL" else "/dev/null"
+)
+
 fun system(cmd: String) {
     val rsp = ProcessBuilder(cmd).inheritIO().start().waitFor()
     if (rsp != 0) error("Exec return $rsp, $cmd")
@@ -28,7 +34,19 @@ fun exec(vararg cmd: String) {
     if (rsp != 0) error("Exec return $rsp, ${cmd.joinToString(" ")}")
 }
 
-fun repoexec(vararg cmd: String) {
-    val rsp = ProcessBuilder(*cmd).inheritIO().directory(pages).start().waitFor()
+fun repoexec(
+    vararg cmd: String,
+    nooutput: Boolean = false,
+) {
+    val rsp = ProcessBuilder(*cmd)
+        .inheritIO()
+        .directory(pages)
+        .also { builder ->
+            if (nooutput) {
+                builder.redirectOutput(ProcessBuilder.Redirect.to(FileDevNull))
+            }
+        }
+        .start()
+        .waitFor()
     if (rsp != 0) error("Exec return $rsp, ${cmd.joinToString(" ")}")
 }

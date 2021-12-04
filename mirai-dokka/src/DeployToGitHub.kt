@@ -25,7 +25,9 @@ fun main() {
     repoexec("git", "config", "--local", "user.email", "mamoebot@users.noreply.github.com")
     repoexec("git", "config", "--local", "user.name", "mamoebot")
     repoexec("git", "add", "-A")
-    repoexec("git", "commit", "-m", currentVersion)
-    repoexec("git", "push", "HEAD:token")
-
+    repoexec(
+        "git", "commit", "-m", currentVersion,
+        nooutput = true,
+    )
+    repoexec("git", "push", "origin", "HEAD:token")
 }
