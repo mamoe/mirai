@@ -29,5 +29,5 @@ fun main() {
         "git", "commit", "-m", currentVersion,
         nooutput = true,
     )
-    repoexec("git", "push", "origin", "HEAD:token")
+    repoexec("git", "push", "token", "HEAD:master")
 }
