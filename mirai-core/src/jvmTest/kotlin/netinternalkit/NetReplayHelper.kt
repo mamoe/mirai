@@ -10,7 +10,7 @@
 @file:JvmName("NetReplayHelper")
 @file:Suppress("TestFunctionName")
 
-package net.mamoe.mirai.internal.bootstrap
+package net.mamoe.mirai.internal.netinternalkit
 
 import io.netty.channel.*
 import net.mamoe.mirai.Bot
@@ -38,28 +38,42 @@ import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 
-private val droppedCommands: Collection<String> by lazy {
-    listOf(
-        "Heartbeat.Alive",
-        "wtlogin.exchange_emp",
-        "StatSvc.register",
-        "StatSvc.GetDevLoginInfo",
-        "MessageSvc.PbGetMsg",
-        "friendlist.getFriendGroupList",
-        "friendlist.GetTroopListReqV2",
-        "friendlist.GetTroopMemberListReq",
-        "ConfigPushSvc.PushReq",
-        *PacketLoggingStrategyImpl.getDefaultBlacklist().toTypedArray(),
-    )
+
+internal object NetReplayHelperSettings {
+    var commands_hide_hideAll: Collection<String> by lateinitMutableProperty {
+        listOf(
+            "Heartbeat.Alive",
+            "wtlogin.exchange_emp",
+            "StatSvc.register",
+            "StatSvc.GetDevLoginInfo",
+            "MessageSvc.PbGetMsg",
+            "friendlist.getFriendGroupList",
+            "friendlist.GetTroopListReqV2",
+            "friendlist.GetTroopMemberListReq",
+        )
+    }
+
+    var commands_hide_hideInConsole: Collection<String> by lateinitMutableProperty {
+        listOf(
+            "ConfigPushSvc.PushReq",
+            *PacketLoggingStrategyImpl.getDefaultBlacklist().toTypedArray(),
+        )
+    }
+
+    var logger_console: MiraiLogger by lateinitMutableProperty {
+        MiraiLogger.Factory.create(NetReplayHelperClass())
+    }
+
+    var logger_file: MiraiLogger = SilentLogger.withSwitch(false)
+
+    @JvmField
+    val NetReplyHelper: Class<*> = NetReplayHelperClass()
 }
 
 private fun NetReplayHelperClass(): Class<*> {
     return MethodHandles.lookup().lookupClass()
 }
 
-private val logger by lazy {
-    MiraiLogger.Factory.create(NetReplayHelperClass())
-}
 
 private fun attachNetReplayHelper(channel: Channel) {
     channel.pipeline()
@@ -71,10 +85,27 @@ private fun attachNetReplayHelper(channel: Channel) {
 private fun newRawPacketDumper(): ChannelHandler = object : ChannelInboundHandlerAdapter() {
     override fun channelRead(ctx: ChannelHandlerContext?, msg: Any?) {
         if (msg is RawIncomingPacket) {
-            if (msg.commandName in droppedCommands) {
-                logger.debug { "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=<DROPPED>" }
+            if (msg.commandName in NetReplayHelperSettings.commands_hide_hideAll) {
+                NetReplayHelperSettings.logger_console.debug {
+                    "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=<DROPPED>"
+                }
+                NetReplayHelperSettings.logger_file.debug {
+                    "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=<DROPPED>"
+                }
+                super.channelRead(ctx, msg)
+                return
+            }
+            if (msg.commandName in NetReplayHelperSettings.commands_hide_hideInConsole) {
+                NetReplayHelperSettings.logger_console.debug {
+                    "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=<DROPPED>"
+                }
             } else {
-                logger.debug { "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=${msg.body.toUHexString()}" }
+                NetReplayHelperSettings.logger_console.debug {
+                    "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=${msg.body.toUHexString()}"
+                }
+            }
+            NetReplayHelperSettings.logger_file.debug {
+                "sid=${msg.sequenceId}, cmd=${msg.commandName}, body=${msg.body.toUHexString()}"
             }
         }
         super.channelRead(ctx, msg)
@@ -156,7 +187,10 @@ private fun attachNetReplayWView(channel: Channel) {
     fun Component.onClick(handle: () -> Unit) {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                runCatching(handle).onFailure { logger.error(it) }
+                runCatching(handle).onFailure { err ->
+                    NetReplayHelperSettings.logger_console.error(err)
+                    NetReplayHelperSettings.logger_file.error(err)
+                }
             }
         })
     }
@@ -192,14 +226,11 @@ private fun attachNetReplayWView(channel: Channel) {
     frame.setLocationRelativeTo(null)
     frame.isVisible = true
 
-    channel.pipeline().addFirst(object : ChannelInboundHandlerAdapter() {
-        override fun channelInactive(ctx: ChannelHandlerContext?) {
-            SwingUtilities.invokeLater {
-                frame.dispose()
-            }
-            super.channelInactive(ctx)
+    channel.closeFuture().addListener {
+        SwingUtilities.invokeLater {
+            frame.dispose()
         }
-    })
+    }
 
 }
 
