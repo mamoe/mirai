@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorAccent">#FFFFFF</color>
+    <color name="colorBtnImg">#FFFFFF</color>
+
+    <color name="colorNavText">#FFFFFF</color>
+    <color name="colorStartBackground">#000000</color>
+</resources>
