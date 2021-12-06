@@ -1,0 +1,15 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '$KOTLIN_VERSION'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '$KOTLIN_VERSION'
+
+    id 'net.mamoe.mirai-console' version '$MIRAI_VERSION'
+}
+
+group = '$GROUP_ID'
+version = '$VERSION'
+
+repositories {
+    #if ($USE_PROXY_REPO) maven { url 'https://maven.aliyun.com/repository/public' } #end
+
+    mavenCentral()
+}

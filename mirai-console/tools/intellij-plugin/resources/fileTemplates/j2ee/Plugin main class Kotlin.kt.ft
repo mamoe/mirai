@@ -1,0 +1,27 @@
+package $PACKAGE_NAME
+
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.info
+#set($HAS_DETAILS = ${PLUGIN_AUTHOR} != "" || ${PLUGIN_DEPENDS_ON} != "" || ${PLUGIN_INFO} != "")
+object $CLASS_NAME : KotlinPlugin(
+    JvmPluginDescription(
+        id = "${PLUGIN_ID}",
+        #if(${PLUGIN_NAME} != "")name = "${PLUGIN_NAME}",
+#end
+        version = "${PLUGIN_VERSION}",
+    ) #if($HAS_DETAILS){
+#end
+#if(${PLUGIN_AUTHOR} != "")author("${PLUGIN_AUTHOR}")
+#end
+#if(${PLUGIN_DEPENDS_ON} != "")dependsOn("${PLUGIN_DEPENDS_ON}")
+#end
+#if(${PLUGIN_INFO} != "")info("""${PLUGIN_INFO}""")
+#end
+#if($HAS_DETAILS)    }
+#end
+) {
+    override fun onEnable() {
+        logger.info { "Plugin loaded" }
+    }
+}

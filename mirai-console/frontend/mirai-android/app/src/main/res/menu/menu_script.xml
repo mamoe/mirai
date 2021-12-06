@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_script_center"
+        android:icon="@drawable/ic_store_white_24"
+        android:iconTint="#FFFFFF"
+        android:title="脚本中心"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_add_script"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:iconTint="#FFFFFF"
+        android:title="添加脚本"
+        app:showAsAction="always" />
+</menu>

@@ -1,0 +1,1 @@
+resource.use { it.uploadAsImage(contact) }
