@@ -849,6 +849,8 @@ public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFolder : ne
 	public abstract fun resolveFilesStream (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun resolveFolder (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
 	public abstract fun resolveFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveFolderById (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun resolveFolderById (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;

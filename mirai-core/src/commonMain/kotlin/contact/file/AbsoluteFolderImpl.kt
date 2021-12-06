@@ -369,6 +369,19 @@ internal class AbsoluteFolderImpl(
         return getItemsFlow().firstOrNull { it.folderInfo?.folderName == name }?.resolve() as AbsoluteFolder?
     }
 
+    override suspend fun resolveFolderById(id: String): AbsoluteFolder? {
+        if (name.isBlank()) throw IllegalArgumentException("folder id cannot be blank.")
+        if (!FileSystem.isLegal(id)) return null
+        if (id == AbsoluteFolder.ROOT_FOLDER_ID) return root // special case, not ambiguous — '/' always refers to root.
+        if (this.id != AbsoluteFolder.ROOT_FOLDER_ID) return null // reserved for future
+
+        // All folder ids start with '/'.
+        // Currently, only root folders can have children folders,
+        // and we don't know how the folderIds can be changed,
+        // so we force the receiver to be root for now, to provide forward-compatibility.
+        return root.impl().getItemsFlow().firstOrNull { it.folderInfo?.folderId == id }?.resolve() as AbsoluteFolder?
+    }
+
     override suspend fun resolveFileById(id: String, deep: Boolean): AbsoluteFile? {
         if (id == "/" || id.isEmpty()) throw IllegalArgumentException("Illegal file id: $id")
         getItemsFlow().filter { it.fileInfo?.fileId == id }.map { it.resolve() as AbsoluteFile }.firstOrNull()
