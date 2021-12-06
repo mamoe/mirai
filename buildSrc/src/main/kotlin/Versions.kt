@@ -130,9 +130,9 @@ const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStd
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
 
 
-const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
-const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
-const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
+//const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
+//const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
+//const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
 
 const val `yamlkt-jvm` = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 

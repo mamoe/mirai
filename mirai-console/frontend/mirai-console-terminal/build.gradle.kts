@@ -19,10 +19,10 @@ dependencies {
     implementation("org.fusesource.jansi:jansi:1.18")
 
     compileAndTestRuntime(project(":mirai-console"))
-    compileAndTestRuntime(`mirai-core-api`)
+    compileAndTestRuntime(project(":mirai-core-api"))
     compileAndTestRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib)) // must specify `compileOnly` explicitly
 
-    testApi(`mirai-core`)
+    testApi(project(":mirai-core"))
     testApi(project(":mirai-console"))
 }
 

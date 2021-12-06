@@ -30,5 +30,5 @@ kotlin {
 dependencies {
     api(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    api(`mirai-core-utils`)
+    api(project(":mirai-core-utils"))
 }
