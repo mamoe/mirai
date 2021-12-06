@@ -8,10 +8,23 @@
 Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器人库
 
 这个项目的名字来源于
-     <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
-     <p><a href = "https://www.crypton.co.jp/">CRYPTON</a>以<a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>为代表的创作与活动<a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a></p>
+<p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>
+作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">
+《境界的彼方》</a>
+的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">
+栗山未来(Kuriyama <b>Mirai</b>)</a></p>
+<p><a href = "https://www.crypton.co.jp/">CRYPTON</a>
+以<a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>
+为代表的创作与活动<a href = "https://magicalmirai.com/2019/index_en.html">(
+Magical <b>Mirai</b>)</a></p>
 图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
+
+# 已合并到 mirai 主仓库
+
+mirai-console 已经合并到 mirai 主仓库: [mirai](https://github.com/mamoe/mirai).
+
+本仓库仅保存旧版 issues, 请在 mirai 仓库提交 PR 以及新 issues.
 
 # mirai-console
 
@@ -30,7 +43,8 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 
 ### 执行指令
 
-在控制台输入 `?` 查看可用指令列表。**注意，请先为用户授予执行某些指令的权限，详见 [示例](docs/BuiltInCommands.md#授予一个用户执行所有指令的权限)**。
+在控制台输入 `?` 查看可用指令列表。**
+注意，请先为用户授予执行某些指令的权限，详见 [示例](docs/BuiltInCommands.md#授予一个用户执行所有指令的权限)**。
 
 ### 内置指令
 
@@ -47,5 +61,5 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 - [Mirai 项目组](https://github.com/project-mirai)
 - [在 Android 平台使用](https://github.com/mzdluo123/MiraiAndroid)
 - Mirai 官方维护的插件:
-  - [chat-command](https://github.com/project-mirai/chat-command)
-  - [mirai-api-http](https://github.com/project-mirai/mirai-api-http)
+    - [chat-command](https://github.com/project-mirai/chat-command)
+    - [mirai-api-http](https://github.com/project-mirai/mirai-api-http)
