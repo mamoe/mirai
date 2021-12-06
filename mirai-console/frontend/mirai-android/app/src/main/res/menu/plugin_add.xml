@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_add_plugin"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:iconTint="#FFFFFF"
+        android:title="添加插件"
+        app:showAsAction="always" />
+</menu>

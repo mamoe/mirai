@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.console.ConsoleFragment">
+
+    <ScrollView
+        android:id="@+id/main_scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
+        app:layout_constraintBottom_toTopOf="@+id/command_input"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/log_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:scrollbars="vertical"
+            android:text="正在加载..."
+            android:textIsSelectable="false" />
+
+    </ScrollView>
+
+    <EditText
+        android:id="@+id/command_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="请输入命令"
+        android:imeOptions="actionSend"
+        android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/commandSend_btn"
+        app:layout_constraintStart_toEndOf="@+id/shortcutBottom_btn">
+
+    </EditText>
+
+    <ImageButton
+        android:id="@+id/commandSend_btn"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_keyboard_return_black_24dp"
+        android:tint="@color/colorBtnImg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/command_input" />
+
+    <ImageButton
+        android:id="@+id/shortcutBottom_btn"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_keyboard_arrow_up_24"
+        android:tint="@color/colorBtnImg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/command_input">
+
+    </ImageButton>
+</androidx.constraintlayout.widget.ConstraintLayout>
