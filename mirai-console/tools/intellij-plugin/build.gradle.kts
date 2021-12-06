@@ -79,7 +79,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     untilBuild.set("215.*")
     pluginDescription.set(
         """
-        Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Console</a>
+        Plugin development support for <a href='https://github.com/mamoe/mirai'>Mirai Console</a>
         
         <h3>Features</h3>
         <ul>
@@ -91,7 +91,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     )
     changeNotes.set(
         """
-        See <a href="https://github.com/mamoe/mirai-console/releases">https://github.com/mamoe/mirai-console/releases</a>
+        See <a href="https://github.com/mamoe/mirai/releases">https://github.com/mamoe/mirai/releases</a>
     """.trimIndent()
     )
 }

@@ -31,7 +31,7 @@ git submodule update
 
 ### 能做什么?
 
-- 维护社区: 可以为 [mirai-console](https://github.com/mamoe/mirai-console) 编写插件, 并发布到论坛
+- 维护社区: 可以为 [mirai-console](/mirai-console) 编写插件, 并发布到论坛
 
 - 代码优化: 优化任何功能设计或实现, 或是引入一个新的设计
 - 解决问题: 在 [issues](https://github.com/mamoe/mirai/issues) 查看 mirai 正遇到的所有问题, 或在 [里程碑](https://github.com/mamoe/mirai/milestones) 查看版本计划. 所有没有 assignee 的 issue 都处于

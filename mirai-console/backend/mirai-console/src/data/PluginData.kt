@@ -103,7 +103,7 @@ import kotlin.reflect.KType
  *
  * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions].
  *
- * 要查看详细的解释，请查看 [docs/PluginData.md](https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md)
+ * 要查看详细的解释，请查看 [docs/PluginData.md](/mirai-console/docs/PluginData.md)
  *
  * ## 实现注意
  * 此类型处于实验性阶段. 使用其中定义的属性和函数是安全的, 但将来可能会新增成员抽象函数.
