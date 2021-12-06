@@ -20,7 +20,6 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.registering
 
 fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
@@ -73,16 +72,17 @@ fun Project.configureRemoteRepos() {
 @Suppress("NOTHING_TO_INLINE")
 inline fun Project.configurePublishing(
     artifactId: String,
-    vcs: String = "https://github.com/mamoe/mirai"
+    vcs: String = "https://github.com/mamoe/mirai",
+    addProjectComponents: Boolean = true
 ) {
     configureRemoteRepos()
     apply<ShadowPlugin>()
 
-    val sourcesJar by tasks.registering(Jar::class) {
+    val sourcesJar = if (!addProjectComponents) null else tasks.maybeCreate("sourcesJar", Jar::class.java).apply {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
-    val stubJavadoc = tasks.register("javadocJar", Jar::class) {
+    val stubJavadoc = if (!addProjectComponents) null else tasks.register("javadocJar", Jar::class) {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         archiveClassifier.set("javadoc")
     }
@@ -90,7 +90,7 @@ inline fun Project.configurePublishing(
     publishing {
         publications {
             register("mavenJava", MavenPublication::class) {
-                from(components["java"])
+                if (addProjectComponents) from(components["java"])
 
                 groupId = rootProject.group.toString()
                 setArtifactId(artifactId)
@@ -101,8 +101,8 @@ inline fun Project.configurePublishing(
                     vcs = vcs
                 )
 
-                artifact(sourcesJar.get())
-                artifact(stubJavadoc.get())
+                sourcesJar?.let { artifact(it) }
+                stubJavadoc?.get()?.let { artifact(it) }
             }
         }
         configGpgSign(this@configurePublishing)
