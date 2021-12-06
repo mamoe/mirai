@@ -70,8 +70,8 @@ kotlin {
 }
 
 pluginBundle {
-    website = "https://github.com/mamoe/mirai-console"
-    vcsUrl = "https://github.com/mamoe/mirai-console"
+    website = "https://github.com/mamoe/mirai"
+    vcsUrl = "https://github.com/mamoe/mirai"
     tags = listOf("framework", "kotlin", "mirai")
 }
 

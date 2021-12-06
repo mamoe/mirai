@@ -40,7 +40,7 @@ Mirai 运行在 JVM，你需要使用 Kotlin 语言或 Java 语言来编写你�
 
 > 有关 JVM 平台项目配置可以在[之后](ConfiguringProjects.md#mirai---configuring-projects)了解到。
 
-## [mirai-console](https://github.com/mamoe/mirai-console): Mirai 官方的可拓展式 QQ 机器人管理控制台
+## [mirai-console](/mirai-console): Mirai 官方的可拓展式 QQ 机器人管理控制台
 
 前面我们提到，你可以使用 Mirai 框架提供的对外开放接口来编写个性化QQ机器人程序，而 mirai-console 就是 Mirai 官方开发组编写的 QQ 机器人程序，它**在 Mirai 框架提供的基础功能的基础上进行了封装**并**进一步提供了更方便的开放接口**。
 
@@ -56,8 +56,13 @@ Mirai 运行在 JVM，你需要使用 Kotlin 语言或 Java 语言来编写你�
 
 mirai-console 的内部也不是单一的结构，它分为**前端**和**后端**具体如下：
 
-- [后端](https://github.com/mamoe/mirai-console/tree/master/backend)：后端就是做了上述工作，即提供**指令**，**权限**，**自动数据**等开放接口。
-- [前端](https://github.com/mamoe/mirai-console/tree/master/frontend)：前端就是启动 mirai-console 并监控后端运行状态的端口，上述命令行解密是前端的一种，即 [**mirai-console-terminal**](https://github.com/mamoe/mirai-console/tree/master/frontend/mirai-console-terminal)，在终端启动的前端。另外还有其他可用的前端如运行在 Android 的 **[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid)**。
+- [后端](/mirai-console/backend)：后端就是做了上述工作，即提供**指令**，**权限**，**自动数据**
+  等开放接口。
+- [前端](/mirai-console/frontend)：前端就是启动 mirai-console
+  并监控后端运行状态的端口，上述命令行解密是前端的一种，即 [**
+  mirai-console-terminal**](/mirai-console/frontend/mirai-console-terminal)
+  ，在终端启动的前端。另外还有其他可用的前端如运行在 Android
+  的 **[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid)**。
 
 后端就像是“**电脑主机**”，执行着核心工作，前端就像是“**显示器**”、“**鼠标**”和“**键盘**”，可以控制后端。
 

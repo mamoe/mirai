@@ -4,7 +4,7 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 ## 使用工具自动独立启动
 
-该部分文档已经转移到 [用户手册](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md)。
+该部分文档已经转移到 [用户手册](/docs/UserManual.md)。
 
 ## 嵌入应用启动（实验性）
 

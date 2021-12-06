@@ -14,7 +14,9 @@ Mirai Console 分前后端模块实现。开发插件**只需要针对同一个�
 
 ## 选择版本
 
-`mirai-console` 与 `mirai-core` **同步版本**发布。版本号见 [mirai](https://github.com/mamoe/mirai/blob/dev/docs/ConfiguringProjects.md#%E9%80%89%E6%8B%A9%E7%89%88%E6%9C%AC)。
+`mirai-console` 与 `mirai-core` **同步版本**
+发布。版本号见 [mirai](/docs/ConfiguringProjects.md#%E9%80%89%E6%8B%A9%E7%89%88%E6%9C%AC)
+。
 
 通常使用最新版本的稳定版本即可。
 
@@ -24,15 +26,17 @@ Mirai Console 分前后端模块实现。开发插件**只需要针对同一个�
 
 ### A.使用项目创建工具
 
-Mirai 为 IntelliJ IDEA 或 Android Studio 提供插件: [安装方法](https://github.com/mamoe/mirai/blob/dev/docs/Preparations.md#%E5%AE%89%E8%A3%85-ide-%E6%8F%92%E4%BB%B6)
+Mirai 为 IntelliJ IDEA 或 Android Studio
+提供插件: [安装方法](/docs/Preparations.md#%E5%AE%89%E8%A3%85-ide-%E6%8F%92%E4%BB%B6)
 
-之后便可在新建项目时选择 `Mirai`，将会自动套用 [模板项目](https://github.com/project-mirai/mirai-console-plugin-template)。
+之后便可在新建项目时选择 `Mirai`
+，将会自动套用 [模板项目](https://github.com/project-mirai/mirai-console-plugin-template)。
 
 ![](.ConfiguringProjects_images/6d010b1a.png)
 
 ![](.ConfiguringProjects_images/a6a3b24b.png)
 
-> 现在你已经配置好了项目，开始阅读 [Core 开发文档](https://github.com/mamoe/mirai/blob/dev/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
+> 现在你已经配置好了项目，开始阅读 [Core 开发文档](/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
 
 ### B.使用模板项目
 
@@ -46,7 +50,7 @@ Mirai 鼓励插件开发者将自己的作品开源，并为此提供了模板�
 
 3. 克隆项目，检查并修改生成的属性
 
-> 现在你已经配置好了项目，开始阅读 [Core 开发文档](https://github.com/mamoe/mirai/blob/dev/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
+> 现在你已经配置好了项目，开始阅读 [Core 开发文档](/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
 
 ### C.使用 Gradle 插件配置项目
 
@@ -76,7 +80,7 @@ plugins {
 
 可以在 [README](../tools/gradle-plugin/README.md#mirai-console-gradle-plugin) 获取详细的 Gradle 插件使用方法。
 
-> 现在你已经配置好了项目，开始阅读 [Core 开发文档](https://github.com/mamoe/mirai/blob/dev/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
+> 现在你已经配置好了项目，开始阅读 [Core 开发文档](/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
 
 ### D.手动配置项目
 
@@ -96,4 +100,4 @@ dependencies {
 
 注意，在打包插件时必须将依赖一并打包进插件 JAR，且排除 `mirai-core`，`mirai-console` 和[它们的间接依赖](https://mvnrepository.com/artifact/net.mamoe/mirai-core-jvm/2.4.0)，否则可能导致兼容性问题。
 
-> 现在你已经配置好了项目，开始阅读 [Core 开发文档](https://github.com/mamoe/mirai/blob/dev/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)
+> 现在你已经配置好了项目，开始阅读 [Core 开发文档](/docs/CoreAPI.md) 或 [Console 开发文档](README.md#mirai-console)

@@ -8,7 +8,8 @@
 - Android：Android SDK 26+ （Android 8.0，Oreo)
 
 
-**但注意不要使用 Oracle JDK**（[原因](https://github.com/mamoe/mirai/discussions/779)），可以使用其他任何 JDK。
+**但注意不要使用 Oracle JDK**
+（[原因](https://github.com/mamoe/mirai/discussions/779)），可以使用其他任何 JDK。
 
 > 要下载 JDK：
 > - 手动下载安装如 [AdoptOpenJDK](https://adoptopenjdk.net/)
@@ -18,15 +19,19 @@
 
 ### 安装 IDE 插件
 
-[Mirai Console IntelliJ]: https://github.com/mamoe/mirai-console/tree/master/tools/intellij-plugin
-[Mirai Console IntelliJ-JB]: https://github.com/mamoe/mirai-console/tree/master/tools/intellij-plugin
+[Mirai Console IntelliJ]: /mirai-console/tools/intellij-plugin
+
+[Mirai Console IntelliJ-JB]: /mirai-console/tools/intellij-plugin
+
 [Mirai Console IntelliJ-OK]: https://plugins.jetbrains.com/embeddable/install/15094
 
 <!--[Kotlin Jvm Blocking Bridge]: https://github.com/mamoe/kotlin-jvm-blocking-bridge-->
 <!--[Kotlin Jvm Blocking Bridge-JB]: https://plugins.jetbrains.com/plugin/14816-kotlin-jvm-blocking-bridge-->
 <!--[Kotlin Jvm Blocking Bridge-OK]: https://plugins.jetbrains.com/embeddable/install/14816-->
 
-推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 或 [Android Studio](https://developer.android.com/studio)。Mirai 提供 IDE 插件来提升开发体验。
+推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+或 [Android Studio](https://developer.android.com/studio)。Mirai 提供 IDE
+插件来提升开发体验。
 
 |          插件名           |                         描述                         |               一键安装                |         JetBrains 插件仓库          |
 |:------------------------:|:---------------------------------------------------:|:-----------------------------------:|:----------------------------------:|
