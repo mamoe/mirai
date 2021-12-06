@@ -33,13 +33,13 @@ internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
 private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
 
-// Remove in the future, see #1715
+// Fixme: Remove in the future, see #1715
 private val fileMessageWarningShown = object : ExceptionCollector() {
     override fun addSuppressed(receiver: Throwable, e: Throwable) {
     }
 }
 
-// Remove in the future, see #1715
+// Fixme: Remove in the future, see #1715
 private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
 
 internal fun Message.verifySendingValid() {
@@ -49,7 +49,7 @@ internal fun Message.verifySendingValid() {
             this.forEach { it.verifySendingValid() }
         }
         is FileMessage -> {
-            // https://github.com/mamoe/mirai/issues/1715
+            // Fixme: https://github.com/mamoe/mirai/issues/1715
 
             if (!ALLOW_SENDING_FILE_MESSAGE) {
                 val e =
