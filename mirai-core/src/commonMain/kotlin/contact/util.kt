@@ -14,12 +14,9 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.message.LongMessageInternal
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.castOrNull
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 
 internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
 internal inline val Group.groupCode: Long get() = this.id
@@ -34,13 +31,45 @@ internal fun Contact.logMessageSent(message: Message) {
 
 internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
+private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
+
+// Remove in the future, see #1715
+private val fileMessageWarningShown = object : ExceptionCollector() {
+    override fun addSuppressed(receiver: Throwable, e: Throwable) {
+    }
+}
+
+// Remove in the future, see #1715
+private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
+
 internal fun Message.verifySendingValid() {
-    fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
+//    fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
     when (this) {
         is MessageChain -> {
             this.forEach { it.verifySendingValid() }
         }
-        is FileMessage -> fail("Sending FileMessage is not in support")
+        is FileMessage -> {
+            // https://github.com/mamoe/mirai/issues/1715
+
+            if (!ALLOW_SENDING_FILE_MESSAGE) {
+                val e =
+                    Exception("This stacktrace might help you find your code causing this problem. It is shown once for each distinct line.")
+                val log =
+                    "Sending FileMessage manually is error-prone and is planned to be prohibited in the future. " +
+                            "Please use AbsoluteFolder.uploadNewFile (recommended) or RemoteFile.uploadAndSend instead (deprecated)." +
+                            "You can add JVM argument '-Dmirai.message.allow.sending.file.message=true' to ignore this warning, " +
+                            "however, your code might not work in the future."
+
+                // Show stacktrace for each call only once.
+                if (fileMessageWarningShown.collect(e)) {
+                    logger.warning(log, e)
+                } else {
+                    logger.warning(log)
+                }
+            }
+
+//            fail("Sending FileMessage is not in support")
+        }
     }
 }
 
