@@ -781,8 +781,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean {
-        if (bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
-            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
+        if ((bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) && (bot.configuration.protocol != BotConfiguration.MiraiProtocol.IPAD)) {
+            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE or IPAD")
         }
         bot.asQQAndroidBot()
 
