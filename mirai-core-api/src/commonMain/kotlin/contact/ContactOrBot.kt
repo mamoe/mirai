@@ -35,9 +35,20 @@ public interface ContactOrBot : CoroutineScope {
     public val bot: Bot
 
     /**
-     * 头像下载链接
+     * 头像下载链接, 100px
+     * @see getAvatarUrl
      */
     public val avatarUrl: String
-        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
+        get() = getAvatarUrl(spec = 100)
 
+    /**
+     * 头像下载链接,
+     * 指定规格不存在时, 会返回 40x40px 的默认图片.
+     * @param spec 头像的规格, 单位px
+     * 0 (原图), 40 (最高压缩等级), 41 (实际上是40px, 但会比40好一些), 100, 140, 640.
+     *
+     * 实际上以下格式的url也是可以下载头像的
+     * http://q.qlogo.cn/headimg_dl?dst_uin=${id}&spec=${spec}
+     */
+    public fun getAvatarUrl(spec: Int): String = "http://q.qlogo.cn/g?b=qq&nk=${id}&s=${spec}"
 }
