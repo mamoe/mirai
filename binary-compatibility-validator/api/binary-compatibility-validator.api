@@ -321,6 +321,7 @@ public final class net/mamoe/mirai/contact/ContactList : java/util/Collection, k
 
 public abstract interface class net/mamoe/mirai/contact/ContactOrBot : kotlinx/coroutines/CoroutineScope {
 	public fun getAvatarUrl ()Ljava/lang/String;
+	public fun getAvatarUrl (I)Ljava/lang/String;
 	public abstract fun getBot ()Lnet/mamoe/mirai/Bot;
 	public abstract fun getId ()J
 }
@@ -353,6 +354,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getAnnouncements ()Lnet/mamoe/mirai/contact/announcement/Announcements;
 	public fun getAvatarUrl ()Ljava/lang/String;
+	public fun getAvatarUrl (I)Ljava/lang/String;
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
