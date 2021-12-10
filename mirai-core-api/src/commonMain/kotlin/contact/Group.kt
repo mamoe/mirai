@@ -104,19 +104,17 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
     public val botPermission: MemberPermission get() = botAsMember.permission
 
     /**
-     * 群头像下载链接, 100px
+     * 群头像下载链接, 规格640px.
      * @see getAvatarUrl
      */
     public override val avatarUrl: String
-        get() = getAvatarUrl(spec = 100)
+        get() = getAvatarUrl(spec = AvatarSpec.LARGEST)
 
     /**
-     * 群头像下载链接,
-     * 指定规格不存在时, 会返回 40x40px 的默认图片.
-     * @param spec 头像的规格, 单位px
-     * 0 (原图), 40 (最高压缩等级), 41 (实际上是40px, 但会比40好一些), 100, 140, 640.
+     * 群头像下载链接.
+     * @param spec 头像的规格. 指定规格不存在时, 会返回 40x40px 的默认图片.
      */
-    public override fun getAvatarUrl(spec: Int): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec}"
+    public override fun getAvatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
