@@ -43,7 +43,7 @@ object Versions {
 
     const val logback = "1.2.5"
     const val slf4j = "1.7.32"
-    const val log4j = "2.14.1"
+    const val log4j = "2.15.0-rc2"
     const val asm = "9.1"
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
