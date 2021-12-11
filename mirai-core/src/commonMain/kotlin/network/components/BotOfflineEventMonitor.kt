@@ -79,6 +79,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
                 bot.logger.warning { "Connection occupied by another android device: ${event.message}" }
                 closeNetwork()
             }
+            is BotOfflineEvent.Closed -> return
             is BotOfflineEvent.MsfOffline,
             is BotOfflineEvent.Dropped,
             is BotOfflineEvent.RequireReconnect,

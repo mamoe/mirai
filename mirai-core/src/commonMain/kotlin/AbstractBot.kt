@@ -16,7 +16,9 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
@@ -105,7 +107,9 @@ internal abstract class AbstractBot constructor(
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) return
-
+        launch {
+            BotOfflineEvent.Closed(this@AbstractBot, cause).broadcast()
+        }
         if (cause == null) {
             supervisorJob.cancel()
         } else {

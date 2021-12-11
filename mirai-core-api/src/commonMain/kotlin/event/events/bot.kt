@@ -114,6 +114,20 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         }
     }
 
+    /**
+     * 被关闭
+     */
+    public data class Closed @MiraiInternalApi public constructor(
+        public override val bot: Bot,
+        override val cause: Throwable?,
+    ) : BotOfflineEvent(), BotPassiveEvent, CauseAware {
+        override val reconnect: Boolean = false
+
+        override fun toString(): String {
+            return "BotOfflineEvent.Closed(bot=$bot, cause=$cause)"
+        }
+    }
+
     @MiraiExperimentalApi
     public interface CauseAware {
         public val cause: Throwable?
