@@ -374,7 +374,7 @@ for (SingleMessage message : messageChain) {
 }
 ```
 
-也可以使用 `messageChain.iterator()`、 `messageChain.steam()` 等。
+也可以使用 `messageChain.iterator()`、 `messageChain.stream()` 等。
 
 ### 序列化
 
