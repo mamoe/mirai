@@ -29,10 +29,7 @@ Mirai 控制台现在有两个版本，插件在这两个版本的 Mirai Console
 可以使用[脚本](https://mirai.mamoe.net/assets/uploads/files/1618372079496-install-20210412.cmd)
 自动安装 32 位带 HTTP 插件的版本，也可以使用安装器个性化安装：
 
-1.
-
-访问 [iTXTech/mcl-installer](https://github.com/iTXTech/mcl-installer/releases)；
-
+1. 访问 [iTXTech/mcl-installer](https://github.com/iTXTech/mcl-installer/releases)；
 2. 下载适合你的系统的可执行文件；
 3. 在一个新文件夹存放这个文件，运行它；
 4. 通常可以一路回车使用默认设置完成安装，安装完成后程序自动退出；
