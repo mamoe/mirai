@@ -2195,6 +2195,19 @@ public final class net/mamoe/mirai/event/events/BotOfflineEvent$Active : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/event/events/BotOfflineEvent$Closed : net/mamoe/mirai/event/events/BotOfflineEvent, net/mamoe/mirai/event/events/BotOfflineEvent$CauseAware, net/mamoe/mirai/event/events/BotPassiveEvent {
+	public final fun component1 ()Lnet/mamoe/mirai/Bot;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$Closed;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/BotOfflineEvent$Closed;Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/BotOfflineEvent$Closed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getCause ()Ljava/lang/Throwable;
+	public fun getReconnect ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/event/events/BotOfflineEvent$Dropped : net/mamoe/mirai/event/events/BotOfflineEvent, net/mamoe/mirai/event/events/BotOfflineEvent$CauseAware, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/Bot;
 	public final fun component2 ()Ljava/lang/Throwable;
