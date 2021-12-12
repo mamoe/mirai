@@ -14,7 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
@@ -602,7 +602,7 @@ public constructor(
 
     public constructor(
         cleanup: ResourceCleanCallback? = null,
-    ): this(null, cleanup)
+    ) : this(null, cleanup)
 
     public fun interface ResourceCleanCallback {
         @Throws(IOException::class)

@@ -12,7 +12,7 @@
 
 package net.mamoe.mirai.contact.announcement
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.announcement.Announcement.Companion.publishAnnouncement

@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.internal.contact.file
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.notice.BotAware
 import net.mamoe.mirai.internal.network.protocol.data.proto.GroupFileCommon

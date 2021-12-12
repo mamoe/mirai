@@ -15,7 +15,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender

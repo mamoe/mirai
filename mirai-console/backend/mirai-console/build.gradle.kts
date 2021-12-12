@@ -17,7 +17,7 @@ plugins {
     kotlin("plugin.serialization")
     id("java")
     `maven-publish`
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 }
 
 version = Versions.console

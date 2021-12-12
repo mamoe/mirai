@@ -16,7 +16,7 @@ package net.mamoe.mirai
 
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.Event
