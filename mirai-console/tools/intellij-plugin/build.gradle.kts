@@ -64,6 +64,8 @@ fun File.resolveMkdir(relative: String): File {
 
 kotlin.target.compilations.all {
     kotlinOptions {
+        apiVersion = "1.4"
+        languageVersion = "1.4"
         jvmTarget = "11"
     }
 }

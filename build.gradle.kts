@@ -40,7 +40,7 @@ plugins {
     kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("org.jetbrains.dokka") version Versions.dokka
 //    id("org.jetbrains.dokka") version Versions.dokka
-    id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
+    id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
@@ -92,7 +92,7 @@ allprojects {
 
         runCatching {
             blockingBridge {
-                unitCoercion = net.mamoe.kjbb.compiler.UnitCoercion.COMPATIBILITY
+                unitCoercion = me.him188.kotlin.jvm.blocking.bridge.compiler.UnitCoercion.COMPATIBILITY
             }
         }
 

@@ -16,7 +16,7 @@ plugins {
 
     //id("kotlinx-atomicfu")
     id("signing")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 
     `maven-publish`
 }

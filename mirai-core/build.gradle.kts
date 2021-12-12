@@ -15,7 +15,7 @@ plugins {
     kotlin("multiplatform")
     // id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
     `maven-publish`
 }
 

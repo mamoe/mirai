@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.notice.processors
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.FriendMessageSyncEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
