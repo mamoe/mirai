@@ -1750,7 +1750,7 @@ public abstract interface annotation class net/mamoe/mirai/event/EventHandler : 
 
 public final class net/mamoe/mirai/event/EventKt {
 	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;)Lnet/mamoe/mirai/event/Event;
-	public static final synthetic fun broadcast (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun getEventDisabled ()Z
 	public static final fun setEventDisabled (Z)V
 }
