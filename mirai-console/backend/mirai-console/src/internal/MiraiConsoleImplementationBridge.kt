@@ -61,6 +61,8 @@ import java.time.format.DateTimeFormatter
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 /**
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
@@ -71,6 +73,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.getInstance()
+
+    // FIXME: 12/12/2021 Workaround for compiler regression, should remove when using Kotlin compiller 1.6.20
+    private operator fun <V> KProperty0<V>.getValue(thisRef: Any?, property: KProperty<*>): V = this.get()
+
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
     override val version: SemVersion by MiraiConsoleBuildConstants::version
     override val rootPath: Path by instance::rootPath
