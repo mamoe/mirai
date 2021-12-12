@@ -33,17 +33,7 @@ dependencies {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("myPlatform") {
-            groupId = rootProject.group.toString()
-            artifactId = "mirai-bom"
-            version = Versions.project
-            from(components["javaPlatform"])
-            setupPom(project)
-            configGpgSign(project)
-        }
-    }
-}
-
 configurePublishing("mirai-bom", addProjectComponents = false)
+publishing.publications.getByName<MavenPublication>("mavenJava") {
+    from(components["javaPlatform"])
+}
