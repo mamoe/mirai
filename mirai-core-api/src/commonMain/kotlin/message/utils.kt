@@ -16,7 +16,7 @@ package net.mamoe.mirai.message
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import net.mamoe.mirai.event.EventPriority
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.message.data.MessageChain
@@ -50,6 +50,30 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
 ): MessageChain {
     return syncFromEvent<P, P>(timeoutMillis, priority) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
+    }.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent] 并拦截该事件
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ *
+ * @see syncFromEvent 实现原理
+ * @see MessageEvent.intercept 拦截事件
+ */
+@JvmSynthetic
+public suspend inline fun <reified P : MessageEvent> P.nextMessageAndIntercept(
+    timeoutMillis: Long = -1,
+    priority: EventPriority = EventPriority.MONITOR,
+    noinline filter: suspend P.(P) -> Boolean = { true }
+): MessageChain {
+    return syncFromEvent<P, P>(timeoutMillis, priority) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageAndIntercept) }?.takeIf {
+            filter(it, it).apply { if (this && priority > EventPriority.MONITOR) it.intercept() }
+        }
     }.message
 }
 
