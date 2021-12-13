@@ -43,6 +43,33 @@ public suspend inline fun <reified E : Event> nextEvent(
 
 
 /**
+ * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例并拦截该事件.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
+ *
+ * @see EventChannel.subscribe 普通地监听一个事件
+ * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
+ * @see Event.intercept 拦截事件
+ *
+ * @throws TimeoutCancellationException 在超时后抛出.
+ */
+@JvmSynthetic
+public suspend inline fun <reified E : Event> nextEventAndIntercept(
+    timeoutMillis: Long = -1,
+    priority: EventPriority = EventPriority.MONITOR,
+    crossinline filter: (E) -> Boolean = { true }
+): E {
+    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
+    return withTimeoutOrCoroutineScope(timeoutMillis) {
+        nextEventImpl(E::class, this, priority) {
+            filter(it).apply { if (this && priority > EventPriority.MONITOR) it.intercept() }
+        }
+    }
+}
+
+
+/**
  * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
  *
  * @param timeoutMillis 超时. 单位为毫秒.
