@@ -73,7 +73,8 @@ fun Project.configureRemoteRepos() {
 inline fun Project.configurePublishing(
     artifactId: String,
     vcs: String = "https://github.com/mamoe/mirai",
-    addProjectComponents: Boolean = true
+    addProjectComponents: Boolean = true,
+    setupGpg: Boolean = true,
 ) {
     configureRemoteRepos()
     apply<ShadowPlugin>()
@@ -105,6 +106,8 @@ inline fun Project.configurePublishing(
                 stubJavadoc?.get()?.let { artifact(it) }
             }
         }
-        configGpgSign(this@configurePublishing)
+        if (setupGpg) {
+            configGpgSign(this@configurePublishing)
+        }
     }
 }
