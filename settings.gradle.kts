@@ -52,6 +52,7 @@ includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-ann
 includeConsoleProject(":mirai-console", "backend/mirai-console")
 includeConsoleProject(":mirai-console.codegen", "backend/codegen")
 includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+includeConsoleProject(":mirai-console.testunit", "backend/real-time-test-unit")
 includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
 includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
 includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
