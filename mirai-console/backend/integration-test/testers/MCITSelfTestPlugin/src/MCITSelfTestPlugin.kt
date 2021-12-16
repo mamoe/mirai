@@ -14,6 +14,10 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
 import kotlin.test.assertTrue
 
+/*
+MCITSelfTestPlugin: 用于测试 Integration-test 可正常加载
+@see /test/testpoints/MCITBSelfAssertions
+ */
 public object MCITSelfTestPlugin : KotlinPlugin(
     JvmPluginDescription(
         id = "net.mamoe.tester.mirai-console-self-test",

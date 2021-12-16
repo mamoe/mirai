@@ -13,7 +13,14 @@ import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
-public abstract class AbstractTestPointAsPlugin {
+/**
+ * IntegrationTest 测试单元 (Plugin mode)
+ *
+ * 该单元除了拥有 [AbstractTestPoint] 具有的功能之外, 还可以直接模拟一个插件的行为.
+ *
+ * 在此单元里, 可以像写正常的 console 插件一样在此写测试时插件
+ */
+public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
     protected abstract fun newPluginDescription(): JvmPluginDescription
 
     protected open fun KotlinPlugin.onInit() {}
@@ -21,8 +28,6 @@ public abstract class AbstractTestPointAsPlugin {
     protected open fun KotlinPlugin.onEnable0() {}
     protected open fun KotlinPlugin.onDisable0() {}
 
-    internal open fun onConsoleStartSuccessfully() {}
-    internal open fun beforeConsoleStartup() {}
 
 
     @Suppress("unused")

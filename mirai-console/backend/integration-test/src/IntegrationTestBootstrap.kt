@@ -13,12 +13,13 @@ package net.mamoe.console.integrationtest
 
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
-import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
-import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
+import net.mamoe.console.integrationtest.AbstractTestPoint.Companion.internalBCS
+import net.mamoe.console.integrationtest.AbstractTestPoint.Companion.internalOSS
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.terminal.ConsoleTerminalExperimentalApi
 import net.mamoe.mirai.console.terminal.ConsoleTerminalSettings
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
+import net.mamoe.mirai.utils.cast
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -29,11 +30,12 @@ import java.util.zip.ZipOutputStream
 import kotlin.system.exitProcess
 
 /**
- * 入口点为 /test/MiraiConsoleRealTimeTestUnit.kt 并非此函数(文件),
+ * 入口点为 /test/MiraiConsoleIntegrationTestBootstrap.kt 并非此函数(文件),
  * 不要直接执行此函数
  */
 @OptIn(ConsoleTerminalExperimentalApi::class)
-public fun main() {
+@PublishedApi
+internal fun main() {
     // PRE CHECK
     kotlin.run {
         if (!System.getenv("MIRAI_CONSOLE_INTEGRATION_TEST").orEmpty().toBoolean()) {
@@ -50,16 +52,18 @@ public fun main() {
     ConsoleTerminalSettings.setupAnsi = false
     ConsoleTerminalSettings.noConsole = true
 
-    val testUnits: List<AbstractTestPointAsPlugin> = listOf(
-        DoNothingPoint,
-        MCITBSelfAssertions,
-    )
+    val testUnits: List<AbstractTestPoint> = readStringListFromEnv("IT_POINTS").asSequence()
+        .onEach { println("[MCIT] Loading test point: $it") }
+        .map { Class.forName(it) }
+        .map { it.kotlin.objectInstance ?: it.newInstance() }
+        .map { it.cast<AbstractTestPoint>() }
+        .toList()
 
     File("plugins").mkdirs()
     prepareConsole()
 
-    testUnits.forEach { it.generatePluginJar() }
-    testUnits.forEach { it.beforeConsoleStartup() }
+    testUnits.forEach { (it as? AbstractTestPointAsPlugin)?.generatePluginJar() }
+    testUnits.forEach { it.internalBCS() }
 
     MiraiConsoleTerminalLoader.startAsDaemon()
 
@@ -69,7 +73,7 @@ public fun main() {
 
     // I/main: mirai-console started successfully.
 
-    testUnits.forEach { it.onConsoleStartSuccessfully() }
+    testUnits.forEach { it.internalOSS() }
 
     runBlocking {
         MiraiConsole.job.cancelAndJoin()
@@ -87,8 +91,8 @@ loggers:
 """
     )
 
-    for (i in 0 until System.getenv("IT_PLUGINS")!!.toInt()) {
-        val jarFile = File(System.getenv("IT_PLUGIN_$i"))
+    readStringListFromEnv("IT_PLUGINS").forEach { path ->
+        val jarFile = File(path)
         val target = File("plugins/${jarFile.name}").mkparents()
         jarFile.copyTo(target, overwrite = true)
         println("[MCIT] Copied external plugin: $jarFile")

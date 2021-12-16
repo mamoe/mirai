@@ -14,6 +14,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
 
+/*
+DoNothingPoint: Example
+ */
 internal object DoNothingPoint : AbstractTestPointAsPlugin() {
     var enableCalled = false
     override fun newPluginDescription(): JvmPluginDescription {

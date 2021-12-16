@@ -9,13 +9,13 @@
 
 package net.mamoe.console.integrationtest
 
+import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
+import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.concurrent.thread
+import kotlin.reflect.KClass
 
 
 class MiraiConsoleIntegrationTestBootstrap {
@@ -26,83 +26,27 @@ class MiraiConsoleIntegrationTestBootstrap {
         不使用 @TempDir 是为了保存最后一次失败快照, 便于 debug
          */
         val workingDir = File("build/IntegrationTest") // mirai-console/backend/integration-test/build/IntegrationTest
-        workingDir.deleteRecursively()
-        workingDir.mkdirs()
-        var isDebugging = false
-
-        val builder = ProcessBuilder(
-            findJavaExec(),
+        val launcher = MiraiConsoleIntegrationTestLauncher()
+        launcher.workingDir = workingDir
+        launcher.plugins = readStringListFromEnv("IT_PLUGINS")
+        launcher.points = listOf<Any>(
+            DoNothingPoint,
+            MCITBSelfAssertions,
+        ).asSequence().map { v ->
+            when (v) {
+                is Class<*> -> v
+                is KClass<*> -> v.java
+                else -> v.javaClass
+            }
+        }.map { it.name }.toMutableList()
+        launcher.vmoptions = mutableListOf(
             *ManagementFactory.getRuntimeMXBean().inputArguments.filterNot {
                 it.startsWith("-Djava.security.manager=")
             }.toTypedArray(),
             *System.getenv("IT_ARGS")!!.splitToSequence(",").map {
                 Base64.getDecoder().decode(it).decodeToString()
-            }.onEach { arg0 ->
-                if (arg0.startsWith("-agentlib:")) {
-                    isDebugging = true
-                }
-            }.filter { it.isNotEmpty() }.toList().toTypedArray(),
-            "-cp", ManagementFactory.getRuntimeMXBean().classPath,
-            "net.mamoe.console.integrationtest.IntegrationTestBootstrap",
+            }.filter { it.isNotEmpty() }.toList().toTypedArray()
         )
-            .directory(workingDir)
-        // .inheritIO() // No output in idea
-
-        builder.environment()["MIRAI_CONSOLE_INTEGRATION_TEST"] = "true"
-
-        println("[MCIT] Launching IntegrationTest")
-        println("[MCIT]    `- Arguments: ${builder.command().joinToString(" ")}")
-        println("[MCIT]    `- Directory: ${builder.directory().absoluteFile}")
-        println("[MCIT]    `- Debugging: $isDebugging")
-        if (isDebugging) {
-            println("[MCIT] Running in debug mode. Watchdog thread will not start")
-        }
-
-        val process = builder.start()
-
-        val timedOut = AtomicBoolean(false)
-        val watchcat = thread {
-            if (isDebugging) return@thread
-            try {
-                Thread.sleep(TimeUnit.MINUTES.toMillis(5))
-                timedOut.set(true)
-                process.destroyForcibly()
-            } catch (ignored: InterruptedException) {
-            }
-        }
-
-        thread { process.inputStream.copyTo(System.out);println("Stdout copy end") }
-        thread { process.errorStream.copyTo(System.err);println("Stderr copy end") }
-
-        val rsp = process.waitFor()
-        if (timedOut.get()) {
-            error("Mirai console daemon timed out")
-        }
-        watchcat.interrupt()
-        if (rsp != 0) error("Rsp $rsp")
+        launcher.launch()
     }
-
-    private fun findJavaExec(): String {
-        findJavaExec0()?.let { return it.absolutePath }
-        System.err.println("[MCIT] WARNING: Unable to determine the current runtime executable path.")
-        System.err.println("[MCIT] WARNING: Using default executable to launch test unit")
-        return "java"
-    }
-
-    private fun findJavaExec0(): File? {
-        val ext = if ("windows" in System.getProperty("os.name").lowercase()) {
-            ".exe"
-        } else ""
-
-        val javaHome = File(System.getProperty("java.home"))
-        javaHome.resolve("bin/java$ext").takeIf { it.exists() }?.let { return it }
-        javaHome.resolve("java$ext").takeIf { it.exists() }?.let { return it }
-
-
-        javaHome.resolve("jre/bin/java$ext").takeIf { it.exists() }?.let { return it }
-        javaHome.resolve("jre/java$ext").takeIf { it.exists() }?.let { return it }
-
-        return null
-    }
-
 }

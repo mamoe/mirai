@@ -9,7 +9,6 @@
 
 @file:Suppress("UnusedImport")
 
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.util.Base64
 
 plugins {
@@ -78,7 +77,7 @@ mcit_test.configure {
 
         test0.environment("IT_PLUGINS", jars.size)
         jars.forEachIndexed { index, jar ->
-            test0.environment("IT_PLUGIN_$index", jar.absolutePath)
+            test0.environment("IT_PLUGINS_$index", jar.absolutePath)
         }
 
     }
@@ -89,7 +88,7 @@ rootProject.allprojects {
         project.afterEvaluate {
             val tk = tasks.named<Jar>("jar")
             subplugins.add(tk)
-            mcit_test.dependsOn(tk)
+            mcit_test.configure { dependsOn(tk) }
         }
     }
 }

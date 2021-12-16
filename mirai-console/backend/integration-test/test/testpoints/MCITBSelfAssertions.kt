@@ -16,6 +16,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import kotlin.test.*
 
+/*
+MCITBSelfAssertions: 用于检查 Integration Test 可以正常加载 AbstractTestPointAsPlugin 与 外部测试插件
+ */
 internal object MCITBSelfAssertions : AbstractTestPointAsPlugin() {
     override fun newPluginDescription(): JvmPluginDescription {
         return JvmPluginDescription(
