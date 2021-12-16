@@ -9,6 +9,7 @@
 
 @file:Suppress("UnusedImport")
 
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.util.Base64
 
 plugins {
@@ -55,7 +56,10 @@ dependencies {
 
 }
 
-tasks.named<Test>("test").configure {
+val subplugins = mutableListOf<TaskProvider<Jar>>()
+
+val mcit_test = tasks.named<Test>("test")
+mcit_test.configure {
     val test0 = this
     doFirst {
         // For IDEA Debugging
@@ -65,5 +69,27 @@ tasks.named<Test>("test").configure {
         }.joinToString(",")
         test0.jvmArgs = mutableListOf()
         test0.environment("IT_ARGS", extArgs)
+
+        // For plugins coping
+        val jars = subplugins.asSequence()
+            .map { it.get() }
+            .flatMap { it.outputs.files.files.asSequence() }
+            .toList()
+
+        test0.environment("IT_PLUGINS", jars.size)
+        jars.forEachIndexed { index, jar ->
+            test0.environment("IT_PLUGIN_$index", jar.absolutePath)
+        }
+
+    }
+}
+
+rootProject.allprojects {
+    if (project.path.removePrefix(":").startsWith("mirai-console.integration-test.tp.")) {
+        project.afterEvaluate {
+            val tk = tasks.named<Jar>("jar")
+            subplugins.add(tk)
+            mcit_test.dependsOn(tk)
+        }
     }
 }

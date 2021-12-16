@@ -14,6 +14,7 @@ package net.mamoe.console.integrationtest
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
+import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.terminal.ConsoleTerminalExperimentalApi
 import net.mamoe.mirai.console.terminal.ConsoleTerminalSettings
@@ -51,6 +52,7 @@ public fun main() {
 
     val testUnits: List<AbstractTestPointAsPlugin> = listOf(
         DoNothingPoint,
+        MCITBSelfAssertions,
     )
 
     File("plugins").mkdirs()
@@ -84,7 +86,13 @@ loggers:
   Bot: ALL
 """
     )
-    // TODO: Tester code as external plugin mode
+
+    for (i in 0 until System.getenv("IT_PLUGINS")!!.toInt()) {
+        val jarFile = File(System.getenv("IT_PLUGIN_$i"))
+        val target = File("plugins/${jarFile.name}").mkparents()
+        jarFile.copyTo(target, overwrite = true)
+        println("[MCIT] Copied external plugin: $jarFile")
+    }
 }
 
 private fun AbstractTestPointAsPlugin.generatePluginJar() {
