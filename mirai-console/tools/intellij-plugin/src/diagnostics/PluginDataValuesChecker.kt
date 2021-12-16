@@ -11,11 +11,11 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
+import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.SERIALIZABLE_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.*
-import net.mamoe.mirai.console.intellij.resolve.bodyCalls
 import net.mamoe.mirai.console.intellij.resolve.hasSuperType
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
@@ -26,6 +26,8 @@ import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.js.descriptorUtils.getJetTypeFqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
+import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
+import org.jetbrains.kotlin.resolve.calls.checkers.CallCheckerContext
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
@@ -33,34 +35,30 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.isSubclassOf
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
 
-class PluginDataValuesChecker : DeclarationChecker {
-    /**
-     * [KtObjectDeclaration], [KtParameter], [KtPrimaryConstructor], [KtClass], [KtNamedFunction], [KtProperty]
-     */
+class PluginDataValuesChecker : CallChecker, DeclarationChecker {
+
+    override fun check(resolvedCall: ResolvedCall<*>, reportOn: PsiElement, context: CallCheckerContext) {
+        check(
+            resolvedCall as ResolvedCall<out CallableDescriptor>,
+            resolvedCall.call.callElement as? KtExpression ?: return,
+            context
+        )
+    }
+
     override fun check(
         declaration: KtDeclaration,
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext
     ) {
-        val bindingContext = context.bindingContext
-
-        //println(declaration::class.qualifiedName + "\t:" + declaration.text.take(10))
-
         if (declaration is KtProperty) {
             checkReadOnly(declaration, context)
-        }
-
-        val calls = declaration.bodyCalls(bindingContext) ?: return
-
-        for ((call, expr) in calls) {
-            check(call, expr, context)
         }
     }
 
     /**
      * Check `PluginData.value` calls
      */
-    fun check(call: ResolvedCall<out CallableDescriptor>, expr: KtExpression, context: DeclarationCheckerContext) {
+    fun check(call: ResolvedCall<out CallableDescriptor>, expr: KtExpression, context: CallCheckerContext) {
         if (!call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME)) return
 
         if (expr is KtCallExpression)
@@ -87,25 +85,28 @@ class PluginDataValuesChecker : DeclarationChecker {
     private fun checkConstructableAndSerializable(
         call: ResolvedCall<out CallableDescriptor>,
         expr: KtCallExpression,
-        context: DeclarationCheckerContext
+        context: CallCheckerContext
     ) {
         if (call.resultingDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) != true) return
 
-        for ((typeParameterDescriptor, kotlinType) in call.typeArguments.entries) {
-            if ((typeParameterDescriptor.isReified || typeParameterDescriptor.resolveContextKinds?.contains(
-                    ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR
-                ) == true)
+        for ((entry, argument) in call.typeArguments.entries.zip(expr.typeArguments)) {
+            val (parameter, kotlinType) = entry
+            if ((parameter.isReified
+                        || parameter.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true)
                 && kotlinType is SimpleType
             ) {
-
-                checkConstructableAndSerializable(kotlinType, expr, context)
-                checkFixType(kotlinType, expr, context)
+                checkConstructableAndSerializable(kotlinType, expr, argument, context)
+                checkFixType(kotlinType, expr, argument, context)
             }
         }
     }
 
-    private fun checkFixType(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
-        val inspectionTarget = retrieveInspectionTarget(type, callExpr) ?: return
+    private fun checkFixType(
+        type: KotlinType,
+        callExpr: KtCallExpression,
+        inspectionTarget: KtTypeProjection,
+        context: CallCheckerContext
+    ) {
         val classDescriptor = type.classDescriptor() ?: return
         val jetTypeFqn = type.getJetTypeFqName(false)
 
@@ -132,22 +133,21 @@ class PluginDataValuesChecker : DeclarationChecker {
             else -> return
         } ?: return
 
-        context.report(factory.on(inspectionTarget, callExpr, jetTypeFqn.substringAfterLast('.')))
+        context.trace.report(factory.on(inspectionTarget, callExpr, jetTypeFqn.substringAfterLast('.')))
     }
 
     private fun checkConstructableAndSerializable(
         type: KotlinType,
         callExpr: KtCallExpression,
-        context: DeclarationCheckerContext
+        inspectionTarget: KtTypeProjection,
+        context: CallCheckerContext
     ) {
         val classDescriptor = type.classDescriptor() ?: return
 
         if (canBeSerializedInternally(classDescriptor)) return
 
-        val inspectionTarget = retrieveInspectionTarget(type, callExpr) ?: return
-
         if (!classDescriptor.hasNoArgConstructor())
-            return context.report(
+            return context.trace.report(
                 MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
                     inspectionTarget,
                     callExpr,
@@ -156,7 +156,7 @@ class PluginDataValuesChecker : DeclarationChecker {
             )
 
         if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
-            return context.report(
+            return context.trace.report(
                 MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
                     inspectionTarget,
                     classDescriptor

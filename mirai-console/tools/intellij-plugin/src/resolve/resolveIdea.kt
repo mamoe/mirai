@@ -160,57 +160,6 @@ val KtAnnotationEntry.annotationClass: KtClass?
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
-fun KtElement.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
-    return allChildrenWithSelfSequence
-        .filterIsInstance<KtElement>()
-        .mapNotNull { it.getResolvedCall(bindingContext) }
-}
-
-data class ResolvedCallWithExpr<C : CallableDescriptor, E : KtExpression>(
-    val call: ResolvedCall<C>,
-    val expr: E
-)
-
-/**
- * 只解决一层
- */
-fun KtDeclaration.bodyCalls(bindingContext: BindingContext): Sequence<ResolvedCallWithExpr<out CallableDescriptor, KtExpression>>? {
-    return when (val declaration = this) {
-        is KtClassOrObject -> {
-            declaration.superTypeListEntries.asSequence().flatMap {
-                it.resolveAllCallsWithElement(bindingContext, true)
-            }
-        }
-        is KtDeclarationWithBody -> {
-            declaration.bodyExpression?.resolveAllCallsWithElement(bindingContext, false) ?: return null
-        }
-        is KtCallExpression -> {
-            val call = declaration.getResolvedCall(bindingContext) ?: return null
-            sequenceOf(ResolvedCallWithExpr(call, declaration))
-        }
-        is KtProperty -> {
-            val expr = declaration.delegateExpression ?: return null
-            val call = expr.getResolvedCall(bindingContext) ?: return null
-            sequenceOf(ResolvedCallWithExpr(call, expr))
-        }
-        else -> return null
-    }
-}
-
-fun KtElement.resolveAllCallsWithElement(
-    bindingContext: BindingContext,
-    recursive: Boolean = true
-): Sequence<ResolvedCallWithExpr<out CallableDescriptor, KtExpression>> {
-    return (if (recursive) allChildrenWithSelfSequence else childrenWithSelf.asSequence())
-        .filterIsInstance<KtExpression>()
-        .mapNotNull { expr ->
-            val callee = expr.getCalleeExpressionIfAny() ?: return@mapNotNull null
-            val resolved = callee.getResolvedCall(bindingContext) ?: return@mapNotNull null
-
-            ResolvedCallWithExpr(resolved, expr)
-        }
-}
-
 fun ValueArgument.resolveStringConstantValues(bindingContext: BindingContext): Sequence<String>? {
     return this.getArgumentExpression()?.resolveStringConstantValues(bindingContext)
 }
@@ -234,7 +183,7 @@ fun KtReferenceExpression.typeFqName() = type()?.fqName
 fun KtExpression.typeFqName() = referenceExpression()?.typeFqName()
 
 fun KtElement.getResolvedCall(
-    context: BindingContext = analyze(BodyResolveMode.PARTIAL),
+    context: BindingContext,
 ): ResolvedCall<out CallableDescriptor>? {
     return this.getCall(context)?.getResolvedCall(context)
 }

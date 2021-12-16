@@ -25,7 +25,7 @@ object MyPluginMain : KotlinPlugin(
         PermissionService.INSTANCE.register(permissionId("dvs"), "ok")
         PermissionService.INSTANCE.register(permissionId("perm with space"), "error")
         PermissionId("Namespace with space", "Name with space")
-        SemVersion.parseRangeRequirement("")
+        SemVersion.parseRangeRequirement("1.0")
         SemVersion.parseRangeRequirement("<br/>")
         SemVersion.parseRangeRequirement("SB YELLOW")
         SemVersion.parseRangeRequirement("1.0.0 || 2.0.0 || ")

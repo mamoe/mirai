@@ -67,7 +67,7 @@ object MiraiConsoleErrors {
     val ILLEGAL_COMMAND_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
 
     @JvmField
-    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<KtElement>(WARNING)
+    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<PsiElement>(WARNING)
 
     @JvmField
     val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)

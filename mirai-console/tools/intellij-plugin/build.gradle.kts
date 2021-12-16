@@ -24,11 +24,6 @@ repositories {
 version = Versions.console
 description = "IntelliJ plugin for Mirai Console"
 
-// JVM fails to compile
-kotlin.target.compilations.forEach { kotlinCompilation ->
-    kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
-} // don't use `useIr()`, compatibility with mirai-console dedicated builds
-
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     version.set(Versions.intellij)
@@ -39,9 +34,10 @@ intellij {
 
     plugins.set(
         listOf(
-            "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
+//            "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
             "java",
-            "gradle"
+            "gradle",
+            "org.jetbrains.kotlin"
         )
     )
 }
@@ -68,8 +64,6 @@ fun File.resolveMkdir(relative: String): File {
 
 kotlin.target.compilations.all {
     kotlinOptions {
-        apiVersion = "1.4"
-        languageVersion = "1.4"
         jvmTarget = "11"
     }
 }
@@ -83,7 +77,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
         
         <h3>Features</h3>
         <ul>
-            <li>Inspections for plugin properties, for example, checking PluginDescription.</li>
+            <li>Inspections for plugin properties.</li>
             <li>Inspections for illegal calls.</li>
             <li>Intentions for resolving serialization problems.</li>
         </ul>
@@ -103,13 +97,6 @@ dependencies {
 
     api(project(":mirai-console-compiler-common"))
 
-    compileOnly(`kotlin-stdlib-jdk8`)
-//    compileOnly("com.jetbrains:ideaIC:${Versions.intellij}")
-    // compileOnly(`kotlin-compiler`)
-
-//    compileOnly(files("libs/ide-common.jar"))
-    compileOnly(fileTree("run/idea-sandbox/plugins/Kotlin/lib").filter {
-        !it.name.contains("stdlib") && !it.name.contains("coroutines")
-    })
-    compileOnly(`kotlin-reflect`)
+    implementation(`kotlin-stdlib-jdk8`)
+    implementation(`kotlin-reflect`)
 }

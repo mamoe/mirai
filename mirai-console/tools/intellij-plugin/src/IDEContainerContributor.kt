@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij
 
+import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.intellij.diagnostics.CommandDeclarationChecker
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
@@ -25,6 +26,9 @@ import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.idea.core.unwrapModuleSourceInfo
 import org.jetbrains.kotlin.idea.facet.KotlinFacet
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
+import org.jetbrains.kotlin.resolve.calls.checkers.CallCheckerContext
+import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.io.File
@@ -37,7 +41,8 @@ class IDEContainerContributor : StorageComponentContainerContributor {
     ) {
         if (moduleDescriptor.hasMiraiConsoleDependency()) {
             container.useInstance(ContextualParametersChecker().wrapIgnoringExceptionIfNotDebug())
-            container.useInstance(PluginDataValuesChecker().wrapIgnoringExceptionIfNotDebug())
+            container.useInstance((PluginDataValuesChecker() as CallChecker).wrapIgnoringExceptionIfNotDebug())
+            container.useInstance((PluginDataValuesChecker() as DeclarationChecker).wrapIgnoringExceptionIfNotDebug())
             container.useInstance(CommandDeclarationChecker().wrapIgnoringExceptionIfNotDebug())
         }
     }
@@ -47,6 +52,22 @@ class IDEContainerContributor : StorageComponentContainerContributor {
             return this
         }
         return DeclarationCheckerIgnoringExceptions(this)
+    }
+
+    private fun CallChecker.wrapIgnoringExceptionIfNotDebug(): CallChecker {
+        if (DEBUG_ENABLED) {
+            return this
+        }
+        return CallCheckerIgnoringExceptions(this)
+    }
+
+    class CallCheckerIgnoringExceptions(
+        private val delegate: CallChecker
+    ) : CallChecker {
+        override fun check(resolvedCall: ResolvedCall<*>, reportOn: PsiElement, context: CallCheckerContext) {
+            runIgnoringErrors { delegate.check(resolvedCall, reportOn, context) }
+        }
+
     }
 
     class DeclarationCheckerIgnoringExceptions(
