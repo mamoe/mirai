@@ -9,6 +9,8 @@
 
 @file:Suppress("UnusedImport")
 
+import java.util.Base64
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -51,4 +53,17 @@ dependencies {
     api(asm("util"))
     api(asm("commons"))
 
+}
+
+tasks.named<Test>("test").configure {
+    val test0 = this
+    doFirst {
+        // For IDEA Debugging
+        @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+        val extArgs = test0.jvmArgs!!.asSequence().map { extArg ->
+            Base64.getEncoder().encodeToString(extArg.toByteArray())
+        }.joinToString(",")
+        test0.jvmArgs = mutableListOf()
+        test0.environment("IT_ARGS", extArgs)
+    }
 }

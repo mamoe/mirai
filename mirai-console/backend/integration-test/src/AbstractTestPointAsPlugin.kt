@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.console.rttu
+package net.mamoe.console.integrationtest
 
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription

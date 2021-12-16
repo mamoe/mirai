@@ -7,13 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmName("RealTimeTestUnitBootstrap")
+@file:JvmName("IntegrationTestBootstrap")
 
-package net.mamoe.console.rttu
+package net.mamoe.console.integrationtest
 
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
-import net.mamoe.console.rttu.testpoints.DoNothingPoint
+import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.terminal.ConsoleTerminalExperimentalApi
 import net.mamoe.mirai.console.terminal.ConsoleTerminalSettings
@@ -33,6 +33,12 @@ import kotlin.system.exitProcess
  */
 @OptIn(ConsoleTerminalExperimentalApi::class)
 public fun main() {
+    // PRE CHECK
+    kotlin.run {
+        if (!System.getenv("MIRAI_CONSOLE_INTEGRATION_TEST").orEmpty().toBoolean()) {
+            error("Don't launch IntegrationTestBootstrap directly. See /test/MiraiConsoleIntegrationTestBootstrap.kt")
+        }
+    }
     // @context: env.testunit = true
     // @context: env.inJUnitProcess = false
     // @context: env.exitProcessSafety = true
@@ -85,7 +91,7 @@ private fun AbstractTestPointAsPlugin.generatePluginJar() {
     val simpleName = this.javaClass.simpleName
     val point = this
     val jarFile = File("plugins").resolve("$simpleName.jar")
-    // PluginMainPoint: net.mamoe.console.rttu.AbstractTestPointAsPlugin$TestPointPluginImpl
+    // PluginMainPoint: net.mamoe.console.integrationtestAbstractTestPointAsPlugin$TestPointPluginImpl
     jarFile.mkparents()
     ZipOutputStream(
         FileOutputStream(jarFile).buffered()
@@ -97,14 +103,14 @@ private fun AbstractTestPointAsPlugin.generatePluginJar() {
                 "META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin"
             )
         )
-        val delegateClassName = "net.mamoe.console.rttu.tpd.$simpleName"
+        val delegateClassName = "net.mamoe.console.integrationtest.tpd.$simpleName"
         zipOutputStream.write(delegateClassName.toByteArray())
 
         // MainClass
         val internalClassName = delegateClassName.replace('.', '/')
         zipOutputStream.putNextEntry(ZipEntry("$internalClassName.class"))
         val classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
-        val superName = "net/mamoe/console/rttu/AbstractTestPointAsPlugin\$TestPointPluginImpl"
+        val superName = "net/mamoe/console/integrationtest/AbstractTestPointAsPlugin\$TestPointPluginImpl"
         classWriter.visit(
             Opcodes.V1_8,
             Opcodes.ACC_PUBLIC,

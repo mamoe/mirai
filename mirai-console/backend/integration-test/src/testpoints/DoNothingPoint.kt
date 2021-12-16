@@ -7,9 +7,9 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.console.rttu.testpoints
+package net.mamoe.console.integrationtest.testpoints
 
-import net.mamoe.console.rttu.AbstractTestPointAsPlugin
+import net.mamoe.console.integrationtest.AbstractTestPointAsPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
