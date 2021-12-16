@@ -26,6 +26,7 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.verbose
 import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 internal object BuiltInJvmPluginLoaderImpl :
@@ -98,28 +99,16 @@ internal object BuiltInJvmPluginLoaderImpl :
 
     private val loadedPlugins = ConcurrentHashMap<JvmPlugin, Unit>()
 
-    @Throws(PluginLoadException::class)
-    override fun load(plugin: JvmPlugin) {
-        ensureActive()
-
-        if (loadedPlugins.put(plugin, Unit) != null) {
-            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
-        }
-        logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
-        runCatching {
-            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
-            plugin.internalOnLoad()
-        }.getOrElse {
-            throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
-        }
-        val nameFolder = PluginManager.pluginsDataPath.resolve(plugin.description.name).toFile()
+    private fun Path.moveNameFolder(plugin: JvmPlugin) {
+        val nameFolder = this.resolve(plugin.description.name).toFile()
         if (plugin.description.name != plugin.description.id && nameFolder.exists()) {
             // need move
-            val idFolder = PluginManager.pluginsDataPath.resolve(plugin.description.id).toFile()
-            val moveDescription = "移动 ${plugin.description.smartToString()} 的配置目录(${nameFolder.path})到 ${idFolder.path}"
+            val idFolder = this.resolve(plugin.description.id).toFile()
+            val moveDescription =
+                "移动 ${plugin.description.smartToString()} 的数据文件目录(${nameFolder.path})到 ${idFolder.path}"
             if (idFolder.exists()) {
                 if (idFolder.listFiles()?.size != 0) {
-                    logger.error("$moveDescription 失败, 原因:配置目录(${idFolder.path})被占用")
+                    logger.error("$moveDescription 失败, 原因:数据文件目录(${idFolder.path})被占用")
                     logger.error("Mirai Console 将自动关闭, 请删除或移动该目录后再启动")
                     MiraiConsole.job.cancel()
                 } else
@@ -139,6 +128,25 @@ internal object BuiltInJvmPluginLoaderImpl :
             }
             logger.info("$moveDescription 完成")
         }
+    }
+
+    @Throws(PluginLoadException::class)
+    override fun load(plugin: JvmPlugin) {
+        ensureActive()
+
+        if (loadedPlugins.put(plugin, Unit) != null) {
+            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
+        }
+        logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
+        runCatching {
+            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
+            plugin.internalOnLoad()
+        }.getOrElse {
+            throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
+        }
+        // move nameFolder in config and data to idFolder
+        PluginManager.pluginsDataPath.moveNameFolder(plugin)
+        PluginManager.pluginsConfigPath.moveNameFolder(plugin)
     }
 
     override fun enable(plugin: JvmPlugin) {

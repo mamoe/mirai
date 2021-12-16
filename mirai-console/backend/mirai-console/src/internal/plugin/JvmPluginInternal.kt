@@ -76,7 +76,7 @@ internal abstract class JvmPluginInternal(
     }
 
     final override val configFolderPath: Path by lazy {
-        PluginManager.pluginsConfigPath.resolve(description.name).apply { mkdir() }
+        PluginManager.pluginsConfigPath.resolve(description.id).apply { mkdir() }
     }
 
     final override val configFolder: File by lazy {
