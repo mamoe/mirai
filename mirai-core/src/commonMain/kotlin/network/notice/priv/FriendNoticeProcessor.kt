@@ -36,9 +36,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0xb3.SubMs
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList.GetFriendGroupList
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
 /**
@@ -216,7 +216,7 @@ internal class FriendNoticeProcessor(
             }
         }
         if (body.msgProfileInfos.isEmpty() || containsUnknown) {
-            logger.debug { "Transformers528 0x27L: ProfileChanged new data: ${body._miraiContentToString()}" }
+            logger.debug { "Transformers528 0x27L: ProfileChanged new data: ${body.structureToString()}" }
         }
     }
 

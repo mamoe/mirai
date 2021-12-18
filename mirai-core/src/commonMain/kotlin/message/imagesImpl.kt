@@ -21,9 +21,9 @@ import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.*
@@ -109,7 +109,7 @@ OnlineFriendImage() {
                     Image.logger.warning(
                         contextualBugReportException(
                             "Failed to compute friend imageId: resId=${delegate.resId}",
-                            delegate._miraiContentToString(),
+                            delegate.structureToString(),
                             additional = "并描述此时 Bot 是否正在从好友或群接受消息, 尽量附加该图片原文件"
                         )
                     )
