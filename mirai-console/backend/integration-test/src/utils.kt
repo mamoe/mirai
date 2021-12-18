@@ -9,6 +9,9 @@
 
 package net.mamoe.console.integrationtest
 
+import org.junit.jupiter.api.fail
+import java.io.File
+
 internal fun readStringListFromEnv(key: String): MutableList<String> {
     val size = System.getenv(key)!!.toInt()
     val rsp = mutableListOf<String>()
@@ -24,3 +27,11 @@ internal fun saveStringListToEnv(key: String, value: Collection<String>, env: Mu
         env["${key}_$index"] = v
     }
 }
+
+// region assertion kits
+public fun File.assertNotExists() {
+    if (exists()) {
+        fail { "Except ${this.absolutePath} not exists but this file exists in disk" }
+    }
+}
+// endregion

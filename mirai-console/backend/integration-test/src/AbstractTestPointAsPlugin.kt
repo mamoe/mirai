@@ -46,15 +46,30 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
         ) : this(impl.kotlin.objectInstance ?: impl.newInstance())
 
         override fun onDisable() {
-            impl.apply { onDisable0() }
+            try {
+                impl.apply { onDisable0() }
+            } catch (e: Throwable) {
+                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                throw e
+            }
         }
 
         override fun onEnable() {
-            impl.apply { onEnable0() }
+            try {
+                impl.apply { onEnable0() }
+            } catch (e: Throwable) {
+                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                throw e
+            }
         }
 
         override fun PluginComponentStorage.onLoad() {
-            impl.apply { onLoad0(this@onLoad) }
+            try {
+                impl.apply { onLoad0(this@onLoad) }
+            } catch (e: Throwable) {
+                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                throw e
+            }
         }
     }
 

@@ -25,9 +25,14 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.system.exitProcess
+
+internal object IntegrationTestBootstrapContext {
+    val failures = ConcurrentLinkedDeque<Class<*>>()
+}
 
 /**
  * 入口点为 /test/MiraiConsoleIntegrationTestBootstrap.kt 并非此函数(文件),
@@ -69,6 +74,14 @@ internal fun main() {
 
     if (!MiraiConsole.isActive) {
         error("Failed to start console")
+    }
+    if (IntegrationTestBootstrapContext.failures.isNotEmpty()) {
+        val logger = MiraiConsole.mainLogger
+        logger.error("Failed tests: ")
+        IntegrationTestBootstrapContext.failures.toSet().forEach {
+            logger.error("  `- $it")
+        }
+        error("Failed tests: ${IntegrationTestBootstrapContext.failures.toSet()}")
     }
 
     // I/main: mirai-console started successfully.
