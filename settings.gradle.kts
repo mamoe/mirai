@@ -52,6 +52,34 @@ includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-ann
 includeConsoleProject(":mirai-console", "backend/mirai-console")
 includeConsoleProject(":mirai-console.codegen", "backend/codegen")
 includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+
+// region mirai-console.integration-test
+includeConsoleProject(":mirai-console.integration-test", "backend/integration-test")
+
+val consoleIntegrationTestSubPluginBuildGradleKtsTemplate by lazy {
+    rootProject.projectDir
+        .resolve("mirai-console/backend/integration-test/testers")
+        .resolve("tester.template.gradle.kts")
+        .readText()
+}
+
+@Suppress("SimpleRedundantLet")
+fun includeConsoleITPlugin(path: File) {
+    path.resolve("build.gradle.kts").takeIf { !it.isFile }?.let { initScript ->
+        initScript.writeText(consoleIntegrationTestSubPluginBuildGradleKtsTemplate)
+    }
+
+    val projectPath = ":mirai-console.integration-test.tp.${path.name}"
+    include(projectPath)
+    project(projectPath).projectDir = path
+}
+rootProject.projectDir
+    .resolve("mirai-console/backend/integration-test/testers")
+    .listFiles()?.asSequence().orEmpty()
+    .filter { it.isDirectory }
+    .forEach { includeConsoleITPlugin(it) }
+// endregion
+
 includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
 includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
 includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
