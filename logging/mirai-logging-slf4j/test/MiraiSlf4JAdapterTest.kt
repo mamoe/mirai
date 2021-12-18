@@ -13,6 +13,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.loadService
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Order
 import org.slf4j.LoggerFactory
 import org.slf4j.helpers.NOPLogger
@@ -22,6 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 
+@Disabled
 internal class MiraiSlf4JAdapterTest {
 
     @Order(1)
