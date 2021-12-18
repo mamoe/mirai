@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import java.time.temporal.Temporal
 import java.util.*
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
@@ -87,6 +88,21 @@ public interface CommandArgumentContext {
                 (cache[jclass] ?: kotlin.run {
                     EnumValueArgumentParser(jclass).also { cache[jclass] = it }
                 }) as CommandValueArgumentParser<T>
+            } else null
+        }
+
+        override fun toList(): List<ParserPair<*>> = emptyList()
+    }
+
+    private object TemporalCommandArgumentContext : CommandArgumentContext {
+        private val cache = WeakHashMap<Class<out Temporal>, CommandValueArgumentParser<*>>()
+        private val temporalKlass = Temporal::class
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? {
+            return if (kClass.isSubclassOf(temporalKlass)) {
+                val jclass = kClass.java.asSubclass(Temporal::class.java)
+                cache.getOrPut(jclass) { TemporalArgumentParser(jclass) } as CommandValueArgumentParser<T>
             } else null
         }
 

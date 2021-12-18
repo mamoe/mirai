@@ -21,6 +21,9 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.time.temporal.Temporal
 
 
 /**
@@ -473,6 +476,47 @@ public class EnumValueArgumentParser<T : Enum<T>>(
     override fun parse(raw: String, sender: CommandSender): T {
         return try {
             delegate(raw)
+        } catch (e: Throwable) {
+            illegalArgument("无法解析 $raw 为 ${type.simpleName}")
+        }
+    }
+}
+
+/**
+ * 解析参数为时间 [T]
+ *
+ * 注:
+ * - 解析器会尝试反射获取 public static T now() 和 public static T parse(CharSequence text)
+ * - 输入为 `now` 时返回当前时间
+ */
+public class TemporalArgumentParser<T : Temporal>(
+    private val type: Class<T>,
+) : InternalCommandValueArgumentParserExtensions<T>() {
+
+    init {
+        check(Temporal::class.java.isAssignableFrom(type)) {
+            "$type not a temporal class"
+        }
+    }
+
+    private val now: Method = type.getMethod("now").also { method ->
+        check(method.modifiers.and(Modifier.STATIC) != 0) { "$method is not static" }
+        check(type.isAssignableFrom(method.returnType)) { "$method is not return $type" }
+    }
+
+    private val parse: Method = type.getMethod("parse", java.lang.CharSequence::class.java).also { method ->
+        check(method.modifiers.and(Modifier.STATIC) != 0) { "$method is not static" }
+        check(type.isAssignableFrom(method.returnType)) { "$method is not return $type" }
+    }
+
+    override fun parse(raw: String, sender: CommandSender): T {
+        @Suppress("UNCHECKED_CAST")
+        return try {
+            if (raw.equals(other = "now", ignoreCase = true)) {
+                now.invoke(null)
+            } else {
+                parse.invoke(null, raw)
+            } as T
         } catch (e: Throwable) {
             illegalArgument("无法解析 $raw 为 ${type.simpleName}")
         }
