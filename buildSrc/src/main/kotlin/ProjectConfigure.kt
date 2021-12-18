@@ -46,6 +46,11 @@ fun Project.configureJvmTarget() {
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
+
+        if (project.path.endsWith("mirai-console-intellij")) {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
     }
 
     kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
