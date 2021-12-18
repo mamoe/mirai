@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import java.time.*
 import java.time.temporal.Temporal
 import java.util.*
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
@@ -95,15 +96,27 @@ public interface CommandArgumentContext {
     }
 
     private object TemporalCommandArgumentContext : CommandArgumentContext {
-        private val cache = WeakHashMap<Class<out Temporal>, CommandValueArgumentParser<*>>()
-        private val temporalKlass = Temporal::class
+        private val cache = WeakHashMap<KClass<*>, CommandValueArgumentParser<*>>()
+
+        private fun <T : Temporal> put(now: () -> T, parse: (CharSequence) -> T, kClass: KClass<T>) {
+            cache[kClass] = TemporalArgumentParser(kClass.java, now, parse)
+        }
+
+        init {
+            put({ Instant.now() }, { Instant.parse(it) }, Instant::class)
+            put({ Year.now() }, { Year.parse(it) }, Year::class)
+            put({ YearMonth.now() }, { YearMonth.parse(it) }, YearMonth::class)
+            put({ LocalDate.now() }, { LocalDate.parse(it) }, LocalDate::class)
+            put({ LocalTime.now() }, { LocalTime.parse(it) }, LocalTime::class)
+            put({ LocalDateTime.now() }, { LocalDateTime.parse(it) }, LocalDateTime::class)
+            put({ OffsetTime.now() }, { OffsetTime.parse(it) }, OffsetTime::class)
+            put({ OffsetDateTime.now() }, { OffsetDateTime.parse(it) }, OffsetDateTime::class)
+            put({ ZonedDateTime.now() }, { ZonedDateTime.parse(it) }, ZonedDateTime::class)
+        }
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? {
-            return if (kClass.isSubclassOf(temporalKlass)) {
-                val jclass = kClass.java.asSubclass(Temporal::class.java)
-                cache.getOrPut(jclass) { TemporalArgumentParser(jclass) } as CommandValueArgumentParser<T>
-            } else null
+            return cache[kClass] as CommandValueArgumentParser<T>?
         }
 
         override fun toList(): List<ParserPair<*>> = emptyList()
@@ -139,6 +152,7 @@ public interface CommandArgumentContext {
 
             MessageContent::class with RawContentValueArgumentParser
         },
+        TemporalCommandArgumentContext,
     ).fold(EmptyCommandArgumentContext, CommandArgumentContext::plus)
 }
 
