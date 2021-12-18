@@ -139,14 +139,14 @@ internal object BuiltInJvmPluginLoaderImpl :
         }
         logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
         runCatching {
+            // move nameFolder in config and data to idFolder
+            PluginManager.pluginsDataPath.moveNameFolder(plugin)
+            PluginManager.pluginsConfigPath.moveNameFolder(plugin)
             check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
             plugin.internalOnLoad()
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
         }
-        // move nameFolder in config and data to idFolder
-        PluginManager.pluginsDataPath.moveNameFolder(plugin)
-        PluginManager.pluginsConfigPath.moveNameFolder(plugin)
     }
 
     override fun enable(plugin: JvmPlugin) {
