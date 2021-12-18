@@ -26,10 +26,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.data.proto.MultiMsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.toMessageChain
@@ -120,7 +120,7 @@ internal class MultiMsg {
             ) : Response() {
                 override fun toString(): String {
                     if (PacketCodec.PacketLogger.isEnabled) {
-                        return _miraiContentToString()
+                        return structureToString()
                     }
                     return "MultiMsg.ApplyUp.Response.RequireUpload"
                 }
@@ -168,7 +168,7 @@ internal class MultiMsg {
                 //1 -> Response.OK(resId = response.msgResid)
                 else -> {
                     error(kotlin.run {
-                        println(response._miraiContentToString())
+                        println(response.structureToString())
                     }.let { "Protocol error: MultiMsg.ApplyUp failed with result ${response.result}" })
                 }
             }
@@ -221,7 +221,7 @@ internal class MultiMsg {
                 //1 -> Response.OK(resId = response.msgResid)
                 else -> throw contextualBugReportException(
                     "MultiMsg.ApplyDown",
-                    response._miraiContentToString(),
+                    response.structureToString(),
                     additional = "Decode failure result=${response.result}"
                 )
             }
