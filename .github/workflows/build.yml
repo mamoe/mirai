@@ -35,9 +35,9 @@ jobs:
       - name: All Tests
         run: >
           ./gradlew check --scan
-          -Dmirai.network.show.all.components=true
-          -Dkotlinx.coroutines.debug=on
-          -Dmirai.network.show.packet.details=true
+          "-Dmirai.network.show.all.components=true"
+          "-Dkotlinx.coroutines.debug=on"
+          "-Dmirai.network.show.packet.details=true"
 
       - name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule
