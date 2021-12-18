@@ -152,3 +152,8 @@ public fun File.resolveCreateFile(relative: File): File = this.resolve(relative)
 
 public fun File.resolveMkdir(relative: String): File = this.resolve(relative).apply { mkdirs() }
 public fun File.resolveMkdir(relative: File): File = this.resolve(relative).apply { mkdirs() }
+
+public fun File.touch(): File = apply {
+    parentFile?.mkdirs()
+    createNewFile()
+}
