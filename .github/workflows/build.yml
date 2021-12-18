@@ -3,10 +3,15 @@ name: Build
 on: [ push, pull_request ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  build-mirai:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-11
+          - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Checkout submodules
