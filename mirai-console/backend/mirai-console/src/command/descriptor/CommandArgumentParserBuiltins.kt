@@ -492,7 +492,6 @@ public class TemporalArgumentParser<T : Temporal>(
 ) : InternalCommandValueArgumentParserExtensions<T>() {
 
     override fun parse(raw: String, sender: CommandSender): T {
-        @Suppress("UNCHECKED_CAST")
         return try {
             if (raw.equals(other = "now", ignoreCase = true)) {
                 now.invoke()
