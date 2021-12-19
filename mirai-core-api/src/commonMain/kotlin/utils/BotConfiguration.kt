@@ -408,7 +408,7 @@ public open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public fun redirectBotLogToFile(
         file: File = File("mirai.log"),
-        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+        identity: (bot: Bot) -> String = { "Bot ${it.id}" }
     ) {
         require(!file.isDirectory) { "file must not be a dir" }
         botLoggerSupplier = { SingleFileLogger(identity(it), workingDir.resolve(file)) }
@@ -425,7 +425,7 @@ public open class BotConfiguration { // open for Java
     public fun redirectBotLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
-        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+        identity: (bot: Bot) -> String = { "Bot ${it.id}" }
     ) {
         require(!dir.isFile) { "dir must not be a file" }
         botLoggerSupplier = { DirectoryLogger(identity(it), workingDir.resolve(dir), retain) }
