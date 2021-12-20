@@ -68,7 +68,11 @@ class ValueDescAnalyzerTest {
             analyzeAndRender(arrayOf("1"))
         )
         assertEquals(
-            "arrayOf(arrayOf(1))",
+            """
+                arrayOf(
+                arrayOf(1), 
+                )
+            """.trimIndent(),
             analyzeAndRender(arrayOf(arrayOf(1)))
         )
     }
@@ -122,7 +126,7 @@ class ValueDescAnalyzerTest {
         assertEquals(
             """
                 ${TestNesting::class.qualifiedName}(
-                nested=${TestNesting.Nested::class}(
+                nested=${TestNesting.Nested::class.qualifiedName}(
                 value="test",
                 ),
                 )
