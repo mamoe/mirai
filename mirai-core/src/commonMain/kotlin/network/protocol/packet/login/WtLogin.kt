@@ -23,7 +23,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLoginExt
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.analysisTlv0x531
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
 import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.internal.utils.printStructurally
+import net.mamoe.mirai.internal.utils.printStructure
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
@@ -163,7 +163,7 @@ internal class WtLogin {
             val tlvMap: TlvMap = this._readTLVMap()
 
             if (SHOW_TLV_MAP_ON_LOGIN_SUCCESS) {
-                tlvMap.smartToString().printStructurally("tlvMap outer")
+                tlvMap.smartToString().printStructure("tlvMap outer")
             }
 
             // tlvMap.printTLVMap()
@@ -266,7 +266,7 @@ internal class WtLogin {
                     val tlvMap119 = this._readTLVMap()
 
                     if (SHOW_TLV_MAP_ON_LOGIN_SUCCESS) {
-                        tlvMap119.smartToString().printStructurally("TlvMap119")
+                        tlvMap119.smartToString().printStructure("TlvMap119")
                     }
 
                     tlvMap119[0x106]?.let { client.analyzeTlv106(it) }
@@ -366,7 +366,7 @@ internal class WtLogin {
                     } ?: emptyMap()
 
                     if (SHOW_TLV_MAP_ON_LOGIN_SUCCESS) {
-                        changeTokenTimeMap.structureToString().printStructurally("tokenChangeTime")
+                        changeTokenTimeMap.structureToString().printStructure("tokenChangeTime")
                     }
 
                     val outPSKeyMap: PSKeyMap?

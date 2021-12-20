@@ -41,9 +41,9 @@ private val SoutvLogger: MiraiLogger by lazy {
     level = DeprecationLevel.ERROR
 )
 @DeprecatedSinceMirai(errorSince = "2.10")
-internal fun Any?.soutv(name: String = "unnamed") = this.printStructurally(name)
+internal fun Any?.soutv(name: String = "unnamed") = this.printStructure(name)
 
-internal fun Any?.printStructurally(name: String = "unnamed") {
+internal fun Any?.printStructure(name: String = "unnamed") {
     return SoutvLogger.debug { "$name = ${this.structureToString()}" }
 }
 

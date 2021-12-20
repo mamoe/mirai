@@ -10,9 +10,6 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.IMirai
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.toUHexString
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
@@ -21,8 +18,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.javaField
 
-// Kept for souvenir. Not used.
-internal class StructureToStringLegacy : StructureToStringTransformer {
+internal class StructureToStringTransformerLegacy : StructureToStringTransformer {
     override fun transform(any: Any?): String = any._miraiContentToString()
 
     private val indent: String = " ".repeat(4)

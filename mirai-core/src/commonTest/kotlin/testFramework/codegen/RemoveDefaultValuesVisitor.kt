@@ -7,107 +7,33 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.codegen
+package net.mamoe.mirai.internal.testFramework.codegen
 
-import net.mamoe.mirai.utils.cast
-import kotlin.reflect.KClass
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.ClassValueDesc
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.ValueDesc
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.accept
+import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescVisitorUnit
+import net.mamoe.mirai.internal.testFramework.codegen.visitors.AnalyzeDefaultValuesMappingVisitor
+import net.mamoe.mirai.internal.testFramework.codegen.visitors.DefaultValuesMapping
 import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.primaryConstructor
-
-interface ValueDescVisitor {
-    fun visitValue(desc: ValueDesc) {}
-
-    fun visitPlain(desc: PlainValueDesc) {
-        visitValue(desc)
-    }
-
-    fun visitArray(desc: ArrayValueDesc) {
-        visitValue(desc)
-        for (element in desc.elements) {
-            element.accept(this)
-        }
-    }
-
-    fun visitObjectArray(desc: ObjectArrayValueDesc) {
-        visitArray(desc)
-    }
-
-    fun visitCollection(desc: CollectionValueDesc) {
-        visitArray(desc)
-    }
-
-    fun visitMap(desc: MapValueDesc) {
-        visitValue(desc)
-        for ((key, value) in desc.elements.entries) {
-            key.accept(this)
-            value.accept(this)
-        }
-    }
-
-    fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc) {
-        visitArray(desc)
-    }
-
-    fun <T : Any> visitClass(desc: ClassValueDesc<T>) {
-        visitValue(desc)
-        desc.properties.forEach { (_, u) ->
-            u.accept(this)
-        }
-    }
-}
 
 
-class DefaultValuesMapping(
-    val forClass: KClass<*>,
-    val mapping: MutableMap<String, Any?> = mutableMapOf()
-) {
-    operator fun get(property: KProperty<*>): Any? = mapping[property.name]
-}
-
-class AnalyzeDefaultValuesMappingVisitor : ValueDescVisitor {
-    val mappings: MutableList<DefaultValuesMapping> = mutableListOf()
-
-    override fun <T : Any> visitClass(desc: ClassValueDesc<T>) {
-        super.visitClass(desc)
-
-        if (mappings.any { it.forClass == desc.type }) return
-
-        val defaultInstance =
-            createInstanceWithMostDefaultValues(desc.type, desc.properties.mapValues { it.value.origin })
-
-        val optionalParameters = desc.type.primaryConstructor!!.parameters.filter { it.isOptional }
-
-        mappings.add(
-            DefaultValuesMapping(
-                desc.type,
-                optionalParameters.associateTo(mutableMapOf()) { param ->
-                    val value = findCorrespondingProperty(desc, param).get(defaultInstance)
-                    param.name!! to value
-                }
-            )
-        )
-    }
-
-
-    private fun <T : Any> findCorrespondingProperty(
-        desc: ClassValueDesc<T>,
-        param: KParameter
-    ) = desc.type.memberProperties.single { it.name == param.name }.cast<KProperty1<Any, Any>>()
-
-    private fun <T : Any> createInstanceWithMostDefaultValues(clazz: KClass<T>, arguments: Map<KParameter, Any?>): T {
-        val primaryConstructor = clazz.primaryConstructor ?: error("Type $clazz does not have primary constructor.")
-        return primaryConstructor.callBy(arguments.filter { !it.key.isOptional })
-    }
+fun ValueDesc.removeDefaultValues(): ValueDesc {
+    val def = AnalyzeDefaultValuesMappingVisitor()
+    this.accept(def)
+    this.accept(RemoveDefaultValuesVisitor(def.mappings))
+    return this
 }
 
 class RemoveDefaultValuesVisitor(
     private val mappings: MutableList<DefaultValuesMapping>,
-) : ValueDescVisitor {
-    override fun <T : Any> visitClass(desc: ClassValueDesc<T>) {
-        super.visitClass(desc)
+) : ValueDescVisitorUnit {
+    override fun visitValue(desc: ValueDesc, data: Nothing?) {
+        desc.acceptChildren(this, data)
+    }
+
+    override fun <T : Any> visitClass(desc: ClassValueDesc<T>, data: Nothing?) {
+        super.visitClass(desc, data)
         val mapping = mappings.find { it.forClass == desc.type }?.mapping ?: return
 
         // remove properties who have the same values as their default values, this would significantly reduce code size.

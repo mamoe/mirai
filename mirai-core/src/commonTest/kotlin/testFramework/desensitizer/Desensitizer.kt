@@ -7,12 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.notice
+package net.mamoe.mirai.internal.testFramework.desensitizer
 
 import kotlinx.serialization.decodeFromString
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.notice.Desensitizer.Companion.generateAndDesensitize
-import net.mamoe.mirai.internal.utils.codegen.*
+import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
+import net.mamoe.mirai.internal.testFramework.codegen.analyze
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.*
+import net.mamoe.mirai.internal.testFramework.codegen.removeDefaultValues
+import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformerNotNull
+import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArrayAsHexStringTransformer
+import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
 import net.mamoe.mirai.internal.utils.io.NestedStructure
 import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
@@ -74,19 +79,20 @@ internal class Desensitizer private constructor(
         fun desensitize(string: String): String = instance.desensitize(string)
 
 
-        fun ConstructorCallCodegenFacade.generateAndDesensitize(
+        fun ValueDescAnalyzer.generateAndDesensitize(
             value: Any?,
             type: KType,
             desensitizer: Desensitizer = instance,
         ): String {
-            val a = analyze(value, type).apply {
-                accept(DesensitizationVisitor(desensitizer))
-            }
-            return generate(a)
+            return analyze(value, type)
+                .transform(OptimizeByteArrayAsHexStringTransformer())
+                .removeDefaultValues()
+                .transform(DesensitizationVisitor(desensitizer))
+                .renderToString()
         }
 
         @OptIn(ExperimentalStdlibApi::class)
-        inline fun <reified T> ConstructorCallCodegenFacade.generateAndDesensitize(
+        inline fun <reified T> ValueDescAnalyzer.generateAndDesensitize(
             value: T,
             desensitizer: Desensitizer = instance,
         ): String = generateAndDesensitize(value, typeOf<T>(), desensitizer)
@@ -161,52 +167,70 @@ private val format = Yaml {
 
 private class DesensitizationVisitor(
     private val desensitizer: Desensitizer,
-) : ValueDescVisitor {
-    override fun visitPlain(desc: PlainValueDesc) {
-        desc.value = desensitizer.desensitize(desc.value)
+) : ValueDescTransformerNotNull<Nothing?>() {
+    override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc {
+        desc.acceptChildren(this, data)
+        return super.visitValue(desc, data)
     }
 
-    override fun visitObjectArray(desc: ObjectArrayValueDesc) {
-        if (desc.arrayType.arguments.first().type?.classifier == Byte::class) { // variance is ignored
+    override fun visitPlain(desc: PlainValueDesc, data: Nothing?): ValueDesc {
+        return PlainValueDesc(desc.parent, desensitizer.desensitize(desc.value), desc.origin)
+    }
+
+    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc {
+        return if (
+            desc.arrayType.arguments.firstOrNull()?.type?.classifier == Byte::class
+            || (desc.value as? Array<*>)?.getOrNull(0) is Byte
+        ) {
             @Suppress("UNCHECKED_CAST")
-            desc.value = desensitizer.desensitize(desc.value as Array<Byte>)
+            ObjectArrayValueDesc(
+                desc.parent,
+                desensitizer.desensitize(desc.value as Array<Byte>),
+                desc.origin,
+                desc.arrayType,
+                desc.elementType
+            )
         } else {
-            for (element in desc.elements) {
-                element.accept(this)
+            super.visitObjectArray(desc, data)
+        }
+    }
+
+    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: Nothing?): ValueDesc {
+        return if (desc.value is ByteArray) {
+            PrimitiveArrayValueDesc(
+                desc.parent,
+                desensitizer.desensitize(desc.value as ByteArray),
+                desc.origin,
+                desc.arrayType,
+                desc.elementType
+            )
+        } else super.visitPrimitiveArray(desc, data)
+    }
+
+    override fun <T : Any> visitClass(desc: ClassValueDesc<T>, data: Nothing?): ValueDesc {
+        ClassValueDesc(desc.parent, desc.origin, desc.properties.toMutableMap().apply {
+            replaceAll() { key, value ->
+                val annotation = key.findAnnotation<NestedStructure>()
+                if (annotation != null && value.origin is ByteArray) {
+                    val instance = annotation.serializer.objectInstance ?: annotation.serializer.createInstance()
+
+                    val result = instance.cast<NestedStructureDesensitizer<ProtocolStruct, ProtocolStruct>>()
+                        .deserialize(desc.origin as ProtocolStruct, value.origin as ByteArray)
+                        ?: desc.origin
+
+                    val generate = ValueDescAnalyzer.analyze(result)
+                        .transform(OptimizeByteArrayAsHexStringTransformer())
+                        .transform(DesensitizationVisitor(desensitizer))
+                        .renderToString()
+                    PlainValueDesc(
+                        desc,
+                        "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
+                        value.origin
+                    )
+                } else value
             }
-        }
-    }
-
-    override fun visitCollection(desc: CollectionValueDesc) {
-        for (element in desc.elements) {
-            element.accept(this)
-        }
-    }
-
-    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc) {
-        if (desc.value is ByteArray) {
-            desc.value = desensitizer.desensitize(desc.value as ByteArray)
-        }
-    }
-
-    override fun <T : Any> visitClass(desc: ClassValueDesc<T>) {
-        super.visitClass(desc)
-        desc.properties.replaceAll() { key, value ->
-            val annotation = key.findAnnotation<NestedStructure>()
-            if (annotation != null && value.origin is ByteArray) {
-                val instance = annotation.serializer.objectInstance ?: annotation.serializer.createInstance()
-
-                val result = instance.cast<NestedStructureDesensitizer<ProtocolStruct, ProtocolStruct>>()
-                    .deserialize(desc.origin as ProtocolStruct, value.origin as ByteArray)
-                    ?: desc.origin
-
-                val generate = ConstructorCallCodegenFacade.generateAndDesensitize(result)
-                PlainValueDesc(
-                    desc,
-                    "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
-                    value.origin
-                )
-            } else value
+        }).let {
+            return super.visitClass(it, data)
         }
     }
 }
