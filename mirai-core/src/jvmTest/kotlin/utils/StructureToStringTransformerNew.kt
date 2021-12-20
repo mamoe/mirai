@@ -11,9 +11,9 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
 import net.mamoe.mirai.internal.testFramework.codegen.analyze
-import net.mamoe.mirai.internal.testFramework.codegen.descriptors.transformChildren
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.transform
+import net.mamoe.mirai.internal.testFramework.codegen.removeDefaultValues
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArrayAsHexStringTransformer
-import net.mamoe.mirai.internal.testFramework.codegen.visitors.ValueDescToStringRenderer
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
 
 internal class StructureToStringTransformerNew : StructureToStringTransformer {
@@ -21,10 +21,9 @@ internal class StructureToStringTransformerNew : StructureToStringTransformer {
 
     override fun transform(any: Any?): String =
         kotlin.runCatching {
-            val desc = ValueDescAnalyzer.analyze(any)
-            desc.transformChildren(OptimizeByteArrayAsHexStringTransformer())
-            desc.renderToString(
-                ValueDescToStringRenderer()
-            )
-        }.getOrElse { legacy.transform(any) }
+            ValueDescAnalyzer.analyze(any)
+                .transform(OptimizeByteArrayAsHexStringTransformer())
+                ?.removeDefaultValues()
+                ?.renderToString()
+        }.getOrNull() ?: legacy.transform(any)
 }
