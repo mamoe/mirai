@@ -12,7 +12,7 @@ package net.mamoe.mirai.internal.notice.test
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.internal.notice.Desensitizer
+import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.yamlkt.Yaml

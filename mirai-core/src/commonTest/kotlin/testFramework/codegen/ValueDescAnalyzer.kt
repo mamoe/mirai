@@ -7,9 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.codegen
+@file:OptIn(ExperimentalStdlibApi::class)
+
+package net.mamoe.mirai.internal.testFramework.codegen
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.internal.testFramework.codegen.descriptors.*
 import net.mamoe.mirai.utils.cast
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
@@ -20,7 +23,10 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.typeOf
 
-object ConstructorCallCodegenFacade {
+object ValueDescAnalyzer {
+    private val anyType = typeOf<Any>()
+
+
     /**
      * Analyze [value] and give its correspondent [ValueDesc].
      */
@@ -46,17 +52,22 @@ object ConstructorCallCodegenFacade {
             return ClassValueDesc(null, value, map)
         }
 
-        ArrayValueDesc.createOrNull(value, type, null)?.let { return it }
+        CollectionLikeValueDesc.createOrNull(value, type, null)?.let { return it }
         if (value is Collection<*>) {
-            return CollectionValueDesc(null, value, arrayType = type, elementType = type.arguments.first().type!!)
+            return CollectionValueDesc(
+                null,
+                value,
+                arrayType = type,
+                elementType = type.arguments.firstOrNull()?.type ?: anyType
+            )
         } else if (value is Map<*, *>) {
             return MapValueDesc(
                 null,
                 value.cast(),
                 value.cast(),
                 type,
-                type.arguments.first().type!!,
-                type.arguments[1].type!!
+                type.arguments.firstOrNull()?.type ?: anyType,
+                type.arguments.getOrNull(1)?.type ?: anyType
             )
         }
 
@@ -70,36 +81,9 @@ object ConstructorCallCodegenFacade {
             else -> PlainValueDesc(null, value.toString(), value)
         }
     }
-
-    /**
-     * Generate source code to construct the value represented by [desc].
-     */
-    fun generate(desc: ValueDesc, context: CodegenContext = CodegenContext()): String {
-        if (context.configuration.removeDefaultValues) {
-            val def = AnalyzeDefaultValuesMappingVisitor()
-            desc.accept(def)
-            desc.accept(RemoveDefaultValuesVisitor(def.mappings))
-        }
-
-        ValueCodegen(context).generate(desc)
-        return context.getResult()
-    }
-
-    fun analyzeAndGenerate(value: Any?, type: KType, context: CodegenContext = CodegenContext()): String {
-        return generate(analyze(value, type), context)
-    }
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-inline fun <reified T> ConstructorCallCodegenFacade.analyze(value: T): ValueDesc {
+inline fun <reified T> ValueDescAnalyzer.analyze(value: T): ValueDesc {
     return analyze(value, typeOf<T>())
 }
-
-@OptIn(ExperimentalStdlibApi::class)
-inline fun <reified T> ConstructorCallCodegenFacade.analyzeAndGenerate(
-    value: T,
-    context: CodegenContext = CodegenContext()
-): String {
-    return analyzeAndGenerate(value, typeOf<T>(), context)
-}
-
