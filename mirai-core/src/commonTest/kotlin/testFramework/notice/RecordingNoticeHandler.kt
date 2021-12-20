@@ -7,15 +7,15 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.notice
+package net.mamoe.mirai.internal.testFramework.notice
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
-import net.mamoe.mirai.internal.notice.Desensitizer.Companion.generateAndDesensitize
-import net.mamoe.mirai.internal.utils.codegen.ConstructorCallCodegenFacade
+import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
+import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer.Companion.generateAndDesensitize
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
@@ -42,7 +42,7 @@ internal class RecordingNoticeProcessor : SimpleNoticeProcessor<ProtocolStruct>(
         lock.withLock {
             id.getAndDecrement()
             logger.info { "Recorded #${id.value} ${data::class.simpleName}" }
-            logger.info { "Desensitized: \n\n\u001B[0m" + ConstructorCallCodegenFacade.generateAndDesensitize(data) + "\n\n" }
+            logger.info { "Desensitized: \n\n\u001B[0m" + ValueDescAnalyzer.generateAndDesensitize(data) + "\n\n" }
         }
     }
 }
