@@ -84,13 +84,11 @@ internal class Desensitizer private constructor(
             type: KType,
             desensitizer: Desensitizer = instance,
         ): String {
-            val a = analyze(value, type).apply {
-                accept(DesensitizationVisitor(desensitizer), null)
-            }
-            return a.accept(
-                ValueDescToStringRenderer(),
-                RendererContext(WordingIndenter.spacing(4))
-            )
+            return analyze(value, type)
+                .transform(OptimizeByteArrayAsHexStringTransformer())
+                .removeDefaultValues()
+                .transform(DesensitizationVisitor(desensitizer))
+                .renderToString()
         }
 
         @OptIn(ExperimentalStdlibApi::class)
@@ -170,6 +168,11 @@ private val format = Yaml {
 private class DesensitizationVisitor(
     private val desensitizer: Desensitizer,
 ) : ValueDescTransformerNotNull<Nothing?>() {
+    override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc {
+        desc.acceptChildren(this, data)
+        return super.visitValue(desc, data)
+    }
+
     override fun visitPlain(desc: PlainValueDesc, data: Nothing?): ValueDesc {
         return PlainValueDesc(desc.parent, desensitizer.desensitize(desc.value), desc.origin)
     }
