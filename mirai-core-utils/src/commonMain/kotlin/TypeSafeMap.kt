@@ -121,6 +121,8 @@ internal class MutableTypeSafeMapImpl(
     override fun <T> remove(key: TypeKey<T>): T? = map.remove(key.name)?.uncheckedCast()
 }
 
+public fun TypeSafeMap.toMutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMap(this.toMap())
+
 public inline fun MutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMapImpl()
 public inline fun MutableTypeSafeMap(map: Map<String, Any?>): MutableTypeSafeMap =
     MutableTypeSafeMapImpl().also { it.map.putAll(map) }
