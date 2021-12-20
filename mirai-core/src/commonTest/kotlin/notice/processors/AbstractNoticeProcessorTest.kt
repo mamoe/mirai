@@ -31,10 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
-import net.mamoe.mirai.utils.TypeSafeMap
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.hexToUBytes
+import net.mamoe.mirai.utils.*
 
 
 /**
@@ -45,7 +42,9 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
         System.setProperty("mirai.network.notice.pipeline.log.full", "true")
     }
 
-    protected object UseTestContext {
+    protected class UseTestContext(
+        val attributes: MutableTypeSafeMap
+    ) {
         val EMPTY_BYTE_ARRAY get() = net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
         fun String.hexToBytes() = hexToUBytes().toByteArray()
 
@@ -61,7 +60,8 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
         block: UseTestContext.() -> ProtocolStruct
     ): ProcessResult {
         val handler = LoggingPacketHandlerAdapter(PacketLoggingStrategyImpl(bot), bot.logger)
-        return pipeline.process(bot, block(UseTestContext), attributes).also { list ->
+        val context = UseTestContext(attributes.toMutableTypeSafeMap())
+        return pipeline.process(bot, block(context), context.attributes).also { list ->
             for (packet in list) {
                 handler.handlePacket(IncomingPacket("test", packet))
             }
