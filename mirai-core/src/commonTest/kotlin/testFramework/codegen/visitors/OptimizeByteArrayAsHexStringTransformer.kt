@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.testFramework.codegen.visitors
 
 import net.mamoe.mirai.internal.testFramework.codegen.descriptors.*
 import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformer
+import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformerNotNull
 import net.mamoe.mirai.utils.toUHexString
 import kotlin.reflect.typeOf
 
@@ -20,7 +21,7 @@ import kotlin.reflect.typeOf
  * If the byte array was from [String.toByteArray], transform it to the [String].
  * Otherwise, transform it as hex string.
  */
-open class OptimizeByteArrayAsHexStringTransformer : ValueDescTransformer<Nothing?>() {
+open class OptimizeByteArrayAsHexStringTransformer : ValueDescTransformerNotNull<Nothing?>() {
     open fun transform(desc: CollectionLikeValueDesc, value: ByteArray): ValueDesc {
         return if (isReadableString(value)) {
             // prefers to show readable string
@@ -44,12 +45,12 @@ open class OptimizeByteArrayAsHexStringTransformer : ValueDescTransformer<Nothin
     protected fun isReadableString(value: ByteArray) =
         value.decodeToString().all { Character.isUnicodeIdentifierPart(it) || it.isWhitespace() }
 
-    override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc? {
+    override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc {
         desc.acceptChildren(this, data)
         return super.visitValue(desc, data)
     }
 
-    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc? {
+    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc {
         if (desc.arrayType == arrayOfByteType) {
             val array = desc.elements.mapNotNull { (it as? PlainValueDesc)?.value?.toByteOrNull() }.toByteArray()
             if (array.size != desc.elements.size) return desc
@@ -59,7 +60,7 @@ open class OptimizeByteArrayAsHexStringTransformer : ValueDescTransformer<Nothin
         return super.visitObjectArray(desc, data)
     }
 
-    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: Nothing?): ValueDesc? {
+    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: Nothing?): ValueDesc {
         if (desc.value is ByteArray) {
             return transform(desc, desc.value as ByteArray)
         }

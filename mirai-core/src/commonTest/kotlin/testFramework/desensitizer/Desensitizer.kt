@@ -11,13 +11,13 @@ package net.mamoe.mirai.internal.testFramework.desensitizer
 
 import kotlinx.serialization.decodeFromString
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.internal.testFramework.codegen.*
+import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
+import net.mamoe.mirai.internal.testFramework.codegen.analyze
 import net.mamoe.mirai.internal.testFramework.codegen.descriptors.*
+import net.mamoe.mirai.internal.testFramework.codegen.removeDefaultValues
+import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformerNotNull
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArrayAsHexStringTransformer
-import net.mamoe.mirai.internal.testFramework.codegen.visitors.RendererContext
-import net.mamoe.mirai.internal.testFramework.codegen.visitors.ValueDescToStringRenderer
-import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformer
-import net.mamoe.mirai.internal.testFramework.codegen.visitors.WordingIndenter
+import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
 import net.mamoe.mirai.internal.utils.io.NestedStructure
 import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
@@ -169,27 +169,27 @@ private val format = Yaml {
 
 private class DesensitizationVisitor(
     private val desensitizer: Desensitizer,
-) : ValueDescTransformer<Nothing?>() {
+) : ValueDescTransformerNotNull<Nothing?>() {
     override fun visitPlain(desc: PlainValueDesc, data: Nothing?): ValueDesc {
         return PlainValueDesc(desc.parent, desensitizer.desensitize(desc.value), desc.origin)
     }
 
-    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc? {
+    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc {
         return if (desc.arrayType.arguments.first().type?.classifier == Byte::class) { // variance is ignored
             @Suppress("UNCHECKED_CAST")
             (ObjectArrayValueDesc(
-        desc.parent,
-        desensitizer.desensitize(desc.value as Array<Byte>),
-        desc.origin,
-        desc.arrayType,
-        desc.elementType
-    ))
+                desc.parent,
+                desensitizer.desensitize(desc.value as Array<Byte>),
+                desc.origin,
+                desc.arrayType,
+                desc.elementType
+            ))
         } else {
             super.visitObjectArray(desc, data)
         }
     }
 
-    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: Nothing?): ValueDesc? {
+    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: Nothing?): ValueDesc {
         return if (desc.value is ByteArray) {
             PrimitiveArrayValueDesc(
                 desc.parent,

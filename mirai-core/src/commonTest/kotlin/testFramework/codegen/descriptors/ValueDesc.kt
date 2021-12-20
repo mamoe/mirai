@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.testFramework.codegen.descriptors
 
 import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformer
+import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescTransformerNotNull
 import net.mamoe.mirai.internal.testFramework.codegen.visitor.ValueDescVisitor
 
 sealed interface ValueDesc {
@@ -24,7 +25,8 @@ sealed interface ValueDesc {
 }
 
 fun <R> ValueDesc.accept(visitor: ValueDescVisitor<Nothing?, R>): R = accept(visitor, null)
-fun ValueDesc.transform(visitor: ValueDescTransformer<Nothing?>): ValueDesc? = transform(visitor, null)
+fun ValueDesc.transform(visitor: ValueDescTransformer<Nothing?>) = transform(visitor, null)
+fun ValueDesc.transform(visitor: ValueDescTransformerNotNull<Nothing?>) = transform(visitor, null)!!
 fun <R> ValueDesc.acceptChildren(visitor: ValueDescVisitor<Nothing?, R>) = acceptChildren(visitor, null)
 fun ValueDesc.transformChildren(visitor: ValueDescTransformer<Nothing?>) = transformChildren(visitor, null)
 

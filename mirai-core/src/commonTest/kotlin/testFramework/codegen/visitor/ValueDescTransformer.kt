@@ -61,3 +61,40 @@ abstract class ValueDescTransformer<D> : ValueDescVisitor<D, ValueDesc?> {
     }
 }
 
+abstract class ValueDescTransformerNotNull<D> : ValueDescTransformer<D>() {
+    private fun fail(): Nothing {
+        throw IllegalStateException("ValueDescTransformerNotNull cannot return null from its 'visit' functions.")
+    }
+
+    override fun visitValue(desc: ValueDesc, data: D): ValueDesc {
+        return super.visitValue(desc, data) ?: fail()
+    }
+
+    override fun visitObjectArray(desc: ObjectArrayValueDesc, data: D): ValueDesc {
+        return super.visitObjectArray(desc, data) ?: fail()
+    }
+
+    override fun visitPrimitiveArray(desc: PrimitiveArrayValueDesc, data: D): ValueDesc {
+        return super.visitPrimitiveArray(desc, data) ?: fail()
+    }
+
+    override fun visitCollection(desc: CollectionValueDesc, data: D): ValueDesc {
+        return super.visitCollection(desc, data) ?: fail()
+    }
+
+    override fun <T : Any> visitClass(desc: ClassValueDesc<T>, data: D): ValueDesc {
+        return super.visitClass(desc, data) ?: fail()
+    }
+
+    override fun visitPlain(desc: PlainValueDesc, data: D): ValueDesc? {
+        return super.visitPlain(desc, data) ?: fail()
+    }
+
+    override fun visitArray(desc: CollectionLikeValueDesc, data: D): ValueDesc {
+        return super.visitArray(desc, data) ?: fail()
+    }
+
+    override fun visitMap(desc: MapValueDesc, data: D): ValueDesc {
+        return super.visitMap(desc, data) ?: fail()
+    }
+}
