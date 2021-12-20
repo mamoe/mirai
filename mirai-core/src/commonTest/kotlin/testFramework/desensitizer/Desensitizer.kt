@@ -178,15 +178,18 @@ private class DesensitizationVisitor(
     }
 
     override fun visitObjectArray(desc: ObjectArrayValueDesc, data: Nothing?): ValueDesc {
-        return if (desc.arrayType.arguments.first().type?.classifier == Byte::class) { // variance is ignored
+        return if (
+            desc.arrayType.arguments.firstOrNull()?.type?.classifier == Byte::class
+            || (desc.value as? Array<*>)?.getOrNull(0) is Byte
+        ) {
             @Suppress("UNCHECKED_CAST")
-            (ObjectArrayValueDesc(
+            ObjectArrayValueDesc(
                 desc.parent,
                 desensitizer.desensitize(desc.value as Array<Byte>),
                 desc.origin,
                 desc.arrayType,
                 desc.elementType
-            ))
+            )
         } else {
             super.visitObjectArray(desc, data)
         }
@@ -205,7 +208,7 @@ private class DesensitizationVisitor(
     }
 
     override fun <T : Any> visitClass(desc: ClassValueDesc<T>, data: Nothing?): ValueDesc {
-        return ClassValueDesc(desc.parent, desc.origin, desc.properties.toMutableMap().apply {
+        ClassValueDesc(desc.parent, desc.origin, desc.properties.toMutableMap().apply {
             replaceAll() { key, value ->
                 val annotation = key.findAnnotation<NestedStructure>()
                 if (annotation != null && value.origin is ByteArray) {
@@ -217,7 +220,8 @@ private class DesensitizationVisitor(
 
                     val generate = ValueDescAnalyzer.analyze(result)
                         .transform(OptimizeByteArrayAsHexStringTransformer())
-                        ?.transform(DesensitizationVisitor(desensitizer))
+                        .transform(DesensitizationVisitor(desensitizer))
+                        .renderToString()
                     PlainValueDesc(
                         desc,
                         "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
@@ -225,6 +229,8 @@ private class DesensitizationVisitor(
                     )
                 } else value
             }
-        })
+        }).let {
+            return super.visitClass(it, data)
+        }
     }
 }
