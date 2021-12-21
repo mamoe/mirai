@@ -74,11 +74,11 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             // Bot send message to himself? or from other client? I am not the implementer.
 
             // This was `bot.client.sendFriendMessageSeq.updateIfSmallerThan(msgHead.msgSeq)`,
-            // changed to `if (!bot.client.sendFriendMessageSeq.updateIfSmallerThan(msgHead.msgSeq)) return`
+            // changed to `if (!bot.client.sendFriendMessageSeq.updateIfDifferentWith(msgHead.msgSeq)) return`
             // in 2021/12/20, 2.10.0-RC, 2.8.4, 2.9.0
             // to fix 好友无法消息同步（FriendMessageSyncEvent） #1624
             // Relevant tests: `MessageSyncTest`
-            if (!bot.client.sendFriendMessageSeq.updateIfSmallerThan(msgHead.msgSeq)) return
+            if (!bot.client.sendFriendMessageSeq.updateIfDifferentWith(msgHead.msgSeq)) return
         }
 
         if (!bot.components[SsoProcessor].firstLoginSucceed) return
