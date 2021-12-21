@@ -347,8 +347,12 @@ internal class GroupNotificationProcessor(
             }
             // 龙王
             10093L, 1053L, 1054L -> {
-                val now: NormalMember = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
-                val previous: NormalMember? = grayTip.msgTemplParam["uin_last"]?.findMember()
+                val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val previous = grayTip.msgTemplParam["uin_last"]?.findMember()
+
+                val lastTalkative = group.lastTalkative.value
+                if (lastTalkative == now) return // duplicate
+                if (!group.lastTalkative.compareAndSet(lastTalkative, now)) return
 
                 if (previous == null) {
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))

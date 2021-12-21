@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -114,6 +115,7 @@ internal class GroupImpl constructor(
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
     override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
+    val lastTalkative = atomic<NormalMemberImpl?>(null)
 
     override val announcements: Announcements by lazy {
         AnnouncementsImpl(
