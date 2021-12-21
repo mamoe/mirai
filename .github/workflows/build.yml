@@ -27,17 +27,17 @@ jobs:
         run: chmod -R 777 *
 
       - name: Init gradle project
-        run: ./gradlew clean --scan
+        run: ./gradlew clean --scan "-Porg.gradle.parallel=true" "-Porg.gradle.daemon=false"
 
       - name: Build all
-        run: ./gradlew assemble --scan
+        run: ./gradlew assemble --scan "-Porg.gradle.parallel=true" "-Porg.gradle.daemon=false"
 
       - name: All Tests
         run: >
-          ./gradlew check --scan
+          ./gradlew check --scan "-Porg.gradle.parallel=true" "-Porg.gradle.daemon=false"
           "-Dmirai.network.show.all.components=true"
           "-Dkotlinx.coroutines.debug=on"
           "-Dmirai.network.show.packet.details=true"
 
       - name: Ensure KDoc valid
-        run: ./gradlew dokkaHtmlMultiModule
+        run: ./gradlew dokkaHtmlMultiModule "-Porg.gradle.parallel=true" "-Porg.gradle.daemon=false"
