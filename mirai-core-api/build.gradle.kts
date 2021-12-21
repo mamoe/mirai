@@ -55,6 +55,7 @@ kotlin {
                 api(kotlin("reflect"))
                 api(`kotlinx-serialization-core-jvm`)
                 api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`) // don't remove it, otherwise IDE will complain
                 api(`kotlinx-coroutines-jdk8`)
                 api(`ktor-client-okhttp`)
 
