@@ -216,17 +216,22 @@ private class DesensitizationVisitor(
 
                     val result = instance.cast<NestedStructureDesensitizer<ProtocolStruct, ProtocolStruct>>()
                         .deserialize(desc.origin as ProtocolStruct, value.origin as ByteArray)
-                        ?: desc.origin
+                        ?.let { ValueDescAnalyzer.analyze(it) }
 
-                    val generate = ValueDescAnalyzer.analyze(result)
-                        .transform(OptimizeByteArrayAsHexStringTransformer())
-                        .transform(DesensitizationVisitor(desensitizer))
-                        .renderToString()
-                    PlainValueDesc(
-                        desc,
-                        "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
-                        value.origin
-                    )
+                    if (result == null) {
+                        value
+                    } else {
+                        val generate = ValueDescAnalyzer.analyze(result)
+                            .transform(OptimizeByteArrayAsHexStringTransformer())
+                            .transform(DesensitizationVisitor(desensitizer))
+                            .renderToString()
+
+                        PlainValueDesc(
+                            desc,
+                            "$generate.toByteArray(${result::class.qualifiedName}.serializer())",
+                            value.origin
+                        )
+                    }
                 } else value
             }
         }).let {
