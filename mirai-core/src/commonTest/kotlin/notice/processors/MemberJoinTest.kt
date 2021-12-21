@@ -147,6 +147,48 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
+    suspend fun `member request accepted by bot as admin`() {
+        suspend fun runTest() = use {
+            net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
+                msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
+                    fromUin = 2230203,
+                    toUin = 1230002,
+                    msgType = 33,
+                    msgSeq = 45576,
+                    msgTime = 1640123193,
+                    msgUid = 144115188080508961,
+                    authUin = 1230003,
+                    authNick = "user3",
+                    extGroupKeyInfo = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.ExtGroupKeyInfo(
+                        curMaxSeq = 1773,
+                        curTime = 1640123193,
+                    ),
+                ),
+                msgBody = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MsgBody(
+                    msgContent = "00 22 07 BB 01 00 12 C4 B3 82 00 12 C4 B2 06 B9 DC C0 ED D4 B1 00 30 30 38 38 32 32 30 42 30 31 35 42 34 42 42 30 32 44 43 38 30 41 38 37 45 45 45 46 38 42 41 37 45 31 43 32 44 37 32 30 43 37 32 41 34 42 31 39 32".hexToBytes(),
+                ),
+            )
+        }
+
+        val group = setBot(1230002)
+            .addGroup(2230203, 1230001, name = "testtest", botPermission = MemberPermission.ADMINISTRATOR).apply {
+                addMember(1230001, "user2", MemberPermission.OWNER)
+                addMember(1230002, "bot", MemberPermission.ADMINISTRATOR)
+            }
+
+        assertNull(group.members[1230003])
+
+        runTest().run {
+            assertEquals(1, size)
+            val event = single()
+            assertIs<MemberJoinEvent.Active>(event)
+            assertEquals(2230203, event.groupId)
+            assertEquals(1230003, event.member.id)
+            assertNotNull(group.members[1230003])
+        }
+    }
+
+    @Test
     fun `member request rejected by other admin`() {
         // There is no corresponding event
     }
