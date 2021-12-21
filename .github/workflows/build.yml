@@ -8,10 +8,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - windows-latest
+        os: # mirai build requires a minimum system memory of 8 GB, while Windows and Ubuntu VMs provides only 7 GB. See https://github.com/mamoe/mirai/actions/runs/1608172113 for details.
+#          - windows-latest
           - macos-11
-          - ubuntu-latest
+#          - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Checkout submodules
