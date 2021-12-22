@@ -91,7 +91,6 @@ internal class EventChannelTest : AbstractEventTest() {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testAsChannel() {
         runBlocking {
@@ -117,7 +116,6 @@ internal class EventChannelTest : AbstractEventTest() {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `test forwardToChannel`() {
         runBlocking {
@@ -143,7 +141,6 @@ internal class EventChannelTest : AbstractEventTest() {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `test forwardToChannel listener completes if channel closed`() {
         runBlocking {
