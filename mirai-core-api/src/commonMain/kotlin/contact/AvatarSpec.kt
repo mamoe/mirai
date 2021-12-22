@@ -9,18 +9,20 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.utils.MiraiInternalApi
+
 /**
- * 头像的规格, [size] 单位 px.
+ * 头像的规格, [size] 单位为 px.
  */
 @Suppress("unused")
-public enum class AvatarSpec(public val size: Int) : Comparable<AvatarSpec> {
+public enum class AvatarSpec(@MiraiInternalApi public val size: Int) : Comparable<AvatarSpec> {
     /**
      * 最高压缩等级
      */
     SMALLEST(40),
 
     /**
-     * 群员列表中的显示大小, 实际上是40px, 但会比 [SMALLEST] 好一些
+     * 群员列表中的显示大小, 实际上是 40 px, 但会比 [SMALLEST] 好一些
      */
     SMALL(41),
 

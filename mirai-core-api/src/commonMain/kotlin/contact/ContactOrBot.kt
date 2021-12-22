@@ -35,7 +35,7 @@ public interface ContactOrBot : CoroutineScope {
     public val bot: Bot
 
     /**
-     * 头像下载链接, 规格640px.
+     * 头像下载链接, 规格默认为 [AvatarSpec.LARGEST]
      * @see getAvatarUrl
      */
     public val avatarUrl: String
@@ -43,7 +43,7 @@ public interface ContactOrBot : CoroutineScope {
 
     /**
      * 头像下载链接.
-     * @param spec 头像的规格. 指定规格不存在时, 会返回 40x40px 的默认图片.
+     * @param spec 头像的规格.
      */
     public fun getAvatarUrl(spec: AvatarSpec): String = "http://q.qlogo.cn/g?b=qq&nk=${id}&s=${spec.size}"
 }

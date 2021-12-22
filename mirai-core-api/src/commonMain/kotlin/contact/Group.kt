@@ -104,7 +104,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
     public val botPermission: MemberPermission get() = botAsMember.permission
 
     /**
-     * 群头像下载链接, 规格640px.
+     * 群头像下载链接, 规格默认为 [AvatarSpec.LARGEST]
      * @see getAvatarUrl
      */
     public override val avatarUrl: String
@@ -112,7 +112,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
 
     /**
      * 群头像下载链接.
-     * @param spec 头像的规格. 指定规格不存在时, 会返回 40x40px 的默认图片.
+     * @param spec 头像的规格.
      */
     public override fun getAvatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
 
