@@ -12,8 +12,8 @@
 package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
-import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.utils.createInstanceOrNull
 import java.lang.reflect.Modifier
 import java.util.*
 import kotlin.reflect.KClass
