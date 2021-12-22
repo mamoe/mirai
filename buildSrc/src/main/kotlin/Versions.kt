@@ -14,7 +14,7 @@ import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.9.0"
+    const val project = "2.10.0-RC"
 
     const val core = project
     const val console = project
@@ -34,7 +34,7 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "2.0.0-160.2"
+    const val blockingBridge = "2.0.0-160.3"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
