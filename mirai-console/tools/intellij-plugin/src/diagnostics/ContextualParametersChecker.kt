@@ -28,7 +28,6 @@ import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
-import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.ValueArgument
 import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
@@ -116,7 +115,7 @@ class ContextualParametersChecker : CallChecker {
                 "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax"
             )
 
-            val lowercaseId = value.lowercase()
+            val lowercaseId = value.toLowerCase()
 
             if (ID_REGEX.matchEntire(value) == null) {
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(
@@ -133,7 +132,7 @@ class ContextualParametersChecker : CallChecker {
 
         fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空")
-            val lowercaseName = value.lowercase()
+            val lowercaseName = value.toLowerCase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称")
             }
