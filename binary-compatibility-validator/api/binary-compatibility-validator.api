@@ -1705,6 +1705,8 @@ public class net/mamoe/mirai/event/EventChannel {
 	public final synthetic fun filter (Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Ljava/lang/Class;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/event/EventChannel;
+	public final fun forwardToChannel (Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;)Lnet/mamoe/mirai/event/Listener;
+	public static synthetic fun forwardToChannel$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public final fun getBaseEventClass ()Lkotlin/reflect/KClass;
 	public final fun getDefaultCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public final fun parentJob (Lkotlinx/coroutines/Job;)Lnet/mamoe/mirai/event/EventChannel;
