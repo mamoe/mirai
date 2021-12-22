@@ -8,10 +8,12 @@
  */
 
 @file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:JvmName("NextEventAsyncKt")
 
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -32,21 +34,44 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @since 2.2
  */
 @JvmSynthetic
+@Deprecated(
+    "Please use `async` with `nextEvent` manually.",
+    ReplaceWith(
+        """async(coroutineContext) {
+        if (timeoutMillis == -1L) {
+            this.globalEventChannel(coroutineContext).nextEvent<E>(priority, filter)
+        } else {
+            withTimeout(timeoutMillis) {
+                GlobalEventChannel.nextEvent<E>(priority, filter)
+            }
+        }
+    }""",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.time.withTimeout",
+        "net.mamoe.mirai.event.globalEventChannel",
+        "net.mamoe.mirai.event.GlobalEventChannel",
+        "net.mamoe.mirai.event.nextEvent"
+    ),
+    level = DeprecationLevel.WARNING
+)
+@DeprecatedSinceMirai(warningSince = "2.10")
 @MiraiExperimentalApi
 public inline fun <reified E : Event> CoroutineScope.nextEventAsync(
     timeoutMillis: Long = -1,
     priority: EventPriority = EventPriority.MONITOR,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline filter: (E) -> Boolean = { true }
-): Deferred<E> {
-    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    return async(coroutineContext) {
-        withTimeoutOrCoroutineScope(timeoutMillis, this) {
-            nextEventImpl(E::class, this, priority, filter)
+): Deferred<E> =
+    async(coroutineContext) {
+        val block: suspend (E) -> Boolean = { filter(it) } // inline once.
+        if (timeoutMillis == -1L) {
+            this.globalEventChannel(coroutineContext).nextEvent(priority, block)
+        } else {
+            withTimeout(timeoutMillis) {
+                GlobalEventChannel.nextEvent(priority, block)
+            }
         }
     }
-}
-
 
 /**
  * 返回一个 [Deferred], 其值为下一个广播并通过 [filter] 的事件 [E] 示例.
@@ -63,6 +88,27 @@ public inline fun <reified E : Event> CoroutineScope.nextEventAsync(
  * @since 2.2
  */
 @MiraiExperimentalApi
+@Deprecated(
+    "Please use `async` with `nextEventOrNull` manually.",
+    ReplaceWith(
+        """async(coroutineContext) {
+        if (timeoutMillis == -1L) {
+            this.globalEventChannel(coroutineContext).nextEvent<E>(priority, filter)
+        } else {
+            withTimeoutOrNull(timeoutMillis) {
+                GlobalEventChannel.nextEvent<E>(priority, filter)
+            }
+        }
+    }""",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "net.mamoe.mirai.event.globalEventChannel",
+        "net.mamoe.mirai.event.GlobalEventChannel",
+        "net.mamoe.mirai.event.nextEvent"
+    ),
+    level = DeprecationLevel.WARNING
+)
+@DeprecatedSinceMirai(warningSince = "2.10")
 @JvmSynthetic
 public inline fun <reified E : Event> CoroutineScope.nextEventOrNullAsync(
     timeoutMillis: Long,
@@ -71,8 +117,13 @@ public inline fun <reified E : Event> CoroutineScope.nextEventOrNullAsync(
     crossinline filter: (E) -> Boolean = { true }
 ): Deferred<E?> {
     return async(coroutineContext) {
-        withTimeoutOrNull(timeoutMillis) {
-            nextEventImpl(E::class, this, priority, filter)
+        val block: suspend (E) -> Boolean = { filter(it) } // inline once.
+        if (timeoutMillis == -1L) {
+            this.globalEventChannel(coroutineContext).nextEvent(priority, block)
+        } else {
+            withTimeoutOrNull(timeoutMillis) {
+                GlobalEventChannel.nextEvent(priority, block)
+            }
         }
     }
 }

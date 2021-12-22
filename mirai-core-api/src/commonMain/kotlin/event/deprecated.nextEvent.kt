@@ -8,18 +8,25 @@
  */
 
 @file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:JvmName("NextEventKt")
 
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.coroutines.resume
 import kotlin.reflect.KClass
 
 
 /**
  * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
+ *
+ * ### 已弃用
+ *
+ * 该函数相当于 [GlobalEventChannel.nextEvent].
+ * 不一定需要将所有被弃用的 [nextEvent] 都换成 `GlobalEventChannel.nextEvent`, 请根据情况选择合适的 [EventChannel].
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
@@ -30,20 +37,33 @@ import kotlin.reflect.KClass
  * @throws TimeoutCancellationException 在超时后抛出.
  */
 @JvmSynthetic
+@DeprecatedSinceMirai(warningSince = "2.10")
+@Deprecated(
+    "Use GlobalEventChannel.nextEvent",
+    ReplaceWith(
+        "if (timeoutMillis == -1L) { GlobalEventChannel.nextEvent<E>(priority, filter) } else { withTimeout(timeoutMillis) { GlobalEventChannel.nextEvent<E>(priority, filter) } }",
+        "net.mamoe.mirai.event.GlobalEventChannel",
+        "kotlinx.coroutines.time.withTimeout",
+    ),
+    level = DeprecationLevel.WARNING
+)
 public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
     priority: EventPriority = EventPriority.MONITOR,
     crossinline filter: (E) -> Boolean = { true }
-): E {
-    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    return withTimeoutOrCoroutineScope(timeoutMillis) {
-        nextEventImpl(E::class, this, priority, filter)
-    }
+): E = if (timeoutMillis == -1L) {
+    GlobalEventChannel.nextEvent(priority) { filter(it) }
+} else {
+    withTimeout(timeoutMillis) { GlobalEventChannel.nextEvent(priority) { filter(it) } }
 }
-
 
 /**
  * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
+ *
+ * ### 已弃用
+ *
+ * 该函数相当于 [GlobalEventChannel.nextEvent].
+ * 不一定需要将所有被弃用的 [nextEvent] 都换成 `GlobalEventChannel.nextEvent`, 请根据情况选择合适的 [EventChannel].
  *
  * @param timeoutMillis 超时. 单位为毫秒.
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
@@ -54,19 +74,37 @@ public suspend inline fun <reified E : Event> nextEvent(
  * @return 事件实例, 在超时后返回 `null`
  */
 @JvmSynthetic
+@DeprecatedSinceMirai(warningSince = "2.10")
+@Deprecated(
+    "Use GlobalEventChannel.nextEvent",
+    ReplaceWith(
+        "withTimeoutOrNull(timeoutMillis) { GlobalEventChannel.nextEvent<E>(priority, filter) }",
+
+        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "net.mamoe.mirai.event.GlobalEventChannel",
+        "net.mamoe.mirai.event.nextEvent"
+    ),
+    level = DeprecationLevel.WARNING
+)
 public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
     priority: EventPriority = EventPriority.MONITOR,
     crossinline filter: (E) -> Boolean = { true }
-): E? {
-    return withTimeoutOrNull(timeoutMillis) {
-        nextEventImpl(E::class, this, priority, filter)
-    }
-}
+): E? = withTimeoutOrNull(timeoutMillis) { GlobalEventChannel.nextEvent(priority) { filter(it) } }
 
 
+///////////////////////////////////////////////////////////////////////////
+// internals
+///////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @since 2.0
+ */
 @JvmSynthetic
 @PublishedApi
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(hiddenSince = "2.10")
 internal suspend inline fun <E : Event> nextEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
@@ -80,7 +118,7 @@ internal suspend inline fun <E : Event> nextEventImpl(
 
             try {
                 cont.resume(this)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
             return@subscribe ListeningStatus.STOPPED
         }
@@ -98,6 +136,7 @@ internal inline fun <BaseEvent : Event> EventChannel<BaseEvent>.parentJob(job: J
 
 @JvmSynthetic
 @PublishedApi
+@Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
 internal suspend inline fun <E : BotEvent> nextBotEventImpl(
     bot: Bot,
     eventClass: KClass<E>,
@@ -109,7 +148,7 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
         .subscribe(eventClass, priority = priority) {
             try {
                 if (this.bot == bot) cont.resume(this)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
             return@subscribe ListeningStatus.STOPPED
         }
@@ -121,10 +160,12 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
 
 @JvmSynthetic
 @PublishedApi
-internal suspend inline fun <R> withTimeoutOrCoroutineScope(
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(hiddenSince = "2.10")
+internal suspend fun <R> withTimeoutOrCoroutineScope(
     timeoutMillis: Long,
     useCoroutineScope: CoroutineScope? = null,
-    noinline block: suspend CoroutineScope.() -> R
+    block: suspend CoroutineScope.() -> R
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0 " }
 
@@ -138,7 +179,8 @@ internal suspend inline fun <R> withTimeoutOrCoroutineScope(
 
 @JvmSynthetic
 @PublishedApi
-@Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(hiddenSince = "2.10")
 internal suspend inline fun <R> withTimeoutOrCoroutineScope(
     timeoutMillis: Long,
     noinline block: suspend CoroutineScope.() -> R

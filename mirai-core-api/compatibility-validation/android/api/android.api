@@ -1789,6 +1789,11 @@ public final class net/mamoe/mirai/event/ExceptionInEventHandlerException : java
 	public fun getMessage ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/event/ExtensionsKt {
+	public static final fun nextEventImpl (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlinx/coroutines/CoroutineScope;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun syncFromEventImpl (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlinx/coroutines/CoroutineScope;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class net/mamoe/mirai/event/GlobalEventChannel : net/mamoe/mirai/event/EventChannel {
 	public static final field INSTANCE Lnet/mamoe/mirai/event/GlobalEventChannel;
 }

@@ -8,16 +8,18 @@
  */
 
 @file:Suppress("unused")
+@file:JvmName("SyncFromEventKt")
 
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
 /**
- * 挂起当前协程, 监听事件 [E], 并尝试从这个事件中**同步**一个值, 在超时时抛出 [TimeoutCancellationException]
+ * 挂起当前协程, 监听事件 [E], 并尝试从这个事件中**获取**一个值, 在超时时抛出 [TimeoutCancellationException]
  *
  * @param timeoutMillis 超时. 单位为毫秒.
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
@@ -31,6 +33,17 @@ import kotlin.reflect.KClass
  * @throws TimeoutCancellationException 在超时后抛出.
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
+@DeprecatedSinceMirai(warningSince = "2.10")
+@Deprecated(
+    "Use GlobalEventChannel.syncFromEvent",
+    ReplaceWith(
+        "if (timeoutMillis == -1L) { GlobalEventChannel.syncFromEvent<E, R>(priority) { mapper.invoke(it, it) } } else { withTimeout(timeoutMillis) { GlobalEventChannel.syncFromEvent<E, R>(priority) { mapper.invoke(it, it) } } }",
+        "kotlinx.coroutines.time.withTimeout",
+        "net.mamoe.mirai.event.GlobalEventChannel",
+        "net.mamoe.mirai.event.syncFromEvent"
+    ),
+    level = DeprecationLevel.WARNING
+)
 @JvmSynthetic
 public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
@@ -41,11 +54,11 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
 
     return if (timeoutMillis == -1L) {
         coroutineScope {
-            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
+            GlobalEventChannel.syncFromEventImpl(E::class, this, priority) { mapper.invoke(it, it) }
         }
     } else {
         withTimeout(timeoutMillis) {
-            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
+            GlobalEventChannel.syncFromEventImpl(E::class, this, priority) { mapper.invoke(it, it) }
         }
     }
 }
@@ -65,6 +78,12 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
+@DeprecatedSinceMirai(warningSince = "2.10")
+@Deprecated(
+    "Use GlobalEventChannel.syncFromEvent",
+    ReplaceWith("withTimeoutOrNull(timeoutMillis) { GlobalEventChannel.syncFromEvent<E, R>(priority) { event -> with(event) { mapper(event) } }"),
+    level = DeprecationLevel.WARNING
+)
 public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
     priority: EventPriority = EventPriority.MONITOR,
@@ -73,7 +92,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
 
     return withTimeoutOrNull(timeoutMillis) {
-        syncFromEventImpl<E, R>(E::class, this, priority, mapper)
+        GlobalEventChannel.syncFromEventImpl(E::class, this, priority) { mapper.invoke(it, it) }
     }
 }
 
@@ -91,6 +110,20 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
+@Deprecated(
+    "Please use `async` and `syncFromEvent` manually.",
+    replaceWith = ReplaceWith(
+        """async(coroutineContext) {
+        withTimeoutOrNull(timeoutMillis) {
+            GlobalEventChannel.syncFromEvent<E, R>(priority, filter)
+        }
+    }""",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "net.mamoe.mirai.event.globalEventChannel",
+        "net.mamoe.mirai.event.syncFromEvent"
+    ),
+)
 @JvmSynthetic
 @Suppress("DeferredIsResult")
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
@@ -101,10 +134,13 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
 ): Deferred<R?> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEventOrNull(timeoutMillis, priority, mapper)
+        withTimeoutOrNull(timeoutMillis) {
+            GlobalEventChannel.syncFromEvent<E, R>(priority) { event ->
+                mapper(event, event)
+            }
+        }
     }
 }
-
 
 /**
  * 异步监听这个事件, 并尝试从这个事件中获取一个值.
@@ -120,6 +156,25 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
  * @see EventChannel.subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
+@Deprecated(
+    "Please use `async` and `syncFromEvent` manually.",
+    replaceWith = ReplaceWith(
+        """async(coroutineContext) {
+        if (timeoutMillis == -1L) {
+            this.globalEventChannel(coroutineContext).syncFromEvent<E, R>(priority, filter)
+        } else {
+            withTimeout(timeoutMillis) {
+                GlobalEventChannel.syncFromEvent<E, R>(priority, filter)
+            }
+        }
+    }""",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.time.withTimeout",
+        "net.mamoe.mirai.event.globalEventChannel",
+        "net.mamoe.mirai.event.syncFromEvent"
+    ),
+)
+@DeprecatedSinceMirai("2.10")
 @JvmSynthetic
 @Suppress("DeferredIsResult")
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
@@ -130,7 +185,11 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 ): Deferred<R> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEvent(timeoutMillis, priority, mapper)
+        if (timeoutMillis == -1L) {
+            GlobalEventChannel.syncFromEvent(priority) { it: E -> mapper.invoke(it, it) }
+        } else {
+            withTimeout(timeoutMillis) { GlobalEventChannel.syncFromEvent(priority) { it: E -> mapper.invoke(it, it) } }
+        }
     }
 }
 
@@ -139,6 +198,8 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 //// internal
 //////////////
 
+@Deprecated("Deprecated since its usages are deprecated")
+@DeprecatedSinceMirai("2.10")
 @JvmSynthetic
 @PublishedApi
 internal suspend inline fun <E : Event, R> syncFromEventImpl(
@@ -152,7 +213,7 @@ internal suspend inline fun <E : Event, R> syncFromEventImpl(
             cont.resumeWith(kotlin.runCatching {
                 mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
             })
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
         return@subscribe ListeningStatus.STOPPED
     }
