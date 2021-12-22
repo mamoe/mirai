@@ -12,6 +12,7 @@ package net.mamoe.console.integrationtest
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.createInstanceOrNull
 
 /**
  * IntegrationTest 测试单元 (Plugin mode)
@@ -29,7 +30,6 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
     protected open fun KotlinPlugin.onDisable0() {}
 
 
-
     @Suppress("unused")
     @PublishedApi
     internal abstract class TestPointPluginImpl(
@@ -43,7 +43,9 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
         @PublishedApi
         internal constructor(
             impl: Class<out AbstractTestPointAsPlugin>
-        ) : this(impl.kotlin.objectInstance ?: impl.newInstance())
+        ) : this(
+            impl.kotlin.createInstanceOrNull() ?: impl.getConstructor().newInstance()
+        )
 
         override fun onDisable() {
             try {

@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
+import net.mamoe.mirai.utils.createInstanceOrNull
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import kotlin.contracts.contract
