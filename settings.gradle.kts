@@ -30,6 +30,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 includeProject(":mirai-core-utils")
 includeProject(":mirai-core-api")
 includeProject(":mirai-core")
+includeProject(":mirai-core-mock")
 includeProject(":mirai-core-all")
 includeProject(":mirai-bom")
 includeProject(":mirai-dokka")
