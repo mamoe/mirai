@@ -36,6 +36,7 @@ object Versions {
     const val coroutinesIo = "0.1.16"
 
     const val blockingBridge = "2.0.0-160.3"
+    const val dynamicDelegation = "0.1.1-160.1"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
