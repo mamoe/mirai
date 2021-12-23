@@ -20,6 +20,7 @@ dependencies {
 
     compileAndTestRuntime(project(":mirai-console"))
     compileAndTestRuntime(project(":mirai-core-api"))
+    compileAndTestRuntime(project(":mirai-core-utils"))
     compileAndTestRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib)) // must specify `compileOnly` explicitly
 
     testApi(project(":mirai-core"))

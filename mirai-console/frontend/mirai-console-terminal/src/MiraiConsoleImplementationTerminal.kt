@@ -22,10 +22,7 @@
 package net.mamoe.mirai.console.terminal
 
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
@@ -37,7 +34,10 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.terminal.noconsole.AllEmptyLineReader
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
-import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
 import org.jline.reader.LineReader
@@ -66,7 +66,7 @@ open class MiraiConsoleImplementationTerminal
     override val configStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
-    NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
+    SupervisorJob() + CoroutineName("MiraiConsoleImplementationTerminal") +
             CoroutineExceptionHandler { coroutineContext, throwable ->
                 if (throwable is CancellationException) {
                     return@CoroutineExceptionHandler

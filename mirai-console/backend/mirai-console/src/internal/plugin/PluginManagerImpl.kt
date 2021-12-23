@@ -27,8 +27,8 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.nio.file.Path
