@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
-import java.time.temporal.Temporal
+import java.time.temporal.TemporalAccessor
 
 
 /**
@@ -485,7 +485,7 @@ public class EnumValueArgumentParser<T : Enum<T>>(
  * @param now 返回当前时间
  * @param parse 从字符串解析时间
  */
-public class TemporalArgumentParser<T : Temporal>(
+public class TemporalArgumentParser<T : TemporalAccessor>(
     private val type: Class<T>,
     private val now: () -> T,
     private val parse: (CharSequence) -> T,

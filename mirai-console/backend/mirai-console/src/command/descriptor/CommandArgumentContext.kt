@@ -24,7 +24,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
 import java.time.*
-import java.time.temporal.Temporal
+import java.time.temporal.TemporalAccessor
 import java.util.*
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
@@ -96,22 +96,24 @@ public interface CommandArgumentContext {
     }
 
     private object TemporalCommandArgumentContext : CommandArgumentContext {
-        private val cache = WeakHashMap<KClass<*>, CommandValueArgumentParser<*>>()
+        private val cache = HashMap<KClass<*>, CommandValueArgumentParser<*>>()
 
-        private fun <T : Temporal> put(now: () -> T, parse: (CharSequence) -> T, kClass: KClass<T>) {
+        private fun <T : TemporalAccessor> put(kClass: KClass<T>, now: () -> T, parse: (CharSequence) -> T) {
             cache[kClass] = TemporalArgumentParser(kClass.java, now, parse)
         }
 
         init {
-            put({ Instant.now() }, { Instant.parse(it) }, Instant::class)
-            put({ Year.now() }, { Year.parse(it) }, Year::class)
-            put({ YearMonth.now() }, { YearMonth.parse(it) }, YearMonth::class)
-            put({ LocalDate.now() }, { LocalDate.parse(it) }, LocalDate::class)
-            put({ LocalTime.now() }, { LocalTime.parse(it) }, LocalTime::class)
-            put({ LocalDateTime.now() }, { LocalDateTime.parse(it) }, LocalDateTime::class)
-            put({ OffsetTime.now() }, { OffsetTime.parse(it) }, OffsetTime::class)
-            put({ OffsetDateTime.now() }, { OffsetDateTime.parse(it) }, OffsetDateTime::class)
-            put({ ZonedDateTime.now() }, { ZonedDateTime.parse(it) }, ZonedDateTime::class)
+            put(Instant::class, Instant::now, Instant::parse)
+            put(Year::class, Year::now, Year::parse)
+            put(YearMonth::class, YearMonth::now, YearMonth::parse)
+            put(LocalDate::class, LocalDate::now, LocalDate::parse)
+            put(LocalTime::class, LocalTime::now, LocalTime::parse)
+            put(LocalDateTime::class, LocalDateTime::now, LocalDateTime::parse)
+            put(OffsetTime::class, OffsetTime::now, OffsetTime::parse)
+            put(OffsetDateTime::class, OffsetDateTime::now, OffsetDateTime::parse)
+            put(ZonedDateTime::class, ZonedDateTime::now, ZonedDateTime::parse)
+            put(MonthDay::class, MonthDay::now, MonthDay::parse)
+            put(ZoneOffset::class, { OffsetDateTime.now().offset }, { ZoneOffset.of(it.toString()) })
         }
 
         @Suppress("UNCHECKED_CAST")
