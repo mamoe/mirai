@@ -40,6 +40,7 @@ plugins {
     id("org.jetbrains.dokka") version Versions.dokka
 //    id("org.jetbrains.dokka") version Versions.dokka
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
+    id("me.him188.kotlin-dynamic-delegation") version Versions.dynamicDelegation
     id("com.gradle.plugin-publish") version "0.12.0" apply false
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version Versions.binaryValidator apply false
 }

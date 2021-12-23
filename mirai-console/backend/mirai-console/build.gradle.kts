@@ -20,6 +20,7 @@ plugins {
     id("java")
     `maven-publish`
     id("me.him188.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-dynamic-delegation")
 }
 
 version = Versions.console
