@@ -82,7 +82,9 @@ public annotation class ResolveContext(
          */
         RESTRICTED_NO_ARG_CONSTRUCTOR, // NOT_CONSTRUCTABLE_TYPE
 
-        RESTRICTED_CONSOLE_COMMAND_OWNER, ;
+        RESTRICTED_CONSOLE_COMMAND_OWNER,
+
+        RESTRICTED_ABSTRACT_MESSAGE_KEYS;
 
         public companion object
     }
