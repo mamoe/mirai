@@ -17,8 +17,10 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.PROHIBITED_ABSTRACT_MESSAGE_KEYS
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.compiler.common.resolve.CONSOLE_COMMAND_OWNER_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.PROHIBITED_MESSAGE_KEYS
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
@@ -30,6 +32,7 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.ValueArgument
+import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
 import org.jetbrains.kotlin.resolve.calls.checkers.CallCheckerContext
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
@@ -219,6 +222,23 @@ class ContextualParametersChecker : CallChecker {
 
             return null
         }
+
+        fun checkAbstractMessageKeys(
+            context: CallCheckerContext,
+            inspectionTarget: PsiElement,
+            argument: ValueArgument
+        ): Diagnostic? {
+            val expr = argument.getArgumentExpression() ?: return null
+
+            if (expr is KtReferenceExpression) {
+                val call = expr.getResolvedCall(context.bindingContext) ?: return null
+                if (PROHIBITED_MESSAGE_KEYS.any { call.isCalling(it) }) {
+                    return PROHIBITED_ABSTRACT_MESSAGE_KEYS.on(inspectionTarget)
+                }
+            }
+
+            return null
+        }
     }
 
     fun interface ElementChecker {
@@ -268,6 +288,7 @@ class ContextualParametersChecker : CallChecker {
             put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
             put(ResolveContextKind.VERSION_REQUIREMENT, ::checkVersionRequirement)
             put(ResolveContextKind.RESTRICTED_CONSOLE_COMMAND_OWNER, ::checkConsoleCommandOwner)
+            put(ResolveContextKind.RESTRICTED_ABSTRACT_MESSAGE_KEYS, ::checkAbstractMessageKeys)
         }
 
 }

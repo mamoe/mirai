@@ -60,6 +60,7 @@ kotlin {
                 api(`ktor-client-okhttp`)
 
                 implementation(project(":mirai-core-utils"))
+                implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf-jvm`)
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)
