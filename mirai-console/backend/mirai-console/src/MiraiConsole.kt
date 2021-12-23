@@ -28,7 +28,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
+import net.mamoe.mirai.utils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger

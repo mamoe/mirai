@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
+import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.verbose
 import java.io.File

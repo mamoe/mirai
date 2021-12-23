@@ -23,7 +23,7 @@ import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.res
 import net.mamoe.mirai.console.command.resolve.getOrElse
 import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
+import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.MiraiLogger
