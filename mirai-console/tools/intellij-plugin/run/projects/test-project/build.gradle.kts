@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.6.0"
     kotlin("plugin.serialization") version "1.6.0"
-    id("net.mamoe.mirai-console") version "2.9.0-M1"
+    id("net.mamoe.mirai-console") version "2.99.0-local"
     java
 }
 
@@ -13,6 +13,6 @@ dependencies {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
+    mavenLocal()
 }
