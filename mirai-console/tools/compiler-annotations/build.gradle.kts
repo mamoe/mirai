@@ -9,9 +9,10 @@
 
 @file:Suppress("UnusedImport")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
 plugins {
-    kotlin("jvm")
-    id("java")
+    kotlin("multiplatform")
     `maven-publish`
 }
 
@@ -20,6 +21,16 @@ description = "Mirai Console compiler annotations"
 
 kotlin {
     explicitApi()
+
+    jvm("android") {
+        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+    }
+
+    jvm("common") {
+        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
+    }
+
+    jvm("jvm")
 }
 
-configurePublishing("mirai-console-compiler-annotations")
+configureMppPublishing()
