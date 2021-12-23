@@ -14,11 +14,11 @@ import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.10.0-RC"
+    val project = System.getenv("mirai.build.project.version") ?: "2.10.0-RC"
 
-    const val core = project
-    const val console = project
-    const val consoleTerminal = project
+    val core = project
+    val console = project
+    val consoleTerminal = project
 
     const val kotlinCompiler = "1.6.0"
     const val kotlinStdlib = kotlinCompiler
