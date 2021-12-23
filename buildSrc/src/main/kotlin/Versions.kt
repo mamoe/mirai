@@ -63,6 +63,11 @@ object Versions {
     const val yamlkt = "0.12.0"
     const val intellijGradlePlugin = "1.7.0"
 
+    // https://github.com/google/jimfs
+    // Java In Memory File System
+    const val jimfs = "1.2"
+
+
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
     const val intellij = "222.3345-EAP-CANDIDATE-SNAPSHOT"
@@ -114,6 +119,10 @@ val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network-jvm", Versions.ktor)
 val `ktor-client-serialization` = ktor("client-serialization", Versions.ktor)
+
+val `ktor-server-core` = ktor("server-core", Versions.ktor)
+val `ktor-server-netty` = ktor("server-netty", Versions.ktor)
+const val `java-in-memory-file-system` = "com.google.jimfs:jimfs:" + Versions.jimfs
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 
