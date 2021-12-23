@@ -31,6 +31,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Pa
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
@@ -48,6 +49,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.readString
 import net.mamoe.mirai.utils.secondsToMillis
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryUsage
@@ -214,7 +216,8 @@ public object BuiltInCommands {
                     sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
                     return null
                 }
-                return if (acc.password.kind == MD5) acc.password.value.toByteArray() else acc.password.value
+                val strv = acc.password.value
+                return if (acc.password.kind == MD5) strv.autoHexToBytes() else strv
             }
 
             val pwd: Any = password ?: getPassword(id) ?: return
