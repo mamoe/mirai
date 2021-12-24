@@ -456,6 +456,18 @@ internal class TestCommand : AbstractConsoleTest() {
                     assertEquals(1, arg1)
                     Testing.ok(x)
                 }
+
+                @SubCommand
+                fun enum(arg1: Int, vararg y: TestEnumArgCommand.TestEnum) {
+                    assertEquals(1, arg1)
+                    Testing.ok(y)
+                }
+
+                @SubCommand
+                fun long(arg1: String, vararg z: Long) {
+                    assertEquals("arg1", arg1)
+                    Testing.ok(z)
+                }
             }
             optionCommand.withRegistration {
                 assertArrayEquals(
@@ -464,7 +476,6 @@ internal class TestCommand : AbstractConsoleTest() {
                         assertSuccess(sender.executeCommand("/test vararg 1"))
                     }
                 )
-
                 assertArrayEquals(
                     arrayOf("s"),
                     withTesting<Array<String>> {
@@ -477,12 +488,42 @@ internal class TestCommand : AbstractConsoleTest() {
                         assertSuccess(sender.executeCommand("/test vararg 1 s s s"))
                     }
                 )
+
+                assertArrayEquals(
+                    TestEnumArgCommand.TestEnum.values(),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test enum 1 ${TestEnumArgCommand.TestEnum.values().joinToString(" ")}"))
+                    }
+                )
+
+                assertArrayEquals(
+                    longArrayOf(),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test long arg1"))
+                    }
+                )
+                assertArrayEquals(
+                    longArrayOf(1),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test long arg1 1"))
+                    }
+                )
+                assertArrayEquals(
+                    longArrayOf(1, 2, 3),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test long arg1 1 2 3"))
+                    }
+                )
             }
         }
     }
 }
 
 fun <T> assertArrayEquals(expected: Array<out T>, actual: Array<out T>, message: String? = null) {
+    asserter.assertEquals(message, expected.contentToString(), actual.contentToString())
+}
+
+fun assertArrayEquals(expected: LongArray, actual: LongArray, message: String? = null) {
     asserter.assertEquals(message, expected.contentToString(), actual.contentToString())
 }
 

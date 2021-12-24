@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.internal.data.castOrInternalError
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
+import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
@@ -72,42 +73,50 @@ public data class DefaultCommandValueArgument(
 public fun <T> CommandValueArgument.mapValue(typeVariant: TypeVariant<T>): T = typeVariant.mapValue(this.value)
 
 
-@OptIn(ExperimentalStdlibApi::class)
-@ExperimentalCommandDescriptors
-public inline fun <reified T> CommandValueArgument.mapToType(): T =
-    mapToTypeOrNull() ?: throw  NoValueArgumentMappingException(this, typeOf<T>())
+//@OptIn(ExperimentalStdlibApi::class)
+//@ExperimentalCommandDescriptors
+//public inline fun <reified T> CommandValueArgument.mapToType(): T =
+//    mapToTypeOrNull() ?: throw  NoValueArgumentMappingException(this, typeOf<T>())
+//
+//@OptIn(ExperimentalStdlibApi::class)
+//@ExperimentalCommandDescriptors
+//public fun <T> CommandValueArgument.mapToType(type: KType): T =
+//    mapToTypeOrNull(type) ?: throw  NoValueArgumentMappingException(this, type)
 
-@OptIn(ExperimentalStdlibApi::class)
 @ExperimentalCommandDescriptors
-public fun <T> CommandValueArgument.mapToType(type: KType): T =
-    mapToTypeOrNull(type) ?: throw  NoValueArgumentMappingException(this, type)
-
-@ExperimentalCommandDescriptors
-public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType): T? {
-    if (expectingType.isSubtypeOf(ARRAY_OUT_ANY_TYPE)) {
-        val arrayElementType = expectingType.arguments.single().type ?: ANY_TYPE
+public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType, context: (KType, Message) -> T?): T? {
+    if (expectingType.isSubtypeOf(ARRAY_OUT_ANY_TYPE) || expectingType in BASE_ARRAY_TYPES) {
+        val arrayElementType = BASE_ARRAY_TYPES[expectingType] ?: expectingType.arguments.single().type ?: ANY_TYPE
 
         val result = ArrayList<Any?>()
 
         when (val value = value) {
             is MessageChain -> {
                 for (message in value) {
-                    result.add(mapToTypeOrNullImpl(arrayElementType, message))
+                    result.add(mapToTypeOrNullImpl(arrayElementType, message) ?: context(arrayElementType, message))
                 }
             }
             else -> { // single
                 value.castOrInternalError<SingleMessage>()
-                result.add(mapToTypeOrNullImpl(arrayElementType, value))
+                result.add(mapToTypeOrNullImpl(arrayElementType, value) ?: context(arrayElementType, value))
             }
         }
 
-
         @Suppress("UNCHECKED_CAST")
-        return result.toArray(arrayElementType.createArray(result.size)) as T
+        return when (expectingType) {
+            typeOf0<ByteArray>() -> (result as List<Byte>).toByteArray()
+            typeOf0<CharArray>() -> (result as List<Char>).toCharArray()
+            typeOf0<ShortArray>() -> (result as List<Short>).toShortArray()
+            typeOf0<IntArray>() -> (result as List<Int>).toIntArray()
+            typeOf0<LongArray>() -> (result as List<Long>).toLongArray()
+            typeOf0<FloatArray>() -> (result as List<Float>).toFloatArray()
+            typeOf0<DoubleArray>() -> (result as List<Double>).toDoubleArray()
+            else -> result.toArray(arrayElementType.createArray(result.size))
+        } as T?
     }
 
     @Suppress("UNCHECKED_CAST")
-    return mapToTypeOrNullImpl(expectingType, value) as T
+    return (mapToTypeOrNullImpl(expectingType, value) ?: context(expectingType, value)) as T?
 }
 
 private fun KType.createArray(size: Int): Array<Any?> {
@@ -131,8 +140,8 @@ private fun CommandValueArgument.mapToTypeOrNullImpl(expectingType: KType, value
     return result.mapValue(value)
 }
 
-@ExperimentalCommandDescriptors
-public inline fun <reified T> CommandValueArgument.mapToTypeOrNull(): T? {
-    @OptIn(ExperimentalStdlibApi::class)
-    return mapToTypeOrNull(typeOf<T>())
-}
+//@ExperimentalCommandDescriptors
+//public inline fun <reified T> CommandValueArgument.mapToTypeOrNull(): T? {
+//    @OptIn(ExperimentalStdlibApi::class)
+//    return mapToTypeOrNull(typeOf<T>())
+//}

@@ -147,6 +147,15 @@ public data class CommandReceiverParameter<T : CommandSender>(
 
 internal val ANY_TYPE = typeOf0<Any>()
 internal val ARRAY_OUT_ANY_TYPE = typeOf0<Array<out Any?>>()
+internal val BASE_ARRAY_TYPES = mapOf(
+    typeOf0<ByteArray>() to typeOf0<Byte>(),
+    typeOf0<CharArray>() to typeOf0<Char>(),
+    typeOf0<ShortArray>() to typeOf0<Short>(),
+    typeOf0<IntArray>() to typeOf0<Int>(),
+    typeOf0<LongArray>() to typeOf0<Long>(),
+    typeOf0<FloatArray>() to typeOf0<Float>(),
+    typeOf0<DoubleArray>() to typeOf0<Double>()
+)
 
 @ExperimentalCommandDescriptors
 public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>, AbstractCommandParameter<T>() {
@@ -163,8 +172,9 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         commandArgumentContext: CommandArgumentContext?
     ): ArgumentAcceptance {
         if (isVararg) {
-            val arrayElementType = this.type.arguments.single() // Array<T>
-            return acceptingImpl(arrayElementType.type ?: ANY_TYPE, argument, commandArgumentContext)
+            // BaseArray or Array<T>
+            val arrayElementType = BASE_ARRAY_TYPES[this.type] ?: this.type.arguments.single().type
+            return acceptingImpl(arrayElementType ?: ANY_TYPE, argument, commandArgumentContext)
         }
 
         return acceptingImpl(this.type, argument, commandArgumentContext)
@@ -244,7 +254,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
                 "type.classifier must be KClass."
             }
             if (isVararg)
-                check(type.isSubtypeOf(ARRAY_OUT_ANY_TYPE)) {
+                check(type.isSubtypeOf(ARRAY_OUT_ANY_TYPE) || type in BASE_ARRAY_TYPES) {
                     "type must be subtype of Array if vararg. Given $type."
                 }
         }
