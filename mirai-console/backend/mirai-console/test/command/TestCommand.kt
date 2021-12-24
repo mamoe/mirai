@@ -302,7 +302,7 @@ internal class TestCommand : AbstractConsoleTest() {
                 val implement: TemporalAccessor = withTesting {
                     assertSuccess(execute(sender, PlainText(subCommand), PlainText("now")))
                 }
-                // println("${kClass.simpleName}: $implement")
+                assertTrue { kClass.isInstance(implement) }
                 assertEquals(implement, withTesting {
                     assertSuccess(execute(sender, PlainText(subCommand), PlainText("$implement")))
                 })
