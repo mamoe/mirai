@@ -51,6 +51,10 @@ object Versions {
 
     const val junit = "5.7.2"
 
+    // https://github.com/google/jimfs
+    // Java In Memory File System
+    const val jimfs = "1.2"
+
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
     const val yamlkt = "0.10.2"
@@ -108,6 +112,10 @@ val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-client-logging-jvm` = ktor("client-logging-jvm", Versions.ktor)
 val `ktor-network-jvm` = ktor("network-jvm", Versions.ktor)
 val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
+
+val `ktor-server-core` = ktor("server-core", Versions.ktor)
+val `ktor-server-netty` = ktor("server-netty", Versions.ktor)
+const val `java-in-memory-file-system` = "com.google.jimfs:jimfs:" + Versions.jimfs
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 
