@@ -30,7 +30,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
@@ -49,7 +49,6 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.readString
 import net.mamoe.mirai.utils.secondsToMillis
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryUsage
@@ -181,7 +180,7 @@ public object BuiltInCommands {
         @Handler
         public suspend fun CommandSender.handle(
             @Name("qq") id: Long
-        ){
+        ) {
             if (Bot.getInstanceOrNull(id)?.close() == null) {
                 sendMessage("$id 未登录")
             } else {
@@ -505,10 +504,10 @@ public object BuiltInCommands {
                 reset().append("\n\n")
 
                 append("Plugins: ")
-                if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
+                if (MiraiConsole.pluginManagerImpl.resolvedPlugins.isEmpty()) {
                     gray().append("<none>")
                 } else {
-                    PluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
+                    MiraiConsole.pluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
                         green().append(plugin.name).reset().append(" v").gold()
                         plugin.version.toString()
                     }
