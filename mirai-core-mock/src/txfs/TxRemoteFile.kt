@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.txfs
 
 import net.mamoe.mirai.utils.ExternalResource
+import java.nio.file.Path
 
 public interface TxRemoteFile {
     public val system: TxFileSystem
@@ -21,6 +22,7 @@ public interface TxRemoteFile {
     public val id: String
     public val exists: Boolean
     public val parent: TxRemoteFile
+    public val size: Long
 
     public fun listFiles(): Sequence<TxRemoteFile>?
     public fun delete(): Boolean
@@ -28,6 +30,8 @@ public interface TxRemoteFile {
     public fun moveTo(path: TxRemoteFile)
 
     public fun asExternalResource(): ExternalResource
+    public fun resolveNativePath(): Path
+
     public fun uploadFile(name: String, content: ExternalResource, uploader: Long): TxRemoteFile
 
     public fun mksubdir(name: String, creator: Long): TxRemoteFile

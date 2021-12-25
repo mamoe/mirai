@@ -21,6 +21,9 @@ plugins {
 version = Versions.project
 description = "Mirai core mock testing framework"
 
+kotlin {
+    explicitApiWarning()
+}
 
 dependencies {
     api(project(":mirai-core"))

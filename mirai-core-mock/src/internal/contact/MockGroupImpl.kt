@@ -29,7 +29,6 @@ import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
-import net.mamoe.mirai.mock.internal.remotefile.MockRemoteFileRoot
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.ExternalResource
@@ -306,7 +305,8 @@ internal class MockGroupImpl(
 
     @Suppress("OverridingDeprecatedMember", "DEPRECATION")
     override val filesRoot: RemoteFile by lazy {
-        MockRemoteFileRoot(this)
+        net.mamoe.mirai.mock.internal.remotefile.v1.MockRemoteFileRoot(this)
+        //MockRemoteFileRoot(this)
     }
 
     override val files: RemoteFiles

@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.mock.contact
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.UserOrBot
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.MessageReceipt

@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.mock
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.event.broadcast
@@ -21,7 +21,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.data.OnlineAudio
 import net.mamoe.mirai.mock.contact.*
 import net.mamoe.mirai.mock.database.MessageDatabase
-import net.mamoe.mirai.mock.fsserver.TmpFsServer
+import net.mamoe.mirai.mock.txfs.TmpFsServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.utils.ExternalResource
@@ -43,7 +43,7 @@ public interface MockBot : Bot, MockContactOrBot, MockUserOrBot {
      * 修改此字段时不会广播事件
      */
     @MockBotDSL
-    var nickNoEvent: String
+    public var nickNoEvent: String
 
     /**
      * bot 昵称

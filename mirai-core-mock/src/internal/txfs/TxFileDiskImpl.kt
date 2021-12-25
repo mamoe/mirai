@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.mock.internal.txfs
 
+import net.mamoe.mirai.mock.internal.remotefile.length
 import net.mamoe.mirai.mock.txfs.TxFileDisk
 import net.mamoe.mirai.mock.txfs.TxFileSystem
 import net.mamoe.mirai.mock.txfs.TxRemoteFile
@@ -210,6 +211,12 @@ internal class TxFileImpl(
     override val name: String get() = system.resolveName(id)
     override val path: String get() = system.resolveAbsPath(id)
     override val parent: TxFileImpl get() = system.resolveParent(id)
+    override val size: Long
+        get() {
+            val pt = toPath
+            if (pt.isFile) return pt.length()
+            return 0
+        }
 
     override fun listFiles(): Sequence<TxRemoteFile>? {
         val pt = toPath
@@ -255,6 +262,12 @@ internal class TxFileImpl(
 
         details.resolve("parent").writeText(path.id)
         path.toPath.resolve(id.substring(1)).createFile()
+    }
+
+    override fun resolveNativePath(): Path {
+        val pt = toPath
+        if (!pt.isFile) error("file not exists: $this <$pt>")
+        return pt
     }
 
     override fun asExternalResource(): ExternalResource {

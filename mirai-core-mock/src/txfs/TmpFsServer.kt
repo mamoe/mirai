@@ -7,16 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.mock.fsserver
+package net.mamoe.mirai.mock.txfs
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.mock.internal.remotefile.FsServerImpl
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.plusHttpSubpath
 import java.io.Closeable
 import java.nio.file.FileSystem
+import java.nio.file.Path
 
 /**
  * 临时 HTTP 文件中转服务器
@@ -35,6 +36,7 @@ import java.nio.file.FileSystem
 public interface TmpFsServer : Closeable {
     public val httpRoot: String
     public val fsSystem: FileSystem
+    public val fsDisk: TxFileDisk
 
 
     /**
@@ -69,6 +71,8 @@ public interface TmpFsServer : Closeable {
     public fun getHttpUrl(id: String): String {
         return httpRoot.plusHttpSubpath(id)
     }
+
+    public fun resolveHttpUrl(path: Path): String
 
     public companion object {
         @JvmStatic
