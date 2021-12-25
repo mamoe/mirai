@@ -14,24 +14,27 @@ import io.ktor.features.*
 import io.ktor.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import net.mamoe.mirai.mock.fsserver.TmpFsServer
+import net.mamoe.mirai.mock.internal.txfs.TxFileDiskImpl
+import net.mamoe.mirai.mock.txfs.TmpFsServer
+import net.mamoe.mirai.mock.txfs.TxFileDisk
 import net.mamoe.mirai.utils.*
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.URI
 import java.nio.file.FileSystem
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.createFile
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
+import kotlin.io.path.*
 
 internal class FsServerImpl(
     override val fsSystem: FileSystem,
     val httpPort: Int,
 ) : TmpFsServer {
     var logger by lateinitMutableProperty { MiraiLogger.Factory.create(TmpFsServer::class.java, "TmpFsServer") }
+    override val fsDisk: TxFileDisk by lazy {
+        TxFileDiskImpl(fsSystem.getPath("tx-fs-disk"))
+    }
 
     override lateinit var httpRoot: String
     lateinit var server: NettyApplicationEngine
@@ -86,8 +89,12 @@ internal class FsServerImpl(
             module {
                 intercept(ApplicationCallPipeline.Call) {
                     val request = URI.create(call.request.origin.uri).path.removePrefix("/")
-                    val path = fsSystem.getPath(request)
-                    logger.verbose { "New http request: $request" }
+                    val path = if (request.startsWith("abs-access")) {
+                        fsSystem.getPath(request.removePrefix("abs-access"))
+                    } else {
+                        fsSystem.getPath(request)
+                    }
+                    logger.verbose { "New http request: $request -> $path" }
                     if (path.exists()) {
                         call.respondOutputStream {
                             runBIO {
@@ -120,5 +127,12 @@ internal class FsServerImpl(
             server.stop(0, 0)
         }
         fsSystem.close()
+    }
+
+    override fun resolveHttpUrl(path: Path): String {
+        require(path.fileSystem === fsSystem) {
+            error("Cross FileSystem access: $path")
+        }
+        return "${httpRoot}abs-access${path.absolutePathString()}"
     }
 }

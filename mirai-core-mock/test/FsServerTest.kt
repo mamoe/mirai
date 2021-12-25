@@ -10,10 +10,12 @@
 package net.mamoe.mirai.mock.test
 
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.mock.fsserver.TmpFsServer
+import net.mamoe.mirai.mock.txfs.TmpFsServer
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.mkParentDirs
 import org.junit.jupiter.api.Test
 import java.net.URL
+import kotlin.io.path.writeText
 import kotlin.test.assertEquals
 
 @Suppress("RemoveExplicitTypeArguments")
@@ -28,6 +30,12 @@ internal class FsServerTest {
         println(fsServer.httpRoot + pt)
         val response = URL(fsServer.httpRoot + pt).readText()
         assertEquals("Test", response)
+
+        val pt0 = fsServer.fsSystem.getPath("/rand/etc/randrand/somedata")
+        pt0.mkParentDirs()
+        pt0.writeText("Test")
+
+        assertEquals("Test", URL(fsServer.resolveHttpUrl(pt0)).readText())
 
         fsServer.close()
     }

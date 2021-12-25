@@ -10,7 +10,7 @@
 package net.mamoe.mirai.mock.contact
 
 import kotlinx.coroutines.cancel
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotLeaveEvent

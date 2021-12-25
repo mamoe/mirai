@@ -43,7 +43,7 @@ internal abstract class AbstractMockContact(
     protected abstract fun newMessageSource(message: MessageChain): OnlineMessageSource.Outgoing
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Contact> {
-        val msg = broadcastMessagePreSendEvent(message) { _, _ -> newMessagePreSend(message) }
+        val msg = broadcastMessagePreSendEvent(message, false) { _, _ -> newMessagePreSend(message) }
 
         val source = newMessageSource(msg)
         val response = source withMessage msg

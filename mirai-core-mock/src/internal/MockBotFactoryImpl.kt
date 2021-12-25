@@ -13,7 +13,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.MockBotFactory
 import net.mamoe.mirai.mock.database.MessageDatabase
-import net.mamoe.mirai.mock.fsserver.TmpFsServer
+import net.mamoe.mirai.mock.txfs.TmpFsServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.utils.BotConfiguration

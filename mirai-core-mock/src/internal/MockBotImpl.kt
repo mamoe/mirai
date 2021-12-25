@@ -32,7 +32,7 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockOtherClient
 import net.mamoe.mirai.mock.contact.MockStranger
 import net.mamoe.mirai.mock.database.MessageDatabase
-import net.mamoe.mirai.mock.fsserver.TmpFsServer
+import net.mamoe.mirai.mock.txfs.TmpFsServer
 import net.mamoe.mirai.mock.internal.components.MockEventDispatcherImpl
 import net.mamoe.mirai.mock.internal.contact.MockFriendImpl
 import net.mamoe.mirai.mock.internal.contact.MockGroupImpl

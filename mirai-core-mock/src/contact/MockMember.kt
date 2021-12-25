@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.mock.contact
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.mock.MockBotDSL
