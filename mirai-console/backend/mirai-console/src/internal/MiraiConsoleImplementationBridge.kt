@@ -53,6 +53,7 @@ import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import java.time.Instant
@@ -63,6 +64,8 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
+
+internal val MiraiConsole.pluginManagerImpl: PluginManagerImpl get() = this.pluginManager.cast()
 
 /**
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
@@ -79,6 +82,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
     override val version: SemVersion by MiraiConsoleBuildConstants::version
+    override val pluginManager: PluginManagerImpl by lazy { PluginManagerImpl(coroutineContext) }
     override val rootPath: Path by instance::rootPath
     override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
 
@@ -163,11 +167,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
         phase("initialize all plugins") {
-            PluginManager // init
+            pluginManager // init
 
             mainLogger.verbose { "Loading JVM plugins..." }
-            PluginManagerImpl.loadAllPluginsUsingBuiltInLoaders()
-            PluginManagerImpl.initExternalPluginLoaders().let { count ->
+            pluginManager.loadAllPluginsUsingBuiltInLoaders()
+            pluginManager.initExternalPluginLoaders().let { count ->
                 mainLogger.verbose { "$count external PluginLoader(s) found. " }
                 if (count != 0) {
                     mainLogger.verbose { "Loading external plugins..." }
@@ -176,7 +180,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
         phase("load all plugins") {
-            PluginManagerImpl.loadPlugins(PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
+            pluginManager.loadPlugins(pluginManager.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
 
             mainLogger.verbose { "${PluginManager.plugins.size} plugin(s) loaded." }
         }
@@ -217,13 +221,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase("enable plugins") {
             mainLogger.verbose { "Enabling plugins..." }
 
-            PluginManagerImpl.enableAllLoadedPlugins()
+            pluginManager.enableAllLoadedPlugins()
 
             for (registeredCommand in CommandManager.allRegisteredCommands) {
                 registeredCommand.permission // init
             }
 
-            mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
+            mainLogger.info { "${pluginManager.plugins.size} plugin(s) enabled." }
         }
 
         phase("auto-login bots") {

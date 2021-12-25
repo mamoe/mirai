@@ -28,10 +28,10 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.utils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.childScopeContext
 import net.mamoe.mirai.utils.verbose
 import java.io.File
 import java.nio.file.Path
@@ -83,6 +83,12 @@ public interface MiraiConsole : CoroutineScope {
      */
     public val version: SemVersion
 
+    /**
+     * [PluginManager] 实例. 在 [MiraiConsole] 生命周期内应保持不变.
+     *
+     * @since 2.10
+     */
+    public val pluginManager: PluginManager
 
     @ConsoleExperimentalApi
     public val pluginCenter: PluginCenter

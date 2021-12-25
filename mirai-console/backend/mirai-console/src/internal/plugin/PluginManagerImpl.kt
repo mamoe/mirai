@@ -15,7 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
-import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.Plugin
@@ -28,13 +27,19 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.coroutines.CoroutineContext
 
-internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope("PluginManager") {
+internal val PluginManager.impl: PluginManagerImpl get() = this.cast()
+
+internal class PluginManagerImpl(
+    private val parentCoroutineContext: CoroutineContext
+) : PluginManager, CoroutineScope by parentCoroutineContext.childScope("PluginManager") {
 
     override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
     override val pluginsFolder: File = pluginsPath.toFile()
@@ -130,7 +135,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             builtInLoaders.listAndSortAllPlugins()
                 .asSequence()
                 .onEach { (_, descriptions) ->
-                    descriptions.let(PluginManagerImpl::checkPluginDescription)
+                    descriptions.let(::checkPluginDescription)
                 }
 
         return allDescriptions.toList().sortByDependencies()

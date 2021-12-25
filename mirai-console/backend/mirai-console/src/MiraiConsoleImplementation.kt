@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -243,7 +243,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
             override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
-            override val resolvedPlugins: MutableList<Plugin> get() = PluginManagerImpl.resolvedPlugins
+            override val resolvedPlugins: MutableList<Plugin> get() = MiraiConsole.pluginManagerImpl.resolvedPlugins
         }
 
         @Volatile

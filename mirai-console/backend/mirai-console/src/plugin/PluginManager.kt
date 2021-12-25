@@ -11,8 +11,8 @@
 
 package net.mamoe.mirai.console.plugin
 
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import java.io.File
@@ -130,7 +130,7 @@ public interface PluginManager {
 
     // endregion
 
-    public companion object INSTANCE : PluginManager by PluginManagerImpl {
+    public companion object INSTANCE : PluginManager by (dynamicDelegation(MiraiConsole::pluginManager)) {
         /**
          * 经过泛型类型转换的 [Plugin.loader]
          */
