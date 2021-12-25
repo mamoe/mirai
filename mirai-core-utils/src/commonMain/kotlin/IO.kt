@@ -17,6 +17,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import java.io.File
+import java.io.InputStream
 import kotlin.text.String
 
 public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
@@ -132,6 +133,19 @@ public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF
 
 public fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 public fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
+
+public fun InputStream.dropContentAndClose(bufferSize: Int = 2048): Unit = use {
+    dropContent(bufferSize)
+}
+
+public fun InputStream.dropContent(bufferSize: Int = 2048) {
+    val buffer = ByteArray(bufferSize)
+    while (true) {
+        if (read(buffer) == -1) {
+            return
+        }
+    }
+}
 
 public fun File.createFileIfNotExists() {
     if (!this.exists()) {
