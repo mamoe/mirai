@@ -15,15 +15,14 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
@@ -42,26 +41,22 @@ import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
-import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
-import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.utils.*
-import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 
@@ -71,7 +66,8 @@ internal val MiraiConsole.pluginManagerImpl: PluginManagerImpl get() = this.plug
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
  */
 @Suppress("SpellCheckingInspection")
-internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
+internal object MiraiConsoleImplementationBridge : CoroutineScope,
+    MiraiConsoleImplementation by (dynamicDelegation { MiraiConsoleImplementation.getInstance() }),
     MiraiConsole {
     override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
@@ -83,29 +79,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
     override val version: SemVersion by MiraiConsoleBuildConstants::version
     override val pluginManager: PluginManagerImpl by lazy { PluginManagerImpl(coroutineContext) }
-    override val rootPath: Path by instance::rootPath
-    override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
 
-    override val mainLogger: MiraiLogger by lazy {
-        createLogger("main")
-    }
-    override val coroutineContext: CoroutineContext by instance::coroutineContext
-    override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> by instance::builtInPluginLoaders
-    override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl by instance::consoleCommandSender
+    override val mainLogger: MiraiLogger by lazy { createLogger("main") }
 
-    override val dataStorageForJvmPluginLoader: PluginDataStorage by instance::dataStorageForJvmPluginLoader
-    override val configStorageForJvmPluginLoader: PluginDataStorage by instance::configStorageForJvmPluginLoader
-    override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
-    override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
-    override val consoleInput: ConsoleInput by instance::consoleInput
-    override val isAnsiSupported: Boolean by instance::isAnsiSupported
-
-    val consoleDataScope = ConsoleDataScope(coroutineContext, dataStorageForBuiltIns, dataStorageForBuiltIns)
-
-    override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
-        instance.createLoginSolver(requesterBot, configuration)
-
-    override val loggerController: LoggerController by instance::loggerController
+    val consoleDataScope by lazy { ConsoleDataScope(coroutineContext, dataStorageForBuiltIns, dataStorageForBuiltIns) }
 
     init {
         // TODO: Replace to standard api
