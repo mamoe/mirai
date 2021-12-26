@@ -15,22 +15,28 @@ import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.io.File
 import java.nio.file.Path
 
 /**
  * 插件管理器.
  *
- * [PluginManager] 管理所有 [插件加载器][PluginLoader], 储存对所有插件的引用 ([plugins]), 但不直接与 [插件实例][Plugin] 交互.
+ * [PluginManager] 管理所有 [插件加载器][PluginLoader], 储存对所有插件的引用 ([plugins]), 通过 [PluginLoader] 间接与 [插件实例][Plugin] 交互.
  *
- * 有关 [插件加载][PluginLoader.load], [插件启用][PluginLoader.enable] 等操作都由 [PluginLoader] 完成.
+ * [插件加载][PluginLoader.load] 和 [插件启用][PluginLoader.enable] 等操作都由 [PluginLoader] 完成.
  * [PluginManager] 仅作为一个联系所有 [插件加载器][PluginLoader], 使它们互相合作的桥梁.
  *
- * 若要主动加载一个插件, 请获取相应插件的 [PluginLoader], 然后使用 [PluginLoader.enable]
+ * 若要主动加载一个插件, 请获取能加载该插件的 [PluginLoader], 然后使用 [PluginLoader.enable]
+ *
+ * ## 获取插件管理器实例
+ *
+ * 可通过 [MiraiConsole.pluginManager] 或 [PluginManager.INSTANCE] 获取 [PluginManager] 实例.
  *
  * @see Plugin 插件
  * @see PluginLoader 插件加载器
  */
+@NotStableForInheritance
 public interface PluginManager {
     // region paths
 
@@ -130,6 +136,9 @@ public interface PluginManager {
 
     // endregion
 
+    /**
+     * [PluginManager] 实例. 转发所有调用到 [MiraiConsole.pluginManager].
+     */
     public companion object INSTANCE : PluginManager by (dynamicDelegation(MiraiConsole::pluginManager)) {
         /**
          * 经过泛型类型转换的 [Plugin.loader]
