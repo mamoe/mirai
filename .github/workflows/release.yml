@@ -45,11 +45,6 @@ jobs:
       - name: Check keys
         run: ./gradlew ensureMavenCentralAvailable
 
-      - name: fillBuildConstants
-        run: >
-          ./gradlew
-          fillBuildConstants --scan
-
       - name: Assemble
         run: ./gradlew assemble --scan
 
