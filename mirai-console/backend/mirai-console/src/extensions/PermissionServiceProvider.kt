@@ -26,7 +26,7 @@ public interface PermissionServiceProvider : SingletonExtension<PermissionServic
     public companion object ExtensionPoint :
         AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(
             PermissionServiceProvider::class,
-            BuiltInPermissionService
+            { BuiltInPermissionService }
         ) {
         internal var permissionServiceOk = false
 
