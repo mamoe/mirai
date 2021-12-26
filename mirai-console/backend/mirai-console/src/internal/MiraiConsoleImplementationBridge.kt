@@ -100,6 +100,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val consoleInput: ConsoleInput by instance::consoleInput
     override val isAnsiSupported: Boolean by instance::isAnsiSupported
 
+    val consoleDataScope = ConsoleDataScope(coroutineContext, dataStorageForBuiltIns, dataStorageForBuiltIns)
+
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         instance.createLoginSolver(requesterBot, configuration)
 
@@ -128,7 +130,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase("setup logger controller") {
             if (loggerController === LoggerControllerImpl) {
                 // Reload LoggerConfig.
-                ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+                consoleDataScope.addAndReloadConfig(LoggerConfig)
                 LoggerControllerImpl.initialized = true
             }
         }
@@ -162,8 +164,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase("load configurations") {
             mainLogger.verbose { "Loading configurations..." }
-            ConsoleDataScope.addAndReloadConfig(CommandConfig)
-            ConsoleDataScope.reloadAll()
+            consoleDataScope.addAndReloadConfig(CommandConfig)
+            consoleDataScope.reloadAll()
         }
 
         phase("initialize all plugins") {
@@ -189,7 +191,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             SingletonExtensionSelector.init()
             val instance = SingletonExtensionSelector.instance
             if (instance is BuiltInSingletonExtensionSelector) {
-                ConsoleDataScope.addAndReloadConfig(instance.config)
+                consoleDataScope.addAndReloadConfig(instance.config)
             }
         }
 
@@ -200,7 +202,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             PermissionServiceProvider.permissionServiceOk = true
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
-                    ConsoleDataScope.addAndReloadConfig(ps.config)
+                    consoleDataScope.addAndReloadConfig(ps.config)
                     mainLogger.verbose { "Reloaded PermissionService settings." }
                 } else {
                     mainLogger.info { "Loaded PermissionService from plugin ${PermissionServiceProvider.providerPlugin?.name}" }
