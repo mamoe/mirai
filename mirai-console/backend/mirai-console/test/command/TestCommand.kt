@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
-import net.mamoe.mirai.console.framework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleTest
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.*
