@@ -57,10 +57,10 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         val userDefined = instances.getOrPut(this, ::CopyOnWriteArraySet) as Set<ExtensionRegistry<T>>
 
         val builtins = if (this is AbstractInstanceExtensionPoint<*, *>) {
-            this.builtinImplementations.mapTo(HashSet()) {
+            this.builtinImplementations.mapTo(HashSet()) { instance ->
                 DataExtensionRegistry(
                     null,
-                    it
+                    instance()
                 )
             } as Set<ExtensionRegistry<T>>
         } else null
@@ -116,18 +116,18 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         }
     }
 
-    internal inline fun <reified E : SingletonExtension<T>, T> ExtensionPoint<out E>.findSingletonInstance(builtin: T): T =
-        findSingletonInstance(E::class, builtin)
+    internal inline fun <reified E : SingletonExtension<T>, T> ExtensionPoint<out E>.findSingletonInstance(noinline default: () -> T): T =
+        findSingletonInstance(E::class, default)
 
     internal fun <E : SingletonExtension<T>, T> ExtensionPoint<out E>.findSingletonInstance(
         type: KClass<E>,
-        builtin: T,
+        default: () -> T,
     ): T {
         val candidates = this.getExtensions()
         return when (candidates.size) {
-            0 -> builtin
+            0 -> default()
             1 -> candidates.single().extension.instance
-            else -> SingletonExtensionSelector.instance.selectSingleton(type, candidates)?.instance ?: builtin
+            else -> SingletonExtensionSelector.instance.selectSingleton(type, candidates)?.instance ?: default()
         }
     }
 
