@@ -14,7 +14,7 @@ import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.Extension
 import net.mamoe.mirai.console.extension.FunctionExtension
 import net.mamoe.mirai.console.extension.SingletonExtension
-import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
+import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.internal.extension.ExtensionRegistry
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.Plugin
@@ -55,7 +55,7 @@ public interface SingletonExtensionSelector : FunctionExtension {
             check(instanceField == null) { "Internal error: reinitialize SingletonExtensionSelector" }
             val instances = GlobalComponentStorage.run { SingletonExtensionSelector.getExtensions() }
             instanceField = when {
-                instances.isEmpty() -> BuiltInSingletonExtensionSelector
+                instances.isEmpty() -> SingletonExtensionSelectorImpl
                 instances.size == 1 -> {
                     instances.single().also { (plugin, ext) ->
                         MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: $ext from ${plugin?.name ?: "<builtin>"}" }
