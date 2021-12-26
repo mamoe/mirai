@@ -23,27 +23,59 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.SemVersion
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.childScopeContext
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.nio.file.Path
 import java.time.Instant
 
-
 /**
- * mirai-console 实例
+ * Mirai Console 后端功能入口.
+ *
+ * # 使用 Mirai Console
+ *
+ * ## 获取 Mirai Console 后端实例
+ *
+ * 一般插件开发者只能通过 [MiraiConsole.INSTANCE] 获得 [MiraiConsole] 实例.
+ *
+ * ## Mirai Console 生命周期
+ *
+ * [MiraiConsole] 实现[协程作用域][CoroutineScope]. [MiraiConsole] 生命周期与该[协程作用域][CoroutineScope]的相同.
+ *
+ * 在 [MiraiConsole] 实例构造后就视为*已开始[生存][Job.isActive]*. 随后才会[正式启动][MiraiConsoleImplementation.start] (初始化和加载插件等).
+ *
+ * [取消 Job][Job.cancel] 时会同时停止 [MiraiConsole], 并进行清理工作 (例如调用 [JvmPlugin.onDisable].
+ *
+ * ## 获取插件管理器等功能实例
+ *
+ * [MiraiConsole] 是后端功能入口, 可调用其 [MiraiConsole.pluginManager] 获取到 [PluginManager] 等实例.
+ *
+ * # 实现 Mirai Console
+ *
+ * ## 实现 Mirai Console 后端
+ *
+ * [MiraiConsole] 不可直接实现.
+ *
+ * 要实现 Mirai Console 后端, 需实现接口 [MiraiConsoleImplementation] 为一个 `class` 切勿实现为 `object`(单例或静态).
+ *
+ * ## 启动 Mirai Console 后端
+ *
+ * Mirai Console 后端 (即本 [MiraiConsole] 类实例) 不可单独 (直接) 启动, 需要配合一个任意的前端实现.
+ *
+ * Mirai Console 的启动时机由前端决定. 前端可在恰当的时机调用 [MiraiConsoleImplementation.start] 来启动一个 [MiraiConsoleImplementation].
+ *
+ * [MiraiConsoleImplementation] 将会由 [bridge][MiraiConsoleImplementationBridge] 转接为 [MiraiConsole] 实现. 对 [MiraiConsole] 的调用都会被转发到前端实现的 [MiraiConsoleImplementation].
  *
  * @see INSTANCE
  * @see MiraiConsoleImplementation
  */
+@NotStableForInheritance
 public interface MiraiConsole : CoroutineScope {
     /**
      * Console 运行根目录, 由前端决定确切路径.
@@ -110,6 +142,11 @@ public interface MiraiConsole : CoroutineScope {
     @ConsoleExperimentalApi
     public val isAnsiSupported: Boolean
 
+    /**
+     * [MiraiConsole] 唯一实例. 一般插件开发者只能通过 [MiraiConsole.INSTANCE] 获得 [MiraiConsole] 实例.
+     *
+     * 对象以 [bridge][MiraiConsoleImplementationBridge] 实现, 将会桥接特定前端实现的 [MiraiConsoleImplementation] 到 [MiraiConsole].
+     */
     public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
         /**
          * 获取 [MiraiConsole] 的 [Job]
