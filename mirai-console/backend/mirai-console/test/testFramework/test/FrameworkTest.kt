@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.framework.test
 
-import net.mamoe.mirai.console.framework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleTest
 import net.mamoe.mirai.console.plugin.PluginManager
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

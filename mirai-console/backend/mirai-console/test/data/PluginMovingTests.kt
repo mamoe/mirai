@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console.data
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.framework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleTest
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load

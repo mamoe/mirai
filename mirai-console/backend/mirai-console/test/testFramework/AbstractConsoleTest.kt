@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.console.framework
+package net.mamoe.mirai.console.testFramework
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelAndJoin
