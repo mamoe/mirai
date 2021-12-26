@@ -10,49 +10,53 @@
 package net.mamoe.mirai.console.internal.data.builtins
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.minutesToMillis
+import kotlin.coroutines.CoroutineContext
 
 
-internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("ConsoleDataScope") {
+internal class ConsoleDataScope(
+    parentCoroutineContext: CoroutineContext,
+    private val dataStorage: PluginDataStorage,
+    private val configStorage: PluginDataStorage,
+) : CoroutineScope by parentCoroutineContext.childScope("ConsoleDataScope") {
+    val dataHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginDataHolder(this.coroutineContext)
+    val configHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginConfigHolder(this.coroutineContext)
+
     private val data: List<PluginData> = mutableListOf()
     private val configs: MutableList<PluginConfig> = mutableListOf(AutoLoginConfig)
 
     fun addAndReloadConfig(config: PluginConfig) {
         configs.add(config)
-        ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
+        configStorage.load(configHolder, config)
     }
 
     fun reloadAll() {
         data.forEach { dt ->
-            ConsoleBuiltInPluginDataStorage.load(ConsoleBuiltInPluginDataHolder, dt)
+            dataStorage.load(dataHolder, dt)
         }
         configs.forEach { config ->
-            ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
+            configStorage.load(dataHolder, config)
         }
     }
 }
 
-internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
-    CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginDataHolder") {
+private class ConsoleBuiltInPluginDataHolder(
+    parentCoroutineContext: CoroutineContext
+) : AutoSavePluginDataHolder,
+    CoroutineScope by parentCoroutineContext.childScope("ConsoleBuiltInPluginDataHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
     override val dataHolderName: String get() = "Console"
 }
 
-internal object ConsoleBuiltInPluginConfigHolder : AutoSavePluginDataHolder,
-    CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginConfigHolder") {
+private class ConsoleBuiltInPluginConfigHolder(
+    parentCoroutineContext: CoroutineContext
+) : AutoSavePluginDataHolder,
+    CoroutineScope by parentCoroutineContext.childScope("ConsoleBuiltInPluginConfigHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
     override val dataHolderName: String get() = "Console"
 }
-
-internal object ConsoleBuiltInPluginDataStorage :
-    PluginDataStorage by MiraiConsoleImplementationBridge.dataStorageForBuiltIns
-
-internal object ConsoleBuiltInPluginConfigStorage :
-    PluginDataStorage by MiraiConsoleImplementationBridge.configStorageForBuiltIns
