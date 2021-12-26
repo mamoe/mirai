@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
 
-internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
+internal object SingletonExtensionSelectorImpl : SingletonExtensionSelector {
 
     internal val config: SaveData = SaveData()
 

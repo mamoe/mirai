@@ -32,7 +32,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Co
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
-import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
+import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
@@ -164,7 +164,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
         phase("load SingletonExtensionSelector") {
             SingletonExtensionSelector.init()
             val instance = SingletonExtensionSelector.instance
-            if (instance is BuiltInSingletonExtensionSelector) {
+            if (instance is SingletonExtensionSelectorImpl) {
                 consoleDataScope.addAndReloadConfig(instance.config)
             }
         }
