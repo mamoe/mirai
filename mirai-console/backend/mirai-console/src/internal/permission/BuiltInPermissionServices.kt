@@ -31,7 +31,7 @@ internal fun PermissionService<*>.checkType(permissionType: KClass<out Permissio
     return this as PermissionService<Permission>
 }
 
-internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
+internal class AllPermitPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
     override val rootPermission: PermissionImpl get() = RootPermissionImpl.also { all[it.id] = it }
@@ -65,7 +65,7 @@ internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
 @Suppress("DEPRECATION")
 private val RootPermissionImpl = PermissionImpl(PermissionId("*", "*"), "The root permission").also { it.parent = it }
 
-internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
+internal class AllDenyPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
@@ -97,7 +97,7 @@ internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     }
 }
 
-internal object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
+internal class BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
     PermissionService<PermissionImpl> {
 
     override val permissionType: KClass<PermissionImpl>
