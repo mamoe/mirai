@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
-import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.utils.createInstanceOrNull
 import java.lang.reflect.Modifier
 import java.util.*
@@ -39,7 +39,7 @@ internal object PluginServiceHelper {
         }.let { ServiceList(this, it) }
 
     fun <T : Any> ServiceList<T>.loadAllServices(): List<T> {
-        return delegate.mapNotNull { classLoader.loadService<T>(it) }
+        return delegate.mapNotNull { classLoader.loadService(it) }
     }
 
     private fun <T : Any> ClassLoader.loadService(
@@ -69,7 +69,7 @@ internal object PluginServiceHelper {
 
     fun <T : Any> loadAllServicesFromMemoryAndPluginClassLoaders(service: KClass<T>): List<T> {
         val list = ServiceLoader.load(service.java, this::class.java.classLoader).toList()
-        return list + BuiltInJvmPluginLoaderImpl.classLoaders.flatMap { it.findServices(service).loadAllServices() }
+        return list + JvmPluginLoader.classLoaders.flatMap { it.findServices(service).loadAllServices() }
     }
 }
 

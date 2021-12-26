@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.internal.data.builtins
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
@@ -19,23 +20,23 @@ import net.mamoe.mirai.utils.minutesToMillis
 import kotlin.coroutines.CoroutineContext
 
 
-internal class ConsoleDataScope(
+internal class ConsoleDataScopeImpl(
     parentCoroutineContext: CoroutineContext,
     private val dataStorage: PluginDataStorage,
     private val configStorage: PluginDataStorage,
-) : CoroutineScope by parentCoroutineContext.childScope("ConsoleDataScope") {
-    val dataHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginDataHolder(this.coroutineContext)
-    val configHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginConfigHolder(this.coroutineContext)
+) : CoroutineScope by parentCoroutineContext.childScope("ConsoleDataScope"), MiraiConsoleImplementation.ConsoleDataScope {
+    override val dataHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginDataHolder(this.coroutineContext)
+    override val configHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginConfigHolder(this.coroutineContext)
 
     private val data: List<PluginData> = mutableListOf()
     private val configs: MutableList<PluginConfig> = mutableListOf(AutoLoginConfig)
 
-    fun addAndReloadConfig(config: PluginConfig) {
+    override fun addAndReloadConfig(config: PluginConfig) {
         configs.add(config)
         configStorage.load(configHolder, config)
     }
 
-    fun reloadAll() {
+    override fun reloadAll() {
         data.forEach { dt ->
             dataStorage.load(dataHolder, dt)
         }

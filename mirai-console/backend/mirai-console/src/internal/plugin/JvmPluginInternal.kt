@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.PluginComponentStorage
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.permission.Permission
@@ -26,7 +27,7 @@ import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceCont
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
-import net.mamoe.mirai.console.util.NamedSupervisorJob
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream
@@ -144,15 +145,13 @@ internal abstract class JvmPluginInternal(
             )
         }
             .plus(parentCoroutineContext)
+            .plus(CoroutineName("Plugin ${(this as AbstractJvmPlugin).dataHolderName}"))
             .plus(
-                NamedSupervisorJob(
-                    "Plugin ${(this as AbstractJvmPlugin).dataHolderName}",
-                    parentCoroutineContext[Job] ?: BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!
-                )
+                SupervisorJob(parentCoroutineContext[Job] ?: JvmPluginLoader.coroutineContext[Job]!!)
             )
             .also {
                 if (!MiraiConsole.isActive) return@also
-                BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
+                JvmPluginLoader.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
                 }
             }
