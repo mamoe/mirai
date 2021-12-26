@@ -10,13 +10,18 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.plugin.loader.FilePluginLoader
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * JVM 插件加载器
  */
+@NotStableForInheritance
 public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
      * ".jar"
@@ -33,7 +38,15 @@ public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, J
      */
     public val configStorage: PluginDataStorage
 
-    public companion object BuiltIn : JvmPluginLoader by BuiltInJvmPluginLoaderImpl {
+    /**
+     * @since 2.10
+     */
+    @MiraiInternalApi
+    public val classLoaders: List<ClassLoader>
+
+    public companion object BuiltIn :
+        JvmPluginLoader by (dynamicDelegation { MiraiConsoleImplementationBridge.jvmPluginLoader }) {
+
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
         override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription =
             BuiltInJvmPluginLoaderImpl.run { plugin.description }

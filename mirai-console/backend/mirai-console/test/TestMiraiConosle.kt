@@ -47,6 +47,9 @@ fun initTestEnvironment() {
 
             }
         override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader })
+        override val jvmPluginLoader: JvmPluginLoader by lazy {
+            backendAccess.createDefaultJvmPluginLoader(coroutineContext)
+        }
         override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl =
             object : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
                 override suspend fun sendMessage(message: Message) {
@@ -76,6 +79,13 @@ fun initTestEnvironment() {
             return PlatformLogger(identity)
         }
 
+        override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {
+            MiraiConsoleImplementation.ConsoleDataScope.createDefault(
+                coroutineContext,
+                dataStorageForBuiltIns,
+                configStorageForBuiltIns
+            )
+        }
         override val coroutineContext: CoroutineContext =
             CoroutineName("Console Main") + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
                 throwable.printStackTrace()

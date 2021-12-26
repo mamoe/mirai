@@ -16,12 +16,16 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.data.PluginDataHolder
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
@@ -84,6 +88,18 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * @return 不可变的 [List], [Collections.unmodifiableList]
      */
     public val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>>
+
+    /**
+     * [JvmPluginLoader] 实例. 建议实现为 lazy:
+     *
+     * ```
+     * override val jvmPluginLoader: JvmPluginLoader by lazy { backendAccess.createDefaultJvmPluginLoader(coroutineContext) }
+     * ```
+     *
+     * @see BackendAccess.createDefaultJvmPluginLoader
+     * @since 2.10.0-RC
+     */
+    public val jvmPluginLoader: JvmPluginLoader
 
     /**
      * 由 Kotlin 用户实现
@@ -188,6 +204,54 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public val loggerController: LoggerController get() = LoggerControllerImpl
 
+    ///////////////////////////////////////////////////////////////////////////
+    // ConsoleDataScope
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Mirai Console 内置的一些 [PluginConfig] 和 [PluginData] 的管理器.
+     *
+     * 建议实现为 lazy:
+     * ```
+     * override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {
+     *     MiraiConsoleImplementation.ConsoleDataScope.createDefault(
+     *         coroutineContext,
+     *         dataStorageForBuiltIns,
+     *         configStorageForBuiltIns
+     *     )
+     * }
+     * ```
+     *
+     * @since 2.10.0-RC
+     */
+    public val consoleDataScope: ConsoleDataScope
+
+    /**
+     * Mirai Console 内置的一些 [PluginConfig] 和 [PluginData] 的管理器.
+     *
+     * @since 2.10.0-RC
+     */
+    @ConsoleFrontEndImplementation
+    public interface ConsoleDataScope {
+        public val dataHolder: AutoSavePluginDataHolder
+        public val configHolder: AutoSavePluginDataHolder
+        public fun addAndReloadConfig(config: PluginConfig)
+        public fun reloadAll()
+
+        /**
+         * @since 2.10.0-RCl
+         */
+        @ConsoleFrontEndImplementation
+        public companion object {
+            @JvmStatic
+            public fun createDefault(
+                coroutineContext: CoroutineContext,
+                dataStorage: PluginDataStorage,
+                configStorage: PluginDataStorage
+            ): ConsoleDataScope = ConsoleDataScopeImpl(coroutineContext, dataStorage, configStorage)
+        }
+    }
+
 
     /// Hooks & Backend Access
     /**
@@ -231,6 +295,12 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
         // PluginManagerImpl.resolvedPlugins
         public val resolvedPlugins: MutableList<Plugin>
+
+        /**
+         * @since 2.10.0-RC
+         */
+        public fun createDefaultJvmPluginLoader(coroutineContext: CoroutineContext): JvmPluginLoader =
+            BuiltInJvmPluginLoaderImpl(coroutineContext)
     }
 
     /**

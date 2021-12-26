@@ -22,30 +22,36 @@ import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
-import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.castOrNull
+import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.verbose
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.CoroutineContext
 
-internal object BuiltInJvmPluginLoaderImpl :
-    AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
-    CoroutineScope by MiraiConsole.childScope("JvmPluginLoader", CoroutineExceptionHandler { _, throwable ->
-        BuiltInJvmPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+internal val JvmPluginLoader.implOrNull get() = this.castOrNull<BuiltInJvmPluginLoaderImpl>()
+
+internal class BuiltInJvmPluginLoaderImpl(
+    parentCoroutineContext: CoroutineContext
+) : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
+    CoroutineScope by parentCoroutineContext.childScope("JvmPluginLoader", CoroutineExceptionHandler { _, throwable ->
+        logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
     }),
     JvmPluginLoader {
+
+    companion object {
+        internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
+    }
 
     override val configStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.configStorageForJvmPluginLoader
 
-    @JvmStatic
-    internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
-
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
 
-    internal val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
+    override val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description

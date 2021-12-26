@@ -31,7 +31,6 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
-import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
@@ -81,8 +80,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
     override val pluginManager: PluginManagerImpl by lazy { PluginManagerImpl(coroutineContext) }
 
     override val mainLogger: MiraiLogger by lazy { createLogger("main") }
-
-    val consoleDataScope by lazy { ConsoleDataScope(coroutineContext, dataStorageForBuiltIns, dataStorageForBuiltIns) }
 
     init {
         // TODO: Replace to standard api

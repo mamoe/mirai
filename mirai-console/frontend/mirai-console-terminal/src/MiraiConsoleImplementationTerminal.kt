@@ -74,8 +74,17 @@ open class MiraiConsoleImplementationTerminal
                 val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {
+    override val jvmPluginLoader: JvmPluginLoader by lazy { backendAccess.createDefaultJvmPluginLoader(coroutineContext) }
+
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
     override val isAnsiSupported: Boolean get() = true
+    override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {
+        MiraiConsoleImplementation.ConsoleDataScope.createDefault(
+            coroutineContext,
+            dataStorageForBuiltIns,
+            configStorageForBuiltIns
+        )
+    }
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         LoginSolver.Default?.takeIf { it !is StandardCharImageLoginSolver }?.let { return it }
