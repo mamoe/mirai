@@ -72,7 +72,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessageAndIntercept(
 ): MessageChain {
     return syncFromEvent<P, P>(timeoutMillis, priority) {
         takeIf { this.isContextIdenticalWith(this@nextMessageAndIntercept) }?.takeIf {
-            filter(it, it).apply { if (this && priority > EventPriority.MONITOR) it.intercept() }
+            filter(it, it).apply { it.intercept() }
         }
     }.message
 }

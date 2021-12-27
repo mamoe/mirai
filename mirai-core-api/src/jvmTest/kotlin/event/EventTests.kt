@@ -10,12 +10,15 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.GlobalEventChannel.subscribeAlways
+import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
 import net.mamoe.mirai.utils.StepUtil
 import org.junit.jupiter.api.AfterEach
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TestEvent : AbstractEvent() {
@@ -304,5 +307,25 @@ internal class EventTests : AbstractEventTest() {
             }
             PriorityTestEvent().broadcast()
         }
+    }
+
+    @Test
+    fun `test next event`() {
+        resetEventListeners()
+        subscribeOnce<TestEvent> {
+            nextEventAndIntercept<TestEvent> { true }
+        }
+        subscribeAlways<TestEvent>(priority = EventPriority.LOW) {
+            this.triggered = true
+        }
+        val tmp = TestEvent()
+        val tmp2 = TestEvent()
+        runBlocking {
+            launch { tmp.broadcast() }
+            launch { tmp2.broadcast() }
+        }
+        assertTrue { tmp.triggered }
+        assertFalse { tmp2.triggered }
+        resetEventListeners()
     }
 }

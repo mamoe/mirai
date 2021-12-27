@@ -63,7 +63,7 @@ public suspend inline fun <reified E : Event> nextEventAndIntercept(
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
         nextEventImpl(E::class, this, priority) {
-            filter(it).apply { if (this && priority > EventPriority.MONITOR) it.intercept() }
+            filter(it).apply { it.intercept() }
         }
     }
 }
