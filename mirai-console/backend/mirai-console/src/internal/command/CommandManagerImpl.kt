@@ -23,14 +23,18 @@ import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.res
 import net.mamoe.mirai.console.command.resolve.getOrElse
 import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
-import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.castOrNull
+import net.mamoe.mirai.utils.childScope
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCommandDescriptors::class)
-internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiConsole.childScope("CommandManagerImpl") {
+internal class CommandManagerImpl(
+    parentCoroutineContext: CoroutineContext
+) : CommandManager, CoroutineScope by parentCoroutineContext.childScope("CommandManagerImpl") {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.createLogger("command")
     }

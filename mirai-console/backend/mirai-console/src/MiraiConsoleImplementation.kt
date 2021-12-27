@@ -15,6 +15,7 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
@@ -22,6 +23,7 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
@@ -143,6 +145,17 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * [ConsoleCommandSender]
      */
     public val consoleCommandSender: ConsoleCommandSenderImpl
+
+    /**
+     * [CommandManager] 实现, 建议实现为 lazy:
+     * ```
+     * override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
+     * ```
+     *
+     * @since 2.10.0-RC
+     * @see BackendAccess.createDefaultCommandManager
+     */
+    public val commandManager: CommandManager
 
     public val dataStorageForJvmPluginLoader: PluginDataStorage
     public val configStorageForJvmPluginLoader: PluginDataStorage
@@ -301,6 +314,12 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          */
         public fun createDefaultJvmPluginLoader(coroutineContext: CoroutineContext): JvmPluginLoader =
             BuiltInJvmPluginLoaderImpl(coroutineContext)
+
+        /**
+         * @since 2.10.0-RC
+         */
+        public fun createDefaultCommandManager(coroutineContext: CoroutineContext): CommandManager =
+            CommandManagerImpl(coroutineContext)
     }
 
     /**

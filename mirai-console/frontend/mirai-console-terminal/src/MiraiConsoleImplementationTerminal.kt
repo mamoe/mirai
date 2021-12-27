@@ -27,6 +27,7 @@ import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -75,7 +76,7 @@ open class MiraiConsoleImplementationTerminal
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {
     override val jvmPluginLoader: JvmPluginLoader by lazy { backendAccess.createDefaultJvmPluginLoader(coroutineContext) }
-
+    override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
     override val isAnsiSupported: Boolean get() = true
     override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {

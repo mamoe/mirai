@@ -15,15 +15,16 @@
 
 package net.mamoe.mirai.console.command
 
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl.executeCommand
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.executeCommandImpl
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.*
@@ -170,7 +171,11 @@ public interface CommandManager {
      */
     public fun matchCommand(commandName: String): Command?
 
-    public companion object INSTANCE : CommandManager by CommandManagerImpl {
+    /**
+     * [CommandManager] 实例. 转发所有调用到 [MiraiConsoleImplementation.commandManager].
+     */
+    public companion object INSTANCE :
+        CommandManager by (dynamicDelegation { MiraiConsoleImplementationBridge.commandManager }) {
 
         /**
          * @see CommandManager.getRegisteredCommands
