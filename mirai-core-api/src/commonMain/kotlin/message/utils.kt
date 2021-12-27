@@ -67,7 +67,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
 @JvmSynthetic
 public suspend inline fun <reified P : MessageEvent> P.nextMessageAndIntercept(
     timeoutMillis: Long = -1,
-    priority: EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.HIGH,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
     return syncFromEvent<P, P>(timeoutMillis, priority) {

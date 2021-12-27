@@ -57,7 +57,7 @@ public suspend inline fun <reified E : Event> nextEvent(
 @JvmSynthetic
 public suspend inline fun <reified E : Event> nextEventAndIntercept(
     timeoutMillis: Long = -1,
-    priority: EventPriority = EventPriority.MONITOR,
+    priority: EventPriority = EventPriority.HIGH,
     crossinline filter: (E) -> Boolean = { true }
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
