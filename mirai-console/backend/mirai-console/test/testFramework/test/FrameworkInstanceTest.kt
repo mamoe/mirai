@@ -7,14 +7,14 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.console.framework.test
+package net.mamoe.mirai.console.testFramework.test
 
-import net.mamoe.mirai.console.testFramework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.console.plugin.PluginManager
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class FrameworkTest : AbstractConsoleTest() {
+class FrameworkInstanceTest : AbstractConsoleInstanceTest() {
 
     @Test
     fun testConsole1() {

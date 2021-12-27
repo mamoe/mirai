@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFails
 
 internal class PermissionsBasicsTest {
+    @Suppress("ILLEGAL_PERMISSION_NAMESPACE", "ILLEGAL_PERMISSION_NAME") // inspection by mirai-console-intellij
     @Test
     fun testInvalidPermissionId() {
         assertFails { PermissionId("space namespace", "name") }
@@ -21,10 +22,5 @@ internal class PermissionsBasicsTest {
         // assertFails { PermissionId("namespace", "") }
         assertFails { PermissionId("namespace:name", "name") }
         assertFails { PermissionId("namespace", "namespace:name") }
-    }
-
-    @Test
-    fun parentsWithSelfSequence() {
-
     }
 }

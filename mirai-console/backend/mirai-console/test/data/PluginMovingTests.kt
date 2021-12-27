@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console.data
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.testFramework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load
@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.plugin.name
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class PluginMovingTests : AbstractConsoleTest() {
+class PluginMovingTests : AbstractConsoleInstanceTest() {
     private val mockPluginWithName = object : KotlinPlugin(JvmPluginDescription("org.test1.test1", "1.0.0", "test1")) {}
     private val mockPluginWithName2 =
         object : KotlinPlugin(JvmPluginDescription("org.test2.test2", "1.0.0", "test2")) {}
