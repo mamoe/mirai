@@ -8,6 +8,7 @@
  */
 @file:Suppress("UNUSED_VARIABLE")
 
+import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
@@ -115,8 +116,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
-
-afterEvaluate {
-    project(":binary-compatibility-validator").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
-    project(":binary-compatibility-validator-android").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
-}
+configureBinaryValidators("jvm", "android")

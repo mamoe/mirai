@@ -18,23 +18,24 @@ pluginManagement {
     }
 }
 
+val allProjects = mutableListOf<ProjectDescriptor>()
 rootProject.name = "mirai"
 
 fun includeProject(projectPath: String, dir: String? = null) {
     include(projectPath)
     if (dir != null) project(projectPath).projectDir = file(dir)
+    allProjects.add(project(projectPath))
 }
 
-include(":mirai-core-utils")
-include(":mirai-core-api")
-include(":mirai-core")
-include(":mirai-core-all")
-include(":mirai-bom")
-include(":mirai-dokka")
+includeProject(":mirai-core-utils")
+includeProject(":mirai-core-api")
+includeProject(":mirai-core")
+includeProject(":mirai-core-all")
+includeProject(":mirai-bom")
+includeProject(":mirai-dokka")
 
-include(":binary-compatibility-validator")
-include(":binary-compatibility-validator-android")
-project(":binary-compatibility-validator-android").projectDir = file("binary-compatibility-validator/android")
+//includeProject(":binary-compatibility-validator")
+//includeProject(":binary-compatibility-validator-android", "binary-compatibility-validator/android")
 
 includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
 includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
@@ -96,4 +97,20 @@ if (!disableOldFrontEnds) {
     }
 }
 
-include(":ci-release-helper")
+includeProject(":ci-release-helper")
+
+
+val result = mutableListOf<ProjectDescriptor>()
+for (project in allProjects) {
+    val validationDir = project.projectDir.resolve("compatibility-validation")
+    if (!validationDir.exists()) continue
+    validationDir.listFiles().orEmpty<File>().forEach { dir ->
+        if (dir.resolve("build.gradle.kts").isFile) {
+            val path = project.path + ":validator-${dir.name}"
+            include(path)
+            project(path).projectDir = dir
+//            project(path).name = "${project.name}-validator-${dir.name}"
+            result.add(project(path))
+        }
+    }
+}

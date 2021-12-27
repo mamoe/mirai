@@ -9,6 +9,7 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
+import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
@@ -131,3 +132,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
+configureBinaryValidators("jvm", "android")
