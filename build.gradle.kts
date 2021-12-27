@@ -10,10 +10,10 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.time.LocalDateTime
 
 buildscript {
@@ -30,7 +30,6 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:${Versions.androidGradlePlugin}")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicFU}")
-        classpath("org.jetbrains.kotlinx:binary-compatibility-validator:${Versions.binaryValidator}")
         classpath("org.jetbrains.dokka:dokka-base:${Versions.dokka}")
     }
 }
@@ -42,27 +41,6 @@ plugins {
 //    id("org.jetbrains.dokka") version Versions.dokka
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.gradle.plugin-publish") version "0.12.0" apply false
-}
-
-// https://github.com/kotlin/binary-compatibility-validator
-apply(plugin = "binary-compatibility-validator")
-
-configure<kotlinx.validation.ApiValidationExtension> {
-    allprojects.forEach { subproject ->
-        ignoredProjects.add(subproject.name)
-    }
-    ignoredProjects.remove("binary-compatibility-validator")
-    ignoredProjects.remove("binary-compatibility-validator-android")
-    // Enable validator for module `binary-compatibility-validator` and `-android` only.
-
-
-    ignoredPackages.add("net.mamoe.mirai.internal")
-    ignoredPackages.add("net.mamoe.mirai.console.internal")
-    nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiInternalApi")
-    nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiInternalFile")
-    nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleInternalApi")
-    nonPublicMarkers.add("net.mamoe.mirai.console.utils.ConsoleExperimentalApi")
-    nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiExperimentalApi")
 }
 
 GpgSigner.setup(project)
