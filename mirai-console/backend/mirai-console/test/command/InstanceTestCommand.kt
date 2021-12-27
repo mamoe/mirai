@@ -22,9 +22,10 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
-import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
+import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.*
@@ -99,6 +100,8 @@ internal val owner by lazy { TestUnitCommandOwner }
 
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
+    private val manager by lazy { MiraiConsoleImplementationBridge.commandManager as CommandManagerImpl }
+
     @Test
     fun testRegister() {
         try {
@@ -111,10 +114,10 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
             assertEquals(1, getRegisteredCommands(owner).size)
 
-            assertEquals(1, CommandManagerImpl._registeredCommands.size)
+            assertEquals(1, manager._registeredCommands.size)
             assertEquals(2,
-                CommandManagerImpl.requiredPrefixCommandMap.size,
-                CommandManagerImpl.requiredPrefixCommandMap.entries.joinToString { it.toString() })
+                manager.requiredPrefixCommandMap.size,
+                manager.requiredPrefixCommandMap.entries.joinToString { it.toString() })
         } finally {
             unregisterCommand(TestCompositeCommand)
         }

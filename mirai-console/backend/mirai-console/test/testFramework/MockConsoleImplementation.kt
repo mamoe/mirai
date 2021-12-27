@@ -16,6 +16,7 @@ import kotlinx.coroutines.cancel
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -56,6 +57,7 @@ open class MockConsoleImplementation : MiraiConsoleImplementation {
                 println(message)
             }
         }
+    override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
     override val dataStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
     override val configStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
     override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
