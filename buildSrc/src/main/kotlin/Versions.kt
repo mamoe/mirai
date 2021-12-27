@@ -14,7 +14,8 @@ import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    val project = System.getenv("mirai.build.project.version") ?: "2.10.0-RC"
+    val project = System.getenv("mirai.build.project.version")
+        ?: /*PROJECT_VERSION_START*/"2.10.0-RC-null-1cd354a7"/*PROJECT_VERSION_END*/
 
     val core = project
     val console = project
@@ -55,7 +56,8 @@ object Versions {
 
     const val yamlkt = "0.10.2"
     const val intellijGradlePlugin = "1.3.0"
-//    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
+
+    //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
     const val intellij = "2021.3" // don't update easily unless you want your disk space -= 500MB
 
 }
