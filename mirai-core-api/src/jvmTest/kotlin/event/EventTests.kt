@@ -18,7 +18,6 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TestEvent : AbstractEvent() {
@@ -310,7 +309,7 @@ internal class EventTests : AbstractEventTest() {
     }
 
     @Test
-    fun `test next event`() {
+    fun `test next event and intercept`() {
         resetEventListeners()
         subscribeOnce<TestEvent> {
             nextEventAndIntercept<TestEvent> { true }
@@ -324,8 +323,7 @@ internal class EventTests : AbstractEventTest() {
             launch { tmp.broadcast() }
             launch { tmp2.broadcast() }
         }
-        assertTrue { tmp.triggered }
-        assertFalse { tmp2.triggered }
+        assertTrue { (tmp.triggered || tmp2.triggered) && (tmp.triggered != tmp2.triggered) }
         resetEventListeners()
     }
 }
