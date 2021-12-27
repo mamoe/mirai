@@ -30,6 +30,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:${Versions.androidGradlePlugin}")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicFU}")
+        classpath("org.jetbrains.kotlinx:binary-compatibility-validator:${Versions.binaryValidator}")
         classpath("org.jetbrains.dokka:dokka-base:${Versions.dokka}")
     }
 }
@@ -41,16 +42,15 @@ plugins {
 //    id("org.jetbrains.dokka") version Versions.dokka
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("com.gradle.plugin-publish") version "0.12.0" apply false
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version Versions.binaryValidator
 }
+
+// https://github.com/kotlin/binary-compatibility-validator
+apply(plugin = "binary-compatibility-validator")
 
 configure<kotlinx.validation.ApiValidationExtension> {
     allprojects.forEach { subproject ->
         ignoredProjects.add(subproject.name)
     }
-    ignoredProjects.remove("mirai-core")
-    ignoredProjects.remove("mirai-core-api")
-    ignoredProjects.remove("mirai-console")
     ignoredProjects.remove("binary-compatibility-validator")
     ignoredProjects.remove("binary-compatibility-validator-android")
     // Enable validator for module `binary-compatibility-validator` and `-android` only.
