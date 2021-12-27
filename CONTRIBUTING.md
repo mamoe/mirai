@@ -95,8 +95,8 @@ mirai 2.9.0 在如下环境测试可以编译:
 - 在 mirai-core 和 mirai-core-api 使用纯 Kotlin 实现
 - 尽量不要引用新的库
 - 遵守 Kotlin 官方代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
-- 保证二进制兼容性: 在提交前执行 `gradlew build`, 若有不兼容变更会得到错误。  
-  如果你正在添加一个新功能，可以忽略这个错误，执行 `gradlew clean apiDump`。这将会生成 `binary-compatibility-validator.api`，文件的变化反映了你的修改情况。将这些文件一并提交。 (详细了解 [Kotlin/binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator))
+- 保证二进制兼容性: 在提交前执行 `./gradlew build`, 若有不兼容变更会得到错误。  
+  如果你正在添加一个新功能，可以忽略这个错误，执行 `./gradlew clean apiDumpAll`。这将会生成 `*.api`，文件的变化反映了你的修改情况。将这些文件一并提交。 (详细了解 [Kotlin/binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator))
 - 通过 GitHub 的 Pull Request 提交代码，很快就会有相关模块负责人员来审核
 
 
