@@ -9,6 +9,8 @@
 
 @file:Suppress("UnusedImport")
 
+import BinaryCompatibilityConfigurator.configureBinaryValidator
+import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
 
@@ -76,3 +78,4 @@ tasks {
 }
 
 configurePublishing("mirai-console")
+configureBinaryValidator(null)
