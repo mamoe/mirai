@@ -14,22 +14,26 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
-import net.mamoe.mirai.console.initTestEnvironment
+import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 
-abstract class AbstractConsoleTest {
+abstract class AbstractConsoleInstanceTest {
     val mockPlugin by lazy { mockKotlinPlugin() }
+    private lateinit var implementation: MiraiConsoleImplementation
+    val consoleImplementation: MiraiConsoleImplementation by ::implementation
 
     @BeforeEach
     protected open fun initializeConsole() {
-        initTestEnvironment()
+        this.implementation = MockConsoleImplementation().apply { start() }
+        CommandManager
     }
 
     @AfterEach
-    protected open fun cancelConsole() {
+    protected open fun stopConsole() {
         if (MiraiConsoleImplementation.instanceInitialized) {
             try {
                 runBlocking { MiraiConsole.job.cancelAndJoin() }
@@ -44,8 +48,8 @@ abstract class AbstractConsoleTest {
     }
 
     companion object {
-        fun mockKotlinPlugin(): KotlinPlugin {
-            return object : KotlinPlugin(JvmPluginDescription("org.test.test", "1.0.0")) {}
+        fun mockKotlinPlugin(id: String = "org.test.test"): KotlinPlugin {
+            return object : KotlinPlugin(JvmPluginDescription(id, "1.0.0")) {}
         }
     }
 }
