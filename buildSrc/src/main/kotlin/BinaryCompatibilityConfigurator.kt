@@ -32,16 +32,19 @@ object BinaryCompatibilityConfigurator {
         }
 
         project.afterEvaluate {
-            val validatorProject = findProject(project.path + ":validator-${dir.name}")
-            validatorProject
-                ?.getTasksByName("apiDump", false)
-                ?.let { apiDumpAll.dependsOn(it) }
+            val validatorProject = findProject(getValidatorDir(dir))
+            validatorProject?.afterEvaluate {
+                tasks.getByName("apiDump").let { apiDumpAll.dependsOn(it) }
+            }
 
-            validatorProject
-                ?.getTasksByName("apiCheck", false)
-                ?.let { apiCheckAll.dependsOn(it) }
+            validatorProject?.afterEvaluate {
+                tasks.getByName("apiCheck").let { apiCheckAll.dependsOn(it) }
+            }
+
         }
     }
+
+    private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + ":${dir.name}"
 
     /**
      * @param targetName `null` for JVM projects.
@@ -59,9 +62,9 @@ object BinaryCompatibilityConfigurator {
         )
 
         project.afterEvaluate {
-            findProject(project.path + ":validator-${dir.name}")
+            findProject(getValidatorDir(dir))
                 ?.afterEvaluate {
-                    tasks["apiBuild"].dependsOn(project.tasks["build"])
+                    tasks.findByName("apiBuild")?.dependsOn(project.tasks["build"])
                 }
         }
     }
