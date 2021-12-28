@@ -10,6 +10,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.utils.EventListenerLikeJava
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import org.junit.jupiter.api.Test
@@ -24,7 +25,7 @@ internal class JvmMethodEventsTestJava : AbstractEventTest() {
     fun test() {
         val host = TestHost(called)
         GlobalEventChannel.registerListenerHost(host)
-        TestEvent().__broadcastJava()
+        runBlocking { TestEvent().broadcast() }
         assertEquals(3, called.get(), null)
         host.cancel() // reset listeners
     }

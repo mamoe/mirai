@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_finish"
+        android:icon="@drawable/ic_check_white_24dp"
+        android:title="完成验证"
+        android:visible="true"
+        app:showAsAction="always" />
+</menu>

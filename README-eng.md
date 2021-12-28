@@ -14,8 +14,12 @@ Mirai is designed to handle all sorts of messaging works that can be automatical
 Mirai is able to run as a plugin-supported framework.  
 The community, (with `mirai-console`) that allows developers to share their plugins, and for users to install plugins quickly, is building in progress.
 
-- JVM languages like `Java` or `Kotlin`： Make Jar plugin for [mirai-console](https://github.com/mamoe/mirai-console) directly and share with other developers through the plugin center.
-- `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) supports plugins using Kotlin Scripts (`kts`)（**OpenJDK 8+ only，except Android**）
+- JVM languages like `Java` or `Kotlin`： Make Jar plugin
+  for [mirai-console](/mirai-console) directly and share with other
+  developers through the plugin center.
+- `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts)
+  supports plugins using Kotlin Scripts (`kts`)（**OpenJDK 8+ only，except
+  Android**）
 - Native languages like `C`, `C++`： [mirai-native](https://github.com/iTXTech/mirai-native) supports plugins from CoolQ **(`Windows JREx86` only / with `Wine`)**
 - `JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) supports plugins using `JavaScript` and inter-operate with **mirai** on JVM directly.
 - Any language：Use HTTP API from [mirai-api-http](https://github.com/mamoe/mirai-api-http)

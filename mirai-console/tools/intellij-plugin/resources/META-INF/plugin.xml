@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright 2019-2021 Mamoe Technologies and contributors.
+  ~
+  ~  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+  ~  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+  ~
+  ~  https://github.com/mamoe/mirai/blob/master/LICENSE
+  -->
+
+<idea-plugin>
+    <id>net.mamoe.mirai-console</id>
+
+    <name>Mirai Console</name>
+
+    <vendor
+            email="support@mamoe.net"
+            url="https://github.com/mamoe/">
+        Mamoe Technologies
+    </vendor>
+
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <depends>com.intellij.gradle</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <moduleType id="MIRAI_MODULE_TYPE"
+                    implementationClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleType"/>
+        <moduleBuilder id="MIRAI_MODULE" builderClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleBuilder"/>
+
+        <fileTemplateGroup implementation="net.mamoe.mirai.console.intellij.assets.FileTemplateRegistrar"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
+
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="PluginMainServiceNotConfigured"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="plugin.service.not.configured.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
+
+        <localInspection groupPath="Mirai console" language="JAVA" shortName="PluginMainServiceNotConfiguredJava"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="plugin.service.not.configured.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
+
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="ResourceNotClosed"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="resource.not.closed.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.mirai.core.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.ResourceNotClosedInspection"/>
+
+        <localInspection groupPath="Mirai console" language="JAVA" shortName="ResourceNotClosedJava"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="resource.not.closed.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.mirai.core.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.ResourceNotClosedInspection"/>
+
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="UsingStringPlusMessage"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="using.string.plus.message.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.message.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.UsingStringPlusMessageInspection"/>
+
+        <intentionAction>
+            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.WrapWithResourceUseCallIntention</className>
+            <category>Mirai console</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.WrapWithResourceUseCallJavaIntention</className>
+            <category>Mirai console</category>
+        </intentionAction>
+
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <storageComponentContainerContributor
+                implementation="net.mamoe.mirai.console.intellij.IDEContainerContributor"/>
+        <quickFixContributor implementation="net.mamoe.mirai.console.intellij.QuickFixRegistrar"/>
+    </extensions>
+</idea-plugin>

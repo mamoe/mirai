@@ -16,7 +16,7 @@ plugins {
 
     //id("kotlinx-atomicfu")
     id("signing")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 
     `maven-publish`
 }
@@ -55,10 +55,12 @@ kotlin {
                 api(kotlin("reflect"))
                 api(`kotlinx-serialization-core-jvm`)
                 api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`) // don't remove it, otherwise IDE will complain
                 api(`kotlinx-coroutines-jdk8`)
                 api(`ktor-client-okhttp`)
 
                 implementation(project(":mirai-core-utils"))
+                implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf-jvm`)
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)

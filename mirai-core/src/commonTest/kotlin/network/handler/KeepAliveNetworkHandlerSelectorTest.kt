@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 internal val selectorLogger = MiraiLogger.Factory.create(TestSelector::class, "selector")
 
@@ -52,7 +52,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
                 setState(State.OK)
             }
         }
-        runBlockingUnit(timeout = Duration.seconds(1)) { selector.awaitResumeInstance() }
+        runBlockingUnit(timeout = 1.seconds) { selector.awaitResumeInstance() }
         assertNotNull(selector.getCurrentInstanceOrNull())
     }
 
@@ -75,7 +75,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         selector.setCurrent(handler)
         assertSame(handler, selector.getCurrentInstanceOrNull())
         handler.setState(State.CLOSED)
-        runBlockingUnit(timeout = Duration.seconds(3)) { selector.awaitResumeInstance() }
+        runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
         assertEquals(1, selector.createInstanceCount.get())
     }
 

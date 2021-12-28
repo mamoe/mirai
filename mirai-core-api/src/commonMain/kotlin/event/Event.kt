@@ -11,9 +11,9 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.MessageEvent
@@ -21,7 +21,6 @@ import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.JavaFriendlyAPI
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -143,7 +142,7 @@ public interface CancellableEvent : Event {
  *
  * @see __broadcastJava Java 使用
  */
-@JvmSynthetic
+@JvmBlockingBridge
 public suspend fun <E : Event> E.broadcast(): E = _EventBroadcast.implementation.broadcastPublic(this)
 
 /**
@@ -204,21 +203,6 @@ internal open class _EventBroadcast {
     }
 
     private val topLevelEventLogger by lazy { MiraiLogger.Factory.create(Event::class, "EventPipeline") }
-}
-
-/**
- * 在 Java 广播一个事件的唯一途径.
- *
- * 调用方法: `EventKt.broadcast(event)`
- */
-@Suppress("FunctionName")
-@JvmName("broadcast")
-@JavaFriendlyAPI
-public fun <E : Event> E.__broadcastJava(): E = apply {
-    if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return@apply
-    }
-    runBlocking { this@__broadcastJava.broadcast() }
 }
 
 /**

@@ -14,7 +14,7 @@ plugins {
     kotlin("plugin.serialization")
 
     id("kotlinx-atomicfu")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 }
 
 description = "Mirai API binary compatibility validator"

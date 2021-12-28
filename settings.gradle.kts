@@ -12,7 +12,6 @@ pluginManagement {
         if (System.getProperty("use.maven.local") == "true") {
             mavenLocal()
         }
-//        mavenLocal()
         gradlePluginPortal()
         mavenCentral()
         google()
@@ -43,48 +42,58 @@ includeProject(":mirai-logging-slf4j-simple", "logging/mirai-logging-slf4j-simpl
 includeProject(":mirai-logging-slf4j-logback", "logging/mirai-logging-slf4j-logback")
 
 
-fun includeConsoleProjects() {
-    val disableOldFrontEnds = true
+val disableOldFrontEnds = true
 
-    fun includeConsoleProject(projectPath: String, dir: String? = null) =
-        includeProject(projectPath, "mirai-console/$dir")
+fun includeConsoleProject(projectPath: String, dir: String? = null) =
+    includeProject(projectPath, "mirai-console/$dir")
 
-    includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-annotations")
-    includeConsoleProject(":mirai-console", "backend/mirai-console")
-    includeConsoleProject(":mirai-console.codegen", "backend/codegen")
-    includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
-    includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
-    includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
-    includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
+includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-annotations")
+includeConsoleProject(":mirai-console", "backend/mirai-console")
+includeConsoleProject(":mirai-console.codegen", "backend/codegen")
+includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
 
-    @Suppress("ConstantConditionIf")
-    if (!disableOldFrontEnds) {
-        includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+// region mirai-console.integration-test
+includeConsoleProject(":mirai-console.integration-test", "backend/integration-test")
 
-        println("JDK version: ${JavaVersion.current()}")
+val consoleIntegrationTestSubPluginBuildGradleKtsTemplate by lazy {
+    rootProject.projectDir
+        .resolve("mirai-console/backend/integration-test/testers")
+        .resolve("tester.template.gradle.kts")
+        .readText()
+}
 
-        if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
-            includeConsoleProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
-        } else {
-            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
-        }
+@Suppress("SimpleRedundantLet")
+fun includeConsoleITPlugin(path: File) {
+    path.resolve("build.gradle.kts").takeIf { !it.isFile }?.let { initScript ->
+        initScript.writeText(consoleIntegrationTestSubPluginBuildGradleKtsTemplate)
     }
-}
 
-fun isMiraiConsoleCloned(): Boolean {
-    return file("mirai-console/build.gradle.kts").exists()
+    val projectPath = ":mirai-console.integration-test.tp.${path.name}"
+    include(projectPath)
+    project(projectPath).projectDir = path
 }
+rootProject.projectDir
+    .resolve("mirai-console/backend/integration-test/testers")
+    .listFiles()?.asSequence().orEmpty()
+    .filter { it.isDirectory }
+    .forEach { includeConsoleITPlugin(it) }
+// endregion
 
-if (isMiraiConsoleCloned()) {
-    includeConsoleProjects()
-} else {
-    logger.warn(
-        """
-            [mirai] mirai-console submodule is not configured. 
-            Please execute `git submodule init` and `git submodule update` to include mirai-console build if you want.
-            If you develop only on mirai-core, it's not compulsory to include mirai-console.
-        """.trimIndent()
-    )
+includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
+includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
+includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
+
+@Suppress("ConstantConditionIf")
+if (!disableOldFrontEnds) {
+    includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+
+    println("JDK version: ${JavaVersion.current()}")
+
+    if (JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+        includeConsoleProject(":mirai-console-graphical", "frontend/mirai-console-graphical")
+    } else {
+        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用 JDK 9 以上版本引入模块 `:mirai-console-graphical`\n")
+    }
 }
 
 include(":ci-release-helper")

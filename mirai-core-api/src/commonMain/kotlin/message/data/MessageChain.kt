@@ -21,6 +21,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
@@ -38,6 +39,7 @@ import net.mamoe.mirai.utils.safeCast
 import java.util.stream.Stream
 import kotlin.reflect.KProperty
 import kotlin.streams.asSequence
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_ABSTRACT_MESSAGE_KEYS as RAMK
 
 /**
  * 消息链, `List<SingleMessage>`, 即 [单个消息元素][SingleMessage] 的有序集合.
@@ -211,7 +213,7 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? {
+    public operator fun <M : SingleMessage> get(@ResolveContext(RAMK) key: MessageKey<M>): M? {
         @Suppress("UNCHECKED_CAST")
         return firstOrNull { key.safeCast.invoke(it) != null } as M?
     }
@@ -242,7 +244,7 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
+    public operator fun <M : SingleMessage> contains(@ResolveContext(RAMK) key: MessageKey<M>): Boolean =
         any { key.safeCast.invoke(it) != null }
 
     @MiraiExperimentalApi
@@ -381,7 +383,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
  */
 @JvmSynthetic
 public inline fun <M : SingleMessage> MessageChain.getOrFail(
-    key: MessageKey<M>,
+    @ResolveContext(RAMK) key: MessageKey<M>,
     crossinline lazyMessage: (key: MessageKey<M>) -> String = { key.toString() }
 ): M = get(key) ?: throw NoSuchElementException(lazyMessage(key))
 

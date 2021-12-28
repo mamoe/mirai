@@ -69,6 +69,12 @@ try (InputStream inputStream = TODO()) {
 
 ```
 
+### 自行实现 ExternalResource
+
+从 2.9.0 开始，可以很容易实现自定义 `ExternalResource`
+
+`@see` `AbstractExternalResource` 源码注释
+
 # Contact & Message
 
 ## Send Image

@@ -25,8 +25,8 @@ import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -177,10 +177,10 @@ internal class OnlineMessageSourceFromGroupImpl(
 
     override val subject: GroupImpl by lazy {
         val groupCode = msg.first().msgHead.groupInfo?.groupCode
-            ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
+            ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
 
         val group = bot.getGroup(groupCode)?.checkIsGroupImpl()
-            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
+            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
 
         group
     }
@@ -192,7 +192,7 @@ internal class OnlineMessageSourceFromGroupImpl(
         if (member != null) return@lazy member
 
         val anonymousInfo = msg.first().msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }
-            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
+            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
 
         anonymousInfo.run {
             group.newAnonymous(anonGroupMsg!!.anonNick.decodeToString(), anonGroupMsg.anonId.encodeBase64())

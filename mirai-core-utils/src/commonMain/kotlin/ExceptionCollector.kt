@@ -41,9 +41,13 @@ public open class ExceptionCollector {
         if (!hashCodes.add(hash(e))) return false // filter out duplications
         // we can also check suppressed exceptions of [e] but actual influence would be slight.
         beforeCollect(e)
-        this.last?.let { e.addSuppressed(it) }
+        this.last?.let { addSuppressed(e, it) }
         this.last = e
         return true
+    }
+
+    protected open fun addSuppressed(receiver: Throwable, e: Throwable) {
+        receiver.addSuppressed(e)
     }
 
     private fun hash(e: Throwable): Long {

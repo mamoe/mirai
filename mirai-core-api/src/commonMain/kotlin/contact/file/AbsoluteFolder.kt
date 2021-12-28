@@ -13,7 +13,7 @@
 package net.mamoe.mirai.contact.file
 
 import kotlinx.coroutines.flow.Flow
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
@@ -118,6 +118,15 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      * @throws IllegalArgumentException 当 [name] 为空或包含非法字符 (`:*?"<>|`) 时抛出
      */
     public suspend fun resolveFolder(name: String): AbsoluteFolder?
+
+    /**
+     * 获取一个已存在的 [AbsoluteFileFolder.id] 为 [id] 的子目录. 当该名称的子目录不存在时返回 `null`.
+     *
+     * @throws IllegalArgumentException 当 [id] 为空或无效时抛出
+     *
+     * @since 2.9.0
+     */
+    public suspend fun resolveFolderById(id: String): AbsoluteFolder?
 
     /**
      * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`. 当 [deep] 为 `true` 时还会深入子目录查找.

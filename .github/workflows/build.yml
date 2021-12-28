@@ -3,46 +3,25 @@ name: Build
 on: [ push, pull_request ]
 
 jobs:
-  build-mirai-core:
-
-    runs-on: ubuntu-latest
-
+  build-mirai:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: # mirai build requires a minimum system memory of 8 GB, while Windows and Ubuntu VMs provides only 7 GB. See https://github.com/mamoe/mirai/actions/runs/1608172113 for details.
+#          - windows-latest
+          - macos-11
+#          - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-
-      - name: chmod -R 777 *
-        run: chmod -R 777 *
-
-      - name: Init gradle project
-        run: ./gradlew clean --scan
-
-      - name: Build mirai-core series
-        run: ./gradlew assemble --scan
-
-      - name: mirai-core Tests
-        run: >
-          ./gradlew check --scan
-          -Dmirai.network.show.all.components=true
-          -Dkotlinx.coroutines.debug=on
-          -Dmirai.network.show.packet.details=true
-  build-all:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Setup JDK 11
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
+          distribution: 'adopt'
+          java-version: '11'
 
       - name: chmod -R 777 *
         run: chmod -R 777 *
@@ -56,9 +35,9 @@ jobs:
       - name: All Tests
         run: >
           ./gradlew check --scan
-          -Dmirai.network.show.all.components=true
-          -Dkotlinx.coroutines.debug=on
-          -Dmirai.network.show.packet.details=true
+          "-Dmirai.network.show.all.components=true"
+          "-Dkotlinx.coroutines.debug=on"
+          "-Dmirai.network.show.packet.details=true"
 
       - name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule

@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -49,7 +49,7 @@ internal class ForwardRefineTest : AbstractTestWithMiraiImpl() {
         })
         println(refine.size)
         println(refine.first()::class)
-        println(refine._miraiContentToString())
+        println(refine.structureToString())
         assertTrue { refine.first() is MessageOrigin }
         assertTrue { refine.drop(1).first() is ForwardMessage }
         assertEquals(

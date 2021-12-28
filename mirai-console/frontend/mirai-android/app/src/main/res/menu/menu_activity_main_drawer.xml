@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_console"
+            android:icon="@drawable/ic_desktop_windows_black_24dp"
+            android:title="控制台" />
+        <item
+            android:id="@+id/nav_plugins"
+            android:icon="@drawable/ic_extension_black_24dp"
+            android:title="插件管理" />
+        <item
+            android:id="@+id/nav_scripts"
+            android:icon="@drawable/ic_insert_drive_file_black_24dp"
+            android:title="脚本管理" />
+
+        <item
+            android:id="@+id/nav_setting"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="设置" />
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_info_black_24dp"
+            android:title="关于" />
+    </group>
+</menu>

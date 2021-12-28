@@ -1,0 +1,16 @@
+plugins {
+    val kotlinVersion = "$KOTLIN_VERSION"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.serialization") version kotlinVersion
+
+    id("net.mamoe.mirai-console") version "$MIRAI_VERSION"
+}
+
+group = "$GROUP_ID"
+version = "$VERSION"
+
+repositories {
+    #if ($USE_PROXY_REPO) maven("https://maven.aliyun.com/repository/public") #end
+
+    mavenCentral()
+}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="日志">
+
+        <EditTextPreference
+            android:defaultValue="300"
+            android:icon="@drawable/ic_local_printshop_24"
+            android:key="log_buffer_preference"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="日志缓存行数"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_local_printshop_24"
+            android:key="print_to_logcat_preference"
+            android:summary="你可以使用 TAG: MA 级别:INFO 来看到log"
+            android:title="打印日志到logcat" />
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="启动">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_android_24"
+            android:key="start_on_boot_preference"
+            android:summary="请加入开机自启白名单以确保能够正常开机启动"
+            android:title="开机启动" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_battery_alert_24"
+            android:key="ignore_battery_optimization"
+            android:title="忽略电池优化" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="其他">
+        <EditTextPreference
+            android:defaultValue="15"
+            android:icon="@drawable/ic_restore_24"
+            android:key="status_refresh_count"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="状态栏每分钟刷新次数[1-60]"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_baseline_publish_24"
+            android:key="allow_push_msg_preference"
+            android:summary="使用方法请看项目GitHub"
+            android:title="允许使用广播推送消息" />
+    </PreferenceCategory>
+    <EditTextPreference
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:enabled="false"
+        android:title="部分设置重启后才会生效！" />
+</PreferenceScreen>

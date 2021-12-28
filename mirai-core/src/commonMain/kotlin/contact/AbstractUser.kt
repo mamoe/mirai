@@ -31,7 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -112,7 +112,7 @@ internal sealed class AbstractUser(
                             } else {
                                 throw contextualBugReportException(
                                     "Failed to compute friend image image from resourceId: ${resp.resourceId}",
-                                    resp._miraiContentToString(),
+                                    resp.structureToString(),
                                     additional = "并附加此时正在上传的文件"
                                 )
                             }

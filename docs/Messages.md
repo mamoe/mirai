@@ -18,6 +18,8 @@
   - [由 mirai 码字符串取得 `MessageChain` 实例](#由-mirai-码字符串取得-messagechain-实例)
   - [`serializeToMiraiCode` 与 `toString` 的区别](#serializetomiraicode-与-tostring-的区别)
 
+---
+
 ## 消息系统
 
 在 Contacts 章节提到，要发送消息，使用 `Contact.sendMessage(Message)`。`Message` 架构如下图所示。
@@ -55,6 +57,8 @@ Mirai 支持富文本消息。
 后文会介绍如何获取元数据。
 
 > 回到 [目录](#目录)
+
+---
 
 ## 消息元素
 
@@ -370,7 +374,7 @@ for (SingleMessage message : messageChain) {
 }
 ```
 
-也可以使用 `messageChain.iterator()`。
+也可以使用 `messageChain.iterator()`、 `messageChain.stream()` 等。
 
 ### 序列化
 
@@ -478,6 +482,9 @@ bot.getEventChannel().subscribeAlways<GroupMessageEvent>(event -> {
 
 在 [消息元素](#消息元素) 表格中找到你需要的消息元素，然后到源码内注释查看相应的用法说明。
 
+> 回到 [目录](#目录)
+
+---
 
 ## Mirai 码
 

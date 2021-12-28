@@ -32,7 +32,7 @@ fun Project.configureJvmTarget() {
     val defaultVer = JavaVersion.VERSION_1_8
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.languageVersion = "1.5"
+        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
     }
@@ -46,6 +46,11 @@ fun Project.configureJvmTarget() {
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
+
+        if (project.path.endsWith("mirai-console-intellij")) {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
     }
 
     kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
@@ -146,7 +151,7 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.console.util.ConsoleInternalApi",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
 
-    "kotlinx.io.core.internal.DangerousInternalIoApi",
+    "kotlinx.io.core.internal.DangerousInternalIoApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="pluginData"
+            type="net.mamoe.mirai.console.plugins.PluginDescription" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activity.PluginImportActivity">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/pluginName_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:text="@{pluginData.name}"
+                    android:textSize="24sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="插件名称" />
+
+                <TextView
+                    android:id="@+id/pluginVersion_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@{pluginData.version}"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/pluginName_text"
+                    app:layout_constraintStart_toEndOf="@+id/pluginName_text"
+                    tools:text="v1.0" />
+
+                <TextView
+                    android:id="@+id/pluginMain_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@{pluginData.basePath}"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="@+id/pluginName_text"
+                    app:layout_constraintTop_toBottomOf="@+id/pluginVersion_text"
+                    tools:text="com.example.xxxx" />
+
+                <TextView
+                    android:id="@+id/pluginAuthor_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@{`BY: `+pluginData.author}"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="@+id/pluginMain_text"
+                    app:layout_constraintTop_toBottomOf="@+id/pluginMain_text"
+                    tools:text="BY: HelloWorld" />
+
+                <TextView
+                    android:id="@+id/pluginInfo_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:maxLines="5"
+
+                    android:singleLine="false"
+                    android:text="@{pluginData.info}"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/pluginName_text"
+                    app:layout_constraintTop_toBottomOf="@+id/pluginAuthor_text"
+                    tools:text="这里是插件info信息dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="你要导入这个插件吗？"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="@+id/cardView"
+            app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="请注意，导入未知来源的插件可能会存在未知的风险，如果你信任本插件请点击下面的按钮来完成导入"
+            app:layout_constraintEnd_toEndOf="@+id/cardView"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/textView5"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="该功能为实验性功能，如在导入过程中出现错误请换一台设备重试，或是到群内或是GitHub寻找手动导入方法"
+            app:layout_constraintEnd_toEndOf="@+id/cardView"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/cardView"
+            app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+        <Button
+            android:id="@+id/import_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="导入"
+            app:layout_constraintEnd_toEndOf="@+id/textView4"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="@+id/textView4"
+            app:layout_constraintTop_toBottomOf="@+id/desugaring_checkBox" />
+
+        <RadioGroup
+            android:id="@+id/import_radioGroup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView6">
+
+            <RadioButton
+                android:id="@+id/compile_radioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="编译并安装" />
+
+            <RadioButton
+                android:id="@+id/copy_radioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="仅安装" />
+        </RadioGroup>
+
+        <CheckBox
+            android:id="@+id/desugaring_checkBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:checked="true"
+            android:text="脱糖(desugaring)"
+            app:layout_constraintEnd_toEndOf="@+id/import_radioGroup"
+            app:layout_constraintStart_toStartOf="@+id/import_radioGroup"
+            app:layout_constraintTop_toBottomOf="@+id/import_radioGroup" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

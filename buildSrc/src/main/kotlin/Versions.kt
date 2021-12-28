@@ -14,27 +14,28 @@ import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.9.0-M1"
+    val project = System.getenv("mirai.build.project.version")
+        ?: /*PROJECT_VERSION_START*/"2.10.0-RC"/*PROJECT_VERSION_END*/
 
-    const val core = project
-    const val console = project
-    const val consoleTerminal = project
+    val core = project
+    val console = project
+    val consoleTerminal = project
 
-    const val kotlinCompiler = "1.5.30"
-    const val kotlinStdlib = "1.5.30"
+    const val kotlinCompiler = "1.6.0"
+    const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.6.0"
 
-    const val coroutines = "1.5.1"
-    const val atomicFU = "0.16.3"
+    const val coroutines = "1.6.0"
+    const val atomicFU = "0.17.0"
     const val serialization = "1.2.2"
-    const val ktor = "1.5.4"
+    const val ktor = "1.6.5"
 
     const val binaryValidator = "0.4.0"
 
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "1.10.6-1530.2"
+    const val blockingBridge = "2.0.0-160.3"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
@@ -43,7 +44,7 @@ object Versions {
 
     const val logback = "1.2.5"
     const val slf4j = "1.7.32"
-    const val log4j = "2.14.1"
+    const val log4j = "2.15.0"
     const val asm = "9.1"
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
@@ -54,9 +55,10 @@ object Versions {
     // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
     const val yamlkt = "0.10.2"
-    const val intellijGradlePlugin = "1.1"
-    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
-    const val intellij = "2021.1.3" // don't update easily unless you want your disk space -= 500MB
+    const val intellijGradlePlugin = "1.3.0"
+
+    //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
+    const val intellij = "2021.3" // don't update easily unless you want your disk space -= 500MB
 
 }
 
@@ -130,9 +132,9 @@ const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStd
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
 
 
-const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
-const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
-const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
+//const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
+//const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
+//const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
 
 const val `yamlkt-jvm` = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 

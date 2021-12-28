@@ -849,6 +849,8 @@ public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFolder : ne
 	public abstract fun resolveFilesStream (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun resolveFolder (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
 	public abstract fun resolveFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolveFolderById (Ljava/lang/String;)Lnet/mamoe/mirai/contact/file/AbsoluteFolder;
+	public abstract fun resolveFolderById (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
@@ -1703,6 +1705,8 @@ public class net/mamoe/mirai/event/EventChannel {
 	public final synthetic fun filter (Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Ljava/lang/Class;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filterIsInstance (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/event/EventChannel;
+	public final fun forwardToChannel (Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;)Lnet/mamoe/mirai/event/Listener;
+	public static synthetic fun forwardToChannel$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/EventPriority;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public final fun getBaseEventClass ()Lkotlin/reflect/KClass;
 	public final fun getDefaultCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public final fun parentJob (Lkotlinx/coroutines/Job;)Lnet/mamoe/mirai/event/EventChannel;
@@ -1746,7 +1750,7 @@ public abstract interface annotation class net/mamoe/mirai/event/EventHandler : 
 
 public final class net/mamoe/mirai/event/EventKt {
 	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;)Lnet/mamoe/mirai/event/Event;
-	public static final synthetic fun broadcast (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun getEventDisabled ()Z
 	public static final fun setEventDisabled (Z)V
 }
