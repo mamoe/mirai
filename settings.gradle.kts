@@ -106,7 +106,7 @@ for (project in allProjects) {
     if (!validationDir.exists()) continue
     validationDir.listFiles().orEmpty<File>().forEach { dir ->
         if (dir.resolve("build.gradle.kts").isFile) {
-            val path = project.path + ":validator-${dir.name}"
+            val path = ":validator" + project.path + ":${dir.name}"
             include(path)
             project(path).projectDir = dir
 //            project(path).name = "${project.name}-validator-${dir.name}"
