@@ -122,3 +122,5 @@ tasks {
 
     compileKotlin.dependsOn(fillBuildConstants)
 }
+
+configurePublishing("mirai-console-gradle")
