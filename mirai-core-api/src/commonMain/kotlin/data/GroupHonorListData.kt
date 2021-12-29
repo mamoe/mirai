@@ -17,6 +17,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
@@ -107,16 +108,18 @@ public data class GroupHonorListData(
 
     @Deprecated(
         message = "Meaningless response",
-        level = DeprecationLevel.ERROR,
+        level = DeprecationLevel.HIDDEN,
         replaceWith = ReplaceWith("error(\"Delete me\")"),
     )
+    @DeprecatedSinceMirai(errorSince = "2.7", hiddenSince = "2.10") // maybe 2.7
     @Suppress("DEPRECATION_ERROR")
     val acceptLanguages: List<Language?>? get() = null
 
     @Deprecated(
         message = "Meaningless response",
-        level = DeprecationLevel.ERROR,
+        level = DeprecationLevel.HIDDEN,
     )
+    @DeprecatedSinceMirai(errorSince = "2.7", hiddenSince = "2.10") // maybe 2.7
     public data class Language(
         @SerialName("code")
         val code: String? = null,

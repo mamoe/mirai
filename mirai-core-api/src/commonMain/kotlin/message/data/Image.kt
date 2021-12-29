@@ -405,6 +405,7 @@ public enum class ImageType(
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 @MiraiInternalApi
 @get:JvmName("calculateImageMd5")
+@DeprecatedSinceMirai(hiddenSince = "2.9")
 public val Image.md5: ByteArray
     get() = Image.calculateImageMd5ByImageId(imageId)
 

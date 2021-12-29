@@ -83,8 +83,9 @@ public inline val Int.monthsToSeconds: Long
     get() = this * 30.daysToSeconds
 
 // @MiraiExperimentalApi
-@Deprecated("Do not use unstable API", level = DeprecationLevel.ERROR)
+@Deprecated("Do not use unstable API", level = DeprecationLevel.HIDDEN)
 @ExperimentalTime
+@DeprecatedSinceMirai(errorSince = "2.7", hiddenSince = "2.10") // maybe 2.7
 public fun Duration.toHumanReadableString(): String {
     val days = toInt(DurationUnit.DAYS)
     val hours = toInt(DurationUnit.HOURS) % 24

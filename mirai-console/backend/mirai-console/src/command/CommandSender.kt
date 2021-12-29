@@ -37,6 +37,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.childScopeContext
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -589,8 +590,9 @@ public open class MemberCommandSender internal constructor(
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempCommandSender 已更改为 GroupTempCommandSender",
     replaceWith = ReplaceWith("GroupTempCommandSender", "net.mamoe.mirai.console.command.GroupTempCommandSender"),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 public sealed class TempCommandSender(
     public override val user: NormalMember,
 ) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("TempCommandSender")
@@ -705,8 +707,9 @@ public class MemberCommandSenderOnMessage internal constructor(
         "GroupTempCommandSenderOnMessage",
         "net.mamoe.mirai.console.command.GroupTempCommandSenderOnMessage"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 public sealed class TempCommandSenderOnMessage(
     public override val fromEvent: GroupTempMessageEvent,
 ) : GroupTempCommandSender(fromEvent.sender), CommandSenderOnMessage<GroupTempMessageEvent>

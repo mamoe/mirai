@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
 
 internal sealed class PacketFactory<TPacket : Packet?> {
@@ -117,6 +118,7 @@ internal suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
     level = DeprecationLevel.HIDDEN,
 )
 @PublishedApi
+@DeprecatedSinceMirai(hiddenSince = "2.7")
 internal val PacketLogger: MiraiLoggerWithSwitch
     get() = PacketCodec.PacketLogger
 

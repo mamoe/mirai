@@ -22,6 +22,7 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.message.isContextIdenticalWith
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 
@@ -195,6 +196,7 @@ public class GroupMessageEvent(
     replaceWith = ReplaceWith("GroupTempMessageEvent", "net.mamoe.mirai.event.events.GroupTempMessageEvent"),
     DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
 public sealed class TempMessageEvent constructor(
     public override val sender: NormalMember,
     public override val message: MessageChain,

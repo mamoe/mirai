@@ -33,6 +33,7 @@ import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -366,6 +367,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
                 "Please specify your serial property as MessageChain and use contextual and polymorphic serializers from MessageSerializers.serializersModule.",
         level = DeprecationLevel.WARNING
     ) // deprecated since 2.8-M1
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public fun serializer(): KSerializer<MessageChain> = MessageChain.Serializer
 
     private object EmptyMessageChainIterator : Iterator<SingleMessage> {

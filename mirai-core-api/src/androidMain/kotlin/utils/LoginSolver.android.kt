@@ -71,6 +71,7 @@ public actual abstract class LoginSolver public actual constructor() {
 
         @Suppress("unused")
         @Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
+        @DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
         public actual fun getDefault(): LoginSolver = Default
             ?: error("LoginSolver is not provided by default on your platform. Please specify by BotConfiguration.loginSolver")
     }
