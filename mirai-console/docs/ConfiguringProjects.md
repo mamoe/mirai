@@ -8,7 +8,7 @@ Mirai Console 分前后端模块实现。开发插件**只需要针对同一个�
 
 现有的前端如下所示。你不需要下载它们，因为插件的开发都是通用的。
 
-- `mirai-console-terminal`: JVM 终端前端，适合在测试环境或服务器运行。
+- [`mirai-console-terminal`](https://github.com/iTXTech/mirai-console-loader/releases): JVM 终端前端，适合在测试环境或服务器运行。
 - [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): Android 应用前端，可兼容大部分 Mirai Console 插件。
 - [`mirai-compose`](https://github.com/sonder-joker/mirai-compose): 跨平台桌面图形前端，拥有可视化管理。正处于测试阶段。
 
