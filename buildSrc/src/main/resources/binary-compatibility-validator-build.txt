@@ -9,7 +9,7 @@
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "$$PLUGIN_VERSION$$"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 description = "Binary compatibility validator for project $$PROJECT_PATH$$"
