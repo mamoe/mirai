@@ -37,7 +37,7 @@ private val SoutvLogger: MiraiLogger by lazy {
 
 @Deprecated(
     "",
-    ReplaceWith("this.printStructurally(name)", "net.mamoe.mirai.internal.utils.printStructurally"),
+    ReplaceWith("this.printStructure(name)", "net.mamoe.mirai.internal.utils.printStructure"),
     level = DeprecationLevel.ERROR
 )
 @DeprecatedSinceMirai(errorSince = "2.10")
