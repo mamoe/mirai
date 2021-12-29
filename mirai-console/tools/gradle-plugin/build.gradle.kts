@@ -17,8 +17,6 @@ plugins {
     id("java")
     //signing
     `maven-publish`
-
-    id("com.github.johnrengelman.shadow")
 }
 
 val integTest = sourceSets.create("integTest")
