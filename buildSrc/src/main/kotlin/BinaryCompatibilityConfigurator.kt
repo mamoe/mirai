@@ -46,17 +46,23 @@ object BinaryCompatibilityConfigurator {
 
     private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + ":${dir.name}"
 
+    private fun File.writeTextIfNeeded(text: String) {
+        if (!this.exists()) return this.writeText(text)
+        if (this.readText() == text) return
+        return this.writeText(text)
+    }
+
     /**
      * @param targetName `null` for JVM projects.
      */
     fun createValidator(project: Project, dir: File, targetName: String?) {
-        dir.resolve("build.gradle.kts").writeText(
+        dir.resolve("build.gradle.kts").writeTextIfNeeded(
             applyTemplate(
                 project.path,
                 if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main"
             )
         )
-        dir.resolve(".gitignore").writeText(
+        dir.resolve(".gitignore").writeTextIfNeeded(
             this::class.java.classLoader
                 .getResourceAsStream("binary-compatibility-validator-ignore.txt")!!.readBytes().decodeToString()
         )
