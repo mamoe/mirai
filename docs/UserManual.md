@@ -121,7 +121,7 @@ Mirai Console 内置一些指令，输入 `?` 并回车可以查看指令列表�
 [`/permission permit [target] [permission]`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
 来授予其他人执行相关命令的权限, 需要执行的权限一般情况在插件的介绍页都会给明
 
-`@see` [`PermissionCommand`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
+详见 [`PermissionCommand`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
 
 ## 解决问题
 
