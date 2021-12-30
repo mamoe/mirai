@@ -201,8 +201,8 @@ internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
         flag = ByteArray(4),
         bigUrl = bigUrl,
         origUrl = origUrl,
-        width = picWidth,
-        height = picHeight,
+        width = picWidth.coerceAtLeast(1),
+        height = picHeight.coerceAtLeast(1),
         imageType = imgType,
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
@@ -257,8 +257,8 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         picMd5 = this.md5,
         flag = ByteArray(4),
         size = size.toInt(),
-        width = width,
-        height = height,
+        width = width.coerceAtLeast(1),
+        height = height.coerceAtLeast(1),
         imageType = getIdByImageType(imageType),
         origin = if (imageType == ImageType.GIF) {
             0
