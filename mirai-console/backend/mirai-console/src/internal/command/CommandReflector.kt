@@ -28,12 +28,25 @@ import kotlin.reflect.full.*
 
 internal val ILLEGAL_SUB_NAME_CHARS = "\\/!@#$%^&*()_+-={}[];':\",.<>?`~".toCharArray()
 
+internal val SPLIT_SPACES = Regex("\\s+")
+internal val STOP_PARSE_INDICATOR = Regex("^--\\s+|\\s+--\\s+")
+
+internal fun CharSequence.flattenCommandTextParts(): MessageChain {
+    val allParts = this@flattenCommandTextParts.split(STOP_PARSE_INDICATOR, 2).filterNot { it.isBlank() }
+
+    val firstParts = allParts.getOrNull(0)?.splitToSequence(SPLIT_SPACES)?.filterNot { it.isBlank() }
+    val ignoredParts = allParts.getOrNull(1)
+
+    return buildMessageChain {
+        firstParts?.forEach { +PlainText(it) }
+        ignoredParts?.let { +PlainText(it) }
+    }
+}
+
 internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
     when (this@flattenCommandComponents) {
-        is PlainText -> this@flattenCommandComponents.content.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { +PlainText(it) }
-        is CharSequence -> this@flattenCommandComponents.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { +PlainText(it) }
+        is PlainText -> this@flattenCommandComponents.content.flattenCommandTextParts()
+        is CharSequence -> this@flattenCommandComponents.flattenCommandTextParts()
         is SingleMessage -> add(this@flattenCommandComponents)
         is Array<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
         is Iterable<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
