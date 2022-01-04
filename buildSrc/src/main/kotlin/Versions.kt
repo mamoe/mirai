@@ -14,7 +14,7 @@ import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 object Versions {
-    const val project = "2.9.1"
+    const val project = "2.9.2"
 
     const val core = project
     const val console = project
