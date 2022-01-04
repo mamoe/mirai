@@ -83,6 +83,7 @@ allprojects {
         google()
     }
 
+    preConfigureJvmTarget()
     afterEvaluate {
         configureJvmTarget()
         configureMppShadow()

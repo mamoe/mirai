@@ -28,14 +28,30 @@ fun Project.useIr() {
     }
 }
 
-fun Project.configureJvmTarget() {
-    val defaultVer = JavaVersion.VERSION_1_8
+private fun Project.jvmVersion(): JavaVersion {
+    return if (project.path.endsWith("mirai-console-intellij")) {
+        JavaVersion.VERSION_11
+    } else {
+        JavaVersion.VERSION_1_8
+    }
+}
+
+fun Project.preConfigureJvmTarget() {
+    val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class.java) {
         kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
     }
+
+    tasks.withType(JavaCompile::class.java) {
+        sourceCompatibility = defaultVer.toString()
+        targetCompatibility = defaultVer.toString()
+    }
+}
+fun Project.configureJvmTarget() {
+    val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class)
         .filter { it.name.startsWith("compileTestKotlin") }
@@ -46,11 +62,6 @@ fun Project.configureJvmTarget() {
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
-
-        if (project.path.endsWith("mirai-console-intellij")) {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
-        }
     }
 
     kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
