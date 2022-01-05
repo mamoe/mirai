@@ -1,7 +1,7 @@
 name: Bug 报告
 description: 提交一个 bug
 labels:
-  - "question"
+  - "z:question"
 
 body:
   - type: markdown
