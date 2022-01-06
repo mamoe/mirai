@@ -31,7 +31,7 @@ import kotlin.reflect.typeOf
  * Inherited instances must be [CommandValueParameter] or [CommandReceiverParameter]
  */
 @ExperimentalCommandDescriptors
-public interface CommandParameter<T : Any?> {
+public sealed interface CommandParameter<T : Any?> {
     public val name: String?
 
     public val isOptional: Boolean
