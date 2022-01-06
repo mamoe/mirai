@@ -33,10 +33,10 @@ kotlin {
     } else {
         printAndroidNotInstalled()
     }
-
-    jvm("common") {
-        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
-    }
+//
+//    jvm("jvmCommon") {
+//        attributes.attribute(MIRAI_PLATFORM, "jvmCommon")
+//    }
 
     jvm("jvm")
 
@@ -60,19 +60,33 @@ kotlin {
             }
         }
 
+        val jvmCommonMain by creating {
+            dependsOn(commonMain)
+        }
+
+        val jvmCommonTest by creating {
+            dependsOn(commonTest)
+        }
+
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
-                //
+                dependsOn(jvmCommonMain)
                 dependencies {
                     compileOnly(`android-runtime`)
 //                    api1(`ktor-client-android`)
                 }
             }
+            val androidTest by getting {
+                dependsOn(jvmCommonTest)
+            }
         }
 
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependsOn(jvmCommonMain)
+        }
 
         val jvmTest by getting {
+            dependsOn(jvmCommonTest)
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }

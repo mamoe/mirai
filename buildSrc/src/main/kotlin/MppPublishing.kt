@@ -24,10 +24,10 @@ fun Project.configureMppPublishing() {
 
     // mirai does some magic on MPP targets
     afterEvaluate {
-        tasks.findByName("compileKotlinCommon")?.enabled = false
-        tasks.findByName("compileTestKotlinCommon")?.enabled = false
+        tasks.findByName("compileKotlinJvmCommon")?.enabled = false
+        tasks.findByName("compileTestKotlinJvmCommon")?.enabled = false
 
-        tasks.findByName("compileCommonMainKotlinMetadata")?.enabled = false
+//        tasks.findByName("compileCommonMainKotlinMetadata")?.enabled = false
         tasks.findByName("compileKotlinMetadata")?.enabled = false
 
         // TODO: 2021/1/30 如果添加 JVM 到 root module, 这个 task 会失败因 root module artifacts 有变化

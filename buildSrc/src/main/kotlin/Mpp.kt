@@ -13,6 +13,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencySubstitutions
 import org.gradle.api.artifacts.ResolutionStrategy
 import org.gradle.api.artifacts.component.ComponentSelector
+import org.gradle.api.attributes.Attribute
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.util.*
 
 /*
@@ -117,3 +119,5 @@ fun ResolutionStrategy.substituteDependencies(action: ResolutionStrategyDsl.() -
         action(ResolutionStrategyDsl(this))
     }
 }
+
+//fun KotlinMulti.configure

@@ -24,7 +24,7 @@ import net.mamoe.mirai.utils.info
 /**
  * ### How to use recorder?
  *
- * 0. Configure desensitization. See mirai-core/src/commonTest/recording/configs/desensitization.yml
+ * 0. Configure desensitization. See mirai-core/src/jvmCommonTest/recording/configs/desensitization.yml
  * 1. Inject the recorder as follows:
  *
  * ```

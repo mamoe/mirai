@@ -67,7 +67,7 @@ internal class ImageReadingTest : AbstractTest() {
         )
         println("Current path: "+File(".").absolutePath)
         //Issue 1610
-        File("./src/commonTest/resources/image/jpeg-header-issue-1610.bin").readBytes().testRead(
+        File("./src/jvmCommonTest/resources/image/jpeg-header-issue-1610.bin").readBytes().testRead(
             ImageType.JPG
         )
         //Failed to find

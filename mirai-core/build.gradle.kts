@@ -21,14 +21,6 @@ plugins {
 
 description = "Mirai Protocol implementation for QQ Android"
 
-afterEvaluate {
-    tasks.getByName("compileKotlinCommon").enabled = false
-    tasks.getByName("compileTestKotlinCommon").enabled = false
-
-    tasks.getByName("compileCommonMainKotlinMetadata").enabled = false
-    tasks.getByName("compileKotlinMetadata").enabled = false
-}
-
 kotlin {
     explicitApi()
 
@@ -40,9 +32,6 @@ kotlin {
         printAndroidNotInstalled()
     }
 
-    jvm("common") {
-        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
-    }
 
     jvm("jvm")
 
@@ -65,21 +54,50 @@ kotlin {
             }
         }
 
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("script-runtime"))
                 api(`yamlkt-jvm`)
             }
         }
 
+        val jvmCommonMain by creating {
+            dependsOn(commonMain)
+            afterEvaluate {
+                project(":mirai-core-api").afterEvaluate {
+                    requiresVisibilityOf(project(":mirai-core-api").kotlin.sourceSets.getByName("jvmCommonMain"))
+
+                }
+            }
+        }
+
+        val jvmCommonTest by creating {
+            dependsOn(commonTest)
+            dependencies {
+                api(project(":mirai-core-api"))
+                api(`kotlinx-serialization-core-jvm`)
+                api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`)
+
+                implementation(project(":mirai-core-utils"))
+                implementation(`kotlinx-serialization-protobuf-jvm`)
+                implementation(`kotlinx-atomicfu-jvm`)
+                implementation(`netty-all`)
+                implementation(`log4j-api`)
+                implementation(bouncycastle)
+                implementationKotlinxIoJvm()
+            }
+        }
+
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
-                dependsOn(commonMain)
+                dependsOn(jvmCommonMain)
                 dependencies {
                     compileOnly(`android-runtime`)
                 }
             }
             val androidTest by getting {
+                dependsOn(jvmCommonTest)
                 dependencies {
                     implementation(kotlin("test", Versions.kotlinCompiler))
                     implementation(kotlin("test-junit5", Versions.kotlinCompiler))
@@ -91,6 +109,7 @@ kotlin {
         }
 
         val jvmMain by getting {
+            dependsOn(jvmCommonMain)
             dependencies {
                 //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
                 // api(kotlinx("coroutines-debug", Versions.coroutines))
@@ -98,6 +117,7 @@ kotlin {
         }
 
         val jvmTest by getting {
+            dependsOn(jvmCommonTest)
             dependencies {
                 api(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")

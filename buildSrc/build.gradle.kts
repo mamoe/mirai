@@ -47,7 +47,8 @@ dependencies {
     fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
     fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
-    // compileOnly(kotlin("gradle-plugin-api", "1.3.72")) // Gradle's Kotlin is 1.3.72
+//    compileOnly(kotlin("gradle-plugin-api", version("kotlinCompiler")))
+//    compileOnly(kotlin("gradle-plugin", version("kotlinCompiler")))
 
     api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
     api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))

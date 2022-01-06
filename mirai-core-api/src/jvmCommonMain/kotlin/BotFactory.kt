@@ -12,6 +12,7 @@
 package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 构造 [Bot] 的工厂. 这是 [Bot] 唯一的构造方式.
