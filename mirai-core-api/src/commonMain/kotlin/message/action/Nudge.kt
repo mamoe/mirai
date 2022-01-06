@@ -38,7 +38,7 @@ public sealed class Nudge {
     /**
      * 发送戳一戳消息到 [receiver].
      *
-     * 需要使用支持的[协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE] 或 [MiraiProtocol.IPAD].
+     * 需要使用支持的[协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE] 或 [MiraiProtocol.IPAD]. 自 2.10 起才支持使用 IPAD 协议发送.
      *
      * @param receiver 这条 "戳一戳" 消息的接收对象. (不是 "戳" 动作的对象, 而是接收 "A 戳了 B" 这条消息的对象)
      * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
@@ -57,7 +57,7 @@ public sealed class Nudge {
         /**
          * 发送戳一戳消息.
          *
-         * 需要使用支持的[协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE] 或 [MiraiProtocol.IPAD].
+         * 需要使用支持的[协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE] 或 [MiraiProtocol.IPAD]. 自 2.10 起才支持使用 IPAD 协议发送.
          *
          * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
          *
