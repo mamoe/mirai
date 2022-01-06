@@ -28,10 +28,6 @@ private val primitiveCollectionsImplemented by lazy {
     false
 }
 
-@PublishedApi
-@OptIn(ExperimentalStdlibApi::class)
-internal inline fun <reified T> typeOf0(): KType = kotlin.reflect.typeOf<T>()
-
 @Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
 internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
     val classifier = type.classifier

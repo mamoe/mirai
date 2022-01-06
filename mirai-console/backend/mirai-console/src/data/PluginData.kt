@@ -24,7 +24,6 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
 import net.mamoe.mirai.console.data.java.JAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.createInstanceSmart
-import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.internal.data.valueFromKTypeImpl
 import net.mamoe.mirai.console.internal.data.valueImpl
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
@@ -34,6 +33,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /**
  * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪. 典型的实现为 [AbstractPluginData].
@@ -212,7 +212,7 @@ public inline fun <reified T> PluginData.value(
     default: T,
     crossinline apply: T.() -> Unit = {},
 ): SerializerAwareValue<T> =
-    valueFromKType(typeOf0<T>(), default).also { it.value.apply() }
+    valueFromKType(typeOf<T>(), default).also { it.value.apply() }
 
 /**
  * 通过具体化类型创建一个 [SerializerAwareValue].
@@ -222,7 +222,7 @@ public inline fun <reified T> PluginData.value(
 @LowPriorityInOverloadResolution
 public inline fun <@ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR) reified T>
         PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> =
-    valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }
+    valueImpl<T>(typeOf<T>(), T::class).also { it.value.apply() }
 
 @Suppress("UNCHECKED_CAST")
 @PublishedApi

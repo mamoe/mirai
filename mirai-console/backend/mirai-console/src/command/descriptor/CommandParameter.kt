@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandValueArgument
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
-import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.content
 import kotlin.reflect.KClass
@@ -145,8 +144,8 @@ public data class CommandReceiverParameter<T : CommandSender>(
 }
 
 
-internal val ANY_TYPE = typeOf0<Any>()
-internal val ARRAY_OUT_ANY_TYPE = typeOf0<Array<out Any?>>()
+internal val ANY_TYPE = typeOf<Any>()
+internal val ARRAY_OUT_ANY_TYPE = typeOf<Array<out Any?>>()
 
 @ExperimentalCommandDescriptors
 public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>, AbstractCommandParameter<T>() {
