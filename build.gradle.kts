@@ -94,8 +94,8 @@ allprojects {
 
 subprojects {
     afterEvaluate {
-        if (project.name == "mirai-core-api") configureDokka()
-        if (project.name == "mirai-console") configureDokka()
+        if (project.path == ":mirai-core-api") configureDokka()
+        if (project.path == ":mirai-console") configureDokka()
     }
 }
 rootProject.configureDokka()
