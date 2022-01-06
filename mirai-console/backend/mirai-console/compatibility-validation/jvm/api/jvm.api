@@ -15,6 +15,7 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsole : kotlinx/c
 	public abstract fun getBuiltInPluginLoaders ()Ljava/util/List;
 	public abstract fun getMainLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public abstract fun getPluginCenter ()Lnet/mamoe/mirai/console/plugin/center/PluginCenter;
+	public abstract fun getPluginManager ()Lnet/mamoe/mirai/console/plugin/PluginManager;
 	public abstract fun getRootPath ()Ljava/nio/file/Path;
 	public abstract fun getVersion ()Lnet/mamoe/mirai/console/util/SemVersion;
 	public abstract fun isAnsiSupported ()Z
@@ -32,6 +33,7 @@ public final class net/mamoe/mirai/console/MiraiConsole$INSTANCE : net/mamoe/mir
 	public final fun getJob ()Lkotlinx/coroutines/Job;
 	public fun getMainLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public fun getPluginCenter ()Lnet/mamoe/mirai/console/plugin/center/PluginCenter;
+	public fun getPluginManager ()Lnet/mamoe/mirai/console/plugin/PluginManager;
 	public fun getRootPath ()Ljava/nio/file/Path;
 	public fun getVersion ()Lnet/mamoe/mirai/console/util/SemVersion;
 	public final fun isActive ()Z
@@ -52,15 +54,18 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementati
 	public abstract fun createLoginSolver (JLnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/utils/LoginSolver;
 	public fun getBackendAccess ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$BackendAccess;
 	public abstract fun getBuiltInPluginLoaders ()Ljava/util/List;
+	public abstract fun getCommandManager ()Lnet/mamoe/mirai/console/command/CommandManager;
 	public abstract fun getConfigStorageForBuiltIns ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getConfigStorageForJvmPluginLoader ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getConsoleCommandSender ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleCommandSenderImpl;
+	public abstract fun getConsoleDataScope ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope;
 	public abstract fun getConsoleInput ()Lnet/mamoe/mirai/console/util/ConsoleInput;
 	public abstract fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public abstract fun getDataStorageForBuiltIns ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getDataStorageForJvmPluginLoader ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getFrontEndDescription ()Lnet/mamoe/mirai/console/MiraiConsoleFrontEndDescription;
 	public static fun getInstance ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation;
+	public abstract fun getJvmPluginLoader ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader;
 	public fun getLoggerController ()Lnet/mamoe/mirai/console/logging/LoggerController;
 	public abstract fun getRootPath ()Ljava/nio/file/Path;
 	public fun isAnsiSupported ()Z
@@ -72,6 +77,8 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementati
 }
 
 public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementation$BackendAccess {
+	public fun createDefaultCommandManager (Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/console/command/CommandManager;
+	public fun createDefaultJvmPluginLoader (Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader;
 	public abstract fun getGlobalComponentStorage ()Lnet/mamoe/mirai/console/extension/ComponentStorage;
 	public abstract fun getResolvedPlugins ()Ljava/util/List;
 }
@@ -84,6 +91,19 @@ public final class net/mamoe/mirai/console/MiraiConsoleImplementation$Companion 
 public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleCommandSenderImpl {
 	public abstract synthetic fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract synthetic fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope {
+	public static final field Companion Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope$Companion;
+	public abstract fun addAndReloadConfig (Lnet/mamoe/mirai/console/data/PluginConfig;)V
+	public static fun createDefault (Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/console/data/PluginDataStorage;Lnet/mamoe/mirai/console/data/PluginDataStorage;)Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope;
+	public abstract fun getConfigHolder ()Lnet/mamoe/mirai/console/data/AutoSavePluginDataHolder;
+	public abstract fun getDataHolder ()Lnet/mamoe/mirai/console/data/AutoSavePluginDataHolder;
+	public abstract fun reloadAll ()V
+}
+
+public final class net/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope$Companion {
+	public final fun createDefault (Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/console/data/PluginDataStorage;Lnet/mamoe/mirai/console/data/PluginDataStorage;)Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope;
 }
 
 public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementation$JConsoleCommandSenderImpl : net/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleCommandSenderImpl {
@@ -1741,13 +1761,16 @@ public abstract class net/mamoe/mirai/console/extension/AbstractExtensionPoint :
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractInstanceExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint {
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public fun <init> (Lkotlin/reflect/KClass;[Lkotlin/jvm/functions/Function0;)V
 	public fun <init> (Lkotlin/reflect/KClass;[Lnet/mamoe/mirai/console/extension/InstanceExtension;)V
-	public final fun getBuiltinImplementations ()[Lnet/mamoe/mirai/console/extension/InstanceExtension;
+	public final fun getBuiltinImplementations ()[Lkotlin/jvm/functions/Function0;
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractSingletonExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint, net/mamoe/mirai/console/extension/SingletonExtensionPoint {
 	public fun <init> (Lkotlin/reflect/KClass;Ljava/lang/Object;)V
-	public final fun getBuiltinImplementation ()Ljava/lang/Object;
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function0;)V
+	public final fun getBuiltinImplementation ()Lkotlin/jvm/functions/Function0;
 	public fun getSelectedInstance ()Ljava/lang/Object;
 }
 
@@ -2653,6 +2676,7 @@ public final class net/mamoe/mirai/console/plugin/jvm/JvmPluginDescriptionKt {
 
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/console/plugin/loader/FilePluginLoader {
 	public static final field BuiltIn Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader$BuiltIn;
+	public abstract fun getClassLoaders ()Ljava/util/List;
 	public abstract fun getConfigStorage ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getDataStorage ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getFileSuffix ()Ljava/lang/String;
@@ -2663,6 +2687,7 @@ public final class net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader$BuiltIn : 
 	public fun disable (Lnet/mamoe/mirai/console/plugin/jvm/JvmPlugin;)V
 	public synthetic fun enable (Lnet/mamoe/mirai/console/plugin/Plugin;)V
 	public fun enable (Lnet/mamoe/mirai/console/plugin/jvm/JvmPlugin;)V
+	public fun getClassLoaders ()Ljava/util/List;
 	public fun getConfigStorage ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public fun getDataStorage ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
