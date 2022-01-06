@@ -23,7 +23,7 @@ internal class StructureToStringTransformerNew : StructureToStringTransformer {
         kotlin.runCatching {
             ValueDescAnalyzer.analyze(any)
                 .transform(OptimizeByteArrayAsHexStringTransformer())
-                ?.removeDefaultValues()
-                ?.renderToString()
+                .removeDefaultValues()
+                .renderToString()
         }.getOrNull() ?: legacy.transform(any)
 }
