@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
     "Use GlobalEventChannel.syncFromEvent",
     ReplaceWith(
         "if (timeoutMillis == -1L) { GlobalEventChannel.syncFromEvent<E, R>(priority) { mapper.invoke(it, it) } } else { withTimeout(timeoutMillis) { GlobalEventChannel.syncFromEvent<E, R>(priority) { mapper.invoke(it, it) } } }",
-        "kotlinx.coroutines.time.withTimeout",
+        "kotlinx.coroutines.withTimeout",
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),
@@ -119,7 +119,7 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
         }
     }""",
         "kotlinx.coroutines.async",
-        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "kotlinx.coroutines.withTimeoutOrNull",
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),
@@ -169,7 +169,7 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
         }
     }""",
         "kotlinx.coroutines.async",
-        "kotlinx.coroutines.time.withTimeout",
+        "kotlinx.coroutines.withTimeout",
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),

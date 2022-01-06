@@ -43,7 +43,7 @@ import kotlin.reflect.KClass
     ReplaceWith(
         "if (timeoutMillis == -1L) { GlobalEventChannel.nextEvent<E>(priority, filter) } else { withTimeout(timeoutMillis) { GlobalEventChannel.nextEvent<E>(priority, filter) } }",
         "net.mamoe.mirai.event.GlobalEventChannel",
-        "kotlinx.coroutines.time.withTimeout",
+        "kotlinx.coroutines.withTimeout",
     ),
     level = DeprecationLevel.WARNING
 )
@@ -80,7 +80,7 @@ public suspend inline fun <reified E : Event> nextEvent(
     ReplaceWith(
         "withTimeoutOrNull(timeoutMillis) { GlobalEventChannel.nextEvent<E>(priority, filter) }",
 
-        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "kotlinx.coroutines.withTimeoutOrNull",
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
     ),

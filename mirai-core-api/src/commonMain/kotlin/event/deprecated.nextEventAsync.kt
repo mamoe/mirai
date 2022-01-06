@@ -47,7 +47,7 @@ import kotlin.coroutines.EmptyCoroutineContext
         }
     }""",
         "kotlinx.coroutines.async",
-        "kotlinx.coroutines.time.withTimeout",
+        "kotlinx.coroutines.withTimeout",
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
@@ -101,7 +101,7 @@ public inline fun <reified E : Event> CoroutineScope.nextEventAsync(
         }
     }""",
         "kotlinx.coroutines.async",
-        "kotlinx.coroutines.time.withTimeoutOrNull",
+        "kotlinx.coroutines.withTimeoutOrNull",
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
