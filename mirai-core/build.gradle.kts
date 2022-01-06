@@ -33,13 +33,8 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-//        apply(from = rootProject.file("gradle/android.gradle"))
-//        android("android") {
-//            publishAllLibraryVariants()
-//        }
         jvm("android") {
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-            //   publishAllLibraryVariants()
         }
     } else {
         printAndroidNotInstalled()
@@ -51,10 +46,6 @@ kotlin {
 
     jvm("jvm")
 
-    /*
-    jvm("android") {
-        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "android")
-    }*/
     sourceSets.apply {
 
         val commonMain by getting {
