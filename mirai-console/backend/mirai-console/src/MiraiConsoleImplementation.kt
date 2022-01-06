@@ -181,7 +181,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         public fun requestInputJ(hint: String): String
 
         override suspend fun requestInput(hint: String): String {
-            return withContext(Dispatchers.IO) { requestInputJ(hint) }
+            return runInterruptible(Dispatchers.IO) { requestInputJ(hint) }
         }
     }
 
