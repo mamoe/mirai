@@ -484,7 +484,9 @@ public class EnumValueArgumentParser<T : Enum<T>>(
  * 解析参数为时间 [T]
  * @param now 返回当前时间
  * @param parse 从字符串解析时间
+ * @since 2.10
  */
+@MiraiExperimentalApi
 public class TemporalArgumentParser<T : TemporalAccessor>(
     private val type: Class<T>,
     private val now: () -> T,
