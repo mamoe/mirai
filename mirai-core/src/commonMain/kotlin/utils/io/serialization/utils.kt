@@ -24,7 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
-import net.mamoe.mirai.internal.utils.soutv
+import net.mamoe.mirai.internal.utils.printStructure
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readPacketExact
 import kotlin.contracts.InvocationKind
@@ -171,7 +171,7 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteArray.loadOidb(deserializer: DeserializationStrategy<T>, log: Boolean = false): T {
     val oidb = loadAs(OidbSso.OIDBSSOPkg.serializer())
     if (log) {
-        oidb.soutv("OIDB")
+        oidb.printStructure("OIDB")
     }
     return oidb.bodybuffer.loadAs(deserializer)
 }

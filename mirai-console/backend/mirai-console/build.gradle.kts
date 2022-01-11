@@ -9,15 +9,18 @@
 
 @file:Suppress("UnusedImport")
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.time.Instant
+import BinaryCompatibilityConfigurator.configureBinaryValidator
+import BinaryCompatibilityConfigurator.configureBinaryValidators
+import java.time.*
+import java.time.format.*
 
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("java")
     `maven-publish`
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-dynamic-delegation")
 }
 
 version = Versions.console
@@ -50,29 +53,23 @@ dependencies {
 }
 
 tasks {
-    val compileKotlin by getting {}
-
-    register("fillBuildConstants") {
+    val task = register("generateBuildConstants") {
         group = "mirai"
         doLast {
-            (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsoleBuildConstants.kt" }.single()
-                .let { file ->
-                    file.writeText(
-                        file.readText()
-                            .replace(
-                                Regex("""val buildDate: Instant = Instant.ofEpochSecond\(.*\)""")
-                            ) {
-                                """val buildDate: Instant = Instant.ofEpochSecond(${
-                                    Instant.now().epochSecond
-                                })"""
-                            }
-                            .replace(
-                                Regex("""const val versionConst:\s+String\s+=\s+".*"""")
-                            ) { """const val versionConst: String = "${project.version}"""" }
-                    )
-                }
+            val now = Instant.now()
+            project.file("src/internal/MiraiConsoleBuildConstants.kt").writeText(
+                project.file("src/internal/MiraiConsoleBuildConstants.kt.template").readText()
+                    .replace("GENERATION_DATE", now.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                    .replace("BUILD_DATE", now.epochSecond.toString())
+                    .replace("VERSION_CONSTANT", project.version.toString())
+            )
         }
+    }
+
+    afterEvaluate {
+        getByName("compileKotlin").dependsOn(task)
     }
 }
 
 configurePublishing("mirai-console")
+configureBinaryValidator(null)

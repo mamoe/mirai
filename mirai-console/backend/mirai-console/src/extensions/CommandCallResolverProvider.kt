@@ -20,7 +20,7 @@ public interface CommandCallResolverProvider : SingletonExtension<CommandCallRes
     public companion object ExtensionPoint :
         AbstractSingletonExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(
             CommandCallResolverProvider::class,
-            BuiltInCommandCallResolver
+            { BuiltInCommandCallResolver }
         )
 }
 

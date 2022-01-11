@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.internal.data
 
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.ValueName
+import net.mamoe.mirai.utils.createInstanceOrNull
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
@@ -62,14 +63,6 @@ internal fun KType.classifierAsKClassOrNull() = when (val t = classifier) {
     is KClass<*> -> t
     else -> null
 } as KClass<Any>?
-
-@JvmSynthetic
-internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
-    val noArgsConstructor = constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
-        ?: return null
-
-    return noArgsConstructor.callBy(emptyMap())
-}
 
 @JvmSynthetic
 internal fun KClass<*>.findValueName(): String =

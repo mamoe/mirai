@@ -12,7 +12,7 @@
 package net.mamoe.mirai.contact.roaming
 
 import kotlinx.coroutines.flow.Flow
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.JavaFriendlyAPI

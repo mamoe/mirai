@@ -29,6 +29,8 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class EventChannelTest : AbstractEventTest() {
     suspend fun suspendCall() {
@@ -89,10 +91,10 @@ internal class EventChannelTest : AbstractEventTest() {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testAsChannel() {
         runBlocking {
+            @Suppress("DEPRECATION")
             val channel = GlobalEventChannel
                 .filterIsInstance<TE>()
                 .filter { true }
@@ -106,6 +108,57 @@ internal class EventChannelTest : AbstractEventTest() {
             TE(2).broadcast()
             println("Broadcast done")
             channel.close()
+
+            val list = channel.receiveAsFlow().toList()
+
+            assertEquals(1, list.size)
+            assertEquals(TE(2), list.single())
+        }
+    }
+
+    @Test
+    fun `test forwardToChannel`() {
+        runBlocking {
+            val channel = Channel<TE>(Channel.BUFFERED)
+            val listener = GlobalEventChannel
+                .filterIsInstance<TE>()
+                .filter { true }
+                .filter { it.x == 2 }
+                .filter { true }
+                .forwardToChannel(channel)
+
+            TE(1).broadcast()
+            TE(2).broadcast()
+            listener.complete()
+            TE(2).broadcast()
+
+            channel.close()
+
+            val list = channel.receiveAsFlow().toList()
+
+            assertEquals(1, list.size)
+            assertEquals(TE(2), list.single())
+        }
+    }
+
+    @Test
+    fun `test forwardToChannel listener completes if channel closed`() {
+        runBlocking {
+            val channel = Channel<TE>(Channel.BUFFERED)
+            val listener = GlobalEventChannel
+                .filterIsInstance<TE>()
+                .filter { true }
+                .filter { it.x == 2 }
+                .filter { true }
+                .forwardToChannel(channel)
+
+            TE(1).broadcast()
+            TE(2).broadcast()
+            channel.close()
+            assertTrue { listener.isActive }
+            TE(2).broadcast()
+            assertTrue { listener.isCompleted }
+            assertFalse { listener.isActive }
 
             val list = channel.receiveAsFlow().toList()
 

@@ -17,8 +17,10 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.PROHIBITED_ABSTRACT_MESSAGE_KEYS
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.compiler.common.resolve.CONSOLE_COMMAND_OWNER_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.PROHIBITED_MESSAGE_KEYS
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
@@ -28,9 +30,9 @@ import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
-import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.ValueArgument
+import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
 import org.jetbrains.kotlin.resolve.calls.checkers.CallCheckerContext
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
@@ -116,7 +118,7 @@ class ContextualParametersChecker : CallChecker {
                 "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax"
             )
 
-            val lowercaseId = value.lowercase()
+            val lowercaseId = value.toLowerCase()
 
             if (ID_REGEX.matchEntire(value) == null) {
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(
@@ -133,7 +135,7 @@ class ContextualParametersChecker : CallChecker {
 
         fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空")
-            val lowercaseName = value.lowercase()
+            val lowercaseName = value.toLowerCase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称")
             }
@@ -220,6 +222,23 @@ class ContextualParametersChecker : CallChecker {
 
             return null
         }
+
+        fun checkAbstractMessageKeys(
+            context: CallCheckerContext,
+            inspectionTarget: PsiElement,
+            argument: ValueArgument
+        ): Diagnostic? {
+            val expr = argument.getArgumentExpression() ?: return null
+
+            if (expr is KtReferenceExpression) {
+                val call = expr.getResolvedCall(context.bindingContext) ?: return null
+                if (PROHIBITED_MESSAGE_KEYS.any { call.isCalling(it) }) {
+                    return PROHIBITED_ABSTRACT_MESSAGE_KEYS.on(inspectionTarget)
+                }
+            }
+
+            return null
+        }
     }
 
     fun interface ElementChecker {
@@ -269,6 +288,7 @@ class ContextualParametersChecker : CallChecker {
             put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
             put(ResolveContextKind.VERSION_REQUIREMENT, ::checkVersionRequirement)
             put(ResolveContextKind.RESTRICTED_CONSOLE_COMMAND_OWNER, ::checkConsoleCommandOwner)
+            put(ResolveContextKind.RESTRICTED_ABSTRACT_MESSAGE_KEYS, ::checkAbstractMessageKeys)
         }
 
 }

@@ -12,7 +12,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.internal.event.EVENT_LAUNCH_UNDISPATCHED
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Disabled

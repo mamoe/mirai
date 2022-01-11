@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.internal.data.builtins
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
@@ -19,6 +20,8 @@ import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.utils.SecretsProtection
+import net.mamoe.mirai.utils.readString
 import net.mamoe.yamlkt.Comment
 import net.mamoe.yamlkt.YamlDynamicSerializer
 
@@ -42,12 +45,24 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         val configuration: Map<ConfigurationKey, @Serializable(with = YamlDynamicSerializer::class) Any> = mapOf(),
     ) {
         @Serializable
-        public data class Password(
+        public data class Password
+        /** @since 2.10.0 */
+        public constructor(
             @Comment("密码种类, 可选 PLAIN 或 MD5")
             val kind: PasswordKind,
+            /** @since 2.10.0 */
+            @SerialName("value")
             @Comment("密码内容, PLAIN 时为密码文本, MD5 时为 16 进制")
-            val value: String,
-        )
+            val value0: SecretsProtection.EscapedString,
+        ) {
+            public constructor(kind: PasswordKind, value: String) : this(
+                kind,
+                SecretsProtection.EscapedString(SecretsProtection.escape(value.toByteArray())),
+            )
+
+            internal val value: String
+                get() = value0.asString
+        }
 
         @Suppress("EnumEntryName")
         @Serializable

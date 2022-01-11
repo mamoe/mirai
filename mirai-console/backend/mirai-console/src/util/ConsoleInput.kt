@@ -13,7 +13,7 @@
 
 package net.mamoe.mirai.console.util
 
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.util.ConsoleInputImpl
 

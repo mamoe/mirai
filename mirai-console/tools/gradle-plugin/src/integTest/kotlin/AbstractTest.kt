@@ -54,6 +54,14 @@ abstract class AbstractTest {
         """
         )
 
+        File(tempDir, "gradle.properties").apply {
+            delete()
+            writeText("""
+                org.gradle.daemon=false
+                org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
+            """.trimIndent())
+        }
+
         buildFile = File(tempDir, "build.gradle")
         buildFile.delete()
         buildFile.writeText(

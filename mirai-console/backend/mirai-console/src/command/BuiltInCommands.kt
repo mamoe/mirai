@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.allRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.map
@@ -23,14 +24,13 @@ import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.pluginManagerImpl
+import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
@@ -179,7 +179,7 @@ public object BuiltInCommands {
         @Handler
         public suspend fun CommandSender.handle(
             @Name("qq") id: Long
-        ){
+        ) {
             if (Bot.getInstanceOrNull(id)?.close() == null) {
                 sendMessage("$id 未登录")
             } else {
@@ -214,7 +214,8 @@ public object BuiltInCommands {
                     sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
                     return null
                 }
-                return if (acc.password.kind == MD5) acc.password.value.toByteArray() else acc.password.value
+                val strv = acc.password.value
+                return if (acc.password.kind == MD5) strv.autoHexToBytes() else strv
             }
 
             val pwd: Any = password ?: getPassword(id) ?: return
@@ -230,7 +231,7 @@ public object BuiltInCommands {
                     scopeWith(ConsoleCommandSender).sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
                                 if (this is CommandSenderOnMessage<*>) {
-                                    CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
+                                    MiraiConsole.launch(CoroutineName("stacktrace delayer from Login")) {
                                         fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
                                     }
                                     "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
@@ -502,10 +503,10 @@ public object BuiltInCommands {
                 reset().append("\n\n")
 
                 append("Plugins: ")
-                if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
+                if (MiraiConsole.pluginManagerImpl.resolvedPlugins.isEmpty()) {
                     gray().append("<none>")
                 } else {
-                    PluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
+                    MiraiConsole.pluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
                         green().append(plugin.name).reset().append(" v").gold()
                         plugin.version.toString()
                     }

@@ -37,17 +37,16 @@ Mirai Console 项目由四个模块组成：后端，前端，Gradle 插件，In
 - 请优先使用 Kotlin
 - 请遵守 [Kotlin 官方代码风格](https://www.kotlincn.net/docs/reference/coding-conventions.html)
 
+
+<!--
 ## 发布版本
 
 （以下内容针对拥有 Mirai Console write 权限的项目成员）
 
 若你要发布一个 Mirai Console dev release：
 
-1. 更新 buildSrc/Versions.kt 中 `project` 版本号为目标版本；
-2. 本地执行 `./gradlew fillBuildConstants`；
-3. Push 第 1，2 步的修改为同一个 commit，commit 备注为版本号名称，如 `1.0.1-dev-1`；
-4. 添加 Git 版本号 tag，格式为 `1.0.1-dev-1`（不带 `v`）；
-5. `git push --tags` 推送 tag 更新，GitHub Actions 将会检测到 tag 更新并执行 JCenter 发布。
+1. 添加 Git 版本号 tag，格式为 `v1.0.1-dev-1`；
+2. `git push --tags` 推送 tag 更新，GitHub Actions 将会检测到 tag 更新并执行 JCenter 发布。
 
 
 若你要发布一个 Mirai Console 稳定版 release，请按顺序进行如下检查：
@@ -64,3 +63,5 @@ Mirai Console 项目由四个模块组成：后端，前端，Gradle 插件，In
    - 完整列举公开 API 的任何变动，简要描述或省略内部变动；
    - 为更改按 “后端”，“前端”，“IDE 插件”，“Gradle 插件” 分类；
 8. 点击 `Publish`。GitHub Actions 将会检测到 tag 更新并执行 JCenter 发布。
+
+-->

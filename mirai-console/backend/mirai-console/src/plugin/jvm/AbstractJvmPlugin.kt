@@ -34,7 +34,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
 ) : JvmPlugin, JvmPluginInternal(parentCoroutineContext), AutoSavePluginDataHolder {
     @ConsoleExperimentalApi
     public final override val dataHolderName: String
-        get() = this.description.name
+        get() = this.description.id
 
     public final override val loader: JvmPluginLoader get() = super<JvmPluginInternal>.loader
 

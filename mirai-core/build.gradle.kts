@@ -9,13 +9,14 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
+import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     kotlin("multiplatform")
     // id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
     `maven-publish`
 }
 
@@ -33,13 +34,8 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-//        apply(from = rootProject.file("gradle/android.gradle"))
-//        android("android") {
-//            publishAllLibraryVariants()
-//        }
         jvm("android") {
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-            //   publishAllLibraryVariants()
         }
     } else {
         printAndroidNotInstalled()
@@ -51,10 +47,6 @@ kotlin {
 
     jvm("jvm")
 
-    /*
-    jvm("android") {
-        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "android")
-    }*/
     sourceSets.apply {
 
         val commonMain by getting {
@@ -131,3 +123,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
+configureBinaryValidators("jvm", "android")

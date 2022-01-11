@@ -17,8 +17,6 @@ plugins {
     id("java")
     //signing
     `maven-publish`
-
-    id("com.github.johnrengelman.shadow")
 }
 
 val integTest = sourceSets.create("integTest")
@@ -87,12 +85,6 @@ gradlePlugin {
     }
 }
 
-kotlin.target.compilations.all {
-    kotlinOptions {
-        apiVersion = "1.3"
-        languageVersion = "1.3"
-    }
-}
 
 val integrationTestTask = tasks.register<Test>("integTest") {
     description = "Runs the integration tests."
@@ -106,9 +98,7 @@ tasks.check {
 }
 
 tasks {
-    val compileKotlin by getting {}
-
-    val fillBuildConstants by registering {
+    val generateBuildConstants by registering {
         group = "mirai"
         doLast {
             projectDir.resolve("src/main/kotlin/VersionConstants.kt").apply { createNewFile() }
@@ -120,5 +110,9 @@ tasks {
         }
     }
 
-    compileKotlin.dependsOn(fillBuildConstants)
+    afterEvaluate {
+        getByName("compileKotlin").dependsOn(generateBuildConstants)
+    }
 }
+
+configurePublishing("mirai-console-gradle")

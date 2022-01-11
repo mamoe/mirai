@@ -41,8 +41,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcSimpleGet
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.internal.utils.toIpV4Long
 import net.mamoe.mirai.utils.*
 
@@ -369,7 +369,7 @@ internal class StatSvc {
 
                     else -> throw contextualBugReportException(
                         "decode SvcReqMSFLoginNotify (OtherClient status change)",
-                        notify._miraiContentToString(),
+                        notify.structureToString(),
                         additional = "unknown notify.status=${notify.status}"
                     )
                 }

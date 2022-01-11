@@ -10,6 +10,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.utils.EventListenerLikeJava
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import org.junit.jupiter.api.Test
@@ -34,7 +35,7 @@ internal class SimpleListenerHostTestJava : AbstractEventTest() {
         }
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.globalEventChannel().registerListenerHost(host)
-        object : AbstractEvent() {}.__broadcastJava()
+        runBlocking { object : AbstractEvent() {}.broadcast() }
         if (!called.get()) {
             throw AssertionError("JavaTest: SimpleListenerHost Failed.")
         }

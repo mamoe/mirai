@@ -12,7 +12,7 @@
 package net.mamoe.mirai.message.action
 
 import kotlinx.coroutines.*
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import java.util.concurrent.CompletableFuture

@@ -21,9 +21,9 @@ import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.*
@@ -109,7 +109,7 @@ OnlineFriendImage() {
                     Image.logger.warning(
                         contextualBugReportException(
                             "Failed to compute friend imageId: resId=${delegate.resId}",
-                            delegate._miraiContentToString(),
+                            delegate.structureToString(),
                             additional = "并描述此时 Bot 是否正在从好友或群接受消息, 尽量附加该图片原文件"
                         )
                     )
@@ -201,8 +201,8 @@ internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
         flag = ByteArray(4),
         bigUrl = bigUrl,
         origUrl = origUrl,
-        width = picWidth,
-        height = picHeight,
+        width = picWidth.coerceAtLeast(1),
+        height = picHeight.coerceAtLeast(1),
         imageType = imgType,
         //_400Height = 235,
         //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
@@ -257,8 +257,8 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
         picMd5 = this.md5,
         flag = ByteArray(4),
         size = size.toInt(),
-        width = width,
-        height = height,
+        width = width.coerceAtLeast(1),
+        height = height.coerceAtLeast(1),
         imageType = getIdByImageType(imageType),
         origin = if (imageType == ImageType.GIF) {
             0

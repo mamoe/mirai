@@ -38,11 +38,11 @@
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.5.10" // 确保添加 Kotlin
+    kotlin("jvm") version "1.5.30" // 确保添加 Kotlin
 }
 
 dependencies {
-    api("net.mamoe", "mirai-core", "2.7.0")
+    api("net.mamoe", "mirai-core", "2.9.1")
 }
 ```
 
@@ -58,11 +58,11 @@ dependencies {
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.10' // 确保添加 Kotlin
+    id 'org.jetbrains.kotlin.jvm' version '1.5.30' // 确保添加 Kotlin
 }
 
 dependencies {
-    implementation 'net.mamoe:mirai-core:2.7.0'
+    implementation 'net.mamoe:mirai-core:2.9.1'
 }
 ```
 
@@ -77,7 +77,7 @@ Mirai 在开发时需要 `net.mamoe:mirai-core-api`, 在运行时需要 `net.mam
 使用 `mirai-bom` 也会对 Dependabot 等自动化依赖管理程序更加友好。
 ```kotlin
 dependencies {
-    api(platform("net.mamoe:mirai-bom:2.8.0"))
+    api(platform("net.mamoe:mirai-bom:2.9.1"))
     api("net.mamoe:mirai-core-api")     // 编译代码使用
     runtimeOnly("net.mamoe:mirai-core") // 运行时使用
 }
@@ -86,13 +86,15 @@ dependencies {
 尤其注意 Dependabot 等依赖管理程序可能会导致模块版本不同。
 ```kotlin
 dependencies {
-    val miraiVersion = "2.8.0"
+    val miraiVersion = "2.9.1"
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
 }
 ```
 
 ## B. 使用 Maven
+
+> 推荐使用 gradle, 使用 maven 您可能会遇到各种奇怪的依赖错乱问题
 
 在 `pom.xml` 中添加 mirai 依赖：
 
@@ -101,7 +103,7 @@ dependencies {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.7.0</version> 
+        <version>2.9.1</version> 
     </dependency>
 </dependencies>
 ```

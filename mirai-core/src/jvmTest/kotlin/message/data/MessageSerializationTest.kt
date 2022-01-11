@@ -20,7 +20,7 @@ import net.mamoe.mirai.internal.message.MarketFaceImpl
 import net.mamoe.mirai.internal.message.OnlineAudioImpl
 import net.mamoe.mirai.internal.message.UnsupportedMessageImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
@@ -201,7 +201,7 @@ internal class MessageSerializationTest {
             ignoreUnknownKeys = true
         }
         val source = j.decodeFromString(MessageSource.Serializer, a)
-        println(source._miraiContentToString())
+        println(source.structureToString())
         assertEquals(
             expected = Mirai.buildMessageSource(692928873, MessageSourceKind.GROUP) {
                 id(44)

@@ -28,9 +28,9 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
 internal class GroupNotificationProcessor(
@@ -347,8 +347,12 @@ internal class GroupNotificationProcessor(
             }
             // 龙王
             10093L, 1053L, 1054L -> {
-                val now: NormalMember = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
-                val previous: NormalMember? = grayTip.msgTemplParam["uin_last"]?.findMember()
+                val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val previous = grayTip.msgTemplParam["uin_last"]?.findMember()
+
+                val lastTalkative = group.lastTalkative.value
+                if (lastTalkative == now) return // duplicate
+                if (!group.lastTalkative.compareAndSet(lastTalkative, now)) return
 
                 if (previous == null) {
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))
@@ -362,7 +366,7 @@ internal class GroupNotificationProcessor(
             else -> {
                 markNotConsumed()
                 logger.debug {
-                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
+                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?.structureToString()}"
                 }
             }
         }

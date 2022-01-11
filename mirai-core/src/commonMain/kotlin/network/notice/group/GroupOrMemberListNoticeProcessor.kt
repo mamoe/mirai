@@ -33,9 +33,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.internal.utils.toMemberInfo
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
@@ -212,7 +212,7 @@ internal class GroupOrMemberListNoticeProcessor(
                 } else {
                     throw contextualBugReportException(
                         "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
-                        data._miraiContentToString(),
+                        data.structureToString(),
                         null,
                         "并描述此时机器人是否被邀请加入群等其他",
                     )
@@ -244,7 +244,7 @@ internal class GroupOrMemberListNoticeProcessor(
                 }
                 else -> throw contextualBugReportException(
                     "parse SystemMsgNewGroup, subType=1",
-                    this._miraiContentToString(),
+                    this.structureToString(),
                     additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
                 )
             }
@@ -287,7 +287,7 @@ internal class GroupOrMemberListNoticeProcessor(
                     else -> {
                         throw contextualBugReportException(
                             "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
-                            this._miraiContentToString(),
+                            this.structureToString(),
                             null,
                             "并描述此时机器人是否被踢出群等",
                         )

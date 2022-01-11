@@ -145,8 +145,8 @@ internal class RichStatus(
                                     while (true) {
                                         if (lastPosition < 5) return@theSwitch
 
-                                        val var6 = byteBuffer.getInt()
-                                        var var4 = byteBuffer.get().toIntUnsigned()
+                                        byteBuffer.getInt()
+                                        byteBuffer.get().toIntUnsigned()
 
                                         // var9.topicsPos.add(new Pair(var6, var3));
                                         lastPosition -= 5

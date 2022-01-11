@@ -12,6 +12,9 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import org.apache.logging.log4j.Marker
 import org.apache.logging.log4j.MarkerManager
+import org.apache.logging.log4j.message.Message
+import org.apache.logging.log4j.message.SimpleMessage
+import org.apache.logging.log4j.message.SimpleMessageFactory
 import java.util.logging.Level as JulLevel
 import java.util.logging.Logger as JulLogger
 
@@ -19,35 +22,36 @@ internal class Log4jLoggerAdapter(
     private val logger: org.apache.logging.log4j.Logger,
     override val marker: Marker?,
 ) : MiraiLoggerPlatformBase(), MarkedMiraiLogger {
+    val factory: SimpleMessageFactory = SimpleMessageFactory.INSTANCE
 
     override fun verbose0(message: String?, e: Throwable?) {
         val marker = marker
-        if (marker != null) logger.trace(marker, message, e)
-        else logger.trace(message, e)
+        if (marker != null) logger.trace(marker, factory.newMessage(message), e)
+        else logger.trace(factory.newMessage(message), e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
         val marker = marker
-        if (marker != null) logger.debug(marker, message, e)
-        else logger.debug(message, e)
+        if (marker != null) logger.debug(marker, factory.newMessage(message), e)
+        else logger.debug(factory.newMessage(message), e)
     }
 
     override fun info0(message: String?, e: Throwable?) {
         val marker = marker
-        if (marker != null) logger.info(marker, message, e)
-        else logger.info(message, e)
+        if (marker != null) logger.info(marker, factory.newMessage(message), e)
+        else logger.info(factory.newMessage(message), e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
         val marker = marker
-        if (marker != null) logger.warn(marker, message, e)
-        else logger.warn(message, e)
+        if (marker != null) logger.warn(marker, factory.newMessage(message), e)
+        else logger.warn(factory.newMessage(message), e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
         val marker = marker
-        if (marker != null) logger.error(marker, message, e)
-        else logger.error(message, e)
+        if (marker != null) logger.error(marker, factory.newMessage(message), e)
+        else logger.error(factory.newMessage(message), e)
     }
 
     override val isVerboseEnabled: Boolean get() = logger.isTraceEnabled

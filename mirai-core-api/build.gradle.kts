@@ -8,6 +8,7 @@
  */
 @file:Suppress("UNUSED_VARIABLE")
 
+import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
@@ -16,7 +17,7 @@ plugins {
 
     //id("kotlinx-atomicfu")
     id("signing")
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 
     `maven-publish`
 }
@@ -27,13 +28,8 @@ kotlin {
     explicitApi()
 
     if (isAndroidSDKAvailable) {
-//        apply(from = rootProject.file("gradle/android.gradle"))
-//        android("android") {
-//            publishAllLibraryVariants()
-//        }
         jvm("android") {
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-            //   publishAllLibraryVariants()
         }
     } else {
         printAndroidNotInstalled()
@@ -45,9 +41,6 @@ kotlin {
 
     jvm("jvm")
 
-//    jvm("android") {
-//        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "android")
-//    }
 
     sourceSets {
         val commonMain by getting {
@@ -55,10 +48,12 @@ kotlin {
                 api(kotlin("reflect"))
                 api(`kotlinx-serialization-core-jvm`)
                 api(`kotlinx-serialization-json-jvm`)
+                api(`kotlinx-coroutines-core-jvm`) // don't remove it, otherwise IDE will complain
                 api(`kotlinx-coroutines-jdk8`)
                 api(`ktor-client-okhttp`)
 
                 implementation(project(":mirai-core-utils"))
+                implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf-jvm`)
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)
@@ -113,8 +108,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
-
-afterEvaluate {
-    project(":binary-compatibility-validator").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
-    project(":binary-compatibility-validator-android").tasks["apiBuild"].dependsOn(project(":mirai-core-api").tasks["build"])
-}
+configureBinaryValidators("jvm", "android")

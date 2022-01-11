@@ -29,9 +29,9 @@ import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.terminal.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.childScope
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream
