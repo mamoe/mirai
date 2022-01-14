@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -39,7 +39,6 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -408,68 +407,6 @@ public enum class ImageType(
 @DeprecatedSinceMirai(hiddenSince = "2.9")
 public val Image.md5: ByteArray
     get() = Image.calculateImageMd5ByImageId(imageId)
-
-
-/**
- * 所有 [Image] 实现的基类.
- */
-@MiraiInternalApi
-public sealed class AbstractImage : Image {
-    private val _stringValue: String? by lazy(NONE) { "[mirai:image:$imageId]" }
-
-    override val size: Long
-        get() = 0L
-    override val width: Int
-        get() = 0
-    override val height: Int
-        get() = 0
-    override val imageType: ImageType
-        get() = ImageType.UNKNOWN
-
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = if (isEmoji) {
-        "[动画表情]"
-    } else {
-        "[图片]"
-    }
-
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:image:").append(imageId).append("]")
-    }
-
-    final override fun hashCode(): Int = imageId.hashCode()
-    final override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is Image) return false
-        return this.imageId == other.imageId
-    }
-}
-
-
-/**
- * 好友图片
- *
- * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
- */
-// NotOnlineImage
-@MiraiInternalApi
-public abstract class FriendImage @MiraiInternalApi public constructor() :
-    AbstractImage() { // change to sealed in the future.
-    public companion object
-}
-
-/**
- * 群图片.
- *
- * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
- * @see Image 查看更多说明
- */
-// CustomFace
-@MiraiInternalApi
-public abstract class GroupImage @MiraiInternalApi public constructor() :
-    AbstractImage() { // change to sealed in the future.
-    public companion object
-}
 
 
 /**

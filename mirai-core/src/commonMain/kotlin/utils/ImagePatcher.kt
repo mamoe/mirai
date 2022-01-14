@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,12 +10,11 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.message.FriendImage
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
-import net.mamoe.mirai.message.data.FriendImage
-import net.mamoe.mirai.message.data.md5
 import net.mamoe.mirai.utils.ResourceAccessLock
 import net.mamoe.mirai.utils.UnsafeMutableNonNullProperty
 import net.mamoe.mirai.utils.currentTimeMillis

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("DEPRECATION_ERROR")
@@ -24,10 +24,69 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.structureToString
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.FlashImage
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
+
+
+/**
+ * 所有 [Image] 实现的基类.
+ */
+// moved from mirai-core-api since 2.11
+internal sealed class AbstractImage : Image {
+    private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId]" }
+
+    override val size: Long
+        get() = 0L
+    override val width: Int
+        get() = 0
+    override val height: Int
+        get() = 0
+    override val imageType: ImageType
+        get() = ImageType.UNKNOWN
+
+    final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = if (isEmoji) {
+        "[动画表情]"
+    } else {
+        "[图片]"
+    }
+
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:image:").append(imageId).append("]")
+    }
+
+    final override fun hashCode(): Int = imageId.hashCode()
+    final override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is Image) return false
+        return this.imageId == other.imageId
+    }
+}
+
+
+/**
+ * 好友图片
+ *
+ * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
+ */
+// NotOnlineImage
+// moved from mirai-core-api since 2.11
+internal sealed class FriendImage : AbstractImage()
+
+/**
+ * 群图片.
+ *
+ * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
+ * @see Image 查看更多说明
+ */
+// CustomFace
+// moved from mirai-core-api since 2.11
+internal sealed class GroupImage : AbstractImage()
+
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(with = OnlineGroupImageImpl.Serializer::class)
