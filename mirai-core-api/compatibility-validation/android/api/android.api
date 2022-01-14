@@ -5629,6 +5629,9 @@ public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
 	public static synthetic fun title$default (Lnet/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder;Ljava/lang/String;ILjava/lang/String;ILjava/lang/Object;)V
 }
 
+public final class net/mamoe/mirai/message/data/visitor/MessageVisitorKt {
+}
+
 public abstract class net/mamoe/mirai/network/CustomLoginFailedException : net/mamoe/mirai/network/LoginFailedException {
 	public fun <init> (Z)V
 	public fun <init> (ZLjava/lang/String;)V

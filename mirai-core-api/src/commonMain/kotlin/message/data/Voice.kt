@@ -17,6 +17,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 
 
@@ -175,6 +176,11 @@ public open class Voice @MiraiInternalApi constructor(
         result = 33 * result + _codec
         result = 15 * result + _url.hashCode()
         return result
+    }
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitVoice(this, data)
     }
 }
 

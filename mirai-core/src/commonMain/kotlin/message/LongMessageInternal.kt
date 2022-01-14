@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.message
@@ -13,9 +13,11 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
+import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.safeCast
 
 // internal runtime value, not serializable
@@ -28,6 +30,10 @@ internal data class LongMessageInternal internal constructor(override val conten
         val long = Mirai.downloadLongMessage(bot, resId)
 
         return MessageOrigin(SimpleServiceMessage(serviceId, content), resId, MessageOriginKind.LONG) + long
+    }
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.ex()?.visitLongMessageInternal(this, data) ?: super<AbstractServiceMessage>.accept(visitor, data)
     }
 
     companion object Key :
@@ -115,6 +121,13 @@ internal data class ForwardMessageInternal(
             source = source,
             summary = summary.trim(),
             nodeList = Mirai.downloadForwardMessage(bot, resId),
+        )
+    }
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.ex()?.visitForwardMessageInternal(this, data) ?: super<AbstractServiceMessage>.accept(
+            visitor,
+            data
         )
     }
 

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -19,7 +19,9 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -27,6 +29,8 @@ import net.mamoe.mirai.utils.safeCast
  */
 // @Serializable(SingleMessage.Serializer::class)
 public interface SingleMessage : Message {
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitSingleMessage(this, data)
 
     /**
      * @suppress deprecated since 2.4.0
@@ -66,6 +70,11 @@ public interface MessageMetadata : SingleMessage {
      * 返回空字符串
      */
     override fun contentToString(): String = ""
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMessageMetadata(this, data)
+    }
 }
 
 /**
@@ -85,6 +94,11 @@ public interface MessageMetadata : SingleMessage {
  * @see MusicShare 音乐分享
  */
 public interface MessageContent : SingleMessage {
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMessageContent(this, data)
+    }
+
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
 }
 

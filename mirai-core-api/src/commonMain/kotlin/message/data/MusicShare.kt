@@ -15,6 +15,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
@@ -129,6 +130,10 @@ public data class MusicShare(
             .append(']')
     }
 
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMusicShare(this, data)
+    }
 
     /**
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
