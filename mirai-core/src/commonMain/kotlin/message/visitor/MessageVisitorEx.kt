@@ -11,6 +11,8 @@
 package net.mamoe.mirai.internal.message.visitor
 
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.flags.*
+import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.castOrNull

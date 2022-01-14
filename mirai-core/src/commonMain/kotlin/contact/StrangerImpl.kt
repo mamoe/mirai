@@ -25,8 +25,8 @@ import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.event.events.StrangerMessagePostSendEvent
 import net.mamoe.mirai.event.events.StrangerMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.createMessageReceipt
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
+import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message

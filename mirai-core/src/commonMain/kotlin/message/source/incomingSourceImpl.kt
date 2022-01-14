@@ -22,7 +22,6 @@ import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
-import net.mamoe.mirai.internal.message.IncomingMessageSourceInternal
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody

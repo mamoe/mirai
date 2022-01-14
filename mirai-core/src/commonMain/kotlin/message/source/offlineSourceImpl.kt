@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal.message.source
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.message.MessageSourceInternal
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.message.toRichTextElems

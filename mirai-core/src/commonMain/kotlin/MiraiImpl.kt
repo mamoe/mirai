@@ -35,6 +35,10 @@ import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
 import net.mamoe.mirai.internal.event.InternalEventMechanism
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.image.*
+import net.mamoe.mirai.internal.message.image.OfflineGroupImage
+import net.mamoe.mirai.internal.message.image.OnlineFriendImageImpl
+import net.mamoe.mirai.internal.message.image.OnlineGroupImageImpl
 import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl

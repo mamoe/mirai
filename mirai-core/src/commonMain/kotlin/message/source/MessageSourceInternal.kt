@@ -7,14 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.source
 
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.MessageReceipt

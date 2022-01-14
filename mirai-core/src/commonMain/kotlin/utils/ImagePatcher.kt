@@ -10,8 +10,8 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.message.FriendImage
-import net.mamoe.mirai.internal.message.OfflineGroupImage
+import net.mamoe.mirai.internal.message.image.FriendImage
+import net.mamoe.mirai.internal.message.image.OfflineGroupImage
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.utils.ResourceAccessLock

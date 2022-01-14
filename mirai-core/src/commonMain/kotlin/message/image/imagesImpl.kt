@@ -9,7 +9,7 @@
 
 @file:Suppress("DEPRECATION_ERROR")
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.image
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
