@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.image
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
