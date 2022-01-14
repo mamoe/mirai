@@ -29,3 +29,28 @@ public fun String.dropEmoji(): String {
 }
 
 // endregion
+
+public fun CharSequence.chineseLength(upTo: Int = Int.MAX_VALUE): Int {
+    return this.sumUpTo(upTo) { it.chineseLength }
+}
+
+public val Char.chineseLength: Int
+    get() {
+        return when (this) {
+            in '\u0000'..'\u007F' -> 1
+            in '\u0080'..'\u07FF' -> 2
+            in '\u0800'..'\uFFFF' -> 3
+            else -> 4
+        }
+    }
+
+public inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): Int {
+    var sum = 0
+    for (element in this) {
+        sum += selector(element)
+        if (sum >= upTo) {
+            return sum
+        }
+    }
+    return sum
+}
