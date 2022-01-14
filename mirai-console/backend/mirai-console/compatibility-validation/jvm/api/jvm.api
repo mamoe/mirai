@@ -10,7 +10,6 @@ public final class net/mamoe/mirai/console/MalformedMiraiConsoleImplementationEr
 
 public abstract interface class net/mamoe/mirai/console/MiraiConsole : kotlinx/coroutines/CoroutineScope {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;
-	public abstract fun createLogger (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public abstract fun getBuildDate ()Ljava/time/Instant;
 	public abstract fun getBuiltInPluginLoaders ()Ljava/util/List;
 	public abstract fun getMainLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
@@ -22,11 +21,8 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsole : kotlinx/c
 }
 
 public final class net/mamoe/mirai/console/MiraiConsole$INSTANCE : net/mamoe/mirai/console/MiraiConsole {
-	public final fun addBot (JLjava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
-	public final fun addBot (J[BLkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
 	public static synthetic fun addBot$default (Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;JLjava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/Bot;
 	public static synthetic fun addBot$default (Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;J[BLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/Bot;
-	public fun createLogger (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public fun getBuildDate ()Ljava/time/Instant;
 	public fun getBuiltInPluginLoaders ()Ljava/util/List;
 	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
@@ -60,6 +56,7 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsoleImplementati
 	public abstract fun getConsoleCommandSender ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleCommandSenderImpl;
 	public abstract fun getConsoleDataScope ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope;
 	public abstract fun getConsoleInput ()Lnet/mamoe/mirai/console/util/ConsoleInput;
+	public fun getConsoleLaunchOptions ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleLaunchOptions;
 	public abstract fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public abstract fun getDataStorageForBuiltIns ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
 	public abstract fun getDataStorageForJvmPluginLoader ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
@@ -150,9 +147,6 @@ public abstract class net/mamoe/mirai/console/command/AbstractUserCommandSender 
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface class net/mamoe/mirai/console/command/BuiltInCommand : net/mamoe/mirai/console/command/Command {
 }
 
 public final class net/mamoe/mirai/console/command/BuiltInCommands {
@@ -320,7 +314,6 @@ public final class net/mamoe/mirai/console/command/CommandExecutionException : j
 
 public abstract interface class net/mamoe/mirai/console/command/CommandManager {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/command/CommandManager$INSTANCE;
-	public synthetic fun executeCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/console/command/Command;Lnet/mamoe/mirai/message/data/Message;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun executeCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/Message;Z)Lnet/mamoe/mirai/console/command/CommandExecuteResult;
 	public fun executeCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/Message;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun executeCommand$default (Lnet/mamoe/mirai/console/command/CommandManager;Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/console/command/Command;Lnet/mamoe/mirai/message/data/Message;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -339,7 +332,6 @@ public abstract interface class net/mamoe/mirai/console/command/CommandManager {
 }
 
 public final class net/mamoe/mirai/console/command/CommandManager$INSTANCE : net/mamoe/mirai/console/command/CommandManager {
-	public synthetic fun executeCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/console/command/Command;Lnet/mamoe/mirai/message/data/Message;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun executeCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/Message;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final synthetic fun findDuplicate (Lnet/mamoe/mirai/console/command/Command;)Lnet/mamoe/mirai/console/command/Command;
 	public fun findDuplicateCommand (Lnet/mamoe/mirai/console/command/Command;)Lnet/mamoe/mirai/console/command/Command;
@@ -423,7 +415,6 @@ public final class net/mamoe/mirai/console/command/CommandSender$Companion {
 public final class net/mamoe/mirai/console/command/CommandSenderKt {
 	public static final synthetic fun fold (Lnet/mamoe/mirai/console/command/CommandSender;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static synthetic fun fold$default (Lnet/mamoe/mirai/console/command/CommandSender;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/lang/Object;
-	public static final synthetic fun foldContext (Lnet/mamoe/mirai/console/command/UserCommandSender;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static final fun getBotOrNull (Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/Bot;
 	public static final fun getGroupOrNull (Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/contact/Group;
 	public static final fun isConsole (Lnet/mamoe/mirai/console/command/CommandSender;)Z
@@ -445,10 +436,6 @@ public abstract class net/mamoe/mirai/console/command/CompositeCommand : net/mam
 }
 
 protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$Description : java/lang/annotation/Annotation {
-	public abstract fun value ()Ljava/lang/String;
-}
-
-protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$Name : java/lang/annotation/Annotation {
 	public abstract fun value ()Ljava/lang/String;
 }
 
@@ -480,9 +467,6 @@ public final class net/mamoe/mirai/console/command/ConsoleCommandSender : net/ma
 	public final fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
-}
-
-public abstract class net/mamoe/mirai/console/command/FailureReason {
 }
 
 public abstract class net/mamoe/mirai/console/command/FailureReason$ArgumentLengthMismatch : net/mamoe/mirai/console/command/FailureReason {
@@ -642,10 +626,6 @@ public abstract class net/mamoe/mirai/console/command/SimpleCommand : net/mamoe/
 protected abstract interface annotation class net/mamoe/mirai/console/command/SimpleCommand$Handler : java/lang/annotation/Annotation {
 }
 
-protected abstract interface annotation class net/mamoe/mirai/console/command/SimpleCommand$Name : java/lang/annotation/Annotation {
-	public abstract fun value ()Ljava/lang/String;
-}
-
 public class net/mamoe/mirai/console/command/StrangerCommandSender : net/mamoe/mirai/console/command/AbstractUserCommandSender, kotlinx/coroutines/CoroutineScope {
 	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public fun getPermitteeId ()Lnet/mamoe/mirai/console/permission/PermitteeId;
@@ -676,12 +656,6 @@ public abstract class net/mamoe/mirai/console/command/TempCommandSenderOnMessage
 	public synthetic fun <init> (Lnet/mamoe/mirai/event/events/GroupTempMessageEvent;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/GroupTempMessageEvent;
 	public synthetic fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageEvent;
-}
-
-public final class net/mamoe/mirai/console/command/UnmatchedCommandSignature {
-	public fun <init> (Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;Lnet/mamoe/mirai/console/command/FailureReason;)V
-	public final fun getFailureReason ()Lnet/mamoe/mirai/console/command/FailureReason;
-	public final fun getSignature ()Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;
 }
 
 public abstract interface class net/mamoe/mirai/console/command/UserCommandSender : net/mamoe/mirai/console/command/CommandSender {
@@ -715,28 +689,6 @@ public final class net/mamoe/mirai/console/command/descriptor/AbstractCommandVal
 public abstract class net/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter : net/mamoe/mirai/console/command/descriptor/AbstractCommandParameter, net/mamoe/mirai/console/command/descriptor/CommandValueParameter {
 	public fun accepting (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;)Lnet/mamoe/mirai/console/command/descriptor/ArgumentAcceptance;
 	protected fun acceptingImpl (Lkotlin/reflect/KType;Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;)Lnet/mamoe/mirai/console/command/descriptor/ArgumentAcceptance;
-	public fun toString ()Ljava/lang/String;
-}
-
-public abstract class net/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter$Extended : net/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter {
-	public fun <init> ()V
-}
-
-public final class net/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter$StringConstant : net/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Z)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Z)Lnet/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter$StringConstant;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter$StringConstant;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/console/command/descriptor/AbstractCommandValueParameter$StringConstant;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getExpectingValue ()Ljava/lang/String;
-	public final fun getIgnoreCase ()Z
-	public fun getName ()Ljava/lang/String;
-	public fun getType ()Lkotlin/reflect/KType;
-	public fun hashCode ()I
-	public fun isOptional ()Z
-	public fun isVararg ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -972,18 +924,6 @@ public abstract interface class net/mamoe/mirai/console/command/descriptor/Comma
 	public abstract fun getValueParameters ()Ljava/util/List;
 }
 
-public abstract interface class net/mamoe/mirai/console/command/descriptor/CommandSignatureFromKFunction : net/mamoe/mirai/console/command/descriptor/CommandSignature {
-	public abstract fun getOriginFunction ()Lkotlin/reflect/KFunction;
-}
-
-public class net/mamoe/mirai/console/command/descriptor/CommandSignatureFromKFunctionImpl : net/mamoe/mirai/console/command/descriptor/AbstractCommandSignature, net/mamoe/mirai/console/command/descriptor/CommandSignatureFromKFunction {
-	public fun <init> (Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;Ljava/util/List;Lkotlin/reflect/KFunction;Lkotlin/jvm/functions/Function3;)V
-	public fun call (Lnet/mamoe/mirai/console/command/resolve/ResolvedCommandCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getOriginFunction ()Lkotlin/reflect/KFunction;
-	public fun getReceiverParameter ()Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;
-	public fun getValueParameters ()Ljava/util/List;
-}
-
 public class net/mamoe/mirai/console/command/descriptor/CommandSignatureImpl : net/mamoe/mirai/console/command/descriptor/AbstractCommandSignature, net/mamoe/mirai/console/command/descriptor/CommandSignature {
 	public fun <init> (Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;Ljava/util/List;Lkotlin/jvm/functions/Function3;)V
 	public fun call (Lnet/mamoe/mirai/console/command/resolve/ResolvedCommandCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1079,10 +1019,6 @@ public final class net/mamoe/mirai/console/command/descriptor/ExistingUserValueA
 	public fun parse (Ljava/lang/String;Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/contact/User;
 	public synthetic fun parse (Lnet/mamoe/mirai/message/data/MessageContent;Lnet/mamoe/mirai/console/command/CommandSender;)Ljava/lang/Object;
 	public fun parse (Lnet/mamoe/mirai/message/data/MessageContent;Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/contact/User;
-}
-
-public abstract interface annotation class net/mamoe/mirai/console/command/descriptor/ExperimentalCommandDescriptors : java/lang/annotation/Annotation {
-	public abstract fun message ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/command/descriptor/FloatValueArgumentParser {
@@ -1256,12 +1192,6 @@ public final class net/mamoe/mirai/console/command/parse/CommandCallImpl : net/m
 	public fun getValueArguments ()Ljava/util/List;
 }
 
-public abstract interface class net/mamoe/mirai/console/command/parse/CommandCallParser {
-	public static final field Companion Lnet/mamoe/mirai/console/command/parse/CommandCallParser$Companion;
-	public abstract fun parse (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/console/command/parse/CommandCall;
-	public static fun parseCommandCall (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/console/command/parse/CommandCall;
-}
-
 public final class net/mamoe/mirai/console/command/parse/CommandCallParser$Companion {
 	public final fun parseCommandCall (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/console/command/parse/CommandCall;
 }
@@ -1278,33 +1208,10 @@ public final class net/mamoe/mirai/console/command/parse/CommandValueArgumentKt 
 	public static final fun mapValue (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lnet/mamoe/mirai/console/command/descriptor/TypeVariant;)Ljava/lang/Object;
 }
 
-public final class net/mamoe/mirai/console/command/parse/DefaultCommandValueArgument : net/mamoe/mirai/console/command/parse/CommandValueArgument {
-	public fun <init> (Lnet/mamoe/mirai/message/data/Message;)V
-	public final fun component1 ()Lnet/mamoe/mirai/message/data/Message;
-	public final fun copy (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/console/command/parse/DefaultCommandValueArgument;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/command/parse/DefaultCommandValueArgument;Lnet/mamoe/mirai/message/data/Message;ILjava/lang/Object;)Lnet/mamoe/mirai/console/command/parse/DefaultCommandValueArgument;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getType ()Lkotlin/reflect/KType;
-	public fun getTypeVariants ()Ljava/util/List;
-	public fun getValue ()Lnet/mamoe/mirai/message/data/Message;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser : net/mamoe/mirai/console/command/parse/CommandCallParser {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser;
-	public fun parse (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/console/command/parse/CommandCall;
-}
-
 public final class net/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser$Provider : net/mamoe/mirai/console/extensions/CommandCallParserProvider {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser$Provider;
 	public synthetic fun getInstance ()Ljava/lang/Object;
 	public fun getInstance ()Lnet/mamoe/mirai/console/command/parse/CommandCallParser;
-}
-
-public final class net/mamoe/mirai/console/command/resolve/BuiltInCommandCallResolver : net/mamoe/mirai/console/command/resolve/CommandCallResolver {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/command/resolve/BuiltInCommandCallResolver;
-	public fun resolve (Lnet/mamoe/mirai/console/command/parse/CommandCall;)Lnet/mamoe/mirai/console/command/resolve/CommandResolveResult;
 }
 
 public abstract interface class net/mamoe/mirai/console/command/resolve/CommandCallInterceptor {
@@ -1335,7 +1242,6 @@ public abstract interface class net/mamoe/mirai/console/command/resolve/CommandC
 }
 
 public final class net/mamoe/mirai/console/command/resolve/CommandCallResolver$Companion {
-	public final fun resolveCall (Lnet/mamoe/mirai/console/command/parse/CommandCall;)Lnet/mamoe/mirai/console/command/resolve/CommandResolveResult;
 }
 
 public final class net/mamoe/mirai/console/command/resolve/CommandCallResolverKt {
@@ -1411,33 +1317,10 @@ public abstract class net/mamoe/mirai/console/data/AbstractPluginData : net/mamo
 	public final fun getUpdaterSerializer ()Lkotlinx/serialization/KSerializer;
 	public synthetic fun getUpdaterSerializer$mirai_console ()Lkotlinx/serialization/KSerializer;
 	public final fun getValueNodes ()Ljava/util/List;
-	public fun onInit (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginDataStorage;)V
-	public fun onValueChanged (Lnet/mamoe/mirai/console/data/Value;)V
 	public final fun provideDelegate (Lnet/mamoe/mirai/console/data/SerializerAwareValue;Ljava/lang/Object;Lkotlin/reflect/KProperty;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
-	public fun track (Lnet/mamoe/mirai/console/data/SerializerAwareValue;Ljava/lang/String;Ljava/util/List;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
-}
-
-public final class net/mamoe/mirai/console/data/AbstractPluginData$ValueNode {
-	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/console/data/Value;Ljava/util/List;Lkotlinx/serialization/KSerializer;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lnet/mamoe/mirai/console/data/Value;
-	public final fun component3 ()Ljava/util/List;
-	public final fun component4 ()Lkotlinx/serialization/KSerializer;
-	public final fun copy (Ljava/lang/String;Lnet/mamoe/mirai/console/data/Value;Ljava/util/List;Lkotlinx/serialization/KSerializer;)Lnet/mamoe/mirai/console/data/AbstractPluginData$ValueNode;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/data/AbstractPluginData$ValueNode;Ljava/lang/String;Lnet/mamoe/mirai/console/data/Value;Ljava/util/List;Lkotlinx/serialization/KSerializer;ILjava/lang/Object;)Lnet/mamoe/mirai/console/data/AbstractPluginData$ValueNode;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAnnotations ()Ljava/util/List;
-	public final fun getUpdaterSerializer ()Lkotlinx/serialization/KSerializer;
-	public final fun getValue ()Lnet/mamoe/mirai/console/data/Value;
-	public final fun getValueName ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/data/AbstractPluginDataKt {
-	public static final fun findBackingFieldValue (Lnet/mamoe/mirai/console/data/AbstractPluginData;Ljava/lang/String;)Lnet/mamoe/mirai/console/data/Value;
-	public static final fun findBackingFieldValue (Lnet/mamoe/mirai/console/data/AbstractPluginData;Lkotlin/reflect/KProperty;)Lnet/mamoe/mirai/console/data/Value;
-	public static final fun findBackingFieldValueNode (Lnet/mamoe/mirai/console/data/AbstractPluginData;Lkotlin/reflect/KProperty;)Lnet/mamoe/mirai/console/data/AbstractPluginData$ValueNode;
 }
 
 public class net/mamoe/mirai/console/data/AutoSavePluginConfig : net/mamoe/mirai/console/data/AutoSavePluginData, net/mamoe/mirai/console/data/PluginConfig {
@@ -1447,67 +1330,13 @@ public class net/mamoe/mirai/console/data/AutoSavePluginConfig : net/mamoe/mirai
 public class net/mamoe/mirai/console/data/AutoSavePluginData : net/mamoe/mirai/console/data/AbstractPluginData {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getSaveName ()Ljava/lang/String;
-	public fun onInit (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginDataStorage;)V
-	public final fun onValueChanged (Lnet/mamoe/mirai/console/data/Value;)V
-	protected fun shouldPerformAutoSaveWheneverChanged ()Z
-}
-
-public abstract interface class net/mamoe/mirai/console/data/AutoSavePluginDataHolder : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/console/data/PluginDataHolder {
-	public abstract fun getAutoSaveIntervalMillis ()Lkotlin/ranges/LongRange;
-}
-
-public abstract interface class net/mamoe/mirai/console/data/BooleanValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/ByteValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/CharValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/CompositeListValue : net/mamoe/mirai/console/data/ListValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/CompositeMapValue : net/mamoe/mirai/console/data/MapValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/CompositeSetValue : net/mamoe/mirai/console/data/SetValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/CompositeValue : net/mamoe/mirai/console/data/Value {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/DoubleValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/FloatValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/IntValue : net/mamoe/mirai/console/data/PrimitiveValue {
 }
 
 public abstract interface class net/mamoe/mirai/console/data/ListValue : net/mamoe/mirai/console/data/CompositeValue {
 }
 
-public abstract interface class net/mamoe/mirai/console/data/LongValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/MapValue : net/mamoe/mirai/console/data/CompositeValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/MemoryPluginDataStorage : net/mamoe/mirai/console/data/PluginDataStorage {
-	public static final field Companion Lnet/mamoe/mirai/console/data/MemoryPluginDataStorage$Companion;
-	public static fun create ()Lnet/mamoe/mirai/console/data/MemoryPluginDataStorage;
-}
-
 public final class net/mamoe/mirai/console/data/MemoryPluginDataStorage$Companion {
 	public final fun create ()Lnet/mamoe/mirai/console/data/MemoryPluginDataStorage;
-}
-
-public abstract interface class net/mamoe/mirai/console/data/MultiFilePluginDataStorage : net/mamoe/mirai/console/data/PluginDataStorage {
-	public static final field Companion Lnet/mamoe/mirai/console/data/MultiFilePluginDataStorage$Companion;
-	public static fun create (Ljava/nio/file/Path;)Lnet/mamoe/mirai/console/data/MultiFilePluginDataStorage;
-	public abstract fun getDirectoryPath ()Ljava/nio/file/Path;
 }
 
 public final class net/mamoe/mirai/console/data/MultiFilePluginDataStorage$Companion {
@@ -1521,8 +1350,6 @@ public abstract interface class net/mamoe/mirai/console/data/PluginData {
 	public abstract fun getSaveName ()Ljava/lang/String;
 	public abstract fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
 	public abstract fun getUpdaterSerializer ()Lkotlinx/serialization/KSerializer;
-	public abstract fun onInit (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginDataStorage;)V
-	public abstract fun onValueChanged (Lnet/mamoe/mirai/console/data/Value;)V
 }
 
 public final class net/mamoe/mirai/console/data/PluginDataExtensions {
@@ -1543,35 +1370,6 @@ public final class net/mamoe/mirai/console/data/PluginDataExtensions {
 	public static final fun withEmptyDefaultSetImmutable (Lnet/mamoe/mirai/console/data/SerializerAwareValue;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
 }
 
-public class net/mamoe/mirai/console/data/PluginDataExtensions$NotNullMap : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun clear ()V
-	public fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun containsKey (Ljava/lang/Object;)Z
-	public fun containsValue (Ljava/lang/Object;)Z
-	public final fun entrySet ()Ljava/util/Set;
-	public fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getKeys ()Ljava/util/Set;
-	public fun getOrDefault (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
-	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putAll (Ljava/util/Map;)V
-	public fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
-	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
-}
-
 public final class net/mamoe/mirai/console/data/PluginDataExtensions$NotNullMutableMap : net/mamoe/mirai/console/data/PluginDataExtensions$NotNullMap, java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
 	public fun clear ()V
 	public fun containsKey (Ljava/lang/Object;)Z
@@ -1590,10 +1388,6 @@ public final class net/mamoe/mirai/console/data/PluginDataExtensions$NotNullMuta
 	public fun remove (Ljava/lang/Object;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/console/data/PluginDataHolder {
-	public abstract fun getDataHolderName ()Ljava/lang/String;
-}
-
 public final class net/mamoe/mirai/console/data/PluginDataKt {
 	public static final fun value (Lnet/mamoe/mirai/console/data/PluginData;B)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
 	public static final fun value (Lnet/mamoe/mirai/console/data/PluginData;C)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
@@ -1604,47 +1398,11 @@ public final class net/mamoe/mirai/console/data/PluginDataKt {
 	public static final fun value (Lnet/mamoe/mirai/console/data/PluginData;Ljava/lang/String;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
 	public static final fun value (Lnet/mamoe/mirai/console/data/PluginData;S)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
 	public static final fun value (Lnet/mamoe/mirai/console/data/PluginData;Z)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
-	public static final fun valueFromKType (Lnet/mamoe/mirai/console/data/PluginData;Lkotlin/reflect/KType;Ljava/lang/Object;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
 	public static final fun valueImpl (Lnet/mamoe/mirai/console/data/PluginData;Lkotlin/reflect/KType;Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PluginDataStorage {
-	public abstract fun load (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginData;)V
-	public abstract fun store (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginData;)V
 }
 
 public final class net/mamoe/mirai/console/data/PluginDataStorageKt {
 	public static final synthetic fun getDirectory (Lnet/mamoe/mirai/console/data/MultiFilePluginDataStorage;)Ljava/io/File;
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveIntIntMapValue : net/mamoe/mirai/console/data/PrimitiveMapValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveIntListValue : net/mamoe/mirai/console/data/PrimitiveListValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveIntLongMapValue : net/mamoe/mirai/console/data/PrimitiveMapValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveIntSetValue : net/mamoe/mirai/console/data/PrimitiveSetValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveListValue : net/mamoe/mirai/console/data/ListValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveLongListValue : net/mamoe/mirai/console/data/PrimitiveListValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveLongSetValue : net/mamoe/mirai/console/data/PrimitiveSetValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveMapValue : net/mamoe/mirai/console/data/MapValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveSetValue : net/mamoe/mirai/console/data/SetValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/PrimitiveValue : net/mamoe/mirai/console/data/Value {
 }
 
 public class net/mamoe/mirai/console/data/ReadOnlyPluginConfig : net/mamoe/mirai/console/data/ReadOnlyPluginData, net/mamoe/mirai/console/data/PluginConfig {
@@ -1654,11 +1412,6 @@ public class net/mamoe/mirai/console/data/ReadOnlyPluginConfig : net/mamoe/mirai
 public class net/mamoe/mirai/console/data/ReadOnlyPluginData : net/mamoe/mirai/console/data/AbstractPluginData {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getSaveName ()Ljava/lang/String;
-	public fun onInit (Lnet/mamoe/mirai/console/data/PluginDataHolder;Lnet/mamoe/mirai/console/data/PluginDataStorage;)V
-	public final fun onValueChanged (Lnet/mamoe/mirai/console/data/Value;)V
-}
-
-public abstract interface class net/mamoe/mirai/console/data/ReferenceValue : net/mamoe/mirai/console/data/Value {
 }
 
 public final class net/mamoe/mirai/console/data/SerializableValue : net/mamoe/mirai/console/data/SerializerAwareValue, net/mamoe/mirai/console/data/Value {
@@ -1693,15 +1446,6 @@ public final class net/mamoe/mirai/console/data/SerializerAwareValue$Companion {
 	public final fun deserialize (Lnet/mamoe/mirai/console/data/SerializerAwareValue;Lkotlinx/serialization/StringFormat;Ljava/lang/String;)V
 	public final fun serialize (Lnet/mamoe/mirai/console/data/SerializerAwareValue;Lkotlinx/serialization/BinaryFormat;)[B
 	public final fun serialize (Lnet/mamoe/mirai/console/data/SerializerAwareValue;Lkotlinx/serialization/StringFormat;)Ljava/lang/String;
-}
-
-public abstract interface class net/mamoe/mirai/console/data/SetValue : net/mamoe/mirai/console/data/CompositeValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/ShortValue : net/mamoe/mirai/console/data/PrimitiveValue {
-}
-
-public abstract interface class net/mamoe/mirai/console/data/StringValue : net/mamoe/mirai/console/data/PrimitiveValue {
 }
 
 public abstract interface class net/mamoe/mirai/console/data/Value : kotlin/properties/ReadWriteProperty {
@@ -1761,15 +1505,10 @@ public abstract class net/mamoe/mirai/console/extension/AbstractExtensionPoint :
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractInstanceExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint {
-	public fun <init> (Lkotlin/reflect/KClass;)V
-	public fun <init> (Lkotlin/reflect/KClass;[Lkotlin/jvm/functions/Function0;)V
-	public fun <init> (Lkotlin/reflect/KClass;[Lnet/mamoe/mirai/console/extension/InstanceExtension;)V
 	public final fun getBuiltinImplementations ()[Lkotlin/jvm/functions/Function0;
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractSingletonExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint, net/mamoe/mirai/console/extension/SingletonExtensionPoint {
-	public fun <init> (Lkotlin/reflect/KClass;Ljava/lang/Object;)V
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function0;)V
 	public final fun getBuiltinImplementation ()Lkotlin/jvm/functions/Function0;
 	public fun getSelectedInstance ()Ljava/lang/Object;
 }
@@ -1967,43 +1706,8 @@ public final class net/mamoe/mirai/console/extensions/SingletonExtensionSelector
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class net/mamoe/mirai/console/logging/AbstractLoggerController : net/mamoe/mirai/console/logging/LoggerController {
-	public fun <init> ()V
-	protected abstract fun getPriority (Ljava/lang/String;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public fun shouldLog (Ljava/lang/String;Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;)Z
-	protected fun shouldLog (Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;)Z
-}
-
-public final class net/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority : java/lang/Enum {
-	public static final field ALL Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field Companion Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority$Companion;
-	public static final field DEBUG Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field ERROR Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field INFO Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field NONE Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field VERBOSE Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static final field WARNING Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	public static fun values ()[Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-}
-
 public final class net/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority$Companion {
 	public final fun by (Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-}
-
-public abstract class net/mamoe/mirai/console/logging/AbstractLoggerController$PathBased : net/mamoe/mirai/console/logging/AbstractLoggerController {
-	public fun <init> ()V
-	public fun <init> (C)V
-	public synthetic fun <init> (CILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	protected abstract fun findPriority (Ljava/lang/String;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	protected abstract fun getDefaultPriority ()Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	protected fun getPriority (Ljava/lang/String;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
-	protected fun getSpliterator ()C
-	protected fun nextPath (Ljava/lang/String;)Ljava/lang/String;
-}
-
-public abstract interface class net/mamoe/mirai/console/logging/LoggerController {
-	public abstract fun shouldLog (Ljava/lang/String;Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;)Z
 }
 
 public abstract class net/mamoe/mirai/console/permission/AbstractPermitteeId : net/mamoe/mirai/console/permission/PermitteeId {
@@ -2078,15 +1782,6 @@ public final class net/mamoe/mirai/console/permission/AbstractPermitteeId$AnyTem
 public final class net/mamoe/mirai/console/permission/AbstractPermitteeId$AnyUser : net/mamoe/mirai/console/permission/AbstractPermitteeId {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/permission/AbstractPermitteeId$AnyUser;
 	public fun asString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/console/permission/AbstractPermitteeId$AsStringSerializer : kotlinx/serialization/KSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/permission/AbstractPermitteeId$AsStringSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/console/permission/AbstractPermitteeId;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/console/permission/AbstractPermitteeId;)V
 }
 
 public final class net/mamoe/mirai/console/permission/AbstractPermitteeId$Companion {
@@ -2235,7 +1930,6 @@ public final class net/mamoe/mirai/console/permission/PermissionRegistryConflict
 
 public abstract interface class net/mamoe/mirai/console/permission/PermissionService {
 	public static final field Companion Lnet/mamoe/mirai/console/permission/PermissionService$Companion;
-	public fun allocatePermissionIdForPlugin (Lnet/mamoe/mirai/console/plugin/Plugin;Ljava/lang/String;)Lnet/mamoe/mirai/console/permission/PermissionId;
 	public static fun cancel (Lnet/mamoe/mirai/console/permission/Permittee;[Lnet/mamoe/mirai/console/permission/Permission;Z)V
 	public abstract fun cancel (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/Permission;Z)V
 	public static fun cancel (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermissionId;Z)V
@@ -2402,51 +2096,6 @@ public final class net/mamoe/mirai/console/plugin/ResourceContainer$Companion {
 	public final fun create (Lkotlin/reflect/KClass;)Lnet/mamoe/mirai/console/plugin/ResourceContainer;
 }
 
-public abstract interface class net/mamoe/mirai/console/plugin/center/PluginCenter {
-	public abstract fun downloadPlugin (Ljava/lang/Object;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun downloadPlugin (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun fetchPlugin (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun findPlugin (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getName ()Ljava/lang/String;
-	public abstract fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo {
-	public static final field Companion Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo$Companion;
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Ljava/lang/String;
-	public final fun component11 ()Ljava/util/List;
-	public final fun component12 ()Ljava/util/List;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/util/List;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Ljava/lang/String;
-	public final fun component8 ()Ljava/lang/String;
-	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAuthor ()Ljava/lang/String;
-	public final fun getChangeLog ()Ljava/util/List;
-	public final fun getCommands ()Ljava/util/List;
-	public final fun getConsoleVersion ()Ljava/lang/String;
-	public final fun getContact ()Ljava/lang/String;
-	public final fun getCoreVersion ()Ljava/lang/String;
-	public final fun getDescription ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getTags ()Ljava/util/List;
-	public final fun getUsage ()Ljava/lang/String;
-	public final fun getVcs ()Ljava/lang/String;
-	public final fun getVersion ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
 public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo$$serializer;
 	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
@@ -2461,34 +2110,6 @@ public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo
 
 public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInfo$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight {
-	public static final field Companion Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight$Companion;
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Ljava/util/List;
-	public final fun component8 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAuthor ()Ljava/lang/String;
-	public final fun getCommands ()Ljava/util/List;
-	public final fun getConsoleVersion ()Ljava/lang/String;
-	public final fun getCoreVersion ()Ljava/lang/String;
-	public final fun getDescription ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getTags ()Ljava/util/List;
-	public final fun getVersion ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
 public final class net/mamoe/mirai/console/plugin/center/PluginCenter$PluginInsight$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -2589,10 +2210,6 @@ public final class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPluginKt {
 	public static final synthetic fun reloadPluginData (Lnet/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin;Lnet/mamoe/mirai/console/data/PluginData;)V
 	public static final synthetic fun savePluginConfig (Lnet/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin;Lnet/mamoe/mirai/console/data/PluginConfig;)V
 	public static final synthetic fun savePluginData (Lnet/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin;Lnet/mamoe/mirai/console/data/PluginData;)V
-}
-
-public abstract interface class net/mamoe/mirai/console/plugin/jvm/ExportManager {
-	public abstract fun isExported (Ljava/lang/String;)Z
 }
 
 public abstract class net/mamoe/mirai/console/plugin/jvm/JavaPlugin : net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin, net/mamoe/mirai/console/plugin/jvm/JvmPlugin {
@@ -2706,21 +2323,6 @@ public abstract class net/mamoe/mirai/console/plugin/jvm/KotlinPlugin : net/mamo
 	public final fun getDescription ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;
 }
 
-public final class net/mamoe/mirai/console/plugin/jvm/StandardExportManagers {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/plugin/jvm/StandardExportManagers;
-	public static final fun parse (Ljava/util/Iterator;)Lnet/mamoe/mirai/console/plugin/jvm/ExportManager;
-}
-
-public final class net/mamoe/mirai/console/plugin/jvm/StandardExportManagers$AllDenied : net/mamoe/mirai/console/plugin/jvm/ExportManager {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/plugin/jvm/StandardExportManagers$AllDenied;
-	public fun isExported (Ljava/lang/String;)Z
-}
-
-public final class net/mamoe/mirai/console/plugin/jvm/StandardExportManagers$AllExported : net/mamoe/mirai/console/plugin/jvm/ExportManager {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/plugin/jvm/StandardExportManagers$AllExported;
-	public fun isExported (Ljava/lang/String;)Z
-}
-
 public abstract class net/mamoe/mirai/console/plugin/loader/AbstractFilePluginLoader : net/mamoe/mirai/console/plugin/loader/FilePluginLoader {
 	public fun <init> (Ljava/lang/String;)V
 	protected abstract fun extractPlugins (Lkotlin/sequences/Sequence;)Ljava/util/List;
@@ -2780,7 +2382,6 @@ public class net/mamoe/mirai/console/util/AnsiMessageBuilder : java/io/Serializa
 	public fun gray ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun green ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun hashCode ()I
-	public static final fun isAnsiSupported (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 	public fun lightBlue ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun lightCyan ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun lightGreen ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
@@ -2804,7 +2405,6 @@ public final class net/mamoe/mirai/console/util/AnsiMessageBuilder$Companion {
 	public final fun from (Ljava/lang/StringBuilder;)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public final fun from (Ljava/lang/StringBuilder;Z)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/console/util/AnsiMessageBuilder$Companion;Ljava/lang/StringBuilder;ZILjava/lang/Object;)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
-	public final fun isAnsiSupported (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 }
 
 public final class net/mamoe/mirai/console/util/AnsiMessageBuilderKt {
@@ -2837,29 +2437,6 @@ public abstract interface annotation class net/mamoe/mirai/console/util/ConsoleI
 
 public final class net/mamoe/mirai/console/util/ConsoleUtils {
 	public static final synthetic fun requestInput (Lnet/mamoe/mirai/console/MiraiConsole;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class net/mamoe/mirai/console/util/ContactUtils {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/util/ContactUtils;
-	public static final fun getContact (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun getContact (Lnet/mamoe/mirai/Bot;JZ)Lnet/mamoe/mirai/contact/Contact;
-	public static synthetic fun getContact$default (Lnet/mamoe/mirai/Bot;JZILjava/lang/Object;)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun getContactOrNull (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun getContactOrNull (Lnet/mamoe/mirai/Bot;JZ)Lnet/mamoe/mirai/contact/Contact;
-	public static synthetic fun getContactOrNull$default (Lnet/mamoe/mirai/Bot;JZILjava/lang/Object;)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun getFriendOrGroup (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun getFriendOrGroupOrNull (Lnet/mamoe/mirai/Bot;J)Lnet/mamoe/mirai/contact/Contact;
-	public static final fun renderContactOrName (Lnet/mamoe/mirai/contact/ContactOrBot;)Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/console/util/CoroutineScopeUtils {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/util/CoroutineScopeUtils;
-	public static final fun childScope (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/coroutines/CoroutineContext;)Lkotlinx/coroutines/CoroutineScope;
-	public static synthetic fun childScope$default (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Lkotlinx/coroutines/CoroutineScope;
-	public static final fun childScopeContext (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
-	public static synthetic fun childScopeContext$default (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Lkotlin/coroutines/CoroutineContext;
-	public static final fun overrideWithSupervisorJob (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;)Lkotlin/coroutines/CoroutineContext;
-	public static synthetic fun overrideWithSupervisorJob$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;ILjava/lang/Object;)Lkotlin/coroutines/CoroutineContext;
 }
 
 public abstract interface class net/mamoe/mirai/console/util/MessageScope {
@@ -2920,42 +2497,6 @@ public final class net/mamoe/mirai/console/util/MessageScopeKt {
 	public static final synthetic fun toMessageScopeMessageScopeFlow (Lkotlinx/coroutines/flow/Flow;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toMessageScopeMessageScopeIterable (Ljava/lang/Iterable;)Lnet/mamoe/mirai/console/util/MessageScope;
 	public static final fun toMessageScopeMessageScopeSequence (Lkotlin/sequences/Sequence;)Lnet/mamoe/mirai/console/util/MessageScope;
-}
-
-public final class net/mamoe/mirai/console/util/MessageUtils {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/util/MessageUtils;
-	public static final fun firstContent (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/MessageContent;
-	public static final fun firstContentOrNull (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/MessageContent;
-	public static final fun messageContentsSequence (Lnet/mamoe/mirai/message/data/MessageChain;)Lkotlin/sequences/Sequence;
-}
-
-public final class net/mamoe/mirai/console/util/NamedSupervisorJob : kotlinx/coroutines/CompletableJob {
-	public fun <init> (Ljava/lang/String;)V
-	public fun <init> (Ljava/lang/String;Lkotlinx/coroutines/Job;)V
-	public synthetic fun <init> (Ljava/lang/String;Lkotlinx/coroutines/Job;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun attachChild (Lkotlinx/coroutines/ChildJob;)Lkotlinx/coroutines/ChildHandle;
-	public synthetic fun cancel ()V
-	public synthetic fun cancel (Ljava/lang/Throwable;)Z
-	public fun cancel (Ljava/util/concurrent/CancellationException;)V
-	public fun complete ()Z
-	public fun completeExceptionally (Ljava/lang/Throwable;)Z
-	public fun fold (Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
-	public fun get (Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext$Element;
-	public fun getCancellationException ()Ljava/util/concurrent/CancellationException;
-	public fun getChildren ()Lkotlin/sequences/Sequence;
-	public fun getKey ()Lkotlin/coroutines/CoroutineContext$Key;
-	public fun getOnJoin ()Lkotlinx/coroutines/selects/SelectClause0;
-	public fun invokeOnCompletion (Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/DisposableHandle;
-	public fun invokeOnCompletion (ZZLkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/DisposableHandle;
-	public fun isActive ()Z
-	public fun isCancelled ()Z
-	public fun isCompleted ()Z
-	public fun join (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun minusKey (Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext;
-	public fun plus (Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
-	public fun plus (Lkotlinx/coroutines/Job;)Lkotlinx/coroutines/Job;
-	public fun start ()Z
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/util/SemVersion : java/lang/Comparable {
