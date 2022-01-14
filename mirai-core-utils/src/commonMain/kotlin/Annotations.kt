@@ -18,8 +18,22 @@ import kotlin.annotation.AnnotationTarget.*
 public annotation class TestOnly
 
 /**
+ * 标注 API 弃用记录, 用于在将来提升弃用等级.
+ *
+ * 注意, 在使用时必须使用 named arguments, 如:
+ * ```
+ * @DeprecatedSinceMirai(warningSince = "2.9")
+ * ```
+ *
  * @since 2.9.0-RC
  */ // https://github.com/mamoe/mirai/issues/1669
+@Target(
+    CLASS,
+    PROPERTY,
+    CONSTRUCTOR,
+    FUNCTION,
+    TYPEALIAS
+)
 public annotation class DeprecatedSinceMirai(
     val warningSince: String = "",
     val errorSince: String = "",

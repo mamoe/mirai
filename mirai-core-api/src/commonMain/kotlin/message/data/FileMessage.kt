@@ -80,6 +80,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
      */
     @Suppress("DEPRECATION")
     @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
         @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)

@@ -164,7 +164,7 @@ internal object MessageScopeCodegen {
                     @Deprecated(
                         "Senseless scopeWith. Use asMessageScope.",
                         ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope")
-                    )
+                    ) // diagnostic deprecation
                     public inline fun ${a}.scopeWith(): MessageScope = asMessageScope()
                 """
                 )
@@ -181,7 +181,7 @@ internal object MessageScopeCodegen {
                             "net.mamoe.mirai.console.util.asMessageScope", 
                             "net.mamoe.mirai.console.util.invoke",
                         )
-                    )
+                    ) // diagnostic deprecation
                     public inline fun <R> ${a}.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
 """
                 )

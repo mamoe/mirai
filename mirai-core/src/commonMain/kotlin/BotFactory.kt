@@ -16,6 +16,7 @@ package net.mamoe.mirai.internal
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 /**
  * QQ for Android
@@ -23,8 +24,9 @@ import net.mamoe.mirai.utils.BotConfiguration
 @Deprecated(
     "BotFactoryImpl was accidentally made public, use BotFactory.INSTANCE instead",
     ReplaceWith("BotFactory", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.WARNING,
+    DeprecationLevel.ERROR,
 )
+@DeprecatedSinceMirai(errorSince = "2.10")
 public object BotFactoryImpl : BotFactory {
 
     /**

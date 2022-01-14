@@ -5670,7 +5670,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getContactListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
-	public final fun getFirstReconnectDelayMillis ()J
+	public final synthetic fun getFirstReconnectDelayMillis ()J
 	public final fun getHeartbeatPeriodMillis ()J
 	public final fun getHeartbeatStrategy ()Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
 	public final fun getHeartbeatTimeoutMillis ()J
@@ -5681,7 +5681,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
 	public final fun getParentCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public final fun getProtocol ()Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
-	public final fun getReconnectPeriodMillis ()J
+	public final synthetic fun getReconnectPeriodMillis ()J
 	public final fun getReconnectionRetryTimes ()I
 	public final fun getStatHeartbeatPeriodMillis ()J
 	public final fun getWorkingDir ()Ljava/io/File;
@@ -5716,7 +5716,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setContactListCache (Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;)V
 	public final fun setConvertLineSeparator (Z)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
-	public final fun setFirstReconnectDelayMillis (J)V
+	public final synthetic fun setFirstReconnectDelayMillis (J)V
 	public final fun setHeartbeatPeriodMillis (J)V
 	public final fun setHeartbeatStrategy (Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;)V
 	public final fun setHeartbeatTimeoutMillis (J)V
@@ -5727,7 +5727,7 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
 	public final fun setParentCoroutineContext (Lkotlin/coroutines/CoroutineContext;)V
 	public final fun setProtocol (Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;)V
-	public final fun setReconnectPeriodMillis (J)V
+	public final synthetic fun setReconnectPeriodMillis (J)V
 	public final fun setReconnectionRetryTimes (I)V
 	public final fun setShowingVerboseEventLog (Z)V
 	public final fun setStatHeartbeatPeriodMillis (J)V
@@ -5882,7 +5882,6 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun create (Ljava/io/RandomAccessFile;Ljava/lang/String;Z)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static fun create ([B)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static fun create ([BLjava/lang/String;)Lnet/mamoe/mirai/utils/ExternalResource;
-	public static fun createAutoCloseable (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public abstract fun getClosed ()Lkotlinx/coroutines/Deferred;
 	public abstract fun getFormatName ()Ljava/lang/String;
 	public abstract fun getMd5 ()[B
@@ -5947,7 +5946,6 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/RandomAccessFile;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;[BLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun createAutoCloseable (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;

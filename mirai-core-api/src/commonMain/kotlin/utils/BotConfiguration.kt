@@ -198,15 +198,17 @@ public open class BotConfiguration { // open for Java
     /** 心跳失败后的第一次重连前的等待时间. */
     @Deprecated(
         "Useless since new network. Please just remove this.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
     public var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
     /** 重连失败后, 继续尝试的每次等待时间 */
     @Deprecated(
         "Useless since new network. Please just remove this.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
     public var reconnectPeriodMillis: Long = 5.secondsToMillis
 
     /** 最多尝试多少次重连 */
@@ -585,10 +587,6 @@ public open class BotConfiguration { // open for Java
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
             new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
             new.heartbeatStrategy = heartbeatStrategy
-            @Suppress("DEPRECATION")
-            new.firstReconnectDelayMillis = firstReconnectDelayMillis
-            @Suppress("DEPRECATION")
-            new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.autoReconnectOnForceOffline = autoReconnectOnForceOffline
             new.loginSolver = loginSolver

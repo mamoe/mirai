@@ -111,7 +111,8 @@ internal class GroupImpl constructor(
     override lateinit var botAsMember: NormalMemberImpl
 
     @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
+    @DeprecatedSinceMirai(warningSince = "2.8")
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
     override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 

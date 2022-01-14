@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -151,6 +152,7 @@ public fun <R> EventChannel<*>.subscribeUserMessages(
     ),
     DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
 public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<GroupTempMessageEvent, Listener<GroupTempMessageEvent>, Unit, Unit>
 
 /**
@@ -167,6 +169,7 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<Group
     ),
     DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
 public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: ConcurrencyKind = CONCURRENT,

@@ -2035,7 +2035,7 @@ public abstract interface class net/mamoe/mirai/console/plugin/PluginFileExtensi
 public final class net/mamoe/mirai/console/plugin/PluginKt {
 	public static final fun getAuthor (Lnet/mamoe/mirai/console/plugin/Plugin;)Ljava/lang/String;
 	public static final fun getDependencies (Lnet/mamoe/mirai/console/plugin/Plugin;)Ljava/util/Set;
-	public static final fun getDescription (Lnet/mamoe/mirai/console/plugin/Plugin;)Lnet/mamoe/mirai/console/plugin/description/PluginDescription;
+	public static final synthetic fun getDescription (Lnet/mamoe/mirai/console/plugin/Plugin;)Lnet/mamoe/mirai/console/plugin/description/PluginDescription;
 	public static final fun getId (Lnet/mamoe/mirai/console/plugin/Plugin;)Ljava/lang/String;
 	public static final fun getInfo (Lnet/mamoe/mirai/console/plugin/Plugin;)Ljava/lang/String;
 	public static final fun getName (Lnet/mamoe/mirai/console/plugin/Plugin;)Ljava/lang/String;

@@ -17,10 +17,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.utils.*
 
 
 /**
@@ -66,14 +63,15 @@ public abstract class PttMessage : MessageContent {
  * - 将 [Group.uploadVoice] 替换为 [Group.uploadAudio]
  * - 如果有必须使用旧 [Voice] 类型的情况, 请使用 [Audio.toVoice]
  */
-@Suppress("DuplicatedCode", "DEPRECATION")
+@Suppress("DuplicatedCode", "DEPRECATION", "DEPRECATION_ERROR")
 @Serializable
 @SerialName(Voice.SERIAL_NAME)
 @Deprecated(
     "Please use Audio instead.",
     replaceWith = ReplaceWith("Audio", "net.mamoe.mirai.message.data.Audio"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 ) // deprecated since 2.7
+@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
 public open class Voice @MiraiInternalApi constructor(
     @MiraiExperimentalApi public override val fileName: String,
     @MiraiExperimentalApi public override val md5: ByteArray,
@@ -83,6 +81,12 @@ public open class Voice @MiraiInternalApi constructor(
     private val _url: String
 ) : PttMessage() {
 
+    @Deprecated(
+        "Please use Audio instead.",
+        replaceWith = ReplaceWith("Audio.Key", "net.mamoe.mirai.message.data.Audio.Key"),
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public companion object Key : AbstractPolymorphicMessageKey<PttMessage, Voice>(PttMessage, { it.safeCast() }) {
         public const val SERIAL_NAME: String = "Voice"
 
@@ -95,8 +99,9 @@ public open class Voice @MiraiInternalApi constructor(
         @Suppress("DeprecatedCallableAddReplaceWith")
         @Deprecated(
             "Please consider migrating to Audio",
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         @JvmStatic
         public fun fromAudio(audio: Audio): Voice {
             audio.run {
@@ -175,10 +180,11 @@ public open class Voice @MiraiInternalApi constructor(
  *
  * @since 2.7
  */
-@Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+@Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith", "DEPRECATION_ERROR")
 @Deprecated(
     "Please migrate to Audio",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 ) // deprecated since 2.7
 @JvmSynthetic
+@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
 public inline fun Audio.toVoice(): Voice = Voice.fromAudio(this)

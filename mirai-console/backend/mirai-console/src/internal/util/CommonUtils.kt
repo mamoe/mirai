@@ -50,7 +50,7 @@ internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
 }
 
 @Suppress("DeprecatedCallableAddReplaceWith", "UnusedParameter", "UNUSED_PARAMETER")
-@Deprecated("Useless ifNull on not null value.")
+@Deprecated("Useless ifNull on not null value.") // diagnostic deprecation
 @JvmName("ifNull1")
 internal inline fun <T : Any> T.ifNull(block: () -> T): T = this
 

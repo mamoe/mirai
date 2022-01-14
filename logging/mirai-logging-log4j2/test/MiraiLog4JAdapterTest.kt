@@ -21,7 +21,7 @@ import kotlin.test.assertIs
 
 internal class MiraiLog4JAdapterTest {
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     @Test
     fun `services prevail than legacy overrides`() {
         MiraiLogger.setDefaultLoggerCreator {

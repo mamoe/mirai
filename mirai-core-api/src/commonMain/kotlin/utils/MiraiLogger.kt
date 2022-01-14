@@ -94,7 +94,8 @@ public interface MiraiLogger {
          */
         @MiraiInternalApi
         @MiraiExperimentalApi
-        @Deprecated("Deprecated.") // deprecated since 2.7
+        @Deprecated("Deprecated.", level = DeprecationLevel.ERROR) // deprecated since 2.7
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
 
         /**
@@ -103,9 +104,10 @@ public interface MiraiLogger {
         @Suppress("DeprecatedCallableAddReplaceWith")
         @Deprecated(
             "Please set factory by providing an service of type net.mamoe.mirai.utils.MiraiLogger.Factory",
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
         @JvmStatic
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
             DefaultFactoryOverrides.override { _, identity -> creator(identity) }
         }
@@ -119,9 +121,10 @@ public interface MiraiLogger {
             "Please use MiraiLogger.Factory.create", ReplaceWith(
                 "MiraiLogger.Factory.create(YourClass::class, identity)",
                 "net.mamoe.mirai.utils.MiraiLogger"
-            ), level = DeprecationLevel.WARNING
+            ), level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
         @JvmStatic
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
     }
 
@@ -208,7 +211,8 @@ public interface MiraiLogger {
      * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MynLogger() + MyLogger2()`
      */
     @Suppress("UNUSED_PARAMETER")
-    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.ERROR) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public var follower: MiraiLogger?
         get() = null
         set(value) {}
@@ -274,7 +278,8 @@ public interface MiraiLogger {
      * @return [follower]
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.ERROR) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public operator fun <T : MiraiLogger> plus(follower: T): T = follower
 }
 
@@ -464,12 +469,13 @@ public class MiraiLoggerWithSwitch internal constructor(private val delegate: Mi
  * @see PlatformLogger
  * @see SimpleLogger
  */
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     public override val isEnabled: Boolean get() = true
 
     @Suppress("OverridingDeprecatedMember")
-    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.ERROR) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public final override var follower: MiraiLogger? = null
 
     public final override fun verbose(message: String?) {
@@ -544,7 +550,8 @@ public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     protected abstract fun error0(message: String?, e: Throwable?)
 
     @Suppress("OverridingDeprecatedMember")
-    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.ERROR) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public override operator fun <T : MiraiLogger> plus(follower: T): T {
         this.follower = follower
         return follower

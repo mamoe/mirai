@@ -548,15 +548,18 @@ internal class RemoteFileImpl(
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(resource: ExternalResource): FileMessage {
         return upload(resource, null)
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
         file.toExternalResource().use { upload(it, callback) }
 
     //compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File): FileMessage {
         // Dear compiler:
         //
