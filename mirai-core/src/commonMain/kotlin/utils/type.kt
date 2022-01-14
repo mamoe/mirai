@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.utils
@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.internal.message.ForwardMessageInternal
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.chineseLength
 import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.toLongUnsigned
 import java.net.Inet4Address
@@ -39,17 +40,6 @@ internal fun String.toIpV4Long(): Long {
             Inet4Address.getByName(this).address.toInt().toLongUnsigned()
         } catch (e: UnknownHostException) {
             -2
-        }
-    }
-}
-
-internal fun String.chineseLength(upTo: Int): Int {
-    return this.sumUpTo(upTo) {
-        when (it) {
-            in '\u0000'..'\u007F' -> 1
-            in '\u0080'..'\u07FF' -> 2
-            in '\u0800'..'\uFFFF' -> 3
-            else -> 4
         }
     }
 }
@@ -82,13 +72,3 @@ internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: 
     return sum
 }
 
-internal inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): Int {
-    var sum = 0
-    for (element in this) {
-        sum += selector(element)
-        if (sum >= upTo) {
-            return sum
-        }
-    }
-    return sum
-}
