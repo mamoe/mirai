@@ -100,6 +100,9 @@ open class MiraiConsoleImplementationTerminal
             require(isDirectory) { "rootDir $absolutePath is not a directory" }
         }
     }
+
+    override val consoleLaunchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions
+        get() = ConsoleTerminalSettings.launchOptions
 }
 
 val lineReader: LineReader by lazy {

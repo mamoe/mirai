@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
@@ -330,6 +331,25 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val backendAccess: BackendAccess
         get() = backendAccessInstance
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ConsoleLaunchOptions
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Console 启动参数, 修改参数会改变默认行为
+     * @since 2.10.0-RC
+     */
+    @ConsoleExperimentalApi
+    public class ConsoleLaunchOptions {
+        @JvmField
+        public var crashWhenPluginLoadFailed: Boolean = false
+    }
+
+    @ConsoleExperimentalApi
+    public val consoleLaunchOptions: ConsoleLaunchOptions
+        get() = ConsoleLaunchOptions()
+
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
             override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
@@ -339,6 +359,10 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         @Volatile
         internal var instance: MiraiConsoleImplementation? = null
         internal val instanceInitialized: Boolean get() = instance != null
+
+        @JvmSynthetic
+        internal var options: ConsoleLaunchOptions = ConsoleLaunchOptions()
+
         private val initLock = ReentrantLock()
 
         /**
@@ -362,6 +386,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
                             "Run MiraiConsole.cancel to kill old instance before starting another instance."
                 )
             }
+            options = this.consoleLaunchOptions
             this@Companion.instance = this
             kotlin.runCatching {
                 MiraiConsoleImplementationBridge.doStart()

@@ -13,9 +13,9 @@ import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.PluginComponentStorage
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.permission.Permission
@@ -93,7 +93,10 @@ internal abstract class JvmPluginInternal(
                 cancel(CancellationException("plugin disabled"))
             },
             onFailure = {
-                cancel(CancellationException("Exception while enabling plugin", it))
+                cancel(CancellationException("Exception while disabling plugin", it))
+                if (MiraiConsoleImplementation.options.crashWhenPluginLoadFailed) {
+                    throw it
+                }
             }
         )
         isEnabled = false
@@ -120,6 +123,9 @@ internal abstract class JvmPluginInternal(
             onFailure = {
                 cancel(CancellationException("Exception while enabling plugin", it))
                 logger.error(it)
+                if (MiraiConsoleImplementation.options.crashWhenPluginLoadFailed) {
+                    throw it
+                }
                 return false
             }
         )

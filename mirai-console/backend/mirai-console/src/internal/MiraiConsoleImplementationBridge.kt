@@ -81,6 +81,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
 
     override val mainLogger: MiraiLogger by lazy { createLogger("main") }
 
+    override val consoleLaunchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions get() = MiraiConsoleImplementation.options
+
     init {
         // TODO: Replace to standard api
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
