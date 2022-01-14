@@ -20,7 +20,13 @@ import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.toPtt
+import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock

@@ -20,6 +20,8 @@ import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock

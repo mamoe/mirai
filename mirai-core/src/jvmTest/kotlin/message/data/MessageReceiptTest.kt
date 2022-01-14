@@ -17,7 +17,7 @@ import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.message.ForwardMessageInternal
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -69,9 +69,11 @@ internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
                                 sender = bot,
                                 target = group,
                                 time = currentTimeSeconds().toInt(),
-                        originalMessage = message //,
-                        //   sourceMessage = message
-                    )))
+                                originalMessage = message //,
+                                //   sourceMessage = message
+                            )
+                        )
+                    )
                     listOf()
                 }
         }
