@@ -35,6 +35,14 @@ import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
 import net.mamoe.mirai.internal.event.InternalEventMechanism
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.source.*
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromFriendImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromStrangerImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromTempImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.ResourceKind

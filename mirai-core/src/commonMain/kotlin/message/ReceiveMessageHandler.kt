@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
+import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
