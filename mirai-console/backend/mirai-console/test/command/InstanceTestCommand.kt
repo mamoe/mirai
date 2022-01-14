@@ -28,6 +28,9 @@ import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
+import java.time.*
+import java.time.temporal.TemporalAccessor
+import kotlin.reflect.KClass
 import kotlin.test.*
 
 object TestCompositeCommand : CompositeCommand(
@@ -88,6 +91,64 @@ object TestEnumArgCommand : CompositeCommand(owner, "testenum") {
     @SubCommand
     fun CommandSender.e1(enum: TestEnum) {
         Testing.ok(enum)
+    }
+}
+
+object TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
+
+    @SubCommand
+    fun CommandSender.instant(temporal: Instant) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.year(temporal: Year) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.yearmonth(temporal: YearMonth) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.localdate(temporal: LocalDate) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.localtime(temporal: LocalTime) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.localdatetime(temporal: LocalDateTime) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.offsettime(temporal: OffsetTime) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.offsetdatetime(temporal: OffsetDateTime) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.zoneddatetime(temporal: ZonedDateTime) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.monthday(temporal: MonthDay) {
+        Testing.ok(temporal)
+    }
+
+    @SubCommand
+    fun CommandSender.zoneoffset(temporal: ZoneOffset) {
+        Testing.ok(temporal)
     }
 }
 
@@ -219,6 +280,36 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
                 Testing.ok(Unit)
             }
 
+        }
+    }
+
+    @Test
+    fun `test temporal argument`() = runBlocking {
+        TestTemporalArgCommand.withRegistration {
+            val temporal: List<KClass<out TemporalAccessor>> = listOf(
+                Instant::class,
+                Year::class,
+                YearMonth::class,
+                LocalDate::class,
+                LocalTime::class,
+                LocalDateTime::class,
+                OffsetTime::class,
+                OffsetDateTime::class,
+                ZonedDateTime::class,
+                MonthDay::class,
+                ZoneOffset::class
+            )
+
+            for (kClass in temporal) {
+                val subCommand = kClass.simpleName!!
+                val implement: TemporalAccessor = withTesting {
+                    assertSuccess(execute(sender, PlainText(subCommand), PlainText("now")))
+                }
+                assertTrue { kClass.isInstance(implement) }
+                assertEquals(implement, withTesting {
+                    assertSuccess(execute(sender, PlainText(subCommand), PlainText("$implement")))
+                })
+            }
         }
     }
 

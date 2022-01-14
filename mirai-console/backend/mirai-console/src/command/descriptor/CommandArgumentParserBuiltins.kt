@@ -21,6 +21,8 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import java.time.temporal.TemporalAccessor
 
 
 /**
@@ -475,6 +477,32 @@ public class EnumValueArgumentParser<T : Enum<T>>(
             delegate(raw)
         } catch (e: Throwable) {
             illegalArgument("无法解析 $raw 为 ${type.simpleName}")
+        }
+    }
+}
+
+/**
+ * 解析参数为时间 [T]
+ * @param now 返回当前时间
+ * @param parse 从字符串解析时间
+ * @since 2.10
+ */
+@MiraiExperimentalApi
+public class TemporalArgumentParser<T : TemporalAccessor>(
+    private val type: Class<T>,
+    private val now: () -> T,
+    private val parse: (CharSequence) -> T,
+) : InternalCommandValueArgumentParserExtensions<T>() {
+
+    override fun parse(raw: String, sender: CommandSender): T {
+        return try {
+            if (raw.equals(other = "now", ignoreCase = true)) {
+                now.invoke()
+            } else {
+                parse.invoke(raw)
+            }
+        } catch (e: Throwable) {
+            illegalArgument("无法解析 $raw 为 ${type.javaClass}")
         }
     }
 }
