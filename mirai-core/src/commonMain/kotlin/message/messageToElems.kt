@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.message.data.*
 import net.mamoe.mirai.internal.message.flags.InternalFlagOnlyMessage
 import net.mamoe.mirai.internal.message.image.*
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
@@ -177,7 +178,7 @@ internal fun MessageChain.toRichTextElems(
                 .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
 
 
-            is AtAll -> elements.add(atAllData)
+            is AtAll -> elements.add(AtAll.jceData)
             is Face -> elements.add(
                 if (currentMessage.id >= 260) {
                     ImMsgBody.Elem(commonElem = currentMessage.toCommData())

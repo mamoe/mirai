@@ -7,12 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.contact.takeSingleContent
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
+import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind

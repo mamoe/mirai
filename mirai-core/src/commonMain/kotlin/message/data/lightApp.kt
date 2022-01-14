@@ -7,12 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.message.RefinableMessage
+import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 

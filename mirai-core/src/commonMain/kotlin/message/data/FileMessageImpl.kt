@@ -8,7 +8,7 @@
  */
 
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull

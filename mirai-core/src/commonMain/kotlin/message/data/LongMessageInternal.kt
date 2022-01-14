@@ -7,12 +7,15 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
+import net.mamoe.mirai.internal.message.RefinableMessage
+import net.mamoe.mirai.internal.message.RefineContext
+import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.message.MessageReceipt

@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.contact.ContactOrBot
-import net.mamoe.mirai.internal.message.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.chineseLength
 import net.mamoe.mirai.utils.toInt

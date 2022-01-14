@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
+import net.mamoe.mirai.internal.message.data.*
 import net.mamoe.mirai.internal.message.image.OnlineFriendImageImpl
 import net.mamoe.mirai.internal.message.image.OnlineGroupImageImpl
 import net.mamoe.mirai.internal.message.source.*

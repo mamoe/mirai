@@ -8,12 +8,14 @@
  */
 
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.message.RefinableMessage
+import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.Dice

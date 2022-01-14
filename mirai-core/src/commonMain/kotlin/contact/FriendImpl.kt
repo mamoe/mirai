@@ -23,7 +23,7 @@ import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
-import net.mamoe.mirai.internal.message.OfflineAudioImpl
+import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody

@@ -20,6 +20,10 @@ import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.data.checkIsImpl
+import net.mamoe.mirai.internal.message.data.forwardMessage
+import net.mamoe.mirai.internal.message.data.longMessage
 import net.mamoe.mirai.internal.message.flags.DontAsLongMessage
 import net.mamoe.mirai.internal.message.flags.ForceAsLongMessage
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
