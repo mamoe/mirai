@@ -9,7 +9,7 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.flags
 
 import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.message.data.AbstractMessageKey
@@ -18,6 +18,11 @@ import net.mamoe.mirai.message.data.MessageKey
 import net.mamoe.mirai.message.data.MessageMetadata
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.safeCast
+
+/**
+ * Ignore on transformation
+ */
+internal sealed interface InternalFlagOnlyMessage : MessageMetadata
 
 /**
  * 内部 flag, 放入 chain 强制作为 long 发送
@@ -73,8 +78,3 @@ internal object MiraiInternalMessageFlag : MessageMetadata, ConstrainSingle, Int
         )
     }
 }
-
-/**
- * Ignore on transformation
- */
-internal sealed interface InternalFlagOnlyMessage : MessageMetadata

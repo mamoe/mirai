@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl.Companion.findFileByPath
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.highway.Highway

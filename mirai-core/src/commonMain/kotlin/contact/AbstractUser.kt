@@ -18,8 +18,8 @@ import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.image.*
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.highway.ChannelKind
