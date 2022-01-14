@@ -4446,12 +4446,6 @@ public final class net/mamoe/mirai/message/data/ForwardMessageKt {
 	public static synthetic fun toForwardMessage$default (Lnet/mamoe/mirai/message/data/Message;Lnet/mamoe/mirai/contact/User;ILnet/mamoe/mirai/message/data/ForwardMessage$DisplayStrategy;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ForwardMessage;
 }
 
-public final class net/mamoe/mirai/message/data/FriendImage$Companion {
-}
-
-public final class net/mamoe/mirai/message/data/GroupImage$Companion {
-}
-
 public final class net/mamoe/mirai/message/data/HummerMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 }
 
