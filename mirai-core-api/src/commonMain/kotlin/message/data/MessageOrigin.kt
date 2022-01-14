@@ -15,7 +15,9 @@ import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.IMirai
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -87,6 +89,8 @@ public class MessageOrigin(
         return result
     }
 
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitMessageOrigin(this, data)
 
     public companion object Key : AbstractMessageKey<MessageOrigin>({ it.safeCast() }) {
         public const val SERIAL_NAME: String = "MessageOrigin"

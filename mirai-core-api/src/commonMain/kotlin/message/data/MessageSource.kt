@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -184,6 +185,11 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      */
     public final override fun toString(): String =
         "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMessageSource(this, data)
+    }
 
     public object Serializer : MessageSourceSerializerImpl("MessageSource")
 

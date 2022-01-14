@@ -14,16 +14,19 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
+import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.cast
 import java.util.concurrent.atomic.AtomicBoolean
 
 
 /**
  * All [MessageSource] should implement this interface.
  */
-internal interface MessageSourceInternal {
+internal interface MessageSourceInternal : MessageMetadata {
     @Transient
     val sequenceIds: IntArray // ids
 
@@ -38,6 +41,10 @@ internal interface MessageSourceInternal {
     val isRecalledOrPlanned: AtomicBoolean
 
     fun toJceData(): ImMsgBody.SourceMsg
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.ex()?.visitMessageSourceInternal(this.cast(), data) ?: super.accept(visitor, data)
+    }
 }
 
 /**

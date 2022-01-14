@@ -38,6 +38,7 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.isUploaded
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 
@@ -165,6 +166,11 @@ public interface Image : Message, MessageContent, CodableMessage {
      * @since 2.9.0
      */ // was an extension on Image before 2.9.0-M1.
     public val md5: ByteArray get() = calculateImageMd5ByImageId(imageId)
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitImage(this, data)
+    }
 
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,

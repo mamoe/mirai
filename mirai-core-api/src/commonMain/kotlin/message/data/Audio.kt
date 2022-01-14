@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -101,6 +102,11 @@ public sealed interface Audio : MessageContent {
      */
     public override fun toString(): String
     public override fun contentToString(): String = "[语音消息]"
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitAudio(this, data)
+    }
 }
 
 
