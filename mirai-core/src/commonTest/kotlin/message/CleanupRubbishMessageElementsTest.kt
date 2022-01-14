@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
+import net.mamoe.mirai.internal.message.data.LongMessageInternal
+import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test

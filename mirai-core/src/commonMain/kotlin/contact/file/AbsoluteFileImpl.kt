@@ -12,7 +12,7 @@ package net.mamoe.mirai.internal.contact.file
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
-import net.mamoe.mirai.internal.message.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.data.FileMessage

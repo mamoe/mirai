@@ -13,8 +13,8 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.internal.message.FileMessageImpl
-import net.mamoe.mirai.internal.message.LongMessageInternal
+import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
