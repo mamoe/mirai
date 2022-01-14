@@ -1,15 +1,16 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.impl.netty
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -24,10 +25,12 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.assertEventNotBroadcast
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.supervisorJob
 import org.junit.jupiter.api.TestInstance
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -131,6 +134,22 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<Event>(1) {
             network.close(null)
+            assertState(CLOSED)
+            eventDispatcher.joinBroadcast()
+        }.let { event ->
+            assertEquals(BotOfflineEvent.Active::class, event[0]::class)
+        }
+    }
+
+    @Test
+    fun `BotOffline from OK TO CLOSED by bot close`() = runBlockingUnit {
+        bot.login()
+        assertState(OK)
+        eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
+        assertEventBroadcasts<Event>(1) {
+            assertTrue { bot.isActive }
+            bot.close(null)
+            bot.supervisorJob.join()
             assertState(CLOSED)
             eventDispatcher.joinBroadcast()
         }.let { event ->
