@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.message.flags.InternalFlagOnlyMessage
 import net.mamoe.mirai.internal.message.image.*
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem

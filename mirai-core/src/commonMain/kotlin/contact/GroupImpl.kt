@@ -26,9 +26,9 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.message.image.getIdByImageType

@@ -20,6 +20,9 @@ import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
+import net.mamoe.mirai.internal.message.flags.DontAsLongMessage
+import net.mamoe.mirai.internal.message.flags.ForceAsLongMessage
+import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.image.FriendImage
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
