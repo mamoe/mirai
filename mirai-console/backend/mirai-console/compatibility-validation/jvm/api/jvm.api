@@ -1974,7 +1974,11 @@ public abstract interface class net/mamoe/mirai/console/plugin/PluginManager {
 	public fun enablePlugin (Lnet/mamoe/mirai/console/plugin/Plugin;)V
 	public abstract fun getBuiltInLoaders ()Ljava/util/List;
 	public abstract fun getPluginDescription (Lnet/mamoe/mirai/console/plugin/Plugin;)Lnet/mamoe/mirai/console/plugin/description/PluginDescription;
+	public abstract fun getPluginLibrariesFolder ()Ljava/io/File;
+	public abstract fun getPluginLibrariesPath ()Ljava/nio/file/Path;
 	public abstract fun getPluginLoaders ()Ljava/util/List;
+	public abstract fun getPluginSharedLibrariesFolder ()Ljava/io/File;
+	public abstract fun getPluginSharedLibrariesPath ()Ljava/nio/file/Path;
 	public abstract fun getPlugins ()Ljava/util/List;
 	public abstract fun getPluginsConfigFolder ()Ljava/io/File;
 	public abstract fun getPluginsConfigPath ()Ljava/nio/file/Path;
@@ -1993,7 +1997,11 @@ public final class net/mamoe/mirai/console/plugin/PluginManager$INSTANCE : net/m
 	public fun getBuiltInLoaders ()Ljava/util/List;
 	public final synthetic fun getDescription (Lnet/mamoe/mirai/console/plugin/Plugin;)Lnet/mamoe/mirai/console/plugin/description/PluginDescription;
 	public fun getPluginDescription (Lnet/mamoe/mirai/console/plugin/Plugin;)Lnet/mamoe/mirai/console/plugin/description/PluginDescription;
+	public fun getPluginLibrariesFolder ()Ljava/io/File;
+	public fun getPluginLibrariesPath ()Ljava/nio/file/Path;
 	public fun getPluginLoaders ()Ljava/util/List;
+	public fun getPluginSharedLibrariesFolder ()Ljava/io/File;
+	public fun getPluginSharedLibrariesPath ()Ljava/nio/file/Path;
 	public fun getPlugins ()Ljava/util/List;
 	public fun getPluginsConfigFolder ()Ljava/io/File;
 	public fun getPluginsConfigPath ()Ljava/nio/file/Path;
