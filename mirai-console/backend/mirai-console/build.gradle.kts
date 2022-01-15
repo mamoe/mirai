@@ -30,6 +30,8 @@ kotlin {
     explicitApiWarning()
 }
 
+configurations.register("consoleRuntimeClasspath")
+
 dependencies {
     compileAndTestRuntime(project(":mirai-core-api"))
     compileAndTestRuntime(project(":mirai-core-utils"))
@@ -46,10 +48,18 @@ dependencies {
     smartImplementation(`yamlkt-jvm`)
     smartImplementation(`jetbrains-annotations`)
     smartImplementation(`caller-finder`)
+    smartImplementation(`maven-resolver-api`)
+    smartImplementation(`maven-resolver-provider`)
+    smartImplementation(`maven-resolver-impl`)
+    smartImplementation(`maven-resolver-connector-basic`)
+    smartImplementation(`maven-resolver-transport-http`)
     smartApi(`kotlinx-coroutines-jdk8`)
 
     testApi(project(":mirai-core"))
     testApi(`kotlin-stdlib-jdk8`)
+
+    "consoleRuntimeClasspath"(project)
+    "consoleRuntimeClasspath"(project(":mirai-core"))
 }
 
 tasks {
@@ -70,6 +80,15 @@ tasks {
         getByName("compileKotlin").dependsOn(task)
     }
 }
+
+tasks.getByName("compileKotlin").dependsOn(
+    DependencyDumper.registerDumpTaskKtSrc(
+        project,
+        "consoleRuntimeClasspath",
+        project.file("src/internal/MiraiConsoleBuildDependencies.kt"),
+        "net.mamoe.mirai.console.internal.MiraiConsoleBuildDependencies"
+    )
+)
 
 configurePublishing("mirai-console")
 configureBinaryValidator(null)

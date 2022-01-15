@@ -48,6 +48,12 @@ internal class PluginManagerImpl(
     override val pluginsConfigPath: Path = MiraiConsole.rootPath.resolve("config").apply { mkdir() }
     override val pluginsConfigFolder: File = pluginsConfigPath.toFile()
 
+    override val pluginLibrariesPath: Path = MiraiConsole.rootPath.resolve("plugin-libraries").apply { mkdir() }
+    override val pluginLibrariesFolder: File = pluginLibrariesPath.toFile()
+
+    override val pluginSharedLibrariesPath: Path = MiraiConsole.rootPath.resolve("plugin-shared-libraries").apply { mkdir() }
+    override val pluginSharedLibrariesFolder: File = pluginSharedLibrariesPath.toFile()
+
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> by lazy {
         builtInLoaders.toMutableList()

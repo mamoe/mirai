@@ -44,6 +44,9 @@ public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, J
     @MiraiInternalApi
     public val classLoaders: List<ClassLoader>
 
+    @MiraiInternalApi
+    public fun findLoadedClass(name: String): Class<*>?
+
     public companion object BuiltIn :
         JvmPluginLoader by (dynamicDelegation { MiraiConsoleImplementation.getInstance().jvmPluginLoader }) {
 

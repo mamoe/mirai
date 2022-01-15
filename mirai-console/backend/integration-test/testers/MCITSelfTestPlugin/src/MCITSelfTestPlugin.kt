@@ -30,4 +30,8 @@ public object MCITSelfTestPlugin : KotlinPlugin(
 
         assertTrue { true }
     }
+
+    public fun someAction() {
+        logger.info { "Called!" }
+    }
 }

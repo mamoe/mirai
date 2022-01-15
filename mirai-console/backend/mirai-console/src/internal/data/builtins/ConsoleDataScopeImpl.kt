@@ -29,7 +29,10 @@ internal class ConsoleDataScopeImpl(
     override val configHolder: AutoSavePluginDataHolder = ConsoleBuiltInPluginConfigHolder(this.coroutineContext)
 
     private val data: List<PluginData> = mutableListOf()
-    private val configs: MutableList<PluginConfig> = mutableListOf(AutoLoginConfig)
+    private val configs: MutableList<PluginConfig> = mutableListOf(
+        AutoLoginConfig,
+        PluginDependenciesConfig,
+    )
 
     override fun addAndReloadConfig(config: PluginConfig) {
         configs.add(config)
