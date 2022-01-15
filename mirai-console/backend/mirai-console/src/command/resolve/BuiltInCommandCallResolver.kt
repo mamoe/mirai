@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
-import net.mamoe.mirai.message.data.EmptyMessageChain
+import net.mamoe.mirai.message.data.emptyMessageChain
 import net.mamoe.mirai.message.data.toMessageChain
 
 /**
@@ -149,7 +149,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 // add default empty vararg argument
                 val remainingVararg = remainingParameters.find { it.isVararg }
                 if (remainingVararg != null) {
-                    zipped.add(remainingVararg to DefaultCommandValueArgument(EmptyMessageChain))
+                    zipped.add(remainingVararg to DefaultCommandValueArgument(emptyMessageChain()))
                     remainingParameters.remove(remainingVararg)
                 }
             }
@@ -195,7 +195,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
             .also { list ->
 
                 val candidates = list
-                    .asSequence().filterIsInstance<ResolveData>()
+                    .asSequence()
                     .flatMap { phase ->
                         phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }
                             .map { phase to it }

@@ -4954,6 +4954,7 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final fun contentsList (Lnet/mamoe/mirai/message/data/MessageChain;)Ljava/util/List;
 	public static final synthetic fun contentsSequence (Lnet/mamoe/mirai/message/data/MessageChain;)Lkotlin/sequences/Sequence;
 	public static final fun copySource (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
+	public static final fun emptyMessageChain ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public static final synthetic fun getBot (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/Bot;
 	public static final fun getBot (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/Bot;
 	public static final fun getBotOrNull (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/Bot;
