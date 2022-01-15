@@ -146,7 +146,7 @@ public interface CommandManager {
     public suspend fun executeCommand(
         sender: CommandSender,
         command: Command,
-        arguments: Message = EmptyMessageChain,
+        arguments: Message = emptyMessageChain(),
         checkPermission: Boolean = true,
     ): CommandExecuteResult {
         // TODO: 2020/10/18  net.mamoe.mirai.console.command.CommandManager.execute

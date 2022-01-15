@@ -347,9 +347,23 @@ public sealed interface MessageChain :
 }
 
 /**
- * 不含任何元素的 [MessageChain].
+ * 返回一个不含任何元素的 [MessageChain].
+ *
+ * @since 2.11
+ */
+// Java: MessageUtils.emptyMessageChain()
+@Suppress("DEPRECATION")
+public fun emptyMessageChain(): MessageChain = EmptyMessageChain
+
+/**
+ * 不含任何元素的 [MessageChain]. 已弃用, 请使用 [emptyMessageChain]
  */
 //@Serializable(MessageChain.Serializer::class)
+@Deprecated(
+    "Please use emptyMessageChain()",
+    replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
+)
+@DeprecatedSinceMirai(warningSince = "2.11")
 public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList() {
     override val size: Int get() = 0
 
