@@ -69,7 +69,7 @@ fun includeConsoleITPlugin(path: File) {
         initScript.writeText(consoleIntegrationTestSubPluginBuildGradleKtsTemplate)
     }
 
-    val projectPath = ":mirai-console.integration-test.tp.${path.name}"
+    val projectPath = ":mirai-console.integration-test:${path.name}"
     include(projectPath)
     project(projectPath).projectDir = path
 }

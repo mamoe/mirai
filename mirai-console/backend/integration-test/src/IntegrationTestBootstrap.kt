@@ -56,6 +56,7 @@ internal fun main() {
 
     ConsoleTerminalSettings.setupAnsi = false
     ConsoleTerminalSettings.noConsole = true
+    ConsoleTerminalSettings.launchOptions.crashWhenPluginLoadFailed = true
 
     val testUnits: List<AbstractTestPoint> = readStringListFromEnv("IT_POINTS").asSequence()
         .onEach { println("[MCIT] Loading test point: $it") }

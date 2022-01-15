@@ -83,8 +83,9 @@ mcit_test.configure {
     }
 }
 
-rootProject.allprojects {
-    if (project.path.removePrefix(":").startsWith("mirai-console.integration-test.tp.")) {
+val crtProject = project
+subprojects {
+    if (project.parent == crtProject) {
         project.afterEvaluate {
             val tk = tasks.named<Jar>("jar")
             subplugins.add(tk)
