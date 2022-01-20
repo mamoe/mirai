@@ -156,8 +156,9 @@ internal object LightMessageRefiner : MessageRefiner() {
         val source = this.sourceOrNull?.safeCast<IncomingMessageSourceInternal>() ?: return this
         val originalMessage = this
         source.originalMessageLazy = lazy {
-            @Suppress("INVISIBLE_MEMBER")
-            createMessageChainImplOptimized(originalMessage.filterNot { it is MessageSource })
+            originalMessage.filterNot { it is MessageSource }.toMessageChain()
+//            @Suppress("INVISIBLE_MEMBER")
+//            createMessageChainImplOptimized(originalMessage.filterNot { it is MessageSource })
         }
         return this
     }

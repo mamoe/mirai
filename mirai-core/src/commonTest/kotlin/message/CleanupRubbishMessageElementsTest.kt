@@ -151,8 +151,7 @@ internal class CleanupRubbishMessageElementsTest {
     }
 
     private fun noMessageSource(c: MessageChain): MessageChain {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        return createMessageChainImplOptimized(c.filterNot { it is MessageSource })
+        return c.filterNot { it is MessageSource }.toMessageChain()
     }
 
     //endregion

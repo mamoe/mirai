@@ -143,6 +143,11 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_AB
  * 例如用户发送了两条内容相同的消息, 但其中一条带有引用回复而另一条没有, 则两条消息的索引可能有变化 (当然内容顺序不会改变, 只是 [QuoteReply] 的位置有可能会变化).
  * 因此在使用直接索引访问时要格外注意兼容性, 故不推荐这种访问方案.
  *
+ * ### 避免索引访问以提高性能
+ *
+ * 自 2.12 起, [MessageChain] 内部结构有性能优化. 该优化大幅降低元素数量多的 [MessageChain] 的连接的时间复杂度.
+ * 性能优化默认生效, 但若使用 [get], [subList] 等 [List] 于 [Collection] 之外的方法时则会让该优化失效 (相比 2.12 以前不会丢失性能, 只是没有优化).
+ *
  * ## 撤回和引用
  *
  * 要撤回消息, 查看 [MessageSource]
@@ -253,11 +258,6 @@ public sealed interface MessageChain :
     @MiraiInternalApi
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitMessageChain(this, data)
 
-    @MiraiInternalApi
-    override fun <D> acceptChildren(visitor: MessageVisitor<D, *>, data: D) {
-        forEach { it.accept(visitor, data) }
-    }
-
     /**
      * 将 [MessageChain] 作为 `List<SingleMessage>` 序列化. 使用 [多态序列化][Polymorphic].
      *
@@ -349,7 +349,7 @@ public sealed interface MessageChain :
 /**
  * 返回一个不含任何元素的 [MessageChain].
  *
- * @since 2.11
+ * @since 2.12
  */
 // Java: MessageUtils.emptyMessageChain()
 @Suppress("DEPRECATION")
@@ -363,13 +363,17 @@ public fun emptyMessageChain(): MessageChain = EmptyMessageChain
     "Please use emptyMessageChain()",
     replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
-public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList() {
+@DeprecatedSinceMirai(warningSince = "2.12")
+public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(), MessageChainImpl {
     override val size: Int get() = 0
 
     override fun toString(): String = ""
     override fun contentToString(): String = ""
     override fun serializeToMiraiCode(): String = ""
+
+    @MiraiInternalApi
+    override val hasConstrainSingle: Boolean
+        get() = false
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
@@ -486,7 +490,7 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
  */
 @JvmName("newChain")
 public fun Sequence<Message>.toMessageChain(): MessageChain =
-    createMessageChainImplOptimized(this.constrainSingleMessages())
+    LinearMessageChainImpl.create(ConstrainSingleHelper.constrainSingleMessages(this))
 
 /**
  * 扁平化 [this] 并创建一个 [MessageChain].
@@ -525,11 +529,8 @@ public inline fun Array<out Message>.toMessageChain(): MessageChain = this.asSeq
 @JvmName("newChain")
 public fun Message.toMessageChain(): MessageChain = when (this) {
     is MessageChain -> (this as List<SingleMessage>).toMessageChain()
-    else -> MessageChainImpl(
-        listOf(
-            this as? SingleMessage ?: error("Message is either MessageChain nor SingleMessage: $this")
-        )
-    )
+    is SingleMessage -> LinearMessageChainImpl.create(listOf(this), this is ConstrainSingle)
+    else -> error("Message is either MessageChain nor SingleMessage: $this")
 }
 
 
