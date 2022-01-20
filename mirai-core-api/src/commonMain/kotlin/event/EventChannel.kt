@@ -81,7 +81,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         ),
         level = DeprecationLevel.WARNING,
     )
-    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+    @DeprecatedSinceMirai(warningSince = "2.10")
     @MiraiExperimentalApi
     public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,
