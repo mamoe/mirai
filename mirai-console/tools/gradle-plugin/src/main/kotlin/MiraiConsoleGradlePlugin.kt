@@ -30,6 +30,10 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 public class MiraiConsoleGradlePlugin : Plugin<Project> {
+    internal companion object {
+        const val MIRAI_SHADOW_CONF_NAME: String = "shadowLink"
+    }
+
     private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
         try {
             @Suppress("DEPRECATION") // user may use 1.4
@@ -113,12 +117,19 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         fun registerBuildPluginTask(target: KotlinTarget, isSingleTarget: Boolean) {
             tasks.create(
                 "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
+                BuildMiraiPluginV2::class.java
+            ).also { buildPluginV2 ->
+                buildPluginV2.registerMetadataTask(tasks, "miraiPrepareMetadata".wrapNameWithPlatform(target, isSingleTarget))
+                buildPluginV2.init(target)
+            }
+            tasks.create(
+                "buildPluginLegacy".wrapNameWithPlatform(target, isSingleTarget),
                 BuildMiraiPluginTask::class.java,
                 target
             ).apply shadow@{
                 group = "mirai"
 
-                archiveExtension.set("mirai.jar")
+                archiveExtension.set("legacy.mirai.jar")
 
                 val compilations = target.compilations.filter { it.name == MAIN_COMPILATION_NAME }
 
@@ -153,6 +164,10 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         }
     }
 
+    private fun Project.setupConfigurations() {
+        configurations.create(MIRAI_SHADOW_CONF_NAME).isCanBeResolved = false
+    }
+
     override fun apply(target: Project): Unit = with(target) {
         extensions.create("mirai", MiraiConsoleExtension::class.java)
 
@@ -161,6 +176,8 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         // plugins.apply("org.gradle.maven")
         plugins.apply(ShadowPlugin::class.java)
         plugins.apply(BintrayPlugin::class.java)
+
+        project.setupConfigurations()
 
         afterEvaluate {
             configureCompileTarget()
