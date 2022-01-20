@@ -17,8 +17,10 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.asImmutable
+import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.replaceAllKotlin
 
 // region image
@@ -26,18 +28,6 @@ import net.mamoe.mirai.utils.replaceAllKotlin
 /////////////////////////
 //// IMPLEMENTATIONS ////
 /////////////////////////
-
-@Suppress("unused", "UNUSED_PARAMETER")
-private fun Message.hasDuplicationOfConstrain(key: MessageKey<*>): Boolean {
-    return true
-    /*
-     return when (this) {
-         is SingleMessage -> (this as? ConstrainSingle)?.key == key
-         is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
-         is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle)?.key == key }
-         else -> error("stub")
-     }*/
-}
 
 @JvmSynthetic
 internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boolean): Boolean {
@@ -65,93 +55,67 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
     }
 }
 
-@JvmSynthetic
-internal fun Message.followedByImpl(tail: Message): MessageChain {
-    return MessageChainImplBySequence(this.toMessageChain().asSequence() + tail.toMessageChain().asSequence())
-    /*
-    when {
-        this is SingleMessage && tail is SingleMessage -> {
-            if (this is ConstrainSingle && tail is ConstrainSingle) {
-                if (this.key == tail.key)
-                    return SingleMessageChainImpl(tail)
-            }
-            return CombinedMessage(this, tail)
-        }
 
-        this is SingleMessage -> { // tail is not
-            tail as MessageChain
-
-            if (this is ConstrainSingle) {
-                val key = this.key
-                if (tail.any { (it as? ConstrainSingle)?.key == key }) {
-                    return tail
-                }
-            }
-            return CombinedMessage(this, tail)
-        }
-
-        tail is SingleMessage -> {
-            this as MessageChain
-
-            if (tail is ConstrainSingle && this.hasDuplicationOfConstrain(tail.key)) {
-                return MessageChainImplByCollection(constrainSingleMessagesImpl(this.asSequence() + tail))
-            }
-
-            return CombinedMessage(this, tail)
-        }
-
-        else -> { // both chain
-            this as MessageChain
-            tail as MessageChain
-
-            return MessageChainImplByCollection(
-                constrainSingleMessagesImpl(this.asSequence() + tail)
-            )
-        }
-    }*/
+internal sealed interface MessageChainImpl : MessageChain {
+    /**
+     * 去重算法 v1 - 2.12:
+     * 在连接时若只有 0-1 方包含 [ConstrainSingle], 则使用 [CombinedMessage] 优化性能. 否则使用旧版复杂去重算法构造 [LinearMessageChainImpl].
+     */
+    @MiraiInternalApi
+    val hasConstrainSingle: Boolean
 }
 
-
-@JvmSynthetic
-internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
-    constrainSingleMessagesImpl(this)
-
-/**
- * - [Sequence.toMutableList]
- * - Replace in-place with marker null
- */
-@MiraiExperimentalApi
-@JvmSynthetic
-internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): List<SingleMessage> {
-    val list: MutableList<SingleMessage?> = sequence.toMutableList()
-
-    for (singleMessage in list.asReversed()) {
-        if (singleMessage is ConstrainSingle) {
-            val key = singleMessage.key.topmostKey
-            val firstOccurrence = list.first { it != null && key.isInstance(it) } // may be singleMessage itself
-            list.replaceAllKotlin {
-                when {
-                    it == null -> null
-                    it === firstOccurrence -> singleMessage
-                    key.isInstance(it) -> null // remove duplicates
-                    else -> it
-                }
-            }
-        }
+internal val Message.hasConstrainSingle: Boolean
+    get() {
+        if (this is SingleMessage) return this is ConstrainSingle
+        // now `this` is MessageChain
+        return this.castOrNull<MessageChainImpl>()?.hasConstrainSingle ?: true // for external type, assume they do
     }
 
-    return list.filterNotNull().asImmutable()
+/**
+ * @see ConstrainSingleHelper.constrainSingleMessages
+ */
+internal data class ConstrainSingleData(
+    val value: List<SingleMessage>,
+    val hasConstrainSingle: Boolean,
+)
+
+internal object ConstrainSingleHelper {
+    @JvmName("constrainSingleMessages_Sequence")
+    internal fun constrainSingleMessages(sequence: Sequence<Message>): ConstrainSingleData =
+        constrainSingleMessages(sequence.flatMap { it.toMessageChain() })
+
+    internal fun constrainSingleMessages(sequence: Sequence<SingleMessage>): ConstrainSingleData =
+        constrainSingleMessagesImpl(sequence)
+
+    /**
+     * - [Sequence.toMutableList]
+     * - Replace in-place with marker null
+     */
+    private fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): ConstrainSingleData {
+        val list: MutableList<SingleMessage?> = sequence.toMutableList()
+
+        var hasConstrainSingle = false
+        for (singleMessage in list.asReversed()) {
+            if (singleMessage is ConstrainSingle) {
+                hasConstrainSingle = true
+                val key = singleMessage.key.topmostKey
+                val firstOccurrence = list.first { it != null && key.isInstance(it) } // may be singleMessage itself
+                list.replaceAllKotlin {
+                    when {
+                        it == null -> null
+                        it === firstOccurrence -> singleMessage
+                        key.isInstance(it) -> null // remove duplicates
+                        else -> it
+                    }
+                }
+            }
+        }
+
+        return ConstrainSingleData(list.filterNotNull().asImmutable(), hasConstrainSingle)
+    }
+
 }
-
-@JvmSynthetic
-internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
-    constrainSingleMessagesImpl(this.asSequence())
-
-@JvmName("constrainSingleMessages_Sequence")
-@JvmSynthetic
-internal fun Sequence<Message>.constrainSingleMessages(): List<SingleMessage> =
-    this.flatMap { it.toMessageChain() }.constrainSingleMessages()
-
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
@@ -159,23 +123,21 @@ internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
     return this.asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
 }
 
-/**
- * @return [EmptyMessageChain] if [delegate] is empty, otherwise [MessageChainImpl]
- */
-internal fun createMessageChainImplOptimized(delegate: List<SingleMessage>): MessageChain {
-    return if (delegate.isEmpty()) emptyMessageChain()
-    else MessageChainImpl(delegate)
-}
+@RequiresOptIn
+internal annotation class MessageChainConstructor
+
 
 /**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(MessageChain.Serializer::class)
-internal data class MessageChainImpl constructor(
+internal class LinearMessageChainImpl @MessageChainConstructor private constructor(
     @JvmField
-    internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
-) : Message, MessageChain, List<SingleMessage> by delegate {
+    internal val delegate: List<SingleMessage>,
+    override val hasConstrainSingle: Boolean
+) : Message, MessageChain, List<SingleMessage> by delegate, MessageChainImpl,
+    DirectSizeAccess, DirectToStringAccess {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
 
@@ -186,13 +148,81 @@ internal data class MessageChainImpl constructor(
     override fun contentToString(): String = contentToStringTemp
 
     override fun hashCode(): Int = delegate.hashCode()
-    override fun equals(other: Any?): Boolean = other is MessageChainImpl && other.delegate == this.delegate
-}
+    override fun equals(other: Any?): Boolean = other is LinearMessageChainImpl && other.delegate == this.delegate
 
-@Suppress("FunctionName") // source compatibility with 1.x
-internal fun MessageChainImplBySequence(
-    delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-): MessageChain = createMessageChainImplOptimized(delegate.constrainSingleMessages())
+    override fun <D> acceptChildren(visitor: MessageVisitor<D, *>, data: D) {
+        for (singleMessage in delegate) {
+            singleMessage.accept(visitor, data)
+        }
+    }
+
+    companion object {
+        fun combineCreate(message: Message, tail: Message): MessageChain {
+            return create(
+                ConstrainSingleHelper.constrainSingleMessages(
+                    message.toMessageChain().asSequence() + tail.toMessageChain().asSequence()
+                )
+            )
+            /*
+            when {
+                this is SingleMessage && tail is SingleMessage -> {
+                    if (this is ConstrainSingle && tail is ConstrainSingle) {
+                        if (this.key == tail.key)
+                            return SingleMessageChainImpl(tail)
+                    }
+                    return CombinedMessage(this, tail)
+                }
+
+                this is SingleMessage -> { // tail is not
+                    tail as MessageChain
+
+                    if (this is ConstrainSingle) {
+                        val key = this.key
+                        if (tail.any { (it as? ConstrainSingle)?.key == key }) {
+                            return tail
+                        }
+                    }
+                    return CombinedMessage(this, tail)
+                }
+
+                tail is SingleMessage -> {
+                    this as MessageChain
+
+                    if (tail is ConstrainSingle && this.hasDuplicationOfConstrain(tail.key)) {
+                        return MessageChainImplByCollection(constrainSingleMessagesImpl(this.asSequence() + tail))
+                    }
+
+                    return CombinedMessage(this, tail)
+                }
+
+                else -> { // both chain
+                    this as MessageChain
+                    tail as MessageChain
+
+                    return MessageChainImplByCollection(
+                        constrainSingleMessagesImpl(this.asSequence() + tail)
+                    )
+                }
+            }*/
+        }
+
+        /**
+         * @param delegate must be immutable
+         */
+        @OptIn(MessageChainConstructor::class)
+        fun create(delegate: List<SingleMessage>, hasConstrainSingle: Boolean): MessageChain {
+            return if (delegate.isEmpty()) {
+                emptyMessageChain()
+            } else {
+                LinearMessageChainImpl(delegate, hasConstrainSingle)
+            }
+        }
+
+        fun create(data: ConstrainSingleData): MessageChain {
+            return create(data.value, data.hasConstrainSingle)
+        }
+    }
+}
 
 
 //////////////////////

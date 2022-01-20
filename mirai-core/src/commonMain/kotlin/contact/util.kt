@@ -30,7 +30,7 @@ internal fun Contact.logMessageSent(message: Message) {
     }
 }
 
-internal fun MessageChain.countImages(): Int = this.count { it is Image }
+internal fun Iterable<SingleMessage>.countImages(): Int = this.count { it is Image }
 
 private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
 
@@ -55,14 +55,14 @@ internal fun Message.verifySendingValid() {
     }
 }
 
-internal fun MessageChain.verifyLength(
+internal fun Iterable<SingleMessage>.verifyLength(
     originalMessage: Message, target: Contact,
 ): Int {
     val chain = this
     val length = estimateLength(target, 15001)
     if (length > 15000 || countImages() > 50) {
         throw MessageTooLargeException(
-            target, originalMessage, this,
+            target, originalMessage, this.toMessageChain(),
             "message(${
                 chain.joinToString("", limit = 10).let { rsp ->
                     if (rsp.length > 100) {

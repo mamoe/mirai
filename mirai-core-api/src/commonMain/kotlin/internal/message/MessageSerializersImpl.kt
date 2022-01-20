@@ -92,7 +92,7 @@ private val builtInSerializersModule by lazy {
 
 //        contextual(SingleMessage::class, SingleMessage.Serializer)
         contextual(MessageChain::class, MessageChain.Serializer)
-        contextual(MessageChainImpl::class, MessageChainImpl.serializer())
+        contextual(LinearMessageChainImpl::class, LinearMessageChainImpl.serializer())
 
         contextual(ShowImageFlag::class, ShowImageFlag.Serializer)
 

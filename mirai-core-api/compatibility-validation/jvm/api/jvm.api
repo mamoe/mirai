@@ -3608,7 +3608,7 @@ public final class net/mamoe/mirai/message/data/Dice$Key : net/mamoe/mirai/messa
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain {
+public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain, net/mamoe/mirai/message/data/MessageChainImpl {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/EmptyMessageChain;
 	public synthetic fun add (ILjava/lang/Object;)V
 	public fun add (ILnet/mamoe/mirai/message/data/SingleMessage;)V
@@ -3624,6 +3624,7 @@ public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/Li
 	public fun equals (Ljava/lang/Object;)Z
 	public synthetic fun get (I)Ljava/lang/Object;
 	public fun get (I)Lnet/mamoe/mirai/message/data/SingleMessage;
+	public fun getHasConstrainSingle ()Z
 	public fun getSize ()I
 	public fun hashCode ()I
 	public final fun indexOf (Ljava/lang/Object;)I

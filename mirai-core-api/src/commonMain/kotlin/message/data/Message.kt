@@ -240,7 +240,20 @@ public interface Message {
      * @see plus `+` 操作符重载
      */
     @JvmSynthetic // in java they should use `plus` instead
-    public fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
+    public fun followedBy(tail: Message): MessageChain {
+        var constrainSingleCount = 0
+        if (this.hasConstrainSingle) constrainSingleCount++
+        if (tail.hasConstrainSingle) constrainSingleCount++
+        return if (constrainSingleCount == 0) {
+            // Future optimize:
+            // When constrainSingleCount == 1, see if we can connect by CombinedMessage,
+            // this need some kind of replacement of `hasConstrainSingle` with more information about MessageKeys.
+            @OptIn(MessageChainConstructor::class)
+            CombinedMessage(this, tail, false)
+        } else {
+            LinearMessageChainImpl.combineCreate(this, tail)
+        }
+    }
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: MessageChain): MessageChain = this + another as Message
@@ -277,14 +290,14 @@ public interface Message {
 
     /**
      * @suppress 这是内部 API, 不要在任何情况下调用
-     * @since MESSAGE_VISITOR
+     * @since 2.12
      */
     @MiraiInternalApi
     public fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitMessage(this, data)
 
     /**
      * @suppress 这是内部 API, 不要在任何情况下调用
-     * @since MESSAGE_VISITOR
+     * @since 2.12
      */
     @MiraiInternalApi
     public fun <D> acceptChildren(visitor: MessageVisitor<D, *>, data: D) {

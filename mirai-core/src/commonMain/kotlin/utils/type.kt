@@ -44,7 +44,7 @@ internal fun String.toIpV4Long(): Long {
     }
 }
 
-internal fun MessageChain.estimateLength(target: ContactOrBot, upTo: Int): Int =
+internal fun Iterable<SingleMessage>.estimateLength(target: ContactOrBot, upTo: Int): Int =
     sumUpTo(upTo) { it, up ->
         it.estimateLength(target, up)
     }

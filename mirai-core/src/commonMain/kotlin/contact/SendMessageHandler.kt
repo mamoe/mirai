@@ -319,9 +319,7 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
             )
             forward.nodeList.forEach { tmp.addAll(it.messageChain) }
 
-            // toMessageChain will lose some element
-            @Suppress("INVISIBLE_MEMBER")
-            createMessageChainImplOptimized(tmp).verifyLength(forward, contact)
+            tmp.verifyLength(forward, contact)
         }
 
         val resId = getMiraiImpl().uploadMessageHighway(
