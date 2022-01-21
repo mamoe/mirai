@@ -11,17 +11,14 @@ package net.mamoe.mirai.console.internal.permission
 
 import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.permission.*
+import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.hasChild
 
 internal abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
     protected abstract val permissions: MutableMap<PermissionId, P>
     protected abstract val grantedPermissionsMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermitteeId>>
 
-    protected abstract fun createPermission(
-        id: PermissionId,
-        description: String,
-        parent: Permission
-    ): P
+    protected abstract fun createPermission(id: PermissionId, description: String, parent: Permission): P
 
     override fun get(id: PermissionId): P? = permissions[id]
 
@@ -33,23 +30,28 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
     }
 
     override fun permit(permitteeId: PermitteeId, permission: P) {
-        val id = permission.id
-        grantedPermissionsMap[id].add(permitteeId)
+        grantedPermissionsMap[permission.id].add(permitteeId)
     }
 
     override fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean) {
-        if (recursive) {
-            grantedPermissionsMap[permission.id]
-        } else grantedPermissionsMap[permission.id].remove(permitteeId)
+        val success = if (recursive) {
+            getPermittedPermissions(permitteeId).any { permitted ->
+                (permission in permitted.parentsWithSelf) && grantedPermissionsMap[permitted.id].remove(permitteeId)
+            }
+        } else {
+            grantedPermissionsMap[permission.id].remove(permitteeId)
+        }
+        check(success) {
+            "${permitteeId.asString()} 不拥有权限 ${permission.id} 或者权限来源于抽象继承"
+        }
     }
 
     override fun getRegisteredPermissions(): Sequence<P> = permissions.values.asSequence()
-    override fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<P> = sequence<P> {
+
+    override fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<P> = sequence {
         for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
 
-            val granted =
-                if (permissibleIdentifiers.isEmpty()) false
-                else permissibleIdentifiers.any { permitteeId.hasChild(it) }
+            val granted = permissibleIdentifiers.any { permitteeId.hasChild(it) }
 
             if (granted) get(permissionIdentifier)?.let { yield(it) }
         }
