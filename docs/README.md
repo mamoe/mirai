@@ -177,3 +177,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 ### mirai-core API 文档
 
 请在 [CoreAPI.md](CoreAPI.md) 阅读 JVM 平台的 mirai-core-api 使用文档。
+
+### mirai-core API KDoc
+
+可在 https://github.com/project-mirai/mirai-doc 查看 KDoc。
