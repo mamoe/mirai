@@ -99,6 +99,7 @@ internal class BuiltInJvmPluginLoaderImpl(
                     ctx.sharedLibrariesLoader.addLib(artifactResult.artifact.file)
                     ctx.sharedLibrariesDependencies.add(artifactResult.artifact.depId())
                     logger.debug { "Linked static shared library: ${artifactResult.artifact}" }
+                    logger.verbose { "Linked static shared library: ${artifactResult.artifact.file}" }
                 }
             }
         } else {

@@ -16,8 +16,12 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.verbose
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
+import org.codehaus.plexus.util.ReaderFactory
+import org.codehaus.plexus.util.xml.pull.MXParser
+import org.codehaus.plexus.util.xml.pull.XmlPullParser
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.RepositorySystemSession
+import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.collection.CollectRequest
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
@@ -25,6 +29,8 @@ import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.graph.DependencyFilter
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.RemoteRepository
+import org.eclipse.aether.repository.WorkspaceReader
+import org.eclipse.aether.repository.WorkspaceRepository
 import org.eclipse.aether.resolution.DependencyRequest
 import org.eclipse.aether.resolution.DependencyResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
@@ -33,6 +39,7 @@ import org.eclipse.aether.spi.locator.ServiceLocator
 import org.eclipse.aether.transfer.AbstractTransferListener
 import org.eclipse.aether.transfer.TransferEvent
 import org.eclipse.aether.transport.http.HttpTransporterFactory
+import java.io.File
 
 
 @Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
@@ -63,6 +70,8 @@ internal class JvmPluginDependencyDownloader(
                     "mirai-core-utils",
                     "mirai-core-utils-jvm",
                     "mirai-core-utils-android",
+                    "mirai-console",
+                    "mirai-console-terminal",
                 )
             ) return@DependencyFilter false
         }
@@ -96,12 +105,99 @@ internal class JvmPluginDependencyDownloader(
                 logger.warning(event.exception)
             }
         }
+        val userHome = System.getProperty("user.home")
+        fun findMavenLocal(): File {
+            val mavenHome = File(userHome, ".m2")
+            fun findFromSettingsXml(): File? {
+                val settings = File(mavenHome, "settings.xml")
+                if (!settings.isFile) return null
+                ReaderFactory.newXmlReader(settings).use { reader ->
+                    val parser = MXParser()
+                    parser.setInput(reader)
+
+                    var eventType = parser.eventType
+                    var joinedSettings = false
+                    while (eventType != XmlPullParser.END_DOCUMENT) {
+                        when (eventType) {
+                            XmlPullParser.START_TAG -> {
+                                if (!joinedSettings) {
+                                    if (parser.name != "settings") {
+                                        return null
+                                    }
+                                    joinedSettings = true
+                                } else {
+                                    if (parser.name == "localRepository") {
+                                        val loc = File(parser.nextText())
+                                        if (loc.isDirectory) return loc
+                                        return null
+                                    } else {
+                                        parser.skipSubTree()
+                                    }
+                                }
+                            }
+                            // else -> parser.skipSubTree()
+                        }
+                        eventType = parser.next()
+                    }
+                }
+                return null
+            }
+            return kotlin.runCatching {
+                findFromSettingsXml()
+            }.onFailure { error ->
+                logger.warning(error)
+            }.getOrNull() ?: File(mavenHome, "repository")
+        }
+
+        fun findGradleDepCache(): File {
+            return File(userHome, ".gradle/caches/modules-2/files-2.1")
+        }
+
+        val mavenLocRepo = findMavenLocal()
+        val gradleLocRepo = findGradleDepCache()
+        logger.debug { "Maven        local: $mavenLocRepo" }
+        logger.debug { "Gradle cache local: $gradleLocRepo" }
+        session.workspaceReader = object : WorkspaceReader {
+            private val repository: WorkspaceRepository = WorkspaceRepository("default")
+            override fun getRepository(): WorkspaceRepository = repository
+
+            override fun findArtifact(artifact: Artifact): File? {
+                // logger.debug { "Try resolve $artifact" }
+                val path = session.localRepositoryManager.getPathForLocalArtifact(artifact)
+                File(mavenLocRepo, path).takeIf { it.isFile }?.let { return it }
+                val gradleDep = gradleLocRepo
+                    .resolve(artifact.groupId)
+                    .resolve(artifact.artifactId)
+                    .resolve(artifact.baseVersion)
+                if (gradleDep.isDirectory) {
+                    val fileName = buildString {
+                        append(artifact.artifactId)
+                        append('-')
+                        append(artifact.baseVersion)
+                        artifact.classifier?.takeIf { it.isNotEmpty() }?.let { c ->
+                            append('-').append(c)
+                        }
+                        append('.').append(artifact.extension)
+                    }
+                    gradleDep.walk().maxDepth(2)
+                        .filter { it.isFile }
+                        .firstOrNull { it.name == fileName }
+                        ?.let { return it }
+                }
+                return null
+            }
+
+            override fun findVersions(artifact: Artifact?): MutableList<String> {
+                return mutableListOf()
+            }
+
+        }
         session.setReadOnly()
         repositories = repository.newResolutionRepositories(
             session,
-//            listOf(RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2").build())
-//            listOf(RemoteRepository.Builder("central", "default", "https://maven.aliyun.com/repository/public").build())
-            listOf(RemoteRepository.Builder("central", "default", PluginDependenciesConfig.repoLoc).build())
+            PluginDependenciesConfig.repoLoc.map { url ->
+                RemoteRepository.Builder(null, "default", url).build()
+            }
         )
         logger.debug { "Remote server: " + PluginDependenciesConfig.repoLoc }
     }
@@ -115,7 +211,7 @@ internal class JvmPluginDependencyDownloader(
             dependencies.add(dependency)
         }
         return repository.resolveDependencies(
-            session as RepositorySystemSession?, DependencyRequest(
+            session, DependencyRequest(
                 CollectRequest(
                     null as Dependency?, dependencies,
                     repositories

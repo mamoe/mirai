@@ -21,7 +21,7 @@ internal object PluginSharedLibraries : AbstractTestPoint() {
         if (System.getenv("CI").orEmpty().toBoolean()) {
             println("CI env")
             File("config/Console/PluginDependencies.yml").writeText(
-                "repoLoc: 'https://repo.maven.apache.org/maven2'"
+                "repoLoc: ['https://repo.maven.apache.org/maven2']"
             )
         }
         File("plugin-shared-libraries").mkdirs()
