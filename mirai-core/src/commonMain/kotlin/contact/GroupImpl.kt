@@ -126,7 +126,7 @@ internal class GroupImpl constructor(
 
     override lateinit var owner: NormalMemberImpl
     override lateinit var botAsMember: NormalMemberImpl
-    internal val botAsMemberInitialized = ::botAsMember.isInitialized
+    internal val botAsMemberInitialized get() = ::botAsMember.isInitialized
 
     @Suppress("DEPRECATION")
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
