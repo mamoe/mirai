@@ -45,7 +45,7 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
             val about = buildList {
                 for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
                     val parent = get(permissionIdentifier) ?: continue
-                    parent in permission.parentsWithSelf
+                    if (parent !in permission.parentsWithSelf) continue
                     for (permissibleId in permissibleIdentifiers) {
                         if (permitteeId.hasChild(permitteeId)) {
                             add(parent to permissibleId)
