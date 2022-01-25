@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.spi.DeviceInfoService
 import java.io.File
 import java.io.InputStream
 import kotlin.coroutines.CoroutineContext
@@ -335,6 +336,20 @@ public open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public fun fileBasedDeviceInfo(filepath: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier { workingDir.resolve(filepath) }
+    }
+
+    /**
+     * 使用 [DeviceInfoService] 存储设备信息.
+     *
+     * 此函数基于 SPIService.
+     * @param service 设备信息服务.
+     * @see deviceInfo
+     * @see DeviceInfoService
+     */
+    @JvmOverloads
+    @ConfigurationDsl
+    public fun loadDeviceInfoService(service: DeviceInfoService = DeviceInfoService.INSTANCE) {
+        deviceInfo = service::load
     }
 
     ///////////////////////////////////////////////////////////////////////////

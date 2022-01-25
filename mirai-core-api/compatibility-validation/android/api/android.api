@@ -5629,6 +5629,18 @@ public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : n
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
+public final class net/mamoe/mirai/spi/DeviceInfoService$Default : net/mamoe/mirai/spi/DeviceInfoService {
+	public static final field INSTANCE Lnet/mamoe/mirai/spi/DeviceInfoService$Default;
+	public fun generate ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public fun load (Lnet/mamoe/mirai/Bot;)Lnet/mamoe/mirai/utils/DeviceInfo;
+}
+
+public final class net/mamoe/mirai/spi/DeviceInfoService$INSTANCE : net/mamoe/mirai/spi/DeviceInfoService {
+	public fun generate ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public fun load (Lnet/mamoe/mirai/Bot;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun setService (Lnet/mamoe/mirai/spi/DeviceInfoService;)V
+}
+
 public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe/mirai/utils/ExternalResource {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -5688,6 +5700,9 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun isConvertLineSeparator ()Z
 	public final fun isShowingVerboseEventLog ()Z
 	public final fun loadDeviceInfoJson (Ljava/lang/String;)V
+	public final fun loadDeviceInfoService ()V
+	public final fun loadDeviceInfoService (Lnet/mamoe/mirai/spi/DeviceInfoService;)V
+	public static synthetic fun loadDeviceInfoService$default (Lnet/mamoe/mirai/utils/BotConfiguration;Lnet/mamoe/mirai/spi/DeviceInfoService;ILjava/lang/Object;)V
 	public final fun noBotLog ()V
 	public final fun noNetworkLog ()V
 	public final fun randomDeviceInfo ()V
