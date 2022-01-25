@@ -60,7 +60,6 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
                     ${permitteeId.asString()} 的权限来自 ${about.joinToString { (parent, permitted) -> "${parent.id} ${permitted.asString()}" }}
                     Mirai Console 内置权限系统目前不支持单独禁用继承得到的权限. 可取消父权限再为其分别分配子权限.
                 """.trimIndent()
-                    ""
             }
         }
     }
