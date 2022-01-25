@@ -42,7 +42,24 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
             grantedPermissionsMap[permission.id].remove(permitteeId)
         }
         check(success) {
-            "${permitteeId.asString()} 不拥有权限 ${permission.id} 或者权限来源于抽象继承"
+            val about = buildList {
+                for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
+                    for (permissibleId in permissibleIdentifiers) {
+                        if (permitteeId.hasChild(permitteeId)) {
+                            add(permissionIdentifier to permissibleId)
+                        }
+                    }
+                }
+            }
+            if (about.isEmpty()) {
+                "${permitteeId.asString()} 不拥有权限 ${permission.id} "
+            } else {
+                """
+                    ${permitteeId.asString()} 的权限来自 ${about.joinToString { (parentId, permitted) -> "$parentId ${permitted.asString()}" }}
+                    Mirai Console 内置权限系统目前不支持单独禁用继承得到的权限. 可取消父权限再为其分别分配子权限.
+                """.trimIndent()
+                    ""
+            }
         }
     }
 
