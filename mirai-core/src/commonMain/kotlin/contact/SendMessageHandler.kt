@@ -314,12 +314,9 @@ internal suspend fun <C : Contact> SendMessageHandler<C>.transformSpecialMessage
                     "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
                 )
             }
-            val tmp = ArrayList<SingleMessage>(
-                forward.nodeList.sumOf { it.messageChain.size }
-            )
-            forward.nodeList.forEach { tmp.addAll(it.messageChain) }
-
-            tmp.verifyLength(forward, contact)
+            sequence {
+                forward.nodeList.forEach { yieldAll(it.messageChain) }
+            }.asIterable().verifyLength(forward, contact)
         }
 
         val resId = getMiraiImpl().uploadMessageHighway(
