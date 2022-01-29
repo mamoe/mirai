@@ -257,7 +257,7 @@ internal fun List<PluginDescription>.findDependency(dependency: PluginDependency
 
 internal fun PluginDescription.checkSatisfies(dependency: PluginDependency, plugin: PluginDescription) {
     val requirement = dependency.versionRequirement ?: return
-    if (SemVersion.parseRangeRequirement(requirement).test(this.version)) {
+    if (!SemVersion.parseRangeRequirement(requirement).test(this.version)) {
         throw PluginLoadException("Plugin '${plugin.id}' ('${plugin.id}') requires '${dependency.id}' with version $requirement while the resolved is ${this.version}")
     }
 }
