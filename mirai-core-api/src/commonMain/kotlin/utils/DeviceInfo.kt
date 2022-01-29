@@ -152,7 +152,7 @@ public class DeviceInfo(
                 wifiBSSID = "02:00:00:00:00:00".toByteArray(),
                 wifiSSID = "<unknown ssid>".toByteArray(),
                 imsiMd5 = getRandomByteArray(16, random).md5(),
-                imei = "86" + getRandomIntString(12, random).let { it + luhn(it) },
+                imei = ("86" + getRandomIntString(12, random)).let { it + luhn(it) },
                 apn = "wifi".toByteArray()
             )
         }
