@@ -152,7 +152,7 @@ internal fun ExternalResource.calculateImageInfo(): ImageInfo {
     val imageType = ImageType.match(formatName)
     return inputStream().asInput().withUse {
         when (imageType) {
-            ImageType.JPG -> getJPGImageInfo()
+            ImageType.JPG, ImageType.JPEG -> getJPGImageInfo()
             ImageType.BMP -> getBMPImageInfo()
             ImageType.GIF -> getGIFImageInfo()
             ImageType.PNG, ImageType.APNG -> getPNGImageInfo()

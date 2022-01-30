@@ -378,6 +378,7 @@ public enum class ImageType(
     GIF("gif"),
     //WEBP, //Unsupported by pc client
     APNG("png"),
+    JPEG("jpg"),
     UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
 
     public companion object {
