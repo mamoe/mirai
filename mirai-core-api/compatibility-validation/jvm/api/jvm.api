@@ -5881,6 +5881,7 @@ public abstract interface class net/mamoe/mirai/utils/ExternalResource : java/io
 	public static fun create (Ljava/io/RandomAccessFile;Ljava/lang/String;Z)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static fun create ([B)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static fun create ([BLjava/lang/String;)Lnet/mamoe/mirai/utils/ExternalResource;
+	public static synthetic fun createAutoCloseable (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public abstract fun getClosed ()Lkotlinx/coroutines/Deferred;
 	public abstract fun getFormatName ()Ljava/lang/String;
 	public abstract fun getMd5 ()[B
@@ -5945,6 +5946,7 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/InputStream;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;Ljava/io/RandomAccessFile;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public static synthetic fun create$default (Lnet/mamoe/mirai/utils/ExternalResource$Companion;[BLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/ExternalResource;
+	public final synthetic fun createAutoCloseable (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/utils/ExternalResource;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun sendAsFile (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;

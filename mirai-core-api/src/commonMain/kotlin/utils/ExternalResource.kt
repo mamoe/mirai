@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -227,6 +227,24 @@ public interface ExternalResource : Closeable {
 
         // endregion
 
+
+        /* note:
+        于 2.8.0-M1 添加 (#1392)
+
+        于 2.8.0-RC 移动至 `toExternalResource`(#1588)
+         */
+        @JvmName("createAutoCloseable")
+        @JvmStatic
+        @Deprecated(
+            level = DeprecationLevel.HIDDEN,
+            message = "Moved to `toExternalResource()`",
+            replaceWith = ReplaceWith("resource.toAutoCloseable()"),
+        )
+        @DeprecatedSinceMirai(errorSince = "2.8", hiddenSince = "2.10")
+        public fun createAutoCloseable(resource: ExternalResource): ExternalResource {
+            return resource.toAutoCloseable()
+        }
+
         ///////////////////////////////////////////////////////////////////////////
         // region sendAsImageTo
         ///////////////////////////////////////////////////////////////////////////
@@ -349,7 +367,7 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
-        @Suppress("DEPRECATION","DEPRECATION_ERROR")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
