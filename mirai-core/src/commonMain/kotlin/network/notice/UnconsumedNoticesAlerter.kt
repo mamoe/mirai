@@ -105,7 +105,7 @@ internal class UnconsumedNoticesAlerter(
                 // unknown
                 // 前 4 byte 是群号
             }
-            84, 87 -> { // 请求入群验证 和 被要求入群
+            84, 87 -> { // 请求入群验证 和 被邀请入群
                 bot.network.run {
                     NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
                 }
