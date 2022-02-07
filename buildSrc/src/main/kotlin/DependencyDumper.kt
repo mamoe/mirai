@@ -12,6 +12,7 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
+import java.util.zip.ZipFile
 
 object DependencyDumper {
     fun registerDumpTask(project: Project, confName: String, out: File): TaskProvider<Task> {
@@ -47,8 +48,9 @@ object DependencyDumper {
             doLast {
                 val dependencies = HashSet<String>()
                 fun emit(dep: ResolvedDependency) {
-                    dependencies.add(dep.moduleGroup + ":" + dep.moduleName)
-                    dep.children.forEach { emit(it) }
+                    if (dependencies.add(dep.moduleGroup + ":" + dep.moduleName)) {
+                        dep.children.forEach { emit(it) }
+                    }
                 }
                 project.configurations.getByName(confName).resolvedConfiguration.firstLevelModuleDependencies.forEach { dependency ->
                     emit(dependency)
@@ -57,7 +59,47 @@ object DependencyDumper {
                 stdep.sort()
                 action(stdep)
             }
-        }
+        }.also { dependenciesDump.dependsOn(it) }
     }
 
+    fun registerDumpClassGraph(project: Project, confName: String, out: String): TaskProvider<Task> {
+        val dependenciesDump = project.tasks.maybeCreate("dependenciesDump")
+        dependenciesDump.group = "mirai"
+        return project.tasks.register("dependenciesDumpGraph_${confName.capitalize()}") {
+            group = "mirai"
+            val outFile = temporaryDir.resolve(out)
+            outputs.file(outFile)
+            val conf = project.configurations.getByName(confName)
+            dependsOn(conf)
+
+            doLast {
+                outFile.parentFile.mkdirs()
+
+                val classes = HashSet<String>()
+                conf.resolvedConfiguration.files.forEach { file ->
+                    if (file.isFile) {
+                        ZipFile(file).use { zipFile ->
+                            zipFile.entries().asSequence()
+                                .filter { it.name.endsWith(".class") }
+                                .filterNot { it.name.startsWith("META-INF") }
+                                .map { it.name.substringBeforeLast('.').replace('/', '.') }
+                                .map { it.removePrefix(".") }
+                                .forEach { classes.add(it) }
+                        }
+                    } else if (file.isDirectory) {
+                        file.walk()
+                            .filter { it.isFile }
+                            .filter { it.name.endsWith(".class") }
+                            .map { it.relativeTo(file).path.substringBeforeLast('.') }
+                            .map { it.replace('\\', '.').replace('/', '.') }
+                            .map { it.removePrefix(".") }
+                            .forEach { classes.add(it) }
+                    }
+                }
+                outFile.bufferedWriter().use { writer ->
+                    classes.sorted().forEach { writer.append(it).append('\n') }
+                }
+            }
+        }.also { dependenciesDump.dependsOn(it) }
+    }
 }

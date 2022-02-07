@@ -26,7 +26,7 @@ import java.util.zip.ZipFile
 Class resolving:
 
 |
-`- Resolve standard classes: by super class loader.
+`- Resolve standard classes: hard linked by console (@see AllDependenciesClassesHolder)
 `- Resolve classes in shared libraries (Shared in all plugins)
 |
 |-===== SANDBOX =====
@@ -35,6 +35,7 @@ Class resolving:
 `- Resolve classes in independent libraries (Can only be loaded by current plugin)
 `- Resolve classes in current jar.
 `- Resolve classes from other plugin jar
+`- Resolve by AppClassLoader
 
  */
 
@@ -58,6 +59,17 @@ internal class DynLibClassLoader(
         }
     }
 
+    internal fun loadClassInThisClassLoader(name: String): Class<*>? {
+        synchronized(getClassLoadingLock(name)) {
+            findLoadedClass(name)?.let { return it }
+            try {
+                return findClass(name)
+            } catch (ignored: ClassNotFoundException) {
+            }
+        }
+        return null
+    }
+
     internal fun addLib(url: URL) {
         addURL(url)
     }
@@ -75,6 +87,7 @@ internal class DynLibClassLoader(
 internal class JvmPluginClassLoaderN : URLClassLoader {
     val file: File
     val ctx: JvmPluginsLoadingCtx
+    val sharedLibrariesLogger: DynLibClassLoader
 
     val dependencies: MutableCollection<JvmPluginClassLoaderN> = hashSetOf()
 
@@ -85,6 +98,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     private constructor(file: File, ctx: JvmPluginsLoadingCtx, unused: Unit) : super(
         arrayOf(), ctx.sharedLibrariesLoader
     ) {
+        this.sharedLibrariesLogger = ctx.sharedLibrariesLoader
         this.file = file
         this.ctx = ctx
         init0()
@@ -94,6 +108,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         file.name,
         arrayOf(), ctx.sharedLibrariesLoader
     ) {
+        this.sharedLibrariesLogger = ctx.sharedLibrariesLoader
         this.file = file
         this.ctx = ctx
         init0()
@@ -184,12 +199,28 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     internal fun resolvePluginPublicClass(name: String): Class<*>? {
         if (pluginMainPackages.contains(name.pkgName())) {
             if (declaredFilter?.isExported(name) == false) return null
-            return loadClass(name)
+            synchronized(getClassLoadingLock(name)) {
+                findLoadedClass(name)?.let { return it }
+                return super.findClass(name)
+            }
         }
         return null
     }
 
-    override fun findClass(name: String): Class<*> {
+    override fun loadClass(name: String, resolve: Boolean): Class<*> = loadClass(name)
+
+    override fun loadClass(name: String): Class<*> {
+        if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
+            return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
+        }
+        if (name.startsWith("net.mamoe.mirai.")) { // Avoid plugin classing cheating
+            try {
+                return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
+            } catch (ignored: ClassNotFoundException) {
+            }
+        }
+        sharedLibrariesLogger.loadClassInThisClassLoader(name)?.let { return it }
+
         // Search dependencies first
         dependencies.forEach { dependency ->
             dependency.resolvePluginSharedLibAndPluginClass(name)?.let { return it }
@@ -202,15 +233,18 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         }
 
         try {
-            return super.findClass(name)
+            synchronized(getClassLoadingLock(name)) {
+                findLoadedClass(name)?.let { return it }
+                return super.findClass(name)
+            }
         } catch (error: ClassNotFoundException) {
-            // Finally, try search from other plugins
+            // Finally, try search from other plugins and console system
             ctx.pluginClassLoaders.forEach { other ->
-                if (other !== this) {
+                if (other !== this && other !in dependencies) {
                     other.resolvePluginPublicClass(name)?.let { return it }
                 }
             }
-            throw error
+            return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
         }
     }
 
