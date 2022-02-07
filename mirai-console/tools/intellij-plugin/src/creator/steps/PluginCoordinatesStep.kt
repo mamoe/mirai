@@ -1,17 +1,18 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 
 package net.mamoe.mirai.console.intellij.creator.steps
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
-import kotlinx.coroutines.*
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.vcs.log.submitSafe
 import net.mamoe.mirai.console.compiler.common.CheckerConstants.PLUGIN_ID_PATTERN
 import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
@@ -24,10 +25,12 @@ import net.mamoe.mirai.console.intellij.creator.tasks.adjustToClassName
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
 import java.awt.event.ItemEvent
 import java.awt.event.ItemListener
+import java.util.concurrent.ExecutorService
 import javax.swing.*
 
 class PluginCoordinatesStep(
-    private val model: MiraiProjectModel
+    private val model: MiraiProjectModel,
+    private val scope: ExecutorService,
 ) : ModuleWizardStep() {
 
     private lateinit var panel: JPanel
@@ -54,7 +57,7 @@ class PluginCoordinatesStep(
     private val versionKindChangeListener: ItemListener = ItemListener { event ->
         if (event.stateChange != ItemEvent.SELECTED) return@ItemListener
 
-        updateVersionItems()
+        updateVersionItemsAsync()
     }
 
     override fun getPreferredFocusedComponent(): JComponent = idField
@@ -70,8 +73,8 @@ class PluginCoordinatesStep(
         miraiVersionBox.addItem(VERSION_LOADING_PLACEHOLDER)
         miraiVersionBox.selectedItem = VERSION_LOADING_PLACEHOLDER
 
-        model.availableMiraiVersionsOrFail.invokeOnCompletion {
-            updateVersionItems()
+        model.availableMiraiVersionsOrFail.whenComplete { _, _ ->
+            updateVersionItemsAsync()
         }
 
         if (idField.text.isNullOrEmpty()) {
@@ -87,16 +90,15 @@ class PluginCoordinatesStep(
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun updateVersionItems() {
-        GlobalScope.launch(Dispatchers.Main + CoroutineName("updateVersionItems")) {
-            if (!model.availableMiraiVersionsOrFail.isCompleted) return@launch
+    private fun updateVersionItemsAsync() {
+        scope.submitSafe(LOG) {
+            if (!model.availableMiraiVersionsOrFail.isDone) return@submitSafe
             miraiVersionBox.removeAllItems()
             val expectingKind = miraiVersionKindBox.selectedItem as? MiraiVersionKind ?: MiraiVersionKind.DEFAULT
-            kotlin.runCatching { model.availableMiraiVersionsOrFail.await() }
+            kotlin.runCatching { model.availableMiraiVersionsOrFail.join() }
                 .fold(
                     onSuccess = { versions ->
-                        versions.sortedDescending()
+                        versions
                             .filter { v -> expectingKind.isThatKind(v) }
                             .forEach { v -> miraiVersionBox.addItem(v) }
                     },
@@ -141,5 +143,6 @@ class PluginCoordinatesStep(
 
     companion object {
         const val VERSION_LOADING_PLACEHOLDER = "Loading..."
+        private val LOG = Logger.getInstance(PluginCoordinatesStep::class.java)
     }
 }
