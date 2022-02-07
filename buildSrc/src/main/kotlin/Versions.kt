@@ -19,7 +19,7 @@ object Versions {
 
     val core = project
     val console = project
-    val consoleIntellij = "$project-160-213-1" // mirai-kotlin-idea-patch
+    val consoleIntellij = "213-$project-160-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
     const val kotlinCompiler = "1.6.0"

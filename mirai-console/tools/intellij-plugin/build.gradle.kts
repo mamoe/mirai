@@ -22,7 +22,7 @@ repositories {
     mavenCentral()
 }
 
-version = Versions.console
+version = Versions.consoleIntellij
 description = "IntelliJ plugin for Mirai Console"
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
