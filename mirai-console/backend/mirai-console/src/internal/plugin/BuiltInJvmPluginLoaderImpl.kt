@@ -143,7 +143,9 @@ internal class BuiltInJvmPluginLoaderImpl(
                     JvmPlugin::class,
                     KotlinPlugin::class,
                     JavaPlugin::class
-                ).loadAllServices()
+                ).loadAllServices().also { plugins ->
+                    plugins.firstOrNull()?.logger?.let { pluginClassLoader.linkedLogger = it }
+                }
             }.flatMap { (f, list) ->
 
                 list.associateBy { f }.asSequence()

@@ -10,10 +10,9 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.graph.DependencyFilter
 import java.io.File
@@ -94,6 +93,12 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     lateinit var pluginSharedCL: DynLibClassLoader
     lateinit var pluginIndependentCL: DynLibClassLoader
 
+    @Suppress("PrivatePropertyName")
+    private val file_: File
+        get() = file
+
+    var linkedLogger by lateinitMutableProperty { MiraiConsole.createLogger("JvmPlugin[" + file_.name + "]") }
+    val undefinedDependencies = mutableSetOf<String>()
 
     private constructor(file: File, ctx: JvmPluginsLoadingCtx, unused: Unit) : super(
         arrayOf(), ctx.sharedLibrariesLoader
@@ -241,7 +246,13 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
             // Finally, try search from other plugins and console system
             ctx.pluginClassLoaders.forEach { other ->
                 if (other !== this && other !in dependencies) {
-                    other.resolvePluginPublicClass(name)?.let { return it }
+                    other.resolvePluginPublicClass(name)?.let {
+                        if (undefinedDependencies.add(other.file.name)) {
+                            linkedLogger.warning { "Linked class $name in ${other.file.name} but plugin not depend on it." }
+                            linkedLogger.warning { "Class loading logic may change in feature." }
+                        }
+                        return it
+                    }
                 }
             }
             return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
