@@ -283,6 +283,7 @@ internal class MockRemoteFileSub(
         )
     }
 
+    @Suppress("OverridingDeprecatedMember")
     override suspend fun upload(resource: ExternalResource, callback: RemoteFile.ProgressionCallback?): FileMessage {
 
         kotlin.run perm@{
@@ -312,7 +313,8 @@ internal class MockRemoteFileSub(
     @Suppress("DEPRECATION_ERROR")
     @MiraiExperimentalApi
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
-        return contact.sendMessage(upload(resource))
+        @Suppress("DEPRECATION_ERROR")
+        return contact.sendMessage(upload(resource, null))
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
