@@ -15,16 +15,17 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.FriendAddEvent
 import net.mamoe.mirai.event.events.FriendInputStatusChangedEvent
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.mock.MockBotDSL
+import net.mamoe.mirai.mock.internal.contact.MockImage
 import kotlin.random.Random
 
 @JvmBlockingBridge
 public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport {
     public interface MockApi {
-        val contact: MockFriend
-        var nick: String
-        var remark: String
+        public val contact: MockFriend
+        public var nick: String
+        public var remark: String
+        public var avatar: MockImage?
     }
 
     /**
@@ -49,6 +50,11 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
     public suspend fun broadcastFriendAddEvent(): FriendAddEvent {
         return FriendAddEvent(this).broadcast()
     }
+
+    /**
+     * 更改好友头像
+     */
+    public suspend fun setAvatar(img: MockImage)
 
     /**
      * 广播好友邀请 [bot] 加入一个群聊的事件

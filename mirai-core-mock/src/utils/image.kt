@@ -9,7 +9,30 @@
 
 package net.mamoe.mirai.mock.utils
 
+import net.mamoe.mirai.mock.MockBot
+import net.mamoe.mirai.mock.internal.contact.MockImage
+import net.mamoe.mirai.utils.generateImageId
+import net.mamoe.mirai.utils.generateUUID
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.runBIO
+import kotlin.io.path.createFile
+import kotlin.io.path.outputStream
 import net.mamoe.mirai.utils.randomImageContent as miraiutils_randomImageContent
 
 // Make `randomImageContent` public
 public fun randomImageContent(): ByteArray = miraiutils_randomImageContent()
+
+internal suspend fun randomMockImage(bot: MockBot): MockImage {
+    val text = randomImageContent()
+    val uuid = generateUUID(text.md5())
+    val f = bot.tmpFsServer.fsSystem.getPath("$uuid.png")
+    runBIO {
+        bot.tmpFsServer.fsSystem.getPath(uuid).also {
+            it.createFile()
+        }.outputStream().use { fso ->
+            fso.write(text)
+        }
+    }
+    bot.tmpFsServer.bindFile(uuid, f.toString())
+    return MockImage(generateImageId(text.md5()), f.toString())
+}
