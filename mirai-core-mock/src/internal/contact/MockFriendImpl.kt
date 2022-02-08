@@ -63,9 +63,9 @@ internal class MockFriendImpl(
             return mockApi.avatar!!.getUrl(this.bot)
         }
 
-    override suspend fun setAvatar(img: MockImage) {
+    override fun setAvatar(img: MockImage) {
         mockApi.avatar = img
-        FriendAvatarChangedEvent(this).broadcast()
+        FriendAvatarChangedEvent(this).broadcastBlocking()
     }
 
     override var nick: String

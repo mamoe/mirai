@@ -1,0 +1,30 @@
+/*
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
+ */
+
+package net.mamoe.mirai.mock.test.mock
+
+import net.mamoe.mirai.event.events.StrangerRelationChangeEvent
+import net.mamoe.mirai.mock.test.MockBotTestBase
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+
+internal class MockStrangerTest : MockBotTestBase() {
+    @Test
+    fun strangerRelationChangeEvent() = runTest {
+        runAndReceiveEventBroadcast {
+            bot.addStranger(111, "aa").addAsFriend()
+            bot.addStranger(222, "bb").delete()
+        }.let {
+            assertEquals(2, it.size)
+            assertIsInstance<StrangerRelationChangeEvent.Friended>(it[0])
+            assertIsInstance<StrangerRelationChangeEvent.Deleted>(it[1])
+            assert(bot.getFriend(111)!!.avatarUrl != "")
+        }
+    }
+}

@@ -54,7 +54,7 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
     /**
      * 更改好友头像
      */
-    public suspend fun setAvatar(img: MockImage)
+    public fun setAvatar(img: MockImage)
 
     /**
      * 广播好友邀请 [bot] 加入一个群聊的事件
