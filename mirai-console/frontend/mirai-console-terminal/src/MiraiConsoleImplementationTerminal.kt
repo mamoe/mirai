@@ -98,11 +98,16 @@ open class MiraiConsoleImplementationTerminal
         with(rootPath.toFile()) {
             mkdir()
             require(isDirectory) { "rootDir $absolutePath is not a directory" }
+            LoggingService.setup(resolve("logs"))
         }
     }
 
     override val consoleLaunchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions
         get() = ConsoleTerminalSettings.launchOptions
+
+    override fun preStart() {
+        overrideSTD()
+    }
 }
 
 val lineReader: LineReader by lazy {
@@ -166,6 +171,8 @@ internal val ANSI_RESET = Ansi().reset().toString()
 
 internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
     PlatformLogger(identity = it, output = { line ->
-        lineReader.printAbove(line + ANSI_RESET)
+        val text = line + ANSI_RESET
+        lineReader.printAbove(text)
+        LoggingService.pushLine(text)
     })
 }

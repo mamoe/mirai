@@ -48,4 +48,7 @@ object ConsoleTerminalSettings {
 
     @JvmField
     var noConsoleReadingReplacement: String = ""
+
+    @JvmField
+    var noLogging = false
 }

@@ -154,7 +154,6 @@ object MiraiConsoleTerminalLoader {
     @ConsoleExperimentalApi
     fun startAsDaemon(instance: MiraiConsoleImplementationTerminal = MiraiConsoleImplementationTerminal()) {
         instance.start()
-        overrideSTD()
         startupConsoleThread()
     }
 }
@@ -173,8 +172,7 @@ internal fun overrideSTD() {
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stdout")
-                    .run { ({ line: String? -> info(line) }) }
+                logger = LoggerCreator("stdout")::info
             ),
             false,
             "UTF-8"
@@ -183,8 +181,7 @@ internal fun overrideSTD() {
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stderr")
-                    .run { ({ line: String? -> warning(line) }) }
+                logger = LoggerCreator("stderr")::warning
             ),
             false,
             "UTF-8"
