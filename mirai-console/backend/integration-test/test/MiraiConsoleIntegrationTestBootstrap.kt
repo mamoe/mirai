@@ -12,6 +12,7 @@ package net.mamoe.console.integrationtest
 import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
 import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
 import net.mamoe.console.integrationtest.testpoints.plugin.PluginDataRenameToIdTest
+import net.mamoe.console.integrationtest.testpoints.terminal.TestTerminalLogging
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -34,6 +35,7 @@ class MiraiConsoleIntegrationTestBootstrap {
             DoNothingPoint,
             MCITBSelfAssertions,
             PluginDataRenameToIdTest,
+            TestTerminalLogging,
         ).asSequence().map { v ->
             when (v) {
                 is Class<*> -> v

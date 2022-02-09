@@ -9,16 +9,17 @@
 
 package net.mamoe.mirai.console.terminal
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.utils.TestOnly
 import java.io.File
 import java.io.RandomAccessFile
+import java.lang.Runnable
 import java.nio.file.Files
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
@@ -80,7 +81,7 @@ internal class LoggingService {
         @OptIn(TestOnly::class)
         switchLogFileNow = ::switchLogFile
 
-        scope.launch {
+        scope.launch(threadDispatcher) {
             while (isActive) {
                 val nextLine = pipeline.receive()
                 synchronized(outputLock) {
@@ -89,6 +90,28 @@ internal class LoggingService {
                         out.write('\n'.code)
                     }
                 }
+            }
+        }
+
+        // Daily split log files
+        val nextDayTimeSec = Instant.now()
+            .atZone(ZoneId.systemDefault())
+            .plus(1, ChronoUnit.DAYS)
+            .withHour(0)
+            .withMinute(0)
+            .withSecond(0)
+            .toEpochSecond()
+
+        threadPool.scheduleAtFixedRate(
+            ::switchLogFile,
+            nextDayTimeSec * 1000 - System.currentTimeMillis(),
+            TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS
+        )
+
+        scope.coroutineContext.job.invokeOnCompletion {
+            threadPool.shutdown()
+            synchronized(outputLock) {
+                output.get()?.close()
             }
         }
     }
