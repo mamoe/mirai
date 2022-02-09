@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 
 internal class MockStrangerTest : MockBotTestBase() {
     @Test
-    fun strangerRelationChangeEvent() = runTest {
+    fun testStrangerRelationChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
             bot.addStranger(111, "aa").addAsFriend()
             bot.addStranger(222, "bb").delete()

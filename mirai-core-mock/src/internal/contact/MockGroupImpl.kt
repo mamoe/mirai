@@ -128,6 +128,7 @@ internal class MockGroupImpl(
         override var isAnonymousChatAllowed: Boolean = false
         override var isAllowConfessTalk: Boolean = false
         override var groupName: String = name
+        override var entranceAnnouncement: String = ""
 
         override fun withActor(actor: MockNormalMember): MockGroupControlPane {
             return GroupControlPaneImpl(actor)
@@ -146,6 +147,14 @@ internal class MockGroupImpl(
                 if (ov == value) return
                 rawGroupControlPane.groupName = value
                 GroupNameChangeEvent(ov, value, group, currentActor).broadcastBlocking()
+            }
+        override var entranceAnnouncement: String
+            get() = rawGroupControlPane.entranceAnnouncement
+            set(value) {
+                val oa = rawGroupControlPane.entranceAnnouncement
+                if (value == oa) return
+                rawGroupControlPane.entranceAnnouncement = value
+                GroupEntranceAnnouncementChangeEvent(oa, value, this.group, currentActor).broadcastBlocking()
             }
 
         override var isMuteAll: Boolean

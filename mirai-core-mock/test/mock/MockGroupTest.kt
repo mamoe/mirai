@@ -144,4 +144,17 @@ internal class MockGroupTest : MockBotTestBase() {
         fsroot.resolve("helloworld.txt").delete()
         assertEquals(0, fsroot.listFilesCollection().size)
     }
+
+    @Test
+    internal fun testChangeGroupEntranceAnnouncement() = runTest {
+        runAndReceiveEventBroadcast {
+            val g = bot.addGroup(111, "aa")
+            val m = g.addMember0(simpleMemberInfo(222, "bb", "cc", permission = MemberPermission.ADMINISTRATOR))
+            g.controlPane.withActor(m).entranceAnnouncement = "new"
+        }.let {
+            assertEquals(1, it.size)
+            assertIsInstance<GroupEntranceAnnouncementChangeEvent>(it[0])
+            assertEquals(bot.getGroup(111)!!.controlPane.entranceAnnouncement, "new")
+        }
+    }
 }
