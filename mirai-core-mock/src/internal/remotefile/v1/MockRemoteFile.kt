@@ -309,6 +309,7 @@ internal class MockRemoteFileSub(
         )
     }
 
+    @Suppress("DEPRECATION_ERROR")
     @MiraiExperimentalApi
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         return contact.sendMessage(upload(resource))

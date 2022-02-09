@@ -58,7 +58,7 @@ internal suspend fun ExternalResource.mockUploadAudio(bot: MockBot) = inResource
 internal suspend fun ExternalResource.mockUploadVoice(bot: MockBot) = kotlin.run {
     val md5 = this.md5
     val size = this.size
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     Voice(
         fileName = md5.toUHexString() + ".amr",
         md5 = md5,
@@ -93,8 +93,32 @@ internal suspend fun ExternalResource.mockImplUploadAudioAsOnline(bot: MockBot):
 internal class MockImage(
     override val imageId: String,
     private val urlPath: String,
-) : GroupImage(), DeferredOriginUrlAware {
+    override val width: Int = 0,
+    override val height: Int = 0,
+    override val size: Long = 0,
+    override val imageType: ImageType = ImageType.UNKNOWN,
+) : DeferredOriginUrlAware, Image {
+    private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId]" }
+
     override fun getUrl(bot: Bot): String {
         return bot.mock().tmpFsServer.httpRoot.plusHttpSubpath(urlPath)
+    }
+
+    final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = if (isEmoji) {
+        "[动画表情]"
+    } else {
+        "[图片]"
+    }
+
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:image:").append(imageId).append("]")
+    }
+
+    final override fun hashCode(): Int = imageId.hashCode()
+    final override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is Image) return false
+        return this.imageId == other.imageId
     }
 }

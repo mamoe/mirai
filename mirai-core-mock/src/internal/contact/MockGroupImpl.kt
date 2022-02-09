@@ -295,7 +295,7 @@ internal class MockGroupImpl(
         return super<AbstractMockContact>.sendMessage(message).cast()
     }
 
-    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
     override suspend fun uploadVoice(resource: ExternalResource): Voice =
         resource.mockUploadVoice(bot)
 
