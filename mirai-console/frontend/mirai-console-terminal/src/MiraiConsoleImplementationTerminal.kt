@@ -86,19 +86,28 @@ open class MiraiConsoleImplementationTerminal
             configStorageForBuiltIns
         )
     }
+    // used in test
+    internal val logService: LoggingService
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         LoginSolver.Default?.takeIf { it !is StandardCharImageLoginSolver }?.let { return it }
         return StandardCharImageLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
+    override fun createLogger(identity: String?): MiraiLogger {
+        return PlatformLogger(identity = identity, output = { line ->
+            val text = line + ANSI_RESET
+            lineReader.printAbove(text)
+            logService.pushLine(text)
+        })
+    }
 
     init {
         with(rootPath.toFile()) {
             mkdir()
             require(isDirectory) { "rootDir $absolutePath is not a directory" }
-            LoggingService.setup(resolve("logs"))
+            logService = LoggingService()
+            logService.startup(resolve("logs"), this@MiraiConsoleImplementationTerminal)
         }
     }
 
@@ -106,7 +115,7 @@ open class MiraiConsoleImplementationTerminal
         get() = ConsoleTerminalSettings.launchOptions
 
     override fun preStart() {
-        overrideSTD()
+        overrideSTD(this)
     }
 }
 
@@ -168,11 +177,3 @@ private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
 }
 
 internal val ANSI_RESET = Ansi().reset().toString()
-
-internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
-    PlatformLogger(identity = it, output = { line ->
-        val text = line + ANSI_RESET
-        lineReader.printAbove(text)
-        LoggingService.pushLine(text)
-    })
-}

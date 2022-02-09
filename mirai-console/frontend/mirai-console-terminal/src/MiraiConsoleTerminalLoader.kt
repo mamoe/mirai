@@ -168,11 +168,11 @@ internal object ConsoleDataHolder : AutoSavePluginDataHolder,
         get() = "Terminal"
 }
 
-internal fun overrideSTD() {
+internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = LoggerCreator("stdout")::info
+                logger = terminal.createLogger("stdout")::info
             ),
             false,
             "UTF-8"
@@ -181,7 +181,7 @@ internal fun overrideSTD() {
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = LoggerCreator("stderr")::warning
+                logger = terminal.createLogger("stderr")::warning
             ),
             false,
             "UTF-8"
