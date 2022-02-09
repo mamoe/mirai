@@ -30,7 +30,6 @@ import net.mamoe.mirai.console.terminal.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.childScope
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -169,6 +168,9 @@ internal object ConsoleDataHolder : AutoSavePluginDataHolder,
 }
 
 internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
+    if (ConsoleTerminalSettings.noConsole) {
+        SystemOutputPrintStream // Avoid StackOverflowError when launch with no console mode
+    }
     System.setOut(
         PrintStream(
             BufferedOutputStream(
