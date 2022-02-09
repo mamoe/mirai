@@ -55,6 +55,11 @@ internal class MockGroupImpl(
         val onm = honorMembers.value[honorType.ordinal]
         honorMembers.value[honorType.ordinal] = member
         // TODO(broadcast order, achieve first or lose first??)
+        if (honorType == GroupHonorType.TALKATIVE) {
+            // TODO(Will MemberHonorChangeEvent still broadcast after GroupTalkativeChangeEvent?)
+            if (onm != null) GroupTalkativeChangeEvent(this, member, onm).broadcastBlocking()
+            return
+        }
         if (onm != null) MemberHonorChangeEvent.Lose(onm, honorType).broadcastBlocking()
         MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
     }

@@ -45,7 +45,7 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
 
     /**
      * 更改拥有群荣耀的群成员
-     * 会自动广播[MemberHonorChangeEvent.Achieve]和[MemberHonorChangeEvent.Lose]
+     * 会自动广播[MemberHonorChangeEvent.Achieve]和[MemberHonorChangeEvent.Lose] 或 [net.mamoe.mirai.event.events.GroupTalkativeChangeEvent] 如果honorType是[GroupHonorType.TALKATIVE]
      * 如果不需要广播直接更改 [MockGroup.honorMembers]
      */
     @MockBotDSL
