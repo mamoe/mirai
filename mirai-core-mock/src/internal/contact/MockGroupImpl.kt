@@ -16,6 +16,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.OfflineAnnouncement
 import net.mamoe.mirai.contact.announcement.buildAnnouncementParameters
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -47,6 +48,16 @@ internal class MockGroupImpl(
 ) : AbstractMockContact(
     parentCoroutineContext, bot, id
 ), MockGroup {
+    override val honorMembers: Lazy<MutableList<MockNormalMember?>> =
+        lazy { MutableList(GroupHonorType.values().size) { null } }
+
+    override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
+        val onm = honorMembers.value[honorType.ordinal]
+        honorMembers.value[honorType.ordinal] = member
+        // TODO(broadcast order, achieve first or lose first??)
+        if (onm != null) MemberHonorChangeEvent.Lose(onm, honorType).broadcastBlocking()
+        MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
+    }
 
     override fun addMember(mockMember: MemberInfo): MockGroup {
         addMember0(mockMember)

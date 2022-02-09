@@ -12,6 +12,7 @@ package net.mamoe.mirai.mock.test.mock
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.announcement.AnnouncementParameters
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.test.MockBotTestBase
@@ -155,6 +156,21 @@ internal class MockGroupTest : MockBotTestBase() {
             assertEquals(1, it.size)
             assertIsInstance<GroupEntranceAnnouncementChangeEvent>(it[0])
             assertEquals(bot.getGroup(111)!!.controlPane.entranceAnnouncement, "new")
+        }
+    }
+
+    @Test
+    internal fun testMemberHonorChangeEvent() = runTest {
+        runAndReceiveEventBroadcast {
+            val g = bot.addGroup(111, "aa")
+            val m1 = g.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
+            val m2 = g.addMember0(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
+            g.honorMembers.value[GroupHonorType.ACTIVE.ordinal] = m1
+            g.changeHonorMember(m2, GroupHonorType.ACTIVE)
+        }.let {
+            assertEquals(2, it.size)
+            assertIsInstance<MemberHonorChangeEvent>(it[0])
+            assertIsInstance<MemberHonorChangeEvent>(it[1])
         }
     }
 }

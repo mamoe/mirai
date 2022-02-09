@@ -24,15 +24,15 @@ import java.util.concurrent.CancellationException
 public interface MockNormalMember : NormalMember, MockMember {
     public interface MockApi : MockMember.MockApi {
         override val member: MockNormalMember
-        var lastSpeakTimestamp: Int
-        var joinTimestamp: Int
-        var nameCard: String
-        var specialTitle: String
+        public var lastSpeakTimestamp: Int
+        public var joinTimestamp: Int
+        public var nameCard: String
+        public var specialTitle: String
 
         /**
          * 单位 秒
          */
-        var muteTimeEndTimestamp: Long
+        public var muteTimeEndTimestamp: Long
     }
 
     /**
