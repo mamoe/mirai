@@ -106,8 +106,13 @@ open class MiraiConsoleImplementationTerminal
         with(rootPath.toFile()) {
             mkdir()
             require(isDirectory) { "rootDir $absolutePath is not a directory" }
-            logService = LoggingService()
-            logService.startup(resolve("logs"), this@MiraiConsoleImplementationTerminal)
+            logService = if (ConsoleTerminalSettings.noLogging) {
+                LoggingServiceNoop()
+            } else {
+                LoggingServiceI().also { service ->
+                    service.startup(resolve("logs"), this@MiraiConsoleImplementationTerminal)
+                }
+            }
         }
     }
 

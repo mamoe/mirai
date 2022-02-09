@@ -15,7 +15,6 @@ import kotlinx.coroutines.channels.onFailure
 import net.mamoe.mirai.utils.TestOnly
 import java.io.File
 import java.io.RandomAccessFile
-import java.lang.Runnable
 import java.nio.file.Files
 import java.time.Instant
 import java.time.ZoneId
@@ -26,10 +25,25 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-@OptIn(ConsoleTerminalExperimentalApi::class)
-internal class LoggingService {
+internal sealed class LoggingService {
     @TestOnly
     internal lateinit var switchLogFileNow: () -> Unit
+
+    internal abstract fun pushLine(line: String)
+}
+
+internal class LoggingServiceNoop : LoggingService() {
+    override fun pushLine(line: String) {
+    }
+
+    init {
+        @OptIn(TestOnly::class)
+        switchLogFileNow = {}
+    }
+}
+
+@OptIn(ConsoleTerminalExperimentalApi::class)
+internal class LoggingServiceI : LoggingService() {
 
     private val threadPool = Executors.newScheduledThreadPool(3, object : ThreadFactory {
         private val group = ThreadGroup("mirai console terminal logging")
@@ -122,7 +136,7 @@ internal class LoggingService {
         }, 200, TimeUnit.MILLISECONDS)
     }
 
-    fun pushLine(line: String) {
+    override fun pushLine(line: String) {
         pipeline.trySend(line).onFailure {
             pushInPool(line)
         }
