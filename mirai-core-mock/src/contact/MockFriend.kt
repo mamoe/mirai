@@ -25,7 +25,7 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
         public val contact: MockFriend
         public var nick: String
         public var remark: String
-        public var avatar: MockImage?
+        public var avatarUrl: String?
     }
 
     /**
@@ -53,8 +53,9 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
 
     /**
      * 更改好友头像
+     * @param url [MockImage.getUrl]
      */
-    public fun setAvatar(img: MockImage)
+    public fun setAvatarUrl(url: String)
 
     /**
      * 广播好友邀请 [bot] 加入一个群聊的事件

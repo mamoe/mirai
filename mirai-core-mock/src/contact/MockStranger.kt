@@ -9,15 +9,12 @@
 
 package net.mamoe.mirai.mock.contact
 
-import kotlinx.coroutines.runBlocking
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.StrangerAddEvent
 import net.mamoe.mirai.event.events.StrangerRelationChangeEvent
 import net.mamoe.mirai.mock.MockBotDSL
-import net.mamoe.mirai.mock.internal.contact.MockImage
-import net.mamoe.mirai.mock.utils.randomMockImage
 
 @JvmBlockingBridge
 public interface MockStranger : Stranger, MockContact, MockUser {
@@ -25,19 +22,12 @@ public interface MockStranger : Stranger, MockContact, MockUser {
         public val contact: MockStranger
         public var nick: String
         public var remark: String
-        public val avatar: Lazy<MockImage>
-            get() = lazy {
-                runBlocking {
-                    randomMockImage(contact.bot)
-                }
-            }
     }
 
     /**
      * 头像链接
      */
     override val avatarUrl: String
-        get() = mockApi.avatar.value.getUrl(this.bot)
 
     /**
      * 广播陌生人加入

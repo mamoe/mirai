@@ -12,11 +12,14 @@ package net.mamoe.mirai.mock.internal.contact
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.announcement.Announcement
 import net.mamoe.mirai.contact.announcement.AnnouncementImage
 import net.mamoe.mirai.contact.announcement.OnlineAnnouncement
+import net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent
 import net.mamoe.mirai.mock.contact.announcement.MockAnnouncements
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
+import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.generateImageId
@@ -48,24 +51,32 @@ internal class MockAnnouncementsImpl(
         annoc.group = group
     }
 
-    override fun publish0(announcement: Announcement): OnlineAnnouncement {
-        // TODO: GroupEntranceAnnouncementChangeEvent
+    override fun publish0(announcement: Announcement, actor: NormalMember): OnlineAnnouncement {
+        val old = if (announcement.parameters.sendToNewMember)
+            announcements.elements().toList().firstOrNull { oa -> oa.parameters.sendToNewMember }
+        else null
         val onac = MockOnlineAnnouncement(
             content = announcement.content,
             parameters = announcement.parameters,
-            senderId = group.bot.id,
+            senderId = actor.id,
             fid = UUID.randomUUID().toString(),
             allConfirmed = false,
             confirmedMembersCount = 0,
             publicationTime = currentTimeSeconds()
         )
         putDirect(onac)
+        if (old != null) GroupEntranceAnnouncementChangeEvent(
+            old.content,
+            announcement.content,
+            group,
+            actor
+        ).broadcastBlocking()
         return onac
     }
 
     override suspend fun publish(announcement: Announcement): OnlineAnnouncement {
         // TODO: CheckPermission
-        return publish0(announcement)
+        return publish0(announcement, this.group.botAsMember)
     }
 
     override suspend fun uploadImage(resource: ExternalResource): AnnouncementImage = resource.inResource {

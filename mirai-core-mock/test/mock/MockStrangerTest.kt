@@ -20,10 +20,10 @@ internal class MockStrangerTest : MockBotTestBase() {
         runAndReceiveEventBroadcast {
             bot.addStranger(111, "aa").addAsFriend()
             bot.addStranger(222, "bb").delete()
-        }.let {
-            assertEquals(2, it.size)
-            assertIsInstance<StrangerRelationChangeEvent.Friended>(it[0])
-            assertIsInstance<StrangerRelationChangeEvent.Deleted>(it[1])
+        }.let { events ->
+            assertEquals(2, events.size)
+            assertIsInstance<StrangerRelationChangeEvent.Friended>(events[0])
+            assertIsInstance<StrangerRelationChangeEvent.Deleted>(events[1])
             assert(bot.getFriend(111)!!.avatarUrl != "")
         }
     }

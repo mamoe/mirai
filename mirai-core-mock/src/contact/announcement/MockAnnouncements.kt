@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.announcement.OnlineAnnouncement
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 public interface MockAnnouncements : Announcements {
-    public fun publish0(announcement: Announcement): OnlineAnnouncement
+    public fun publish0(announcement: Announcement, actor: NormalMember): OnlineAnnouncement
 }
 
 public data class MockOnlineAnnouncement @MiraiInternalApi public constructor(

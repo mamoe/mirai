@@ -48,17 +48,14 @@ internal class MockGroupImpl(
 ) : AbstractMockContact(
     parentCoroutineContext, bot, id
 ), MockGroup {
-    override val honorMembers: Lazy<MutableList<MockNormalMember?>> =
-        lazy { MutableList(GroupHonorType.values().size) { null } }
+    override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = mutableMapOf()
 
     override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
-        val onm = honorMembers.value[honorType.ordinal]
-        honorMembers.value[honorType.ordinal] = member
-        // TODO(broadcast order, achieve first or lose first??)
+        val onm = honorMembers[honorType]
+        honorMembers[honorType] = member
+        // reference net.mamoe.mirai.internal.network.notice.group.NoticePipelineContext.processGeneralGrayTip, GroupNotificationProcessor.kt#361L
         if (honorType == GroupHonorType.TALKATIVE) {
-            // TODO(Will MemberHonorChangeEvent still broadcast after GroupTalkativeChangeEvent?)
             if (onm != null) GroupTalkativeChangeEvent(this, member, onm).broadcastBlocking()
-            return
         }
         if (onm != null) MemberHonorChangeEvent.Lose(onm, honorType).broadcastBlocking()
         MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
@@ -144,7 +141,6 @@ internal class MockGroupImpl(
         override var isAnonymousChatAllowed: Boolean = false
         override var isAllowConfessTalk: Boolean = false
         override var groupName: String = name
-        override var entranceAnnouncement: String = ""
 
         override fun withActor(actor: MockNormalMember): MockGroupControlPane {
             return GroupControlPaneImpl(actor)
@@ -163,14 +159,6 @@ internal class MockGroupImpl(
                 if (ov == value) return
                 rawGroupControlPane.groupName = value
                 GroupNameChangeEvent(ov, value, group, currentActor).broadcastBlocking()
-            }
-        override var entranceAnnouncement: String
-            get() = rawGroupControlPane.entranceAnnouncement
-            set(value) {
-                val oa = rawGroupControlPane.entranceAnnouncement
-                if (value == oa) return
-                rawGroupControlPane.entranceAnnouncement = value
-                GroupEntranceAnnouncementChangeEvent(oa, value, this.group, currentActor).broadcastBlocking()
             }
 
         override var isMuteAll: Boolean
@@ -263,7 +251,7 @@ internal class MockGroupImpl(
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 announcements.publish0(OfflineAnnouncement.create(value, buildAnnouncementParameters {
                     sendToNewMember = true
-                }))
+                }), this@MockGroupImpl.botAsMember)
             }
 
         override var isMuteAll: Boolean

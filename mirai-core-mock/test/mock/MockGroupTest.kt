@@ -11,7 +11,7 @@ package net.mamoe.mirai.mock.test.mock
 
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.announcement.AnnouncementParameters
+import net.mamoe.mirai.contact.announcement.AnnouncementParametersBuilder
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
@@ -76,16 +76,31 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     internal fun testGroupAnnouncements() = runTest {
         val group = bot.addGroup(8484541, "87")
-        group.announcements.publish(
-            MockOnlineAnnouncement(
-                content = "Hello World",
-                parameters = AnnouncementParameters.DEFAULT,
-                senderId = 971121,
-                allConfirmed = false,
-                confirmedMembersCount = 0,
-                publicationTime = 0
+        runAndReceiveEventBroadcast {
+            group.announcements.publish(
+                MockOnlineAnnouncement(
+                    content = "dlroW olleH",
+                    parameters = AnnouncementParametersBuilder().apply { this.sendToNewMember = true }.build(),
+                    senderId = 9711221,
+                    allConfirmed = false,
+                    confirmedMembersCount = 0,
+                    publicationTime = 0
+                )
             )
-        )
+            group.announcements.publish(
+                MockOnlineAnnouncement(
+                    content = "Hello World",
+                    parameters = AnnouncementParametersBuilder().apply { this.sendToNewMember = true }.build(),
+                    senderId = 971121,
+                    allConfirmed = false,
+                    confirmedMembersCount = 0,
+                    publicationTime = 0
+                )
+            )
+        }.let { events ->
+            assertEquals(1, events.size)
+            assertIsInstance<GroupEntranceAnnouncementChangeEvent>(events[0])
+        }
         val anc = group.announcements.asFlow().toList()
         assertEquals(1, anc.size)
         assertEquals("Hello World", anc[0].content)
@@ -147,30 +162,17 @@ internal class MockGroupTest : MockBotTestBase() {
     }
 
     @Test
-    internal fun testChangeGroupEntranceAnnouncement() = runTest {
-        runAndReceiveEventBroadcast {
-            val g = bot.addGroup(111, "aa")
-            val m = g.addMember0(simpleMemberInfo(222, "bb", "cc", permission = MemberPermission.ADMINISTRATOR))
-            g.controlPane.withActor(m).entranceAnnouncement = "new"
-        }.let {
-            assertEquals(1, it.size)
-            assertIsInstance<GroupEntranceAnnouncementChangeEvent>(it[0])
-            assertEquals(bot.getGroup(111)!!.controlPane.entranceAnnouncement, "new")
-        }
-    }
-
-    @Test
     internal fun testMemberHonorChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
             val g = bot.addGroup(111, "aa")
             val m1 = g.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
             val m2 = g.addMember0(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
-            g.honorMembers.value[GroupHonorType.ACTIVE.ordinal] = m1
+            g.honorMembers[GroupHonorType.ACTIVE] = m1
             g.changeHonorMember(m2, GroupHonorType.ACTIVE)
-        }.let {
-            assertEquals(2, it.size)
-            assertIsInstance<MemberHonorChangeEvent>(it[0])
-            assertIsInstance<MemberHonorChangeEvent>(it[1])
+        }.let { events ->
+            assertEquals(2, events.size)
+            assertIsInstance<MemberHonorChangeEvent>(events[0])
+            assertIsInstance<MemberHonorChangeEvent>(events[1])
         }
     }
 }

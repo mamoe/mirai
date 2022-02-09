@@ -41,7 +41,7 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
     override val owner: MockNormalMember
     override val botAsMember: MockNormalMember
     override val announcements: MockAnnouncements
-    public val honorMembers: Lazy<MutableList<MockNormalMember?>>
+    public val honorMembers: MutableMap<GroupHonorType, MockNormalMember>
 
     /**
      * 更改拥有群荣耀的群成员
