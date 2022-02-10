@@ -44,9 +44,10 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
     public val honorMembers: MutableMap<GroupHonorType, MockNormalMember>
 
     /**
-     * 更改拥有群荣耀的群成员
-     * 会自动广播[MemberHonorChangeEvent.Achieve]和[MemberHonorChangeEvent.Lose] 或 [net.mamoe.mirai.event.events.GroupTalkativeChangeEvent] 如果honorType是[GroupHonorType.TALKATIVE]
-     * 如果不需要广播直接更改 [MockGroup.honorMembers]
+     * 更改拥有群荣耀的群成员.
+     * 会自动广播[MemberHonorChangeEvent.Achieve]和[MemberHonorChangeEvent.Lose].
+     * 此外如果honorType是[GroupHonorType.TALKATIVE], 会额外广播[net.mamoe.mirai.event.events.GroupTalkativeChangeEvent].
+     * 如果不需要广播事件, 可直接更改 [MockGroup.honorMembers]
      */
     @MockBotDSL
     public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType)

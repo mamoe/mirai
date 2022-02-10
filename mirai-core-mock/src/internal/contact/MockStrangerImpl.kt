@@ -10,7 +10,6 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -42,8 +41,7 @@ internal class MockStrangerImpl(
         override var nick: String = nick
         override var remark: String = remark
     }
-    override val avatarUrl: String =
-        runBlocking { randomMockImage(this@MockStrangerImpl.bot).getUrl(this@MockStrangerImpl.bot) }
+    override val avatarUrl: String = randomMockImage(this@MockStrangerImpl.bot).getUrl(this@MockStrangerImpl.bot)
     override val nick: String
         get() = mockApi.nick
     override val remark: String

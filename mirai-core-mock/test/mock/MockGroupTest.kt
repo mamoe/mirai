@@ -98,7 +98,7 @@ internal class MockGroupTest : MockBotTestBase() {
                 )
             )
         }.let { events ->
-            assertEquals(1, events.size)
+            assertEquals(2, events.size)
             assertIsInstance<GroupEntranceAnnouncementChangeEvent>(events[0])
         }
         val anc = group.announcements.asFlow().toList()

@@ -13,6 +13,7 @@ import net.mamoe.mirai.event.events.StrangerRelationChangeEvent
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 internal class MockStrangerTest : MockBotTestBase() {
     @Test
@@ -24,7 +25,7 @@ internal class MockStrangerTest : MockBotTestBase() {
             assertEquals(2, events.size)
             assertIsInstance<StrangerRelationChangeEvent.Friended>(events[0])
             assertIsInstance<StrangerRelationChangeEvent.Deleted>(events[1])
-            assert(bot.getFriend(111)!!.avatarUrl != "")
+            assertNotEquals(bot.getFriend(111)!!.avatarUrl, "")
         }
     }
 }

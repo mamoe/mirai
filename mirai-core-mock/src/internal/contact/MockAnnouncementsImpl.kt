@@ -65,8 +65,8 @@ internal class MockAnnouncementsImpl(
             publicationTime = currentTimeSeconds()
         )
         putDirect(onac)
-        if (old != null) GroupEntranceAnnouncementChangeEvent(
-            old.content,
+        GroupEntranceAnnouncementChangeEvent(
+            old?.content ?: "",
             announcement.content,
             group,
             actor

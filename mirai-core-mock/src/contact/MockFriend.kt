@@ -52,7 +52,7 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
     }
 
     /**
-     * 更改好友头像
+     * 模拟好友头像变更, 将会广播 [net.mamoe.mirai.event.events.FriendAvatarChangedEvent] 事件.
      * @param url [MockImage.getUrl]
      */
     public fun setAvatarUrl(url: String)

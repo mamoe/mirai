@@ -12,7 +12,6 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
@@ -57,9 +56,7 @@ internal class MockFriendImpl(
         get() {
             // can use `lazy` to replace this stuff
             if (mockApi.avatarUrl == null)
-                mockApi.avatarUrl = runBlocking {
-                    randomMockImage(this@MockFriendImpl.bot).getUrl(this@MockFriendImpl.bot)
-                }
+                mockApi.avatarUrl = randomMockImage(this@MockFriendImpl.bot).getUrl(this@MockFriendImpl.bot)
             return mockApi.avatarUrl!!
         }
 
