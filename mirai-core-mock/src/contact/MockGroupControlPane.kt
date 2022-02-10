@@ -10,7 +10,7 @@
 package net.mamoe.mirai.mock.contact
 
 /**
- * 群设置面板, 进行的操作如果使用 withActor 会进行广播
+ * 群设置面板, 进行的操作如果使用 [withActor] 会进行广播
  *
  * 与 [MockGroup.settings] 不同的是, 该控制面板不会进行权限校检
  */
