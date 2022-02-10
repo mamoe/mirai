@@ -11,17 +11,10 @@
 
 package net.mamoe.mirai.mock.internal.remotefile.v2
 
-import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.contact.FileSupported
-import net.mamoe.mirai.contact.file.AbsoluteFile
-import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.mock.txfs.TxFileSystem
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.JavaFriendlyAPI
-import net.mamoe.mirai.utils.ProgressionCallback
-import java.util.stream.Stream
 
 internal class MockRemoteFiles(
     override val contact: FileSupported,
@@ -30,9 +23,7 @@ internal class MockRemoteFiles(
     override val root: AbsoluteFolder = MRF_AbsoluteFolderRoot(this)
 }
 
-internal class MRF_AbsoluteFolderRoot(
-    val files: MockRemoteFiles,
-) : AbsoluteFolder {
+internal class MRF_AbsoluteFolderRoot(files: MockRemoteFiles) : MockAbsoluteFolder(files) {
     override val contentsCount: Int get() = 0
     override suspend fun refreshed(): AbsoluteFolder = this
 
@@ -51,74 +42,4 @@ internal class MRF_AbsoluteFolderRoot(
     override suspend fun delete(): Boolean = false
     override suspend fun refresh(): Boolean = true
     override fun toString(): String = absolutePath
-
-
-    override suspend fun folders(): Flow<AbsoluteFolder> {
-        TODO("Not yet implemented")
-    }
-
-    @JavaFriendlyAPI
-    override suspend fun foldersStream(): Stream<AbsoluteFolder> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun files(): Flow<AbsoluteFile> {
-        TODO("Not yet implemented")
-    }
-
-    @JavaFriendlyAPI
-    override suspend fun filesStream(): Stream<AbsoluteFile> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun children(): Flow<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
-
-    @JavaFriendlyAPI
-    override suspend fun childrenStream(): Stream<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createFolder(name: String): AbsoluteFolder {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resolveFolder(name: String): AbsoluteFolder? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resolveFolderById(id: String): AbsoluteFolder? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resolveFileById(id: String, deep: Boolean): AbsoluteFile? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
-        TODO("Not yet implemented")
-    }
-
-    @JavaFriendlyAPI
-    override suspend fun resolveFilesStream(path: String): Stream<AbsoluteFile> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resolveAll(path: String): Flow<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
-
-    @JavaFriendlyAPI
-    override suspend fun resolveAllStream(path: String): Stream<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun uploadNewFile(
-        filepath: String,
-        content: ExternalResource,
-        callback: ProgressionCallback<AbsoluteFile, Long>?
-    ): AbsoluteFile {
-        TODO("Not yet implemented")
-    }
 }
