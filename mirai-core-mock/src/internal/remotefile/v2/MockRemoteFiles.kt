@@ -24,22 +24,28 @@ internal class MockRemoteFiles(
 }
 
 internal class MRF_AbsoluteFolderRoot(files: MockRemoteFiles) : MockAbsoluteFolder(files) {
-    override val contentsCount: Int get() = 0
-    override suspend fun refreshed(): AbsoluteFolder = this
+    override var contentsCount: Int
+        get() = 0
+        set(value) {}
 
-    override val contact: FileSupported get() = files.contact
+    override suspend fun refreshed(): AbsoluteFolder = this
     override val parent: AbsoluteFolder? get() = null
     override val id: String get() = "/"
-    override val name: String get() = "/"
-    override val absolutePath: String get() = "/"
+    override var name: String
+        get() = "/"
+        set(value) {}
+    override var absolutePath: String
+        get() = "/"
+        set(value) {}
     override val isFile: Boolean get() = false
     override val isFolder: Boolean get() = true
     override val uploadTime: Long get() = 0
-    override val lastModifiedTime: Long get() = 0
+    override var lastModifiedTime: Long
+        get() = 0
+        set(value) {}
     override val uploaderId: Long get() = 0
     override suspend fun exists(): Boolean = true
     override suspend fun renameTo(newName: String): Boolean = false
     override suspend fun delete(): Boolean = false
     override suspend fun refresh(): Boolean = true
-    override fun toString(): String = absolutePath
 }

@@ -21,25 +21,23 @@ import java.util.stream.Stream
 import kotlin.streams.asStream
 
 internal open class MockAbsoluteFolder(
-    val files: MockRemoteFiles,
+    private val files: MockRemoteFiles,
     override val parent: AbsoluteFolder? = null,
     override val id: String = "/",
-    override val name: String = "/",
-    override val absolutePath: String = "/",
+    override var name: String = "/",
+    override var absolutePath: String = "/",
     override val contact: FileSupported = files.contact,
     override val isFile: Boolean = false,
     override val isFolder: Boolean = true,
     override val uploadTime: Long = 0L,
-    override val lastModifiedTime: Long = 0L,
+    override var lastModifiedTime: Long = 0L,
     override val uploaderId: Long = 0L,
-    override val contentsCount: Int = 0
+    override var contentsCount: Int = 0
 ) : AbsoluteFolder {
     private var _exists = true
-    override suspend fun refreshed(): AbsoluteFolder? =
-        (parent ?: files.root).folders().firstOrNull { it.id == id }
+    override suspend fun refreshed(): AbsoluteFolder? = parent!!.resolveFolderById(id)
 
-    private fun currentTxRF() =
-        if (absolutePath == "/") files.fileSystem.root else files.fileSystem.findByPath(absolutePath).first()
+    private fun currentTxRF() = files.fileSystem.resolveById(id)!!
 
     override suspend fun folders(): Flow<AbsoluteFolder> =
         currentTxRF().listFiles()?.filter { it.isDirectory }?.map { it.toMockAbsFolder(files) }?.asFlow() ?: emptyFlow()
@@ -57,14 +55,18 @@ internal open class MockAbsoluteFolder(
     override suspend fun filesStream(): Stream<AbsoluteFile> =
         currentTxRF().listFiles()?.filter { it.isFile }?.map { it.toMockAbsFile(files) }?.asStream() ?: Stream.empty()
 
-    override suspend fun children(): Flow<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun children(): Flow<AbsoluteFileFolder> =
+        files.fileSystem.resolveById(id)!!.listFiles()?.map {
+            if (it.isFile) it.toMockAbsFile(files)
+            else it.toMockAbsFolder(files)
+        }?.asFlow() ?: emptyFlow()
 
     @JavaFriendlyAPI
-    override suspend fun childrenStream(): Stream<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun childrenStream(): Stream<AbsoluteFileFolder> =
+        files.fileSystem.resolveById(id)!!.listFiles()?.map {
+            if (it.isFile) it.toMockAbsFile(files)
+            else it.toMockAbsFolder(files)
+        }?.asStream() ?: Stream.empty()
 
     override suspend fun createFolder(name: String): AbsoluteFolder {
         if (name.isBlank()) throw IllegalArgumentException("folder name cannot be blank.")
@@ -96,7 +98,7 @@ internal open class MockAbsoluteFolder(
         if (id == "/" || id.isEmpty()) throw IllegalArgumentException("Illegal file id: $id")
         files().firstOrNull { it.id == id }?.let { return it }
         if (!deep) return null
-        return folders().map { it.resolveFileById(id, deep) }.firstOrNull()
+        return folders().map { it.resolveFileById(id, deep) }.firstOrNull { it != null }
     }
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
@@ -140,7 +142,14 @@ internal open class MockAbsoluteFolder(
 
     @JavaFriendlyAPI
     override suspend fun resolveAllStream(path: String): Stream<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
+        if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
+        checkLegitimacy(path)
+        val p = if (path.startsWith("/")) path
+        else "${absolutePath.removeSuffix("/")}/$path"
+        return files.fileSystem.findByPath(p).map {
+            if (it.isDirectory) it.toMockAbsFolder(files)
+            else it.toMockAbsFile(files)
+        }.asStream()
     }
 
     override suspend fun uploadNewFile(
@@ -148,9 +157,10 @@ internal open class MockAbsoluteFolder(
     ): AbsoluteFile {
         val folderName = filepath.removePrefix("/").substringBeforeLast("/")
         val folder =
-            if (filepath.removePrefix("/").contains("/")) resolveFolder(folderName) ?: createFolder(folderName)
+            if (folderName == "") files.root
+            else if (filepath.removePrefix("/").contains("/")) resolveFolder(folderName) ?: createFolder(folderName)
             else this
-        val f = files.fileSystem.findByPath(folder.absolutePath).first()
+        val f = files.fileSystem.resolveById(folder.id)!!
             .uploadFile(filepath.substringAfterLast("/"), content, 0L)
         return f.toMockAbsFile(files, content.md5, content.sha1)
     }
@@ -158,7 +168,11 @@ internal open class MockAbsoluteFolder(
     override suspend fun exists(): Boolean = _exists
 
     override suspend fun renameTo(newName: String): Boolean {
-        TODO("Not yet implemented")
+        if (files.fileSystem.resolveById(id)!!.rename(newName)) {
+            refresh()
+            return true
+        }
+        return false
     }
 
     override suspend fun delete(): Boolean {
@@ -175,7 +189,11 @@ internal open class MockAbsoluteFolder(
             _exists = false
             return false
         }
-        TODO("Not yet implemented")
+        this.name = new.name
+        this.lastModifiedTime = new.lastModifiedTime
+        this.contentsCount = new.contentsCount
+        this.absolutePath = new.absolutePath
+        return false
     }
 
     override fun toString(): String = "MockAbsoluteFolder(id=$id,absolutePath=$absolutePath,name=$name"
