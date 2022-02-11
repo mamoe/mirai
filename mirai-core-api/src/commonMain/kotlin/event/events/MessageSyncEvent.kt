@@ -27,8 +27,9 @@ import net.mamoe.mirai.message.data.source
  *
  * @see MessageEvent
  */
-public interface MessageSyncEvent : MessageEvent {
-    public val client: OtherClient
+public interface MessageSyncEvent : MessageEvent, OtherClientEvent {
+    public override val client: OtherClient
+    override val bot: Bot get() = client.bot
 }
 
 /**
@@ -47,7 +48,7 @@ public class GroupTempMessageSyncEvent(
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 
-    public override val bot: Bot get() = sender.bot
+    public override val bot: Bot get() = client.bot
     public override val subject: NormalMember get() = sender
     public override val group: Group get() = sender.group
     public override val senderName: String get() = sender.nameCardOrNick
@@ -72,7 +73,7 @@ public class FriendMessageSyncEvent constructor(
     }
 
     public override val friend: Friend get() = sender
-    public override val bot: Bot get() = super.bot
+    public override val bot: Bot get() = client.bot
     public override val subject: Friend get() = sender
     public override val senderName: String get() = sender.nick
     public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
@@ -96,7 +97,7 @@ public class StrangerMessageSyncEvent constructor(
     }
 
     public override val stranger: Stranger get() = sender
-    public override val bot: Bot get() = super.bot
+    public override val bot: Bot get() = client.bot
     public override val subject: Stranger get() = sender
     public override val senderName: String get() = sender.nick
     public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
@@ -120,7 +121,7 @@ public class GroupMessageSyncEvent(
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 
-    override val bot: Bot get() = group.bot
+    override val bot: Bot get() = client.bot
     override val subject: Group get() = group
     override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
