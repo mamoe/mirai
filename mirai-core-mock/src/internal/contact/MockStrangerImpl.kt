@@ -22,7 +22,6 @@ import net.mamoe.mirai.mock.contact.MockStranger
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromStranger
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToStranger
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
-import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.cast
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
@@ -41,7 +40,8 @@ internal class MockStrangerImpl(
         override var nick: String = nick
         override var remark: String = remark
     }
-    override val avatarUrl: String = randomMockImage(this@MockStrangerImpl.bot).getUrl(this@MockStrangerImpl.bot)
+    override var _avatarUrl: String? = null
+
     override val nick: String
         get() = mockApi.nick
     override val remark: String

@@ -16,7 +16,6 @@ import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.FriendAddEvent
 import net.mamoe.mirai.event.events.FriendInputStatusChangedEvent
 import net.mamoe.mirai.mock.MockBotDSL
-import net.mamoe.mirai.mock.internal.contact.MockImage
 import kotlin.random.Random
 
 @JvmBlockingBridge
@@ -25,7 +24,6 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
         public val contact: MockFriend
         public var nick: String
         public var remark: String
-        public var avatarUrl: String?
     }
 
     /**
@@ -50,12 +48,6 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
     public suspend fun broadcastFriendAddEvent(): FriendAddEvent {
         return FriendAddEvent(this).broadcast()
     }
-
-    /**
-     * 模拟好友头像变更, 将会广播 [net.mamoe.mirai.event.events.FriendAvatarChangedEvent] 事件.
-     * @param url [MockImage.getUrl]
-     */
-    public fun setAvatarUrl(url: String)
 
     /**
      * 广播好友邀请 [bot] 加入一个群聊的事件

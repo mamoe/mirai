@@ -101,11 +101,13 @@ internal class MockImage(
     private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId]" }
 
     override fun getUrl(bot: Bot): String {
+        if (urlPath.startsWith("http"))
+            return urlPath
         return bot.mock().tmpFsServer.httpRoot.plusHttpSubpath(urlPath)
     }
 
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = if (isEmoji) {
+    override fun toString(): String = _stringValue!!
+    override fun contentToString(): String = if (isEmoji) {
         "[动画表情]"
     } else {
         "[图片]"
@@ -115,8 +117,8 @@ internal class MockImage(
         builder.append("[mirai:image:").append(imageId).append("]")
     }
 
-    final override fun hashCode(): Int = imageId.hashCode()
-    final override fun equals(other: Any?): Boolean {
+    override fun hashCode(): Int = imageId.hashCode()
+    override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is Image) return false
         return this.imageId == other.imageId

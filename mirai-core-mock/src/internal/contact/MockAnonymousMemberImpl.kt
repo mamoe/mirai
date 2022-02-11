@@ -40,6 +40,7 @@ internal class MockAnonymousMemberImpl(
         throw AssertionError()
     }
 
+    override var _avatarUrl: String? = null
     override suspend fun postMessagePreSend(message: MessageChain, receipt: MessageReceipt<*>) {
         throw AssertionError()
     }

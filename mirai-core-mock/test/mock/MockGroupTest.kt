@@ -22,10 +22,7 @@ import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class MockGroupTest : MockBotTestBase() {
     @Test
@@ -190,5 +187,10 @@ internal class MockGroupTest : MockBotTestBase() {
         }.let { events ->
             assertTrue(events[0].cast<GroupMessageEvent>().message.contains(FileMessage))
         }
+    }
+
+    @Test
+    internal fun testAvatar() = runTest {
+        assertNotEquals(bot.addGroup(111, "aaa").avatarUrl.toUrl().readText(), "")
     }
 }

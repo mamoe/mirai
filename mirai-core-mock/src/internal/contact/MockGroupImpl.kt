@@ -33,6 +33,7 @@ import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
+import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.RemoteFile
@@ -50,6 +51,18 @@ internal class MockGroupImpl(
     parentCoroutineContext, bot, id
 ), MockGroup {
     override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = mutableMapOf()
+    private val txFileSystem = bot.mock().tmpFsServer.fsDisk.newFsSystem()
+
+    override var _avatarUrl: String? = null
+    override var avatarUrl: String
+        get() {
+            if (_avatarUrl == null)
+                _avatarUrl = randomMockImage(bot).getUrl(bot)
+            return _avatarUrl!!
+        }
+        set(value) {
+            _avatarUrl = value
+        }
 
     override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
         val onm = honorMembers[honorType]
@@ -319,11 +332,11 @@ internal class MockGroupImpl(
 
     @Suppress("OverridingDeprecatedMember", "DEPRECATION")
     override val filesRoot: RemoteFile by lazy {
-        net.mamoe.mirai.mock.internal.remotefile.v1.MockRemoteFileRoot(this)
+        net.mamoe.mirai.mock.internal.remotefile.v1.MockRemoteFileRoot(this, txFileSystem)
         //MockRemoteFileRoot(this)
     }
 
-    override val files: RemoteFiles = MockRemoteFiles(this, bot.tmpFsServer.fsDisk.newFsSystem())
+    override val files: RemoteFiles = MockRemoteFiles(this, txFileSystem)
 
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio =
         resource.mockUploadAudio(bot)

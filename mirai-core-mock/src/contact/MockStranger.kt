@@ -25,11 +25,6 @@ public interface MockStranger : Stranger, MockContact, MockUser {
     }
 
     /**
-     * 头像链接
-     */
-    override val avatarUrl: String
-
-    /**
      * 广播陌生人加入
      */
     @MockBotDSL

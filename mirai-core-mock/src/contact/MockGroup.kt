@@ -40,9 +40,9 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
     override val members: ContactList<MockNormalMember>
     override val owner: MockNormalMember
     override val botAsMember: MockNormalMember
+    override var avatarUrl: String
     override val announcements: MockAnnouncements
     public val honorMembers: MutableMap<GroupHonorType, MockNormalMember>
-
     /**
      * 更改拥有群荣耀的群成员.
      * 会自动广播[MemberHonorChangeEvent.Achieve]和[MemberHonorChangeEvent.Lose].

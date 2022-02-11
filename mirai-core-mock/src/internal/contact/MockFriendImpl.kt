@@ -49,21 +49,17 @@ internal class MockFriendImpl(
 
         override var nick: String = nick
         override var remark: String = remark
-        override var avatarUrl: String? = null
     }
-
-    override val avatarUrl: String
+    override var _avatarUrl: String? = null
+    override var avatarUrl: String
         get() {
-            // can use `lazy` to replace this stuff
-            if (mockApi.avatarUrl == null)
-                mockApi.avatarUrl = randomMockImage(this@MockFriendImpl.bot).getUrl(this@MockFriendImpl.bot)
-            return mockApi.avatarUrl!!
+            if (_avatarUrl == null) _avatarUrl = randomMockImage(bot).getUrl(bot)
+            return _avatarUrl!!
         }
-
-    override fun setAvatarUrl(url: String) {
-        mockApi.avatarUrl = url
-        FriendAvatarChangedEvent(this).broadcastBlocking()
-    }
+        set(value) {
+            _avatarUrl = value
+            FriendAvatarChangedEvent(this).broadcastBlocking()
+        }
 
     override var nick: String
         get() = mockApi.nick

@@ -48,7 +48,7 @@ internal class MockNormalMemberImpl(
     parentCoroutineContext, bot,
     id
 ), MockNormalMember {
-
+    override var _avatarUrl: String? = null
     private inline fun <T> crossFriendAccess(
         ifExists: (MockFriend) -> T,
         ifNotExists: () -> T,

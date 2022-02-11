@@ -65,12 +65,13 @@ internal class MockFriendTest: MockBotTestBase() {
     @Test
     internal fun testFriendAvatarChangedEvent() = runTest {
         runAndReceiveEventBroadcast {
-            bot.addFriend(111, "a").setAvatarUrl(randomMockImage(bot).getUrl(bot))
+            bot.addFriend(111, "a").avatarUrl = randomMockImage(bot).getUrl(bot)
             bot.addFriend(222, "b")
         }.let { events ->
             assertIsInstance<FriendAvatarChangedEvent>(events[0])
             assertNotEquals(bot.getFriend(111)!!.avatarUrl, "")
             assertNotEquals(bot.getFriend(222)!!.avatarUrl, "")
+            assertNotEquals(bot.getFriend(222)!!.avatarUrl.toUrl().readText(), "")
         }
     }
 }
