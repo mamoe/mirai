@@ -331,6 +331,7 @@ public abstract interface class net/mamoe/mirai/console/command/CommandSender : 
 	public static fun from (Lnet/mamoe/mirai/event/events/GroupMessageEvent;)Lnet/mamoe/mirai/console/command/MemberCommandSenderOnMessage;
 	public static fun from (Lnet/mamoe/mirai/event/events/GroupTempMessageEvent;)Lnet/mamoe/mirai/console/command/GroupTempCommandSenderOnMessage;
 	public static fun from (Lnet/mamoe/mirai/event/events/MessageEvent;)Lnet/mamoe/mirai/console/command/CommandSenderOnMessage;
+	public static fun from (Lnet/mamoe/mirai/event/events/MessageSyncEvent;)Lnet/mamoe/mirai/console/command/OtherClientCommandSenderOnMessageSync;
 	public static fun from (Lnet/mamoe/mirai/event/events/OtherClientMessageEvent;)Lnet/mamoe/mirai/console/command/OtherClientCommandSenderOnMessage;
 	public static fun from (Lnet/mamoe/mirai/event/events/StrangerMessageEvent;)Lnet/mamoe/mirai/console/command/StrangerCommandSenderOnMessage;
 	public abstract fun getBot ()Lnet/mamoe/mirai/Bot;
@@ -355,6 +356,7 @@ public final class net/mamoe/mirai/console/command/CommandSender$Companion {
 	public final fun from (Lnet/mamoe/mirai/event/events/GroupMessageEvent;)Lnet/mamoe/mirai/console/command/MemberCommandSenderOnMessage;
 	public final fun from (Lnet/mamoe/mirai/event/events/GroupTempMessageEvent;)Lnet/mamoe/mirai/console/command/GroupTempCommandSenderOnMessage;
 	public final fun from (Lnet/mamoe/mirai/event/events/MessageEvent;)Lnet/mamoe/mirai/console/command/CommandSenderOnMessage;
+	public final fun from (Lnet/mamoe/mirai/event/events/MessageSyncEvent;)Lnet/mamoe/mirai/console/command/OtherClientCommandSenderOnMessageSync;
 	public final fun from (Lnet/mamoe/mirai/event/events/OtherClientMessageEvent;)Lnet/mamoe/mirai/console/command/OtherClientCommandSenderOnMessage;
 	public final fun from (Lnet/mamoe/mirai/event/events/StrangerMessageEvent;)Lnet/mamoe/mirai/console/command/StrangerCommandSenderOnMessage;
 	public final fun of (Lnet/mamoe/mirai/contact/Friend;)Lnet/mamoe/mirai/console/command/FriendCommandSender;
@@ -555,6 +557,11 @@ public class net/mamoe/mirai/console/command/OtherClientCommandSender : net/mamo
 public final class net/mamoe/mirai/console/command/OtherClientCommandSenderOnMessage : net/mamoe/mirai/console/command/OtherClientCommandSender, net/mamoe/mirai/console/command/CommandSenderOnMessage {
 	public synthetic fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageEvent;
 	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/OtherClientMessageEvent;
+}
+
+public final class net/mamoe/mirai/console/command/OtherClientCommandSenderOnMessageSync : net/mamoe/mirai/console/command/OtherClientCommandSender, net/mamoe/mirai/console/command/CommandSenderOnMessage {
+	public synthetic fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageEvent;
+	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageSyncEvent;
 }
 
 public abstract interface class net/mamoe/mirai/console/command/PluginCustomCommandSender : net/mamoe/mirai/console/command/CommandSender, net/mamoe/mirai/console/command/SystemCommandSender {

@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -29,18 +30,52 @@ import kotlin.jvm.JvmName
  *
  * @see MessageEvent
  */
-public interface MessageSyncEvent : MessageEvent
+public interface MessageSyncEvent : MessageEvent, OtherClientEvent {
+    public override val client: OtherClient
+    override val bot: Bot get() = sender.bot // don't rely on `client`, old version does not have client.
+}
 
 /**
  * 机器人在其他客户端发送群临时会话消息同步到这个客户端的事件
  *
  * @see MessageSyncEvent
  */
-public class GroupTempMessageSyncEvent(
+public class GroupTempMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
     public override val sender: NormalMember,
     public override val message: MessageChain,
-    public override val time: Int
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        sender: NormalMember,
+        message: MessageChain,
+        time: Int
+    ) : this(client, sender, message, time, null)
+
+    @Deprecated(
+        "Please use the new constructor.",
+        replaceWith = ReplaceWith("GroupTempMessageSyncEvent(client, sender, message, time)"),
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13")
+    public constructor(
+        sender: NormalMember,
+        message: MessageChain,
+        time: Int
+    ) : this(null, sender, message, time, null)
+
+
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a GroupTempMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromTemp" }
@@ -58,11 +93,42 @@ public class GroupTempMessageSyncEvent(
  *
  * @see MessageSyncEvent
  */
-public class FriendMessageSyncEvent constructor(
+public class FriendMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
     public override val sender: Friend,
     public override val message: MessageChain,
-    public override val time: Int
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?
 ) : AbstractMessageEvent(), FriendEvent, MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        sender: Friend,
+        message: MessageChain,
+        time: Int
+    ) : this(client, sender, message, time, null)
+
+    @Deprecated(
+        "Please use the new constructor.",
+        replaceWith = ReplaceWith("FriendMessageSyncEvent(client, sender, message, time)"),
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13")
+    public constructor(
+        sender: Friend,
+        message: MessageChain,
+        time: Int
+    ) : this(null, sender, message, time, null)
+
+
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
@@ -70,7 +136,7 @@ public class FriendMessageSyncEvent constructor(
     }
 
     public override val friend: Friend get() = sender
-    public override val bot: Bot get() = super.bot
+    public override val bot: Bot get() = sender.bot
     public override val subject: Friend get() = sender
     public override val senderName: String get() = sender.nick
     public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
@@ -81,11 +147,42 @@ public class FriendMessageSyncEvent constructor(
  *
  * @see MessageSyncEvent
  */
-public class StrangerMessageSyncEvent constructor(
+public class StrangerMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
     public override val sender: Stranger,
     public override val message: MessageChain,
-    public override val time: Int
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
 ) : AbstractMessageEvent(), StrangerEvent, MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        sender: Stranger,
+        message: MessageChain,
+        time: Int
+    ) : this(client, sender, message, time, null)
+
+    @Deprecated(
+        "Please use the new constructor.",
+        replaceWith = ReplaceWith("StrangerMessageSyncEvent(client, sender, message, time)"),
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13")
+    public constructor(
+        sender: Stranger,
+        message: MessageChain,
+        time: Int
+    ) : this(null, sender, message, time, null)
+
+
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
@@ -93,7 +190,7 @@ public class StrangerMessageSyncEvent constructor(
     }
 
     public override val stranger: Stranger get() = sender
-    public override val bot: Bot get() = super.bot
+    public override val bot: Bot get() = sender.bot
     public override val subject: Stranger get() = sender
     public override val senderName: String get() = sender.nick
     public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
@@ -104,19 +201,53 @@ public class StrangerMessageSyncEvent constructor(
  *
  * @see MessageSyncEvent
  */
-public class GroupMessageSyncEvent(
-    override val group: Group,
-    override val message: MessageChain,
-    override val sender: Member,
-    override val senderName: String,
-    override val time: Int
+public class GroupMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
+    public override val group: Group,
+    public override val message: MessageChain,
+    public override val sender: Member,
+    public override val senderName: String,
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        group: Group,
+        message: MessageChain,
+        sender: Member,
+        senderName: String,
+        time: Int
+    ) : this(client, group, message, sender, senderName, time, null)
+
+    @Deprecated(
+        "Please use the new constructor.",
+        replaceWith = ReplaceWith("GroupMessageSyncEvent(client, group, message, sender, senderName, time)"),
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13")
+    public constructor(
+        group: Group,
+        message: MessageChain,
+        sender: Member,
+        senderName: String,
+        time: Int
+    ) : this(null, group, message, sender, senderName, time, null)
+
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 
-    override val bot: Bot get() = group.bot
+    override val bot: Bot get() = sender.bot
     override val subject: Group get() = group
     override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 

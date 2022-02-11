@@ -2394,7 +2394,9 @@ public final class net/mamoe/mirai/event/events/FriendMessagePreSendEvent : net/
 
 public final class net/mamoe/mirai/event/events/FriendMessageSyncEvent : net/mamoe/mirai/event/events/AbstractMessageEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/MessageSyncEvent {
 	public fun <init> (Lnet/mamoe/mirai/contact/Friend;Lnet/mamoe/mirai/message/data/MessageChain;I)V
+	public fun <init> (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/contact/Friend;Lnet/mamoe/mirai/message/data/MessageChain;I)V
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 	public fun getFriend ()Lnet/mamoe/mirai/contact/Friend;
 	public fun getMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getSender ()Lnet/mamoe/mirai/contact/Friend;
@@ -2576,7 +2578,9 @@ public final class net/mamoe/mirai/event/events/GroupMessagePreSendEvent : net/m
 
 public final class net/mamoe/mirai/event/events/GroupMessageSyncEvent : net/mamoe/mirai/event/events/AbstractMessageEvent, net/mamoe/mirai/event/events/GroupAwareMessageEvent, net/mamoe/mirai/event/events/MessageSyncEvent {
 	public fun <init> (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/contact/Member;Ljava/lang/String;I)V
+	public fun <init> (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/contact/Member;Ljava/lang/String;I)V
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 	public fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public fun getMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getSender ()Lnet/mamoe/mirai/contact/Member;
@@ -2708,7 +2712,9 @@ public final class net/mamoe/mirai/event/events/GroupTempMessagePreSendEvent : n
 
 public final class net/mamoe/mirai/event/events/GroupTempMessageSyncEvent : net/mamoe/mirai/event/events/AbstractMessageEvent, net/mamoe/mirai/event/events/GroupAwareMessageEvent, net/mamoe/mirai/event/events/MessageSyncEvent {
 	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/message/data/MessageChain;I)V
+	public fun <init> (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/message/data/MessageChain;I)V
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 	public fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public fun getMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
@@ -3056,7 +3062,9 @@ public final class net/mamoe/mirai/event/events/MessageRecallEvent$GroupRecall :
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : net/mamoe/mirai/event/events/MessageEvent {
+public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : net/mamoe/mirai/event/events/MessageEvent, net/mamoe/mirai/event/events/OtherClientEvent {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 }
 
 public final class net/mamoe/mirai/event/events/NewFriendRequestEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
@@ -3215,8 +3223,10 @@ public final class net/mamoe/mirai/event/events/StrangerMessagePreSendEvent : ne
 }
 
 public final class net/mamoe/mirai/event/events/StrangerMessageSyncEvent : net/mamoe/mirai/event/events/AbstractMessageEvent, net/mamoe/mirai/event/events/MessageSyncEvent, net/mamoe/mirai/event/events/StrangerEvent {
+	public fun <init> (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/contact/Stranger;Lnet/mamoe/mirai/message/data/MessageChain;I)V
 	public fun <init> (Lnet/mamoe/mirai/contact/Stranger;Lnet/mamoe/mirai/message/data/MessageChain;I)V
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 	public fun getMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getSender ()Lnet/mamoe/mirai/contact/Stranger;
 	public synthetic fun getSender ()Lnet/mamoe/mirai/contact/User;

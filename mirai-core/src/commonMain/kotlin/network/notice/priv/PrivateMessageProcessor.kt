@@ -133,10 +133,12 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
         val time = msgHead.msgTime
 
         collected += if (fromSync) {
+            val client = bot.otherClients.find { it.appId == msgHead.fromInstid }
+                ?: return // don't compare with dstAppId. diff.
             when (user) {
-                is FriendImpl -> FriendMessageSyncEvent(user, chain, time)
-                is StrangerImpl -> StrangerMessageSyncEvent(user, chain, time)
-                is NormalMemberImpl -> GroupTempMessageSyncEvent(user, chain, time)
+                is FriendImpl -> FriendMessageSyncEvent(client, user, chain, time)
+                is StrangerImpl -> StrangerMessageSyncEvent(client, user, chain, time)
+                is NormalMemberImpl -> GroupTempMessageSyncEvent(client, user, chain, time)
                 is AnonymousMemberImpl -> assertUnreachable()
             }
         } else {
