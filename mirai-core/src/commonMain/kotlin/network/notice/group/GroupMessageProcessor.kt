@@ -18,11 +18,8 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.NormalMemberImpl
-import net.mamoe.mirai.internal.contact.info
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
@@ -139,6 +136,8 @@ internal class GroupMessageProcessor(
         if (isFromSelfAccount) {
             collect(
                 GroupMessageSyncEvent(
+                    client = bot.otherClients.find { it.appId == msgHead.fromInstid }
+                        ?: return, // don't compare with dstAppId. diff.
                     message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP),
                     time = msgHead.msgTime,
                     group = group,

@@ -51,9 +51,9 @@ import kotlin.coroutines.CoroutineContext
  * - [MessageEvent.toCommandSender]
  * - [FriendMessageEvent.toCommandSender]
  * - [GroupMessageEvent.toCommandSender]
- * - [TempMessageEvent.toCommandSender]
  * - [StrangerMessageEvent.toCommandSender]
  * - [OtherClientMessageEvent.toCommandSender]
+ * - [MessageSyncEvent.toCommandSender]
  *
  * - [Member.asCommandSender]
  * - [NormalMember.asTempCommandSender]
@@ -227,6 +227,14 @@ public interface CommandSender : CoroutineScope, Permittee {
             OtherClientCommandSenderOnMessage(this)
 
         /**
+         * 构造 [OtherClientCommandSenderOnMessageSync]
+         */
+        @JvmStatic
+        @JvmName("from")
+        public fun MessageSyncEvent.toCommandSender(): OtherClientCommandSenderOnMessageSync =
+            OtherClientCommandSenderOnMessageSync(this)
+
+        /**
          * 构造 [CommandSenderOnMessage]
          */
         @JvmStatic
@@ -238,6 +246,7 @@ public interface CommandSender : CoroutineScope, Permittee {
             is GroupTempMessageEvent -> toCommandSender()
             is StrangerMessageEvent -> toCommandSender()
             is OtherClientMessageEvent -> toCommandSender()
+            is MessageSyncEvent -> toCommandSender()
             else -> throw IllegalArgumentException("Unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
         } as CommandSenderOnMessage<T>
 
@@ -737,3 +746,11 @@ public class StrangerCommandSenderOnMessage internal constructor(
 public class OtherClientCommandSenderOnMessage internal constructor(
     public override val fromEvent: OtherClientMessageEvent,
 ) : OtherClientCommandSender(fromEvent.client), CommandSenderOnMessage<OtherClientMessageEvent>
+
+/**
+ * 代表一个 [其他客户端][OtherClient] 主动在群内、好友聊天等发送消息执行指令
+ * @see OtherClientCommandSender 代表一个 [其他客户端][OtherClient] 执行指令, 但不一定是通过私聊方式
+ */
+public class OtherClientCommandSenderOnMessageSync internal constructor(
+    public override val fromEvent: MessageSyncEvent,
+) : OtherClientCommandSender(fromEvent.client), CommandSenderOnMessage<MessageSyncEvent>

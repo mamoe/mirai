@@ -27,7 +27,9 @@ import net.mamoe.mirai.message.data.source
  *
  * @see MessageEvent
  */
-public interface MessageSyncEvent : MessageEvent
+public interface MessageSyncEvent : MessageEvent {
+    public val client: OtherClient
+}
 
 /**
  * 机器人在其他客户端发送群临时会话消息同步到这个客户端的事件
@@ -35,6 +37,7 @@ public interface MessageSyncEvent : MessageEvent
  * @see MessageSyncEvent
  */
 public class GroupTempMessageSyncEvent(
+    public override val client: OtherClient,
     public override val sender: NormalMember,
     public override val message: MessageChain,
     public override val time: Int
@@ -57,6 +60,7 @@ public class GroupTempMessageSyncEvent(
  * @see MessageSyncEvent
  */
 public class FriendMessageSyncEvent constructor(
+    public override val client: OtherClient,
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
@@ -80,6 +84,7 @@ public class FriendMessageSyncEvent constructor(
  * @see MessageSyncEvent
  */
 public class StrangerMessageSyncEvent constructor(
+    public override val client: OtherClient,
     public override val sender: Stranger,
     public override val message: MessageChain,
     public override val time: Int
@@ -103,11 +108,12 @@ public class StrangerMessageSyncEvent constructor(
  * @see MessageSyncEvent
  */
 public class GroupMessageSyncEvent(
-    override val group: Group,
-    override val message: MessageChain,
-    override val sender: Member,
-    override val senderName: String,
-    override val time: Int
+    public override val client: OtherClient,
+    public override val group: Group,
+    public override val message: MessageChain,
+    public override val sender: Member,
+    public override val senderName: String,
+    public override val time: Int
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
