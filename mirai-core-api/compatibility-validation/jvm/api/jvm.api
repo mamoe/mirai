@@ -3040,7 +3040,8 @@ public final class net/mamoe/mirai/event/events/MessageRecallEvent$GroupRecall :
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : net/mamoe/mirai/event/events/MessageEvent {
+public abstract interface class net/mamoe/mirai/event/events/MessageSyncEvent : net/mamoe/mirai/event/events/MessageEvent, net/mamoe/mirai/event/events/OtherClientEvent {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public abstract fun getClient ()Lnet/mamoe/mirai/contact/OtherClient;
 }
 
