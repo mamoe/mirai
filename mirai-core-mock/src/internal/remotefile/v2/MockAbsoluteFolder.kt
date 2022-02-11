@@ -197,4 +197,13 @@ internal open class MockAbsoluteFolder(
     }
 
     override fun toString(): String = "MockAbsoluteFolder(id=$id,absolutePath=$absolutePath,name=$name"
+    override fun equals(other: Any?): Boolean =
+        other != null && other is AbsoluteFolder && other.id == id
+
+    override fun hashCode(): Int {
+        // from AbsoluteFolderImpl
+        var result = super.hashCode()
+        result = 31 * result + contentsCount.hashCode()
+        return result
+    }
 }

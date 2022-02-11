@@ -32,7 +32,8 @@ internal fun TxRemoteFile.toMockAbsFolder(files: MockRemoteFiles): AbsoluteFolde
         parent,
         this.id,
         this.name,
-        parent.absolutePath.removeSuffix("/") + "/" + this.name
+        parent.absolutePath.removeSuffix("/") + "/" + this.name,
+        contentsCount = this.listFiles()?.count() ?: 0
     )
 }
 
