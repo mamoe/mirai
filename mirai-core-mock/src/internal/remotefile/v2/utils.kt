@@ -9,9 +9,47 @@
 
 package net.mamoe.mirai.mock.internal.remotefile.v2
 
+import net.mamoe.mirai.contact.file.AbsoluteFile
+import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.mock.txfs.TxRemoteFile
+
+internal fun isLegal(path: String): Boolean {
+    return path.firstOrNull { it in """:*?"<>|""" } == null
+}
+
 internal fun checkLegitimacy(path: String) {
     val char = path.firstOrNull { it in """:*?"<>|""" }
     if (char != null) {
         throw IllegalArgumentException("""Chars ':*?"<>|' are not allowed in path. RemoteFile path contains illegal char: '$char'. path='$path'""")
     }
+}
+
+internal fun TxRemoteFile.toMockAbsFolder(files: MockRemoteFiles): AbsoluteFolder {
+    if (this == files.fileSystem.root) return files.root
+    val parent = this.parent.toMockAbsFolder(files)
+    return MockAbsoluteFolder(
+        files,
+        parent,
+        this.id,
+        this.name,
+        parent.absolutePath.removeSuffix("/") + "/" + this.name
+    )
+}
+
+internal fun TxRemoteFile.toMockAbsFile(
+    files: MockRemoteFiles,
+    md5: ByteArray = byteArrayOf(),
+    sha1: ByteArray = byteArrayOf()
+): AbsoluteFile {
+    val parent = this.parent.toMockAbsFolder(files)
+    // todo md5 and sha
+    return MockAbsoluteFile(
+        sha1,
+        md5,
+        files.contact,
+        parent,
+        this.id,
+        this.name,
+        parent.absolutePath.removeSuffix("/") + "/" + this.name
+    )
 }

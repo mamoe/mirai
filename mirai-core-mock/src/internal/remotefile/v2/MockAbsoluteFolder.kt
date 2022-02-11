@@ -9,8 +9,7 @@
 
 package net.mamoe.mirai.mock.internal.remotefile.v2
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
@@ -19,6 +18,7 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.ProgressionCallback
 import java.util.stream.Stream
+import kotlin.streams.asStream
 
 internal open class MockAbsoluteFolder(
     val files: MockRemoteFiles,
@@ -34,40 +34,28 @@ internal open class MockAbsoluteFolder(
     override val uploaderId: Long = 0L,
     override val contentsCount: Int = 0
 ) : AbsoluteFolder {
-    override suspend fun refreshed(): AbsoluteFolder? {
-        TODO("Not yet implemented")
-    }
+    private var _exists = true
+    override suspend fun refreshed(): AbsoluteFolder? =
+        (parent ?: files.root).folders().firstOrNull { it.id == id }
 
     private fun currentTxRF() =
         if (absolutePath == "/") files.fileSystem.root else files.fileSystem.findByPath(absolutePath).first()
 
-    override suspend fun folders(): Flow<AbsoluteFolder> = flow {
-        currentTxRF().listFiles()?.forEach {
-            println(it)
-            if (it.isDirectory) emit(resolveFolder(it.name)!!)
-        }
-    }
+    override suspend fun folders(): Flow<AbsoluteFolder> =
+        currentTxRF().listFiles()?.filter { it.isDirectory }?.map { it.toMockAbsFolder(files) }?.asFlow() ?: emptyFlow()
+
 
     @JavaFriendlyAPI
-    override suspend fun foldersStream(): Stream<AbsoluteFolder> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun foldersStream(): Stream<AbsoluteFolder> =
+        currentTxRF().listFiles()?.filter { it.isDirectory }?.map { it.toMockAbsFolder(files) }?.asStream()
+            ?: Stream.empty()
 
-    override suspend fun files(): Flow<AbsoluteFile> = flow {
-        // note: listFiles 应该只返回不重复的文件, 准备在txFile里支持重复文件:每个文件名后面带有递增序号以支持重复的文件
-        currentTxRF().listFiles()?.forEach { txRFs ->
-            if (txRFs.isFile) {
-                resolveFiles(txRFs.name).collect {
-                    emit(it)
-                }
-            }
-        }
-    }
+    override suspend fun files(): Flow<AbsoluteFile> =
+        currentTxRF().listFiles()?.filter { it.isFile }?.map { it.toMockAbsFile(files) }?.asFlow() ?: emptyFlow()
 
     @JavaFriendlyAPI
-    override suspend fun filesStream(): Stream<AbsoluteFile> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun filesStream(): Stream<AbsoluteFile> =
+        currentTxRF().listFiles()?.filter { it.isFile }?.map { it.toMockAbsFile(files) }?.asStream() ?: Stream.empty()
 
     override suspend fun children(): Flow<AbsoluteFileFolder> {
         TODO("Not yet implemented")
@@ -87,56 +75,67 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun resolveFolder(name: String): AbsoluteFolder? {
         checkLegitimacy(name)
+        if (name.isBlank()) throw IllegalArgumentException("folder path cannot be blank")
         val n = name.removePrefix("/").removeSuffix("/")
         val a = absolutePath.removeSuffix("/")
-        val f = files.fileSystem.findByPath("$a/$n").firstOrNull()
-        if (f != null)
-            return MockAbsoluteFolder(files, this, f.id, f.name, "$a/$n")
-        return null
+        val f = files.fileSystem.findByPath("$a/$n").firstOrNull() ?: return null
+        return f.toMockAbsFolder(files)
     }
 
     override suspend fun resolveFolderById(id: String): AbsoluteFolder? {
-        TODO("Not yet implemented")
+        if (name.isBlank()) throw IllegalArgumentException("folder id cannot be blank.")
+        if (!isLegal(id)) return null
+        if (id == files.root.id) return files.root
+        if (this.id != files.root.id) return null // tx服务器只支持一层文件夹
+        val f = files.fileSystem.resolveById(id) ?: return null
+        if (!f.exists || !f.isDirectory) return null
+        return f.toMockAbsFolder(files)
     }
 
     override suspend fun resolveFileById(id: String, deep: Boolean): AbsoluteFile? {
-        TODO("Not yet implemented")
+        if (id == "/" || id.isEmpty()) throw IllegalArgumentException("Illegal file id: $id")
+        files().firstOrNull { it.id == id }?.let { return it }
+        if (!deep) return null
+        return folders().map { it.resolveFileById(id, deep) }.firstOrNull()
     }
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
-        checkLegitimacy(path)
-        val f = if (path[0] == '/') // abs
-            files.fileSystem.findByPath(path)
-        else {
-            val n = path.removePrefix("/")
-            val a = absolutePath.removeSuffix("/")
-            files.fileSystem.findByPath("$a/$n")
-        }
+        if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
+        if (isLegal(path)) return emptyFlow()
+        if (path[0] == '/') return files.root.resolveFiles(path.removePrefix("/"))
+        if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFiles(path.substringAfter("/"))
+            ?: emptyFlow()
         return flow {
-            f.forEach {
-                // TODO get md5 and sha1
-                emit(
-                    MockAbsoluteFile(
-                        byteArrayOf(),
-                        byteArrayOf(),
-                        files.contact,
-                        this@MockAbsoluteFolder,
-                        it.id,
-                        it.name,
-                        "${absolutePath.removeSuffix("/")}/${it.name}"
-                    )
-                )
-            }
+            files.fileSystem.findByPath(absolutePath).map {
+                it.toMockAbsFile(files)
+            }.asFlow()
         }
     }
 
     @JavaFriendlyAPI
     override suspend fun resolveFilesStream(path: String): Stream<AbsoluteFile> {
-        TODO("Not yet implemented")
+        if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
+        if (isLegal(path)) return Stream.empty()
+        if (path[0] == '/') return files.root.resolveFilesStream(path.removePrefix("/"))
+        if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFilesStream(
+            path.substringAfter(
+                "/"
+            )
+        ) ?: Stream.empty()
+        return files.fileSystem.findByPath(absolutePath).map {
+            it.toMockAbsFile(files)
+        }.asStream()
     }
 
     override suspend fun resolveAll(path: String): Flow<AbsoluteFileFolder> {
-        TODO("Not yet implemented")
+        if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
+        checkLegitimacy(path)
+        val p = if (path.startsWith("/")) path
+        else "${absolutePath.removeSuffix("/")}/$path"
+        return files.fileSystem.findByPath(p).map {
+            if (it.isDirectory) it.toMockAbsFolder(files)
+            else it.toMockAbsFile(files)
+        }.asFlow()
     }
 
     @JavaFriendlyAPI
@@ -145,39 +144,37 @@ internal open class MockAbsoluteFolder(
     }
 
     override suspend fun uploadNewFile(
-        filepath: String,
-        content: ExternalResource,
-        callback: ProgressionCallback<AbsoluteFile, Long>?
+        filepath: String, content: ExternalResource, callback: ProgressionCallback<AbsoluteFile, Long>?
     ): AbsoluteFile {
         val folderName = filepath.removePrefix("/").substringBeforeLast("/")
-        val folder = if (filepath.removePrefix("/").contains("/"))
-            resolveFolder(folderName) ?: createFolder(folderName)
-        else
-            this
+        val folder =
+            if (filepath.removePrefix("/").contains("/")) resolveFolder(folderName) ?: createFolder(folderName)
+            else this
         val f = files.fileSystem.findByPath(folder.absolutePath).first()
             .uploadFile(filepath.substringAfterLast("/"), content, 0L)
-        return MockAbsoluteFile(
-            content.sha1,
-            content.md5,
-            files.contact,
-            files.root.resolveFolder(filepath.substringBeforeLast("/")),
-            f.id,
-            f.name,
-            f.path
-        )
+        return f.toMockAbsFile(files, content.md5, content.sha1)
     }
 
-    override suspend fun exists(): Boolean = files.fileSystem.resolveById(id) != null
+    override suspend fun exists(): Boolean = _exists
 
     override suspend fun renameTo(newName: String): Boolean {
         TODO("Not yet implemented")
     }
 
     override suspend fun delete(): Boolean {
-        TODO("Not yet implemented")
+        if (!_exists) return false
+        if (files.fileSystem.resolveById(id)!!.delete()) {
+            _exists = false
+            return true
+        }
+        return false
     }
 
     override suspend fun refresh(): Boolean {
+        val new = refreshed() ?: let {
+            _exists = false
+            return false
+        }
         TODO("Not yet implemented")
     }
 

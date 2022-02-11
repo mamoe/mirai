@@ -35,13 +35,15 @@ internal class RemoteFileV2Test : MockBotTestBase() {
 
     @Test
     internal fun listFileAndFolder() = runTest {
-        files.root.createFolder("test1")
-            .uploadNewFile("test.txt", "cc".toByteArray().toExternalResource().toAutoCloseable())
+        val f = files.root.createFolder("test1")
+        val ff = f.uploadNewFile("test.txt", "cc".toByteArray().toExternalResource().toAutoCloseable())
         println(files.root.folders().toList())
         println(files.root.resolveFolder("test1")!!.files().toList())
         assertEquals(files.root.folders().toList().size, 1)
         assertEquals(files.root.folders().toList()[0].name, "test1")
         assertEquals(files.root.resolveFolder("test1")!!.files().toList().size, 1)
         assertEquals(files.root.resolveFolder("test1")!!.files().toList()[0].name, "test.txt")
+        assertEquals(files.root.resolveFolderById(f.id)!!.name, "test1")
+        assertEquals(files.root.resolveFileById(ff.id, true)!!.name, "test.txt")
     }
 }
