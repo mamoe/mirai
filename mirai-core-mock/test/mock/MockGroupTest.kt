@@ -14,15 +14,18 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.announcement.AnnouncementParametersBuilder
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.utils.member
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 
 internal class MockGroupTest : MockBotTestBase() {
     @Test
@@ -173,6 +176,19 @@ internal class MockGroupTest : MockBotTestBase() {
             assertEquals(2, events.size)
             assertIsInstance<MemberHonorChangeEvent>(events[0])
             assertIsInstance<MemberHonorChangeEvent>(events[1])
+        }
+    }
+
+    @Test
+    internal fun testGroupRemoteFile() = runTest {
+        val files = bot.addGroup(111, "aaa").files
+        val f = files.uploadNewFile("aaa", "ccc".toByteArray().toExternalResource().toAutoCloseable())
+        assertEquals(f.getUrl()!!.toUrl().readText(), "ccc")
+        runAndReceiveEventBroadcast {
+            bot.getGroup(111)!!.addMember0(simpleMemberInfo(222, "bbb", permission = MemberPermission.ADMINISTRATOR))
+                .says(f.toMessage())
+        }.let { events ->
+            assertTrue(events[0].cast<GroupMessageEvent>().message.contains(FileMessage))
         }
     }
 }

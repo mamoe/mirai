@@ -30,6 +30,7 @@ import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
+import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.ExternalResource
@@ -322,8 +323,7 @@ internal class MockGroupImpl(
         //MockRemoteFileRoot(this)
     }
 
-    override val files: RemoteFiles
-        get() = TODO("Not yet implemented")
+    override val files: RemoteFiles = MockRemoteFiles(this, bot.tmpFsServer.fsDisk.newFsSystem())
 
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio =
         resource.mockUploadAudio(bot)
