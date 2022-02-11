@@ -14,11 +14,13 @@ import com.google.common.jimfs.Jimfs
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
-import net.mamoe.mirai.mock.internal.txfs.TxFileDiskImpl
 import net.mamoe.mirai.mock.internal.txfs.TxFileSystemImpl
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.nio.file.FileSystem
@@ -26,9 +28,9 @@ import kotlin.test.assertEquals
 
 internal class RemoteFileV2Test : MockBotTestBase() {
     private val tmpfs: FileSystem = Jimfs.newFileSystem(Configuration.unix())
-    private val disk = TxFileDiskImpl(tmpfs.getPath("/disk"))
+    private val disk = bot.tmpFsServer.fsDisk
     private val g = bot.addGroup(11L, "a")
-    private val fsys = TxFileSystemImpl(disk)
+    private val fsys = TxFileSystemImpl(disk.cast())
     private val files = MockRemoteFiles(g, fsys)
 
     @AfterEach
@@ -70,10 +72,15 @@ internal class RemoteFileV2Test : MockBotTestBase() {
     }
 
     @Test
-    fun testSendAndDownload() = runTest {
+    internal fun testSendAndDownload() = runTest {
         val f = files.root.uploadNewFile("test.txt", "c".toByteArray().toExternalResource())
         println(files.fileSystem.findByPath("/test.txt").first().path)
-        bot.addGroup(111, "a")
-            .addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER)) says f.toMessage()
+        runAndReceiveEventBroadcast {
+            g.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER)) says f.toMessage()
+        }.let { events ->
+            assertEquals(events.size, 1)
+            assertEquals(events[0].cast<GroupMessageEvent>().message.contains(FileMessage), true)
+        }
+        assertEquals(f.getUrl()!!.toUrl().readText(), "c")
     }
 }

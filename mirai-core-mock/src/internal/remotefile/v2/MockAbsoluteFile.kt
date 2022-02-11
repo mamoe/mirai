@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.mock.utils.mock
 
 internal class MockAbsoluteFile(
     override val sha1: ByteArray,
@@ -43,9 +44,8 @@ internal class MockAbsoluteFile(
         return true
     }
 
-    override suspend fun getUrl(): String? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getUrl(): String =
+        files.contact.bot.mock().tmpFsServer.resolveHttpUrl(files.fileSystem.resolveById(id)!!.resolveNativePath())
 
     override fun toMessage(): FileMessage {
         //todo busId
