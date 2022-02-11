@@ -29,7 +29,7 @@ internal fun TxRemoteFile.toMockAbsFolder(files: MockRemoteFiles): AbsoluteFolde
     val parent = this.parent.toMockAbsFolder(files)
     return MockAbsoluteFolder(
         files,
-        parent,
+        if (this.parent == files.fileSystem.root) null else parent,
         this.id,
         this.name,
         parent.absolutePath.removeSuffix("/") + "/" + this.name
@@ -47,7 +47,7 @@ internal fun TxRemoteFile.toMockAbsFile(
         sha1,
         md5,
         files.contact,
-        parent,
+        if (this.parent == files.fileSystem.root) null else parent,
         this.id,
         this.name,
         parent.absolutePath.removeSuffix("/") + "/" + this.name
