@@ -36,6 +36,7 @@ internal class MockAbsoluteFile(
     override var lastModifiedTime: Long = 0,
     override val uploaderId: Long = 0
 ) : AbsoluteFile {
+    @Volatile
     private var _exists = true
     override suspend fun moveTo(folder: AbsoluteFolder): Boolean {
         files.fileSystem.resolveById(id)!!.moveTo(files.fileSystem.resolveById(folder.id)!!)
