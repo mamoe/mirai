@@ -13,45 +13,51 @@ import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import org.apache.logging.log4j.Marker
 import org.apache.logging.log4j.MarkerManager
 import org.apache.logging.log4j.message.Message
-import org.apache.logging.log4j.message.SimpleMessage
-import org.apache.logging.log4j.message.SimpleMessageFactory
+import org.apache.logging.log4j.message.ReusableMessageFactory
+import org.apache.logging.log4j.message.ReusableSimpleMessage
 import java.util.logging.Level as JulLevel
 import java.util.logging.Logger as JulLogger
+
+private inline fun ReusableMessageFactory.takeMessage(message: String?, crossinline block: (message: Message) -> Unit) {
+    val msg = this.newMessage(message) as ReusableSimpleMessage
+    block(msg)
+    msg.clear()
+}
 
 internal class Log4jLoggerAdapter(
     private val logger: org.apache.logging.log4j.Logger,
     override val marker: Marker?,
 ) : MiraiLoggerPlatformBase(), MarkedMiraiLogger {
-    val factory: SimpleMessageFactory = SimpleMessageFactory.INSTANCE
+    val factory: ReusableMessageFactory = ReusableMessageFactory.INSTANCE
 
     override fun verbose0(message: String?, e: Throwable?) {
-        val marker = marker
-        if (marker != null) logger.trace(marker, factory.newMessage(message), e)
-        else logger.trace(factory.newMessage(message), e)
+        factory.takeMessage(message) {
+            logger.trace(marker, it, e)
+        }
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        val marker = marker
-        if (marker != null) logger.debug(marker, factory.newMessage(message), e)
-        else logger.debug(factory.newMessage(message), e)
+        factory.takeMessage(message) {
+            logger.debug(marker, it, e)
+        }
     }
 
     override fun info0(message: String?, e: Throwable?) {
-        val marker = marker
-        if (marker != null) logger.info(marker, factory.newMessage(message), e)
-        else logger.info(factory.newMessage(message), e)
+        factory.takeMessage(message) {
+            logger.info(marker, it, e)
+        }
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        val marker = marker
-        if (marker != null) logger.warn(marker, factory.newMessage(message), e)
-        else logger.warn(factory.newMessage(message), e)
+        factory.takeMessage(message) {
+            logger.warn(marker, it, e)
+        }
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        val marker = marker
-        if (marker != null) logger.error(marker, factory.newMessage(message), e)
-        else logger.error(factory.newMessage(message), e)
+        factory.takeMessage(message) {
+            logger.error(marker, it, e)
+        }
     }
 
     override val isVerboseEnabled: Boolean get() = logger.isTraceEnabled
