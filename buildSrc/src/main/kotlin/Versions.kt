@@ -26,6 +26,8 @@ object Versions {
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.6.0"
 
+    const val kotlinCompilerForIdeaPlugin = "1.6.20-M1"
+
     const val coroutines = "1.6.0"
     const val atomicFU = "0.17.0"
     const val serialization = "1.2.2"
@@ -127,6 +129,7 @@ val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.tar
 
 
 const val `kotlin-compiler` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}"
+const val `kotlin-compiler_forIdea` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompilerForIdeaPlugin}"
 
 const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlinStdlib}"
 const val `kotlin-reflect` = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinStdlib}"
