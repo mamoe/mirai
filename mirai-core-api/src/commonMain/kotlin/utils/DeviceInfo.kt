@@ -152,9 +152,27 @@ public class DeviceInfo(
                 wifiBSSID = "02:00:00:00:00:00".toByteArray(),
                 wifiSSID = "<unknown ssid>".toByteArray(),
                 imsiMd5 = getRandomByteArray(16, random).md5(),
-                imei = getRandomIntString(15, random),
+                imei = "86${getRandomIntString(12, random)}".let { it + luhn(it) },
                 apn = "wifi".toByteArray()
             )
+        }
+
+        /**
+         * 计算 imei 校验位
+         */
+        private fun luhn(imei: String): Int {
+            var odd = false
+            val zero = '0'
+            val sum = imei.sumOf { char ->
+                odd = !odd
+                if (odd) {
+                    char.code - zero.code
+                } else {
+                    val s = (char.code - zero.code) * 2
+                    s % 10 + s / 10
+                }
+            }
+            return (10 - sum % 10) % 10
         }
     }
 
