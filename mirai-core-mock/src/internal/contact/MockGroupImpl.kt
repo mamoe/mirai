@@ -28,9 +28,9 @@ import net.mamoe.mirai.mock.contact.MockAnonymousMember
 import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
+import net.mamoe.mirai.mock.internal.absolutefile.MockRemoteFiles
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
-import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.randomMockImage

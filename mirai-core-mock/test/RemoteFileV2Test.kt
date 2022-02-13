@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
+import net.mamoe.mirai.mock.internal.absolutefile.MockRemoteFiles
 import net.mamoe.mirai.mock.internal.txfs.TxFileSystemImpl
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource

@@ -8,7 +8,7 @@
  */
 @file:Suppress("invisible_member", "INVISIBLE_REFERENCE")
 
-package net.mamoe.mirai.mock.internal.remotefile.v2
+package net.mamoe.mirai.mock.internal.absolutefile
 
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
