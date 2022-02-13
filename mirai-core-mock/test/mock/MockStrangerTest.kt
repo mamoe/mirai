@@ -11,21 +11,24 @@ package net.mamoe.mirai.mock.test.mock
 
 import net.mamoe.mirai.event.events.StrangerRelationChangeEvent
 import net.mamoe.mirai.mock.test.MockBotTestBase
+import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 internal class MockStrangerTest : MockBotTestBase() {
     @Test
-    fun testStrangerRelationChangeEvent() = runTest {
+    internal fun testStrangerRelationChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
             bot.addStranger(111, "aa").addAsFriend()
             bot.addStranger(222, "bb").delete()
         }.let { events ->
             assertEquals(2, events.size)
             assertIsInstance<StrangerRelationChangeEvent.Friended>(events[0])
+            assertEquals(111, events[0].cast<StrangerRelationChangeEvent.Friended>().friend.id)
             assertIsInstance<StrangerRelationChangeEvent.Deleted>(events[1])
-            assertNotEquals(bot.getFriend(111)!!.avatarUrl, "")
+            assertEquals(222, events[1].cast<StrangerRelationChangeEvent.Deleted>().stranger.id)
+            assertNotEquals("", bot.getFriend(111)!!.avatarUrl)
         }
     }
 }

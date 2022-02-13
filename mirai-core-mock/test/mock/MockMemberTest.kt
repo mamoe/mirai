@@ -19,6 +19,6 @@ internal class MockMemberTest : MockBotTestBase() {
     @Test
     internal fun testAvatar() = runTest {
         val m = bot.addGroup(111, "aaa").addMember0(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
-        assertNotEquals(m.avatarUrl, "")
+        assertNotEquals("", m.avatarUrl)
     }
 }

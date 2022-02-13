@@ -164,26 +164,29 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     internal fun testMemberHonorChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
-            val g = bot.addGroup(111, "aa")
-            val m1 = g.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
-            val m2 = g.addMember0(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
-            g.honorMembers[GroupHonorType.ACTIVE] = m1
-            g.changeHonorMember(m2, GroupHonorType.ACTIVE)
+            val group = bot.addGroup(111, "aa")
+            val member1 = group.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
+            val member2 = group.addMember0(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
+            group.honorMembers[GroupHonorType.ACTIVE] = member1
+            group.changeHonorMember(member2, GroupHonorType.ACTIVE)
         }.let { events ->
             assertEquals(2, events.size)
-            assertIsInstance<MemberHonorChangeEvent>(events[0])
-            assertIsInstance<MemberHonorChangeEvent>(events[1])
+            assertIsInstance<MemberHonorChangeEvent.Lose>(events[0])
+            assertEquals(222, events[0].cast<MemberHonorChangeEvent.Lose>().member.id)
+            assertEquals(GroupHonorType.ACTIVE, events[1].cast<MemberHonorChangeEvent.Achieve>().honorType)
+            assertEquals(333, events[1].cast<MemberHonorChangeEvent.Achieve>().member.id)
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[1])
         }
     }
 
     @Test
-    internal fun testGroupRemoteFile() = runTest {
+    internal fun testGroupFileUpload() = runTest {
         val files = bot.addGroup(111, "aaa").files
-        val f = files.uploadNewFile("aaa", "ccc".toByteArray().toExternalResource().toAutoCloseable())
-        assertEquals(f.getUrl()!!.toUrl().readText(), "ccc")
+        val file = files.uploadNewFile("aaa", "ccc".toByteArray().toExternalResource().toAutoCloseable())
+        assertEquals("ccc", file.getUrl()!!.toUrl().readText())
         runAndReceiveEventBroadcast {
             bot.getGroup(111)!!.addMember0(simpleMemberInfo(222, "bbb", permission = MemberPermission.ADMINISTRATOR))
-                .says(f.toMessage())
+                .says(file.toMessage())
         }.let { events ->
             assertTrue(events[0].cast<GroupMessageEvent>().message.contains(FileMessage))
         }
@@ -191,6 +194,6 @@ internal class MockGroupTest : MockBotTestBase() {
 
     @Test
     internal fun testAvatar() = runTest {
-        assertNotEquals(bot.addGroup(111, "aaa").avatarUrl.toUrl().readText(), "")
+        assertNotEquals("", bot.addGroup(111, "aaa").avatarUrl.toUrl().readText())
     }
 }

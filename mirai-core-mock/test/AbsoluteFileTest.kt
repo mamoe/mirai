@@ -26,12 +26,12 @@ import org.junit.jupiter.api.Test
 import java.nio.file.FileSystem
 import kotlin.test.assertEquals
 
-internal class RemoteFileV2Test : MockBotTestBase() {
+internal class AbsoluteFileTest : MockBotTestBase() {
     private val tmpfs: FileSystem = Jimfs.newFileSystem(Configuration.unix())
     private val disk = bot.tmpFsServer.fsDisk
-    private val g = bot.addGroup(11L, "a")
+    private val group = bot.addGroup(11L, "a")
     private val fsys = TxFileSystemImpl(disk.cast())
-    private val files = MockRemoteFiles(g, fsys)
+    private val files = MockRemoteFiles(group, fsys)
 
     @AfterEach
     internal fun release() {
@@ -40,17 +40,17 @@ internal class RemoteFileV2Test : MockBotTestBase() {
 
     @Test
     internal fun listFileAndFolder() = runTest {
-        val f = files.root.createFolder("test1")
+        val folder = files.root.createFolder("test1")
         files.root.createFolder("test2")
-        val ff = f.uploadNewFile("test.txt", "cc".toByteArray().toExternalResource().toAutoCloseable())
-        f.uploadNewFile("test.txt", "cac".toByteArray().toExternalResource().toAutoCloseable())
+        val file = folder.uploadNewFile("test.txt", "cc".toByteArray().toExternalResource().toAutoCloseable())
+        folder.uploadNewFile("test.txt", "cac".toByteArray().toExternalResource().toAutoCloseable())
         println(files.root.folders().toList())
         println(files.root.resolveFolder("test1")!!.files().toList())
-        assertEquals(files.root.folders().toList().size, 2)
-        assertEquals(files.root.resolveFolder("test1")!!.files().toList().size, 2)
-        assertEquals(files.root.resolveFolder("test1")!!.files().toList()[0].name, "test.txt")
-        assertEquals(files.root.resolveFolderById(f.id)!!.name, "test1")
-        assertEquals(files.root.resolveFileById(ff.id, true)!!.name, "test.txt")
+        assertEquals(2, files.root.folders().toList().size)
+        assertEquals(2, files.root.resolveFolder("test1")!!.files().toList().size)
+        assertEquals("test.txt", files.root.resolveFolder("test1")!!.files().toList()[0].name)
+        assertEquals("test1", files.root.resolveFolderById(folder.id)!!.name)
+        assertEquals("test.txt", files.root.resolveFileById(file.id, true)!!.name)
     }
 
     @Test
@@ -60,15 +60,15 @@ internal class RemoteFileV2Test : MockBotTestBase() {
         val fff = files.root.resolveFileById(ff.id, true)!!
         assertEquals(fff, ff)
         f.renameTo("test2")
-        assertEquals(files.root.folders().first().name, "test2")
+        assertEquals("test2", files.root.folders().first().name)
         fff.refresh()
-        assertEquals(fff.absolutePath, f.absolutePath + "/" + fff.name)
+        assertEquals(f.absolutePath + "/" + fff.name, fff.absolutePath)
         fff.moveTo(files.root)
-        assertEquals(fff.absolutePath, "/${fff.name}")
-        assertEquals(fff.parent, files.root)
+        assertEquals("/${fff.name}", fff.absolutePath)
+        assertEquals(files.root, fff.parent)
         fff.delete()
-        assertEquals(fff.exists(), false)
-        assertEquals(files.root.resolveFileById(fff.id), null)
+        assertEquals(false, fff.exists())
+        assertEquals(null, files.root.resolveFileById(fff.id))
     }
 
     @Test
@@ -76,10 +76,10 @@ internal class RemoteFileV2Test : MockBotTestBase() {
         val f = files.root.uploadNewFile("test.txt", "c".toByteArray().toExternalResource())
         println(files.fileSystem.findByPath("/test.txt").first().path)
         runAndReceiveEventBroadcast {
-            g.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER)) says f.toMessage()
+            group.addMember0(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER)) says f.toMessage()
         }.let { events ->
-            assertEquals(events.size, 1)
-            assertEquals(events[0].cast<GroupMessageEvent>().message.contains(FileMessage), true)
+            assertEquals(1, events.size)
+            assertEquals(true, events[0].cast<GroupMessageEvent>().message.contains(FileMessage))
         }
         assertEquals(f.getUrl()!!.toUrl().readText(), "c")
     }
