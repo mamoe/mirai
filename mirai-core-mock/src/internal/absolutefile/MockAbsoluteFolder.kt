@@ -136,21 +136,17 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        if (FileSystem.isLegal(path)) return emptyFlow()
+        if (!FileSystem.isLegal(path)) return emptyFlow()
         if (path[0] == '/') return files.root.resolveFiles(path.removePrefix("/"))
-        if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFiles(path.substringAfter("/"))
-            ?: emptyFlow()
-        return flow {
-            files.fileSystem.findByPath(absolutePath).map {
-                it.toMockAbsFile(files)
-            }.asFlow()
-        }
+        return files.fileSystem.findByPath(absolutePath.removeSuffix("/") + "/" + path.removePrefix("/")).map {
+            it.toMockAbsFile(files)
+        }.asFlow()
     }
 
     @JavaFriendlyAPI
     override suspend fun resolveFilesStream(path: String): Stream<AbsoluteFile> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        if (FileSystem.isLegal(path)) return Stream.empty()
+        if (!FileSystem.isLegal(path)) return Stream.empty()
         if (path[0] == '/') return files.root.resolveFilesStream(path.removePrefix("/"))
         if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFilesStream(
             path.substringAfter(
@@ -188,6 +184,7 @@ internal open class MockAbsoluteFolder(
     override suspend fun uploadNewFile(
         filepath: String, content: ExternalResource, callback: ProgressionCallback<AbsoluteFile, Long>?
     ): AbsoluteFile {
+        FileSystem.checkLegitimacy(filepath)
         val folderName = filepath.removePrefix("/").substringBeforeLast("/")
         val folder =
             if (folderName == "") files.root

@@ -12,6 +12,7 @@ package net.mamoe.mirai.mock.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.nio.file.FileSystem
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 internal class AbsoluteFileTest : MockBotTestBase() {
     private val tmpfs: FileSystem = Jimfs.newFileSystem(Configuration.unix())
@@ -81,6 +83,17 @@ internal class AbsoluteFileTest : MockBotTestBase() {
             assertEquals(1, events.size)
             assertEquals(true, events[0].cast<GroupMessageEvent>().message.contains(FileMessage))
         }
-        assertEquals(f.getUrl()!!.toUrl().readText(), "c")
+        assertEquals("c", f.getUrl()!!.toUrl().readText())
+    }
+
+    @Test
+    fun testRename() = runTest {
+        val folder = files.root.createFolder("test1")
+        val file = folder.uploadNewFile("test.txt", "content".toByteArray().toExternalResource().toAutoCloseable())
+        assertEquals(file.id, folder.resolveFiles("test.txt").first().id)
+        folder.renameTo("test2")
+        file.refresh()
+        assertEquals(true, file.exists())
+        assertNotEquals(null, folder.resolveFiles("test.txt").firstOrNull())
     }
 }

@@ -39,6 +39,7 @@ internal class MockAbsoluteFile(
     @Volatile
     private var _exists = true
     override suspend fun moveTo(folder: AbsoluteFolder): Boolean {
+        if (!exists()) return false
         files.fileSystem.resolveById(id)!!.moveTo(files.fileSystem.resolveById(folder.id)!!)
         this.parent = folder
         refresh()
@@ -59,6 +60,7 @@ internal class MockAbsoluteFile(
     override suspend fun exists(): Boolean = _exists
 
     override suspend fun renameTo(newName: String): Boolean {
+        if (!exists()) return false
         if (files.fileSystem.resolveById(id)!!.rename(newName)) {
             refresh()
             return true
@@ -76,12 +78,12 @@ internal class MockAbsoluteFile(
     }
 
     override suspend fun refresh(): Boolean {
-        if (!exists()) return false
         val new = refreshed()
         if (new == null) {
             _exists = false
             return false
         }
+        _exists = true
         this.parent = new.parent
         this.expiryTime = new.expiryTime
         this.name = new.name
