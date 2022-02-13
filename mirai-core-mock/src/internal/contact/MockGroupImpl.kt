@@ -34,10 +34,7 @@ import net.mamoe.mirai.mock.internal.remotefile.v2.MockRemoteFiles
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.randomMockImage
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.RemoteFile
-import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
@@ -53,16 +50,7 @@ internal class MockGroupImpl(
     override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = mutableMapOf()
     private val txFileSystem = bot.mock().tmpFsServer.fsDisk.newFsSystem()
 
-    override var _avatarUrl: String? = null
-    override var avatarUrl: String
-        get() {
-            if (_avatarUrl == null)
-                _avatarUrl = randomMockImage(bot).getUrl(bot)
-            return _avatarUrl!!
-        }
-        set(value) {
-            _avatarUrl = value
-        }
+    override var avatarUrl: String by lateinitMutableProperty { randomMockImage(bot).getUrl(bot) }
 
     override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
         val onm = honorMembers[honorType]

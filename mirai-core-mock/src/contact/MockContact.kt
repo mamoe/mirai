@@ -11,24 +11,10 @@ package net.mamoe.mirai.mock.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.mock.utils.randomMockImage
 
 @JvmBlockingBridge
 @Suppress("unused")
 public interface MockContact : Contact, MockContactOrBot {
-    public var _avatarUrl: String?
-
-    /**
-     * 头像链接.
-     * 直接更改本属性会广播头像更改事件(如果存在), 如果不需要广播事件直接更改[_avatarUrl].
-     */
+    // override for modifiable
     override var avatarUrl: String
-        get() {
-            if (_avatarUrl == null)
-                _avatarUrl = randomMockImage(bot).getUrl(bot)
-            return _avatarUrl!!
-        }
-        set(value) {
-            _avatarUrl = value
-        }
 }

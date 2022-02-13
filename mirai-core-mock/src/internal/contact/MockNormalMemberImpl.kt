@@ -25,8 +25,10 @@ import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToTemp
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
+import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
@@ -48,7 +50,7 @@ internal class MockNormalMemberImpl(
     parentCoroutineContext, bot,
     id
 ), MockNormalMember {
-    override var _avatarUrl: String? = null
+    override var avatarUrl: String by lateinitMutableProperty { randomMockImage(bot).getUrl(bot) }
     private inline fun <T> crossFriendAccess(
         ifExists: (MockFriend) -> T,
         ifNotExists: () -> T,

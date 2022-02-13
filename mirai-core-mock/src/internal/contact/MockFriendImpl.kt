@@ -31,6 +31,7 @@ import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
@@ -49,15 +50,12 @@ internal class MockFriendImpl(
 
         override var nick: String = nick
         override var remark: String = remark
+        override var avatarUrl: String by lateinitMutableProperty { randomMockImage(bot).getUrl(bot) }
     }
-    override var _avatarUrl: String? = null
     override var avatarUrl: String
-        get() {
-            if (_avatarUrl == null) _avatarUrl = randomMockImage(bot).getUrl(bot)
-            return _avatarUrl!!
-        }
+        get() = mockApi.avatarUrl
         set(value) {
-            _avatarUrl = value
+            mockApi.avatarUrl = value
             FriendAvatarChangedEvent(this).broadcastBlocking()
         }
 
