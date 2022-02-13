@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.mock.internal.contact
 
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.broadcast
@@ -41,7 +42,7 @@ internal class MockAnonymousMemberImpl(
         throw AssertionError()
     }
 
-    override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
+    override var avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
     override suspend fun postMessagePreSend(message: MessageChain, receipt: MessageReceipt<*>) {
         throw AssertionError()
     }

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.mock.internal.contact
 
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -103,16 +102,14 @@ internal class MockImage(
 
     companion object {
         // create a mockImage with random content
-        internal fun random(bot: MockBot): MockImage {
+        internal suspend fun random(bot: MockBot): MockImage {
             val text = randomImageContent()
             val bindId = "image/" + generateUUID(text.md5())
             val uuid = "${System.currentTimeMillis()}-${UUID.randomUUID()}"
             bot.tmpFsServer.fsSystem.getPath(uuid).outputStream().use { fso ->
                 fso.write(text)
             }
-            runBlocking {
-                bot.tmpFsServer.bindFile(uuid, bindId)
-            }
+            bot.tmpFsServer.bindFile(uuid, bindId)
             return MockImage(generateImageId(text.md5()), bindId)
         }
     }

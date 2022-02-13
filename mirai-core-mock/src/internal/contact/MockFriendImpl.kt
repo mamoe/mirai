@@ -12,6 +12,7 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
@@ -49,7 +50,7 @@ internal class MockFriendImpl(
 
         override var nick: String = nick
         override var remark: String = remark
-        override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
+        override var avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
     }
     override var avatarUrl: String
         get() = mockApi.avatarUrl

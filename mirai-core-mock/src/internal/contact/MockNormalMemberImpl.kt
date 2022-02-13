@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -49,7 +50,7 @@ internal class MockNormalMemberImpl(
     parentCoroutineContext, bot,
     id
 ), MockNormalMember {
-    override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
+    override var avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
     private inline fun <T> crossFriendAccess(
         ifExists: (MockFriend) -> T,
         ifNotExists: () -> T,

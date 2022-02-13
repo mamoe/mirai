@@ -12,6 +12,7 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.OfflineAnnouncement
 import net.mamoe.mirai.contact.announcement.buildAnnouncementParameters
@@ -49,7 +50,7 @@ internal class MockGroupImpl(
     override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = mutableMapOf()
     private val txFileSystem = bot.mock().tmpFsServer.fsDisk.newFsSystem()
 
-    override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
+    override var avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
 
     override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
         val onm = honorMembers[honorType]
