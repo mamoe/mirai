@@ -6,7 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
-
+@file: Suppress("invisible_member", "invisible_reference")
 package net.mamoe.mirai.mock.internal.absolutefile
 
 import kotlinx.coroutines.flow.*
@@ -14,14 +14,47 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFileFolder
 import net.mamoe.mirai.contact.file.AbsoluteFolder
+import net.mamoe.mirai.internal.utils.FileSystem
+import net.mamoe.mirai.mock.txfs.TxRemoteFile
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.ProgressionCallback
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
+private fun TxRemoteFile.toMockAbsFolder(files: MockRemoteFiles): AbsoluteFolder {
+    if (this == files.fileSystem.root) return files.root
+    val parent = this.parent.toMockAbsFolder(files)
+    return MockAbsoluteFolder(
+        files,
+        parent,
+        this.id,
+        this.name,
+        parent.absolutePath.removeSuffix("/") + "/" + this.name,
+        contentsCount = this.listFiles()?.count() ?: 0
+    )
+}
+
+private fun TxRemoteFile.toMockAbsFile(
+    files: MockRemoteFiles,
+    md5: ByteArray = byteArrayOf(),
+    sha1: ByteArray = byteArrayOf()
+): AbsoluteFile {
+    val parent = this.parent.toMockAbsFolder(files)
+    // todo md5 and sha
+    return MockAbsoluteFile(
+        sha1,
+        md5,
+        files,
+        parent,
+        this.id,
+        this.name,
+        parent.absolutePath.removeSuffix("/") + "/" + this.name
+    )
+}
+
 internal open class MockAbsoluteFolder(
-    private val files: MockRemoteFiles,
+    internal val files: MockRemoteFiles,
     override val parent: AbsoluteFolder? = null,
     override val id: String = "/",
     override var name: String = "/",
@@ -70,13 +103,13 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun createFolder(name: String): AbsoluteFolder {
         if (name.isBlank()) throw IllegalArgumentException("folder name cannot be blank.")
-        checkLegitimacy(name)
+        FileSystem.checkLegitimacy(name)
         currentTxRF().mksubdir(name, 0L)
         return resolveFolder(name)!!
     }
 
     override suspend fun resolveFolder(name: String): AbsoluteFolder? {
-        checkLegitimacy(name)
+        FileSystem.checkLegitimacy(name)
         if (name.isBlank()) throw IllegalArgumentException("folder path cannot be blank")
         val n = name.removePrefix("/").removeSuffix("/")
         val a = absolutePath.removeSuffix("/")
@@ -86,7 +119,7 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun resolveFolderById(id: String): AbsoluteFolder? {
         if (name.isBlank()) throw IllegalArgumentException("folder id cannot be blank.")
-        if (!isLegal(id)) return null
+        if (!FileSystem.isLegal(id)) return null
         if (id == files.root.id) return files.root
         if (this.id != files.root.id) return null // tx服务器只支持一层文件夹
         val f = files.fileSystem.resolveById(id) ?: return null
@@ -103,7 +136,7 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        if (isLegal(path)) return emptyFlow()
+        if (FileSystem.isLegal(path)) return emptyFlow()
         if (path[0] == '/') return files.root.resolveFiles(path.removePrefix("/"))
         if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFiles(path.substringAfter("/"))
             ?: emptyFlow()
@@ -117,7 +150,7 @@ internal open class MockAbsoluteFolder(
     @JavaFriendlyAPI
     override suspend fun resolveFilesStream(path: String): Stream<AbsoluteFile> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        if (isLegal(path)) return Stream.empty()
+        if (FileSystem.isLegal(path)) return Stream.empty()
         if (path[0] == '/') return files.root.resolveFilesStream(path.removePrefix("/"))
         if (path.contains("/")) return resolveFolder(path.substringBefore("/"))?.resolveFilesStream(
             path.substringAfter(
@@ -131,7 +164,7 @@ internal open class MockAbsoluteFolder(
 
     override suspend fun resolveAll(path: String): Flow<AbsoluteFileFolder> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        checkLegitimacy(path)
+        FileSystem.checkLegitimacy(path)
         val p = if (path.startsWith("/")) path
         else "${absolutePath.removeSuffix("/")}/$path"
         return files.fileSystem.findByPath(p).map {
@@ -143,7 +176,7 @@ internal open class MockAbsoluteFolder(
     @JavaFriendlyAPI
     override suspend fun resolveAllStream(path: String): Stream<AbsoluteFileFolder> {
         if (path.isBlank()) throw IllegalArgumentException("path cannot be blank.")
-        checkLegitimacy(path)
+        FileSystem.checkLegitimacy(path)
         val p = if (path.startsWith("/")) path
         else "${absolutePath.removeSuffix("/")}/$path"
         return files.fileSystem.findByPath(p).map {

@@ -25,7 +25,6 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockMember
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
-import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.coroutines.CoroutineContext
@@ -42,7 +41,7 @@ internal class MockAnonymousMemberImpl(
         throw AssertionError()
     }
 
-    override var avatarUrl: String by lateinitMutableProperty { randomMockImage(bot).getUrl(bot) }
+    override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
     override suspend fun postMessagePreSend(message: MessageChain, receipt: MessageReceipt<*>) {
         throw AssertionError()
     }

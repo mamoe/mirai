@@ -12,8 +12,8 @@ package net.mamoe.mirai.mock.test.mock
 import net.mamoe.mirai.event.events.FriendAddEvent
 import net.mamoe.mirai.event.events.FriendAvatarChangedEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.mock.internal.contact.MockImage
 import net.mamoe.mirai.mock.test.MockBotTestBase
-import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -66,7 +66,7 @@ internal class MockFriendTest: MockBotTestBase() {
     @Test
     fun testFriendAvatarChangedEvent() = runTest {
         runAndReceiveEventBroadcast {
-            bot.addFriend(111, "a").avatarUrl = randomMockImage(bot).getUrl(bot)
+            bot.addFriend(111, "a").avatarUrl = MockImage.random(bot).getUrl(bot)
             bot.addFriend(222, "b")
         }.let { events ->
             assertIsInstance<FriendAvatarChangedEvent>(events[0])

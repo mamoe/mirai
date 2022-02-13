@@ -25,7 +25,6 @@ import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToTemp
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
-import net.mamoe.mirai.mock.utils.randomMockImage
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.lateinitMutableProperty
@@ -50,7 +49,7 @@ internal class MockNormalMemberImpl(
     parentCoroutineContext, bot,
     id
 ), MockNormalMember {
-    override var avatarUrl: String by lateinitMutableProperty { randomMockImage(bot).getUrl(bot) }
+    override var avatarUrl: String by lateinitMutableProperty { MockImage.random(bot).getUrl(bot) }
     private inline fun <T> crossFriendAccess(
         ifExists: (MockFriend) -> T,
         ifNotExists: () -> T,

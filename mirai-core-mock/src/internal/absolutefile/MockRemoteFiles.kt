@@ -28,7 +28,7 @@ internal class MRF_AbsoluteFolderRoot(files: MockRemoteFiles) : MockAbsoluteFold
         get() = 0
         set(value) {}
 
-    override suspend fun refreshed(): AbsoluteFolder = this
+    override suspend fun refreshed(): AbsoluteFolder = MRF_AbsoluteFolderRoot(files)
     override val parent: AbsoluteFolder? get() = null
     override val id: String get() = "/"
     override var name: String
