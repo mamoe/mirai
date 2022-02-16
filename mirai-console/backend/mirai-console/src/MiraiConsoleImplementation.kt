@@ -43,6 +43,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 
 
@@ -354,6 +355,14 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         private val backendAccessInstance = object : BackendAccess {
             override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
             override val resolvedPlugins: MutableList<Plugin> get() = MiraiConsole.pluginManagerImpl.resolvedPlugins
+        }
+
+        init {
+            Runtime.getRuntime().addShutdownHook(thread(false) {
+                if (instanceInitialized) {
+                    runBlocking { MiraiConsole.job.cancelAndJoin() }
+                }
+            })
         }
 
         @Volatile
