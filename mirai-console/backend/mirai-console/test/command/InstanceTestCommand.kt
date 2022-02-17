@@ -25,15 +25,18 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.message.data.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.time.*
 import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 import kotlin.test.*
 
-object TestCompositeCommand : CompositeCommand(
+class TestCompositeCommand : CompositeCommand(
     owner,
     "testComposite", "tsC"
 ) {
@@ -48,7 +51,7 @@ object TestCompositeCommand : CompositeCommand(
     }
 }
 
-object TestRawCommand : RawCommand(
+class TestRawCommand : RawCommand(
     owner,
     "testRaw"
 ) {
@@ -58,14 +61,14 @@ object TestRawCommand : RawCommand(
 }
 
 
-object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
+class TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
     override suspend fun CommandSender.onCommand(args: MessageChain) {
         Testing.ok(args)
     }
 }
 
 @Suppress("EnumEntryName")
-object TestEnumArgCommand : CompositeCommand(owner, "testenum") {
+class TestEnumArgCommand : CompositeCommand(owner, "testenum") {
     enum class TestEnum {
         V1, V2, V3
     }
@@ -94,7 +97,7 @@ object TestEnumArgCommand : CompositeCommand(owner, "testenum") {
     }
 }
 
-object TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
+class TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
 
     @SubCommand
     fun CommandSender.instant(temporal: Instant) {
@@ -152,26 +155,33 @@ object TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
     }
 }
 
-internal val sender by lazy { ConsoleCommandSender }
+private val sender get() = ConsoleCommandSender
+internal val owner get() = ConsoleCommandOwner
 
-internal object TestUnitCommandOwner : CommandOwner by ConsoleCommandOwner
-
-internal val owner by lazy { TestUnitCommandOwner }
-
-
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     private val manager by lazy { MiraiConsoleImplementation.getBridge().commandManager as CommandManagerImpl }
+
+    private val simpleCommand by lazy { TestSimpleCommand() }
+    private val rawCommand by lazy { TestRawCommand() }
+    private val compositeCommand by lazy { TestCompositeCommand() }
+
+    @BeforeEach
+    fun grantPermission() {
+        ConsoleCommandSender.permit(simpleCommand.permission)
+        ConsoleCommandSender.permit(compositeCommand.permission)
+    }
 
     @Test
     fun testRegister() {
         try {
             unregisterAllCommands(ConsoleCommandOwner) // builtins
             unregisterAllCommands(owner) // testing unit
-            unregisterCommand(TestSimpleCommand)
+            unregisterCommand(simpleCommand)
 
-            assertTrue(TestCompositeCommand.register())
-            assertFalse(TestCompositeCommand.register())
+            assertTrue(compositeCommand.register())
+            assertFalse(compositeCommand.register())
 
             assertEquals(1, getRegisteredCommands(owner).size)
 
@@ -180,24 +190,24 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
                 manager.requiredPrefixCommandMap.size,
                 manager.requiredPrefixCommandMap.entries.joinToString { it.toString() })
         } finally {
-            unregisterCommand(TestCompositeCommand)
+            unregisterCommand(compositeCommand)
         }
     }
 
     @Test
     fun testSimpleExecute() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals("test", withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, "test"))
+                assertSuccess(simpleCommand.execute(sender, "test"))
             }.contentToString())
         }
     }
 
     @Test
     fun `test raw command`() = runBlocking {
-        TestRawCommand.withRegistration {
+        rawCommand.withRegistration {
             val result = withTesting<MessageChain> {
-                assertSuccess(TestRawCommand.execute(sender, PlainText("a1"), PlainText("a2"), PlainText("a3")))
+                assertSuccess(rawCommand.execute(sender, PlainText("a1"), PlainText("a2"), PlainText("a3")))
             }
             assertEquals(3, result.size)
             assertEquals("a1, a2, a3", result.joinToString())
@@ -216,67 +226,68 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun `test enum argument`() = runBlocking {
-        TestEnumArgCommand.withRegistration {
+        val enum = TestEnumArgCommand()
+        enum.withRegistration {
 
             assertEquals(TestEnumArgCommand.TestEnum.V1, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V1")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("V1")))
             })
             assertEquals(TestEnumArgCommand.TestEnum.V2, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V2")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("V2")))
             })
             assertEquals(TestEnumArgCommand.TestEnum.V3, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("V3")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("V3")))
             })
             withTesting<Unit> {
-                assertFailure(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("ENUM_NOT_FOUND")))
+                assertFailure(enum.execute(sender, PlainText("e1"), PlainText("ENUM_NOT_FOUND")))
                 Testing.ok(Unit)
             }
             assertEquals(TestEnumArgCommand.TestEnum.V1, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v1")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("v1")))
             })
             assertEquals(TestEnumArgCommand.TestEnum.V2, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v2")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("v2")))
             })
             assertEquals(TestEnumArgCommand.TestEnum.V3, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("e1"), PlainText("v3")))
+                assertSuccess(enum.execute(sender, PlainText("e1"), PlainText("v3")))
             })
 
 
             assertEquals(TestEnumArgCommand.TestCase.A, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("A")))
+                assertSuccess(enum.execute(sender, PlainText("tc"), PlainText("A")))
             })
             assertEquals(TestEnumArgCommand.TestCase.a, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("a")))
+                assertSuccess(enum.execute(sender, PlainText("tc"), PlainText("a")))
             })
             withTesting<Unit> {
-                assertFailure(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
+                assertFailure(enum.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
                 Testing.ok(Unit)
             }
 
 
             assertEquals(TestEnumArgCommand.TestCamelCase.A, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("A")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("A")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.A, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("a")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("a")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.B, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("B")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("B")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.B, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("b")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("b")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("A_B")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("A_B")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("a_b")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("a_b")))
             })
             assertEquals(TestEnumArgCommand.TestCamelCase.A_B, withTesting {
-                assertSuccess(TestEnumArgCommand.execute(sender, PlainText("tcc"), PlainText("aB")))
+                assertSuccess(enum.execute(sender, PlainText("tcc"), PlainText("aB")))
             })
             withTesting<Unit> {
-                assertFailure(TestEnumArgCommand.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
+                assertFailure(enum.execute(sender, PlainText("tc"), PlainText("ENUM_NOT_FOUND")))
                 Testing.ok(Unit)
             }
 
@@ -285,7 +296,8 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun `test temporal argument`() = runBlocking {
-        TestTemporalArgCommand.withRegistration {
+        val command = TestTemporalArgCommand()
+        command.withRegistration {
             val temporal: List<KClass<out TemporalAccessor>> = listOf(
                 Instant::class,
                 Year::class,
@@ -315,126 +327,126 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun testSimpleArgsSplitting() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "ttt", "tt").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test ttt tt")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test ttt tt")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsEscape() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test esc\\ ape")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test esc\\ ape")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsQuote() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \"esc ape\"")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\"")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsQuoteReject() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "es\"c", "ape\"").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test es\"c ape\"")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test es\"c ape\"")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsQuoteEscape() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "\"esc", "ape\"").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \\\"esc ape\"")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \\\"esc ape\"")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsMultipleQuotes() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape", "1 2").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \"esc ape\" \"1 2\"")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\" \"1 2\"")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsMisplacedQuote() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape", "1\"", "\"2").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \"esc ape\" 1\" \"2 ")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\" 1\" \"2 ")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsQuoteSpaceEscape() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test \"esc", "ape\"").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test\\ \"esc ape\"")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test\\ \"esc ape\"")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParse() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape  ").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test -- esc ape  ")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test -- esc ape  ")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParse2() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape  test\\12\"\"3").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test --  esc ape  test\\12\"\"3")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test --  esc ape  test\\12\"\"3")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParseReject() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test--", "esc", "ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test-- esc ape  ")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test-- esc ape  ")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParseEscape() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "--", "esc", "ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \\-- esc ape")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \\-- esc ape")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParseEscape2() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", " --", "esc", "ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \\ -- esc ape")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \\ -- esc ape")))
             }.joinToString())
         }
     }
 
     @Test
     fun testSimpleArgsStopParseQuote() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "--", "esc", "ape").joinToString(), withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test \"--\" esc ape")))
+                assertSuccess(simpleCommand.execute(sender, PlainText("test \"--\" esc ape")))
             }.joinToString())
         }
     }
@@ -443,9 +455,9 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun `PlainText and Image args splitting`() = runBlocking {
-        TestSimpleCommand.withRegistration {
+        simpleCommand.withRegistration {
             val result = withTesting<MessageChain> {
-                assertSuccess(TestSimpleCommand.execute(sender, buildMessageChain {
+                assertSuccess(simpleCommand.execute(sender, buildMessageChain {
                     +"test"
                     +image
                     +"tt"
@@ -465,7 +477,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun `executing command by string command`() = runBlocking {
-        TestCompositeCommand.withRegistration {
+        compositeCommand.withRegistration {
             val result = withTesting<Int> {
                 assertSuccess(sender.executeCommand("/testComposite mute 1"))
             }
@@ -476,22 +488,22 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
 
     @Test
     fun `composite command descriptors`() {
-        val overloads = TestCompositeCommand.overloads
+        val overloads = compositeCommand.overloads
         assertEquals("CommandSignature(<mute>, seconds: Int = ...)", overloads[0].toString())
         assertEquals("CommandSignature(<mute>, target: Long, seconds: Int)", overloads[1].toString())
     }
 
     @Test
     fun `composite command executing`() = runBlocking {
-        TestCompositeCommand.withRegistration {
+        compositeCommand.withRegistration {
             assertEquals(1, withTesting {
-                assertSuccess(TestCompositeCommand.execute(sender, "mute 1"))
+                assertSuccess(compositeCommand.execute(sender, "mute 1"))
             })
         }
     }
 
     @Test
-    fun `test first param command sender`() = runBlocking<Unit> {
+    fun `test first param command sender`() = runBlocking {
         object : CompositeCommand(owner, "cmd") {
             @SubCommand
             fun handle(sender: CommandSender, arg: String) {
