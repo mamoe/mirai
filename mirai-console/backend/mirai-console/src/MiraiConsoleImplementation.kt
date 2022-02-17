@@ -38,12 +38,14 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KClass
 
 
 /**
@@ -227,7 +229,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /**
      * 前端预先定义的 [LoggerController], 以允许前端使用自己的配置系统
      */
-    public val loggerController: LoggerController get() = LoggerControllerImpl
+    public val loggerController: LoggerController get() = LoggerControllerImpl()
 
     ///////////////////////////////////////////////////////////////////////////
     // ConsoleDataScope
@@ -257,17 +259,40 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * @since 2.10.0-RC
      */
     @ConsoleFrontEndImplementation
+    @NotStableForInheritance
     public interface ConsoleDataScope {
         public val dataHolder: AutoSavePluginDataHolder
         public val configHolder: AutoSavePluginDataHolder
         public fun addAndReloadConfig(config: PluginConfig)
+
+        /**
+         * @since 2.11.0-RC
+         */
+        public fun <T : PluginData> find(type: KClass<T>): T?
+
+        /**
+         * @since 2.11.0-RC
+         */
+        public fun <T : PluginData> get(type: KClass<T>): T =
+            find(type) ?: throw NoSuchElementException(type.qualifiedName)
+
         public fun reloadAll()
 
         /**
-         * @since 2.10.0-RCl
+         * @since 2.10.0-RC
          */
         @ConsoleFrontEndImplementation
         public companion object {
+            /**
+             * @since 2.11.0-RC
+             */
+            public inline fun <reified T : PluginData> ConsoleDataScope.find(): T? = find(T::class)
+
+            /**
+             * @since 2.11.0-RC
+             */
+            public inline fun <reified T : PluginData> ConsoleDataScope.get(): T = get(T::class)
+
             @JvmStatic
             public fun createDefault(
                 coroutineContext: CoroutineContext,

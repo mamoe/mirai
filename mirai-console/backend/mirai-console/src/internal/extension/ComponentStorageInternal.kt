@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.console.internal.extension
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.extension.*
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
@@ -22,7 +22,7 @@ import kotlin.contracts.contract
 internal class GlobalComponentStorageImpl : AbstractConcurrentComponentStorage()
 
 // source compatibility for <2.11
-internal val GlobalComponentStorage get() = MiraiConsoleImplementationBridge.globalComponentStorage
+internal val GlobalComponentStorage get() = MiraiConsoleImplementation.getBridge().globalComponentStorage
 
 /**
  * thread-safe.

@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildDependencies
+import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.utils.MiraiLogger
@@ -193,13 +195,14 @@ internal class JvmPluginDependencyDownloader(
 
         }
         session.setReadOnly()
+        val config = DataScope.get<PluginDependenciesConfig>()
         repositories = repository.newResolutionRepositories(
             session,
-            PluginDependenciesConfig.repoLoc.map { url ->
+            config.repoLoc.map { url ->
                 RemoteRepository.Builder(null, "default", url).build()
             }
         )
-        logger.debug { "Remote server: " + PluginDependenciesConfig.repoLoc }
+        logger.debug { "Remote server: " + config.repoLoc }
     }
 
     public fun resolveDependencies(deps: Collection<String>, vararg filters: DependencyFilter): DependencyResult {
