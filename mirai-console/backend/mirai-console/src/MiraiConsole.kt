@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "unused")
@@ -14,6 +14,7 @@ package net.mamoe.mirai.console
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
@@ -124,6 +125,7 @@ public interface MiraiConsole : CoroutineScope {
 
     @ConsoleExperimentalApi
     public val pluginCenter: PluginCenter
+        get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     /**
      * 创建一个 logger
@@ -147,7 +149,7 @@ public interface MiraiConsole : CoroutineScope {
      *
      * 对象以 [bridge][MiraiConsoleImplementationBridge] 实现, 将会桥接特定前端实现的 [MiraiConsoleImplementation] 到 [MiraiConsole].
      */
-    public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
+    public companion object INSTANCE : MiraiConsole by dynamicDelegation({ MiraiConsoleImplementation.getBridge() }) {
         /**
          * 获取 [MiraiConsole] 的 [Job]
          */ // MiraiConsole.INSTANCE.getJob()
@@ -219,7 +221,7 @@ public interface MiraiConsole : CoroutineScope {
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
                 autoReconnectOnForceOffline()
 
-                this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
+                this.loginSolver = MiraiConsoleImplementation.getInstance().createLoginSolver(id, this)
                 configuration()
             }
 

@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.allRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
@@ -23,7 +24,6 @@ import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
@@ -478,7 +478,7 @@ public object BuiltInCommands {
                 gold().append(MiraiConsoleBuildConstants.versionConst)
                 reset().append(", built on ")
                 lightBlue().append(buildDateFormatted).reset().append(".\n")
-                append(MiraiConsoleImplementationBridge.frontEndDescription.render()).append("\n\n")
+                append(MiraiConsoleImplementation.getInstance().frontEndDescription.render()).append("\n\n")
                 append("Permission Service: ").append(
                     if (PermissionService.INSTANCE is BuiltInPermissionService) {
                         lightYellow()

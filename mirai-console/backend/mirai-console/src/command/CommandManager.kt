@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,7 +24,6 @@ import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.executeCommandImpl
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.*
@@ -175,7 +174,7 @@ public interface CommandManager {
      * [CommandManager] 实例. 转发所有调用到 [MiraiConsoleImplementation.commandManager].
      */
     public companion object INSTANCE :
-        CommandManager by (dynamicDelegation { MiraiConsoleImplementationBridge.commandManager }) {
+        CommandManager by (dynamicDelegation { MiraiConsoleImplementation.getInstance().commandManager }) {
 
         /**
          * @see CommandManager.getRegisteredCommands

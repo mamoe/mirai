@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,9 +10,9 @@
 
 package net.mamoe.mirai.console.util
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.asAnsiMessageBuilder
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.dropAnsi
 import net.mamoe.mirai.contact.Contact
@@ -102,7 +102,7 @@ public open class AnsiMessageBuilder public constructor(
         @JvmStatic
         public fun isAnsiSupported(sender: CommandSender): Boolean =
             if (sender is ConsoleCommandSender) {
-                MiraiConsoleImplementationBridge.isAnsiSupported
+                MiraiConsoleImplementation.getInstance().isAnsiSupported
             } else false
 
         /**

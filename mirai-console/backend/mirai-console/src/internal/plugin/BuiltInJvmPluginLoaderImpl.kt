@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,8 +13,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -46,10 +46,10 @@ internal class BuiltInJvmPluginLoaderImpl(
     }
 
     override val configStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.configStorageForJvmPluginLoader
+        get() = MiraiConsoleImplementation.getInstance().configStorageForJvmPluginLoader
 
     override val dataStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
+        get() = MiraiConsoleImplementation.getInstance().dataStorageForJvmPluginLoader
 
     override val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
 

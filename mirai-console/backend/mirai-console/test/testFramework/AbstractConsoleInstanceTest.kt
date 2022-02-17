@@ -42,7 +42,7 @@ abstract class AbstractConsoleInstanceTest {
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                MiraiConsoleImplementation.instance = null
+                MiraiConsoleImplementation.currentBridge = null
             }
         }
         println("=========".repeat(4) + "CONSOLE STOPPED" + "=========".repeat(4))

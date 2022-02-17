@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:OptIn(ConsoleExperimentalApi::class)
@@ -12,7 +12,6 @@
 package net.mamoe.mirai.console.internal
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import me.him188.kotlin.dynamic.delegation.dynamicDelegation
@@ -32,8 +31,8 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Co
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
-import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
@@ -44,7 +43,6 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginManager
-import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -65,12 +63,12 @@ internal val MiraiConsole.pluginManagerImpl: PluginManagerImpl get() = this.plug
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
  */
 @Suppress("SpellCheckingInspection")
-internal object MiraiConsoleImplementationBridge : CoroutineScope,
-    MiraiConsoleImplementation by (dynamicDelegation { MiraiConsoleImplementation.getInstance() }),
-    MiraiConsole {
-    override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
-
-    private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.getInstance()
+internal class MiraiConsoleImplementationBridge(
+    private val externalImplementation: MiraiConsoleImplementation,
+) : MiraiConsole,
+    MiraiConsoleImplementation by (dynamicDelegation(MiraiConsoleImplementationBridge::externalImplementation)) {
+    override val origin: MiraiConsoleImplementation
+        get() = externalImplementation
 
     // FIXME: 12/12/2021 Workaround for compiler regression, should remove when using Kotlin compiller 1.6.20
     private operator fun <V> KProperty0<V>.getValue(thisRef: Any?, property: KProperty<*>): V = this.get()
@@ -80,8 +78,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
     override val pluginManager: PluginManagerImpl by lazy { PluginManagerImpl(coroutineContext) }
 
     override val mainLogger: MiraiLogger by lazy { createLogger("main") }
-
-    override val consoleLaunchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions get() = MiraiConsoleImplementation.options
 
     init {
         // TODO: Replace to standard api
@@ -96,12 +92,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
 
     override fun createLogger(identity: String?): MiraiLogger {
         val controller = loggerController
-        return MiraiConsoleLogger(controller, instance.createLogger(identity))
+        return MiraiConsoleLogger(controller, externalImplementation.createLogger(identity))
     }
 
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
-        instance.preStart()
+        externalImplementation.preStart()
 
         phase("setup logger controller") {
             if (loggerController === LoggerControllerImpl) {
@@ -267,7 +263,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
             }
         }
 
-        instance.postStart()
+        externalImplementation.postStart()
 
         mainLogger.info { "mirai-console started successfully." }
     }
@@ -291,10 +287,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope,
     }
 
     override fun prePhase(phase: String) {
-        instance.prePhase(phase)
+        externalImplementation.prePhase(phase)
     }
 
     override fun postPhase(phase: String) {
-        instance.postPhase(phase)
+        externalImplementation.postPhase(phase)
     }
 }

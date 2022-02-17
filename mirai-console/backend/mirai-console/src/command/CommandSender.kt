@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -18,11 +18,11 @@ import kotlinx.coroutines.CoroutineScope
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
@@ -35,9 +35,9 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.childScopeContext
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -462,13 +462,13 @@ public object ConsoleCommandSender : AbstractCommandSender() {
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): Nothing? {
-        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        MiraiConsoleImplementation.getInstance().consoleCommandSender.sendMessage(message)
         return null
     }
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): Nothing? {
-        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        MiraiConsoleImplementation.getInstance().consoleCommandSender.sendMessage(message)
         return null
     }
 }
