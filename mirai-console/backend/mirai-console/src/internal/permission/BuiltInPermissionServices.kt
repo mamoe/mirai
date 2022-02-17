@@ -102,9 +102,8 @@ internal class BuiltInPermissionService : AbstractConcurrentPermissionService<Pe
     PermissionService<PermissionImpl> {
 
     class Provider : PermissionServiceProvider {
-        override val instance: PermissionService<*> by lazy {
-            BuiltInPermissionService()
-        }
+        override val instance: PermissionService<*> by lazy { BuiltInPermissionService() }
+        override val priority: Int get() = -1
     }
 
     override val permissionType: KClass<PermissionImpl>

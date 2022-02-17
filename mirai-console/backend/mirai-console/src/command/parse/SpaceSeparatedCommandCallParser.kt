@@ -26,6 +26,7 @@ public object SpaceSeparatedCommandCallParser : CommandCallParser {
     @ExperimentalCommandDescriptors
     public object Provider : CommandCallParserProvider {
         override val instance: CommandCallParser get() = SpaceSeparatedCommandCallParser
+        override val priority: Int get() = -1
     }
 
     override fun parse(caller: CommandSender, message: MessageChain): CommandCall? {

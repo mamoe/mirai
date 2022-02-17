@@ -31,6 +31,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
 
     internal object Provider : CommandCallResolverProvider {
         override val instance: CommandCallResolver = BuiltInCommandCallResolver
+        override val priority: Int get() = -1
     }
 
     override fun resolve(call: CommandCall): CommandResolveResult {
