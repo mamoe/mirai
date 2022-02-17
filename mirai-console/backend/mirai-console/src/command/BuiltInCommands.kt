@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
@@ -484,7 +485,7 @@ public object BuiltInCommands {
                         lightYellow()
                         "Built In Permission Service"
                     } else {
-                        val plugin = PermissionServiceProvider.providerPlugin
+                        val plugin = GlobalComponentStorage.getPreferredExtension(PermissionServiceProvider).plugin
                         if (plugin == null) {
                             PermissionService.INSTANCE.toString()
                         } else {

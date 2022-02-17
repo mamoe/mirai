@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,18 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("DEPRECATION")
+
 package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.extension.AbstractExtensionPoint
-import net.mamoe.mirai.console.extension.Extension
-import net.mamoe.mirai.console.extension.FunctionExtension
-import net.mamoe.mirai.console.extension.SingletonExtension
-import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
-import net.mamoe.mirai.console.internal.extension.ExtensionRegistry
+import net.mamoe.mirai.console.extension.*
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
 
@@ -27,10 +26,20 @@ import kotlin.reflect.KClass
  *
  * 如有多个 [SingletonExtensionSelector] 注册, 将会停止服务器.
  */
+@Deprecated(
+    "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
+    level = DeprecationLevel.WARNING
+)
+@DeprecatedSinceMirai(warningSince = "2.11")
 public interface SingletonExtensionSelector : FunctionExtension {
     /**
      * 表示一个插件注册的 [Extension]
      */
+    @Deprecated(
+        "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.11")
     public data class Registry<T : Extension>(
         val plugin: Plugin?,
         val extension: T,
@@ -44,6 +53,11 @@ public interface SingletonExtensionSelector : FunctionExtension {
         candidates: Collection<Registry<T>>,
     ): T?
 
+    @Deprecated(
+        "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.11")
     public companion object ExtensionPoint :
         AbstractExtensionPoint<SingletonExtensionSelector>(SingletonExtensionSelector::class) {
 
@@ -53,16 +67,22 @@ public interface SingletonExtensionSelector : FunctionExtension {
 
         internal fun init() {
             check(instanceField == null) { "Internal error: reinitialize SingletonExtensionSelector" }
-            val instances = GlobalComponentStorage.run { SingletonExtensionSelector.getExtensions() }
+            val instances = GlobalComponentStorage.getExtensions(ExtensionPoint).toList()
             instanceField = when {
                 instances.isEmpty() -> SingletonExtensionSelectorImpl
                 instances.size == 1 -> {
-                    instances.single().also { (plugin, ext) ->
-                        MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: $ext from ${plugin?.name ?: "<builtin>"}" }
+                    instances.single().also { registry ->
+                        MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: ${registry.extension} from ${registry.plugin?.name ?: "<builtin>"}" }
                     }.extension
                 }
                 else -> {
-                    error("Found too many SingletonExtensionSelectors: ${instances.joinToString { (p, i) -> "'$i' from '${p?.name ?: "<builtin>"}'" }}. Check your plugins and ensure there is only one external SingletonExtensionSelectors")
+                    val hint = instances.joinToString { reg ->
+                        "'${reg.extension}' from '${reg.plugin?.name ?: "<builtin>"}'"
+                    }
+                    error(
+                        "Found too many SingletonExtensionSelectors: $hint. " +
+                                "Check your plugins and ensure there is only one external SingletonExtensionSelectors"
+                    )
                 }
             }
         }

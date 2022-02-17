@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "unused", "MemberVisibilityCanBePrivate")
@@ -13,7 +13,9 @@ package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.extension.instance
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.plugin.Plugin
@@ -140,14 +142,12 @@ public interface PermissionService<P : Permission> {
 
     public companion object {
         /**
-         * [PermissionService] 实例
-         *
-         * @see PermissionServiceProvider.selectedInstance
+         * 选用的 [PermissionService] 实例.
          */
         @get:JvmName("getInstance")
         @JvmStatic
         public val INSTANCE: PermissionService<out Permission>
-            get() = PermissionServiceProvider.selectedInstance
+            get() = GlobalComponentStorage.getPreferredExtension(PermissionServiceProvider).instance
 
         /**
          * 获取一个权限, 失败时抛出 [NoSuchElementException]
