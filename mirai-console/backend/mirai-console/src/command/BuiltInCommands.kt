@@ -15,6 +15,7 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.allRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
@@ -28,6 +29,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
+import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.pluginManagerImpl
@@ -203,7 +205,8 @@ public object BuiltInCommands {
             }
 
             suspend fun getPassword(id: Long): Any? {
-                val acc = AutoLoginConfig.accounts.firstOrNull { it.account == id.toString() }
+                val config = DataScope.get<AutoLoginConfig>()
+                val acc = config.accounts.firstOrNull { it.account == id.toString() }
                 if (acc == null) {
                     sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
                     return null
@@ -321,8 +324,9 @@ public object BuiltInCommands {
         @Description("查看自动登录账号列表")
         @SubCommand
         public suspend fun CommandSender.list() {
+            val config = DataScope.get<AutoLoginConfig>()
             sendMessage(buildString {
-                for (account in AutoLoginConfig.accounts) {
+                for (account in config.accounts) {
                     if (account.account == "123456") continue
                     append("- ")
                     append("账号: ")
@@ -346,27 +350,30 @@ public object BuiltInCommands {
         @Description("添加自动登录, passwordKind 可选 PLAIN 或 MD5")
         @SubCommand
         public suspend fun CommandSender.add(account: Long, password: String, passwordKind: PasswordKind = PLAIN) {
+            val config = DataScope.get<AutoLoginConfig>()
             val accountStr = account.toString()
-            if (AutoLoginConfig.accounts.any { it.account == accountStr }) {
+            if (config.accounts.any { it.account == accountStr }) {
                 sendMessage("已有相同账号在自动登录配置中. 请先删除该账号.")
                 return
             }
-            AutoLoginConfig.accounts.add(AutoLoginConfig.Account(accountStr, Password(passwordKind, password)))
+            config.accounts.add(AutoLoginConfig.Account(accountStr, Password(passwordKind, password)))
             sendMessage("已成功添加 '$account'.")
         }
 
         @Description("清除所有配置")
         @SubCommand
         public suspend fun CommandSender.clear() {
-            AutoLoginConfig.accounts.clear()
+            val config = DataScope.get<AutoLoginConfig>()
+            config.accounts.clear()
             sendMessage("已清除所有自动登录配置.")
         }
 
         @Description("删除一个账号")
         @SubCommand
         public suspend fun CommandSender.remove(account: Long) {
+            val config = DataScope.get<AutoLoginConfig>()
             val accountStr = account.toString()
-            if (AutoLoginConfig.accounts.removeIf { it.account == accountStr }) {
+            if (config.accounts.removeIf { it.account == accountStr }) {
                 sendMessage("已成功删除 '$account'.")
                 return
             }
@@ -376,9 +383,10 @@ public object BuiltInCommands {
         @Description("设置一个账号的一个配置项")
         @SubCommand
         public suspend fun CommandSender.setConfig(account: Long, configKey: ConfigurationKey, value: String) {
+            val config = DataScope.get<AutoLoginConfig>()
             val accountStr = account.toString()
 
-            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+            val oldAccount = config.accounts.find { it.account == accountStr } ?: kotlin.run {
                 sendMessage("未找到账号 $account.")
                 return
             }
@@ -389,8 +397,8 @@ public object BuiltInCommands {
                 put(configKey, value)
             })
 
-            AutoLoginConfig.accounts.remove(oldAccount)
-            AutoLoginConfig.accounts.add(newAccount)
+            config.accounts.remove(oldAccount)
+            config.accounts.add(newAccount)
 
             sendMessage("成功修改 '$account' 的配置 '$configKey' 为 '$value'")
         }
@@ -398,9 +406,10 @@ public object BuiltInCommands {
         @Description("删除一个账号的一个配置项")
         @SubCommand
         public suspend fun CommandSender.removeConfig(account: Long, configKey: ConfigurationKey) {
+            val config = DataScope.get<AutoLoginConfig>()
             val accountStr = account.toString()
 
-            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+            val oldAccount = config.accounts.find { it.account == accountStr } ?: kotlin.run {
                 sendMessage("未找到账号 $account.")
                 return
             }
@@ -409,8 +418,8 @@ public object BuiltInCommands {
                 remove(configKey)
             })
 
-            AutoLoginConfig.accounts.remove(oldAccount)
-            AutoLoginConfig.accounts.add(newAccount)
+            config.accounts.remove(oldAccount)
+            config.accounts.add(newAccount)
 
             sendMessage("成功删除 '$account' 的配置 '$configKey'.")
         }

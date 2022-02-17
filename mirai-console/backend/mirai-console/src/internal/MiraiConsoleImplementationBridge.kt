@@ -19,6 +19,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -34,7 +35,8 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
-import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
+import net.mamoe.mirai.console.internal.data.builtins.DataScope
+import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorageImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
@@ -115,14 +117,6 @@ internal class MiraiConsoleImplementationBridge(
             }
         }
 
-        phase("setup logger controller") {
-            if (loggerController === LoggerControllerImpl) {
-                // Reload LoggerConfig.
-                consoleDataScope.addAndReloadConfig(LoggerConfig)
-                LoggerControllerImpl.initialized = true
-            }
-        }
-
         phase("greeting") {
             val buildDateFormatted =
                 buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -152,7 +146,13 @@ internal class MiraiConsoleImplementationBridge(
 
         phase("load configurations") {
             mainLogger.verbose { "Loading configurations..." }
-            consoleDataScope.addAndReloadConfig(CommandConfig)
+            consoleDataScope.addAndReloadConfig(AutoLoginConfig())
+            consoleDataScope.addAndReloadConfig(CommandConfig())
+            consoleDataScope.addAndReloadConfig(PluginDependenciesConfig())
+            val loggerController = loggerController
+            if (loggerController is LoggerControllerImpl) {
+                consoleDataScope.addAndReloadConfig(loggerController.loggerConfig)
+            }
             consoleDataScope.reloadAll()
         }
 
@@ -227,7 +227,8 @@ internal class MiraiConsoleImplementationBridge(
 
         phase("auto-login bots") {
             runBlocking {
-                val accounts = AutoLoginConfig.accounts.toList()
+                val config = DataScope.get<AutoLoginConfig>()
+                val accounts = config.accounts.toList()
                 for (account in accounts.filter {
                     it.configuration[ConfigurationKey.enable]?.toString()?.equals("true", true) ?: true
                 }) {

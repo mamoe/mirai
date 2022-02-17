@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.internal.command
@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.internal.command
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
@@ -21,12 +22,12 @@ import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCo
 import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor.Companion.intercepted
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
 import net.mamoe.mirai.console.command.resolve.getOrElse
+import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.childScope
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
@@ -69,7 +70,7 @@ internal class CommandManagerImpl(
         _registeredCommands.filter { it.owner == owner }
 
     override val allRegisteredCommands: List<Command> get() = _registeredCommands.toList() // copy
-    override val commandPrefix: String get() = CommandConfig.commandPrefix
+    override val commandPrefix: String get() = DataScope.get<CommandConfig>().commandPrefix
     override fun unregisterAllCommands(owner: CommandOwner) {
         for (registeredCommand in getRegisteredCommands(owner)) {
             unregisterCommand(registeredCommand)
