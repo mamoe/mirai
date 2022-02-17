@@ -1134,12 +1134,6 @@ public final class net/mamoe/mirai/console/command/parse/CommandValueArgumentKt 
 	public static final fun mapValue (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lnet/mamoe/mirai/console/command/descriptor/TypeVariant;)Ljava/lang/Object;
 }
 
-public final class net/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser$Provider : net/mamoe/mirai/console/extensions/CommandCallParserProvider {
-	public static final field INSTANCE Lnet/mamoe/mirai/console/command/parse/SpaceSeparatedCommandCallParser$Provider;
-	public synthetic fun getInstance ()Ljava/lang/Object;
-	public fun getInstance ()Lnet/mamoe/mirai/console/command/parse/CommandCallParser;
-}
-
 public abstract interface class net/mamoe/mirai/console/command/resolve/CommandCallInterceptor {
 	public static final field Companion Lnet/mamoe/mirai/console/command/resolve/CommandCallInterceptor$Companion;
 	public fun interceptBeforeCall (Lnet/mamoe/mirai/message/data/Message;Lnet/mamoe/mirai/console/command/CommandSender;)Lnet/mamoe/mirai/console/command/resolve/InterceptResult;
@@ -1431,7 +1425,6 @@ public abstract class net/mamoe/mirai/console/extension/AbstractExtensionPoint :
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractInstanceExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint {
-	public final fun getBuiltinImplementations ()[Lkotlin/jvm/functions/Function0;
 }
 
 public abstract class net/mamoe/mirai/console/extension/AbstractSingletonExtensionPoint : net/mamoe/mirai/console/extension/AbstractExtensionPoint, net/mamoe/mirai/console/extension/SingletonExtensionPoint {
@@ -1442,9 +1435,12 @@ public abstract class net/mamoe/mirai/console/extension/AbstractSingletonExtensi
 public abstract interface class net/mamoe/mirai/console/extension/ComponentStorage {
 	public abstract fun contribute (Lnet/mamoe/mirai/console/extension/ExtensionPoint;Lnet/mamoe/mirai/console/plugin/Plugin;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun contribute (Lnet/mamoe/mirai/console/extension/ExtensionPoint;Lnet/mamoe/mirai/console/plugin/Plugin;Lnet/mamoe/mirai/console/extension/Extension;)V
+	public abstract fun getExtensions (Lnet/mamoe/mirai/console/extension/ExtensionPoint;)Lkotlin/sequences/Sequence;
+	public abstract fun getExtensionsStream (Lnet/mamoe/mirai/console/extension/ExtensionPoint;)Ljava/util/stream/Stream;
 }
 
 public abstract interface class net/mamoe/mirai/console/extension/Extension {
+	public fun getPriority ()I
 }
 
 public class net/mamoe/mirai/console/extension/ExtensionException : java/lang/RuntimeException {
@@ -1456,6 +1452,11 @@ public class net/mamoe/mirai/console/extension/ExtensionException : java/lang/Ru
 
 public abstract interface class net/mamoe/mirai/console/extension/ExtensionPoint {
 	public abstract fun getExtensionType ()Lkotlin/reflect/KClass;
+}
+
+public abstract interface class net/mamoe/mirai/console/extension/ExtensionRegistry {
+	public abstract fun getExtension ()Lnet/mamoe/mirai/console/extension/Extension;
+	public abstract fun getPlugin ()Lnet/mamoe/mirai/console/plugin/Plugin;
 }
 
 public abstract interface class net/mamoe/mirai/console/extension/FunctionExtension : net/mamoe/mirai/console/extension/Extension {
@@ -1543,11 +1544,11 @@ public final class net/mamoe/mirai/console/extensions/CommandCallParserProviderI
 	public fun getInstance ()Lnet/mamoe/mirai/console/command/parse/CommandCallParser;
 }
 
-public abstract interface class net/mamoe/mirai/console/extensions/CommandCallResolverProvider : net/mamoe/mirai/console/extension/SingletonExtension {
+public abstract interface class net/mamoe/mirai/console/extensions/CommandCallResolverProvider : net/mamoe/mirai/console/extension/InstanceExtension {
 	public static final field ExtensionPoint Lnet/mamoe/mirai/console/extensions/CommandCallResolverProvider$ExtensionPoint;
 }
 
-public final class net/mamoe/mirai/console/extensions/CommandCallResolverProvider$ExtensionPoint : net/mamoe/mirai/console/extension/AbstractSingletonExtensionPoint {
+public final class net/mamoe/mirai/console/extensions/CommandCallResolverProvider$ExtensionPoint : net/mamoe/mirai/console/extension/AbstractInstanceExtensionPoint {
 }
 
 public final class net/mamoe/mirai/console/extensions/CommandCallResolverProviderImpl : net/mamoe/mirai/console/extensions/CommandCallResolverProvider {
@@ -1562,14 +1563,11 @@ public final class net/mamoe/mirai/console/extensions/CommandCallResolverProvide
 	public fun getInstance ()Lnet/mamoe/mirai/console/command/resolve/CommandCallResolver;
 }
 
-public abstract interface class net/mamoe/mirai/console/extensions/PermissionServiceProvider : net/mamoe/mirai/console/extension/SingletonExtension {
+public abstract interface class net/mamoe/mirai/console/extensions/PermissionServiceProvider : net/mamoe/mirai/console/extension/InstanceExtension {
 	public static final field ExtensionPoint Lnet/mamoe/mirai/console/extensions/PermissionServiceProvider$ExtensionPoint;
 }
 
-public final class net/mamoe/mirai/console/extensions/PermissionServiceProvider$ExtensionPoint : net/mamoe/mirai/console/extension/AbstractSingletonExtensionPoint {
-	public final fun getProviderPlugin ()Lnet/mamoe/mirai/console/plugin/Plugin;
-	public synthetic fun getSelectedInstance ()Ljava/lang/Object;
-	public fun getSelectedInstance ()Lnet/mamoe/mirai/console/permission/PermissionService;
+public final class net/mamoe/mirai/console/extensions/PermissionServiceProvider$ExtensionPoint : net/mamoe/mirai/console/extension/AbstractInstanceExtensionPoint {
 }
 
 public final class net/mamoe/mirai/console/extensions/PermissionServiceProviderImpl : net/mamoe/mirai/console/extensions/PermissionServiceProvider {
