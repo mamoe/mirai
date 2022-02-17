@@ -162,7 +162,7 @@ public interface MiraiConsole : CoroutineScope {
          *
          * 调用 [Bot.login] 可登录.
          *
-         * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         * @see Bot.instances 获取现有 [Bot] 实例列表
          * @see BotConfigurationAlterer ExtensionPoint
          */
         // don't static
@@ -225,11 +225,8 @@ public interface MiraiConsole : CoroutineScope {
                 configuration()
             }
 
-            config = GlobalComponentStorage.run {
-                BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
-                    extension.alterConfiguration(id, acc)
-
-                }
+            config = GlobalComponentStorage.foldExtensions(BotConfigurationAlterer, config) { acc, extension ->
+                extension.alterConfiguration(id, acc)
             }
 
             return when (password) {

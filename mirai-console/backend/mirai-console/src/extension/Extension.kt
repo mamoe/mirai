@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,12 +9,15 @@
 
 package net.mamoe.mirai.console.extension
 
+import net.mamoe.mirai.console.command.parse.SpaceSeparatedCommandCallParser
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 /**
  * 表示一个扩展.
@@ -37,7 +40,18 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
  *
  * @see ComponentStorage
  */
-public interface Extension
+public interface Extension {
+    /**
+     * 优先级. 越高越先使用. 内嵌的 [SpaceSeparatedCommandCallParser] 拥有优先级 0.
+     *
+     * 若两个 [InstanceExtension] 有相同的优先级, 将会优先使用内嵌的实现, 再按 [ComponentStorage.contribute] 顺序依次使用.
+     *
+     * @since 2.11
+     */ // https://github.com/mamoe/mirai/issues/1860
+    @ConsoleExperimentalApi
+    public val priority: Int
+        get() = 0
+}
 
 /**
  * 增加一些函数 (方法)的扩展
@@ -51,6 +65,8 @@ public interface FunctionExtension : Extension
  *
  * @see PermissionServiceProvider
  */
+@Deprecated("Please use InstanceExtension instead.", replaceWith = ReplaceWith("InstanceExtension"))
+@DeprecatedSinceMirai(warningSince = "2.11")
 public interface SingletonExtension<T> : Extension {
     public val instance: T
 }

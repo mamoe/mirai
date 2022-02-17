@@ -25,7 +25,6 @@ import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
-import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
@@ -317,6 +316,9 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     @ConsoleFrontEndImplementation
     public interface BackendAccess {
         // GlobalComponentStorage
+        /**
+         * 在 Mirai Console 第一个 phase 之后会包含内建 storages.
+         */
         public val globalComponentStorage: ComponentStorage
 
         // PluginManagerImpl.resolvedPlugins
@@ -365,7 +367,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     @ConsoleFrontEndImplementation
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
-            override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
+            override val globalComponentStorage: ComponentStorage get() = getBridge().globalComponentStorage
             override val resolvedPlugins: MutableList<Plugin> get() = MiraiConsole.pluginManagerImpl.resolvedPlugins
         }
 
