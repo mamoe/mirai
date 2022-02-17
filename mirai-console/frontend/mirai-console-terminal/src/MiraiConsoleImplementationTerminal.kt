@@ -109,8 +109,8 @@ open class MiraiConsoleImplementationTerminal
             logService = if (ConsoleTerminalSettings.noLogging) {
                 LoggingServiceNoop()
             } else {
-                LoggingServiceI().also { service ->
-                    service.startup(resolve("logs"), this@MiraiConsoleImplementationTerminal)
+                LoggingServiceI(childScope("Log Service")).also { service ->
+                    service.startup(resolve("logs"))
                 }
             }
         }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import net.mamoe.mirai.utils.TestOnly
+import net.mamoe.mirai.utils.systemProp
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.file.Files
@@ -20,6 +21,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -43,7 +45,9 @@ internal class LoggingServiceNoop : LoggingService() {
 }
 
 @OptIn(ConsoleTerminalExperimentalApi::class)
-internal class LoggingServiceI : LoggingService() {
+internal class LoggingServiceI(
+    private val scope: CoroutineScope,
+) : LoggingService() {
 
     private val threadPool = Executors.newScheduledThreadPool(3, object : ThreadFactory {
         private val group = ThreadGroup("mirai console terminal logging")
@@ -59,10 +63,12 @@ internal class LoggingServiceI : LoggingService() {
         }
     })
     private val threadDispatcher = threadPool.asCoroutineDispatcher()
-    private val pipeline = Channel<String>(capacity = 2048)
+    internal val pipelineSize = systemProp("mirai.console.terminal.log.buffer", 2048).toInt()
+    private val pipeline = Channel<String>(capacity = pipelineSize)
+    internal lateinit var autoSplitTask: Future<*>
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    fun startup(logDir: File, scope: CoroutineScope) {
+    fun startup(logDir: File) {
         logDir.mkdirs()
 
         val outputLock = Any()
@@ -116,7 +122,7 @@ internal class LoggingServiceI : LoggingService() {
             .withSecond(0)
             .toEpochSecond()
 
-        threadPool.scheduleAtFixedRate(
+        autoSplitTask = threadPool.scheduleAtFixedRate(
             ::switchLogFile,
             nextDayTimeSec * 1000 - System.currentTimeMillis(),
             TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS
@@ -131,9 +137,9 @@ internal class LoggingServiceI : LoggingService() {
     }
 
     private fun pushInPool(line: String) {
-        threadPool.schedule({
-            pipeline.trySend(line).onFailure { pushInPool(line) }
-        }, 200, TimeUnit.MILLISECONDS)
+        scope.launch(threadDispatcher, start = CoroutineStart.UNDISPATCHED) {
+            pipeline.send(line)
+        }
     }
 
     override fun pushLine(line: String) {
