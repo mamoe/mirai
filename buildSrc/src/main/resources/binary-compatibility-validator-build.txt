@@ -25,6 +25,7 @@ apiValidation {
     nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiInternalApi")
     nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiInternalFile")
     nonPublicMarkers.add("net.mamoe.mirai.console.util.ConsoleInternalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.console.ConsoleFrontEndImplementation") // added on 2.11
     nonPublicMarkers.add("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
     nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiExperimentalApi")
 }

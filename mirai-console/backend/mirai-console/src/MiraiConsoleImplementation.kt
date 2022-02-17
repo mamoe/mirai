@@ -56,6 +56,7 @@ import kotlin.coroutines.CoroutineContext
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
+@ConsoleFrontEndImplementation
 public annotation class ConsoleFrontEndImplementation
 
 /**
@@ -361,6 +362,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val consoleLaunchOptions: ConsoleLaunchOptions
         get() = ConsoleLaunchOptions()
 
+    @ConsoleFrontEndImplementation
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
             override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
