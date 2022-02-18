@@ -37,7 +37,7 @@ public object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
         @Comment(
             """
             账号配置. 可用配置列表 (注意大小写):
-            "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH"
+            "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH" /"MAC" / "IPAD"
             "device": "device.json" 
             "enable": true
         """
