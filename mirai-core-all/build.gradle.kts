@@ -7,21 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("UnusedImport")
 
-plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    `maven-publish`
-    id("me.him188.kotlin-jvm-blocking-bridge")
-}
-
-version = Versions.project
-description = "Mirai core shadowed"
-
-dependencies {
-    api(project(":mirai-core"))
-    api(project(":mirai-core-api"))
     api(project(":mirai-core-utils"))
 }
 
