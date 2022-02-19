@@ -371,14 +371,14 @@ public enum class ImageType(
      * @since 2.9.0
      */
     @MiraiInternalApi public val formatName: String,
+    @MiraiInternalApi public vararg val secondaryNames: String
 ) {
     PNG("png"),
     BMP("bmp"),
-    JPG("jpg"),
+    JPG("jpg", "jpeg", "jpe"),
     GIF("gif"),
     //WEBP, //Unsupported by pc client
     APNG("png"),
-    JPEG("jpg"),
     UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
 
     public companion object {
@@ -392,7 +392,7 @@ public enum class ImageType(
         @JvmStatic
         public fun matchOrNull(str: String): ImageType? {
             val input = str.uppercase()
-            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input }
+            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input || it.secondaryNames.contains(input) }
         }
     }
 }

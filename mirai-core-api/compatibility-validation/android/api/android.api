@@ -4539,11 +4539,11 @@ public final class net/mamoe/mirai/message/data/ImageType : java/lang/Enum {
 	public static final field BMP Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field Companion Lnet/mamoe/mirai/message/data/ImageType$Companion;
 	public static final field GIF Lnet/mamoe/mirai/message/data/ImageType;
-	public static final field JPEG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field JPG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field PNG Lnet/mamoe/mirai/message/data/ImageType;
 	public static final field UNKNOWN Lnet/mamoe/mirai/message/data/ImageType;
 	public final fun getFormatName ()Ljava/lang/String;
+	public final fun getSecondaryNames ()[Ljava/lang/String;
 	public static final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
