@@ -375,7 +375,7 @@ public enum class ImageType(
 ) {
     PNG("png"),
     BMP("bmp"),
-    JPG("jpg", "jpeg", "jpe"),
+    JPG("jpg", "JPEG", "JPE"),
     GIF("gif"),
     //WEBP, //Unsupported by pc client
     APNG("png"),
