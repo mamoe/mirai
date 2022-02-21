@@ -151,8 +151,7 @@ object MySimpleCommand : SimpleCommand(
 6. `"Hello"` 也会按照 4~5 的步骤转换为 `String` 类型的参数
 7. 解析完成的参数被传入 `handle`
 
-
-## [`CompositeCommand`]
+### [`CompositeCommand`]
 
 [`CompositeCommand`] 的参数解析与 [`SimpleCommand`] 一样，只是多了「子指令」概念。
 
@@ -206,6 +205,51 @@ object MyCompositeCommand : CompositeCommand(
     }
 }
 ```
+
+### 文本参数的转义
+
+不同的参数默认用空格分隔。有时用户希望在文字参数中包含空格本身，参数解析器可以接受三种表示方法。
+
+以上文中定义的 `MySimpleCommand` 为例：
+
+#### 英文双引号
+
+表示将其中内容作为一个参数，可以包括空格。
+
+例如：用户输入 `/tell 123456 "Hello world!"` ，`message` 会收到 `Hello world!`。
+
+注意：双引号仅在参数的首尾部生效。例如，用户输入 `/tell 123456 He"llo world!"`，`message` 只会得到 `He"llo`。
+
+#### 转义符
+
+即英文反斜杠 `\`。表示忽略之后一个字符的特殊含义，仅看作字符本身。
+
+例如：
+
+- 用户输入 `/tell 123456 Hello\ world!`，`message` 得到 `Hello world!`；
+- 用户输入 `/tell 123456 \"Hello world!\"`，`message` 得到 `"Hello`。
+
+#### 暂停解析标志
+
+即连续两个英文短横线 `--`。表示从此处开始，到**这段文字内容**结束为止，都作为一个完整参数。
+
+例如：
+
+- 用户输入 `/tell 123456 -- Hello:::test\12""3`，`message` 得到 `Hello:::test\12""3`（`:` 表示空格）；
+- 用户输入 `/tell 123456 -- Hello @全体成员 test1 test2`，那么暂停解析的作用范围到 `@` 为止，之后的 `test1` 和 `test2` 是不同的参数。
+- 用户输入 `/tell 123456 \-- Hello` 或 `/tell 123456 "--" Hello`，这不是暂停解析标志，`message` 得到 `--` 本身。
+
+注意：
+
+`--` 的前后都应与其他参数有间隔，否则不认为这是暂停解析标志。
+
+例如，用户输入 `/tell 123456--Hello world!`，`123456--Hello` 会被试图转换为 `User` 并出错。即使转换成功，`message` 也只会得到 `world!`。
+
+### 非文本参数的转义
+
+有时可能需要只用一个参数来接受各种消息内容，例如用户可以在 `/tell 123456` 后接图片、表情等，它们都是 `message` 的一部分。
+
+对于这种定义方式，Mirai Console 的支持尚待实现，目前可以使用 [`RawCommand`] 替代。  
 
 ### 选择 [`RawCommand`], [`SimpleCommand`] 或 [`CompositeCommand`]
 
