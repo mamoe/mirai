@@ -31,6 +31,7 @@ internal object TestTerminalLogging : AbstractTestPoint() {
 
     override fun onConsoleStartSuccessfully() {
         val logService = MiraiConsoleImplementation.getInstance()
+            .origin
             .cast<MiraiConsoleImplementationTerminal>()
             .logService.cast<LoggingServiceI>()
 
