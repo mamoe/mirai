@@ -30,7 +30,6 @@ import net.mamoe.mirai.console.terminal.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.childScope
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -154,7 +153,6 @@ object MiraiConsoleTerminalLoader {
     @ConsoleExperimentalApi
     fun startAsDaemon(instance: MiraiConsoleImplementationTerminal = MiraiConsoleImplementationTerminal()) {
         instance.start()
-        overrideSTD()
         startupConsoleThread()
     }
 }
@@ -169,12 +167,14 @@ internal object ConsoleDataHolder : AutoSavePluginDataHolder,
         get() = "Terminal"
 }
 
-internal fun overrideSTD() {
+internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
+    if (ConsoleTerminalSettings.noConsole) {
+        SystemOutputPrintStream // Avoid StackOverflowError when launch with no console mode
+    }
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stdout")
-                    .run { ({ line: String? -> info(line) }) }
+                logger = terminal.createLogger("stdout")::info
             ),
             false,
             "UTF-8"
@@ -183,8 +183,7 @@ internal fun overrideSTD() {
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(MiraiConsoleTerminalLoader::class, "stderr")
-                    .run { ({ line: String? -> warning(line) }) }
+                logger = terminal.createLogger("stderr")::warning
             ),
             false,
             "UTF-8"
