@@ -105,16 +105,16 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
 
     /**
      * 群头像下载链接, 规格默认为 [AvatarSpec.LARGEST]
-     * @see getAvatarUrl
+     * @see avatarUrl
      */
     public override val avatarUrl: String
-        get() = getAvatarUrl(spec = AvatarSpec.LARGEST)
+        get() = avatarUrl(spec = AvatarSpec.LARGEST)
 
     /**
      * 群头像下载链接.
      * @param spec 头像的规格.
      */
-    public override fun getAvatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
+    public override fun avatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.

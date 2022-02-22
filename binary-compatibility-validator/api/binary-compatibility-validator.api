@@ -361,12 +361,13 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 
 public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
+	public fun avatarUrl (Lnet/mamoe/mirai/contact/AvatarSpec;)Ljava/lang/String;
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getAnnouncements ()Lnet/mamoe/mirai/contact/announcement/Announcements;
 	public fun getAvatarUrl ()Ljava/lang/String;
-	public fun getAvatarUrl (Lnet/mamoe/mirai/contact/AvatarSpec;)Ljava/lang/String;
+	public synthetic fun getAvatarUrl (Lnet/mamoe/mirai/contact/AvatarSpec;)Ljava/lang/String;
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
