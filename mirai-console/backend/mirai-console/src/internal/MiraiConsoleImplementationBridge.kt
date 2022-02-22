@@ -86,6 +86,10 @@ internal class MiraiConsoleImplementationBridge(
     // used internally
     val globalComponentStorage: GlobalComponentStorageImpl by lazy { GlobalComponentStorageImpl() }
 
+    // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
+    @Volatile
+    var permissionSeviceLoaded: Boolean = false
+
     override val mainLogger: MiraiLogger by lazy { createLogger("main") }
 
     init {
@@ -187,6 +191,7 @@ internal class MiraiConsoleImplementationBridge(
         phase("load PermissionService") {
             mainLogger.verbose { "Loading PermissionService..." }
 
+            permissionSeviceLoaded = true
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
                     consoleDataScope.addAndReloadConfig(ps.config)

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.extension.instance
@@ -147,7 +148,12 @@ public interface PermissionService<P : Permission> {
         @get:JvmName("getInstance")
         @JvmStatic
         public val INSTANCE: PermissionService<out Permission>
-            get() = GlobalComponentStorage.getPreferredExtension(PermissionServiceProvider).instance
+            get() {
+                if (!MiraiConsoleImplementation.getBridge().permissionSeviceLoaded) {
+                    error("PermissionService is not yet ready.")
+                }
+                return GlobalComponentStorage.getPreferredExtension(PermissionServiceProvider).instance
+            }
 
         /**
          * 获取一个权限, 失败时抛出 [NoSuchElementException]
