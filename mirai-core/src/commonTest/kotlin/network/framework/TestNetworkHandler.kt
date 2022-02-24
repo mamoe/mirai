@@ -11,6 +11,8 @@ package net.mamoe.mirai.internal.network.framework
 
 import io.netty.channel.Channel
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
@@ -35,9 +37,9 @@ internal open class TestNetworkHandler(
         val resumeDeferred = CompletableDeferred<Unit>()
         val resumeCount = AtomicInteger(0)
         val onResume get() = resumeDeferred.onJoin
+        private val mutex = Mutex()
 
-        @Synchronized
-        override suspend fun resumeConnection0() {
+        override suspend fun resumeConnection0(): Unit = mutex.withLock {
             resumeCount.incrementAndGet()
             resumeDeferred.complete(Unit)
             when (this.correspondingState) {

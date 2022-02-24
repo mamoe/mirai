@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
+import net.mamoe.mirai.utils.createInstanceOrNull
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import kotlin.contracts.contract
@@ -26,10 +27,6 @@ import kotlin.reflect.full.isSubclassOf
 private val primitiveCollectionsImplemented by lazy {
     false
 }
-
-@PublishedApi
-@OptIn(ExperimentalStdlibApi::class)
-internal inline fun <reified T> typeOf0(): KType = kotlin.reflect.typeOf<T>()
 
 @Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
 internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {

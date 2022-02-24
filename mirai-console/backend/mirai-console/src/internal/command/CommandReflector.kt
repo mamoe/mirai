@@ -28,12 +28,36 @@ import kotlin.reflect.full.*
 
 internal val ILLEGAL_SUB_NAME_CHARS = "\\/!@#$%^&*()_+-={}[];':\",.<>?`~".toCharArray()
 
+internal val WORD_DIVIDER = Regex("""(?<!\\)\s+""")                     // 分词的空格
+internal val ESCAPE_PATTERN = Regex("""\\(.)""")                        // 转义符和被转义的符号
+internal val STOP_PARSE_INDICATOR = Regex("""(?<!\\)\s+--\s+|^--\s+""") // 暂停解析符号，前后都有空格，或前为字符串开始
+internal val QUOTE_BEGIN = Regex("""(?<!\\)\s"|^\s"|^"""")              // 左双引号，前有一个未转义的空格，或前为字符串开始
+internal val QUOTE_END = Regex("""(?<!\\)"\s|(?<!\\)"$""")              // 右双引号，前无转义符，后为空格或字符串结束
+
+// 提取引号包围的原始文本，用空格分割剩余部分，并还原被转义的符号
+internal fun String.parseParameterTextToList(): List<CharSequence> =
+    if (this.isBlank()) emptyList()
+    else this.split(QUOTE_BEGIN, 2)
+        .flatMapIndexed { index, part -> if (index > 0) part.split(QUOTE_END, 2) else listOf(part) }
+        .let { unquotedTexts ->
+            return if (unquotedTexts.size == 3)
+                unquotedTexts[0].parseParameterTextToList() + listOf(unquotedTexts[1]) +
+                        unquotedTexts[2].parseParameterTextToList()
+            else
+                this@parseParameterTextToList.split(WORD_DIVIDER).filterNot { it.isBlank() }
+                    .map { it.replace(ESCAPE_PATTERN, "$1") }.toList()
+        }
+
+internal fun CharSequence.flattenCommandTextParts(addCallback: (CharSequence) -> Unit) =
+    this.split(STOP_PARSE_INDICATOR, 2).filterNot { it.isBlank() }.let { stopParseParts ->
+        stopParseParts.getOrNull(0)?.parseParameterTextToList()?.forEach(addCallback)
+        stopParseParts.getOrNull(1)?.let(addCallback)
+    }
+
 internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
     when (this@flattenCommandComponents) {
-        is PlainText -> this@flattenCommandComponents.content.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { +PlainText(it) }
-        is CharSequence -> this@flattenCommandComponents.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { +PlainText(it) }
+        is PlainText -> this@flattenCommandComponents.content.flattenCommandTextParts { +PlainText(it) }
+        is CharSequence -> this@flattenCommandComponents.flattenCommandTextParts { +PlainText(it) }
         is SingleMessage -> add(this@flattenCommandComponents)
         is Array<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
         is Iterable<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }

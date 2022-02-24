@@ -67,6 +67,8 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
 
         init {
             isECDHAvailable = kotlin.runCatching {
+                ecKf // init
+
                 fun testECDH() {
                     ECDHKeyPairImpl(
                         KeyPairGenerator.getInstance("ECDH")

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.internal.message.FileMessageImpl
 import net.mamoe.mirai.internal.message.LongMessageInternal
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
@@ -33,13 +34,6 @@ internal fun MessageChain.countImages(): Int = this.count { it is Image }
 
 private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
 
-// Fixme: Remove in the future, see #1715
-private val fileMessageWarningShown = object : ExceptionCollector() {
-    override fun addSuppressed(receiver: Throwable, e: Throwable) {
-    }
-}
-
-// Fixme: Remove in the future, see #1715
 private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
 
 internal fun Message.verifySendingValid() {
@@ -49,26 +43,14 @@ internal fun Message.verifySendingValid() {
             this.forEach { it.verifySendingValid() }
         }
         is FileMessage -> {
-            // Fixme: https://github.com/mamoe/mirai/issues/1715
-
-            if (!ALLOW_SENDING_FILE_MESSAGE) {
-                val e =
-                    Exception("This stacktrace might help you find your code causing this problem. It is shown once for each distinct line.")
-                val log =
-                    "Sending FileMessage manually is error-prone and is planned to be prohibited in the future. " +
-                            "Please use AbsoluteFolder.uploadNewFile (recommended) or RemoteFile.uploadAndSend instead (deprecated)." +
-                            "You can add JVM argument '-Dmirai.message.allow.sending.file.message=true' to ignore this warning, " +
-                            "however, your code might not work in the future."
-
-                // Show stacktrace for each call only once.
-                if (fileMessageWarningShown.collect(e)) {
-                    logger.warning(log, e)
-                } else {
-                    logger.warning(log)
-                }
+            if (!ALLOW_SENDING_FILE_MESSAGE) { // #1715
+                if (this !is FileMessageImpl) error("Customized FileMessage cannot be send")
+                if (!this.allowSend) error(
+                    "Sending FileMessage is not allowed, as it may cause unexpected results. " +
+                            "Add JVM argument `-Dmirai.message.allow.sending.file.message=true` to disable this check. " +
+                            "Do this only for compatibility!"
+                )
             }
-
-//            fail("Sending FileMessage is not in support")
         }
     }
 }

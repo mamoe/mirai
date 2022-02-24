@@ -10,21 +10,24 @@
 package net.mamoe.mirai.console.terminal.net.mamoe.mirai.console.pure
 
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 @Deprecated(
     message = "Please use MiraiConsoleTerminalLoader",
-    level = DeprecationLevel.ERROR,
+    level = DeprecationLevel.HIDDEN,
     replaceWith = ReplaceWith(
         "MiraiConsoleTerminalLoader",
         "net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader"
     )
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 object MiraiConsolePureLoader {
     @Deprecated(
         message = "for binary compatibility",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
     @JvmStatic
+    @DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
     fun main(args: Array<String>) {
         System.err.println("WARNING: Mirai Console Pure已经更名为 Mirai Console Terminal")
         System.err.println("请使用新的入口点 net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader")

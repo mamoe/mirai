@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -89,7 +90,24 @@ internal fun GroupImpl(
                 this@Group.members.delegate.add(member)
             }
         }
+    }.apply {
+        if (!botAsMemberInitialized) {
+            logger.error(
+                contextualBugReportException("GroupImpl", """
+                    groupId: ${groupInfo.groupCode.takeIf { it != 0L } ?: id}
+                    groupUin: ${groupInfo.uin}
+                    membersCount: ${members.count()}
+                    botId: ${bot.id}
+                    owner: ${kotlin.runCatching { owner }.getOrNull()?.id}
+                """.trimIndent(), additional = "并告知此时 Bot 是否为群管理员或群主, 和是否刚刚加入或离开这个群"
+                )
+            )
+        }
     }
+}
+
+private val logger by lazy {
+    MiraiLogger.Factory.create(GroupImpl::class.java, "Group")
 }
 
 @Suppress("PropertyName")
@@ -108,12 +126,15 @@ internal class GroupImpl constructor(
 
     override lateinit var owner: NormalMemberImpl
     override lateinit var botAsMember: NormalMemberImpl
+    internal val botAsMemberInitialized get() = ::botAsMember.isInitialized
 
     @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
+    @DeprecatedSinceMirai(warningSince = "2.8")
     override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
     override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
+    val lastTalkative = atomic<NormalMemberImpl?>(null)
 
     override val announcements: Announcements by lazy {
         AnnouncementsImpl(

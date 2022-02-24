@@ -119,7 +119,7 @@ private val builtInSerializersModule by lazy {
             subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
 
             //  subclass(PttMessage::class, PttMessage.serializer())
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION_ERROR")
             subclass(Voice::class, Voice.serializer())
 
             // subclass(HummerMessage::class, HummerMessage.serializer())

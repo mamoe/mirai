@@ -17,6 +17,8 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedSendChannelException
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
@@ -26,10 +28,7 @@ import net.mamoe.mirai.internal.event.GlobalEventListeners
 import net.mamoe.mirai.internal.event.Handler
 import net.mamoe.mirai.internal.event.ListenerRegistry
 import net.mamoe.mirai.internal.event.registerEventHandler
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.runBIO
+import net.mamoe.mirai.utils.*
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -69,29 +68,53 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
     /**
      * 创建事件监听并将监听结果发送在 [Channel]. 将返回值 [Channel] [关闭][Channel.close] 时将会同时关闭事件监听.
      *
-     * 标注 [ExperimentalCoroutinesApi] 是因为使用了 [Channel.invokeOnClose]
-     *
      * @param capacity Channel 容量. 详见 [Channel] 构造.
      *
      * @see subscribeAlways
      * @see Channel
      */
+    @Deprecated(
+        "Please use forwardToChannel instead.",
+        replaceWith = ReplaceWith(
+            "Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }",
+            "kotlinx.coroutines.channels.Channel"
+        ),
+        level = DeprecationLevel.WARNING,
+    )
+    @DeprecatedSinceMirai(warningSince = "2.10")
     @MiraiExperimentalApi
-    @ExperimentalCoroutinesApi
     public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: ConcurrencyKind = CONCURRENT,
+        @Suppress("UNUSED_PARAMETER") concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-    ): Channel<out BaseEvent> {
-        val channel = Channel<BaseEvent>(capacity)
-        val listener = subscribeAlways(baseEventClass, coroutineContext, concurrency, priority) { channel.send(it) }
-        channel.invokeOnClose {
-            if (it != null) listener.completeExceptionally(it)
-            else listener.complete()
-        }
+    ): Channel<out BaseEvent> =
+        Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }
 
-        return channel
+    /**
+     * 创建事件监听并将监听结果转发到 [channel]. 当 [Channel.send] 抛出 [ClosedSendChannelException] 时停止 [Listener] 监听和转发.
+     *
+     * 返回创建的会转发监听到的所有事件到 [channel] 的[事件监听器][Listener]. [停止][Listener.complete] 该监听器会停止转发, 不会影响目标 [channel].
+     *
+     * 若 [Channel.send] 挂起, 则监听器也会挂起, 也就可能会导致事件广播过程挂起.
+     *
+     * @see subscribeAlways
+     * @see Channel
+     * @since 2.10
+     */
+    public fun forwardToChannel(
+        channel: SendChannel<@UnsafeVariance BaseEvent>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        priority: EventPriority = EventPriority.MONITOR,
+    ): Listener<@UnsafeVariance BaseEvent> {
+        return subscribe(baseEventClass, coroutineContext, priority = priority) {
+            try {
+                channel.send(it)
+                ListeningStatus.LISTENING
+            } catch (_: ClosedSendChannelException) {
+                ListeningStatus.STOPPED
+            }
+        }
     }
 
     // region transforming operations

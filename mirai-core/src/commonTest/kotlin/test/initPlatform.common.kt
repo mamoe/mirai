@@ -39,7 +39,7 @@ abstract class AbstractTest {
 
     @AfterEach
     protected fun restoreLoggerFactory() {
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION_ERROR")
         MiraiLogger.setDefaultLoggerCreator {
             SynchronizedStdoutLogger(it)
         }

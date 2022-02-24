@@ -21,6 +21,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
@@ -32,12 +33,14 @@ import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
 import java.util.stream.Stream
 import kotlin.reflect.KProperty
 import kotlin.streams.asSequence
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_ABSTRACT_MESSAGE_KEYS as RAMK
 
 /**
  * 消息链, `List<SingleMessage>`, 即 [单个消息元素][SingleMessage] 的有序集合.
@@ -211,7 +214,7 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? {
+    public operator fun <M : SingleMessage> get(@ResolveContext(RAMK) key: MessageKey<M>): M? {
         @Suppress("UNCHECKED_CAST")
         return firstOrNull { key.safeCast.invoke(it) != null } as M?
     }
@@ -242,7 +245,7 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
+    public operator fun <M : SingleMessage> contains(@ResolveContext(RAMK) key: MessageKey<M>): Boolean =
         any { key.safeCast.invoke(it) != null }
 
     @MiraiExperimentalApi
@@ -364,6 +367,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
                 "Please specify your serial property as MessageChain and use contextual and polymorphic serializers from MessageSerializers.serializersModule.",
         level = DeprecationLevel.WARNING
     ) // deprecated since 2.8-M1
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public fun serializer(): KSerializer<MessageChain> = MessageChain.Serializer
 
     private object EmptyMessageChainIterator : Iterator<SingleMessage> {
@@ -381,7 +385,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
  */
 @JvmSynthetic
 public inline fun <M : SingleMessage> MessageChain.getOrFail(
-    key: MessageKey<M>,
+    @ResolveContext(RAMK) key: MessageKey<M>,
     crossinline lazyMessage: (key: MessageKey<M>) -> String = { key.toString() }
 ): M = get(key) ?: throw NoSuchElementException(lazyMessage(key))
 

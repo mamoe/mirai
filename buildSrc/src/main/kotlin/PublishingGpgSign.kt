@@ -32,7 +32,7 @@ open class GPGSignMavenArtifact(
 }
 
 class NameCounter(val name: String) {
-    var counter = 0
+    private var counter = 0
     val nextName: String
         get() = name + if (counter == 0) {
             counter = 1; ""
@@ -44,6 +44,7 @@ class NameCounter(val name: String) {
 object PublishingAccess {
     fun getMetadataArtifacts(publication: MavenPublication): Collection<MavenArtifact> {
         if (publication is DefaultMavenPublication) {
+            @Suppress("UNCHECKED_CAST")
             return DefaultMavenPublication::class.java.getDeclaredField("metadataArtifacts")
                 .also { it.isAccessible = true }
                 .get(publication) as Collection<MavenArtifact>

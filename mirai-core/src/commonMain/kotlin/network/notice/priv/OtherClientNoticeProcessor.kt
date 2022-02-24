@@ -31,8 +31,8 @@ import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.context
@@ -70,9 +70,9 @@ internal class OtherClientNoticeProcessor : MixedNoticeProcessor() {
                             bot.network.logger.warning(
                                 contextualBugReportException(
                                     "SvcRequestPushStatus (OtherClient online)",
-                                    "packet: \n" + data._miraiContentToString() +
+                                    "packet: \n" + data.structureToString() +
                                             "\n\nquery: \n" +
-                                            Mirai.getOnlineOtherClientsList(bot)._miraiContentToString(),
+                                            Mirai.getOnlineOtherClientsList(bot).structureToString(),
                                     additional = "Failed to find corresponding instanceInfo.",
                                 ),
                             )

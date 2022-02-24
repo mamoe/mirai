@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@ import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
@@ -26,7 +27,7 @@ import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceCont
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
-import net.mamoe.mirai.console.util.NamedSupervisorJob
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream
@@ -76,7 +77,7 @@ internal abstract class JvmPluginInternal(
     }
 
     final override val configFolderPath: Path by lazy {
-        PluginManager.pluginsConfigPath.resolve(description.name).apply { mkdir() }
+        PluginManager.pluginsConfigPath.resolve(description.id).apply { mkdir() }
     }
 
     final override val configFolder: File by lazy {
@@ -92,7 +93,10 @@ internal abstract class JvmPluginInternal(
                 cancel(CancellationException("plugin disabled"))
             },
             onFailure = {
-                cancel(CancellationException("Exception while enabling plugin", it))
+                cancel(CancellationException("Exception while disabling plugin", it))
+                if (MiraiConsoleImplementation.getInstance().consoleLaunchOptions.crashWhenPluginLoadFailed) {
+                    throw it
+                }
             }
         )
         isEnabled = false
@@ -119,6 +123,9 @@ internal abstract class JvmPluginInternal(
             onFailure = {
                 cancel(CancellationException("Exception while enabling plugin", it))
                 logger.error(it)
+                if (MiraiConsoleImplementation.getInstance().consoleLaunchOptions.crashWhenPluginLoadFailed) {
+                    throw it
+                }
                 return false
             }
         )
@@ -144,15 +151,13 @@ internal abstract class JvmPluginInternal(
             )
         }
             .plus(parentCoroutineContext)
+            .plus(CoroutineName("Plugin ${(this as AbstractJvmPlugin).dataHolderName}"))
             .plus(
-                NamedSupervisorJob(
-                    "Plugin ${(this as AbstractJvmPlugin).dataHolderName}",
-                    parentCoroutineContext[Job] ?: BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!
-                )
+                SupervisorJob(parentCoroutineContext[Job] ?: JvmPluginLoader.coroutineContext[Job]!!)
             )
             .also {
                 if (!MiraiConsole.isActive) return@also
-                BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
+                JvmPluginLoader.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
                 }
             }

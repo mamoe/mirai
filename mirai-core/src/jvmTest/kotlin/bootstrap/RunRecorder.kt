@@ -14,8 +14,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline
-import net.mamoe.mirai.internal.notice.Desensitizer
-import net.mamoe.mirai.internal.notice.RecordingNoticeProcessor
+import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
+import net.mamoe.mirai.internal.testFramework.notice.RecordingNoticeProcessor
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.readResource
 import net.mamoe.yamlkt.Yaml

@@ -13,7 +13,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     `maven-publish`
-    id("net.mamoe.kotlin-jvm-blocking-bridge")
+    id("me.him188.kotlin-jvm-blocking-bridge")
 }
 
 version = Versions.project
@@ -25,6 +25,6 @@ dependencies {
     api(project(":mirai-core-utils"))
 }
 
-if (!System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING").toBoolean()) {
+if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() != true) {
     configurePublishing("mirai-core-all")
 }

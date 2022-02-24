@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -15,28 +15,29 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.Permittee
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.MessageScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.childScopeContext
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -461,13 +462,13 @@ public object ConsoleCommandSender : AbstractCommandSender() {
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): Nothing? {
-        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        MiraiConsoleImplementation.getInstance().consoleCommandSender.sendMessage(message)
         return null
     }
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): Nothing? {
-        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        MiraiConsoleImplementation.getInstance().consoleCommandSender.sendMessage(message)
         return null
     }
 }
@@ -589,8 +590,9 @@ public open class MemberCommandSender internal constructor(
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempCommandSender 已更改为 GroupTempCommandSender",
     replaceWith = ReplaceWith("GroupTempCommandSender", "net.mamoe.mirai.console.command.GroupTempCommandSender"),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 public sealed class TempCommandSender(
     public override val user: NormalMember,
 ) : AbstractUserCommandSender(), GroupAwareCommandSender, CoroutineScope by user.childScope("TempCommandSender")
@@ -705,8 +707,9 @@ public class MemberCommandSenderOnMessage internal constructor(
         "GroupTempCommandSenderOnMessage",
         "net.mamoe.mirai.console.command.GroupTempCommandSenderOnMessage"
     ),
-    DeprecationLevel.ERROR
+    DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 public sealed class TempCommandSenderOnMessage(
     public override val fromEvent: GroupTempMessageEvent,
 ) : GroupTempCommandSender(fromEvent.sender), CommandSenderOnMessage<GroupTempMessageEvent>

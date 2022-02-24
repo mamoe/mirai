@@ -51,24 +51,61 @@ public interface FunctionExtensionPoint<T : FunctionExtension> : ExtensionPoint<
 
 
 public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T>
-@ConsoleExperimentalApi constructor(
+/**
+ * @since 2.10
+ */
+@ConsoleExperimentalApi
+constructor(
     extensionType: KClass<E>,
     /**
      * 内建的实现列表.
      */
     @ConsoleExperimentalApi
-    public vararg val builtinImplementations: E,
-) : AbstractExtensionPoint<E>(extensionType)
+    public vararg val builtinImplementations: () -> E,
+) : AbstractExtensionPoint<E>(extensionType) {
+
+    /**
+     * @since 2.10
+     */
+    @ConsoleExperimentalApi
+    public constructor(extensionType: KClass<E>) : this(
+        extensionType,
+        builtinImplementations = arrayOf<() -> E>() as Array<out () -> E>
+    ) // to avoid resolution ambiguity
+
+    /**
+     * @since 2.0
+     */
+    @ConsoleExperimentalApi
+    public constructor(extensionType: KClass<E>, vararg builtinImplementations: E) : this(
+        extensionType,
+        builtinImplementations = builtinImplementations.map { { it } }.toTypedArray()
+    )
+}
 
 public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>, T>
-@ConsoleExperimentalApi constructor(
+/**
+ * @since 2.10
+ */
+@ConsoleExperimentalApi
+constructor(
     extensionType: KClass<E>,
     /**
      * 内建的实现.
      */
     @ConsoleExperimentalApi
-    public val builtinImplementation: T,
+    public val builtinImplementation: () -> T,
 ) : AbstractExtensionPoint<E>(extensionType), SingletonExtensionPoint<E> {
+
+    /**
+     * @since 2.0
+     */
+    @Suppress("USELESS_CAST") // compiler bug
+    @ConsoleExperimentalApi
+    public constructor(extensionType: KClass<E>, builtinImplementation: T) : this(
+        extensionType,
+        { builtinImplementation } as () -> T
+    )
 
     /**
      * 由 [SingletonExtensionSelector] 选择后的实例.

@@ -20,7 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
-import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
 internal class UnconsumedNoticesAlerter(
@@ -81,7 +81,7 @@ internal class UnconsumedNoticesAlerter(
             logger.debug(
                 contextualBugReportException(
                     "解析 OnlinePush.PbPushTransMsg, msgType=${data.msgType}",
-                    data._miraiContentToString(),
+                    data.structureToString(),
                     null,
                     "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作.",
                 )
@@ -105,7 +105,7 @@ internal class UnconsumedNoticesAlerter(
                 // unknown
                 // 前 4 byte 是群号
             }
-            84, 87 -> { // 请求入群验证 和 被要求入群
+            84, 87 -> { // 请求入群验证 和 被邀请入群
                 bot.network.run {
                     NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
                 }
@@ -127,7 +127,7 @@ internal class UnconsumedNoticesAlerter(
             data.msg?.context {
                 throw contextualBugReportException(
                     "解析 NewContact.SystemMsgNewGroup, subType=$subType, groupMsgType=$groupMsgType",
-                    forDebug = this._miraiContentToString(),
+                    forDebug = this.structureToString(),
                     additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群",
                 )
             }
@@ -139,7 +139,7 @@ internal class UnconsumedNoticesAlerter(
         if (logger.isEnabled && logger.isDebugEnabled) {
             throw contextualBugReportException(
                 "decode SvcRequestPushStatus (PC Client status change)",
-                data._miraiContentToString(),
+                data.structureToString(),
                 additional = "unknown status=${data.status}",
             )
         }

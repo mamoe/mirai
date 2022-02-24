@@ -12,6 +12,8 @@ package net.mamoe.mirai.console.gradle
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
@@ -54,6 +56,14 @@ abstract class AbstractTest {
         """
         )
 
+        File(tempDir, "gradle.properties").apply {
+            delete()
+            writeText("""
+                org.gradle.daemon=false
+                org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
+            """.trimIndent())
+        }
+
         buildFile = File(tempDir, "build.gradle")
         buildFile.delete()
         buildFile.writeText(
@@ -82,5 +92,17 @@ abstract class AbstractTest {
 //            }
 //        """
 
+    }
+
+    @JvmField
+    @RegisterExtension
+    internal val after: AfterEachCallback = AfterEachCallback { context ->
+        if (context.executionException.isPresent) {
+            val inst = context.requiredTestInstance as AbstractTest
+            println("====================== build.gradle ===========================")
+            println(inst.tempDir.resolve("build.gradle").readText())
+            println("==================== settings.gradle ==========================")
+            println(inst.tempDir.resolve("settings.gradle").readText())
+        }
     }
 }

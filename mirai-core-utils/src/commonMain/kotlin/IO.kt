@@ -18,7 +18,6 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import java.io.File
 import kotlin.text.String
-import java.nio.Buffer as JNioBuffer
 
 public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
 
@@ -37,12 +36,6 @@ public inline fun <R> ByteReadPacket.useBytes(
 public inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
-
-public inline var JNioBuffer.pos: Int
-    get() = position()
-    set(value) {
-        position(value)
-    }
 
 
 public typealias TlvMap = MutableMap<Int, ByteArray>
@@ -152,3 +145,8 @@ public fun File.resolveCreateFile(relative: File): File = this.resolve(relative)
 
 public fun File.resolveMkdir(relative: String): File = this.resolve(relative).apply { mkdirs() }
 public fun File.resolveMkdir(relative: File): File = this.resolve(relative).apply { mkdirs() }
+
+public fun File.touch(): File = apply {
+    parentFile?.mkdirs()
+    createNewFile()
+}

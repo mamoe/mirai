@@ -98,6 +98,36 @@ public fun CoroutineScope.hierarchicalName(
     name: String,
 ): CoroutineName = this.coroutineContext.hierarchicalName(name)
 
+public fun CoroutineContext.newCoroutineContextWithSupervisorJob(name: String? = null): CoroutineContext =
+    this + CoroutineName(name ?: "<unnamed>") + SupervisorJob(this[Job])
+
+public fun CoroutineScope.childScope(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineScope =
+    CoroutineScope(this.childScopeContext(name, context))
+
+public fun CoroutineContext.childScope(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineScope =
+    CoroutineScope(this.childScopeContext(name, context))
+
+public fun CoroutineScope.childScopeContext(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineContext =
+    this.coroutineContext.childScopeContext(name, context)
+
+public fun CoroutineContext.childScopeContext(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineContext =
+    this.newCoroutineContextWithSupervisorJob(name) + context.let {
+        if (name != null) it + CoroutineName(name)
+        else it
+    }
+
 public inline fun <R> runUnwrapCancellationException(block: () -> R): R {
     try {
         return block()

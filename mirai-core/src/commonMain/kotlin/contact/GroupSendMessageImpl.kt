@@ -28,14 +28,18 @@ internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
     eventConstructor: (C, Message) -> MessagePreSendEvent,
 ): MessageChain {
     if (isMiraiInternal) return message.toMessageChain()
+    var eventName: String? = null
     return kotlin.runCatching {
-        eventConstructor(this, message).broadcast()
+        eventConstructor(this, message).also {
+            eventName = it.javaClass.simpleName
+        }.broadcast()
     }.onSuccess {
         check(!it.isCancelled) {
-            throw EventCancelledException("cancelled by GroupMessagePreSendEvent")
+            throw EventCancelledException("cancelled by $eventName")
         }
     }.getOrElse {
-        throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
+        eventName = eventName ?: (this@broadcastMessagePreSendEvent.javaClass.simpleName + "MessagePreSendEvent")
+        throw EventCancelledException("exception thrown when broadcasting $eventName", it)
     }.message.toMessageChain()
 }
 

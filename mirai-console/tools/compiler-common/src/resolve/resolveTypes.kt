@@ -58,6 +58,10 @@ val READ_ONLY_PLUGIN_DATA_FQ_NAME = FqName("net.mamoe.mirai.console.data.ReadOnl
 
 val RESOLVE_CONTEXT_FQ_NAME = FqName("net.mamoe.mirai.console.compiler.common.ResolveContext")
 
+val PROHIBITED_MESSAGE_KEYS = arrayOf(
+    FqName("net.mamoe.mirai.message.data.MessageContent.Key")
+)
+
 /**
  * net.mamoe.mirai.console.compiler.common.ResolveContext.Kind
  */

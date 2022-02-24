@@ -1,18 +1,20 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 
 package net.mamoe.mirai.console.intellij.creator
 
-import kotlinx.coroutines.*
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.util.text.SemVer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.io.IOException
 
 typealias MiraiVersion = String
 
@@ -22,7 +24,7 @@ enum class MiraiVersionKind {
     },
     Prerelease {
         override fun isThatKind(version: String): Boolean =
-            !version.contains("-dev") // && (version.contains("-M") || version.contains("-RC"))
+            version.contains("-M") || version.contains("-RC")
     },
     Nightly {
         override fun isThatKind(version: String): Boolean = true // version.contains("-dev")
@@ -34,8 +36,10 @@ enum class MiraiVersionKind {
         val DEFAULT = Stable
 
         private val REGEX_STABLE = Regex("""^\d+\.\d+(?:\.\d+)?$""")
+        private val LOG = Logger.getInstance(MiraiVersionKind::class.java)
 
-        private suspend fun getMiraiVersionList(): Set<MiraiVersion> {
+        @Throws(IOException::class)
+        fun getMiraiVersionList(): Set<MiraiVersion> {
             fun download(url: String): Document {
                 return Jsoup.connect(url)
                     .followRedirects(true)
@@ -44,27 +48,85 @@ enum class MiraiVersionKind {
                     .get()
             }
 
-            val document = runInterruptible {
-                // https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml
-                // https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml
-                kotlin.runCatching {
-                    download("https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml")
-                }.recoverCatching {
-                    download("https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml")
-                }.getOrThrow()
-            }
+            return kotlin.runCatching {
+                download("https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml")
+            }.recoverCatching {
+                download("https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml")
+            }.map { document ->
+                val xml = document.toString()
 
-            val xml = document.toString()
-
-            return Regex("""<version>\s*(.*?)\s*</version>""").findAll(xml).mapNotNull { it.groupValues[1] }.toSet()
+                Regex("""<version>\s*(.*?)\s*</version>""")
+                    .findAll(xml)
+                    .mapNotNull { it.groupValues.getOrNull(1) }
+                    .sortVersionsDescending()
+                    .toSet()
+            }.getOrThrow()
         }
 
-        fun CoroutineScope.getMiraiVersionListAsync(): Deferred<Set<MiraiVersion>> {
-            return async(CoroutineName("getMiraiVersionListAsync")) {
-                getMiraiVersionList()
-            }
-        }
+        // Kotlin version: not working because
+        // Caused by: java.util.ServiceConfigurationError: kotlinx.coroutines.CoroutineExceptionHandler: com.intellij.openapi.application.impl.CoroutineExceptionHandlerImpl not a subtype
+//
+//        private suspend fun getMiraiVersionList(): Set<MiraiVersion> {
+//            suspend fun download(url: String): Document {
+//                return Jsoup.connect(url)
+//                    .followRedirects(true)
+//                    .ignoreContentType(true)
+//                    .ignoreHttpErrors(true)
+//                    .run { runInterruptible(Dispatchers.IO) { get() } }
+//            }
+//
+//            val document = supervisorScope {
+//                val jobs = mutableListOf<Deferred<Document>>()
+//                jobs += async {
+//                    download("https://maven.aliyun.com/repository/central/net/mamoe/mirai-core/maven-metadata.xml")
+//                }
+//                jobs += async {
+//                    download("https://repo.maven.apache.org/maven2/net/mamoe/mirai-core/maven-metadata.xml")
+//                }
+//                val timeout = launch {
+//                    delay(10_000)
+//                }
+//                // select the faster one
+//                select<Document> {
+//                    jobs.forEach { job -> job.onAwait { it } }
+//                    timeout.onJoin {
+//                        throw IllegalStateException("Timeout getMiraiVersionList").apply {
+//                            jobs.forEach {
+//                                if (it.isCompleted) {
+//                                    try {
+//                                        it.await()
+//                                    } catch (e: Throwable) {
+//                                        addSuppressed(e)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                jobs.forEach { it.cancel() }
+//                timeout.cancel()
+//            }
+//
+//            val xml = document.toString()
+//
+//            return Regex("""<version>\s*(.*?)\s*</version>""").findAll(xml).mapNotNull { it.groupValues.getOrNull(1) }.toSet()
+//        }
+
+//        fun CoroutineScope.getMiraiVersionListAsync(): Deferred<Set<MiraiVersion>> {
+//            return async(CoroutineName("getMiraiVersionListAsync")) {
+//                getMiraiVersionList()
+//            }
+//        }
     }
+}
+
+internal fun Sequence<String>.sortVersionsDescending(): Sequence<String> {
+    return this
+        .mapNotNull { SemVer.parseFromText(it) }
+        .sortedWith { o1, o2 ->
+            o2.compareTo(o1)
+        }
+        .map { it.toString() }
 }
 
 

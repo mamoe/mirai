@@ -9,6 +9,7 @@
 
 package org.example.myplugin
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.value
 import org.example.myplugin.DataTest1.provideDelegate
@@ -16,5 +17,8 @@ import org.example.myplugin.DataTest1.provideDelegate
 
 object DataTest2 : ReadOnlyPluginConfig("data") {
     var pp by value<String>()
+    val x by value<V>(V(""))
     // var should be reported
+
+    class V  constructor(val s: String)
 }

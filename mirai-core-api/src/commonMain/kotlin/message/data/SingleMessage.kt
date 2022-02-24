@@ -19,6 +19,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -37,8 +38,9 @@ public interface SingleMessage : Message {
             "kotlinx.serialization.PolymorphicSerializer",
             "net.mamoe.mirai.message.data.SingleMessage",
         ),
-        level = DeprecationLevel.ERROR // ERROR since 2.8
+        level = DeprecationLevel.HIDDEN // ERROR since 2.8
     ) // error since 2.8
+    @DeprecatedSinceMirai(warningSince = "2.4", errorSince = "2.8", hiddenSince = "2.10")
     public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 

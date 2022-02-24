@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 
@@ -85,6 +86,7 @@ public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
     ),
     DeprecationLevel.HIDDEN
 )
+@DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
 public sealed class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,

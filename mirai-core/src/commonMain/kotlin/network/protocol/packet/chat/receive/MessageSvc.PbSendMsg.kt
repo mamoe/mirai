@@ -162,7 +162,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             fileType = 4,
             pbReserve = byteArrayOf(0),
             format = let {
-                @Suppress("DEPRECATION")
+                @Suppress("DEPRECATION_ERROR")
                 if (it is Voice) {
                     it._codec
                 } else {

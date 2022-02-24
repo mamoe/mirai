@@ -16,7 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
@@ -80,6 +80,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
      */
     @Suppress("DEPRECATION")
     @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
         @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)

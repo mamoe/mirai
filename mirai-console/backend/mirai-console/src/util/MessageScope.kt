@@ -17,7 +17,7 @@ package net.mamoe.mirai.console.util
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.fold
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
@@ -328,19 +328,19 @@ public inline fun <R> MessageScope?.scopeWith(vararg others: MessageScope?, acti
 @Deprecated(
     "Senseless scopeWith. Use asMessageScope.",
     ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope")
-)
+) // diagnostic deprecation
 public inline fun Contact.scopeWith(): MessageScope = asMessageScope()
 
 @Deprecated(
     "Senseless scopeWith. Use asMessageScope.",
     ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope")
-)
+) // diagnostic deprecation
 public inline fun CommandSender.scopeWith(): MessageScope = asMessageScope()
 
 @Deprecated(
     "Senseless scopeWith. Use asMessageScope.",
     ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope")
-)
+) // diagnostic deprecation
 public inline fun MessageScope.scopeWith(): MessageScope = asMessageScope()
 
 @Deprecated(
@@ -348,9 +348,9 @@ public inline fun MessageScope.scopeWith(): MessageScope = asMessageScope()
     ReplaceWith(
         "this.asMessageScope()(action)",
         "net.mamoe.mirai.console.util.asMessageScope",
-        "net.mamoe.mirai.console.util.invoke"
+        "net.mamoe.mirai.console.util.invoke",
     )
-)
+) // diagnostic deprecation
 public inline fun <R> Contact.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
 
 @Deprecated(
@@ -358,9 +358,9 @@ public inline fun <R> Contact.scopeWith(action: MessageScope.() -> R): R = asMes
     ReplaceWith(
         "this.asMessageScope()(action)",
         "net.mamoe.mirai.console.util.asMessageScope",
-        "net.mamoe.mirai.console.util.invoke"
+        "net.mamoe.mirai.console.util.invoke",
     )
-)
+) // diagnostic deprecation
 public inline fun <R> CommandSender.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
 
 @Deprecated(
@@ -368,9 +368,9 @@ public inline fun <R> CommandSender.scopeWith(action: MessageScope.() -> R): R =
     ReplaceWith(
         "this.asMessageScope()(action)",
         "net.mamoe.mirai.console.util.asMessageScope",
-        "net.mamoe.mirai.console.util.invoke"
+        "net.mamoe.mirai.console.util.invoke",
     )
-)
+) // diagnostic deprecation
 public inline fun <R> MessageScope.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
 
 //// endregion MessageScopeBuilders CODEGEN ////

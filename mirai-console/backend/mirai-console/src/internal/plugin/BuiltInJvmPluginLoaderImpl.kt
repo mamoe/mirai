@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,38 +13,107 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import java.io.File
+import java.io.InputStream
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.CoroutineContext
 
-internal object BuiltInJvmPluginLoaderImpl :
-    AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
-    CoroutineScope by MiraiConsole.childScope("JvmPluginLoader", CoroutineExceptionHandler { _, throwable ->
-        BuiltInJvmPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+internal val JvmPluginLoader.implOrNull get() = this.castOrNull<BuiltInJvmPluginLoaderImpl>()
+
+internal class BuiltInJvmPluginLoaderImpl(
+    parentCoroutineContext: CoroutineContext
+) : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
+    CoroutineScope by parentCoroutineContext.childScope("JvmPluginLoader", CoroutineExceptionHandler { _, throwable ->
+        logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
     }),
     JvmPluginLoader {
 
-    override val configStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.configStorageForJvmPluginLoader
+    companion object {
+        internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
+    }
 
-    @JvmStatic
-    internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
+    override val configStorage: PluginDataStorage
+        get() = MiraiConsoleImplementation.getInstance().configStorageForJvmPluginLoader
 
     override val dataStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
+        get() = MiraiConsoleImplementation.getInstance().dataStorageForJvmPluginLoader
 
-    internal val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
+
+    internal val jvmPluginLoadingCtx: JvmPluginsLoadingCtx by lazy {
+        val classLoader = DynLibClassLoader(BuiltInJvmPluginLoaderImpl::class.java.classLoader)
+        val ctx = JvmPluginsLoadingCtx(
+            classLoader,
+            mutableListOf(),
+            JvmPluginDependencyDownloader(logger),
+        )
+        logger.verbose { "Plugin shared libraries: " + PluginManager.pluginSharedLibrariesFolder }
+        PluginManager.pluginSharedLibrariesFolder.listFiles()?.asSequence().orEmpty()
+            .onEach { logger.debug { "Peek $it in shared libraries" } }
+            .filter { file ->
+                if (file.isDirectory) {
+                    return@filter true
+                }
+                if (!file.exists()) {
+                    logger.debug { "Skipped $file because file not exists" }
+                    return@filter false
+                }
+                if (file.isFile) {
+                    if (file.extension == "jar") {
+                        return@filter true
+                    }
+                    logger.debug { "Skipped $file because extension <${file.extension}> != jar" }
+                    return@filter false
+                }
+                logger.debug { "Skipped $file because unknown error" }
+                return@filter false
+            }
+            .filter { it.isDirectory || (it.isFile && it.extension == "jar") }
+            .forEach { pt ->
+                classLoader.addLib(pt)
+                logger.debug { "Linked static shared library: $pt" }
+            }
+        val libraries = PluginManager.pluginSharedLibrariesFolder.resolve("libraries.txt")
+        if (libraries.isFile) {
+            logger.verbose { "Linking static shared libraries...." }
+            val libs = libraries.useLines { lines ->
+                lines.filter { it.isNotBlank() }
+                    .filterNot { it.startsWith("#") }
+                    .onEach { logger.verbose { "static lib queued: $it" } }
+                    .toMutableList()
+            }
+            val staticLibs = ctx.downloader.resolveDependencies(libs)
+            staticLibs.artifactResults.forEach { artifactResult ->
+                if (artifactResult.isResolved) {
+                    ctx.sharedLibrariesLoader.addLib(artifactResult.artifact.file)
+                    ctx.sharedLibrariesDependencies.add(artifactResult.artifact.depId())
+                    logger.debug { "Linked static shared library: ${artifactResult.artifact}" }
+                    logger.verbose { "Linked static shared library: ${artifactResult.artifact.file}" }
+                }
+            }
+        } else {
+            libraries.createNewFile()
+        }
+        ctx
+    }
+
+    override val classLoaders: MutableList<JvmPluginClassLoaderN> get() = jvmPluginLoadingCtx.pluginClassLoaders
+
+    override fun findLoadedClass(name: String): Class<*>? {
+        return classLoaders.firstNotNullOfOrNull { it.loadedClass(name) }
+    }
+
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
@@ -54,7 +123,7 @@ internal object BuiltInJvmPluginLoaderImpl :
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun Sequence<Map.Entry<File, JvmPluginClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+        fun Sequence<Map.Entry<File, JvmPluginClassLoaderN>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
             return onEach { (_, pluginClassLoader) ->
                 val exportManagers = pluginClassLoader.findServices(
                     ExportManager::class
@@ -74,7 +143,9 @@ internal object BuiltInJvmPluginLoaderImpl :
                     JvmPlugin::class,
                     KotlinPlugin::class,
                     JavaPlugin::class
-                ).loadAllServices()
+                ).loadAllServices().also { plugins ->
+                    plugins.firstOrNull()?.logger?.let { pluginClassLoader.linkedLogger = it }
+                }
             }.flatMap { (f, list) ->
 
                 list.associateBy { f }.asSequence()
@@ -84,7 +155,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            JvmPluginClassLoader(it, MiraiConsole::class.java.classLoader, classLoaders)
+            JvmPluginClassLoaderN.newLoader(it, jvmPluginLoadingCtx)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach {
@@ -98,28 +169,16 @@ internal object BuiltInJvmPluginLoaderImpl :
 
     private val loadedPlugins = ConcurrentHashMap<JvmPlugin, Unit>()
 
-    @Throws(PluginLoadException::class)
-    override fun load(plugin: JvmPlugin) {
-        ensureActive()
-
-        if (loadedPlugins.put(plugin, Unit) != null) {
-            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
-        }
-        logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
-        runCatching {
-            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
-            plugin.internalOnLoad()
-        }.getOrElse {
-            throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
-        }
-        val nameFolder = PluginManager.pluginsDataPath.resolve(plugin.description.name).toFile()
+    private fun Path.moveNameFolder(plugin: JvmPlugin) {
+        val nameFolder = this.resolve(plugin.description.name).toFile()
         if (plugin.description.name != plugin.description.id && nameFolder.exists()) {
             // need move
-            val idFolder = PluginManager.pluginsDataPath.resolve(plugin.description.id).toFile()
-            val moveDescription = "移动 ${plugin.description.smartToString()} 的配置目录(${nameFolder.path})到 ${idFolder.path}"
+            val idFolder = this.resolve(plugin.description.id).toFile()
+            val moveDescription =
+                "移动 ${plugin.description.smartToString()} 的数据文件目录(${nameFolder.path})到 ${idFolder.path}"
             if (idFolder.exists()) {
                 if (idFolder.listFiles()?.size != 0) {
-                    logger.error("$moveDescription 失败, 原因:配置目录(${idFolder.path})被占用")
+                    logger.error("$moveDescription 失败, 原因:数据文件目录(${idFolder.path})被占用")
                     logger.error("Mirai Console 将自动关闭, 请删除或移动该目录后再启动")
                     MiraiConsole.job.cancel()
                 } else
@@ -138,6 +197,55 @@ internal object BuiltInJvmPluginLoaderImpl :
                 MiraiConsole.job.cancel()
             }
             logger.info("$moveDescription 完成")
+        }
+    }
+
+    @Throws(PluginLoadException::class)
+    override fun load(plugin: JvmPlugin) {
+        ensureActive()
+
+        if (loadedPlugins.put(plugin, Unit) != null) {
+            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
+        }
+        logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
+        runCatching {
+            // move nameFolder in config and data to idFolder
+            PluginManager.pluginsDataPath.moveNameFolder(plugin)
+            PluginManager.pluginsConfigPath.moveNameFolder(plugin)
+            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
+            // region Link dependencies
+            plugin.javaClass.classLoader.safeCast<JvmPluginClassLoaderN>()?.let { jvmPluginClassLoaderN ->
+                // Link plugin dependencies
+                plugin.description.dependencies.asSequence().mapNotNull { dependency ->
+                    plugin.logger.verbose { "Linking dependency: ${dependency.id}" }
+                    PluginManager.plugins.firstOrNull { it.id == dependency.id }
+                }.mapNotNull { it.javaClass.classLoader.safeCast<JvmPluginClassLoaderN>() }.forEach { dependency ->
+                    plugin.logger.debug { "Linked  dependency: $dependency" }
+                    jvmPluginClassLoaderN.dependencies.add(dependency)
+                }
+                // Link jar dependencies
+                fun InputStream?.readDependencies(): Collection<String> {
+                    if (this == null) return emptyList()
+                    return bufferedReader().useLines { lines ->
+                        lines.filterNot { it.isBlank() }
+                            .filterNot { it.startsWith('#') }
+                            .map { it.trim() }
+                            .toMutableList()
+                    }
+                }
+                jvmPluginClassLoaderN.linkPluginSharedLibraries(
+                    plugin.logger,
+                    jvmPluginClassLoaderN.getResourceAsStream("META-INF/mirai-console-plugin/dependencies-shared.txt").readDependencies()
+                )
+                jvmPluginClassLoaderN.linkPluginPrivateLibraries(
+                    plugin.logger,
+                    jvmPluginClassLoaderN.getResourceAsStream("META-INF/mirai-console-plugin/dependencies-private.txt").readDependencies()
+                )
+            }
+            // endregion
+            plugin.internalOnLoad()
+        }.getOrElse {
+            throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
         }
     }
 

@@ -1,0 +1,4 @@
+com.zaxxer:SparseBitSet:1.2
+
+## Test console non-hard-link override
+org.bouncycastle:bcprov-jdk15on:1.63

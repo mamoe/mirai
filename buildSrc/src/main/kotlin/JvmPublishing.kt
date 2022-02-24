@@ -12,13 +12,13 @@
     "RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
 )
 
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import keys.SecretKeys
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.register
 
 fun Project.configureRemoteRepos() {
@@ -38,7 +38,7 @@ fun Project.configureRemoteRepos() {
         // sonatype
         val keys = SecretKeys.getCache(project)
         repositories {
-            if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING").toBoolean()) {
+            if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() == true) {
                 maven {
                     name = "MiraiRepo"
                     setUrl(System.getenv("SNAPSHOTS_PUBLISHING_URL"))
@@ -73,16 +73,26 @@ fun Project.configureRemoteRepos() {
 inline fun Project.configurePublishing(
     artifactId: String,
     vcs: String = "https://github.com/mamoe/mirai",
-    addProjectComponents: Boolean = true
+    addProjectComponents: Boolean = true,
+    setupGpg: Boolean = true,
 ) {
     configureRemoteRepos()
-    apply<ShadowPlugin>()
 
-    val sourcesJar = if (!addProjectComponents) null else tasks.maybeCreate("sourcesJar", Jar::class.java).apply {
+    val shadowJar = if (!addProjectComponents) null else tasks.register<ShadowJar>("shadowJar") {
+        archiveClassifier.set("all")
+        manifest.inheritFrom(tasks.getByName<Jar>("jar").manifest)
+        from(project.sourceSets["main"].output)
+        configurations = mutableListOf(
+            project.configurations.findByName("runtimeClasspath") ?: project.configurations["runtime"]
+        )
+        exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
+    }
+
+    val sourcesJar = if (!addProjectComponents) null else tasks.register<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
-    val stubJavadoc = if (!addProjectComponents) null else tasks.register("javadocJar", Jar::class) {
+    val stubJavadoc = if (!addProjectComponents) null else tasks.register<Jar>("javadocJar") {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         archiveClassifier.set("javadoc")
     }
@@ -103,8 +113,11 @@ inline fun Project.configurePublishing(
 
                 sourcesJar?.let { artifact(it) }
                 stubJavadoc?.get()?.let { artifact(it) }
+                shadowJar?.get()?.let { artifact(it) }
             }
         }
-        configGpgSign(this@configurePublishing)
+        if (setupGpg) {
+            configGpgSign(this@configurePublishing)
+        }
     }
 }

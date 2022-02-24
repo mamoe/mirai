@@ -350,7 +350,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(21) @JvmField val anonGroupMsg: AnonymousGroupMsg? = null,
         @ProtoNumber(22) @JvmField val qqLiveOld: QQLiveOld? = null,
         @ProtoNumber(23) @JvmField val lifeOnline: LifeOnlineAccount? = null,
-        @ProtoNumber(24) @JvmField val qqwalletMsg: QQWalletMsg? = null,
+        // @ProtoNumber(24) @JvmField val qqwalletMsg: QQWalletMsg? = null,
         @ProtoNumber(25) @JvmField val crmElem: CrmElem? = null,
         @ProtoNumber(26) @JvmField val conferenceTipsInfo: ConferenceTipsInfo? = null,
         @ProtoNumber(27) @JvmField val redbagInfo: RedBagInfo? = null,

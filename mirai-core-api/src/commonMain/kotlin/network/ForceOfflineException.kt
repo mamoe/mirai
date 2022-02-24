@@ -12,11 +12,13 @@ package net.mamoe.mirai.network
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 /**
  * 当 [Bot] 被迫下线时抛出, 作为 [Job.cancel] 的 `cause`
  */
-@Deprecated("Not used anymore since 2.7", level = DeprecationLevel.ERROR) // deprecated since 2.7, error since 2.8
+@Deprecated("Not used anymore since 2.7", level = DeprecationLevel.HIDDEN) // deprecated since 2.7, error since 2.8
+@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
 public class ForceOfflineException
 @JvmOverloads constructor(
     public override val message: String? = null,

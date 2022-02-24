@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:OptIn(ConsoleExperimentalApi::class)
@@ -12,18 +12,16 @@
 package net.mamoe.mirai.console.internal
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
@@ -32,68 +30,54 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
-import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
-import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.extension.SingletonExtensionSelectorImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
-import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginManager
-import net.mamoe.mirai.console.plugin.center.PluginCenter
-import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.utils.*
-import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
+
+internal val MiraiConsole.pluginManagerImpl: PluginManagerImpl get() = this.pluginManager.cast()
 
 /**
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
  */
 @Suppress("SpellCheckingInspection")
-internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
-    MiraiConsole {
-    override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
+internal class MiraiConsoleImplementationBridge(
+    private val externalImplementation: MiraiConsoleImplementation,
+) : MiraiConsole,
+    MiraiConsoleImplementation by (dynamicDelegation(MiraiConsoleImplementationBridge::externalImplementation)) {
+    override val origin: MiraiConsoleImplementation
+        get() = externalImplementation
 
-    private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.getInstance()
+    // FIXME: 12/12/2021 Workaround for compiler regression, should remove when using Kotlin compiller 1.6.20
+    private operator fun <V> KProperty0<V>.getValue(thisRef: Any?, property: KProperty<*>): V = this.get()
+
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
     override val version: SemVersion by MiraiConsoleBuildConstants::version
-    override val rootPath: Path by instance::rootPath
-    override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
+    override val pluginManager: PluginManagerImpl by lazy { PluginManagerImpl(coroutineContext) }
 
-    override val mainLogger: MiraiLogger by lazy {
-        createLogger("main")
-    }
-    override val coroutineContext: CoroutineContext by instance::coroutineContext
-    override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> by instance::builtInPluginLoaders
-    override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl by instance::consoleCommandSender
-
-    override val dataStorageForJvmPluginLoader: PluginDataStorage by instance::dataStorageForJvmPluginLoader
-    override val configStorageForJvmPluginLoader: PluginDataStorage by instance::configStorageForJvmPluginLoader
-    override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
-    override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
-    override val consoleInput: ConsoleInput by instance::consoleInput
-    override val isAnsiSupported: Boolean by instance::isAnsiSupported
-
-    override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
-        instance.createLoginSolver(requesterBot, configuration)
-
-    override val loggerController: LoggerController by instance::loggerController
+    override val mainLogger: MiraiLogger by lazy { createLogger("main") }
 
     init {
         // TODO: Replace to standard api
@@ -108,17 +92,17 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override fun createLogger(identity: String?): MiraiLogger {
         val controller = loggerController
-        return MiraiConsoleLogger(controller, instance.createLogger(identity))
+        return MiraiConsoleLogger(controller, externalImplementation.createLogger(identity))
     }
 
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
-        instance.preStart()
+        externalImplementation.preStart()
 
         phase("setup logger controller") {
             if (loggerController === LoggerControllerImpl) {
                 // Reload LoggerConfig.
-                ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+                consoleDataScope.addAndReloadConfig(LoggerConfig)
                 LoggerControllerImpl.initialized = true
             }
         }
@@ -152,16 +136,16 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase("load configurations") {
             mainLogger.verbose { "Loading configurations..." }
-            ConsoleDataScope.addAndReloadConfig(CommandConfig)
-            ConsoleDataScope.reloadAll()
+            consoleDataScope.addAndReloadConfig(CommandConfig)
+            consoleDataScope.reloadAll()
         }
 
         phase("initialize all plugins") {
-            PluginManager // init
+            pluginManager // init
 
             mainLogger.verbose { "Loading JVM plugins..." }
-            PluginManagerImpl.loadAllPluginsUsingBuiltInLoaders()
-            PluginManagerImpl.initExternalPluginLoaders().let { count ->
+            pluginManager.loadAllPluginsUsingBuiltInLoaders()
+            pluginManager.initExternalPluginLoaders().let { count ->
                 mainLogger.verbose { "$count external PluginLoader(s) found. " }
                 if (count != 0) {
                     mainLogger.verbose { "Loading external plugins..." }
@@ -170,7 +154,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
         phase("load all plugins") {
-            PluginManagerImpl.loadPlugins(PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
+            pluginManager.loadPlugins(pluginManager.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
 
             mainLogger.verbose { "${PluginManager.plugins.size} plugin(s) loaded." }
         }
@@ -178,8 +162,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase("load SingletonExtensionSelector") {
             SingletonExtensionSelector.init()
             val instance = SingletonExtensionSelector.instance
-            if (instance is BuiltInSingletonExtensionSelector) {
-                ConsoleDataScope.addAndReloadConfig(instance.config)
+            if (instance is SingletonExtensionSelectorImpl) {
+                consoleDataScope.addAndReloadConfig(instance.config)
             }
         }
 
@@ -190,7 +174,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             PermissionServiceProvider.permissionServiceOk = true
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
-                    ConsoleDataScope.addAndReloadConfig(ps.config)
+                    consoleDataScope.addAndReloadConfig(ps.config)
                     mainLogger.verbose { "Reloaded PermissionService settings." }
                 } else {
                     mainLogger.info { "Loaded PermissionService from plugin ${PermissionServiceProvider.providerPlugin?.name}" }
@@ -211,13 +195,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase("enable plugins") {
             mainLogger.verbose { "Enabling plugins..." }
 
-            PluginManagerImpl.enableAllLoadedPlugins()
+            pluginManager.enableAllLoadedPlugins()
 
             for (registeredCommand in CommandManager.allRegisteredCommands) {
                 registeredCommand.permission // init
             }
 
-            mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
+            mainLogger.info { "${pluginManager.plugins.size} plugin(s) enabled." }
         }
 
         phase("auto-login bots") {
@@ -279,7 +263,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
         }
 
-        instance.postStart()
+        externalImplementation.postStart()
 
         mainLogger.info { "mirai-console started successfully." }
     }
@@ -303,10 +287,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     }
 
     override fun prePhase(phase: String) {
-        instance.prePhase(phase)
+        externalImplementation.prePhase(phase)
     }
 
     override fun postPhase(phase: String) {
-        instance.postPhase(phase)
+        externalImplementation.postPhase(phase)
     }
 }

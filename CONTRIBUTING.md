@@ -6,7 +6,9 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 
 ## 主仓库 `mirai-core`
 
-### 构建
+### 构建项目
+
+#### 更新 submodules
 
 mirai git 仓库含有 submodule, 请在 clone 时使用 `--recursive` 参数, 或在 clone 后使用如下命令更新 submodule:
 ```shell script
@@ -14,12 +16,21 @@ git submodule init
 git submodule update
 ```
 
+#### 安装 JDK
+
+mirai 2.9.0 在如下环境测试可以编译:
+- macOS 12.0.1, AdoptOpenJDK 17 aarch64, Gradle 7.2, Kotlin 1.6.0
+- macOS 12.0.1, Amazon Corretto 11 amd64, Gradle 7.2, Kotlin 1.6.0
+
+若在其他环境下无法正常编译, 请尝试选择上述一个环境配置.
+
+#### 运行 Gradle 构建
+
 项目首次初始化和构建可能要花费较长时间。
 
 - 要构建项目, 请运行 `gradlew assemble`
-- 要运行测试, 请运行 `gradlew test`
+- 要运行测试, 请运行 `gradlew check`
 - 要构建项目并运行测试, 请运行 `gradlew build`
-- 若要添加一个 suspend 函数, 请务必考虑 Java 兼容性, 使用 [kotlin-jvm-blocking-bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge/blob/master/README-chs.md)
 
 ### 分支
 
@@ -80,11 +91,12 @@ git submodule update
 
 - 使用 IntelliJ IDEA 或 Android Studio
 - 安装 IDE 插件 [kotlin-jvm-blocking-bridge](https://github.com/Him188/kotlin-jvm-blocking-bridge/blob/master/README-chs.md#%E5%AE%89%E8%A3%85-intellij-idea-%E6%88%96-android-studio-%E6%8F%92%E4%BB%B6)
+- 若要添加一个 suspend 函数, 请为它添加 `@JvmBlockingBridge`, 使用 [kotlin-jvm-blocking-bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge/blob/master/README-chs.md)
 - 在 mirai-core 和 mirai-core-api 使用纯 Kotlin 实现
 - 尽量不要引用新的库
 - 遵守 Kotlin 官方代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
-- 保证二进制兼容性: 在提交前执行 `gradlew build`, 若有不兼容变更会得到错误。  
-  如果你正在添加一个新功能，可以忽略这个错误，执行 `gradlew clean apiDump`。这将会生成 `binary-compatibility-validator.api`，文件的变化反映了你的修改情况。将这些文件一并提交。 (详细了解 [Kotlin/binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator))
+- 保证二进制兼容性: 在提交前执行 `./gradlew build`, 若有不兼容变更会得到错误。  
+  如果你正在添加一个新功能，可以忽略这个错误，执行 `./gradlew clean apiDumpAll`。这将会生成 `*.api`，文件的变化反映了你的修改情况。将这些文件一并提交。 (详细了解 [Kotlin/binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator))
 - 通过 GitHub 的 Pull Request 提交代码，很快就会有相关模块负责人员来审核
 
 

@@ -12,7 +12,8 @@
 package net.mamoe.mirai.console.internal.util
 
 import io.github.karlatemp.caller.StackFrame
-import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.console.internal.plugin.implOrNull
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -37,7 +38,7 @@ internal inline fun <reified E : Throwable> runIgnoreException(block: () -> Unit
 internal fun StackFrame.findLoader(): ClassLoader? {
     classInstance?.let { return it.classLoader }
     return runCatching {
-        BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(className, true) != null }
+        JvmPluginLoader.implOrNull?.findLoadedClass(className)?.classLoader
     }.getOrNull()
 }
 
@@ -49,7 +50,7 @@ internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
 }
 
 @Suppress("DeprecatedCallableAddReplaceWith", "UnusedParameter", "UNUSED_PARAMETER")
-@Deprecated("Useless ifNull on not null value.")
+@Deprecated("Useless ifNull on not null value.") // diagnostic deprecation
 @JvmName("ifNull1")
 internal inline fun <T : Any> T.ifNull(block: () -> T): T = this
 

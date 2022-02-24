@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -534,7 +534,7 @@ internal class RemoteFileImpl(
     ): FileMessage {
         val resp = upload0(resource, callback) ?: error("Failed to upload file.")
         return FileMessageImpl(
-            resp.fileId, resp.busId, name, resource.size
+            resp.fileId, resp.busId, name, resource.size, allowSend = true
         )
     }
 
@@ -548,15 +548,18 @@ internal class RemoteFileImpl(
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(resource: ExternalResource): FileMessage {
         return upload(resource, null)
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
         file.toExternalResource().use { upload(it, callback) }
 
     //compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File): FileMessage {
         // Dear compiler:
         //

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,7 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import net.mamoe.kjbb.JvmBlockingBridge
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
@@ -225,26 +225,25 @@ public interface ExternalResource : Closeable {
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
+        // endregion
+
 
         /* note:
         于 2.8.0-M1 添加 (#1392)
 
         于 2.8.0-RC 移动至 `toExternalResource`(#1588)
-
-        Fixme: 在 2.8.0 标为 HIDDEN
          */
         @JvmName("createAutoCloseable")
         @JvmStatic
         @Deprecated(
-            level = DeprecationLevel.ERROR,
+            level = DeprecationLevel.HIDDEN,
             message = "Moved to `toExternalResource()`",
             replaceWith = ReplaceWith("resource.toAutoCloseable()"),
         )
+        @DeprecatedSinceMirai(errorSince = "2.8", hiddenSince = "2.10")
         public fun createAutoCloseable(resource: ExternalResource): ExternalResource {
             return resource.toAutoCloseable()
         }
-
-        // endregion
 
         ///////////////////////////////////////////////////////////////////////////
         // region sendAsImageTo
@@ -368,7 +367,7 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
@@ -378,8 +377,9 @@ public interface ExternalResource : Closeable {
                 "this.sendTo(contact, path, callback)",
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendTo"
             ),
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
@@ -403,7 +403,7 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.upload
          */
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("uploadAsFile")
@@ -414,8 +414,9 @@ public interface ExternalResource : Closeable {
                 "this.sendAsFileTo(contact, path, callback)",
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsFileTo"
             ),
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
@@ -440,7 +441,7 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.uploadAndSend
          */
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION_ERROR", "DEPRECATION")
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile",
             ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
@@ -448,6 +449,7 @@ public interface ExternalResource : Closeable {
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
+        @DeprecatedSinceMirai(warningSince = "2.8")
         public suspend fun <C : FileSupported> File.sendTo(
             contact: C,
             path: String,
@@ -466,7 +468,7 @@ public interface ExternalResource : Closeable {
          * @see RemoteFile.path
          * @see RemoteFile.uploadAndSend
          */
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile",
             ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
@@ -475,6 +477,7 @@ public interface ExternalResource : Closeable {
         @JvmBlockingBridge
         @JvmName("sendAsFile")
         @JvmOverloads
+        @DeprecatedSinceMirai(warningSince = "2.8")
         public suspend fun <C : FileSupported> ExternalResource.sendAsFileTo(
             contact: C,
             path: String,
@@ -489,13 +492,14 @@ public interface ExternalResource : Closeable {
         // region uploadAsVoice
         ///////////////////////////////////////////////////////////////////////////
 
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @JvmBlockingBridge
         @JvmStatic
         @Deprecated(
             "Use `contact.uploadAudio(resource)` instead",
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): net.mamoe.mirai.message.data.Voice {
             @Suppress("DEPRECATION")
             if (contact is Group) return contact.uploadVoice(this)
@@ -602,7 +606,7 @@ public constructor(
 
     public constructor(
         cleanup: ResourceCleanCallback? = null,
-    ): this(null, cleanup)
+    ) : this(null, cleanup)
 
     public fun interface ResourceCleanCallback {
         @Throws(IOException::class)

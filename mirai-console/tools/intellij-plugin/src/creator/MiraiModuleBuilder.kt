@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 
@@ -26,9 +26,6 @@ import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import net.mamoe.mirai.console.intellij.assets.Icons
 import net.mamoe.mirai.console.intellij.creator.steps.BuildSystemStep
 import net.mamoe.mirai.console.intellij.creator.steps.OptionsStep
@@ -37,6 +34,7 @@ import net.mamoe.mirai.console.intellij.creator.tasks.CreateProjectTask
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 
 class MiraiModuleBuilder : JavaModuleBuilder() {
     override fun getPresentableName() = MiraiModuleType.NAME
@@ -90,15 +88,18 @@ class MiraiModuleBuilder : JavaModuleBuilder() {
         val vFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(pathName)
             ?: throw IllegalStateException("Failed to refresh and file file: $path")
 
+
+
         return path to vFile
     }
 
-    private val scope = CoroutineScope(SupervisorJob())
+    //    private val scope = CoroutineScope(SupervisorJob())
+    private val scope = Executors.newFixedThreadPool(2)
     private val model = MiraiProjectModel.create(scope)
 
     override fun cleanup() {
         super.cleanup()
-        scope.cancel()
+        scope.shutdownNow()
     }
 
     override fun createWizardSteps(
@@ -107,7 +108,7 @@ class MiraiModuleBuilder : JavaModuleBuilder() {
     ): Array<ModuleWizardStep> {
         return arrayOf(
             BuildSystemStep(model),
-            PluginCoordinatesStep(model),
+            PluginCoordinatesStep(model, scope),
         )
     }
 
