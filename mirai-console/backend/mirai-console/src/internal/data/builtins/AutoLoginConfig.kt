@@ -39,7 +39,7 @@ public class AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
             "protocol": "ANDROID_PHONE" / "ANDROID_PAD" / "ANDROID_WATCH" /"MAC" / "IPAD"
             "device": "device.json" 
             "enable": true
-            "heartbeatStrategy": "STAT_HB"
+            "heartbeatStrategy": "STAT_HB" / "REGISTER" / "NONE"
         """
         )
         val configuration: Map<ConfigurationKey, @Serializable(with = YamlDynamicSerializer::class) Any> = mapOf(),
