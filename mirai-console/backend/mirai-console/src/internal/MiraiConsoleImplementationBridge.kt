@@ -256,6 +256,16 @@ internal class MiraiConsoleImplementationBridge(
                                 )
                             }
                         }
+                        account.configuration[ConfigurationKey.heartbeatStrategy]?.let { heartStrate ->
+                            this.heartbeatStrategy = runCatching {
+                                BotConfiguration.HeartbeatStrategy.valueOf(heartStrate.toString())
+                            }.getOrElse {
+                                throw IllegalArgumentException(
+                                    "Bad auto-login config value for `heartbeatStrategy` for account $id",
+                                    it
+                                )
+                            }
+                        }
                         account.configuration[ConfigurationKey.device]?.let { device ->
                             fileBasedDeviceInfo(device.toString())
                         }
