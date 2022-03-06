@@ -1,19 +1,23 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmBlockingBridge
 
-package net.mamoe.mirai.event
+package net.mamoe.mirai.internal.event
 
 import kotlinx.coroutines.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
-import net.mamoe.mirai.internal.event.EVENT_LAUNCH_UNDISPATCHED
+import net.mamoe.mirai.event.AbstractEvent
+import net.mamoe.mirai.event.EventPriority
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.internal.network.components.EVENT_LAUNCH_UNDISPATCHED
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

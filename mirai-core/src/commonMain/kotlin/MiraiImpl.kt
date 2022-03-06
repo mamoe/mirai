@@ -14,6 +14,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.util.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
@@ -32,10 +33,10 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
+import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
-import net.mamoe.mirai.internal.network.components.EventDispatcherScopeFlag
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.highway.tryDownload
@@ -299,17 +300,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         solveInvitedJoinGroupRequest(event, accept = false)
 
     override suspend fun broadcastEvent(event: Event) {
-        if (currentCoroutineContext()[EventDispatcherScopeFlag] != null) {
-            // called by [EventDispatcher]
-            return super.broadcastEvent(event)
-        }
         if (event is BotEvent) {
             val bot = event.bot
             if (bot is AbstractBot) {
                 bot.components[EventDispatcher].broadcast(event)
             }
         } else {
-            super.broadcastEvent(event)
+            EventChannelToEventDispatcherAdapter.instance.callListeners(event)
         }
     }
 

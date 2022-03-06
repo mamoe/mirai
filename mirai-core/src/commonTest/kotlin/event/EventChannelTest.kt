@@ -1,26 +1,25 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.event
+package net.mamoe.mirai.internal.event
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendEvent
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.internal.event.GlobalEventListeners
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,17 +45,11 @@ internal class EventChannelTest : AbstractEventTest() {
     @BeforeEach
     fun x() {
         runBlocking { semaphore.acquire() }
-        _EventBroadcast.implementation = object : _EventBroadcast() {
-            override suspend fun <E : Event> broadcastPublic(event: E): E =
-                broadcastImpl(event) // do not call MiraiImpl
-        }
     }
 
     @AfterEach
     fun s() {
-        GlobalEventListeners.clear()
-        runBlocking { semaphore.release() }
-        _EventBroadcast.implementation = _EventBroadcast() // restore
+        EventChannelToEventDispatcherAdapter.instance.eventListeners.clear()
     }
 
     @Test

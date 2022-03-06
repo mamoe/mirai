@@ -83,7 +83,7 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;)V
 	public abstract fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;)V
-	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun broadcastEvent (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun broadcastEvent$suspendImpl (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun calculateGroupCodeByGroupUin (J)J
 	public fun calculateGroupUinByGroupCode (J)J
@@ -1704,6 +1704,8 @@ public final class net/mamoe/mirai/data/UserProfile$Sex : java/lang/Enum {
 }
 
 public abstract class net/mamoe/mirai/event/AbstractEvent : net/mamoe/mirai/event/Event {
+	public field _intercepted Z
+	public final field broadCastLock Lkotlinx/coroutines/sync/Mutex;
 	public fun <init> ()V
 	public final fun cancel ()V
 	public fun intercept ()V
@@ -1732,10 +1734,11 @@ public abstract interface class net/mamoe/mirai/event/Event {
 	public abstract fun isIntercepted ()Z
 }
 
-public class net/mamoe/mirai/event/EventChannel {
-	public fun <init> (Lkotlin/reflect/KClass;)V
+public abstract class net/mamoe/mirai/event/EventChannel {
 	public static synthetic fun asChannel$default (Lnet/mamoe/mirai/event/EventChannel;ILkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;ILjava/lang/Object;)Lkotlinx/coroutines/channels/Channel;
-	public final fun context ([Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/event/EventChannel;
+	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun context ([Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/event/EventChannel;
+	protected abstract fun createListener (Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/event/Listener;
 	public final fun exceptionHandler (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun exceptionHandler (Lkotlinx/coroutines/CoroutineExceptionHandler;)Lnet/mamoe/mirai/event/EventChannel;
 	public final fun filter (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/event/EventChannel;
@@ -1765,6 +1768,7 @@ public class net/mamoe/mirai/event/EventChannel {
 	public final synthetic fun subscribeAlways (Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/event/Listener;
 	public static synthetic fun subscribeAlways$default (Lnet/mamoe/mirai/event/EventChannel;Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Ljava/util/function/Consumer;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
 	public static synthetic fun subscribeAlways$default (Lnet/mamoe/mirai/event/EventChannel;Lkotlin/reflect/KClass;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Lnet/mamoe/mirai/event/EventPriority;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lnet/mamoe/mirai/event/Listener;
+	protected abstract fun subscribeImpl (Lkotlin/reflect/KClass;Lnet/mamoe/mirai/event/Listener;)V
 	public final fun subscribeOnce (Ljava/lang/Class;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
 	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
 	public final fun subscribeOnce (Ljava/lang/Class;Lkotlin/coroutines/CoroutineContext;Lnet/mamoe/mirai/event/ConcurrencyKind;Ljava/util/function/Consumer;)Lnet/mamoe/mirai/event/Listener;
@@ -1793,14 +1797,12 @@ public final class net/mamoe/mirai/event/EventKt {
 }
 
 public final class net/mamoe/mirai/event/EventPriority : java/lang/Enum {
-	public static final field Companion Lnet/mamoe/mirai/event/EventPriority$Companion;
 	public static final field HIGH Lnet/mamoe/mirai/event/EventPriority;
 	public static final field HIGHEST Lnet/mamoe/mirai/event/EventPriority;
 	public static final field LOW Lnet/mamoe/mirai/event/EventPriority;
 	public static final field LOWEST Lnet/mamoe/mirai/event/EventPriority;
 	public static final field MONITOR Lnet/mamoe/mirai/event/EventPriority;
 	public static final field NORMAL Lnet/mamoe/mirai/event/EventPriority;
-	public static final fun getPrioritiesExcludedMonitor$mirai_core_api ()[Lnet/mamoe/mirai/event/EventPriority;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/event/EventPriority;
 	public static fun values ()[Lnet/mamoe/mirai/event/EventPriority;
 }
@@ -1833,6 +1835,8 @@ public final class net/mamoe/mirai/event/ExtensionsKt {
 
 public final class net/mamoe/mirai/event/GlobalEventChannel : net/mamoe/mirai/event/EventChannel {
 	public static final field INSTANCE Lnet/mamoe/mirai/event/GlobalEventChannel;
+	public fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public fun context ([Lkotlin/coroutines/CoroutineContext;)Lnet/mamoe/mirai/event/EventChannel;
 }
 
 public abstract interface class net/mamoe/mirai/event/Listener : kotlinx/coroutines/CompletableJob {

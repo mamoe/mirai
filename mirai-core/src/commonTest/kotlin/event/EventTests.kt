@@ -1,16 +1,16 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.event
+package net.mamoe.mirai.internal.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.StepUtil
+import net.mamoe.mirai.event.*
 import org.junit.jupiter.api.AfterEach
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
@@ -26,7 +26,7 @@ internal class EventTests : AbstractEventTest() {
     var scope = CoroutineScope(EmptyCoroutineContext)
 
     @AfterEach
-    fun finiallyReset() {
+    fun finallyReset() {
         resetEventListeners()
     }
 
@@ -69,7 +69,7 @@ internal class EventTests : AbstractEventTest() {
                 }
             }
         }
-        kotlinx.coroutines.runBlocking {
+        runBlocking {
             ParentEvent().broadcast()
         }
         val called = counter.get()
@@ -97,7 +97,7 @@ internal class EventTests : AbstractEventTest() {
                                 called.getAndIncrement()
                             }
                         }
-                        println("Registeterd $priority")
+                        println("Registered $priority")
                     }
                 }
                 println("Step 1")
@@ -189,13 +189,13 @@ internal class EventTests : AbstractEventTest() {
 
     open class PriorityTestEvent : AbstractEvent()
 
-    fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
+    private fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
         // runBlocking 会完全堵死, 没法退出
         val scope = CoroutineScope(Executor { it.run() }.asCoroutineDispatcher())
         val job = scope.launch {
             invoke(scope.globalEventChannel())
         }
-        kotlinx.coroutines.runBlocking {
+        runBlocking {
             job.join()
         }
         scope.cancel()
@@ -203,7 +203,7 @@ internal class EventTests : AbstractEventTest() {
     }
 
     @Test
-    fun `test handler remvoe`() {
+    fun `test handler remove`() {
         resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
@@ -226,7 +226,7 @@ internal class EventTests : AbstractEventTest() {
         }
     }
     */
-    fun resetEventListeners() {
+    private fun resetEventListeners() {
         scope.cancel()
         runBlocking { scope.coroutineContext[Job]?.join() }
         scope = CoroutineScope(EmptyCoroutineContext)

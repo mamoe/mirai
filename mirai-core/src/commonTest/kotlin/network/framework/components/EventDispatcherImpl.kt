@@ -15,7 +15,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
-import net.mamoe.mirai.internal.network.components.EventDispatcherScopeFlag
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.runUnwrapCancellationException
@@ -32,13 +31,12 @@ internal open class TestEventDispatcherImpl(
 
                 // so that [joinBroadcast] works.
                 launch(
-                    EventDispatcherScopeFlag,
                     start = CoroutineStart.UNDISPATCHED
                 ) {
                     super.broadcast(event)
                 }.join()
             } else {
-                // Scoped closed, typically when broadcasting `BotOfflineEvent` by StateObserver from `bot.close`
+                // Scope closed, typically when broadcasting `BotOfflineEvent` by StateObserver from `bot.close`
                 super.broadcast(event)
             }
         }
