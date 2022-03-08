@@ -39,6 +39,7 @@ import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
@@ -273,9 +274,94 @@ public object BuiltInCommands {
         @Description("查看所有权限列表")
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
-            sendMessage(
-                PermissionService.INSTANCE.getRegisteredPermissions()
-                    .joinToString("\n") { it.id.toString() + "    " + it.description })
+            class PermTree(
+                val perm: Permission,
+                val sub: MutableList<PermissionId> = mutableListOf(),
+            )
+
+            val rootView = PermTree(PermissionService.INSTANCE.rootPermission)
+            val mappings = mutableMapOf<PermissionId, PermTree>()
+            val permListSnapshot = PermissionService.INSTANCE.getRegisteredPermissions().toList()
+
+            permListSnapshot.forEach { perm ->
+                mappings[perm.id] = PermTree(perm)
+            }
+            mappings[rootView.perm.id] = rootView
+
+            permListSnapshot.forEach { perm ->
+                if (perm.id == rootView.perm.id) return@forEach
+
+                val parentView = mappings[perm.parent.id] ?: error("Can't find parent of ${perm.id}: ${perm.parent.id}")
+                parentView.sub.add(perm.id)
+            }
+
+            mappings.values.forEach { view ->
+                view.sub.sortWith { p1, p2 ->
+                    val namespaceCompare = p1.namespace compareTo p2.namespace
+                    if (namespaceCompare != 0) return@sortWith namespaceCompare
+
+                    if (p1.name == p2.name) return@sortWith 0 // ?
+                    if (p1.name == "*") return@sortWith -1
+                    if (p2.name == "*") return@sortWith 1
+
+                    return@sortWith p1.name compareTo p2.name
+                }
+            }
+
+            //*:*
+            // |  `-
+            // |- .....
+            // |  |  `-
+            // |  |- ......
+            // |  |  |  `-
+            // |  |  |-
+            val prefixed = 50
+
+            fun renderDepth(depth: Int, sb: AnsiMessageBuilder) {
+                repeat(depth) { sb.append(" | ") }
+            }
+
+            fun render(depth: Int, view: PermTree, sb: AnsiMessageBuilder) {
+                kotlin.run { // render perm id
+                    var doReset = false
+                    val permId = view.perm.id
+                    if (permId == rootView.perm.id || permId.name.endsWith("*")) {
+                        doReset = true
+                        sb.red()
+                    }
+                    sb.append(permId)
+                    if (doReset) {
+                        sb.reset()
+                    }
+                }
+
+                val linePrefixLen =
+                    (depth * 3) + 1 + view.perm.id.let { it.name.length + it.namespace.length } + (if (depth == 0) 0 else 1)
+                val descFlatten = view.perm.description.replace("\r\n", "\n").replace("\r", "\n")
+                if (!descFlatten.contains('\n') && linePrefixLen < prefixed) {
+                    if (descFlatten.isNotBlank()) {
+                        repeat(prefixed - linePrefixLen) { sb.append(' ') }
+                        sb.append("    ").append(descFlatten)
+                    }
+                } else {
+                    descFlatten.splitToSequence('\n').forEach { line ->
+                        sb.append('\n')
+                        renderDepth(depth, sb)
+                        sb.append(" |  `- ").append(line)
+                    }
+                }
+                sb.append('\n')
+
+                view.sub.forEach { sub ->
+                    val subView = mappings[sub] ?: return@forEach
+                    renderDepth(depth, sb)
+                    sb.append(" |- ")
+                    render(depth + 1, subView, sb)
+                }
+            }
+            sendAnsiMessage {
+                render(0, rootView, this)
+            }
         }
     }
 
