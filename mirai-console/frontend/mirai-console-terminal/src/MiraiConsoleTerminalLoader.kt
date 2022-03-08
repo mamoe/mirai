@@ -68,6 +68,7 @@ object MiraiConsoleTerminalLoader {
             "--help" to "显示此帮助",
             "" to "",
             "--no-console" to "使用无终端操作环境",
+            "--no-logging" to "禁用 console 日志文件",
             "--dont-setup-terminal-ansi" to
                     "[NoConsole] [Windows Only] 不进行ansi console初始化工作",
             "--no-ansi" to "[NoConsole] 禁用 ansi",
@@ -116,6 +117,9 @@ object MiraiConsoleTerminalLoader {
                 }
                 "--dont-setup-terminal-ansi" -> {
                     ConsoleTerminalSettings.setupAnsi = false
+                }
+                "--no-logging" -> {
+                    ConsoleTerminalSettings.noLogging = true
                 }
                 "--no-ansi" -> {
                     ConsoleTerminalSettings.noAnsi = true
