@@ -227,7 +227,7 @@ private val DROP_ANSI_PATTERN = """\u001b[\u0040–\u005F]""".toRegex()
 
 private object Color {
     const val RESET = "\u001b[0m"
-    const val WHITE = "\u001b[30m"
+    const val WHITE = "\u001b[97m"
     const val RED = "\u001b[31m"
     const val EMERALD_GREEN = "\u001b[32m"
     const val GOLD = "\u001b[33m"

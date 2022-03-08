@@ -38,7 +38,6 @@ import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
@@ -222,6 +221,34 @@ public object BuiltInCommands {
     ), BuiltInCommandInternal {
         // TODO: 2020/9/10 improve Permission command
 
+        /* 用于解析权限继承关系 */
+        private class PermTree(
+            val perm: Permission,
+            val sub: MutableList<PermissionId> = mutableListOf(),
+            var linked: Boolean = false,
+            var implicit: Boolean = false,
+        ) {
+            companion object {
+                fun sortView(view: PermTree) {
+                    view.sub.sortWith { p1, p2 ->
+                        val namespaceCompare = p1.namespace compareTo p2.namespace
+                        if (namespaceCompare != 0) return@sortWith namespaceCompare
+
+                        if (p1.name == p2.name) return@sortWith 0 // ?
+                        if (p1.name == "*") return@sortWith -1
+                        if (p2.name == "*") return@sortWith 1
+
+                        return@sortWith p1.name compareTo p2.name
+                    }
+                }
+            }
+        }
+
+        private fun renderDepth(depth: Int, sb: AnsiMessageBuilder) {
+            repeat(depth) { sb.append(" | ") }
+        }
+
+
         @Description("授权一个权限")
         @SubCommand("permit", "grant", "add")
         public suspend fun CommandSender.permit(
@@ -256,16 +283,64 @@ public object BuiltInCommands {
         @SubCommand("permittedPermissions", "pp", "grantedPermissions", "gp")
         public suspend fun CommandSender.permittedPermissions(
             @Name("被许可人 ID") target: PermitteeId,
-            @Name("包括重复") all: Boolean = false,
+            @Name("显示全部") all: Boolean = true,
         ) {
-            var grantedPermissions = target.getPermittedPermissions().toList()
-            if (!all) {
-                grantedPermissions = grantedPermissions.filter { thisPerm ->
-                    grantedPermissions.none { other -> thisPerm.parentsWithSelf.drop(1).any { it == other } }
-                }
-            }
+            val grantedPermissions = target.getPermittedPermissions().toList()
             if (grantedPermissions.isEmpty()) {
                 sendMessage("${target.asString()} 未被授予任何权限. 使用 `${CommandManager.commandPrefix}permission grant` 给予权限.")
+            } else if (all) {
+                val allPermissions = PermissionService.INSTANCE.getRegisteredPermissions().toList()
+                val permMapping = mutableMapOf<PermissionId, PermTree>()
+                grantedPermissions.forEach { granted ->
+                    permMapping[granted.id] = PermTree(granted).also { it.implicit = false }
+                }
+                val root = PermissionService.INSTANCE.rootPermission
+                fun linkPmTree(permTree: PermTree) {
+                    allPermissions.forEach { perm ->
+                        if (perm.id == root.id) return@forEach
+                        if (perm.parent.id == permTree.perm.id) {
+                            permTree.sub.add(perm.id)
+                            val subp = permMapping[perm.id] ?: kotlin.run {
+                                val p = PermTree(perm)
+                                p.implicit = true
+                                permMapping[perm.id] = p
+                                linkPmTree(p)
+                                p
+                            }
+                            subp.linked = true
+                        }
+                    }
+                }
+                permMapping.values.toList().forEach { linkPmTree(it) }
+                permMapping.values.forEach { PermTree.sortView(it) }
+
+                @Suppress("LocalVariableName")
+                val BG_BLACK = "\u001B[40m"
+                fun render(depth: Int, view: PermTree, sb: AnsiMessageBuilder) {
+                    if (view.implicit) {
+                        sb.gray()
+                        sb.append(view.perm.id)
+                        sb.append(" (implicit)\n")
+                        sb.reset().white().ansi(BG_BLACK)
+                    } else {
+                        sb.append(view.perm.id)
+                        sb.append('\n')
+                    }
+                    view.sub.forEach { sub ->
+                        val subView = permMapping[sub] ?: error("Error in resolving $sub")
+                        renderDepth(depth, sb)
+                        sb.append(" |- ")
+                        render(depth + 1, subView, sb)
+                    }
+                }
+                sendAnsiMessage {
+                    ansi(BG_BLACK).white()
+                    permMapping.forEach { (pid, tree) ->
+                        if (!tree.linked) {
+                            render(0, tree, this)
+                        }
+                    }
+                }
             } else {
                 sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
             }
@@ -274,10 +349,6 @@ public object BuiltInCommands {
         @Description("查看所有权限列表")
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
-            class PermTree(
-                val perm: Permission,
-                val sub: MutableList<PermissionId> = mutableListOf(),
-            )
 
             val rootView = PermTree(PermissionService.INSTANCE.rootPermission)
             val mappings = mutableMapOf<PermissionId, PermTree>()
@@ -295,18 +366,7 @@ public object BuiltInCommands {
                 parentView.sub.add(perm.id)
             }
 
-            mappings.values.forEach { view ->
-                view.sub.sortWith { p1, p2 ->
-                    val namespaceCompare = p1.namespace compareTo p2.namespace
-                    if (namespaceCompare != 0) return@sortWith namespaceCompare
-
-                    if (p1.name == p2.name) return@sortWith 0 // ?
-                    if (p1.name == "*") return@sortWith -1
-                    if (p2.name == "*") return@sortWith 1
-
-                    return@sortWith p1.name compareTo p2.name
-                }
-            }
+            mappings.values.forEach { PermTree.sortView(it) }
 
             //*:*
             // |  `-
@@ -316,10 +376,6 @@ public object BuiltInCommands {
             // |  |  |  `-
             // |  |  |-
             val prefixed = 50
-
-            fun renderDepth(depth: Int, sb: AnsiMessageBuilder) {
-                repeat(depth) { sb.append(" | ") }
-            }
 
             fun render(depth: Int, view: PermTree, sb: AnsiMessageBuilder) {
                 kotlin.run { // render perm id
