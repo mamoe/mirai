@@ -41,7 +41,7 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
         } else {
             grantedPermissionsMap[permission.id].remove(permitteeId)
         }
-        check(success) {
+        if (!success) {
             val about = buildList {
                 for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
                     val parent = get(permissionIdentifier) ?: continue
@@ -53,7 +53,7 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
                     }
                 }
             }
-            if (about.isEmpty()) {
+            val message = if (about.isEmpty()) {
                 "${permitteeId.asString()} 不拥有权限 ${permission.id} "
             } else {
                 buildString {
@@ -64,6 +64,8 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
                     appendLine("Mirai Console 内置权限系统目前不支持单独禁用继承得到的权限. 可取消继承来源再为其分别分配.")
                 }
             }
+
+            throw UnsupportedOperationException(message)
         }
     }
 
