@@ -9,16 +9,20 @@
 
 package net.mamoe.console.integrationtest
 
-import net.mamoe.console.integrationtest.testpoints.DoNothingPoint
 import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
-import net.mamoe.console.integrationtest.testpoints.PluginSharedLibraries
-import net.mamoe.console.integrationtest.testpoints.plugin.PluginDataRenameToIdTest
-import net.mamoe.console.integrationtest.testpoints.terminal.TestTerminalLogging
 import org.junit.jupiter.api.Test
+import org.objectweb.asm.ClassReader
 import java.io.File
 import java.lang.management.ManagementFactory
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
+import kotlin.io.path.inputStream
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.reflect.KClass
+import kotlin.streams.toList
+import kotlin.test.assertTrue
 
 
 class MiraiConsoleIntegrationTestBootstrap {
@@ -32,27 +36,46 @@ class MiraiConsoleIntegrationTestBootstrap {
         val launcher = MiraiConsoleIntegrationTestLauncher()
         launcher.workingDir = workingDir
         launcher.plugins = readStringListFromEnv("IT_PLUGINS")
-        launcher.points = listOf<Any>(
-            DoNothingPoint,
-            MCITBSelfAssertions,
-            PluginDataRenameToIdTest,
-            TestTerminalLogging,
-            PluginSharedLibraries,
-        ).asSequence().map { v ->
+        launcher.points = resolveTestPoints().also { points ->
+            // Avoid error in resolving points
+            assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions") }
+            assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.DoNothingPoint") }
+            assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.terminal.TestTerminalLogging") }
+        }.asSequence().map { v ->
             when (v) {
-                is Class<*> -> v
-                is KClass<*> -> v.java
-                else -> v.javaClass
+                is Class<*> -> v.name
+                is KClass<*> -> v.java.name
+                is String -> v
+                else -> v.javaClass.name
             }
-        }.map { it.name }.toMutableList()
+        }.map { it.replace('/', '.') }.toMutableList()
         launcher.vmoptions = mutableListOf(
             *ManagementFactory.getRuntimeMXBean().inputArguments.filterNot {
                 it.startsWith("-Djava.security.manager=")
+            }.filterNot {
+                it.startsWith("-Xmx")
             }.toTypedArray(),
             *System.getenv("IT_ARGS")!!.splitToSequence(",").map {
                 Base64.getDecoder().decode(it).decodeToString()
             }.filter { it.isNotEmpty() }.toList().toTypedArray()
         )
         launcher.launch()
+    }
+
+    private fun resolveTestPoints(): Collection<Any> {
+        val ptloc = MCITBSelfAssertions.javaClass.getResource(MCITBSelfAssertions.javaClass.simpleName + ".class")
+        ptloc ?: error("Failed to resolve test points")
+        val path = Paths.get(ptloc.toURI()).parent
+        return Files.walk(path)
+            .filter { !it.isDirectory() }
+            .filter { it.name.endsWith(".class") }
+            .map { pt ->
+                pt.inputStream().use {
+                    ClassReader(it).className
+                }
+            }
+            .map { it.replace('/', '.') }
+            .filter { AbstractTestPoint::class.java.isAssignableFrom(Class.forName(it)) }
+            .use { it.toList() }
     }
 }
