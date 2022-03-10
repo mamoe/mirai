@@ -45,6 +45,7 @@ import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
@@ -89,6 +90,13 @@ internal class MiraiConsoleImplementationBridge(
     // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
     @Volatile
     var permissionSeviceLoaded: Boolean = false
+
+    // MiraiConsoleImplementation define: get() = LoggerControllerImpl()
+    // Need to cache it or else created every call.
+    //      It caused config/Console/Logger.yml ignored.
+    override val loggerController: LoggerController by lazy {
+        externalImplementation.loggerController
+    }
 
     override val mainLogger: MiraiLogger by lazy { createLogger("main") }
 
