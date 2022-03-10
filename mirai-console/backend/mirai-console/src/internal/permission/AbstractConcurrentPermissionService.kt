@@ -75,4 +75,21 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
             if (granted) get(permissionIdentifier)?.let { yield(it) }
         }
     }
+
+    internal fun getPermittedPermissionsAndSource(permitteeId: PermitteeId): Sequence<Pair<PermitteeId, P>> = sequence {
+        for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
+            permissibleIdentifiers.forEach { pid ->
+                if (permitteeId.hasChild(pid)) {
+                    get(permissionIdentifier)?.let { yield(pid to it) }
+                }
+            }
+        }
+    }
+}
+
+internal fun PermitteeId.getPermittedPermissionsAndSource(): Sequence<Pair<PermitteeId, Permission>> {
+    return when (val ps = PermissionService.INSTANCE) {
+        is AbstractConcurrentPermissionService -> ps.getPermittedPermissionsAndSource(this)
+        else -> ps.getPermittedPermissions(this).map { this to it }
+    }
 }

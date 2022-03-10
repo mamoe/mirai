@@ -35,6 +35,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Pa
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
+import net.mamoe.mirai.console.internal.permission.getPermittedPermissionsAndSource
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
@@ -227,6 +228,7 @@ public object BuiltInCommands {
             val sub: MutableList<PermissionId> = mutableListOf(),
             var linked: Boolean = false,
             var implicit: Boolean = false,
+            val source: MutableList<PermitteeId> = mutableListOf(),
         ) {
             companion object {
                 fun sortView(view: PermTree) {
@@ -285,14 +287,17 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("显示全部") all: Boolean = true,
         ) {
-            val grantedPermissions = target.getPermittedPermissions().toList()
+            val grantedPermissions = target.getPermittedPermissionsAndSource().toList()
             if (grantedPermissions.isEmpty()) {
                 sendMessage("${target.asString()} 未被授予任何权限. 使用 `${CommandManager.commandPrefix}permission grant` 给予权限.")
             } else if (all) {
                 val allPermissions = PermissionService.INSTANCE.getRegisteredPermissions().toList()
                 val permMapping = mutableMapOf<PermissionId, PermTree>()
-                grantedPermissions.forEach { granted ->
-                    permMapping[granted.id] = PermTree(granted).also { it.implicit = false }
+                grantedPermissions.forEach { (source, granted) ->
+                    val m = permMapping[granted.id] ?: kotlin.run {
+                        PermTree(granted).also { it.implicit = false; permMapping[granted.id] = it }
+                    }
+                    m.source.add(source)
                 }
                 val root = PermissionService.INSTANCE.rootPermission
                 fun linkPmTree(permTree: PermTree) {
@@ -324,6 +329,12 @@ public object BuiltInCommands {
                         sb.reset().white().ansi(BG_BLACK)
                     } else {
                         sb.append(view.perm.id)
+                        if (view.source.isNotEmpty()) {
+                            sb.append(' ').gray().append('(')
+                            sb.append("from ")
+                            view.source.joinTo(sb)
+                            sb.append(')').reset().white().ansi(BG_BLACK)
+                        }
                         sb.append('\n')
                     }
                     view.sub.forEach { sub ->
@@ -342,7 +353,7 @@ public object BuiltInCommands {
                     }
                 }
             } else {
-                sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+                sendMessage(grantedPermissions.map { it.second.id }.toSet().joinToString("\n"))
             }
         }
 
