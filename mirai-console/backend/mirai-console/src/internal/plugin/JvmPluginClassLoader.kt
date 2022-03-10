@@ -206,7 +206,9 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
             if (declaredFilter?.isExported(name) == false) return null
             synchronized(getClassLoadingLock(name)) {
                 findLoadedClass(name)?.let { return it }
-                return super.findClass(name)
+                try {
+                    return super.findClass(name)
+                } catch (ignored: ClassNotFoundException) {}
             }
         }
         return null

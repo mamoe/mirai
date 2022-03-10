@@ -13,7 +13,6 @@ import net.mamoe.console.integrationtest.ep.mcitselftest.MCITSelfTestPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
@@ -52,5 +51,10 @@ public object PluginDependOnOther : KotlinPlugin(
                 Class.forName("net.mamoe.assertion.something.not.existing")
             }
         }
+
+        // region https://github.com/mamoe/mirai/issues/1920
+        Class.forName("net.mamoe.console.integrationtest.ep.pddd.p2.PDOO_OtherClass")
+        Class.forName("net.mamoe.console.integrationtest.ep.pddd.PDOO_OtherClass")
+        // endregion
     }
 }
