@@ -119,6 +119,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
                 "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
                 BuildMiraiPluginV2::class.java
             ).also { buildPluginV2 ->
+                buildPluginV2.group = "mirai"
                 buildPluginV2.registerMetadataTask(tasks, "miraiPrepareMetadata".wrapNameWithPlatform(target, isSingleTarget))
                 buildPluginV2.init(target)
             }
