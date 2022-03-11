@@ -52,7 +52,7 @@ internal class BuiltInJvmPluginLoaderImpl(
 
 
     internal val jvmPluginLoadingCtx: JvmPluginsLoadingCtx by lazy {
-        val classLoader = DynLibClassLoader(BuiltInJvmPluginLoaderImpl::class.java.classLoader)
+        val classLoader = DynLibClassLoader(BuiltInJvmPluginLoaderImpl::class.java.classLoader, "GlobalShared")
         val ctx = JvmPluginsLoadingCtx(
             classLoader,
             mutableListOf(),

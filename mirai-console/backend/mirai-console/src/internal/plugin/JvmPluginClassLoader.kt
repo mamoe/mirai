@@ -51,6 +51,7 @@ internal class JvmPluginsLoadingCtx(
 
 internal class DynLibClassLoader(
     parent: ClassLoader?,
+    private val clName: String? = null,
 ) : URLClassLoader(arrayOf(), parent) {
     companion object {
         init {
@@ -78,6 +79,7 @@ internal class DynLibClassLoader(
     }
 
     override fun toString(): String {
+        clName?.let { return "DynLibClassLoader{$it}" }
         return "DynLibClassLoader@" + hashCode()
     }
 }
@@ -130,8 +132,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                     pluginMainPackages.add(pkg)
                 }
         }
-        pluginSharedCL = DynLibClassLoader(ctx.sharedLibrariesLoader)
-        pluginIndependentCL = DynLibClassLoader(pluginSharedCL)
+        pluginSharedCL = DynLibClassLoader(ctx.sharedLibrariesLoader, "SharedCL{${file.name}}")
+        pluginIndependentCL = DynLibClassLoader(pluginSharedCL, "IndependentCL{${file.name}}")
         addURL(file.toURI().toURL())
     }
 
