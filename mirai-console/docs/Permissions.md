@@ -173,8 +173,10 @@ fun Permission.testPermission(PermitteeId): Boolean
 在 Java，请查看 [`PermissionService`] 中的伴生对象。
 
 
-> 查看使用示例: [Him188/mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin/blob/master/src/main/kotlin/org/example/my/plugin/MyPluginMain.kt#L116)
-
+> 查看使用示例: 
+>
+> - [Him188/mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin/blob/master/src/main/kotlin/org/example/my/plugin/MyPluginMain.kt#L116)
+> - [Karlatemp/mirai-console-permission-service-example (gist)](https://gist.github.com/Karlatemp/38b1491dc033854755c0ec7367ba081b)
 
 ### 注册权限
 
