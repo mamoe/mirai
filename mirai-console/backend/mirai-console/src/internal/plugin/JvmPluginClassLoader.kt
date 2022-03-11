@@ -82,6 +82,26 @@ internal class DynLibClassLoader(
         clName?.let { return "DynLibClassLoader{$it}" }
         return "DynLibClassLoader@" + hashCode()
     }
+
+    override fun getResource(name: String?): URL? {
+        if (name == null) return null
+        findResource(name)?.let { return it }
+        if (parent is DynLibClassLoader) {
+            return parent.getResource(name)
+        }
+        return null
+    }
+
+    override fun getResources(name: String?): Enumeration<URL> {
+        if (name == null) return Collections.emptyEnumeration()
+        val res = findResources(name)
+        return if (parent is DynLibClassLoader) {
+            res + parent.getResources(name)
+        } else {
+            res
+        }
+    }
+
 }
 
 @Suppress("JoinDeclarationAndAssignment")
@@ -210,7 +230,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                 findLoadedClass(name)?.let { return it }
                 try {
                     return super.findClass(name)
-                } catch (ignored: ClassNotFoundException) {}
+                } catch (ignored: ClassNotFoundException) {
+                }
             }
         }
         return null
@@ -265,11 +286,48 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
     internal fun loadedClass(name: String): Class<*>? = super.findLoadedClass(name)
 
-    //// 只允许插件 getResource 时获取插件自身资源, https://github.com/mamoe/mirai-console/issues/205
-    override fun getResources(name: String?): Enumeration<URL> = findResources(name)
-    override fun getResource(name: String?): URL? = findResource(name)
-    // getResourceAsStream 在 URLClassLoader 中通过 getResource 确定资源
-    //      因此无需 override getResourceAsStream
+    private fun getRes(name: String, shared: Boolean): Enumeration<URL> {
+        val src = mutableListOf<Enumeration<URL>>(
+            findResources(name),
+        )
+        if (dependencies.isEmpty()) {
+            if (shared) {
+                src.add(sharedLibrariesLogger.getResources(name))
+            }
+        } else {
+            dependencies.forEach { dep ->
+                src.add(dep.getRes(name, false))
+            }
+        }
+        src.add(pluginIndependentCL.getResources(name))
+
+        val resolved = mutableSetOf<URL>()
+        src.forEach { nested -> nested.iterator().forEach { resolved.add(it) } }
+
+        return Collections.enumeration(resolved)
+    }
+
+    override fun getResources(name: String?): Enumeration<URL> {
+        name ?: return Collections.emptyEnumeration()
+
+        if (name.startsWith("META-INF/mirai-console-plugin/"))
+            return findResources(name)
+
+        return getRes(name, true)
+    }
+
+    override fun getResource(name: String?): URL? {
+        name ?: return null
+        if (name.startsWith("META-INF/mirai-console-plugin/"))
+            return findResource(name)
+        findResource(name)?.let { return it }
+        // parent: ctx.sharedLibrariesLoader
+        sharedLibrariesLogger.getResource(name)?.let { return it }
+        dependencies.forEach { dep ->
+            dep.getResource(name)?.let { return it }
+        }
+        return pluginIndependentCL.getResource(name)
+    }
 
     override fun toString(): String {
         return "JvmPluginClassLoader{${file.name}}"
@@ -278,3 +336,35 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
 private fun String.pkgName(): String = substringBeforeLast('.', "")
 internal fun Artifact.depId(): String = "$groupId:$artifactId"
+
+private operator fun <E> Enumeration<E>.plus(next: Enumeration<E>): Enumeration<E> {
+    return compoundEnumerations(listOf(this, next).iterator())
+}
+
+private fun <E> compoundEnumerations(iter: Iterator<Enumeration<E>>): Enumeration<E> {
+    return object : Enumeration<E> {
+        private lateinit var crt: Enumeration<E>
+        override fun hasMoreElements(): Boolean {
+            return (::crt.isInitialized && crt.hasMoreElements()) || iter.hasNext()
+        }
+
+        override fun nextElement(): E {
+            if (::crt.isInitialized) {
+                val c = crt
+                return if (c.hasMoreElements()) {
+                    c.nextElement()
+                } else if (iter.hasNext()) {
+                    crt = iter.next()
+                    nextElement()
+                } else {
+                    throw NoSuchElementException()
+                }
+            } else if (iter.hasNext()) {
+                crt = iter.next()
+                return nextElement()
+            } else {
+                throw NoSuchElementException()
+            }
+        }
+    }
+}

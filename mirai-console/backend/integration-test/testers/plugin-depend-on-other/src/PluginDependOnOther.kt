@@ -12,6 +12,7 @@ package net.mamoe.console.integrationtest.ep.dependonother
 import net.mamoe.console.integrationtest.ep.mcitselftest.MCITSelfTestPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
@@ -45,7 +46,8 @@ public object PluginDependOnOther : KotlinPlugin(
             logger.info { "Gson located $gsonC <${gsonC.classLoader}>" }
             assertSame(gsonC, Class.forName(gsonC.name, false, pluginDepDynDownload.classLoader))
             assertFailsWith<ClassNotFoundException> {
-                Class.forName("com.zaxxer.sparsebits.SparseBitSet") // private in dynamic-dep-download
+                val c = Class.forName("com.zaxxer.sparsebits.SparseBitSet") // private in dynamic-dep-download
+                logger.error { "C: $c, from: ${c.classLoader}" }
             }
             assertFailsWith<ClassNotFoundException> {
                 Class.forName("net.mamoe.assertion.something.not.existing")
