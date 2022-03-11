@@ -64,20 +64,24 @@ val consoleIntegrationTestSubPluginBuildGradleKtsTemplate by lazy {
 }
 
 @Suppress("SimpleRedundantLet")
-fun includeConsoleITPlugin(path: File) {
+fun includeConsoleITPlugin(prefix: String, path: File) {
     path.resolve("build.gradle.kts").takeIf { !it.isFile }?.let { initScript ->
         initScript.writeText(consoleIntegrationTestSubPluginBuildGradleKtsTemplate)
     }
 
-    val projectPath = ":mirai-console.integration-test:${path.name}"
+    val projectPath = "$prefix${path.name}"
     include(projectPath)
     project(projectPath).projectDir = path
+    path.listFiles()?.asSequence().orEmpty()
+        .filter { it.isDirectory }
+        .filter { it.resolve(".nested-module.txt").exists() }
+        .forEach { includeConsoleITPlugin("${projectPath}:", it) }
 }
 rootProject.projectDir
     .resolve("mirai-console/backend/integration-test/testers")
     .listFiles()?.asSequence().orEmpty()
     .filter { it.isDirectory }
-    .forEach { includeConsoleITPlugin(it) }
+    .forEach { includeConsoleITPlugin(":mirai-console.integration-test:", it) }
 // endregion
 
 includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")

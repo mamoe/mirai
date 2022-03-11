@@ -24,7 +24,9 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.io.File
+import java.io.FileDescriptor
 import java.io.FileOutputStream
+import java.io.PrintStream
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -66,13 +68,22 @@ internal fun main() {
         .toList()
 
     File("plugins").mkdirs()
+    File("modules").mkdirs()
     prepareConsole()
 
     testUnits.forEach { (it as? AbstractTestPointAsPlugin)?.generatePluginJar() }
     testUnits.forEach { it.internalBCS() }
 
-    MiraiConsoleTerminalLoader.startAsDaemon()
+    Thread.sleep(2000L)
 
+    try {
+        MiraiConsoleTerminalLoader.startAsDaemon()
+    } catch (e: Throwable) {
+        val ps = PrintStream(FileOutputStream(FileDescriptor.out))
+        e.printStackTrace(ps)
+        ps.flush()
+        exitProcess(1)
+    }
     if (!MiraiConsole.isActive) {
         error("Failed to start console")
     }
@@ -107,9 +118,16 @@ loggers:
 
     readStringListFromEnv("IT_PLUGINS").forEach { path ->
         val jarFile = File(path)
-        val target = File("plugins/${jarFile.name}").mkparents()
-        jarFile.copyTo(target, overwrite = true)
-        println("[MCIT] Copied external plugin: $jarFile")
+        if (jarFile.name.startsWith("module-")) {
+            // DYN MODULE
+            val target = File("modules/${jarFile.name}").mkparents()
+            jarFile.copyTo(target, overwrite = true)
+            println("[MCIT] Copied module: $jarFile")
+        } else {
+            val target = File("plugins/${jarFile.name}").mkparents()
+            jarFile.copyTo(target, overwrite = true)
+            println("[MCIT] Copied external plugin: $jarFile")
+        }
     }
 }
 
