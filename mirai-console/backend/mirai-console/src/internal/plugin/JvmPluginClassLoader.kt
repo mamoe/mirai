@@ -301,8 +301,13 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         }
         src.add(pluginIndependentCL.getResources(name))
 
-        val resolved = mutableSetOf<URL>()
-        src.forEach { nested -> nested.iterator().forEach { resolved.add(it) } }
+        val resolved = mutableListOf<URL>()
+        src.forEach { nested ->
+            nested.iterator().forEach { url ->
+                if (url !in resolved)
+                    resolved.add(url)
+            }
+        }
 
         return Collections.enumeration(resolved)
     }
@@ -312,6 +317,9 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
         if (name.startsWith("META-INF/mirai-console-plugin/"))
             return findResources(name)
+        // Avoid loading duplicated mirai-console plugins
+        if (name.startsWith("META-INF/services/net.mamoe.mirai.console.plugin."))
+            return findResources(name)
 
         return getRes(name, true)
     }
@@ -320,6 +328,10 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         name ?: return null
         if (name.startsWith("META-INF/mirai-console-plugin/"))
             return findResource(name)
+        // Avoid loading duplicated mirai-console plugins
+        if (name.startsWith("META-INF/services/net.mamoe.mirai.console.plugin."))
+            return findResource(name)
+
         findResource(name)?.let { return it }
         // parent: ctx.sharedLibrariesLoader
         sharedLibrariesLogger.getResource(name)?.let { return it }

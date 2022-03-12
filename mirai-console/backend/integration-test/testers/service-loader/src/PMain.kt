@@ -36,5 +36,17 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
             logger.info { "Service: $service" }
         }
         assertEquals(mutableListOf("net.mamoe.console.integrationtest.mod.serviceimpl.ServiceImpl"), services)
+
+        assertEquals(
+            "from plugin",
+            javaClass.getResourceAsStream("/test-res.txt")!!.reader().use { it.readText() }.trim(),
+        )
+        val tstRes = javaClass.classLoader.getResources("test-res.txt").asSequence().onEach {
+            println(it)
+        }.toMutableList()
+        // /service-loader-0.0.0.jar!/test-res.txt
+        // /module-service-loader-typedef-0.0.0.jar!/test-res.txt
+        // /module-service-loader-impl-0.0.0.jar!/test-res.txt
+        assertEquals(3, tstRes.size)
     }
 }
