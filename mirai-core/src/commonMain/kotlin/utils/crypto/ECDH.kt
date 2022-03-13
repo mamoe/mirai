@@ -63,7 +63,6 @@ internal expect class ECDH(keyPair: ECDHKeyPair) {
     fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray
 
     companion object {
-        val isECDHAvailable: Boolean
 
         /**
          * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
