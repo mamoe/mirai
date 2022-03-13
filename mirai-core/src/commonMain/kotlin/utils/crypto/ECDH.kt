@@ -11,18 +11,13 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.utils.decodeBase64
 import net.mamoe.mirai.utils.hexToBytes
-import java.security.KeyFactory
-import java.security.spec.X509EncodedKeySpec
 
 internal expect interface ECDHPrivateKey
 
 internal expect interface ECDHPublicKey {
     fun getEncoded(): ByteArray
 }
-
-internal expect class ECDHKeyPairImpl : ECDHKeyPair
 
 internal interface ECDHKeyPair {
     val privateKey: ECDHPrivateKey
@@ -54,38 +49,53 @@ internal interface ECDHKeyPair {
 /**
  * 椭圆曲线密码, ECDH 加密
  */
-internal expect class ECDH(keyPair: ECDHKeyPair) {
-    val keyPair: ECDHKeyPair
+internal class ECDH(val keyPair: ECDHKeyPair) {
 
     /**
      * 由 [keyPair] 的私匙和 [peerPublicKey] 计算 shareKey
      */
-    fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray
+    fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray {
+        return calculateShareKey(keyPair.privateKey, peerPublicKey)
+    }
 
     companion object {
+        init {
+            ECDHImpl.BC_PROVIDER
+            ECDHImpl.EC_KEY_FACTORY // Init lazy
+        }
 
         /**
          * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
          */
-        fun constructPublicKey(key: ByteArray): ECDHPublicKey
+        fun constructPublicKey(key: ByteArray): ECDHPublicKey {
+            return ECDHImpl.constructPublicKey(key)
+        }
 
         /**
          * 由完整的 rsaKey 校验 publicKey
          */
-        fun verifyPublicKey(version: Int, publicKey: String, publicKeySign: String): Boolean
+        fun verifyPublicKey(version: Int, publicKey: String, publicKeySign: String): Boolean {
+            return ECDHImpl.verifyPubKey(version, publicKey, publicKeySign)
+        }
 
         /**
          * 生成随机密匙对
          */
-        fun generateKeyPair(initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key): ECDHKeyPair
+        fun generateKeyPair(initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key): ECDHKeyPair {
+            return ECDHKeyPairImpl(ECDHImpl.genKeyPair(), initialPublicKey)
+        }
 
         /**
          * 由一对密匙计算 shareKey
          */
-        fun calculateShareKey(privateKey: ECDHPrivateKey, publicKey: ECDHPublicKey): ByteArray
+        fun calculateShareKey(privateKey: ECDHPrivateKey, publicKey: ECDHPublicKey): ByteArray {
+            return ECDHImpl.calcShareKey(privateKey, publicKey)
+        }
     }
 
-    override fun toString(): String
+    override fun toString(): String {
+        return "ECDH(keyPair=$keyPair)"
+    }
 }
 
 @Suppress("FunctionName")
@@ -117,17 +127,12 @@ internal data class ECDHWithPublicKey(private val initialPublicKey: ECDHInitialP
                 ).chunkedHexToBytes()
     )
 * */
-
 @Serializable
 internal data class ECDHInitialPublicKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
     @Transient
     internal val key: ECDHPublicKey = keyStr.adjustToPublicKey()
 }
 
-internal val publicKeyForVerify by lazy {
-    KeyFactory.getInstance("RSA")
-        .generatePublic(X509EncodedKeySpec("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuJTW4abQJXeVdAODw1CamZH4QJZChyT08ribet1Gp0wpSabIgyKFZAOxeArcCbknKyBrRY3FFI9HgY1AyItH8DOUe6ajDEb6c+vrgjgeCiOiCVyum4lI5Fmp38iHKH14xap6xGaXcBccdOZNzGT82sPDM2Oc6QYSZpfs8EO7TYT7KSB2gaHz99RQ4A/Lel1Vw0krk+DescN6TgRCaXjSGn268jD7lOO23x5JS1mavsUJtOZpXkK9GqCGSTCTbCwZhI33CpwdQ2EHLhiP5RaXZCio6lksu+d8sKTWU1eEiEb3cQ7nuZXLYH7leeYFoPtbFV4RicIWp0/YG+RP7rLPCwIDAQAB".decodeBase64()))
-}
 internal val defaultInitialPublicKey: ECDHInitialPublicKey by lazy { ECDHInitialPublicKey(keyStr = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E") }
 private val signHead = "3059301306072a8648ce3d020106082a8648ce3d030107034200".hexToBytes()
 

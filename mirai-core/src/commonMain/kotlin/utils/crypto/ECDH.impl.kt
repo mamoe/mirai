@@ -77,3 +77,25 @@ internal object ECDHImpl {
     }
 }
 
+
+
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+internal actual typealias ECDHPrivateKey = PrivateKey
+
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+internal actual typealias ECDHPublicKey = PublicKey
+
+internal class ECDHKeyPairImpl(
+    private val delegate: KeyPair,
+    initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key,
+) : ECDHKeyPair {
+    override val privateKey: ECDHPrivateKey get() = delegate.private
+    override val publicKey: ECDHPublicKey get() = delegate.public
+    override val maskedShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
+    override val maskedPublicKey: ByteArray by lazy { publicKey.encoded.copyOfRange(26, 91) }
+}
+
+private val publicKeyForVerify by lazy {
+    KeyFactory.getInstance("RSA")
+        .generatePublic(X509EncodedKeySpec("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuJTW4abQJXeVdAODw1CamZH4QJZChyT08ribet1Gp0wpSabIgyKFZAOxeArcCbknKyBrRY3FFI9HgY1AyItH8DOUe6ajDEb6c+vrgjgeCiOiCVyum4lI5Fmp38iHKH14xap6xGaXcBccdOZNzGT82sPDM2Oc6QYSZpfs8EO7TYT7KSB2gaHz99RQ4A/Lel1Vw0krk+DescN6TgRCaXjSGn268jD7lOO23x5JS1mavsUJtOZpXkK9GqCGSTCTbCwZhI33CpwdQ2EHLhiP5RaXZCio6lksu+d8sKTWU1eEiEb3cQ7nuZXLYH7leeYFoPtbFV4RicIWp0/YG+RP7rLPCwIDAQAB".decodeBase64()))
+}
