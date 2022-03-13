@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.internal.permission
 import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
+import net.mamoe.mirai.console.permission.PermitteeId.Companion.allParentsWithSelf
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.hasChild
 
 internal abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
@@ -47,14 +48,14 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
                     val parent = get(permissionIdentifier) ?: continue
                     if (parent !in permission.parentsWithSelf) continue
                     for (permissibleId in permissibleIdentifiers) {
-                        if (permissibleId.hasChild(permitteeId)) {
+                        if (permissibleId in permitteeId.allParentsWithSelf) {
                             add(parent to permissibleId)
                         }
                     }
                 }
             }
             val message = if (about.isEmpty()) {
-                "${permitteeId.asString()} 不拥有权限 ${permission.id} "
+                "${permitteeId.asString()} 不拥有权限 ${permission.id}"
             } else {
                 buildString {
                     appendLine("${permitteeId.asString()} 的 ${permission.id} 权限来自")
