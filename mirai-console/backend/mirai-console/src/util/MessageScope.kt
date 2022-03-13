@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -22,6 +22,8 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.Message
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -290,38 +292,47 @@ public fun MessageScope?.scopeWith(other: MessageScope?): MessageScope {
 }
 
 public inline fun <R> Contact?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> Contact?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> Contact?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> CommandSender?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> CommandSender?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> CommandSender?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> MessageScope?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> MessageScope?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
 public inline fun <R> MessageScope?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return scopeWith(*others).invoke(action)
 }
 
@@ -351,7 +362,10 @@ public inline fun MessageScope.scopeWith(): MessageScope = asMessageScope()
         "net.mamoe.mirai.console.util.invoke",
     )
 ) // diagnostic deprecation
-public inline fun <R> Contact.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
+public inline fun <R> Contact.scopeWith(action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return asMessageScope()(action)
+}
 
 @Deprecated(
     "Senseless scopeWith. Use .asMessageScope().invoke.",
@@ -361,7 +375,10 @@ public inline fun <R> Contact.scopeWith(action: MessageScope.() -> R): R = asMes
         "net.mamoe.mirai.console.util.invoke",
     )
 ) // diagnostic deprecation
-public inline fun <R> CommandSender.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
+public inline fun <R> CommandSender.scopeWith(action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return asMessageScope()(action)
+}
 
 @Deprecated(
     "Senseless scopeWith. Use .asMessageScope().invoke.",
@@ -371,7 +388,10 @@ public inline fun <R> CommandSender.scopeWith(action: MessageScope.() -> R): R =
         "net.mamoe.mirai.console.util.invoke",
     )
 ) // diagnostic deprecation
-public inline fun <R> MessageScope.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
+public inline fun <R> MessageScope.scopeWith(action: MessageScope.() -> R): R {
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
+    return asMessageScope()(action)
+}
 
 //// endregion MessageScopeBuilders CODEGEN ////
 
