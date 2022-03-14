@@ -31,6 +31,8 @@ Mirai Console Gradle 插件。
 
 ## 配置
 
+注意：暂不支持在 mirai 配置以外修改 `jvmTarget` #1798
+ 
 若要修改 Mirai Console Gradle 插件的默认配置，在 `build.gradle.kts` 或 `build.gradle` 内，使用 `mirai`：
 ```kotlin
 mirai { // this: MiraiConsoleExtension
@@ -38,7 +40,7 @@ mirai { // this: MiraiConsoleExtension
 }
 ```
 
-DSL 详见 [MiraiConsoleExtension](src/MiraiConsoleExtension.kt)。
+DSL 详见 [MiraiConsoleExtension](src/main/kotlin/MiraiConsoleExtension.kt)。
 
 ### 打包依赖
 
