@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.minutesToMillis
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -43,6 +44,15 @@ internal class ConsoleDataScopeImpl(
     override fun <T : PluginData> find(type: KClass<T>): T? {
         @Suppress("UNCHECKED_CAST")
         return (data.find { type.isInstance(it) } ?: configs.find { type.isInstance(it) }) as T?
+    }
+
+    /**
+     * Set and override, for tests only.
+     */
+    @TestOnly
+    inline fun <reified T : PluginData> set(value: T) {
+        data.removeIf { value::class.isInstance(it) }
+        data.add(value)
     }
 
     override fun reloadAll() {
