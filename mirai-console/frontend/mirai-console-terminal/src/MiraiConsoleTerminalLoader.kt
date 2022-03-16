@@ -175,6 +175,7 @@ internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
     if (ConsoleTerminalSettings.noConsole) {
         SystemOutputPrintStream // Avoid StackOverflowError when launch with no console mode
     }
+    lineReader // Initialize real frontend first. #1936
     System.setOut(
         PrintStream(
             BufferedOutputStream(
