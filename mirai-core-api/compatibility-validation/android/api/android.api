@@ -4922,6 +4922,7 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun getInternalId (Lnet/mamoe/mirai/message/data/MessageChain;)[I
 	public static final fun getKind (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public static final fun getKind (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public static final synthetic fun getLengthDuration (Lnet/mamoe/mirai/message/data/OnlineAudio;)J
 	public static final synthetic fun getOrFail (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public static synthetic fun getOrFail$default (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public static final synthetic fun getSource (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/MessageSource;
