@@ -50,6 +50,9 @@ import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.Either
+import net.mamoe.mirai.utils.Either.Companion.flatMapNull
+import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.secondsToMillis
 import java.lang.management.ManagementFactory
@@ -188,9 +191,12 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "login", "登录",
         description = "登录一个账号",
     ), BuiltInCommandInternal {
-        private suspend fun Bot.doLogin() = kotlin.runCatching {
-            login(); this
-        }.onFailure { close() }.getOrThrow()
+        internal var doLogin: suspend Bot.() -> Bot = {
+            kotlin.runCatching {
+                login()
+                this
+            }.onFailure { close() }.getOrThrow()
+        } // workaround since LoginCommand is object
 
         @Handler
         @JvmOverloads
@@ -204,24 +210,27 @@ public object BuiltInCommands {
                 return this
             }
 
-            suspend fun getPassword(id: Long): Any? {
+            fun getPassword(id: Long): Either<ByteArray, String?> {
                 val config = DataScope.get<AutoLoginConfig>()
-                val acc = config.accounts.firstOrNull { it.account == id.toString() }
-                if (acc == null) {
-                    sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
-                    return null
-                }
+                val acc = config.accounts.firstOrNull { it.account == id.toString() } ?: return Either.right(null)
                 val strv = acc.password.value
-                return if (acc.password.kind == MD5) strv.autoHexToBytes() else strv
+                return if (acc.password.kind == MD5) Either.left(strv.autoHexToBytes()) else Either.right(strv)
             }
 
-            val pwd: Any = password ?: getPassword(id) ?: return
+            val pwd = Either.right<ByteArray, String?>(password).flatMapNull { getPassword(id) }
             kotlin.runCatching {
-                when (pwd) {
-                    is String -> MiraiConsole.addBot(id, pwd) { setup(protocol) }.doLogin()
-                    is ByteArray -> MiraiConsole.addBot(id, pwd) { setup(protocol) }.doLogin()
-                    else -> throw AssertionError("Assertion failed, please report to https://github.com/mamoe/mirai-console/issues/new/choose, debug=${pwd.javaClass}")// Unreachable
-                }
+                pwd.fold(
+                    onLeft = { pass ->
+                        MiraiConsole.addBot(id, pass) { setup(protocol) }.doLogin()
+                    },
+                    onRight = { pass ->
+                        if (pass == null) {
+                            sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
+                            return
+                        }
+                        MiraiConsole.addBot(id, pass) { setup(protocol) }.doLogin()
+                    }
+                )
             }.fold(
                 onSuccess = { scopeWith(ConsoleCommandSender).sendMessage("${it.nick} ($id) Login successful") },
                 onFailure = { throwable ->
