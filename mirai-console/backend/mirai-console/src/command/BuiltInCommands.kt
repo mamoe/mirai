@@ -9,7 +9,10 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
@@ -25,15 +28,14 @@ import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
+import net.mamoe.mirai.console.internal.command.builtin.LoginCommandImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
-import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.pluginManagerImpl
-import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
@@ -46,15 +48,13 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.plugin.version
-import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.AnsiMessageBuilder
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.sendAnsiMessage
 import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.Either
-import net.mamoe.mirai.utils.Either.Companion.flatMapNull
-import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.secondsToMillis
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryUsage
 import java.time.ZoneId
@@ -187,16 +187,12 @@ public object BuiltInCommands {
         }
     }
 
+    private val loginCommandInstance = LoginCommandImpl()
+
     public object LoginCommand : SimpleCommand(
-        ConsoleCommandOwner, "login", "登录",
-        description = "登录一个账号",
+        ConsoleCommandOwner, loginCommandInstance.primaryName, * loginCommandInstance.secondaryNames,
+        description = loginCommandInstance.description,
     ), BuiltInCommandInternal {
-        internal var doLogin: suspend Bot.() -> Bot = {
-            kotlin.runCatching {
-                login()
-                this
-            }.onFailure { close() }.getOrThrow()
-        } // workaround since LoginCommand is object
 
         @Handler
         @JvmOverloads
@@ -205,48 +201,9 @@ public object BuiltInCommands {
             password: String? = null,
             protocol: BotConfiguration.MiraiProtocol? = null,
         ) {
-            fun BotConfiguration.setup(protocol: BotConfiguration.MiraiProtocol?): BotConfiguration {
-                if (protocol != null) this.protocol = protocol
-                return this
+            loginCommandInstance.run {
+                handle(id, password, protocol)
             }
-
-            fun getPassword(id: Long): Either<ByteArray, String?> {
-                val config = DataScope.get<AutoLoginConfig>()
-                val acc = config.accounts.firstOrNull { it.account == id.toString() } ?: return Either.right(null)
-                val strv = acc.password.value
-                return if (acc.password.kind == MD5) Either.left(strv.autoHexToBytes()) else Either.right(strv)
-            }
-
-            val pwd = Either.right<ByteArray, String?>(password).flatMapNull { getPassword(id) }
-            kotlin.runCatching {
-                pwd.fold(
-                    onLeft = { pass ->
-                        MiraiConsole.addBot(id, pass) { setup(protocol) }.doLogin()
-                    },
-                    onRight = { pass ->
-                        if (pass == null) {
-                            sendMessage("Could not find '$id' in AutoLogin config. Please specify password.")
-                            return
-                        }
-                        MiraiConsole.addBot(id, pass) { setup(protocol) }.doLogin()
-                    }
-                )
-            }.fold(
-                onSuccess = { scopeWith(ConsoleCommandSender).sendMessage("${it.nick} ($id) Login successful") },
-                onFailure = { throwable ->
-                    scopeWith(ConsoleCommandSender).sendMessage(
-                        "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                if (this is CommandSenderOnMessage<*>) {
-                                    MiraiConsole.launch(CoroutineName("stacktrace delayer from Login")) {
-                                        fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
-                                    }
-                                    "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
-                                } else ""
-                    )
-
-                    throw throwable
-                }
-            )
         }
     }
 

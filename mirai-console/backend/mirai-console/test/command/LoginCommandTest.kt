@@ -13,11 +13,14 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
-import net.mamoe.mirai.console.command.BuiltInCommands.LoginCommand
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.internal.command.builtin.LoginCommandImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
 import org.junit.jupiter.api.Test
@@ -33,14 +36,14 @@ internal class LoginCommandTest : AbstractCommandTest() {
         val myId = 123L
         val myPwd = "password001"
 
-        val bot = awaitDeferred<net.mamoe.mirai.internal.QQAndroidBot> { cont ->
-            LoginCommand.doLogin = {
-                val bot = bot as net.mamoe.mirai.internal.QQAndroidBot
-                cont.complete(bot)
-                bot
+        val bot = awaitDeferred<QQAndroidBot> { cont ->
+            val command = object : LoginCommandImpl() {
+                override suspend fun doLogin(bot: Bot) {
+                    cont.complete(bot as QQAndroidBot)
+                }
             }
-
-            LoginCommand.execute(consoleSender, "$myId $myPwd")
+            command.register(true)
+            command.execute(consoleSender, "$myId $myPwd")
         }
 
         val account = bot.account
@@ -62,14 +65,14 @@ internal class LoginCommandTest : AbstractCommandTest() {
             )
         })
 
-        val bot = awaitDeferred<net.mamoe.mirai.internal.QQAndroidBot> { cont ->
-            LoginCommand.doLogin = {
-                val bot = bot as net.mamoe.mirai.internal.QQAndroidBot
-                cont.complete(bot)
-                bot
+        val bot = awaitDeferred<QQAndroidBot> { cont ->
+            val command = object : LoginCommandImpl() {
+                override suspend fun doLogin(bot: Bot) {
+                    cont.complete(bot as QQAndroidBot)
+                }
             }
-
-            LoginCommand.execute(consoleSender, "$myId")
+            command.register(true)
+            command.execute(consoleSender, "$myId")
         }
 
         val account = bot.account
@@ -91,14 +94,14 @@ internal class LoginCommandTest : AbstractCommandTest() {
             )
         })
 
-        val bot = awaitDeferred<net.mamoe.mirai.internal.QQAndroidBot> { cont ->
-            LoginCommand.doLogin = {
-                val bot = bot as net.mamoe.mirai.internal.QQAndroidBot
-                cont.complete(bot)
-                bot
+        val bot = awaitDeferred<QQAndroidBot> { cont ->
+            val command = object : LoginCommandImpl() {
+                override suspend fun doLogin(bot: Bot) {
+                    cont.complete(bot as QQAndroidBot)
+                }
             }
-
-            LoginCommand.execute(consoleSender, "$myId")
+            command.register(true)
+            command.execute(consoleSender, "$myId")
         }
 
         val account = bot.account
