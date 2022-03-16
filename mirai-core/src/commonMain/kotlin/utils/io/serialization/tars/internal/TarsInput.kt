@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,14 +12,13 @@ package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
-import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder.Companion.println
 
 
 /**
  * Tars Input. 需要手动管理 head.
  */
 internal class TarsInput(
-    val input: Input, private val charset: Charset,
+    val input: Input, private val charset: Charset, private val debugLogger: DebugLogger,
 ) {
     private var _head: TarsHead? = null
     private var _nextHead: TarsHead? = null
@@ -114,7 +113,7 @@ internal class TarsInput(
         crossinline message: () -> String = { "tag not found: $tag" },
         crossinline block: (TarsHead) -> R,
     ): R {
-        return checkNotNull<R>(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
+        return checkNotNull(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -170,30 +169,30 @@ internal class TarsInput(
             Tars.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
             Tars.STRING4 -> this.input.discardExact(this.input.readInt())
             Tars.MAP -> { // map
-                TarsDecoder.structureHierarchy++
+                debugLogger.structureHierarchy++
                 repeat(readInt32(0).also {
                     println("SIZE = $it")
                 } * 2) {
                     skipField(nextHead().type)
                 }
-                TarsDecoder.structureHierarchy--
+                debugLogger.structureHierarchy--
             }
             Tars.LIST -> { // list
-                TarsDecoder.structureHierarchy++
+                debugLogger.structureHierarchy++
                 repeat(readInt32(0).also {
                     println("SIZE = $it")
                 }) {
                     skipField(nextHead().type)
                 }
-                TarsDecoder.structureHierarchy--
+                debugLogger.structureHierarchy--
             }
             Tars.STRUCT_BEGIN -> {
-                TarsDecoder.structureHierarchy++
+                debugLogger.structureHierarchy++
                 var head: TarsHead
                 do {
                     head = nextHead()
                     if (head.type == Tars.STRUCT_END) {
-                        TarsDecoder.structureHierarchy--
+                        debugLogger.structureHierarchy--
                         skipField(head.type)
                         break
                     }
@@ -203,7 +202,7 @@ internal class TarsInput(
             Tars.STRUCT_END, Tars.ZERO_TYPE -> {
             }
             Tars.SIMPLE_LIST -> {
-                TarsDecoder.structureHierarchy++
+                debugLogger.structureHierarchy++
                 var head = nextHead()
                 check(head.type == Tars.BYTE) { "bad simple list element type: " + head.type + ", $head" }
                 check(head.tag == 0) { "simple list element tag must be 0, but was ${head.tag}" }
@@ -211,7 +210,7 @@ internal class TarsInput(
                 head = nextHead()
                 check(head.tag == 0) { "tag for size for simple list must be 0, but was ${head.tag}" }
                 this.input.discardExact(readTarsIntValue(head))
-                TarsDecoder.structureHierarchy--
+                debugLogger.structureHierarchy--
             }
             else -> error("invalid type: $type")
         }
