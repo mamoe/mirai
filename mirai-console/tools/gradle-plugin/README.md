@@ -31,20 +31,32 @@ Mirai Console Gradle 插件。
 
 ## 配置
 
-若要修改 Mirai Console Gradle 插件的默认配置，在 `build.gradle.kts` 或 `build.gradle` 内，使用 `mirai`：
+若要修改 Mirai Console Gradle 插件的默认配置，在 `build.gradle.kts` 或 `build.gradle`
+内，使用 `mirai`：
+
 ```kotlin
 mirai { // this: MiraiConsoleExtension
-    
+
 }
 ```
 
 DSL 详见 [MiraiConsoleExtension](src/MiraiConsoleExtension.kt)。
 
+### 修改 Java 编译目标
+
+Mirai Console Gradle 会覆盖 Java 编译目标为 `1.8`. 若要修改该值, 请通过:
+
+```kotlin
+mirai { // this: MiraiConsoleExtension
+    jvmTarget = JavaVersion.VERSION_16
+}
+```
+
 ### 打包依赖
 
-Mirai Console Gradle 在打包 JAR（`buildPlugin`） 时不会携带任何外部依赖, 
-而是会保存一份依赖列表，在加载插件时下载，
-如果您使用了不可在 `Maven Central` 搜索到的依赖, 请使用以下配置告知 mirai-console-gradle
+Mirai Console Gradle 在打包 JAR（`buildPlugin`） 时不会携带任何外部依赖,
+而是会保存一份依赖列表，在加载插件时下载， 如果您使用了不可在 `Maven Central` 搜索到的依赖, 请使用以下配置告知
+mirai-console-gradle
 
 ```groovy
 dependencies {
