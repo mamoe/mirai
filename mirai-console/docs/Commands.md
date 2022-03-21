@@ -130,7 +130,7 @@ Mirai Console 内建 [`SimpleCommand`] 与 [`CompositeCommand`] 拥有 [`Command
 
 此时示例一定比理论有意义。
 
-Example-kotlin:
+Kotlin 示例：
 ```kotlin
 object MySimpleCommand : SimpleCommand(
     MyPluginMain, "tell", "私聊",
