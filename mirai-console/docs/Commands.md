@@ -143,7 +143,7 @@ object MySimpleCommand : SimpleCommand(
 }
 ```
 
-Example-java:
+Java 示例：
 ```java
 public class MySimpleCommand extends SimpleCommand {
 
