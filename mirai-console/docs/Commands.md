@@ -174,7 +174,7 @@ public class MySimpleCommand extends SimpleCommand {
 
 示例：  
 
-Example-kotlin:
+Kotlin 示例：
 ```kotlin
 @OptIn(ConsoleExperimentalAPI::class)
 object MyCompositeCommand : CompositeCommand(
