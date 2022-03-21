@@ -224,7 +224,7 @@ object MyCompositeCommand : CompositeCommand(
 }
 ```
 
-Example-java:
+Java 示例：
 ```java
 public class MyCompositeCommand extends CompositeCommand {
 
