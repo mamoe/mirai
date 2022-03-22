@@ -66,12 +66,10 @@ import kotlin.contracts.contract
  * }
  * ```
  *
- * 注意, 若使用 [InputStream], 必须手动关闭 [InputStream]. 一种使用情况示例:
- *
  * ## 在 Java 获得和使用 [ExternalResource] 实例
  *
  * ```
- * try(ExternalResource resource = ExternalResource.create(file)) { // 使用文件 file
+ * try (ExternalResource resource = ExternalResource.create(file)) { // 使用文件 file
  *     contact.uploadImage(resource); // 用来上传图片
  *     contact.files.uploadNewFile("/foo/test.txt", file); // 或者用来上传文件
  * }
@@ -80,8 +78,8 @@ import kotlin.contracts.contract
  * 注意, 若使用 [InputStream], 必须手动关闭 [InputStream]. 一种使用情况示例:
  *
  * ```java
- * try(InputStream stream = ...) { // 安全地使用 InputStream
- *     try(ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
+ * try (InputStream stream = ...) { // 安全地使用 InputStream
+ *     try (ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
  *         contact.uploadImage(resource); // 用来上传图片
  *         contact.files.uploadNewFile("/foo/test.txt", file); // 或者用来上传文件
  *     }
