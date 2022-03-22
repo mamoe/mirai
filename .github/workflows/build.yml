@@ -41,3 +41,6 @@ jobs:
 
       - name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule
+
+      - name: Upload build artifacts
+        uses: ./.github/actions/upload-build-artifacts
