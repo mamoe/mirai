@@ -42,12 +42,12 @@ internal class PermissionServiceTest {
         // test cancel fail (by parent)
         val cause1 = assertFails { builtIn.cancel(member, command, false) }
         assertTrue { cause1 is UnsupportedOperationException }
-        assertTrue { """
+        assertEquals("""
             m12345.6789 的 plugin:command 权限来自
             m12345.* plugin:*
             Mirai Console 内置权限系统目前不支持单独禁用继承得到的权限. 可取消继承来源再为其分别分配.
             
-        """.trimIndent() == cause1.message }
+        """.trimIndent(), cause1.message)
 
         // test recursive cancel
         builtIn.cancel(any, builtIn.rootPermission, true)
@@ -59,7 +59,7 @@ internal class PermissionServiceTest {
         // test cancel (no permit)
         val cause2 = assertFails { builtIn.cancel(member, command, false) }
         assertTrue { cause2 is UnsupportedOperationException }
-        assertTrue { "${member.asString()} 不拥有权限 ${command.id}" == cause2.message }
+        assertEquals("${member.asString()} 不拥有权限 ${command.id}", cause2.message)
 
         // test not recursive cancel
         builtIn.permit(any, plugin)
