@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.dropEmoji
 import net.mamoe.mirai.utils.safeCast
 
 
@@ -47,7 +48,7 @@ internal fun At.toJceData(
         } else {
             findFromGroup(group) ?: findFromSource()
         } ?: target
-    }"
+    }".dropEmoji()
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {
