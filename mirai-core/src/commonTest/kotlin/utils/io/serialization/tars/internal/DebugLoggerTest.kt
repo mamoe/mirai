@@ -30,6 +30,8 @@ class DebugLoggerTest : AbstractTest() {
         JCE_DESERIALIZER_DEBUG = true
     }
 
+    fun String.uniteLine(): String = replace("\r\n", "\n").replace("\r", "\n")
+
     @Serializable
     data class Struct(
         @TarsId(1) val str: String,
@@ -53,7 +55,7 @@ class DebugLoggerTest : AbstractTest() {
                 name=int
                 decodeElementIndex: currentHead == null
             endStructure: net.mamoe.mirai.internal.utils.io.serialization.tars.internal.DebugLoggerTest.Struct, null, null
-        """.trimIndent(), out.toByteArray().decodeToString().trim()
+        """.trimIndent(), out.toByteArray().decodeToString().trim().uniteLine()
         )
     }
 
@@ -75,7 +77,8 @@ class DebugLoggerTest : AbstractTest() {
                 decodeElementIndex: TarsHead(tag=1, type=6(String1))
                 name=str
                 decodeElementIndex: TarsHead(tag=3, type=0(Byte))
-        """.trimIndent(), exception.message!!.trim()
+                skipping Byte
+        """.trimIndent().trim(), exception.message!!.trim().uniteLine()
         )
     }
 }
