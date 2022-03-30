@@ -348,6 +348,14 @@ MyPluginMain.launch {
 
 详见 [`PluginFileExtensions`]。
 
+Java 示例：
+```java
+File dataFile = JExample.INSTANCE.resolveDataFile("myDataFile.txt");
+// dataFile do something
+File configFile = JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
+// configFile do something
+```
+
 #### 物理目录路径
 用 `$root` 表示 Mirai Console 运行路径，`$name` 表示插件名，
 插件数据目录一般在 `$root/data/$name`，插件配置目录一般在 `$root/config/$name`。
@@ -416,6 +424,17 @@ object MyData : AutoSavePluginData() {
 
 ### 附录：Java 插件的多线程调度器 - [`JavaPluginScheduler`]
 拥有生命周期管理的简单 Java 线程池。其中所有的任务都会在插件被关闭时自动停止。
+
+Java 示例：
+```
+JExample.INSTANCE.getScheduler().repeating(1 * 1000, new Runnable() {
+    @Override
+    public void run() {
+        JExample.INSTANCE.getLogger().info("clock task arrival");
+        // or do something
+    }
+});
+```
 
 > 下一步，[Commands](Commands.md#mirai-console-backend---commands)
 >
