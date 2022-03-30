@@ -39,7 +39,7 @@ internal class TarsInput(
     fun peekNextHead(): TarsHead? {
         _nextHead?.let { return it }
         return readNextHeadButDoNotAssignTo_Head(true).also { _nextHead = it; }.also {
-            println("Peek next head: $it")
+            debugLogger.println("Peek next head: $it")
         }
     }
 
@@ -123,7 +123,7 @@ internal class TarsInput(
             if (tag <= hd.tag || hd.type == 11.toByte()) {
                 return tag == hd.tag
             }
-            println("Discard $tag, $hd, ${hd.size}")
+            debugLogger.println("Discard $tag, $hd, ${hd.size}")
             input.discardExact(hd.size)
             skipField(hd.type)
         }
@@ -152,7 +152,7 @@ internal class TarsInput(
     @OptIn(ExperimentalUnsignedTypes::class)
     @PublishedApi
     internal fun skipField(type: Byte) {
-        println {
+        debugLogger.println {
             "skipping ${
                 TarsHead.findTarsTypeName(
                     type
@@ -171,7 +171,7 @@ internal class TarsInput(
             Tars.MAP -> { // map
                 debugLogger.structureHierarchy++
                 repeat(readInt32(0).also {
-                    println("SIZE = $it")
+                    debugLogger.println("SIZE = $it")
                 } * 2) {
                     skipField(nextHead().type)
                 }
@@ -180,7 +180,7 @@ internal class TarsInput(
             Tars.LIST -> { // list
                 debugLogger.structureHierarchy++
                 repeat(readInt32(0).also {
-                    println("SIZE = $it")
+                    debugLogger.println("SIZE = $it")
                 }) {
                     skipField(nextHead().type)
                 }
@@ -218,7 +218,7 @@ internal class TarsInput(
 
     // region readers
     fun readTarsIntValue(head: TarsHead): Int {
-        //println("readTarsIntValue: $head")
+        //debugLogger.println("readTarsIntValue: $head")
         return readTarsIntValue(head.type, head)
     }
 
@@ -254,7 +254,7 @@ internal class TarsInput(
     }
 
     fun readTarsByteValue(head: TarsHead): Byte {
-        //println("readTarsByteValue: $head")
+        //debugLogger.println("readTarsByteValue: $head")
         return when (head.type) {
             Tars.ZERO_TYPE -> 0
             Tars.BYTE -> input.readByte()
@@ -272,7 +272,7 @@ internal class TarsInput(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun readTarsStringValue(head: TarsHead): String {
-        //println("readTarsStringValue: $head")
+        //debugLogger.println("readTarsStringValue: $head")
         return when (head.type) {
             Tars.STRING1 -> input.readString(input.readUByte().toInt(), charset = charset)
             Tars.STRING4 -> input.readString(

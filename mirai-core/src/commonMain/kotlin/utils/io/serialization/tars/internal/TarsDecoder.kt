@@ -43,7 +43,9 @@ internal class DebugLogger(
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 internal class TarsDecoder(
-    val input: TarsInput, override val serializersModule: SerializersModule, val debugLogger: DebugLogger
+    val input: TarsInput,
+    override val serializersModule: SerializersModule,
+    val debugLogger: DebugLogger,
 ) : TaggedDecoder<TarsTag>() {
     override fun SerialDescriptor.getTag(index: Int): TarsTag {
         val annotations = this.getElementAnnotations(index)
@@ -228,6 +230,7 @@ internal class TarsDecoder(
 
     companion object {
         val logger = MiraiLogger.Factory.create(TarsDecoder::class, "TarsDecoder")
+
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
