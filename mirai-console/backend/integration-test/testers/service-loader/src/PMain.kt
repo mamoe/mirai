@@ -31,7 +31,7 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
             Class.forName("net.mamoe.console.integrationtest.mod.servicetypedef.ServiceTypedef"),
             javaClass.classLoader,
         )
-        val services = loader.asSequence().map { it.javaClass.name}.toMutableList()
+        val services = loader.asSequence().map { it.javaClass.name }.toMutableList()
         services.forEach { service ->
             logger.info { "Service: $service" }
         }
@@ -48,5 +48,10 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
         // /module-service-loader-typedef-0.0.0.jar!/test-res.txt
         // /module-service-loader-impl-0.0.0.jar!/test-res.txt
         assertEquals(3, tstRes.size)
+
+        assertEquals(
+            mutableListOf(),
+            javaClass.classLoader.getResources("something/not/exists.bin").asSequence().toMutableList()
+        )
     }
 }

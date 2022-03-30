@@ -356,27 +356,35 @@ private operator fun <E> Enumeration<E>.plus(next: Enumeration<E>): Enumeration<
 private fun <E> compoundEnumerations(iter: Iterator<Enumeration<E>>): Enumeration<E> {
     return object : Enumeration<E> {
         private lateinit var crt: Enumeration<E>
-        override fun hasMoreElements(): Boolean {
-            return (::crt.isInitialized && crt.hasMoreElements()) || iter.hasNext()
+
+        private var hasMore: Boolean = false
+        private var fetched: Boolean = false
+
+        override tailrec fun hasMoreElements(): Boolean {
+            if (fetched) return hasMore
+            if (::crt.isInitialized) {
+                hasMore = crt.hasMoreElements()
+                if (hasMore) {
+                    fetched = true
+                    return true
+                }
+            }
+            if (!iter.hasNext()) {
+                fetched = true
+                hasMore = false
+                return false
+            }
+            crt = iter.next()
+            return hasMoreElements()
         }
 
         override fun nextElement(): E {
-            if (::crt.isInitialized) {
-                val c = crt
-                return if (c.hasMoreElements()) {
-                    c.nextElement()
-                } else if (iter.hasNext()) {
-                    crt = iter.next()
-                    nextElement()
-                } else {
-                    throw NoSuchElementException()
+            if (hasMoreElements()) {
+                return crt.nextElement().also {
+                    fetched = false
                 }
-            } else if (iter.hasNext()) {
-                crt = iter.next()
-                return nextElement()
-            } else {
-                throw NoSuchElementException()
             }
+            throw NoSuchElementException()
         }
     }
 }
