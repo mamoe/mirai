@@ -538,6 +538,7 @@ public class net/mamoe/mirai/contact/SendMessageFailedException : java/lang/Runt
 }
 
 public final class net/mamoe/mirai/contact/SendMessageFailedException$Reason : java/lang/Enum {
+	public static final field AT_ALL_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field BOT_MUTED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field GROUP_CHAT_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field MESSAGE_TOO_LARGE Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
