@@ -40,7 +40,8 @@ mirai { // this: MiraiConsoleExtension
 }
 ```
 
-DSL 详见 [MiraiConsoleExtension](src/MiraiConsoleExtension.kt)。
+DSL 详见 [MiraiConsoleExtension](src/main/kotlin/MiraiConsoleExtension.kt)
+。
 
 ### 修改 Java 编译目标
 
