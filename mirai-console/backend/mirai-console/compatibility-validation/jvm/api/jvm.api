@@ -66,6 +66,28 @@ public abstract class net/mamoe/mirai/console/command/AbstractCommandSender : ko
 	public abstract fun toString ()Ljava/lang/String;
 }
 
+public abstract class net/mamoe/mirai/console/command/AbstractPluginCustomCommandSender : net/mamoe/mirai/console/command/AbstractCommandSender, net/mamoe/mirai/console/command/PluginCustomCommandSender {
+	public fun <init> (Lnet/mamoe/mirai/console/plugin/Plugin;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+	public fun getName ()Ljava/lang/String;
+	public final fun getOwner ()Lnet/mamoe/mirai/console/plugin/Plugin;
+	public fun getPermitteeId ()Lnet/mamoe/mirai/console/permission/PermitteeId;
+	public fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
+	public fun getUser ()Lnet/mamoe/mirai/contact/User;
+	public fun isAnsiSupported ()Z
+	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected abstract fun sendMessage0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class net/mamoe/mirai/console/command/AbstractPluginCustomCommandSenderJ : net/mamoe/mirai/console/command/AbstractPluginCustomCommandSender {
+	public fun <init> (Lnet/mamoe/mirai/console/plugin/Plugin;)V
+	public final fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected final fun sendMessage0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected abstract fun sendMessageImpl (Ljava/lang/String;)V
+}
+
 public abstract class net/mamoe/mirai/console/command/AbstractUserCommandSender : net/mamoe/mirai/console/command/AbstractCommandSender, net/mamoe/mirai/console/command/UserCommandSender {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getName ()Ljava/lang/String;
@@ -376,7 +398,7 @@ public final class net/mamoe/mirai/console/command/ConsoleCommandOwner : net/mam
 	public fun permissionId (Ljava/lang/String;)Lnet/mamoe/mirai/console/permission/PermissionId;
 }
 
-public final class net/mamoe/mirai/console/command/ConsoleCommandSender : net/mamoe/mirai/console/command/AbstractCommandSender {
+public final class net/mamoe/mirai/console/command/ConsoleCommandSender : net/mamoe/mirai/console/command/AbstractCommandSender, net/mamoe/mirai/console/command/SystemCommandSender {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/command/ConsoleCommandSender;
 	public static final field NAME Ljava/lang/String;
 	public fun getBot ()Ljava/lang/Void;
@@ -389,6 +411,7 @@ public final class net/mamoe/mirai/console/command/ConsoleCommandSender : net/ma
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getUser ()Ljava/lang/Void;
 	public synthetic fun getUser ()Lnet/mamoe/mirai/contact/User;
+	public fun isAnsiSupported ()Z
 	public final fun sendMessage (Ljava/lang/String;)Ljava/lang/Void;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
@@ -528,6 +551,15 @@ public final class net/mamoe/mirai/console/command/OtherClientCommandSenderOnMes
 	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/OtherClientMessageEvent;
 }
 
+public abstract interface class net/mamoe/mirai/console/command/PluginCustomCommandSender : net/mamoe/mirai/console/command/CommandSender, net/mamoe/mirai/console/command/SystemCommandSender {
+	public abstract fun getOwner ()Lnet/mamoe/mirai/console/plugin/Plugin;
+	public fun getPermitteeId ()Lnet/mamoe/mirai/console/permission/PermitteeId;
+	public fun isAnsiSupported ()Z
+	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/console/command/PluginCustomCommandSender;Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public abstract class net/mamoe/mirai/console/command/RawCommand : net/mamoe/mirai/console/command/Command {
 	public fun <init> (Lnet/mamoe/mirai/console/command/CommandOwner;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/console/permission/Permission;Z)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/console/command/CommandOwner;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/console/permission/Permission;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -570,6 +602,10 @@ public class net/mamoe/mirai/console/command/StrangerCommandSender : net/mamoe/m
 public final class net/mamoe/mirai/console/command/StrangerCommandSenderOnMessage : net/mamoe/mirai/console/command/StrangerCommandSender, net/mamoe/mirai/console/command/CommandSenderOnMessage {
 	public synthetic fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageEvent;
 	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/StrangerMessageEvent;
+}
+
+public abstract interface class net/mamoe/mirai/console/command/SystemCommandSender : net/mamoe/mirai/console/command/CommandSender {
+	public abstract fun isAnsiSupported ()Z
 }
 
 public abstract class net/mamoe/mirai/console/command/TempCommandSender : net/mamoe/mirai/console/command/AbstractUserCommandSender, kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/console/command/GroupAwareCommandSender {
