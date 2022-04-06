@@ -20,6 +20,7 @@ import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.Executors
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @JvmBlockingBridge
@@ -107,6 +108,25 @@ internal class NextEventTest : AbstractEventTest() {
         withContext(dispatcher) {
             assertThrows<TimeoutCancellationException> {
                 withTimeout(timeMillis = 1) { channel.nextEvent<TE>(EventPriority.MONITOR) }
+            }
+        }
+    }
+
+    @Test
+    suspend fun `nextEvent can cancel`() {
+        val channel = GlobalEventChannel
+
+        withContext(dispatcher) {
+            coroutineScope {
+                val job = launch {
+                    val result = kotlin.runCatching { channel.nextEvent<TE>(EventPriority.MONITOR) }
+                    assertTrue { result.isFailure }
+                    assertIs<CancellationException>(result.exceptionOrNull())
+                    throw result.exceptionOrNull()!!
+                }
+                assertTrue { job.isActive }
+                job.cancelAndJoin()
+                assertTrue { job.isCancelled }
             }
         }
     }
