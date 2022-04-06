@@ -15,7 +15,10 @@ import kotlinx.coroutines.sync.Mutex
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.TestOnly
 
 /**
  * 表示一个事件.
@@ -143,7 +146,11 @@ public interface CancellableEvent : Event {
  * 当事件被实现为 Kotlin `object` 时, 同一时刻只能有一个 [广播][broadcast] 存在.
  * 较晚执行的 [广播][broadcast] 将会挂起协程并等待之前的广播任务结束.
  *
- * @see __broadcastJava Java 使用
+ * ## 异常处理
+ *
+ * 作为广播方, 本函数不会抛出监听方产生的异常.
+ *
+ * [EventChannel.filter] 和 [Listener.onEvent] 时产生的异常只会由监听方处理.
  */
 @JvmBlockingBridge
 public suspend fun <E : Event> E.broadcast(): E {
