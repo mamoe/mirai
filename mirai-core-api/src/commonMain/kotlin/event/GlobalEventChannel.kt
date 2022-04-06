@@ -32,8 +32,8 @@ public object GlobalEventChannel : EventChannel<Event>(Event::class, EmptyCorout
     }
 
     override fun asFlow(): Flow<Event> = instance.asFlow()
-    override fun <E : Event> subscribeImpl(eventClass: KClass<out E>, listener: Listener<E>) {
-        return instance.subscribeImpl0(eventClass, listener)
+    override fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>) {
+        return instance.registerListener0(eventClass, listener)
     }
 
     override fun <E : Event> createListener(

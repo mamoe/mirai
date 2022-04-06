@@ -9,11 +9,10 @@
 
 package net.mamoe.mirai.internal.event
 
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendEvent
@@ -23,21 +22,20 @@ import net.mamoe.mirai.event.events.MessageEvent
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class EventChannelTest : AbstractEventTest() {
     suspend fun suspendCall() {
-
+        coroutineContext
     }
 
     data class TE(
-        val x: Int
+        val x: Int,
+        val y: Int = 1,
     ) : AbstractEvent()
 
     val semaphore = Semaphore(1)
@@ -53,7 +51,7 @@ internal class EventChannelTest : AbstractEventTest() {
     }
 
     @Test
-    fun testFilter() {
+    fun singleFilter() {
         runBlocking {
             val received = suspendCoroutine<Int> { cont ->
                 GlobalEventChannel
@@ -77,6 +75,131 @@ internal class EventChannelTest : AbstractEventTest() {
                     println("Broadcast 2")
                     TE(2).broadcast()
                     println("Broadcast done")
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+    @Test
+    fun multipleFilters() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .filterIsInstance<TE>()
+                    .filter {
+                        true
+                    }
+                    .filter {
+                        it.x == 2
+                    }
+                    .filter {
+                        it.y == 2
+                    }
+                    .filter {
+                        true
+                    }
+                    .subscribeOnce<TE> {
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    println("Broadcast 1")
+                    TE(1, 1).broadcast()
+                    println("Broadcast 2")
+                    TE(2, 1).broadcast()
+                    println("Broadcast 2")
+                    TE(2, 3).broadcast()
+                    println("Broadcast 2")
+                    TE(2, 2).broadcast()
+                    println("Broadcast done")
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+    @Test
+    fun multipleContexts1() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .parentScope(CoroutineScope(CoroutineName("1")))
+                    .context(CoroutineName("2"))
+                    .context(CoroutineName("3"))
+                    .subscribeOnce<TE>(CoroutineName("4")) {
+                        assertEquals("4", currentCoroutineContext()[CoroutineName]!!.name)
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    TE(2, 2).broadcast()
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+    @Test
+    fun multipleContexts2() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .parentScope(CoroutineScope(CoroutineName("1")))
+                    .context(CoroutineName("2"))
+                    .context(CoroutineName("3"))
+                    .subscribeOnce<TE> {
+                        assertEquals("3", currentCoroutineContext()[CoroutineName]!!.name)
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    TE(2, 2).broadcast()
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+
+    @Test
+    fun multipleContexts3() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .parentScope(CoroutineScope(CoroutineName("1")))
+                    .context(CoroutineName("2"))
+                    .subscribeOnce<TE> {
+                        assertEquals("2", currentCoroutineContext()[CoroutineName]!!.name)
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    TE(2, 2).broadcast()
+                }
+            }
+
+            assertEquals(2, received)
+        }
+    }
+
+    @Test
+    fun multipleContexts4() {
+        runBlocking {
+            val received = suspendCoroutine<Int> { cont ->
+                GlobalEventChannel
+                    .parentScope(CoroutineScope(CoroutineName("1")))
+                    .subscribeOnce<TE> {
+                        assertEquals("1", currentCoroutineContext()[CoroutineName]!!.name)
+                        cont.resume(it.x)
+                    }
+
+                launch {
+                    TE(2, 2).broadcast()
                 }
             }
 
@@ -193,11 +316,14 @@ internal class EventChannelTest : AbstractEventTest() {
         runBlocking {
             assertFailsWith<IllegalStateException> {
                 suspendCoroutine<Int> { cont ->
+                    val handler = CoroutineExceptionHandler { _, throwable ->
+                        cont.resumeWithException(throwable)
+                    }
+
                     GlobalEventChannel
-                        .exceptionHandler {
-                            cont.resumeWithException(it)
-                        }
+                        .context(handler)
                         .subscribeOnce<TE> {
+                            assertSame(handler, currentCoroutineContext()[CoroutineExceptionHandler])
                             error("test error")
                         }
 
@@ -217,7 +343,7 @@ internal class EventChannelTest : AbstractEventTest() {
     @Test
     fun testVariance() {
         var global: EventChannel<Event> = GlobalEventChannel
-        var a: EventChannel<MessageEvent> = global.filterIsInstance<MessageEvent>()
+        val a: EventChannel<MessageEvent> = global.filterIsInstance()
 
         val filterLambda: (ev: MessageEvent) -> Boolean = { true }
 
