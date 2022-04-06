@@ -29,9 +29,11 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.safeCast
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
+import java.util.Objects
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 
@@ -130,6 +132,21 @@ internal abstract class JvmPluginInternal(
             }
         )
     }
+
+    // region JvmPlugin - Single Module Dependencies
+    @Suppress("FunctionName")
+    @JvmSynthetic
+    internal fun __jpi_try_to_init_dependencies() {
+        val classloader = javaClass.classLoader.safeCast<JvmPluginClassLoaderN>() ?: return
+        val desc = try {
+            Objects.requireNonNull(description)
+        } catch (ignored: NullPointerException) { return }
+        if (desc.dependencies.isEmpty()) {
+            classloader.linkPluginLibraries(logger)
+        }
+
+    }
+    // endregion
 
     // endregion
 

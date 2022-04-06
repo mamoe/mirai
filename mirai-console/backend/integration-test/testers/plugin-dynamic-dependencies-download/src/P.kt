@@ -24,6 +24,11 @@ internal object P : KotlinPlugin(
         name = "Plugin Dynamic Dependencies Download",
     )
 ) {
+    init {
+        Class.forName("com.google.gson.Gson") // shared
+        Class.forName("com.zaxxer.sparsebits.SparseBitSet") // private
+    }
+
     override fun PluginComponentStorage.onLoad() {
         Class.forName("com.google.gson.Gson") // shared
         Class.forName("com.zaxxer.sparsebits.SparseBitSet") // private

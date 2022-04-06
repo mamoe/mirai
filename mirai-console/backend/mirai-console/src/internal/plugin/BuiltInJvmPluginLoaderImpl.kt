@@ -223,24 +223,7 @@ internal class BuiltInJvmPluginLoaderImpl(
                     plugin.logger.debug { "Linked  dependency: $dependency" }
                     jvmPluginClassLoaderN.dependencies.add(dependency)
                 }
-                // Link jar dependencies
-                fun InputStream?.readDependencies(): Collection<String> {
-                    if (this == null) return emptyList()
-                    return bufferedReader().useLines { lines ->
-                        lines.filterNot { it.isBlank() }
-                            .filterNot { it.startsWith('#') }
-                            .map { it.trim() }
-                            .toMutableList()
-                    }
-                }
-                jvmPluginClassLoaderN.linkPluginSharedLibraries(
-                    plugin.logger,
-                    jvmPluginClassLoaderN.getResourceAsStream("META-INF/mirai-console-plugin/dependencies-shared.txt").readDependencies()
-                )
-                jvmPluginClassLoaderN.linkPluginPrivateLibraries(
-                    plugin.logger,
-                    jvmPluginClassLoaderN.getResourceAsStream("META-INF/mirai-console-plugin/dependencies-private.txt").readDependencies()
-                )
+                jvmPluginClassLoaderN.linkPluginLibraries(plugin.logger)
             }
             // endregion
             plugin.internalOnLoad()

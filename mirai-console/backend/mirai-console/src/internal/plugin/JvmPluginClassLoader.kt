@@ -16,9 +16,11 @@ import net.mamoe.mirai.utils.*
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.graph.DependencyFilter
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipFile
 
 /*
@@ -174,6 +176,31 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
     internal fun linkPluginPrivateLibraries(logger: MiraiLogger, dependencies: Collection<String>) {
         linkLibraries(logger, dependencies, false)
+    }
+
+    private val isPluginLibrariesLinked = AtomicBoolean(false)
+
+    fun linkPluginLibraries(logger: MiraiLogger) {
+        if (!isPluginLibrariesLinked.compareAndSet(false, true)) return
+
+        // Link jar dependencies
+        fun InputStream?.readDependencies(): Collection<String> {
+            if (this == null) return emptyList()
+            return bufferedReader().useLines { lines ->
+                lines.filterNot { it.isBlank() }
+                    .filterNot { it.startsWith('#') }
+                    .map { it.trim() }
+                    .toMutableList()
+            }
+        }
+        linkPluginSharedLibraries(
+            logger,
+            getResourceAsStream("META-INF/mirai-console-plugin/dependencies-shared.txt").readDependencies()
+        )
+        linkPluginPrivateLibraries(
+            logger,
+            getResourceAsStream("META-INF/mirai-console-plugin/dependencies-private.txt").readDependencies()
+        )
     }
 
     private fun linkLibraries(logger: MiraiLogger, dependencies: Collection<String>, shared: Boolean) {
@@ -344,6 +371,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     override fun toString(): String {
         return "JvmPluginClassLoader{${file.name}}"
     }
+
 }
 
 private fun String.pkgName(): String = substringBeforeLast('.', "")
