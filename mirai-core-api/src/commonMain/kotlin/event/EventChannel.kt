@@ -27,6 +27,7 @@ import net.mamoe.mirai.event.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.internal.event.registerEventHandler
 import net.mamoe.mirai.utils.*
+import org.jetbrains.annotations.Contract
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -214,22 +215,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      */
     @JvmSynthetic
     public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return object : DelegateEventChannel<BaseEvent>(this) {
-            override fun <E : Event> intercept(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus {
-                val thisIntercepted: suspend (E) -> ListeningStatus = { ev ->
-                    val filterResult = try {
-                        @Suppress("UNCHECKED_CAST")
-                        baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
-                    } catch (e: Throwable) {
-                        if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
-                        throw ExceptionInEventChannelFilterException(ev, this, cause = e)
-                    }
-                    if (filterResult) block.invoke(ev)
-                    else ListeningStatus.LISTENING
-                }
-                return delegate.intercept(thisIntercepted)
-            }
-        }
+        return FilterEventChannel<BaseEvent>(this, filter)
     }
 
     /**
@@ -684,30 +670,26 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
 
     // region impl
 
-    /**
-     * 由子类实现，可以为 handler 包装一个过滤器等. 每个 handler 都会经过此函数处理.
-     */
-    @MiraiExperimentalApi
-    protected open fun <E : Event> intercept(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus {
-        return block
-    }
+
+    // protected, to hide from users
+    @MiraiInternalApi
+    protected abstract fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>)
 
     // to overcome visibility issue
-    internal fun <E : Event> intercept0(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus =
-        intercept(block)
-
-    protected abstract fun <E : Event> subscribeImpl(eventClass: KClass<out E>, listener: Listener<E>)
-
-    // to overcome visibility issue
-    internal fun <E : Event> subscribeImpl0(eventClass: KClass<out E>, listener: Listener<E>) {
-        return subscribeImpl(eventClass, listener)
+    internal fun <E : Event> registerListener0(eventClass: KClass<out E>, listener: Listener<E>) {
+        return registerListener(eventClass, listener)
     }
 
     private fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
-        subscribeImpl(eventClass, listener)
+        registerListener(eventClass, listener)
         return listener
     }
 
+    /**
+     * Creates [Listener] instance using the [listenerBlock] action.
+     */
+    @Contract("_ -> new") // always creates new instance
+    @MiraiInternalApi
     protected abstract fun <E : Event> createListener(
         coroutineContext: CoroutineContext,
         concurrencyKind: ConcurrencyKind,
@@ -727,19 +709,29 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
 }
 
 
-private open class DelegateEventChannel<BaseEvent : Event>(
-    protected val delegate: EventChannel<BaseEvent>,
+// used by mirai-core
+internal open class FilterEventChannel<BaseEvent : Event>(
+    private val delegate: EventChannel<BaseEvent>,
+    private val filter: suspend (event: BaseEvent) -> Boolean,
 ) : EventChannel<BaseEvent>(delegate.baseEventClass, delegate.defaultCoroutineContext) {
-    private inline val innerThis get() = this
-
-    override fun <E : Event> intercept(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus {
-        return delegate.intercept0(block)
+    private fun <E : Event> intercept(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus {
+        return { ev ->
+            val filterResult = try {
+                @Suppress("UNCHECKED_CAST")
+                baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
+            } catch (e: Throwable) {
+                if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
+                throw ExceptionInEventChannelFilterException(ev, this, cause = e)
+            }
+            if (filterResult) block.invoke(ev)
+            else ListeningStatus.LISTENING
+        }
     }
 
-    override fun asFlow(): Flow<BaseEvent> = delegate.asFlow()
+    override fun asFlow(): Flow<BaseEvent> = delegate.asFlow().filter(filter)
 
-    override fun <E : Event> subscribeImpl(eventClass: KClass<out E>, listener: Listener<E>) {
-        delegate.subscribeImpl0(eventClass, listener)
+    override fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>) {
+        delegate.registerListener0(eventClass, listener)
     }
 
     override fun <E : Event> createListener(
@@ -747,7 +739,7 @@ private open class DelegateEventChannel<BaseEvent : Event>(
         concurrencyKind: ConcurrencyKind,
         priority: EventPriority,
         listenerBlock: suspend (E) -> ListeningStatus
-    ): Listener<E> = delegate.createListener0(coroutineContext, concurrencyKind, priority, listenerBlock)
+    ): Listener<E> = delegate.createListener0(coroutineContext, concurrencyKind, priority, intercept(listenerBlock))
 
     override fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> {
         return delegate.context(*coroutineContexts)

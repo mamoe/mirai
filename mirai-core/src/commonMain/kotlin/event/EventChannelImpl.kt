@@ -27,7 +27,14 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
-internal open class EventChannelImpl<E : Event>(
+// You probably should only use EventChannelToEventDispatcherAdapter.instance, or just use EventDispatchers. Event.broadcast is also good to use internally!
+@RequiresOptIn(
+    "Every EventChannelImpl has dedicated EventListeners registries. Use the constructor only when you know what you are doing.",
+    level = RequiresOptIn.Level.ERROR
+)
+internal annotation class DangerousEventChannelImplConstructor
+
+internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstructor constructor(
     baseEventClass: KClass<out E>, defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : EventChannel<E>(baseEventClass, defaultCoroutineContext) {
     val eventListeners = EventListeners()
@@ -50,7 +57,7 @@ internal open class EventChannelImpl<E : Event>(
         return flow.asSharedFlow().filter { baseEventClass.isInstance(it) } as Flow<E>
     }
 
-    override fun <E : Event> subscribeImpl(eventClass: KClass<out E>, listener: Listener<E>) {
+    override fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>) {
         eventListeners.addListener(eventClass, listener)
     }
 
@@ -64,7 +71,7 @@ internal open class EventChannelImpl<E : Event>(
         return SafeListener(
             parentJob = context[Job],
             subscriberContext = context,
-            listenerBlock = intercept(listenerBlock),
+            listenerBlock = listenerBlock,
             concurrencyKind = concurrencyKind,
             priority = priority
         )
@@ -114,11 +121,54 @@ internal open class EventChannelImpl<E : Event>(
     }
 
     override fun context(vararg coroutineContexts: CoroutineContext): EventChannel<E> {
-        return EventChannelImpl(
-            baseEventClass,
-            coroutineContexts.fold(defaultCoroutineContext) { acc, coroutineContext ->
-                acc + coroutineContext
-            })
+        val newDefaultContext = coroutineContexts.fold(defaultCoroutineContext) { acc, coroutineContext ->
+            acc + coroutineContext
+        }
+
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        return object : DelegateEventChannel<E>(this) {
+            override fun <E : Event> createListener(
+                coroutineContext: CoroutineContext,
+                concurrencyKind: ConcurrencyKind,
+                priority: EventPriority,
+                listenerBlock: suspend (E) -> ListeningStatus
+            ): Listener<E> {
+                return super.createListener(
+                    newDefaultContext + coroutineContext,
+                    concurrencyKind,
+                    priority,
+                    listenerBlock
+                )
+            }
+
+            override fun context(vararg coroutineContexts: CoroutineContext): EventChannel<E> {
+                return delegate.context(newDefaultContext, *coroutineContexts)
+            }
+        }
+    }
+}
+
+
+internal abstract class DelegateEventChannel<BaseEvent : Event>(
+    protected val delegate: EventChannel<BaseEvent>,
+) : EventChannel<BaseEvent>(delegate.baseEventClass, delegate.defaultCoroutineContext) {
+    override fun asFlow(): Flow<BaseEvent> = delegate.asFlow()
+
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    override fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>) {
+        delegate.registerListener0(eventClass, listener)
+    }
+
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    override fun <E : Event> createListener(
+        coroutineContext: CoroutineContext,
+        concurrencyKind: ConcurrencyKind,
+        priority: EventPriority,
+        listenerBlock: suspend (E) -> ListeningStatus
+    ): Listener<E> = delegate.createListener0(coroutineContext, concurrencyKind, priority, listenerBlock)
+
+    override fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> {
+        return delegate.context(*coroutineContexts)
     }
 }
 

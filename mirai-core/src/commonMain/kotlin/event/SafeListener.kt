@@ -42,22 +42,25 @@ internal class SafeListener<in E : Event> internal constructor(
             // Inherit context.
             withContext(subscriberContext) { listenerBlock.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
         } catch (e: Throwable) {
-            subscriberContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
-                ?: currentCoroutineContext()[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
-                ?: kotlin.run {
-                    val logger = if (event is BotEvent) event.bot.logger else logger
-                    val subscriberName = subscriberContext[CoroutineName]?.name ?: "<unnamed>"
-                    val broadcasterName = currentCoroutineContext()[CoroutineName]?.name ?: "<unnamed>"
-                    val message =
-                        "An exception occurred when processing event. " +
-                                "Subscriber scope: '$subscriberName'. " +
-                                "Broadcaster scope: '$broadcasterName'"
-                    logger.warning(message, e)
-                }
-            // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
-            // ListeningStatus.STOPPED
+            // 若监听方使用了 EventChannel.exceptionHandler, 那么它就能处理异常, 否则将只记录异常.
+            val subscriberExceptionHandler = subscriberContext[CoroutineExceptionHandler]
+            if (subscriberExceptionHandler == null) {
+                val logger = if (event is BotEvent) event.bot.logger else logger
+                val subscriberName =
+                    subscriberContext[CoroutineName]?.name
+                        ?: "<unnamed>" // Bot 协程域有 CoroutineName, mirai-console 也会给插件域加入.
+                val broadcasterName = currentCoroutineContext()[CoroutineName]?.name ?: "<unnamed>"
+                val message =
+                    "An exception occurred when processing event. " +
+                            "Subscriber scope: '$subscriberName'. " +
+                            "Broadcaster scope: '$broadcasterName'"
+                logger.warning(message, e)
 
-            // not stopping listening.
+            } else {
+                subscriberExceptionHandler.handleException(subscriberContext, e)
+            }
+
+
             ListeningStatus.LISTENING
         }
     }
