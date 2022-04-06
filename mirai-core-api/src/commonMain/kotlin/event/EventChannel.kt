@@ -174,6 +174,8 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      *
      * 通过 [asFlow] 接收事件相当于通过 [subscribeAlways] 以 [EventPriority.MONITOR] 监听事件.
      *
+     * **注意**: [context], [parentJob] 等控制 [EventChannel.defaultCoroutineContext] 的操作对 [asFlow] 无效. 因为 [asFlow] 并不创建协程.
+     *
      * @see Flow
      * @since 2.11
      */
@@ -215,7 +217,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      */
     @JvmSynthetic
     public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return FilterEventChannel<BaseEvent>(this, filter)
+        return FilterEventChannel(this, filter)
     }
 
     /**
@@ -386,13 +388,18 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      * 请通过 `withContext(Dispatchers.IO) { }` 等方法执行阻塞工作.
      *
      * ## 异常处理
-     * - 当参数 [handler] 处理抛出异常时, 将会按如下顺序寻找 [CoroutineExceptionHandler] 处理异常:
-     *   1. 参数 [coroutineContext]
-     *   2. [EventChannel.defaultCoroutineContext]
-     *   3. [Event.broadcast] 调用者的 [coroutineContext]
-     *   4. 若事件为 [BotEvent], 则从 [BotEvent.bot] 获取到 [Bot], 进而在 [Bot.coroutineContext] 中寻找
-     *   5. 若以上四个步骤均无法获取 [CoroutineExceptionHandler], 则使用 [MiraiLogger.Companion] 通过日志记录. 但这种情况理论上不应发生.
      *
+     * **监听过程抛出的异常是需要尽可能避免的, 因为这将产生不确定性.**
+     *
+     * 当参数 [handler] 处理事件抛出异常时, 只会从监听方协程上下文 ([CoroutineContext]) 寻找 [CoroutineExceptionHandler] 处理异常, 即如下顺序:
+     *   1. 本函数参数 [coroutineContext]
+     *   2. [EventChannel.defaultCoroutineContext]
+     *   3. 若以上步骤无法获取 [CoroutineExceptionHandler], 则只会在日志记录异常.
+     *   因此建议先指定 [CoroutineExceptionHandler] (可通过 [EventChannel.exceptionHandler]) 再监听事件, 或者在监听事件中捕获异常.
+     *
+     * 因此, 广播方 ([Event.broadcast]) 不会知晓监听方产生的异常, 其 [Event.broadcast] 过程也不会因监听方产生异常而提前结束.
+     *
+     * ***备注***: 在 2.11 以前, 发生上述异常时还会从广播方和有关 [Bot] 协程域获取 [CoroutineExceptionHandler]. 因此行为不稳定而在 2.11 变更为上述过程.
      *
      * 事件处理时抛出异常不会停止监听器.
      *
@@ -403,7 +410,14 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      * 基于 [concurrency] 参数, 事件监听器可以被允许并行执行.
      *
      * - 若 [concurrency] 为 [ConcurrencyKind.CONCURRENT], [handler] 可能被并行调用, 需要保证并发安全.
-     * - 若 [concurrency] 为 [ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制.
+     * - 若 [concurrency] 为 [ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制, 串行异步执行.
+     *
+     * ## 衍生监听方法
+     *
+     * 这些方法仅 Kotlin 可用.
+     *
+     * - [syncFromEvent]: 挂起当前协程, 监听一个事件, 并尝试从这个事件中**获取**一个值
+     * - [nextEvent]: 挂起当前协程, 直到监听到特定类型事件的广播并通过过滤器, 返回这个事件实例.
      *
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext].
      * @param concurrency 并发类型. 查看 [ConcurrencyKind]
@@ -412,10 +426,6 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      *
      * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
      *
-     * @see syncFromEvent 挂起当前协程, 监听一个事件, 并尝试从这个事件中**同步**一个值
-     * @see asyncFromEvent 异步监听一个事件, 并尝试从这个事件中获取一个值.
-     *
-     * @see nextEvent 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
      *
      * @see selectMessages 以 `when` 的语法 '选择' 即将到来的一条消息.
      * @see whileSelectMessages 以 `when` 的语法 '选择' 即将到来的所有消息, 直到不满足筛选结果.

@@ -17,6 +17,7 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.event.EventPriority.*
 import net.mamoe.mirai.utils.NotStableForInheritance
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 订阅者的状态
@@ -67,7 +68,7 @@ public interface Listener<in E : Event> : CompletableJob {
     /**
      * 这个方法将会调用 [EventChannel.subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
      *
-     * 这个函数不会抛出任何异常, 详见 [EventChannel.subscribe]
+     * 这个函数会传递捕获的异常到本 [Listener] 创建时提供的监听方 [CoroutineContext] (通常). 详细行为可见 [EventChannel.subscribe].
      */
     public suspend fun onEvent(event: E): ListeningStatus
 }
