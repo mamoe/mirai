@@ -275,6 +275,9 @@ internal open class NettyNetworkHandler(
                 if (error == null) {
                     this@NettyNetworkHandler.launch { resumeConnection() }
                 } else {
+                    // failed in SSO stage
+                    context[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
+
                     if (error is StateSwitchingException && error.new is StateConnecting) {
                         return@invokeOnCompletion // state already switched, so do not do it again.
                     }

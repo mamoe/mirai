@@ -16,11 +16,11 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.eventDispatcher
 import net.mamoe.mirai.internal.network.framework.setSsoProcessor
-import net.mamoe.mirai.internal.network.framework.ssoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.assertEventNotBroadcast
@@ -50,7 +50,7 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     fun `BotOnlineEvent after successful reconnection`() = runBlockingUnit {
         assertEquals(INITIALIZED, network.state)
         bot.login()
-        bot.components[SsoProcessor].firstLoginSucceed = true
+        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
         assertEquals(OK, network.state)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<BotOnlineEvent>(1) {
@@ -65,7 +65,7 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     fun `BotOfflineEvent after successful reconnection`() = runBlockingUnit {
         assertEquals(INITIALIZED, network.state)
         bot.login()
-        bot.components[SsoProcessor].firstLoginSucceed = true
+        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
         assertEquals(OK, network.state)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<BotOfflineEvent>(1) {
@@ -174,7 +174,7 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
             assertState(INITIALIZED)
             bot.login()
             assertState(OK)
-            network.ssoProcessor.firstLoginSucceed = true
+            bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
             network.setStateConnecting()
             network.resumeConnection()
             assertState(OK)

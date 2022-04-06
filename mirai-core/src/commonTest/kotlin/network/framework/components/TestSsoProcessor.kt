@@ -1,20 +1,19 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework.components
 
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
-import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.components.SsoSession
-import net.mamoe.mirai.internal.network.components.createDeviceInfo
+import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
@@ -28,10 +27,9 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
         QQAndroidClient(bot.account, device = deviceInfo, accountSecrets = AccountSecretsImpl(deviceInfo, bot.account))
     }
     override val ssoSession: SsoSession get() = bot.client
-    override var firstLoginSucceed: Boolean = false
+    override val firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
     override var registerResp: StatSvc.Register.Response? = null
     override suspend fun login(handler: NetworkHandler) {
-        firstLoginSucceed = true
         bot.network.logger.debug { "SsoProcessor.login" }
     }
 

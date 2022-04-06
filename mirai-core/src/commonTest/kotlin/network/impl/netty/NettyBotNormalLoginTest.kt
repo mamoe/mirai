@@ -1,15 +1,14 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.impl.netty
 
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
@@ -62,19 +61,36 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
         assertFalse(bot.isActive)
     }
 
+    // #1963
     @Test
-    fun `test network broken`() = runBlockingUnit {
-        var retryCounter = 0
-        setSsoProcessor {
-            eventDispatcher.joinBroadcast()
-            if (retryCounter++ >= 15) {
-                return@setSsoProcessor
-            }
-            channel.pipeline().fireExceptionCaught(IOException("TestNetworkBroken"))
-            awaitCancellation() // receive exception from "network"
-        }
-        bot.login()
+    fun `test first login failure with internally handled exceptions`() = runBlockingUnit {
+        setSsoProcessor { throw IOException("test Connection reset by peer") }
+        assertFailsWith<IOException>("test Connection reset by peer") { bot.login() }
+        assertState(NetworkHandler.State.CLOSED)
     }
+
+    // #1963
+    @Test
+    fun `test first login failure with internally handled exceptions2`() = runBlockingUnit {
+        setSsoProcessor { throw NettyChannelException("test Connection reset by peer") }
+        assertFailsWith<NettyChannelException>("test Connection reset by peer") { bot.login() }
+        assertState(NetworkHandler.State.CLOSED)
+    }
+
+    // 经过 #1963 考虑后在初次登录遇到任何错误都终止并传递异常
+//    @Test
+//    fun `test network broken`() = runBlockingUnit {
+//        var retryCounter = 0
+//        setSsoProcessor {
+//            eventDispatcher.joinBroadcast()
+//            if (retryCounter++ >= 15) {
+//                return@setSsoProcessor
+//            }
+//            channel.pipeline().fireExceptionCaught(IOException("TestNetworkBroken"))
+//            awaitCancellation() // receive exception from "network"
+//        }
+//        bot.login()
+//    }
 
     @Test
     fun `test resume after MsfOffline received`() = runBlockingUnit {
