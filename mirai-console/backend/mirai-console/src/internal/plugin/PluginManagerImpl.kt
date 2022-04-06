@@ -219,7 +219,7 @@ internal class PluginManagerImpl(
                 if (this in list) {
                     list.add(this)
                     throw PluginInfiniteCircularDependencyReferenceException(
-                        "Death lock referencing: " + list.joinToString(" -> ") { it.id }
+                        "Found circular plugin dependency: " + list.joinToString(" -> ") { it.id }
                     )
                 }
                 list.add(this)
@@ -251,7 +251,13 @@ internal class PluginManagerImpl(
                     } else !dependency.isOptional
                 }
                 if (missed.isNotEmpty()) {
-                    errorMsgs.add("Cannot load plugin ${pluginDesc.name}, missing dependencies: ${missed.joinToString(", ")}")
+                    errorMsgs.add(
+                        "Cannot load plugin '${pluginDesc.name}', missing dependencies: ${
+                            missed.joinToString(
+                                ", "
+                            ) { "'$it'" }
+                        }"
+                    )
                 }
             }
             if (errorMsgs.isNotEmpty()) {

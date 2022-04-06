@@ -76,7 +76,7 @@ internal class PluginLoadingOrderTest : AbstractConsoleInstanceTest() {
                     },
                 )
             )
-        }.let { assertEquals("Death lock referencing: a.a.a -> b.b.b -> a.a.a", it.message) }
+        }.let { assertEquals("Found circular plugin dependency: a.a.a -> b.b.b -> a.a.a", it.message) }
     }
 
     @Test
@@ -87,7 +87,7 @@ internal class PluginLoadingOrderTest : AbstractConsoleInstanceTest() {
                     JvmPluginDescription("a.a.a", "1.0.0") { dependsOn("b.b.b") }
                 )
             )
-        }.let { assertEquals("Cannot load plugin a.a.a, missing dependencies: b.b.b", it.message) }
+        }.let { assertEquals("Cannot load plugin 'a.a.a', missing dependencies: 'b.b.b'", it.message) }
     }
 
     @Test
