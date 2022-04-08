@@ -6,8 +6,14 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+import com.google.gson.JsonObject
 import keys.SecretKeys
 import java.io.ByteArrayOutputStream
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpRequest.BodyPublishers
+import java.net.http.HttpResponse
 
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
@@ -33,6 +39,45 @@ tasks.register("updateSnapshotVersion") {
             text = text.replace(template(project.version), template(snapshotVersion))
             writeText(text)
         }
+    }
+}
+
+tasks.register("publishSnapshotPage") {
+    doLast {
+        val token = System.getenv("GH_TOKEN") ?: error("GH_TOKEN not found")
+
+        val sha = getSha().trim()
+        val ver = (project.version as Any?).toString()
+        val http = HttpClient.newHttpClient()
+        val document = rootProject.projectDir.resolve("docs/UsingSnapshots.md").let { file ->
+            kotlin.runCatching { file.readText() }.getOrElse { "" }
+        }
+        val content = JsonObject().also { data ->
+            data.addProperty("name", "Snapshot Build Output")
+            data.addProperty("head_sha", sha)
+            data.addProperty("conclusion", "success")
+            data.add("output", JsonObject().also { output ->
+                output.addProperty("title", "Snapshot build ($ver)")
+                output.addProperty("summary", "snapshot version: `$ver`\n\n------\n\n\n$document")
+            })
+        }.toString()
+        http.send(
+            HttpRequest.newBuilder(URI.create("https://api.github.com/repos/mamoe/mirai/check-runs"))
+                .POST(BodyPublishers.ofString(content))
+                .header("Authorization", "token $token")
+                .header("Accept", "application/vnd.github.v3+json")
+                .build(),
+            HttpResponse.BodyHandlers.ofByteArrayConsumer { rsp ->
+                if (rsp.isPresent) {
+                    System.out.write(rsp.get())
+                } else {
+                    println()
+                    println()
+                }
+            }
+        )
+
+        (http.executor() as? java.util.concurrent.ExecutorService)?.shutdown()
     }
 }
 
