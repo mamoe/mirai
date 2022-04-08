@@ -78,7 +78,6 @@ internal class BotInitProcessorImpl(
 
     override fun setLoginHalted() {
         state.compareAndSet(expect = INITIALIZING, update = UNINITIALIZED)
-        bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
     }
 
     override suspend fun init() {
