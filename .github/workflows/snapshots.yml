@@ -43,6 +43,7 @@ jobs:
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
+          -Dmirai.network.handle.selector.logging=true
 
       - run: >
           ./gradlew publish --info --scan

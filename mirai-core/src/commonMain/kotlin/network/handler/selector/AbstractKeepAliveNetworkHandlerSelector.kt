@@ -100,7 +100,9 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                 if (current.context[SsoProcessor].firstLoginResult.value?.canRecoverOnFirstLogin == false) {
                     // == null 只表示
                     // == false 表示第一次登录失败, 且此失败没必要重试
-                    throw current.getLastFailure() ?: error("Failed to login with unknown reason.")
+                    logIfEnabled { "[FIRST LOGIN ERROR] current = $current" }
+                    logIfEnabled { "[FIRST LOGIN ERROR] current.state = ${current.state}" }
+                    throw current.getLastFailure() ?: exceptionCollector.getLast() ?: error("Failed to login with unknown reason.")
                 }
             }
 
