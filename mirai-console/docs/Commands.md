@@ -256,7 +256,7 @@ public class MyCompositeCommand extends CompositeCommand {
     }
 
     @SubCommand
-    public void foo(CommandSender sender) {
+    public void foo(ConsoleCommandSender sender) {
         // 使用 ConsoleCommandSender 作为接收者，表示指令只能由控制台执行。
         // 当用户尝试在聊天环境执行时将会收到错误提示。
     }
