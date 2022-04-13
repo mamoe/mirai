@@ -12,8 +12,11 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.nextEventOrNull
+import net.mamoe.mirai.event.EventPriority
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.*
@@ -393,8 +396,10 @@ internal class FriendSendMessageHandler(
         fromAppId: Int
     ): OnlineMessageSource.Outgoing {
 
-        val receipt: SendPrivateMessageReceipt = nextEventOrNull(3000) {
-            it.bot === bot && it.fromAppId == fromAppId
+        val receipt: SendPrivateMessageReceipt = withTimeoutOrNull(3000) {
+            GlobalEventChannel.parentScope(this).nextEvent(EventPriority.MONITOR) {
+                it.bot === bot && it.fromAppId == fromAppId
+            }
         } ?: SendPrivateMessageReceipt.EMPTY
 
         return OnlineMessageSourceToFriendImpl(
@@ -448,8 +453,10 @@ internal open class GroupSendMessageHandler(
         fromAppId: Int,
     ): OnlineMessageSource.Outgoing {
 
-        val receipt: SendGroupMessageReceipt = nextEventOrNull(3000) {
-            it.bot === bot && it.fromAppId == fromAppId
+        val receipt: SendGroupMessageReceipt = withTimeoutOrNull(3000) {
+            GlobalEventChannel.parentScope(this).nextEvent(EventPriority.MONITOR) {
+                it.bot === bot && it.fromAppId == fromAppId
+            }
         } ?: SendGroupMessageReceipt.EMPTY
 
         return OnlineMessageSourceToGroupImpl(

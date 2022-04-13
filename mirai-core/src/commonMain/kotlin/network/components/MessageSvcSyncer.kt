@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.mirai.event.globalEventChannel
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -59,7 +60,7 @@ internal class MessageSvcSyncerImpl(
         logger.info { "Syncing friend message history..." }
         withTimeoutOrNull(30000) {
             launch(CoroutineName("Syncing friend message history")) {
-                nextEvent<MessageSvcPbGetMsg.GetMsgSuccess> {
+                globalEventChannel().nextEvent<MessageSvcPbGetMsg.GetMsgSuccess> {
                     it.bot == this@MessageSvcSyncerImpl.bot
                 }
             }

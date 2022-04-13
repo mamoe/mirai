@@ -23,6 +23,7 @@ import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.registering
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import java.io.File
+import java.util.*
 
 
 private val Project.selfAndParentProjects: Sequence<Project>
@@ -80,7 +81,13 @@ internal data class PluginMetadata(
 )
 
 internal fun String.wrapNameWithPlatform(target: KotlinTarget, isSingleTarget: Boolean): String {
-    return if (isSingleTarget) this else "$this${target.name.capitalize()}"
+    return if (isSingleTarget) this else "$this${
+        target.name.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(
+                Locale.getDefault()
+            ) else it.toString()
+        }
+    }"
 }
 
 private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTarget: Boolean) {

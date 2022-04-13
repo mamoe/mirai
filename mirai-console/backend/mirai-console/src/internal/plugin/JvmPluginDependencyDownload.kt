@@ -37,7 +37,6 @@ import org.eclipse.aether.resolution.DependencyRequest
 import org.eclipse.aether.resolution.DependencyResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
-import org.eclipse.aether.spi.locator.ServiceLocator
 import org.eclipse.aether.transfer.AbstractTransferListener
 import org.eclipse.aether.transfer.TransferEvent
 import org.eclipse.aether.transport.http.HttpTransporterFactory
@@ -50,9 +49,9 @@ internal class JvmPluginDependencyDownloader(
 ) {
     val repositories: MutableList<RemoteRepository>
     val session: RepositorySystemSession
-    val locator: ServiceLocator
+    val locator: org.eclipse.aether.spi.locator.ServiceLocator
     val repository: RepositorySystem
-    val dependencyFilter: DependencyFilter = DependencyFilter { node, parents ->
+    val dependencyFilter: DependencyFilter = DependencyFilter { node, _ ->
         if (node == null || node.artifact == null) return@DependencyFilter true
 
         val artGroup = node.artifact.groupId
@@ -205,7 +204,7 @@ internal class JvmPluginDependencyDownloader(
         logger.debug { "Remote server: " + config.repoLoc }
     }
 
-    public fun resolveDependencies(deps: Collection<String>, vararg filters: DependencyFilter): DependencyResult {
+    fun resolveDependencies(deps: Collection<String>, vararg filters: DependencyFilter): DependencyResult {
 
         val dependencies: MutableList<Dependency> = ArrayList()
         for (library in deps) {

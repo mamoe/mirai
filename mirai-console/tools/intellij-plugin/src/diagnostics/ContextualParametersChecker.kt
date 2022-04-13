@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.intellij.diagnostics
@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.ValueArgument
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.calls.checkers.CallChecker
 import org.jetbrains.kotlin.resolve.calls.checkers.CallCheckerContext
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
@@ -118,7 +117,7 @@ class ContextualParametersChecker : CallChecker {
                 "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax"
             )
 
-            val lowercaseId = value.toLowerCase()
+            val lowercaseId = value.lowercase()
 
             if (ID_REGEX.matchEntire(value) == null) {
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(
@@ -135,7 +134,7 @@ class ContextualParametersChecker : CallChecker {
 
         fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空")
-            val lowercaseName = value.toLowerCase()
+            val lowercaseName = value.lowercase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称")
             }

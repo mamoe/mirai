@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -44,7 +44,7 @@ internal object IntegrationTestBootstrapContext {
 @PublishedApi
 internal fun main() {
     // PRE CHECK
-    kotlin.run {
+    run {
         if (!System.getenv("MIRAI_CONSOLE_INTEGRATION_TEST").orEmpty().toBoolean()) {
             error("Don't launch IntegrationTestBootstrap directly. See /test/MiraiConsoleIntegrationTestBootstrap.kt")
         }
@@ -63,7 +63,10 @@ internal fun main() {
     val testUnits: List<AbstractTestPoint> = readStringListFromEnv("IT_POINTS").asSequence()
         .onEach { println("[MCIT] Loading test point: $it") }
         .map { Class.forName(it) }
-        .map { it.kotlin.objectInstance ?: it.newInstance() }
+        .map {
+            @Suppress("DEPRECATION")
+            it.kotlin.objectInstance ?: it.newInstance()
+        }
         .map { it.cast<AbstractTestPoint>() }
         .toList()
 

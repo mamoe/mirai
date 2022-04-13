@@ -12,8 +12,6 @@ package net.mamoe.mirai.console.extension
 import net.mamoe.mirai.console.command.parse.SpaceSeparatedCommandCallParser
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
-import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
-import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -61,7 +59,7 @@ public interface FunctionExtension : Extension
 /**
  * 为某单例服务注册的 [Extension].
  *
- * 若同时有多个实例可用, 将会使用 [SingletonExtensionSelector.selectSingleton] 选择
+ * 若同时有多个实例可用, 将会使用 [net.mamoe.mirai.console.extensions.SingletonExtensionSelector.selectSingleton] 选择
  *
  * @see PermissionServiceProvider
  */

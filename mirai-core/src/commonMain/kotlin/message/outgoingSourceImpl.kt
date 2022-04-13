@@ -1,24 +1,23 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_OVERRIDE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.internal.message
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.asyncFromEventOrNull
+import net.mamoe.mirai.event.EventPriority
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -169,18 +168,23 @@ internal class OnlineMessageSourceToGroupImpl(
 
     private val sequenceIdDeferred: Deferred<IntArray?> = providedSequenceIds?.let { CompletableDeferred(it) } ?: run {
         val multi = mutableMapOf<Int, Int>()
-        coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, IntArray>(
-            timeoutMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
-        ) {
-            if (it.bot !== this.bot) return@asyncFromEventOrNull null
-            if (it.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
-                multi[it.messageRandom] = it.sequenceId
-                if (multi.size == this@OnlineMessageSourceToGroupImpl.internalIds.size) {
-                    IntArray(multi.size) { index ->
-                        multi[this@OnlineMessageSourceToGroupImpl.internalIds[index]]!!
+        coroutineScope.async {
+            withTimeoutOrNull(
+                timeMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
+            ) {
+                GlobalEventChannel.parentScope(this)
+                    .syncFromEvent<SendGroupMessageReceipt, IntArray>(EventPriority.MONITOR) { receipt ->
+                        if (receipt.bot !== bot) return@syncFromEvent null
+                        if (receipt.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
+                            multi[receipt.messageRandom] = receipt.sequenceId
+                            if (multi.size == this@OnlineMessageSourceToGroupImpl.internalIds.size) {
+                                IntArray(multi.size) { index ->
+                                    multi[this@OnlineMessageSourceToGroupImpl.internalIds[index]]!!
+                                }
+                            } else null
+                        } else null
                     }
-                } else null
-            } else null
+            }
         }
     }
 

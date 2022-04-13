@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("DEPRECATION")
+
 package net.mamoe.mirai.console.internal.extension
 
 import kotlinx.coroutines.runBlocking

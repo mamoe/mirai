@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.extension
 
-import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.reflect.KClass
@@ -39,6 +38,7 @@ public abstract class AbstractExtensionPoint<T : Extension>(
 /**
  * 表示一个 [SingletonExtension] 的 [ExtensionPoint]
  */
+@Suppress("DEPRECATION")
 @Deprecated("Please use InstanceExtensionPoint instead.", replaceWith = ReplaceWith("InstanceExtensionPoint"))
 @DeprecatedSinceMirai(warningSince = "2.11")
 public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
@@ -80,7 +80,7 @@ public constructor(
         /**
          * 内建的实现列表.
          */
-        builtinImplementations: () -> E,
+        @Suppress("UNUSED_PARAMETER") builtinImplementations: () -> E,
     ) : this(extensionType)
 
     /**
@@ -95,7 +95,7 @@ public constructor(
     )
     @DeprecatedSinceMirai(errorSince = "2.11") // for removal
     @ConsoleExperimentalApi // was experimental since 2.0
-    public constructor(extensionType: KClass<E>, vararg builtinImplementations: E) : this(
+    public constructor(extensionType: KClass<E>, @Suppress("UNUSED_PARAMETER") vararg builtinImplementations: E) : this(
         extensionType,
     )
 }
@@ -134,7 +134,7 @@ constructor(
     )
 
     /**
-     * 由 [SingletonExtensionSelector] 选择后的实例.
+     * 由 [net.mamoe.mirai.console.extensions.SingletonExtensionSelector] 选择后的实例.
      */
     @ConsoleExperimentalApi
     public open val selectedInstance: T

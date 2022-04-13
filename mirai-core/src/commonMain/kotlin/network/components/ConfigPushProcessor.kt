@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.internal.network.components
 
+import kotlinx.coroutines.withTimeoutOrNull
+import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.BotOfflineEvent
-import net.mamoe.mirai.event.nextEventOrNull
+import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
@@ -30,7 +33,13 @@ internal class ConfigPushProcessorImpl(
     private val logger: MiraiLogger,
 ) : ConfigPushProcessor {
     override suspend fun syncConfigPush(network: NetworkHandler) {
-        if (nextEventOrNull<ConfigPushSvc.PushReq.PushReqResponse>(60_000) { it.bot == network.context.bot } == null) {
+        val resp = withTimeoutOrNull(60_000) {
+            globalEventChannel().nextEvent<ConfigPushSvc.PushReq.PushReqResponse>(
+                EventPriority.MONITOR
+            ) { it.bot == network.context.bot }
+        }
+
+        if (resp == null) {
             val bdhSyncer = network.context[BdhSessionSyncer]
             if (!bdhSyncer.hasSession) {
                 val e = IllegalStateException("Timeout waiting for ConfigPush.")

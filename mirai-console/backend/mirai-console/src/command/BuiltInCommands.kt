@@ -43,7 +43,6 @@ import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
-import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
@@ -57,6 +56,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.lang.management.ManagementFactory
+import java.lang.management.MemoryMXBean
 import java.lang.management.MemoryUsage
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -346,7 +346,7 @@ public object BuiltInCommands {
                 }
                 sendAnsiMessage {
                     ansi(BG_BLACK).white()
-                    permMapping.forEach { (pid, tree) ->
+                    permMapping.forEach { (_, tree) ->
                         if (!tree.linked) {
                             render(0, tree, this)
                         }
@@ -555,13 +555,13 @@ public object BuiltInCommands {
             val objectPendingFinalizationCount: Int
         }
 
-        internal val memoryUsageGet: MemoryUsageGet = kotlin.runCatching {
+        private val memoryUsageGet: MemoryUsageGet = kotlin.runCatching {
             ByMemoryMXBean
         }.getOrElse { ByRuntime }
 
         internal object ByMemoryMXBean : MemoryUsageGet {
-            val memoryMXBean = ManagementFactory.getMemoryMXBean()
-            val MemoryUsage.m: MUsage
+            private val memoryMXBean: MemoryMXBean = ManagementFactory.getMemoryMXBean()
+            private val MemoryUsage.m: MUsage
                 get() = MUsage(
                     committed, init, used, max
                 )

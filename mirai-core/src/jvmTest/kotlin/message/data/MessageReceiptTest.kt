@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.message.data
@@ -42,7 +42,7 @@ internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
     private val bot = MockBot()
 
     /**
-     * This test is very ugly but we cannot do anything else.
+     * This test is very ugly, but we cannot do anything else.
      */ // We need #1304
     @Test
     fun `refine ForwardMessageInternal for MessageReceipt`() = runBlockingUnit {
@@ -56,17 +56,19 @@ internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
 
         val handler = object : GroupSendMessageHandler(group) {
             override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
-                { _, contact, message, fragmented, sourceCallback ->
+                { _, _, message, _, sourceCallback ->
 
                     assertIs<ForwardMessageInternal>(message[ForwardMessageInternal])
                     assertSame(forward, message[ForwardMessageInternal]?.origin)
 
-                    sourceCallback(CompletableDeferred(OnlineMessageSourceToGroupImpl(
-                        group,
-                        internalIds = intArrayOf(1),
-                        sender = bot,
-                        target = group,
-                        time = currentTimeSeconds().toInt(),
+                    sourceCallback(
+                        CompletableDeferred(
+                            OnlineMessageSourceToGroupImpl(
+                                group,
+                                internalIds = intArrayOf(1),
+                                sender = bot,
+                                target = group,
+                                time = currentTimeSeconds().toInt(),
                         originalMessage = message //,
                         //   sourceMessage = message
                     )))
