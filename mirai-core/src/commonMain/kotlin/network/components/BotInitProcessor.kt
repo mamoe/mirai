@@ -51,6 +51,9 @@ internal interface BotInitProcessor {
      *
      * This is called in [MessageSvcPushForceOffline], which is in case connection is closed by server during the [NetworkHandler.State.LOADING] state.
      *
+     * This function only marks current initialization work has failed. It has nothing to do with result of login.
+     * To update that result, update `bot.components[SsoProcessor].firstLoginResult`.
+     *
      * See [BotInitProcessorImpl.state].
      */
     fun setLoginHalted()
@@ -104,6 +107,7 @@ internal class BotInitProcessorImpl(
             bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.PASSED)
         } catch (e: Throwable) {
             setLoginHalted()
+            bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
             throw e
         }
     }
