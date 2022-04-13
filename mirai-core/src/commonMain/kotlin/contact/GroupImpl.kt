@@ -321,6 +321,7 @@ internal class GroupImpl constructor(
                         GROUP_AUDIO,
                         ChannelKind.HTTP
                     ) { ip, port ->
+                        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
                         Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
                     }
                 }

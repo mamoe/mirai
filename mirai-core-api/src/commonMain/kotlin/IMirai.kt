@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -30,10 +30,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.utils.FileCacheStrategy
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.*
 
 /**
  * [IMirai] 实例.
@@ -100,6 +97,8 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * 覆盖后将会立即应用到全局.
      */
+    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
+    @DeprecatedSinceMirai(warningSince = "2.11.0")
     public var Http: HttpClient
 
     /**

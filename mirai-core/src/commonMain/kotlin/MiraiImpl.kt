@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -57,7 +57,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
-import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -145,6 +144,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
+    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
     override var Http: HttpClient = HttpClient(OkHttp) {
         install(HttpTimeout) {
             this.requestTimeoutMillis = 30_0000
@@ -579,6 +579,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
         bot.asQQAndroidBot().run {
             val rep = network.run {
+                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
                 Mirai.Http.get<String> {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                     parameter("bkn", client.wLoginSigInfo.bkn)
@@ -606,6 +607,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         type: GroupHonorType
     ): GroupHonorListData? = bot.asQQAndroidBot().run {
         val rep = network.run {
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             Mirai.Http.get<String> {
                 url("https://qun.qq.com/interactive/honorlist")
                 parameter("gc", groupId)
@@ -735,6 +737,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         seconds: Int
     ) {
         bot as QQAndroidBot
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         val response = Mirai.Http.post<String> {
             url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
             body = MultiPartFormDataContent(formData {
@@ -883,6 +886,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         bot.asQQAndroidBot()
         when (val resp = MultiMsg.ApplyDown(bot.client, 2, resourceId, 1).sendAndExpect(bot)) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
+                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
                 val http = Mirai.Http
                 val origin = resp.origin
 
