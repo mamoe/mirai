@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -69,9 +69,9 @@ public abstract class PttMessage : MessageContent {
 @Deprecated(
     "Please use Audio instead.",
     replaceWith = ReplaceWith("Audio", "net.mamoe.mirai.message.data.Audio"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 ) // deprecated since 2.7
-@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
 public open class Voice @MiraiInternalApi constructor(
     @MiraiExperimentalApi public override val fileName: String,
     @MiraiExperimentalApi public override val md5: ByteArray,
@@ -84,9 +84,9 @@ public open class Voice @MiraiInternalApi constructor(
     @Deprecated(
         "Please use Audio instead.",
         replaceWith = ReplaceWith("Audio.Key", "net.mamoe.mirai.message.data.Audio.Key"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7
-    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public companion object Key : AbstractPolymorphicMessageKey<PttMessage, Voice>(PttMessage, { it.safeCast() }) {
         public const val SERIAL_NAME: String = "Voice"
 
@@ -101,7 +101,10 @@ public open class Voice @MiraiInternalApi constructor(
             "Please consider migrating to Audio",
             level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(
+            warningSince = "2.7",
+            errorSince = "2.10"
+        )  // if HIDDEN, it cannot be resolved by Audio.toVoice
         @JvmStatic
         public fun fromAudio(audio: Audio): Voice {
             audio.run {
@@ -186,5 +189,5 @@ public open class Voice @MiraiInternalApi constructor(
     level = DeprecationLevel.ERROR
 ) // deprecated since 2.7
 @JvmSynthetic
-@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+@DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
 public inline fun Audio.toVoice(): Voice = Voice.fromAudio(this)

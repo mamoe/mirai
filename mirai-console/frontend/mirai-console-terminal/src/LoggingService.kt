@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
+// Used by https://github.com/iTXTech/soyuz, change with care.
 internal sealed class LoggingService {
     @TestOnly
     internal lateinit var switchLogFileNow: () -> Unit

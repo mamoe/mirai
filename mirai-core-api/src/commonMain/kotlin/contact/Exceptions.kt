@@ -48,8 +48,11 @@ public class BotIsBeingMutedException @MiraiInternalApi constructor(
     public override val target: Group,
     originalMessage: Message,
 ) : SendMessageFailedException(target, Reason.BOT_MUTED, originalMessage) {
-    @DeprecatedSinceMirai(warningSince = "2.9")
-    @Deprecated("Deprecated without replacement. Please consider copy this exception to your code.")
+    @DeprecatedSinceMirai(warningSince = "2.9", errorSince = "2.11")
+    @Deprecated(
+        "Deprecated without replacement. Please consider copy this exception to your code.",
+        level = DeprecationLevel.ERROR
+    )
     // this constructor is since 2.0
     public constructor(
         target: Group,

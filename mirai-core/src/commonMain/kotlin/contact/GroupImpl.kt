@@ -280,24 +280,26 @@ internal class GroupImpl constructor(
         }
     }
 
-    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
-    override suspend fun uploadVoice(resource: ExternalResource): Voice = AudioToSilkService.convert(
-        resource
-    ).useAutoClose { res ->
-        return bot.network.run {
-            uploadAudioResource(res)
+    @Deprecated("use uploadAudio", replaceWith = ReplaceWith("uploadAudio(resource)"), level = DeprecationLevel.HIDDEN)
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
+    override suspend fun uploadVoice(resource: ExternalResource): net.mamoe.mirai.message.data.Voice =
+        AudioToSilkService.convert(
+            resource
+        ).useAutoClose { res ->
+            return bot.network.run {
+                uploadAudioResource(res)
 
-            // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
-            //     ?.msgTryupPttRsp
-            //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
+                // val body = resp?.loadAs(Cmd0x388.RspBody.serializer())
+                //     ?.msgTryupPttRsp
+                //     ?.singleOrNull()?.fileKey ?: error("Group voice highway transfer succeed but failed to find fileKey")
 
-            Voice(
-                "${res.md5.toUHexString("")}.amr",
-                res.md5,
-                res.size,
-                res.voiceCodec,
-                ""
-            )
+                net.mamoe.mirai.message.data.Voice(
+                    "${res.md5.toUHexString("")}.amr",
+                    res.md5,
+                    res.size,
+                    res.voiceCodec,
+                    ""
+                )
         }
     }
 

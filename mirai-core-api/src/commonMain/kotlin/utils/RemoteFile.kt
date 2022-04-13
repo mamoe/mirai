@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -458,7 +458,7 @@ public interface RemoteFile {
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
-    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null,
@@ -474,7 +474,7 @@ public interface RemoteFile {
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource)"), DeprecationLevel.ERROR
     )  // deprecated since 2.7-M1
-    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
@@ -487,7 +487,7 @@ public interface RemoteFile {
     @Deprecated(
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(file, callback)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
-    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(
         file: File,
         callback: ProgressionCallback? = null,
@@ -503,7 +503,7 @@ public interface RemoteFile {
     @Deprecated(
         "Use sendFile instead.", ReplaceWith("this.uploadAndSend(file)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
-    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
@@ -586,7 +586,7 @@ public interface RemoteFile {
             ),
             level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
         public suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
@@ -611,7 +611,7 @@ public interface RemoteFile {
             ),
             level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
         public suspend fun FileSupported.uploadFile(
             path: String,
             file: File,

@@ -26,6 +26,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.data.toVoice
 import net.mamoe.mirai.utils.AbstractExternalResource.ResourceCleanCallback
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -479,9 +480,9 @@ public interface ExternalResource : Closeable {
                 "this.sendTo(contact, path, callback)",
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendTo"
             ),
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.7-M1
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
         public suspend fun File.uploadTo(
             contact: FileSupported,
             path: String,
@@ -516,9 +517,9 @@ public interface ExternalResource : Closeable {
                 "this.sendAsFileTo(contact, path, callback)",
                 "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsFileTo"
             ),
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.7-M1
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
         public suspend fun ExternalResource.uploadAsFile(
             contact: FileSupported,
             path: String,
@@ -599,12 +600,12 @@ public interface ExternalResource : Closeable {
         @JvmStatic
         @Deprecated(
             "Use `contact.uploadAudio(resource)` instead",
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.7
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
         public suspend fun ExternalResource.uploadAsVoice(contact: Contact): net.mamoe.mirai.message.data.Voice {
-            @Suppress("DEPRECATION")
-            if (contact is Group) return contact.uploadVoice(this)
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+            if (contact is Group) return contact.uploadAudio(this).toVoice()
             else throw UnsupportedOperationException("Contact `$contact` is not supported uploading voice")
         }
         // endregion
