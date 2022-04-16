@@ -210,7 +210,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         public var imageId: String,
     ) {
         /**
-         * 图片大小字节数. 如果不提供改属性, 将无法 [Image.Key.isUploaded]
+         * 图片大小字节数. 如果不提供该属性, 将无法 [Image.Key.isUploaded]
          *
          * @see Image.size
          */
