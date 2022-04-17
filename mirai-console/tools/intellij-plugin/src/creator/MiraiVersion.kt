@@ -24,7 +24,7 @@ enum class MiraiVersionKind {
     },
     Prerelease {
         override fun isThatKind(version: String): Boolean =
-            version.contains("-M") || version.contains("-RC")
+            Stable.isThatKind(version) || version.contains("-M") || version.contains("-RC")
     },
     Nightly {
         override fun isThatKind(version: String): Boolean = true // version.contains("-dev")

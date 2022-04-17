@@ -8,42 +8,66 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator
+package net.mamoe.mirai.console.intellij.wizard
 
-import com.intellij.ide.util.projectWizard.JavaModuleBuilder
+import com.intellij.ide.fileTemplates.FileTemplateManager
+import com.intellij.ide.starters.local.*
+import com.intellij.ide.starters.local.wizard.StarterInitialStep
+import com.intellij.ide.starters.shared.*
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.module.JavaModuleType
-import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbAwareRunnable
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.pom.java.LanguageLevel
+import com.intellij.util.lang.JavaVersion
 import net.mamoe.mirai.console.intellij.assets.Icons
-import net.mamoe.mirai.console.intellij.creator.steps.BuildSystemStep
-import net.mamoe.mirai.console.intellij.creator.steps.OptionsStep
-import net.mamoe.mirai.console.intellij.creator.steps.PluginCoordinatesStep
+import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 import net.mamoe.mirai.console.intellij.creator.tasks.CreateProjectTask
+import org.jetbrains.kotlin.tools.composeProjectWizard.ComposeModuleBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.Executors
 
-class MiraiModuleBuilder : JavaModuleBuilder() {
-    override fun getPresentableName() = MiraiModuleType.NAME
+class MiraiModuleBuilder : StarterModuleBuilder() {
+    override fun getBuilderId() = "MiraiModuleBuilder"
+    override fun getPresentableName() = MiraiProjectWizardBundle.message("module.presentation.name")
+    override fun getWeight() = KOTLIN_WEIGHT - 2
     override fun getNodeIcon() = Icons.MainIcon
-    override fun getGroupName() = MiraiModuleType.NAME
-    override fun getWeight() = BUILD_SYSTEM_WEIGHT - 1
-    override fun getBuilderId() = ID
-    override fun getModuleType(): ModuleType<*> = JavaModuleType.getModuleType()
-    override fun getParentGroup() = MiraiModuleType.NAME
+    override fun getDescription(): String = MiraiProjectWizardBundle.message("module.description")
+
+    override fun getProjectTypes(): List<StarterProjectType> = listOf(GRADLE_PROJECT)
+    override fun getTestFrameworks(): List<StarterTestRunner> = listOf(JUNIT_TEST_RUNNER)
+    override fun getMinJavaVersion(): JavaVersion = LanguageLevel.JDK_1_8.toJavaVersion()
+
+    override fun getStarterPack(): StarterPack {
+        return StarterPack(
+            "mirai", listOf(
+                Starter("mirai", "Mirai Console", getDependencyConfig("/starters/compose.pom"), emptyList())
+            )
+        )
+    }
+
+    override fun getLanguages(): List<StarterLanguage> = listOf(JAVA_STARTER_LANGUAGE, KOTLIN_STARTER_LANGUAGE)
+
+
+    override fun createWizardSteps(
+        wizardContext: WizardContext,
+        modulesProvider: ModulesProvider
+    ): Array<ModuleWizardStep> = emptyArray()
+
+    override fun createOptionsStep(contextProvider: StarterContextProvider): StarterInitialStep {
+        return MiraiProjectWizardInitialStep(contextProvider)
+    }
 
     override fun setupRootModel(rootModel: ModifiableRootModel) {
         val project = rootModel.project
@@ -102,20 +126,20 @@ class MiraiModuleBuilder : JavaModuleBuilder() {
         scope.shutdownNow()
     }
 
-    override fun createWizardSteps(
-        wizardContext: WizardContext,
-        modulesProvider: ModulesProvider
-    ): Array<ModuleWizardStep> {
-        return arrayOf(
-            BuildSystemStep(model),
-            PluginCoordinatesStep(model, scope),
-        )
+    override fun getAssets(starter: Starter): List<GeneratorAsset> {
+        val manager = FileTemplateManager.getInstance(ProjectManager.getInstance().defaultProject)
+        val standardAssetsProvider = StandardAssetsProvider()
+
+        val configType = starterContext.getUserData(ComposeModuleBuilder.COMPOSE_CONFIG_TYPE_KEY)
+        val platform = starterContext.getUserData(ComposeModuleBuilder.COMPOSE_PLATFORM_KEY)
+        val packagePath = starterContext.group.replace('.', '/')
+
+        val assets = mutableListOf<GeneratorAsset>()
+
+//        assets.add(
+//            GeneratorTemplateFile("")
+//        )
+        return listOf(GeneratorEmptyDirectory(""))
     }
 
-    override fun getCustomOptionsStep(context: WizardContext?, parentDisposable: Disposable?): ModuleWizardStep =
-        OptionsStep()
-
-    companion object {
-        const val ID = "MIRAI_MODULE"
-    }
 }
