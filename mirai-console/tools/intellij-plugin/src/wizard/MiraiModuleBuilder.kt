@@ -57,7 +57,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
         )
     }
 
-    override fun getLanguages(): List<StarterLanguage> = listOf(JAVA_STARTER_LANGUAGE, KOTLIN_STARTER_LANGUAGE)
+    override fun getLanguages(): List<StarterLanguage> = listOf(KOTLIN_STARTER_LANGUAGE, JAVA_STARTER_LANGUAGE)
 
 
     override fun createWizardSteps(

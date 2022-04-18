@@ -11,15 +11,22 @@ package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.ide.starters.local.StarterContextProvider
 import com.intellij.ide.starters.local.wizard.StarterInitialStep
+import com.intellij.ide.starters.shared.TextValidationFunction
+import com.intellij.ide.starters.shared.ValidationFunctions
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.observable.util.trim
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.SegmentedButton
 import com.intellij.ui.dsl.builder.bindText
+import net.mamoe.mirai.console.compiler.common.CheckerConstants
 import net.mamoe.mirai.console.intellij.creator.MiraiVersion
 import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
 import net.mamoe.mirai.console.intellij.creator.steps.Validation
+import net.mamoe.mirai.console.intellij.creator.tasks.adjustToPresentationName
 import net.mamoe.mirai.console.intellij.wizard.MiraiProjectWizardBundle.message
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.runAsync
@@ -29,29 +36,72 @@ private val log = logger<MiraiProjectWizardInitialStep>()
 class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : StarterInitialStep(contextProvider) {
     private val miraiVersionKindProperty = propertyGraph.property(MiraiVersionKind.Stable)
     private val pluginVersionProperty = propertyGraph.property("0.1.0")
-    private val pluginNameProperty = propertyGraph.lazyProperty { wizardContext.projectName }
-    private val pluginIdProperty = propertyGraph.lazyProperty { "$groupId.$artifactId" }
+    private val pluginNameProperty = propertyGraph.lazyProperty { "" }
+    private val pluginIdProperty = propertyGraph.lazyProperty { "" }
     private val pluginAuthorProperty = propertyGraph.lazyProperty { System.getProperty("user.name") }
+    private val pluginDependenciesProperty = propertyGraph.lazyProperty { "" }
+    private val pluginInfoProperty = propertyGraph.lazyProperty { "" }
 
     var miraiVersionKind by miraiVersionKindProperty
-    var pluginVersion by pluginVersionProperty
-    var pluginName by pluginNameProperty
-    var pluginId by pluginIdProperty
-    val pluginAuthor by pluginAuthorProperty
+    var pluginVersion by pluginVersionProperty.trim()
+    var pluginName by pluginNameProperty.trim()
+    var pluginId by pluginIdProperty.trim()
+    var pluginAuthor by pluginAuthorProperty.trim()
+    var pluginDependencies by pluginDependenciesProperty.trim()
+    var pluginInfo by pluginInfoProperty.trim()
 
     override fun addFieldsAfter(layout: Panel) {
+        lateinit var idCell: Cell<JBTextField>
+        lateinit var nameCell: Cell<JBTextField>
+        lateinit var versionCell: Cell<JBTextField>
+
         layout.group(message("title.plugin.description")) {
             row(message("label.plugin.id")) {
-                textField().bindText(pluginNameProperty)
+                idCell = textField()
+                    .withSpecialValidation(ValidationFunctions.CHECK_NOT_EMPTY)
+                    .bindText(pluginIdProperty)
+                rowComment(message("comment.plugin.id"))
+
+                pluginIdProperty.dependsOn(groupIdProperty) { "$groupId.$artifactId" }
+                pluginIdProperty.dependsOn(artifactIdProperty) { "$groupId.$artifactId" }
             }
+
             row(message("label.plugin.name")) {
-                textField().bindText(pluginNameProperty)
+                nameCell = textField()
+                    .withSpecialValidation(
+                        ValidationFunctions.CHECK_NOT_EMPTY,
+                        TextValidationFunction { text ->
+                            val lowercaseName = text.lowercase().trim()
+                            val illegal =
+                                CheckerConstants.PLUGIN_FORBIDDEN_NAMES.firstOrNull { it == lowercaseName }
+                            if (illegal != null) {
+                                message("validation.plugin.name.forbidden.character", illegal)
+                            } else null
+                        })
+                    .bindText(pluginNameProperty)
+
+                pluginNameProperty.dependsOn(artifactIdProperty) {
+                    artifactId.adjustToPresentationName().orEmpty()
+                }
+
+                rowComment(message("comment.plugin.name"))
             }
             row(message("label.plugin.version")) {
-                textField().bindText(pluginVersionProperty)
+                versionCell = textField().bindText(pluginVersionProperty)
+                rowComment(message("comment.plugin.version"))
             }
             row(message("label.plugin.author")) {
                 textField().bindText(pluginAuthorProperty)
+            }
+            row(message("label.plugin.dependencies")) {
+                expandableTextField().bindText(pluginDependenciesProperty)
+                    .component.emptyText.setText(message("text.hint.plugin.dependencies"), GRAYED_ITALIC_ATTRIBUTES)
+                rowComment(message("comment.plugin.dependencies"))
+            }
+            row(message("label.plugin.info")) {
+                expandableTextField().bindText(pluginInfoProperty)
+                    .component.emptyText.setText(message("text.hint.plugin.info"), GRAYED_ITALIC_ATTRIBUTES)
+                rowComment(message("comment.plugin.info"))
             }
             row(message("label.mirai.version")) {
                 val miraiVersionKindCell = segmentedButton(MiraiVersionKind.values().toList()) { kind ->
@@ -70,6 +120,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 }
 
                 updateVersionItems(miraiVersionKindCell, miraiVersionCell)
+                rowComment(message("comment.mirai.version"))
             }
         }
     }

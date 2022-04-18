@@ -138,6 +138,38 @@ fun String.adjustToClassName(): String? {
     return null
 }
 
+fun String.adjustToPresentationName(): String? {
+    val result = buildString {
+        var doCapitalization = true
+
+        fun Char.isAllowed() = isLetterOrDigit() || this in "_- "
+
+        for (char in this@adjustToPresentationName) {
+            if (!char.isAllowed()) continue
+
+            if (doCapitalization) {
+                when {
+                    char.isLetter() -> append(char.uppercase())
+                    char == '_' -> {}
+                    char == '-' -> {}
+                    else -> append(char)
+                }
+                doCapitalization = false
+            } else {
+                if (char in "_- ") {
+                    doCapitalization = true
+                } else {
+                    append(char)
+                }
+            }
+        }
+    }
+
+    if (result.isValidSimpleClassName()) return result
+
+    return null
+}
+
 @Suppress("RedundantNullableReturnType")
 private val UNINITIALIZED: Any? = Any()
 
