@@ -27,6 +27,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.info
@@ -51,7 +52,8 @@ internal class PluginManagerImpl(
     override val pluginLibrariesPath: Path = MiraiConsole.rootPath.resolve("plugin-libraries").apply { mkdir() }
     override val pluginLibrariesFolder: File = pluginLibrariesPath.toFile()
 
-    override val pluginSharedLibrariesPath: Path = MiraiConsole.rootPath.resolve("plugin-shared-libraries").apply { mkdir() }
+    override val pluginSharedLibrariesPath: Path =
+        MiraiConsole.rootPath.resolve("plugin-shared-libraries").apply { mkdir() }
     override val pluginSharedLibrariesFolder: File = pluginSharedLibrariesPath.toFile()
 
     @Suppress("ObjectPropertyName")
@@ -135,7 +137,7 @@ internal class PluginManagerImpl(
      * 使用 [builtInLoaders] 寻找所有插件, 并初始化其主类.
      */
     @Suppress("UNCHECKED_CAST")
-    @Throws(PluginMissingDependencyException::class)
+    @Throws(PluginResolutionException::class)
     private fun findAndSortAllPluginsUsingBuiltInLoaders(): List<PluginDescriptionWithLoader> {
         val allDescriptions =
             builtInLoaders.listAndSortAllPlugins()
@@ -196,46 +198,115 @@ internal class PluginManagerImpl(
         }.sortByDependencies()
     }
 
-    @Throws(PluginMissingDependencyException::class)
+    @Throws(PluginResolutionException::class)
     private fun <D : PluginDescription> List<D>.sortByDependencies(): List<D> {
-        val resolved = ArrayList<D>(this.size)
+        val originPluginDescriptions = this@sortByDependencies
+        val pending2BeResolved = originPluginDescriptions.toMutableList()
+        val resolved = ArrayList<D>(pending2BeResolved.size)
 
-        fun D.canBeLoad(): Boolean = this.dependencies.all { dependency ->
-            val target = resolved.findDependency(dependency)
-            if (target == null) {
-                dependency.isOptional
-            } else {
-                target.checkSatisfies(dependency, this@canBeLoad)
-                true
+        fun <T> MutableCollection<T>.filterAndRemove(output: MutableCollection<T>, filter: (T) -> Boolean) {
+            this.removeAll { item ->
+                if (filter(item)) {
+                    output.add(item)
+                    true
+                } else false
             }
         }
 
-        fun List<D>.consumeLoadable(): List<D> {
-            val (canBeLoad, cannotBeLoad) = this.partition { it.canBeLoad() }
-            resolved.addAll(canBeLoad)
-            return cannotBeLoad
-        }
-
-        fun Collection<PluginDependency>.filterIsMissing(): List<PluginDependency> =
-            this.filterNot { it.isOptional || resolved.findDependency(it) != null }
-
-        fun List<D>.doSort() {
-            if (this.isEmpty()) return
-
-            val beforeSize = this.size
-            this.consumeLoadable().also { resultPlugins ->
-                check(resultPlugins.size < beforeSize) {
-                    throw PluginMissingDependencyException(resultPlugins.joinToString("\n") { badPlugin ->
-                        "Cannot load plugin ${badPlugin.name}, missing dependencies: ${
-                            badPlugin.dependencies.filterIsMissing().joinToString()
-                        }"
-                    })
+        // Step0. Check non contains death-locked dependencies graph.
+        kotlin.run deathLockDependenciesCheck@{
+            fun D.checkDependencyLink(list: MutableList<D>) {
+                if (this in list) {
+                    list.add(this)
+                    throw PluginInfiniteCircularDependencyReferenceException(
+                        "Found circular plugin dependency: " + list.joinToString(" -> ") { it.id }
+                    )
                 }
-            }.doSort()
+                list.add(this)
+                this.dependencies.forEach { dependency ->
+                    // In this step not care about dependency missing.
+                    val dep0 = pending2BeResolved.findDependency(dependency) ?: return@forEach
+                    dep0.checkDependencyLink(list)
+                }
+                list.removeLast()
+            }
+
+            pending2BeResolved.forEach { dependency ->
+                dependency.checkDependencyLink(mutableListOf())
+            }
         }
 
-        this.doSort()
+        // Step1. Fast process no-depended plugins
+        pending2BeResolved.filterAndRemove(resolved) { it.dependencies.isEmpty() }
+
+        // Step2. Check plugin dependencies graph
+        kotlin.run checkDependenciesMissing@{
+            val errorMsgs = mutableListOf<String>()
+            pending2BeResolved.forEach { pluginDesc ->
+                val missed = pluginDesc.dependencies.filter { dependency ->
+                    val resolvedDep = originPluginDescriptions.findDependency(dependency)
+                    if (resolvedDep != null) {
+                        resolvedDep.checkSatisfies(dependency, pluginDesc)
+                        false
+                    } else !dependency.isOptional
+                }
+                if (missed.isNotEmpty()) {
+                    errorMsgs.add(
+                        "Cannot load plugin '${pluginDesc.name}', missing dependencies: ${
+                            missed.joinToString(
+                                ", "
+                            ) { "'$it'" }
+                        }"
+                    )
+                }
+            }
+            if (errorMsgs.isNotEmpty()) {
+                throw PluginMissingDependencyException(errorMsgs.joinToString("\n"))
+            }
+        }
+
+        // Step3. Sort plugins with dependencies
+        var loopStart = 0 // For faster performance
+        sortWithOptionalDependencies@
+        while (true) {
+            fun searchRemainingDependencies(start: Int, dependency: PluginDependency): Int {
+                for (i in (start + 1) until pending2BeResolved.size) {
+                    val dep0 = pending2BeResolved[i]
+                    if (dep0.id.equals(dependency.id, ignoreCase = true)) {
+                        dep0.checkSatisfies(dependency, pending2BeResolved[i])
+                        return i
+                    }
+                }
+                return -1
+            }
+
+            for (index in loopStart until pending2BeResolved.size) {
+                // Ensure load after all depended plugins
+                val dep = pending2BeResolved[index]
+                for (pluginDependency in dep.dependencies) {
+                    val dependencyIndex = searchRemainingDependencies(index, pluginDependency)
+                    if (dependencyIndex != -1) {
+                        pending2BeResolved.removeAt(index)
+                        pending2BeResolved.add(dependencyIndex, dep)
+                        continue@sortWithOptionalDependencies
+                    }
+                }
+                loopStart = index + 1
+            }
+
+            resolved.addAll(pending2BeResolved)
+            pending2BeResolved.clear()
+            break@sortWithOptionalDependencies
+        }
+
         return resolved
+    }
+
+
+    @Suppress("FunctionName")
+    @TestOnly
+    internal fun <D : PluginDescription> __sortPluginDescription(list: List<D>): List<D> {
+        return list.sortByDependencies()
     }
 }
 
@@ -255,7 +326,7 @@ internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>, plugin: Plug
         loader as PluginLoader<Plugin, PluginDescription>, this, plugin
     )
 
-internal fun List<PluginDescription>.findDependency(dependency: PluginDependency): PluginDescription? {
+internal fun <T : PluginDescription> List<T>.findDependency(dependency: PluginDependency): T? {
     return find { it.id.equals(dependency.id, ignoreCase = true) }
 }
 
