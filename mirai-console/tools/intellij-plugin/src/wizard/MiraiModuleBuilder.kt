@@ -85,6 +85,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
                 "PROJECT_NAME" to starterContext,
                 "USE_PROXY_REPO" to "true",
                 "ARTIFACT_ID" to projectCoordinates.artifactId,
+                "MODULE_NAME" to projectCoordinates.moduleName,
 
                 "PLUGIN_ID" to pluginCoordinates.id,
                 "PLUGIN_NAME" to languageType.escapeString(pluginCoordinates.name),
@@ -124,6 +125,14 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
         assets.add(GeneratorEmptyDirectory("debug-sandbox/plugins"))
         assets.add(GeneratorEmptyDirectory("debug-sandbox/data"))
         assets.add(GeneratorEmptyDirectory("debug-sandbox/config"))
+        assets.add(
+            GeneratorTemplateFile(
+                "debug-sandbox/account.properties",
+                ftManager.getCodeTemplate(FT.AccountProperties)
+            )
+        )
+
+        assets.add(GeneratorTemplateFile(".run/RunTerminal.run.xml", ftManager.getCodeTemplate(FT.RunTerminalRun)))
 
         return assets
     }

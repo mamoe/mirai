@@ -181,9 +181,9 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 .setFadeoutTime(3000)
                 .createBalloon()
                 .show(
-                    RelativePoint.getSouthOf(
+                    RelativePoint.getSouthWestOf(
                         miraiVersionCell.component
-                    ), Balloon.Position.below
+                    ), Balloon.Position.atLeft
                 )
             return false
         }
