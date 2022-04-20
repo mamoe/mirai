@@ -8,7 +8,7 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator
+package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.text.SemVer
@@ -24,7 +24,7 @@ enum class MiraiVersionKind {
     },
     Prerelease {
         override fun isThatKind(version: String): Boolean =
-            version.contains("-M") || version.contains("-RC")
+            Stable.isThatKind(version) || version.contains("-M") || version.contains("-RC")
     },
     Nightly {
         override fun isThatKind(version: String): Boolean = true // version.contains("-dev")
