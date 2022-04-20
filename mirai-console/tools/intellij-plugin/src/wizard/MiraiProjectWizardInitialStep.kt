@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.ide.starters.local.StarterContextProvider
 import com.intellij.ide.starters.local.wizard.StarterInitialStep
-import com.intellij.ide.starters.shared.TextValidationFunction
+import com.intellij.ide.starters.shared.KOTLIN_STARTER_LANGUAGE
 import com.intellij.ide.starters.shared.ValidationFunctions
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.observable.util.trim
@@ -22,7 +22,6 @@ import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.SegmentedButton
 import com.intellij.ui.dsl.builder.bindText
-import net.mamoe.mirai.console.compiler.common.CheckerConstants
 import net.mamoe.mirai.console.intellij.creator.MiraiVersion
 import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
 import net.mamoe.mirai.console.intellij.creator.steps.Validation
@@ -58,7 +57,9 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
         layout.group(message("title.plugin.description")) {
             row(message("label.plugin.id")) {
                 idCell = textField()
-                    .withSpecialValidation(ValidationFunctions.CHECK_NOT_EMPTY)
+                    .withSpecialValidation(
+                        ValidationFunctions.CHECK_NOT_EMPTY,
+                    )
                     .bindText(pluginIdProperty)
                 rowComment(message("comment.plugin.id"))
 
@@ -70,31 +71,33 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 nameCell = textField()
                     .withSpecialValidation(
                         ValidationFunctions.CHECK_NOT_EMPTY,
-                        TextValidationFunction { text ->
-                            val lowercaseName = text.lowercase().trim()
-                            val illegal =
-                                CheckerConstants.PLUGIN_FORBIDDEN_NAMES.firstOrNull { it == lowercaseName }
-                            if (illegal != null) {
-                                message("validation.plugin.name.forbidden.character", illegal)
-                            } else null
-                        })
+                        MiraiValidations.CHECK_FORBIDDEN_PLUGIN_NAME,
+                    )
                     .bindText(pluginNameProperty)
 
                 pluginNameProperty.dependsOn(artifactIdProperty) {
-                    artifactId.adjustToPresentationName().orEmpty()
+                    artifactId.adjustToPresentationName()
                 }
 
                 rowComment(message("comment.plugin.name"))
             }
+
             row(message("label.plugin.version")) {
-                versionCell = textField().bindText(pluginVersionProperty)
+                versionCell = textField()
+                    .withSpecialValidation(
+                        ValidationFunctions.CHECK_NOT_EMPTY,
+                        MiraiValidations.CHECK_ILLEGAL_VERSION_LINE
+                    )
+                    .bindText(pluginVersionProperty)
                 rowComment(message("comment.plugin.version"))
             }
             row(message("label.plugin.author")) {
                 textField().bindText(pluginAuthorProperty)
             }
             row(message("label.plugin.dependencies")) {
-                expandableTextField().bindText(pluginDependenciesProperty)
+                expandableTextField()
+                    .withSpecialValidation(MiraiValidations.CHECK_PLUGIN_DEPENDENCIES_SEGMENT)
+                    .bindText(pluginDependenciesProperty)
                     .component.emptyText.setText(message("text.hint.plugin.dependencies"), GRAYED_ITALIC_ATTRIBUTES)
                 rowComment(message("comment.plugin.dependencies"))
             }
@@ -111,7 +114,9 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                         MiraiVersionKind.Nightly -> message("label.version.nightly")
                     }
                 }.bind(miraiVersionKindProperty)
-                val miraiVersionCell = comboBox(listOf<String>()).enabled(false)
+
+                val miraiVersionCell = comboBox(listOf<String>())
+                    .enabled(false)
 
                 miraiVersionKindProperty.afterChange {
                     if (!miraiVersionCell.component.isEnabled) return@afterChange
@@ -123,6 +128,12 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 rowComment(message("comment.mirai.version"))
             }
         }
+
+        // Update default values
+
+        languageProperty.set(KOTLIN_STARTER_LANGUAGE)
+        pluginIdProperty.set("$groupId.$artifactId")
+        pluginNameProperty.set(artifactId.adjustToPresentationName())
     }
 
     private fun updateVersionItems(

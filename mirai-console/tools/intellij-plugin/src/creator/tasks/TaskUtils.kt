@@ -138,7 +138,7 @@ fun String.adjustToClassName(): String? {
     return null
 }
 
-fun String.adjustToPresentationName(): String? {
+fun String.adjustToPresentationName(): String {
     val result = buildString {
         var doCapitalization = true
 
@@ -158,16 +158,15 @@ fun String.adjustToPresentationName(): String? {
             } else {
                 if (char in "_- ") {
                     doCapitalization = true
+                    append(' ')
                 } else {
                     append(char)
                 }
             }
         }
-    }
+    }.trim()
 
-    if (result.isValidSimpleClassName()) return result
-
-    return null
+    return result
 }
 
 @Suppress("RedundantNullableReturnType")
