@@ -8,7 +8,7 @@
  */
 package creator
 
-import net.mamoe.mirai.console.intellij.creator.sortVersionsDescending
+import net.mamoe.mirai.console.intellij.wizard.sortVersionsDescending
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

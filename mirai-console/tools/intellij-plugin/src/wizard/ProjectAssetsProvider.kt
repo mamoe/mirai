@@ -17,7 +17,6 @@ import com.intellij.ide.starters.local.GeneratorEmptyDirectory
 import com.intellij.ide.starters.local.GeneratorTemplateFile
 import com.intellij.openapi.project.ProjectManager
 import net.mamoe.mirai.console.intellij.assets.FT
-import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 
 sealed class ProjectCreator(
     val model: MiraiProjectModel,

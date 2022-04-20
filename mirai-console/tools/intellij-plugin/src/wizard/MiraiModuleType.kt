@@ -8,12 +8,11 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator
+package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
 import net.mamoe.mirai.console.intellij.assets.Icons
-import net.mamoe.mirai.console.intellij.wizard.MiraiModuleBuilder
 
 class MiraiModuleType : ModuleType<MiraiModuleBuilder>("MIRAI_CONSOLE_PLUGIN_MODULE") {
     override fun createModuleBuilder() = MiraiModuleBuilder()

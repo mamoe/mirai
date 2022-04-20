@@ -8,11 +8,9 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator
+package net.mamoe.mirai.console.intellij.wizard
 
-import net.mamoe.mirai.console.intellij.creator.tasks.adjustToClassName
-import net.mamoe.mirai.console.intellij.wizard.BuildSystemType
-import net.mamoe.mirai.console.intellij.wizard.LanguageType
+import net.mamoe.mirai.console.intellij.diagnostics.adjustToClassName
 import kotlin.contracts.contract
 
 data class ProjectCoordinates(

@@ -23,7 +23,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.dsl.builder.*
-import net.mamoe.mirai.console.intellij.creator.*
 import net.mamoe.mirai.console.intellij.wizard.MiraiProjectWizardBundle.message
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.runAsync

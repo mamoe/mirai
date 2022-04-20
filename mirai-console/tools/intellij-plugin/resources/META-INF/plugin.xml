@@ -26,7 +26,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <moduleType id="MIRAI_CONSOLE_PLUGIN_MODULE"
-                    implementationClass="net.mamoe.mirai.console.intellij.creator.MiraiModuleType"/>
+                    implementationClass="net.mamoe.mirai.console.intellij.wizard.MiraiModuleType"/>
         <moduleBuilder id="MIRAI_MODULE" builderClass="net.mamoe.mirai.console.intellij.wizard.MiraiModuleBuilder"/>
 
         <fileTemplateGroup implementation="net.mamoe.mirai.console.intellij.assets.FileTemplateRegistrar"/>

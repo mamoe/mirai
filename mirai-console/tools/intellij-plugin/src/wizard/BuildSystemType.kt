@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.console.intellij.wizard
 
-import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
-
 enum class BuildSystemType {
     GradleKt {
         override fun createBuildSystem(model: MiraiProjectModel): ProjectCreator =

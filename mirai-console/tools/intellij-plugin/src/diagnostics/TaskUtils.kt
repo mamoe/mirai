@@ -8,7 +8,7 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator.tasks
+package net.mamoe.mirai.console.intellij.diagnostics
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil

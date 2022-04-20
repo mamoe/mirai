@@ -24,7 +24,6 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.util.lang.JavaVersion
 import net.mamoe.mirai.console.intellij.assets.FT
 import net.mamoe.mirai.console.intellij.assets.Icons
-import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
 
 class MiraiModuleBuilder : StarterModuleBuilder() {
     companion object {

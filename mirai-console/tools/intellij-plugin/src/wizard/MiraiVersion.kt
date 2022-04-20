@@ -8,7 +8,7 @@
  */
 
 
-package net.mamoe.mirai.console.intellij.creator
+package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.text.SemVer
