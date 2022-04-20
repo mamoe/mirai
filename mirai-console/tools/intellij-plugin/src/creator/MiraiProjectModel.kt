@@ -10,105 +10,42 @@
 
 package net.mamoe.mirai.console.intellij.creator
 
-import net.mamoe.mirai.console.intellij.creator.steps.BuildSystemType
-import net.mamoe.mirai.console.intellij.creator.steps.LanguageType
 import net.mamoe.mirai.console.intellij.creator.tasks.adjustToClassName
-import net.mamoe.mirai.console.intellij.creator.tasks.lateinitReadWriteProperty
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import net.mamoe.mirai.console.intellij.wizard.BuildSystemType
+import net.mamoe.mirai.console.intellij.wizard.LanguageType
 import kotlin.contracts.contract
 
 data class ProjectCoordinates(
     val groupId: String, // already checked by pattern
     val artifactId: String,
-    val version: String
+    val version: String,
+    val moduleName: String
 ) {
     val packageName: String get() = groupId
 }
 
 data class PluginCoordinates(
-    val id: String?,
-    val name: String?,
-    val author: String?,
-    val info: String?,
-    val dependsOn: String?,
+    val id: String,
+    val name: String,
+    val author: String,
+    val info: String,
+    val dependsOn: String,
 )
 
-class MiraiProjectModel private constructor() {
-    // STEP: ProjectCreator
+class MiraiProjectModel(
+    val projectCoordinates: ProjectCoordinates,
+    val pluginCoordinates: PluginCoordinates,
+    val miraiVersion: String,
 
-    var projectCoordinates: ProjectCoordinates? = null
-    var buildSystemType: BuildSystemType = BuildSystemType.DEFAULT
-    var languageType: LanguageType = LanguageType.DEFAULT
-
-    var miraiVersion: String? = null
-    var pluginCoordinates: PluginCoordinates? = null
-
-    var mainClassQualifiedName: String by lateinitReadWriteProperty { "$packageName.$mainClassSimpleName" }
-    var mainClassSimpleName: String by lateinitReadWriteProperty {
-        pluginCoordinates?.run {
-            name?.adjustToClassName() ?: id?.substringAfterLast('.')?.adjustToClassName()
-        } ?: "PluginMain"
-    }
-    var packageName: String by lateinitReadWriteProperty { projectCoordinates.checkNotNull("projectCoordinates").groupId }
+    val buildSystemType: BuildSystemType,
+    val languageType: LanguageType,
 
 
-    var availableMiraiVersions: CompletableFuture<Set<MiraiVersion>>? = null
-    val availableMiraiVersionsOrFail get() = availableMiraiVersions.checkNotNull("availableMiraiVersions")
-
-    fun checkValuesNotNull() {
-        checkNotNull(miraiVersion) { "miraiVersion" }
-        checkNotNull(pluginCoordinates) { "pluginCoordinates" }
-        checkNotNull(projectCoordinates) { "projectCoordinates" }
-    }
-
-    companion object {
-        fun create(scope: ExecutorService): MiraiProjectModel {
-            return MiraiProjectModel().apply {
-                availableMiraiVersions = scope.async { MiraiVersionKind.getMiraiVersionList() }
-            }
-        }
-
-        fun <T> ExecutorService.async(block: () -> T): CompletableFuture<T> {
-            val future = CompletableFuture<T>()
-            submit {
-                try {
-                    future.complete(block())
-                } catch (e: Throwable) {
-                    future.completeExceptionally(e)
-                }
-            }
-            return future
-        }
-    }
-
-}
-
-val MiraiProjectModel.templateProperties: Map<String, String?>
-    get() {
-        val projectCoordinates = projectCoordinates!!
-        val pluginCoordinates = pluginCoordinates!!
-        return mapOf(
-            "KOTLIN_VERSION" to KotlinVersion.CURRENT.toString(),
-            "MIRAI_VERSION" to miraiVersion!!,
-            "GROUP_ID" to projectCoordinates.groupId,
-            "VERSION" to projectCoordinates.version,
-            "USE_PROXY_REPO" to "true",
-            "ARTIFACT_ID" to projectCoordinates.artifactId,
-
-            "PLUGIN_ID" to pluginCoordinates.id,
-            "PLUGIN_NAME" to languageType.escapeString(pluginCoordinates.name),
-            "PLUGIN_AUTHOR" to languageType.escapeString(pluginCoordinates.author),
-            "PLUGIN_INFO" to languageType.escapeRawString(pluginCoordinates.info),
-            "PLUGIN_DEPENDS_ON" to pluginCoordinates.dependsOn,
-            "PLUGIN_VERSION" to projectCoordinates.version,
-
-            "PACKAGE_NAME" to packageName,
-            "CLASS_NAME" to mainClassSimpleName,
-
-            "LANGUAGE_TYPE" to languageType.toString(),
-        )
-    }
+    val mainClassSimpleName: String = pluginCoordinates.run {
+        name.adjustToClassName() ?: id.substringAfterLast('.').adjustToClassName()
+    } ?: "PluginMain",
+    val packageName: String = projectCoordinates.checkNotNull("projectCoordinates").groupId,
+)
 
 fun <T : Any> T?.checkNotNull(name: String): T {
     contract {

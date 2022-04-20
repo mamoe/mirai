@@ -18,7 +18,6 @@ import java.util.function.Supplier
 @NonNls
 private const val BUNDLE = "messages.MiraiProjectWizardBundle"
 
-
 object MiraiProjectWizardBundle : AbstractBundle(BUNDLE) {
     @Nls
     @JvmStatic

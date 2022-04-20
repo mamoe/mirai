@@ -11,21 +11,19 @@ package net.mamoe.mirai.console.intellij.wizard
 
 import com.intellij.ide.starters.local.StarterContextProvider
 import com.intellij.ide.starters.local.wizard.StarterInitialStep
+import com.intellij.ide.starters.shared.JAVA_STARTER_LANGUAGE
 import com.intellij.ide.starters.shared.KOTLIN_STARTER_LANGUAGE
 import com.intellij.ide.starters.shared.ValidationFunctions
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.observable.util.trim
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.ui.popup.Balloon
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES
-import com.intellij.ui.components.JBTextField
-import com.intellij.ui.dsl.builder.Cell
-import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.builder.SegmentedButton
-import com.intellij.ui.dsl.builder.bindText
-import net.mamoe.mirai.console.intellij.creator.MiraiVersion
-import net.mamoe.mirai.console.intellij.creator.MiraiVersionKind
-import net.mamoe.mirai.console.intellij.creator.steps.Validation
-import net.mamoe.mirai.console.intellij.creator.tasks.adjustToPresentationName
+import com.intellij.ui.awt.RelativePoint
+import com.intellij.ui.dsl.builder.*
+import net.mamoe.mirai.console.intellij.creator.*
 import net.mamoe.mirai.console.intellij.wizard.MiraiProjectWizardBundle.message
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.runAsync
@@ -33,15 +31,15 @@ import org.jetbrains.concurrency.runAsync
 private val log = logger<MiraiProjectWizardInitialStep>()
 
 class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : StarterInitialStep(contextProvider) {
-    private val miraiVersionKindProperty = propertyGraph.property(MiraiVersionKind.Stable)
     private val pluginVersionProperty = propertyGraph.property("0.1.0")
     private val pluginNameProperty = propertyGraph.lazyProperty { "" }
     private val pluginIdProperty = propertyGraph.lazyProperty { "" }
     private val pluginAuthorProperty = propertyGraph.lazyProperty { System.getProperty("user.name") }
     private val pluginDependenciesProperty = propertyGraph.lazyProperty { "" }
     private val pluginInfoProperty = propertyGraph.lazyProperty { "" }
+    private val miraiVersionKindProperty = propertyGraph.property(MiraiVersionKind.Stable)
+    private val miraiVersionProperty = propertyGraph.property("0.1.0")
 
-    var miraiVersionKind by miraiVersionKindProperty
     var pluginVersion by pluginVersionProperty.trim()
     var pluginName by pluginNameProperty.trim()
     var pluginId by pluginIdProperty.trim()
@@ -49,14 +47,15 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     var pluginDependencies by pluginDependenciesProperty.trim()
     var pluginInfo by pluginInfoProperty.trim()
 
-    override fun addFieldsAfter(layout: Panel) {
-        lateinit var idCell: Cell<JBTextField>
-        lateinit var nameCell: Cell<JBTextField>
-        lateinit var versionCell: Cell<JBTextField>
+    var miraiVersionKind by miraiVersionKindProperty
+    var miraiVersion by miraiVersionProperty
 
+    private lateinit var miraiVersionCell: Cell<ComboBox<String>>
+
+    override fun addFieldsAfter(layout: Panel) {
         layout.group(message("title.plugin.description")) {
             row(message("label.plugin.id")) {
-                idCell = textField()
+                textField()
                     .withSpecialValidation(
                         ValidationFunctions.CHECK_NOT_EMPTY,
                     )
@@ -68,7 +67,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
             }
 
             row(message("label.plugin.name")) {
-                nameCell = textField()
+                textField()
                     .withSpecialValidation(
                         ValidationFunctions.CHECK_NOT_EMPTY,
                         MiraiValidations.CHECK_FORBIDDEN_PLUGIN_NAME,
@@ -83,7 +82,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
             }
 
             row(message("label.plugin.version")) {
-                versionCell = textField()
+                textField()
                     .withSpecialValidation(
                         ValidationFunctions.CHECK_NOT_EMPTY,
                         MiraiValidations.CHECK_ILLEGAL_VERSION_LINE
@@ -115,8 +114,9 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     }
                 }.bind(miraiVersionKindProperty)
 
-                val miraiVersionCell = comboBox(listOf<String>())
+                miraiVersionCell = comboBox(listOf<String>())
                     .enabled(false)
+                    .bindItem(miraiVersionProperty)
 
                 miraiVersionKindProperty.afterChange {
                     if (!miraiVersionCell.component.isEnabled) return@afterChange
@@ -132,8 +132,63 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
         // Update default values
 
         languageProperty.set(KOTLIN_STARTER_LANGUAGE)
+        projectTypeProperty.set(MiraiModuleBuilder.GRADLE_KTS_PROJECT)
         pluginIdProperty.set("$groupId.$artifactId")
         pluginNameProperty.set(artifactId.adjustToPresentationName())
+    }
+
+    override fun updateDataModel() {
+        super.updateDataModel()
+
+        starterContext.putUserData(
+            /* key = */ MiraiModuleBuilder.MIRAI_PROJECT_MODEL_KEY,
+            /* value = */ MiraiProjectModel(
+                projectCoordinates = ProjectCoordinates(
+                    groupId = groupId.trim(),
+                    artifactId = artifactId.trim(),
+                    version = pluginVersion.trim(),
+                    moduleName = entityName
+                ),
+                pluginCoordinates = PluginCoordinates(
+                    id = pluginId.trim(),
+                    name = pluginName.trim(),
+                    author = pluginAuthor.trim(),
+                    info = pluginInfo.trim(),
+                    dependsOn = pluginDependencies.trim()
+                ),
+                miraiVersion = miraiVersion,
+                buildSystemType = when (val projectType = projectTypeProperty.get()) {
+                    MiraiModuleBuilder.GRADLE_KTS_PROJECT -> BuildSystemType.GradleKt
+                    MiraiModuleBuilder.GRADLE_GROOVY_PROJECT -> BuildSystemType.GradleGroovy
+                    else -> error("Unsupported project type: $projectType")
+                },
+                languageType = when (val language = languageProperty.get()) {
+                    KOTLIN_STARTER_LANGUAGE -> LanguageType.Kotlin
+                    JAVA_STARTER_LANGUAGE -> LanguageType.Java
+                    else -> error("Unsupported language type: $language")
+                }
+            )
+        )
+    }
+
+    override fun validate(): Boolean {
+        if (miraiVersion == message("label.mirai.version.loading")) {
+            JBPopupFactory.getInstance()
+                .createHtmlTextBalloonBuilder(
+                    message("error.please.wait.for.mirai.version"),
+                    MessageType.WARNING, null
+                )
+                .setFadeoutTime(3000)
+                .createBalloon()
+                .show(
+                    RelativePoint.getSouthOf(
+                        miraiVersionCell.component
+                    ), Balloon.Position.below
+                )
+            return false
+        }
+
+        return super.validate()
     }
 
     private fun updateVersionItems(
@@ -155,10 +210,18 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     .forEach { v -> miraiVersionCell.component.addItem(v) }
                 list
             } catch (e: Throwable) {
-                Validation.popup(
-                    message("error.failed.to.download.mirai.version"),
-                    miraiVersionCell.component
-                )
+                JBPopupFactory.getInstance()
+                    .createHtmlTextBalloonBuilder(
+                        message("error.failed.to.download.mirai.version"),
+                        MessageType.ERROR, null
+                    )
+                    .setFadeoutTime(2000)
+                    .createBalloon()
+                    .show(
+                        RelativePoint.getSouthOf(
+                            miraiVersionCell.component
+                        ), Balloon.Position.below
+                    )
                 null
             }
         }.onError { log.error(it) }
@@ -168,4 +231,35 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 miraiVersionCell.enabled(true)
             }
     }
+}
+
+private fun String.adjustToPresentationName(): String {
+    val result = buildString {
+        var doCapitalization = true
+
+        fun Char.isAllowed() = isLetterOrDigit() || this in "_- "
+
+        for (char in this@adjustToPresentationName) {
+            if (!char.isAllowed()) continue
+
+            if (doCapitalization) {
+                when {
+                    char.isLetter() -> append(char.uppercase())
+                    char == '_' -> {}
+                    char == '-' -> {}
+                    else -> append(char)
+                }
+                doCapitalization = false
+            } else {
+                if (char in "_- ") {
+                    doCapitalization = true
+                    append(' ')
+                } else {
+                    append(char)
+                }
+            }
+        }
+    }.trim()
+
+    return result
 }

@@ -16,36 +16,31 @@ import com.intellij.ide.starters.local.wizard.StarterInitialStep
 import com.intellij.ide.starters.shared.*
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.project.DumbAwareRunnable
-import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider
-import com.intellij.openapi.startup.StartupManager
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.util.Key
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.util.lang.JavaVersion
+import net.mamoe.mirai.console.intellij.assets.FT
 import net.mamoe.mirai.console.intellij.assets.Icons
 import net.mamoe.mirai.console.intellij.creator.MiraiProjectModel
-import net.mamoe.mirai.console.intellij.creator.tasks.CreateProjectTask
-import org.jetbrains.kotlin.tools.composeProjectWizard.ComposeModuleBuilder
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.concurrent.Executors
 
 class MiraiModuleBuilder : StarterModuleBuilder() {
+    companion object {
+        val MIRAI_PROJECT_MODEL_KEY = Key.create<MiraiProjectModel>("mirai.project.model")
+
+        val GRADLE_GROOVY_PROJECT: StarterProjectType = StarterProjectType("gradleGroovy", "Gradle Groovy DSL")
+        val GRADLE_KTS_PROJECT: StarterProjectType = StarterProjectType("gradleKts", "Gradle Kotlin DSL")
+    }
+
     override fun getBuilderId() = "MiraiModuleBuilder"
     override fun getPresentableName() = MiraiProjectWizardBundle.message("module.presentation.name")
     override fun getWeight() = KOTLIN_WEIGHT - 2
     override fun getNodeIcon() = Icons.MainIcon
     override fun getDescription(): String = MiraiProjectWizardBundle.message("module.description")
 
-    override fun getProjectTypes(): List<StarterProjectType> = listOf(GRADLE_PROJECT)
+    override fun getProjectTypes(): List<StarterProjectType> = listOf(GRADLE_GROOVY_PROJECT, GRADLE_KTS_PROJECT)
     override fun getTestFrameworks(): List<StarterTestRunner> = listOf(JUNIT_TEST_RUNNER)
     override fun getMinJavaVersion(): JavaVersion = LanguageLevel.JDK_1_8.toJavaVersion()
 
@@ -69,77 +64,68 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
         return MiraiProjectWizardInitialStep(contextProvider)
     }
 
-    override fun setupRootModel(rootModel: ModifiableRootModel) {
-        val project = rootModel.project
-        val (root, vFile) = createAndGetRoot()
-        rootModel.addContentEntry(vFile)
+    override fun setupModule(module: Module) {
+        // manually set, we do not show the second page with libraries
+        starterContext.starter = starterContext.starterPack.starters.first()
+        starterContext.starterDependencyConfig = loadDependencyConfig()[starterContext.starter?.id]
 
-        if (moduleJdk != null) {
-            rootModel.sdk = moduleJdk
-        } else {
-            rootModel.inheritSdk()
-        }
-
-        val r = DumbAwareRunnable {
-            ProgressManager.getInstance().run(CreateProjectTask(root, rootModel.module, model))
-        }
-
-        if (project.isDisposed) return
-
-        if (
-            ApplicationManager.getApplication().isUnitTestMode ||
-            ApplicationManager.getApplication().isHeadlessEnvironment
-        ) {
-            r.run()
-            return
-        }
-
-        if (!project.isInitialized) {
-            StartupManager.getInstance(project).registerPostStartupActivity(r)
-            return
-        }
-
-        DumbService.getInstance(project).runWhenSmart(r)
+        super.setupModule(module)
     }
 
-    private fun createAndGetRoot(): Pair<Path, VirtualFile> {
-        val temp = contentEntryPath ?: throw IllegalStateException("Failed to get content entry path")
+    override fun getTemplateProperties(): Map<String, Any> {
+        val model = starterContext.getUserData(MIRAI_PROJECT_MODEL_KEY)!!
+        model.run {
+            val projectCoordinates = projectCoordinates
+            val pluginCoordinates = pluginCoordinates
+            return mapOf<String, Any>(
+                "KOTLIN_VERSION" to KotlinVersion.CURRENT.toString(),
+                "MIRAI_VERSION" to miraiVersion,
+                "GROUP_ID" to projectCoordinates.groupId,
+                "VERSION" to projectCoordinates.version,
+                "PROJECT_NAME" to starterContext,
+                "USE_PROXY_REPO" to "true",
+                "ARTIFACT_ID" to projectCoordinates.artifactId,
 
-        val pathName = FileUtil.toSystemIndependentName(temp)
+                "PLUGIN_ID" to pluginCoordinates.id,
+                "PLUGIN_NAME" to languageType.escapeString(pluginCoordinates.name),
+                "PLUGIN_AUTHOR" to languageType.escapeString(pluginCoordinates.author),
+                "PLUGIN_INFO" to languageType.escapeRawString(pluginCoordinates.info),
+                "PLUGIN_DEPENDS_ON" to pluginCoordinates.dependsOn,
+                "PLUGIN_VERSION" to projectCoordinates.version,
 
-        val path = Paths.get(pathName)
-        Files.createDirectories(path)
-        val vFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(pathName)
-            ?: throw IllegalStateException("Failed to refresh and file file: $path")
+                "PACKAGE_NAME" to packageName,
+                "CLASS_NAME" to mainClassSimpleName,
 
-
-
-        return path to vFile
-    }
-
-    //    private val scope = CoroutineScope(SupervisorJob())
-    private val scope = Executors.newFixedThreadPool(2)
-    private val model = MiraiProjectModel.create(scope)
-
-    override fun cleanup() {
-        super.cleanup()
-        scope.shutdownNow()
+                "LANGUAGE_TYPE" to languageType.toString(),
+            )
+        }
     }
 
     override fun getAssets(starter: Starter): List<GeneratorAsset> {
-        val manager = FileTemplateManager.getInstance(ProjectManager.getInstance().defaultProject)
-        val standardAssetsProvider = StandardAssetsProvider()
-
-        val configType = starterContext.getUserData(ComposeModuleBuilder.COMPOSE_CONFIG_TYPE_KEY)
-        val platform = starterContext.getUserData(ComposeModuleBuilder.COMPOSE_PLATFORM_KEY)
-        val packagePath = starterContext.group.replace('.', '/')
-
+        val ftManager = FileTemplateManager.getInstance(ProjectManager.getInstance().defaultProject)
         val assets = mutableListOf<GeneratorAsset>()
 
-//        assets.add(
-//            GeneratorTemplateFile("")
-//        )
-        return listOf(GeneratorEmptyDirectory(""))
+        val model = starterContext.getUserData(MIRAI_PROJECT_MODEL_KEY)!!
+
+        val standardAssetsProvider = StandardAssetsProvider()
+        assets.addAll(standardAssetsProvider.getGradlewAssets())
+
+        model.buildSystemType.createBuildSystem(model)
+            .collectAssets { assets.add(it) }
+
+        assets.add(
+            GeneratorTemplateFile(
+                "src/main/resources/META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin",
+                ftManager.getCodeTemplate(FT.PluginMainService)
+            )
+        )
+
+        assets.add(GeneratorEmptyDirectory("debug-sandbox"))
+        assets.add(GeneratorEmptyDirectory("debug-sandbox/plugins"))
+        assets.add(GeneratorEmptyDirectory("debug-sandbox/data"))
+        assets.add(GeneratorEmptyDirectory("debug-sandbox/config"))
+
+        return assets
     }
 
 }

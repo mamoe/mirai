@@ -10,21 +10,12 @@
 
 package net.mamoe.mirai.console.intellij.creator.tasks
 
-import com.intellij.ide.fileTemplates.FileTemplateManager
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.writeChild
-import net.mamoe.mirai.console.intellij.creator.steps.NamedFile
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
 val Path.vfOrNull: VirtualFile?
     get() = LocalFileSystem.getInstance().refreshAndFindFileByPath(this.toAbsolutePath().toString())
@@ -42,49 +33,12 @@ fun VirtualFile.resolve(relative: String): VirtualFile? = VfsUtil.findRelativeFi
     *relative.replace('\\', '/').split('/').toTypedArray()
 )
 
-fun <T> invokeAndWait(modalityState: ModalityState? = null, runnable: () -> T): T {
-    val app = ApplicationManager.getApplication()
-    if (app.isDispatchThread) return runnable()
-    return computeDelegated {
-        app.invokeAndWait({ it(runnable()) }, modalityState ?: ModalityState.defaultModalityState())
-    }
-}
-
-fun <T> runWriteActionAndWait(modalityState: ModalityState? = null, runnable: () -> T) {
-    invokeAndWait(modalityState) {
-        runWriteAction(runnable)
-    }
-}
-
 @PublishedApi
 internal inline fun <T> computeDelegated(executor: (setter: (T) -> Unit) -> Unit): T {
     var resultRef: T? = null
     executor { resultRef = it }
     @Suppress("UNCHECKED_CAST")
     return resultRef as T
-}
-
-fun Project.getTemplate(
-    templateName: String,
-    properties: Map<String, String?>? = null
-): String {
-    val manager = FileTemplateManager.getInstance(this)
-    val template = manager.getJ2eeTemplate(templateName)
-
-    val allProperties = manager.defaultProperties
-    properties?.let { prop -> allProperties.putAll(prop.mapValues { it.value.orEmpty() }) }
-
-    return template.getText(allProperties)
-}
-
-fun Project.getTemplate(
-    templateName: String,
-    vararg properties: Pair<String, String?>
-): String = getTemplate(templateName, properties.toMap())
-
-
-internal fun VirtualFile.writeChild(pluginMainClassFile: NamedFile): Path {
-    return writeChild(pluginMainClassFile.path, pluginMainClassFile.content)
 }
 
 internal fun VirtualFile.writeChild(path: String, content: String): Path {
@@ -136,53 +90,4 @@ fun String.adjustToClassName(): String? {
     if (result.isValidSimpleClassName()) return result
 
     return null
-}
-
-fun String.adjustToPresentationName(): String {
-    val result = buildString {
-        var doCapitalization = true
-
-        fun Char.isAllowed() = isLetterOrDigit() || this in "_- "
-
-        for (char in this@adjustToPresentationName) {
-            if (!char.isAllowed()) continue
-
-            if (doCapitalization) {
-                when {
-                    char.isLetter() -> append(char.uppercase())
-                    char == '_' -> {}
-                    char == '-' -> {}
-                    else -> append(char)
-                }
-                doCapitalization = false
-            } else {
-                if (char in "_- ") {
-                    doCapitalization = true
-                    append(' ')
-                } else {
-                    append(char)
-                }
-            }
-        }
-    }.trim()
-
-    return result
-}
-
-@Suppress("RedundantNullableReturnType")
-private val UNINITIALIZED: Any? = Any()
-
-@Suppress("UNCHECKED_CAST")
-fun <T, R> lateinitReadWriteProperty(initializer: () -> R) = object : ReadWriteProperty<T, R> {
-    private var field = AtomicReference(UNINITIALIZED)
-    override fun setValue(thisRef: T, property: KProperty<*>, value: R) {
-        field.set(value)
-    }
-
-    override tailrec fun getValue(thisRef: T, property: KProperty<*>): R {
-        val v = field.get()
-        if (v !== UNINITIALIZED) return v as R
-        field.compareAndSet(UNINITIALIZED, initializer())
-        return getValue(thisRef, property)
-    }
 }
