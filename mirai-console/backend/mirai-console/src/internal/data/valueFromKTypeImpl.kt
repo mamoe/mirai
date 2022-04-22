@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -68,7 +68,7 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
                     },
                     kToValue = { k -> valueFromKType(type.arguments[0].type!!, k) },
                     vToValue = { v -> valueFromKType(type.arguments[1].type!!, v) }
-                ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
+                ).serializableValueWith(serializersModule.serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
             }
         }
         MutableList::class,
@@ -84,7 +84,7 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
                 TODO()
             } else {
                 return createCompositeListValueImpl<Any?> { v -> valueFromKType(type.arguments[0].type!!, v) }
-                    .serializableValueWith(serializerMirai(type) as KSerializer<List<Any?>>)
+                    .serializableValueWith(serializersModule.serializerMirai(type) as KSerializer<List<Any?>>)
             }
         }
         MutableSet::class,
@@ -101,11 +101,11 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
                 TODO()
             } else {
                 return createCompositeSetValueImpl<Any?> { v -> valueFromKType(type.arguments[0].type!!, v) }
-                    .serializableValueWith(serializerMirai(type) as KSerializer<Set<Any?>>)
+                    .serializableValueWith(serializersModule.serializerMirai(type) as KSerializer<Set<Any?>>)
             }
         }
         else -> {
-            val serializer = serializerMirai(type)
+            val serializer = serializersModule.serializerMirai(type)
             return LazyReferenceValueImpl<Any?>().serializableValueWith(serializer)
         }
     }

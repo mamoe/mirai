@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,14 +9,26 @@
 
 package net.mamoe.mirai.console.data
 
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import net.mamoe.mirai.console.util.ConsoleInternalApi
+import kotlinx.serialization.modules.SerializersModule
+import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
+import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.mapPrimitive
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
-@OptIn(ConsoleInternalApi::class)
-internal class PluginDataTest {
+internal class PluginDataTest : AbstractConsoleInstanceTest() {
+    @TempDir
+    lateinit var tempDir: Path
+
     class MyPluginData : AutoSavePluginData("test") {
         var int by value(1)
         val map: MutableMap<String, String> by value()
@@ -127,5 +139,87 @@ internal class PluginDataTest {
         assertEquals(mapOf("f" to "test").toString(), reference().toString())
 
         assertSame(reference(), delegation()) // check shadowing
+    }
+
+
+    class SupportsMessageChain : AutoSavePluginData("test") {
+        val chain: MessageChain by value(messageChainOf(PlainText("str")))
+    }
+
+    @Test
+    fun `supports message chain`() {
+        assertEquals(
+            """
+            chain: 
+              - type: PlainText
+                value: 
+                  content: str
+        """.trimIndent(), serializePluginData(SupportsMessageChain())
+        )
+        serializeAndRereadPluginData(SupportsMessageChain())
+    }
+
+    class SupportsPolymorphicCorrectly : AutoSavePluginData("test") {
+        val singleMessage: SingleMessage by value(PlainText("str"))
+        val plainText: PlainText by value(PlainText("str"))
+    }
+
+    @Test
+    fun `supports polymorphic correctly`() {
+        assertEquals(
+            """
+            singleMessage: 
+              type: PlainText
+              value: 
+                content: str
+            plainText: 
+              content: str
+        """.trimIndent(), serializePluginData(SupportsPolymorphicCorrectly())
+        )
+        serializeAndRereadPluginData(SupportsPolymorphicCorrectly())
+    }
+
+    class SupportsSerializersModule : AutoSavePluginData("test") {
+        override val serializersModule: SerializersModule = SerializersModule {
+            contextual(MyClass::class, myClassSerializer)
+        }
+
+        val v: MyClass by value(MyClass("test"))
+
+        data class MyClass(
+            val str: String
+        )
+
+        companion object {
+            private val myClassSerializer = String.serializer().mapPrimitive("MyClass",
+                { MyClass(it) },
+                { it.str }
+            )
+        }
+    }
+
+    @Test
+    fun `supports serializers module`() {
+        assertEquals(
+            """
+            v: test
+        """.trimIndent(), serializePluginData(SupportsSerializersModule())
+        )
+        serializeAndRereadPluginData(SupportsSerializersModule())
+    }
+
+
+    private fun serializePluginData(data: PluginData): String {
+        val storage = MultiFilePluginDataStorageImpl(tempDir)
+        storage.store(mockPlugin, data)
+        return storage.getPluginDataFileInternal(mockPlugin, data).readText()
+    }
+
+    private fun serializeAndRereadPluginData(data: PluginData) {
+        val storage = MultiFilePluginDataStorageImpl(tempDir)
+        storage.store(mockPlugin, data)
+        val serialized = storage.getPluginDataFileInternal(mockPlugin, data).readText()
+        storage.load(mockPlugin, data)
+        assertEquals(serialized, storage.getPluginDataFileInternal(mockPlugin, data).readText())
     }
 }
