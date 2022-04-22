@@ -70,6 +70,20 @@ dependencies {
 }
 ```
 
+特别的, 如果使用了子项目 (Gradle MultiProjects), Mirai Console Gradle 默认也会打包进 JAR.
+
+如果您希望 Mirai Console Gradle 像处理一般依赖一样处理 Gradle 子项目, 请使用以下配置告知
+
+```groovy
+dependencies {
+    implementation project(":nested")
+
+    asNormalDep project(":nested")
+    // build.gradle.kts
+    "asNormalDep"(project(":nested"))
+}
+```
+
 ### `publishPlugin`
 
 配置好 Bintray 参数，使用 `./gradlew publishPlugin` 可自动发布并上传插件到 Bintray。

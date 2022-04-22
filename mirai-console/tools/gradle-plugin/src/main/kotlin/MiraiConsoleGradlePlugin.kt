@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 public class MiraiConsoleGradlePlugin : Plugin<Project> {
     internal companion object {
         const val MIRAI_SHADOW_CONF_NAME: String = "shadowLink"
+        const val MIRAI_AS_NORMAL_DEP_CONF_NAME: String = "asNormalDep"
     }
 
     private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
@@ -167,6 +168,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 
     private fun Project.setupConfigurations() {
         configurations.create(MIRAI_SHADOW_CONF_NAME).isCanBeResolved = false
+        configurations.create(MIRAI_AS_NORMAL_DEP_CONF_NAME).isCanBeResolved = false
     }
 
     override fun apply(target: Project): Unit = with(target) {

@@ -10,9 +10,9 @@
 package net.mamoe.mirai.console.gradle
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.ResolvedArtifact
-import org.gradle.api.artifacts.ResolvedDependency
+import org.gradle.api.Project
+import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.capabilities.Capability
 import org.gradle.api.file.DuplicatesStrategy
@@ -58,6 +58,8 @@ public open class BuildMiraiPluginV2 : Jar() {
                 "net.mamoe:mirai-console-terminal",
             )
         }
+
+        @Suppress("LocalVariableName")
         @TaskAction
         internal fun run() {
             val runtime = mutableSetOf<String>()
@@ -66,6 +68,8 @@ public open class BuildMiraiPluginV2 : Jar() {
             val linkToApi = mutableSetOf<String>()
             val shadowedFiles = mutableSetOf<File>()
             val shadowedDependencies = mutableSetOf<String>()
+            val subprojects = mutableSetOf<String>()
+            val subprojects_fullpath = mutableSetOf<String>()
 
             project.configurations.findByName(MiraiConsoleGradlePlugin.MIRAI_SHADOW_CONF_NAME)?.allDependencies?.forEach { dep ->
                 if (dep is ExternalModuleDependency) {
@@ -73,18 +77,52 @@ public open class BuildMiraiPluginV2 : Jar() {
                     shadowedDependencies.add(artId)
                 }
             }
-            project.configurations.findByName("apiElements")?.allDependencies?.forEach { dep ->
-                if (dep is ExternalModuleDependency) {
-                    val artId = "${dep.group}:${dep.name}"
-                    linkedDependencies.add(artId)
-                    linkToApi.add(artId)
-                }
-            }
-            project.configurations.findByName("implementation")?.allDependencies?.forEach { dep ->
-                if (dep is ExternalModuleDependency) {
+            project.configurations.findByName(MiraiConsoleGradlePlugin.MIRAI_AS_NORMAL_DEP_CONF_NAME)?.allDependencies?.forEach { dep ->
+                if (dep is ProjectDependency) {
                     linkedDependencies.add("${dep.group}:${dep.name}")
                 }
             }
+
+            fun deepForeachDependencies(conf: Configuration?, action: (Dependency) -> Unit) {
+                (conf ?: return).allDependencies.forEach { dep ->
+                    action(dep)
+                    if (dep is ProjectDependency) {
+                        subprojects.add("${dep.group}:${dep.name}")
+                        deepForeachDependencies(dep.dependencyProject.configurations.findByName(conf.name), action)
+                    }
+                }
+
+            }
+
+            fun resolveProject(project: Project, doResolveApi: Boolean) {
+                deepForeachDependencies(project.configurations.findByName("apiElements")) { dep ->
+                    if (dep is ExternalModuleDependency) {
+                        val artId = "${dep.group}:${dep.name}"
+                        linkedDependencies.add(artId)
+                        if (doResolveApi) {
+                            linkToApi.add(artId)
+                        }
+                    }
+                    if (dep is ProjectDependency) {
+                        subprojects_fullpath.add(dep.dependencyProject.path)
+                        subprojects.add("${dep.group}:${dep.name}")
+                        resolveProject(dep.dependencyProject, doResolveApi)
+                    }
+                }
+
+                project.configurations.findByName("implementation")?.allDependencies?.forEach { dep ->
+                    if (dep is ExternalModuleDependency) {
+                        linkedDependencies.add("${dep.group}:${dep.name}")
+                    }
+                    if (dep is ProjectDependency) {
+                        subprojects_fullpath.add(dep.dependencyProject.path)
+                        subprojects.add("${dep.group}:${dep.name}")
+                        resolveProject(dep.dependencyProject, false)
+                    }
+                }
+            }
+
+            resolveProject(project, true)
             linkedDependencies.removeAll(shadowedDependencies)
             linkToApi.removeAll(shadowedDependencies)
             linkedDependencies.addAll(miraiDependencies)
@@ -105,12 +143,17 @@ public open class BuildMiraiPluginV2 : Jar() {
 
             fun resolveDependency(resolvedDependency: ResolvedDependency) {
                 val depId = resolvedDependency.depId()
+                logger.info { "resolving         : $depId" }
                 if (depId in linkedDependencies) {
                     markAsResolved(resolvedDependency)
                     linkDependencyTo(resolvedDependency, runtime)
                     if (depId in linkToApi) {
                         linkDependencyTo(resolvedDependency, api)
                     }
+                    return
+                }
+                if (depId in subprojects) {
+                    resolvedDependency.children.forEach { resolveDependency(it) }
                     return
                 }
             }
@@ -120,6 +163,7 @@ public open class BuildMiraiPluginV2 : Jar() {
             logger.info { "linkToAPi         : $linkToApi" }
             logger.info { "api               : $api" }
             logger.info { "runtime           : $runtime" }
+            logger.info { "subprojects       : $subprojects" }
 
             val lenientConfiguration = runtimeClasspath.lenientConfiguration
             if (lenientConfiguration is DefaultLenientConfiguration) {
@@ -149,6 +193,12 @@ public open class BuildMiraiPluginV2 : Jar() {
                 if (artId is ModuleComponentArtifactIdentifier) {
                     val cid = artId.componentIdentifier
                     if ("${cid.group}:${cid.module}" in linkedDependencies) {
+                        return@forEach
+                    }
+                }
+                val cid = artId.componentIdentifier
+                if (cid is ProjectComponentIdentifier) {
+                    if (cid.projectPath in subprojects_fullpath) {
                         return@forEach
                     }
                 }
