@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("DuplicatedCode")
+@file:Suppress("DuplicatedCode", "FunctionName")
 
 package net.mamoe.mirai.console.gradle
 
@@ -179,6 +179,29 @@ class TestBuildPlugin : AbstractTest() {
             .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
             .build()
         checkOutput()
+    }
+
+    @Test
+    fun `can build with bom dependencies`() {
+        tempDir.resolve("build.gradle").appendText(
+            """
+            dependencies {
+                implementation platform("com.fasterxml.jackson:jackson-bom:2.12.4")
+            }
+        """.trimIndent()
+        )
+        gradleRunner()
+            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
+            .build()
+
+        ZipFile(findJar()).use { zipFile ->
+
+            val dpPrivate = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-private.txt")
+            ).use { it.readBytes().decodeToString() }
+
+            assertFalse { dpPrivate.contains("com.fasterxml.jackson:jackson-bom") }
+        }
     }
 
     private fun findJar(): File = tempDir.resolve("build/libs").listFiles()!!.first { it.name.endsWith(".mirai.jar") }
