@@ -11,10 +11,9 @@
 
 package net.mamoe.mirai.console.data.java
 
-import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.console.util.JavaFriendlyApi
 
 /**
  * 一个插件的配置数据, 用于和用户交互.
@@ -26,23 +25,21 @@ import net.mamoe.mirai.utils.DeprecatedSinceMirai
  *
  * ### 实现
  *
- * 在 [JAutoSavePluginData] 的示例基础上, 修改类定义
+ * 在 [JavaAutoSavePluginData] 的示例基础上, 修改类定义
  * ```java
  * // 原
- * public class AccountPluginData extends JAutoSavePluginData {
+ * public class AccountPluginData extends JavaAutoSavePluginData {
  * // 修改为
- * public class AccountPluginConfig extends JAutoSavePluginConfig {
+ * public class AccountPluginConfig extends JavaAutoSavePluginConfig {
  * ```
  * 即可将一个 [PluginData] 变更为 [PluginConfig].
  *
- * @see JAutoSavePluginData
+ * @see JavaAutoSavePluginData
  * @see PluginConfig
+ *
+ * @since 2.11
  */
-@Deprecated(
-    "请使用 JavaAutoSavePluginConfig",
-    replaceWith = ReplaceWith("JavaAutoSavePluginConfig", "net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig"),
-    level = DeprecationLevel.WARNING
-)
-@DeprecatedSinceMirai(warningSince = "2.11")
-public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName),
+@JavaFriendlyApi
+public abstract class JavaAutoSavePluginConfig public constructor(saveName: String) :
+    JavaAutoSavePluginData(saveName),
     PluginConfig

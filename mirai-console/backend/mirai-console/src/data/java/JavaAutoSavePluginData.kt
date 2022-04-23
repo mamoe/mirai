@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.setValueBySerializer
 import net.mamoe.mirai.console.internal.data.valueImpl
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.console.util.JavaFriendlyApi
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
@@ -27,6 +27,9 @@ import kotlin.reflect.full.createType
 
 /**
  * 供 Java 用户使用的 [PluginData]. 参考 [PluginData] 以获取更多信息.
+ *
+ * 仍然更推荐在项目中混用 Java 和 Kotlin, 使用 Kotlin 编写 [PluginData].
+ * 也可以使用其他持久化库替代 [PluginData].
  *
  * 在 [JvmPlugin] 的典型实现方式:
  * ```
@@ -43,7 +46,7 @@ import kotlin.reflect.full.createType
  * }
  *
  * // MyPluginData.java
- * public class MyPluginData extends JAutoSavePluginData {
+ * public class MyPluginData extends JavaAutoSavePluginData {
  *     public static final MyPluginData INSTANCE = new MyPluginData();
  *
  *     public final Value<String> string = value("test"); // 默认值 "test"
@@ -69,67 +72,72 @@ import kotlin.reflect.full.createType
  * **注意**: 由于实现特殊, 请不要在初始化 Value 时就使用 `.get()`. 这可能会导致自动保存追踪失效. 必须在使用时才调用 `.get()` 获取真实数据对象.
  *
  * @see PluginData
+ * @since 2.11
  */
-@Deprecated(
-    "请使用 JavaAutoSavePluginData",
-    replaceWith = ReplaceWith("JavaAutoSavePluginData", "net.mamoe.mirai.console.data.java.JavaAutoSavePluginData"),
-    level = DeprecationLevel.WARNING
-)
-@DeprecatedSinceMirai(warningSince = "2.11")
-public abstract class JAutoSavePluginData public constructor(saveName: String) : AutoSavePluginData(saveName),
+@JavaFriendlyApi
+public abstract class JavaAutoSavePluginData public constructor(saveName: String) : AutoSavePluginData(saveName),
     PluginConfig {
 
-    //// region JAutoSavePluginData_value_primitives CODEGEN ////
+    //// region JavaAutoSavePluginData_value_primitives CODEGEN ////
 
     /**
-     * 创建一个 [Byte] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Byte] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Byte): SerializerAwareValue<Byte> = valueImpl(default)
+    public fun value(name: String, default: Byte): SerializerAwareValue<Byte> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Short] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Short] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Short): SerializerAwareValue<Short> = valueImpl(default)
+    public fun value(name: String, default: Short): SerializerAwareValue<Short> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Int] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Int] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
+    public fun value(name: String, default: Int): SerializerAwareValue<Int> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Long] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Long] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Long): SerializerAwareValue<Long> = valueImpl(default)
+    public fun value(name: String, default: Long): SerializerAwareValue<Long> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Float] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Float] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Float): SerializerAwareValue<Float> = valueImpl(default)
+    public fun value(name: String, default: Float): SerializerAwareValue<Float> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Double] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Double] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Double): SerializerAwareValue<Double> = valueImpl(default)
+    public fun value(name: String, default: Double): SerializerAwareValue<Double> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Char] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Char] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Char): SerializerAwareValue<Char> = valueImpl(default)
+    public fun value(name: String, default: Char): SerializerAwareValue<Char> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [Boolean] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [Boolean] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: Boolean): SerializerAwareValue<Boolean> = valueImpl(default)
+    public fun value(name: String, default: Boolean): SerializerAwareValue<Boolean> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
     /**
-     * 创建一个 [String] 类型的 [Value], 并设置初始值为 [default]
+     * 创建一个名称为 [name], 类型为 [String] 的 [Value], 并设置初始值为 [default].
      */
-    public fun value(default: String): SerializerAwareValue<String> = valueImpl(default)
+    public fun value(name: String, default: String): SerializerAwareValue<String> =
+        valueImpl(default).apply { track(this, name, emptyList()) }
 
-    //// endregion JAutoSavePluginData_value_primitives CODEGEN ////
+    //// endregion JavaAutoSavePluginData_value_primitives CODEGEN ////
 
     /**
-     * 构造一个支持泛型的 [Value].
+     * 创建一个支持泛型的 [Value].
      *
      * 对于 [Map], [Set], [List], [ConcurrentMap] 等标准库类型, 这个函数会尝试构造 [LinkedHashMap], [LinkedHashSet], [ArrayList], [ConcurrentHashMap] 等相关类型.
      * 而对于自定义数据类型, 本函数只会反射获取 [objectInstance][KClass.objectInstance] 或使用*无参构造器*构造实例.
@@ -143,12 +151,17 @@ public abstract class JAutoSavePluginData public constructor(saveName: String) :
      * - 使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的 **Kotlin** 类
      */
     @JvmOverloads
-    public fun <T : Any> typedValue(type: KType, default: T? = null): SerializerAwareValue<T> {
+    public fun <T : Any> typedValue(name: String, type: KType, default: T? = null): SerializerAwareValue<T> {
         val value = valueImpl<T>(type, type.classifier!!.cast())
         if (default != null) value.setValueBySerializer(default)
+        track(value, name, emptyList())
         return value
     }
 
+    /**
+     * @since 2.11
+     */
+    @JavaFriendlyApi
     public companion object {
         /**
          * 根据 [Class] 及泛型参数获得一个类型
