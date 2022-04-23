@@ -27,6 +27,7 @@ kotlin {
 dependencies {
     api(project(":mirai-core-api"))
     api(project(":mirai-core-utils"))
+    testRuntimeOnly(project(":mirai-core"))
     api(project(":mirai-console-compiler-annotations"))
     api(project(":mirai-console"))
     api(project(":mirai-console-terminal"))

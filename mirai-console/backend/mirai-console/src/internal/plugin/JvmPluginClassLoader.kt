@@ -104,6 +104,40 @@ internal class DynLibClassLoader(
         }
     }
 
+    internal fun findButNoSystem(name: String): Class<*>? {
+        val pt = this.parent
+        if (pt is DynLibClassLoader) {
+            pt.findButNoSystem(name)?.let { return it }
+        }
+        synchronized(getClassLoadingLock(name)) {
+            findLoadedClass(name)?.let { return it }
+            try {
+                findClass(name)?.let { return it }
+            } catch (ignored: ClassNotFoundException) {
+            }
+        }
+        return null
+    }
+
+    override fun loadClass(name: String, resolve: Boolean): Class<*> {
+        if (name.startsWith("java.")) return Class.forName(name, false, null)
+        val pt = this.parent
+        val topPt: ClassLoader? = if (pt is DynLibClassLoader) {
+            pt.findButNoSystem(name)?.let { return it }
+
+            generateSequence<ClassLoader>(pt) { it.parent }.firstOrNull { it !is DynLibClassLoader }
+        } else pt
+
+
+        synchronized(getClassLoadingLock(name)) {
+            findLoadedClass(name)?.let { return it }
+            try {
+                return findClass(name)
+            } catch (ignored: ClassNotFoundException) {
+            }
+            return Class.forName(name, false, topPt)
+        }
+    }
 }
 
 @Suppress("JoinDeclarationAndAssignment")
@@ -134,6 +168,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         init0()
     }
 
+    @Suppress("Since15")
     private constructor(file: File, ctx: JvmPluginsLoadingCtx) : super(
         file.name,
         arrayOf(), ctx.sharedLibrariesLoader
@@ -223,7 +258,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
             } else {
                 pluginIndependentCL.addLib(lib)
             }
-            logger.debug { "Linked $artifact $linkType" }
+            logger.debug { "Linked $artifact $linkType <${if (shared) pluginSharedCL else pluginIndependentCL}>" }
         }
     }
 
@@ -268,6 +303,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     override fun loadClass(name: String, resolve: Boolean): Class<*> = loadClass(name)
 
     override fun loadClass(name: String): Class<*> {
+        if (name.startsWith("java.")) return Class.forName(name, false, null)
         if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
             return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
         }
