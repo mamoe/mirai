@@ -121,6 +121,9 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
                     "miraiPrepareMetadata".wrapNameWithPlatform(target, isSingleTarget)
                 )
                 buildPluginV2.init(target)
+                buildPluginV2.destinationDirectory.value(
+                    project.layout.projectDirectory.dir(project.buildDir.name).dir("mirai")
+                )
             }
             tasks.create(
                 "buildPluginLegacy".wrapNameWithPlatform(target, isSingleTarget),
