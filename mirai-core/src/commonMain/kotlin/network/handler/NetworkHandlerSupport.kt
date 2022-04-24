@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.handler
@@ -159,6 +159,26 @@ internal abstract class NetworkHandlerSupport(
         final override val coroutineContext: CoroutineContext =
             this@NetworkHandlerSupport.coroutineContext + Job(this@NetworkHandlerSupport.coroutineContext.job)
 
+        // Do not use init blocks to launch anything. Do use [startState]
+
+        /**
+         * Starts things that should be done in this state.
+         *
+         * Called after this instance is initialized, and it is at suitable time for initialization.
+         *
+         * Note: must be fast.
+         */
+        open fun startState() {
+
+        }
+
+        /**
+         * Called after this instance is set to [_state]. (Visible publicly)
+         */
+        open fun afterUpdated() {
+
+        }
+
         open fun getCause(): Throwable? = null
 
         /**
@@ -248,7 +268,7 @@ internal abstract class NetworkHandlerSupport(
             val stateObserver = context.getOrNull(StateObserver)
 
             val impl = try {
-                new() // inline only once
+                new()
             } catch (e: Throwable) {
                 stateObserver?.exceptionOnCreatingNewState(this, old, e)
                 throw e
@@ -257,8 +277,14 @@ internal abstract class NetworkHandlerSupport(
             check(old !== impl) { "Old and new states cannot be the same." }
 
             stateObserver?.beforeStateChanged(this, old, impl)
+
+            // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
+            // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
+            impl.startState() // launch jobs
             _state = impl // update current state
             old.cancel(StateSwitchingException(old, impl)) // close old
+            impl.afterUpdated() // now do post-update things.
+
             stateObserver?.stateChanged(this, old, impl) // notify observer
             _stateChannel.trySend(impl.correspondingState) // notify selector
 

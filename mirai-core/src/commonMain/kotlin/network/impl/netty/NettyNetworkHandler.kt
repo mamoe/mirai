@@ -259,14 +259,16 @@ internal open class NettyNetworkHandler(
          */
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
-        private val connection = async {
-            createConnection()
-        }
+        private lateinit var connection: Deferred<io.netty.channel.Channel>
 
         @Suppress("JoinDeclarationAndAssignment")
-        private val connectResult: Deferred<Unit>
+        private lateinit var connectResult: Deferred<Unit>
 
-        init {
+        override fun startState() {
+            connection = async {
+                createConnection()
+            }
+
             connectResult = async {
                 connection.join()
                 context[SsoProcessor].login(this@NettyNetworkHandler)
@@ -318,7 +320,8 @@ internal open class NettyNetworkHandler(
     protected inner class StateLoading(
         private val connection: NettyChannel,
     ) : NettyState(State.LOADING) {
-        init {
+
+        override fun startState() {
             coroutineContext.job.invokeOnCompletion {
                 if (it != null) {
                     connection.close()
@@ -351,7 +354,7 @@ internal open class NettyNetworkHandler(
         private val connection: NettyChannel,
         private val configPush: Job,
     ) : NettyState(State.OK) {
-        init {
+        override fun startState() {
             coroutineContext.job.invokeOnCompletion { err ->
                 if (err is StateSwitchingException) {
                     if (err.new.correspondingState == State.CLOSED) {
@@ -396,7 +399,8 @@ internal open class NettyNetworkHandler(
     protected inner class StateClosed(
         val exception: Throwable?,
     ) : NettyState(State.CLOSED) {
-        init {
+
+        override fun afterUpdated() {
             close(exception)
         }
 
