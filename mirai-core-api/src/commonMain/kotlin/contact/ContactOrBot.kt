@@ -35,9 +35,17 @@ public interface ContactOrBot : CoroutineScope {
     public val bot: Bot
 
     /**
-     * 头像下载链接
+     * 头像下载链接, 规格默认为 [AvatarSpec.LARGEST]
+     * @see avatarUrl
      */
     public val avatarUrl: String
-        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
+        get() = avatarUrl(spec = AvatarSpec.LARGEST)
 
+    /**
+     * 头像下载链接.
+     * @param spec 头像的规格.
+     */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("getAvatarUrl")
+    public fun avatarUrl(spec: AvatarSpec): String = "http://q.qlogo.cn/g?b=qq&nk=${id}&s=${spec.size}"
 }
