@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -84,6 +84,9 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         return list
     }
 
+    /**
+     * If any of the functions throw an exception, HB will fail unexpectedly can [onHeartFailure] will be called.
+     */
     private fun launchHeartbeatJobAsync(
         scope: CoroutineScope,
         name: String,
@@ -92,20 +95,42 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         action: suspend () -> Unit,
         onHeartFailure: HeartbeatFailureHandler,
     ): Deferred<Unit> {
-        return scope.async(CoroutineName("$name Scheduler")) {
+        val coroutineName = "$name Scheduler"
+        return scope.async(CoroutineName(coroutineName)) {
             while (isActive) {
                 try {
                     delay(delay())
                 } catch (e: CancellationException) {
                     return@async // considered normally cancel
+                } catch (e: Throwable) {
+                    onHeartFailure(
+                        name,
+                        IllegalStateException(
+                            "$coroutineName: Internal error: exception in heartbeat delay function",
+                            e
+                        ) // throwing a ISE will stop the handler.
+                    )
+                    return@async
                 }
 
                 try {
-                    withTimeout(timeout()) {
-                        action()
+                    val result = withTimeoutOrNull(timeout()) { action() }
+                    if (result == null) {
+                        onHeartFailure(
+                            name,
+                            PacketTimeoutException(
+                                "$coroutineName: Timeout receiving action response",
+                                CancellationException("Dummy exception for stacktrace")
+                            ) // This is a NetworkException that is recoverable
+                        )
+                        return@async
                     }
                 } catch (e: Throwable) {
-                    onHeartFailure(name, PacketTimeoutException("Timeout receiving Heartbeat response", e))
+                    onHeartFailure(
+                        name,
+                        IllegalStateException("$coroutineName: Internal error: caught unexpected exception", e)
+                    ) // Terminal ISE
+                    return@async
                 }
             }
         }.apply {
