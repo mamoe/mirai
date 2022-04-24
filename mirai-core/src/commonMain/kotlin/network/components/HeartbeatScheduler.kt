@@ -52,7 +52,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
             STAT_HB -> {
                 list += launchHeartbeatJobAsync(
                     scope = scope,
-                    name = "StatHeartbeat",
+                    name = "${network.context.bot.id}.StatHeartbeat",
                     delay = { configuration.statHeartbeatPeriodMillis },
                     timeout = { timeout },
                     action = { heartbeatProcessor.doStatHeartbeatNow(network) },
@@ -62,7 +62,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
             REGISTER -> {
                 list += launchHeartbeatJobAsync(
                     scope = scope,
-                    name = "RegisterHeartbeat",
+                    name = "${network.context.bot.id}.RegisterHeartbeat",
                     delay = { configuration.statHeartbeatPeriodMillis },
                     timeout = { timeout },
                     action = { heartbeatProcessor.doRegisterNow(network) },
@@ -75,7 +75,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
 
         list += launchHeartbeatJobAsync(
             scope = scope,
-            name = "AliveHeartbeat",
+            name = "${network.context.bot.id}.AliveHeartbeat",
             delay = { configuration.heartbeatPeriodMillis },
             timeout = { timeout },
             action = { heartbeatProcessor.doAliveHeartbeatNow(network) },
