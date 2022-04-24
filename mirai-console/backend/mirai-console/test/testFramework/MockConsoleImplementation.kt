@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,8 +17,8 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -35,7 +35,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createTempDirectory
 
 open class MockConsoleImplementation : MiraiConsoleImplementation {
-    override val rootPath: Path = createTempDirectory()
+    final override val rootPath: Path = createTempDirectory()
 
     override val frontEndDescription: MiraiConsoleFrontEndDescription
         get() = object : MiraiConsoleFrontEndDescription {
@@ -58,10 +58,13 @@ open class MockConsoleImplementation : MiraiConsoleImplementation {
             }
         }
     override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
-    override val dataStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
-    override val configStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
-    override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
-    override val configStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
+    override val dataStorageForJvmPluginLoader: PluginDataStorage =
+        MultiFilePluginDataStorageImpl(rootPath.resolve("data"))
+    override val configStorageForJvmPluginLoader: PluginDataStorage =
+        MultiFilePluginDataStorageImpl(rootPath.resolve("config"))
+    override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorageImpl(rootPath.resolve("data"))
+    override val configStorageForBuiltIns: PluginDataStorage =
+        MultiFilePluginDataStorageImpl(rootPath.resolve("config"))
 
     override val consoleInput: ConsoleInput = object : ConsoleInput {
         override suspend fun requestInput(hint: String): String {

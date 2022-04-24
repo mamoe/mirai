@@ -30,11 +30,19 @@ abstract class AbstractConsoleInstanceTest {
     protected open fun initializeConsole() {
         this.implementation = MockConsoleImplementation().apply { start() }
         CommandManager
+        consoleImplementation.jvmPluginLoader.load(mockPlugin)
+        consoleImplementation.jvmPluginLoader.enable(mockPlugin)
     }
 
     @AfterEach
     protected open fun stopConsole() {
         if (MiraiConsoleImplementation.instanceInitialized) {
+            try {
+                consoleImplementation.jvmPluginLoader.disable(mockPlugin)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             try {
                 runBlocking { MiraiConsole.job.cancelAndJoin() }
             } catch (e: CancellationException) {

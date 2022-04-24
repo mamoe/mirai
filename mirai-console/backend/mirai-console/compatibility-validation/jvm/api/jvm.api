@@ -1416,6 +1416,34 @@ public final class net/mamoe/mirai/console/data/java/JAutoSavePluginData$Compani
 	public final fun createKType (Ljava/lang/Class;[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
 }
 
+public abstract class net/mamoe/mirai/console/data/java/JavaAutoSavePluginConfig : net/mamoe/mirai/console/data/java/JavaAutoSavePluginData, net/mamoe/mirai/console/data/PluginConfig {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public abstract class net/mamoe/mirai/console/data/java/JavaAutoSavePluginData : net/mamoe/mirai/console/data/AutoSavePluginData, net/mamoe/mirai/console/data/PluginConfig {
+	public static final field Companion Lnet/mamoe/mirai/console/data/java/JavaAutoSavePluginData$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public static final fun createKType (Ljava/lang/Class;Z[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
+	public static final fun createKType (Ljava/lang/Class;[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
+	public final fun typedValue (Ljava/lang/String;Lkotlin/reflect/KType;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun typedValue (Ljava/lang/String;Lkotlin/reflect/KType;Ljava/lang/Object;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public static synthetic fun typedValue$default (Lnet/mamoe/mirai/console/data/java/JavaAutoSavePluginData;Ljava/lang/String;Lkotlin/reflect/KType;Ljava/lang/Object;ILjava/lang/Object;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;B)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;C)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;D)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;F)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;I)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;J)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;S)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+	public final fun value (Ljava/lang/String;Z)Lnet/mamoe/mirai/console/data/SerializerAwareValue;
+}
+
+public final class net/mamoe/mirai/console/data/java/JavaAutoSavePluginData$Companion {
+	public final fun createKType (Ljava/lang/Class;Z[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
+	public final fun createKType (Ljava/lang/Class;[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
+}
+
 public abstract interface class net/mamoe/mirai/console/events/ConsoleEvent : net/mamoe/mirai/event/Event {
 }
 
