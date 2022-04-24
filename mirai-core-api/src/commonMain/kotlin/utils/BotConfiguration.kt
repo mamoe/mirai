@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS", "MemberVisibilityCanBePrivate")
@@ -63,6 +63,11 @@ public open class BotConfiguration { // open for Java
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
     @MiraiExperimentalApi
+    @Deprecated(
+        "Changing serial format is going to be forbidden. Deprecated for removal. ",
+        level = DeprecationLevel.ERROR
+    )
+    @DeprecatedSinceMirai("")
     public var json: Json = kotlin.runCatching {
         Json {
             isLenient = true
@@ -581,6 +586,7 @@ public open class BotConfiguration { // open for Java
         return BotConfiguration().also { new ->
             // To structural order
             new.workingDir = workingDir
+            @Suppress("DEPRECATION_ERROR")
             new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
