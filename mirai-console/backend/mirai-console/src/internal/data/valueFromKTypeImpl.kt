@@ -111,7 +111,15 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
     }
 }
 
+private fun KClass<*>.isReferencingSamePlatformClass(other: KClass<*>): Boolean {
+    return this.qualifiedName == other.qualifiedName // not using .java for
+}
+
 internal fun KClass<*>.createInstanceSmart(): Any {
+    when {
+        isReferencingSamePlatformClass(Array::class) -> return emptyArray<Any?>()
+    }
+
     return when (this) {
         Byte::class -> 0.toByte()
         Short::class -> 0.toShort()
@@ -144,6 +152,15 @@ internal fun KClass<*>.createInstanceSmart(): Any {
         ConcurrentHashMap::class,
         ConcurrentMap::class,
         -> ConcurrentHashMap<Any?, Any?>()
+
+        ByteArray::class -> byteArrayOf()
+        BooleanArray::class -> booleanArrayOf()
+        ShortArray::class -> shortArrayOf()
+        IntArray::class -> intArrayOf()
+        LongArray::class -> longArrayOf()
+        FloatArray::class -> floatArrayOf()
+        DoubleArray::class -> doubleArrayOf()
+        CharArray::class -> charArrayOf()
 
         else -> createInstanceOrNull()
             ?: error("Cannot create instance or find a initial value for ${this.qualifiedNameOrTip}")

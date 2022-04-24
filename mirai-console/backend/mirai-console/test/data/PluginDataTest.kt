@@ -222,4 +222,98 @@ internal class PluginDataTest : AbstractConsoleInstanceTest() {
         storage.load(mockPlugin, data)
         assertEquals(serialized, storage.getPluginDataFileInternal(mockPlugin, data).readText())
     }
+
+
+    class DefaultValueForArray : AutoSavePluginData("save") {
+        val byteArray: ByteArray by value()
+        val booleanArray: BooleanArray by value()
+        var shortArray: ShortArray by value()
+        val intArray: IntArray by value()
+        val longArray: LongArray by value()
+        val floatArray: FloatArray by value()
+        val doubleArray: DoubleArray by value()
+        val charArray: CharArray by value()
+
+        var stringArray: Array<String> by value()
+        var longObjectArray: Array<Long> by value()
+    }
+
+    @Test
+    fun `default value for array`() {
+        val instance = DefaultValueForArray()
+        assertEquals(
+            """
+                byteArray: []
+                booleanArray: []
+                shortArray: []
+                intArray: []
+                longArray: []
+                floatArray: []
+                doubleArray: []
+                charArray: []
+                stringArray: []
+                longObjectArray: []
+            """.trimIndent(),
+            serializePluginData(instance)
+        )
+        instance.shortArray = shortArrayOf(1)
+        instance.stringArray = arrayOf("1234")
+        println(instance.findBackingFieldValueNode(instance::longObjectArray))
+        instance.longObjectArray = arrayOf(1234)
+        assertEquals(
+            """
+                byteArray: []
+                booleanArray: []
+                shortArray: 
+                  - 1
+                intArray: []
+                longArray: []
+                floatArray: []
+                doubleArray: []
+                charArray: []
+                stringArray: 
+                  - 1234
+                longObjectArray: 
+                  - 1234
+            """.trimIndent(),
+            serializePluginData(instance)
+        )
+        serializeAndRereadPluginData(instance)
+    }
+
+    class DefaultValueForCollections : AutoSavePluginData("save") {
+        val map: Map<String, String> by value()
+        val mapAny: Map<String, Any> by value()
+        val hashMapAny: HashMap<String, Any> by value()
+        val linkedHashMapAny: LinkedHashMap<String, Any> by value()
+
+        val list: List<String> by value()
+        val listAny: List<Any> by value()
+
+        val set: Set<String> by value()
+        val setAny: Set<Any> by value()
+    }
+
+    @Test
+    fun `default value for collections`() {
+        val instance = DefaultValueForCollections()
+        assertEquals(
+            """
+                map: {}
+
+                mapAny: {}
+
+                hashMapAny: {}
+
+                linkedHashMapAny: {}
+
+                list: []
+                listAny: []
+                set: []
+                setAny: []
+            """.trimIndent(),
+            serializePluginData(instance)
+        )
+        serializeAndRereadPluginData(instance)
+    }
 }

@@ -12,8 +12,7 @@
 package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.builtins.ArraySerializer
-import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -28,17 +27,32 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 
-/**
- * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
- * Copyright 2017-2020 JetBrains s.r.o.
- */
 @Suppress("UNCHECKED_CAST")
 internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
     fun serializerByKTypeImpl(type: KType): KSerializer<*> {
         val rootClass = type.classifierAsKClass()
 
+        // In Kotlin 1.6.20, `typeOf<Array<Long>>?.classifier` surprisingly gives kotlin.LongArray
+        // https://youtrack.jetbrains.com/issue/KT-52170/
+        if (type.arguments.size == 1) { // can be typeOf<Array<...>>, so cannot be typeOf<IntArray>
+            val result: KSerializer<Any?>? = when (rootClass) {
+                ByteArray::class -> ArraySerializer(Byte.serializer()).cast()
+                ShortArray::class -> ArraySerializer(Short.serializer()).cast()
+                IntArray::class -> ArraySerializer(Int.serializer()).cast()
+                LongArray::class -> ArraySerializer(Long.serializer()).cast()
+                FloatArray::class -> ArraySerializer(Float.serializer()).cast()
+                DoubleArray::class -> ArraySerializer(Double.serializer()).cast()
+                CharArray::class -> ArraySerializer(Char.serializer()).cast()
+                BooleanArray::class -> ArraySerializer(Boolean.serializer()).cast()
+                else -> null
+            }
+
+            if (result != null) return result
+        }
+
         this.serializerOrNull(type)?.let { return it } // Kotlin builtin and user-defined
         MessageSerializers.serializersModule.serializerOrNull(type)?.let { return it } // Mirai Messages
+        if (type.classifier == Any::class) return if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer as KSerializer<Any?>
 
         val typeArguments = type.arguments
             .map { requireNotNull(it.type) { "Star projections in type arguments are not allowed, but had $type" } }
@@ -47,6 +61,18 @@ internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
             else -> {
                 val serializers = typeArguments.map(::serializerMirai)
                 when (rootClass) {
+                    Collection::class, List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
+                    HashSet::class -> SetSerializer(serializers[0])
+                    Set::class, MutableSet::class, LinkedHashSet::class -> SetSerializer(serializers[0])
+                    HashMap::class -> MapSerializer(serializers[0], serializers[1])
+                    Map::class, MutableMap::class, LinkedHashMap::class -> MapSerializer(
+                        serializers[0],
+                        serializers[1]
+                    )
+                    Map.Entry::class -> MapEntrySerializer(serializers[0], serializers[1])
+                    Pair::class -> PairSerializer(serializers[0], serializers[1])
+                    Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
+
                     Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
                     else -> {
                         if (rootClass.java.isArray) {
