@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,7 +21,6 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.reflect.KClass
-import kotlin.streams.toList
 import kotlin.test.assertTrue
 
 
@@ -33,6 +32,7 @@ class MiraiConsoleIntegrationTestBootstrap {
         不使用 @TempDir 是为了保存最后一次失败快照, 便于 debug
          */
         val workingDir = File("build/IntegrationTest") // mirai-console/backend/integration-test/build/IntegrationTest
+        // 注意: 如果更改 workingDir, 还要更改 mirai-console/backend/integration-test/build.gradle.kts:60 (clean task 的依赖)
         val launcher = MiraiConsoleIntegrationTestLauncher()
         launcher.workingDir = workingDir
         launcher.plugins = readStringListFromEnv("IT_PLUGINS")

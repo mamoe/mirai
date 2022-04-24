@@ -9,7 +9,7 @@
 
 @file:Suppress("UnusedImport")
 
-import java.util.Base64
+import java.util.*
 
 plugins {
     kotlin("jvm")
@@ -55,6 +55,13 @@ dependencies {
     api(asm("commons"))
 
 }
+
+// requires manual run
+val deleteSandbox = tasks.register("deleteSandbox", Delete::class.java) {
+    group = "mirai"
+    delete("build/IntegrationTest")
+}
+//tasks.getByName("clean").dependsOn(deleteSandbox)
 
 val subplugins = mutableListOf<TaskProvider<Jar>>()
 
