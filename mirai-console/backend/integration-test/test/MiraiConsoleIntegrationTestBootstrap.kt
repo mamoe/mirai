@@ -17,6 +17,7 @@ import java.lang.management.ManagementFactory
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import java.util.stream.Collectors
 import kotlin.io.path.inputStream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
@@ -76,6 +77,6 @@ class MiraiConsoleIntegrationTestBootstrap {
             }
             .map { it.replace('/', '.') }
             .filter { AbstractTestPoint::class.java.isAssignableFrom(Class.forName(it)) }
-            .use { it.toList() }
+            .use { it.collect(Collectors.toList()) }
     }
 }
