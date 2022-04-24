@@ -180,5 +180,5 @@ public fun <T> AbstractPluginData.findBackingFieldValue(propertyValueName: Strin
 @ConsoleExperimentalApi
 public fun <T> AbstractPluginData.findBackingFieldValueNode(property: KProperty<T>): AbstractPluginData.ValueNode<out T>? {
     @Suppress("UNCHECKED_CAST")
-    return this.valueNodes.find { it == property } as AbstractPluginData.ValueNode<out T>?
+    return this.valueNodes.find { it.valueName == property.name } as AbstractPluginData.ValueNode<out T>?
 }
