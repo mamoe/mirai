@@ -114,6 +114,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
     /**
      * 群头像下载链接.
      * @param spec 头像的规格.
+     * @since 2.11
      */
     public override fun avatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
 
