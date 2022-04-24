@@ -31,5 +31,7 @@ TODO
 
 ### 创建配套子插件
 
-在 `testers` 创建新的文件夹即可创建新的配套插件, 可用于测试插件依赖, etc
+在 `testers` 创建新的文件夹, 刷新 Gradle 即可获得生成的 build.gradle.kts.
+即可创建新的配套插件, 可用于测试插件依赖, etc
 
+只有在修改 build.gradle.kts 后才需要将其添加 git, 其他情况下会自动生成.
