@@ -10,8 +10,6 @@
 @file:Suppress(
     "INVISIBLE_REFERENCE",
     "INVISIBLE_MEMBER",
-    "EXPOSED_SUPER_CLASS",
-    "NOTHING_TO_INLINE", "unused", "UNCHECKED_CAST"
 )
 @file:JvmName("PluginDataKt")
 
@@ -21,7 +19,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
-import net.mamoe.mirai.console.data.java.JAutoSavePluginData
+import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.createInstanceSmart
 import net.mamoe.mirai.console.internal.data.valueFromKTypeImpl
 import net.mamoe.mirai.console.internal.data.valueImpl
@@ -81,7 +79,7 @@ import kotlin.reflect.typeOf
  *
  * ### 使用 Java
  *
- * 参考 [JAutoSavePluginData]
+ * 参考 [JavaAutoSavePluginData]
  *
  * ## 非引用赋值
  *
