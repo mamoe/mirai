@@ -14,7 +14,6 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.util.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
@@ -70,9 +69,8 @@ internal fun getMiraiImpl() = Mirai as MiraiImpl
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
-    companion object INSTANCE : MiraiImpl() {
-        @Suppress("ObjectPropertyName", "unused", "DEPRECATION_ERROR")
-        private val _init = Mirai.let {
+    companion object {
+        init {
             MessageSerializers.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             MessageSerializers.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
             MessageSerializers.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
@@ -152,7 +150,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    @OptIn(LowLevelApi::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         check(event.responded.compareAndSet(false, true)) {
@@ -587,7 +584,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         parameter("page", page)
                     }
                     headers {
-                        @OptIn(InternalAPI::class) // ktor bug
+                        // ktor bug
                         append(
                             "cookie",
                             "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id}; p_skey=${bot.psKey("qqweb.qq.com")};"
@@ -612,7 +609,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 parameter("gc", groupId)
                 parameter("type", type.value)
                 headers {
-                    @OptIn(InternalAPI::class) // ktor bug
+                    // ktor bug
                     append(
                         "cookie",
                         "uin=o${bot.id};" +
@@ -714,7 +711,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         // Add member in MsgOnlinePush.PbPushMsg
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     @LowLevelApi
     override suspend fun getGroupVoiceDownloadUrl(
         bot: Bot,
@@ -747,7 +743,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 append("bkn", bot.client.wLoginSigInfo.bkn)
             })
             headers {
-                @OptIn(InternalAPI::class) // ktor bug
+                // ktor bug
                 append(
                     "cookie",
                     "uin=o${bot.id}; skey=${bot.sKey};"
