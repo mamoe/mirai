@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.io.JceStruct
-import net.mamoe.mirai.internal.utils.io.serialization.JCE_DESERIALIZER_DEBUG
 import net.mamoe.mirai.internal.utils.io.serialization.readJceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
@@ -26,9 +25,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class DebugLoggerTest : AbstractTest() {
-    init {
-        JCE_DESERIALIZER_DEBUG = true
-    }
 
     fun String.uniteLine(): String = replace("\r\n", "\n").replace("\r", "\n")
 
