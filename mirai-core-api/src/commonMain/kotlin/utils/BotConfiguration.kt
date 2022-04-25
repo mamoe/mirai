@@ -67,7 +67,7 @@ public open class BotConfiguration { // open for Java
         "Changing serial format is going to be forbidden. Deprecated for removal. ",
         level = DeprecationLevel.ERROR
     )
-    @DeprecatedSinceMirai("")
+    @DeprecatedSinceMirai(errorSince = "2.11") // was experimental
     public var json: Json = kotlin.runCatching {
         Json {
             isLenient = true
