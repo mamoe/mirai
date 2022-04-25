@@ -44,7 +44,64 @@ internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
 
 internal fun <T : JceStruct> ByteArray.loadAs(
     deserializer: DeserializationStrategy<T>,
-): T = this.read { readJceStruct(deserializer) }
+    offset: Int = 0,
+    length: Int = size - offset,
+): T {
+    if (this.size >= 4) {
+        val possibleLength = this.toInt(offset = offset)
+//        return doLoadAs(deserializer, offset = offset + 4, length = possibleLength)
+
+        if (possibleLength == length || possibleLength == length - 4) {
+            return doLoadAs(
+                deserializer,
+                offset = offset + 4,
+                length = length - 4
+            )
+        }
+    }
+
+    return doLoadAs(deserializer, offset, length)
+}
+
+private fun <T : JceStruct> ByteArray.doLoadAs(
+    deserializer: DeserializationStrategy<T>,
+    offset: Int,
+    length: Int,
+): T {
+    try {
+        return this.inputStream(offset = offset, length = length).asInput().use { input ->
+            Tars.UTF_8.load(deserializer, input)
+        }
+    } catch (originalException: Exception) {
+        val log = ByteArrayOutputStream()
+        try {
+            val value = PrintStream(log).use { stream ->
+                stream.println("\nData: ")
+                stream.println(this.toUHexString(offset = offset, length = length))
+                stream.println("Trace:")
+
+                this.inputStream(offset = offset, length = length).asInput().use { input ->
+                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(stream))
+                }
+            }
+            return value.also {
+                TarsDecoder.logger.warning(
+                    contextualBugReportException(
+                        "解析 " + deserializer.descriptor.serialName,
+                        "启用 debug 模式后解析正常: $value \n\n${log.toByteArray().decodeToString()}",
+                        originalException
+                    )
+                )
+            }
+        } catch (secondFailure: Exception) {
+            throw contextualBugReportException(
+                "解析 " + deserializer.descriptor.serialName,
+                log.toByteArray().decodeToString(),
+                ExceptionCollector.compressExceptions(originalException, secondFailure)
+            )
+        }
+    }
+}
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
@@ -54,59 +111,12 @@ internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
 }
 
 internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
-    serializer: DeserializationStrategy<T>,
+    deserializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt(),
 ): T {
-    if (JCE_DESERIALIZER_DEBUG) {
-        // since 2.11
-        this.useBytes(n = length) { data, arrayLength ->
-            try {
-                return data.inputStream(offset = 0, length = arrayLength).asInput().use { input ->
-                    Tars.UTF_8.load(serializer, input)
-                }
-            } catch (originalException: Exception) {
-                val log = ByteArrayOutputStream()
-                try {
-                    val value = PrintStream(log).use { stream ->
-                        stream.println("\nData: ")
-                        stream.println(data.toUHexString(length = arrayLength))
-                        stream.println("Trace:")
-
-                        data.inputStream(offset = 0, length = arrayLength).asInput().use { input ->
-                            Tars.UTF_8.load(serializer, input, debugLogger = DebugLogger(stream))
-                        }
-                    }
-                    return value.also {
-                        TarsDecoder.logger.warning(
-                            contextualBugReportException(
-                                "解析 " + serializer.descriptor.serialName,
-                                "启用 debug 模式后解析正常: $value \n\n${log.toByteArray().decodeToString()}",
-                                originalException
-                            )
-                        )
-                    }
-                } catch (secondFailure: Exception) {
-                    throw contextualBugReportException(
-                        "解析 " + serializer.descriptor.serialName,
-                        log.toByteArray().decodeToString(),
-                        ExceptionCollector.compressExceptions(originalException, secondFailure)
-                    )
-                }
-            }
-        }
-    } else {
-        // since 2.0
-        return this.readPacketExact(length).use {
-            Tars.UTF_8.load(serializer, it)
-        }
+    return this.useBytes(n = length) { data, arrayLength ->
+        data.loadAs(deserializer, offset = 0, length = arrayLength)
     }
-}
-
-/**
- * @since 2.11
- */
-internal var JCE_DESERIALIZER_DEBUG by lateinitMutableProperty {
-    systemProp("mirai.jce.deserializer.debug", false)
 }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceRequestPacket(
