@@ -17,15 +17,16 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Compa
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
-import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.util.scopeWith
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Either
 import net.mamoe.mirai.utils.Either.Companion.flatMapNull
 import net.mamoe.mirai.utils.Either.Companion.fold
+import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.secondsToMillis
 
+@Suppress("RESTRICTED_CONSOLE_COMMAND_OWNER") // IDE plugin
 internal open class LoginCommandImpl : SimpleCommand(
     ConsoleCommandOwner, "login", "登录",
     description = "登录一个账号",
@@ -52,7 +53,7 @@ internal open class LoginCommandImpl : SimpleCommand(
             val config = DataScope.get<AutoLoginConfig>()
             val acc = config.accounts.firstOrNull { it.account == id.toString() } ?: return Either.right(null)
             val strv = acc.password.value
-            return if (acc.password.kind == AutoLoginConfig.Account.PasswordKind.MD5) Either.left(strv.autoHexToBytes()) else Either.right(
+            return if (acc.password.kind == AutoLoginConfig.Account.PasswordKind.MD5) Either.left(strv.hexToBytes()) else Either.right(
                 strv
             )
         }
