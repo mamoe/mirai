@@ -43,6 +43,12 @@ fun Project.preConfigureJvmTarget() {
         kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+
+        // Support for parallel compilation: https://youtrack.jetbrains.com/issue/KT-46085
+        // Using /2 processors: jvm and android targets are compiled at the same time, sharing the processors.
+        // Also reserved 2 processors for Gradle multi-tasking
+        // On Apple M1 Max parallelism reduces compilation time by 1/3.
+        kotlinOptions.freeCompilerArgs += "-Xbackend-threads=" + (Runtime.getRuntime().availableProcessors() / 2 - 1).coerceAtLeast(1)
     }
 
     tasks.withType(JavaCompile::class.java) {
