@@ -6397,6 +6397,12 @@ public final class net/mamoe/mirai/utils/SilentLogger : net/mamoe/mirai/utils/Pl
 	public fun getIdentity ()Ljava/lang/String;
 	public fun info0 (Ljava/lang/String;)V
 	public fun info0 (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun isDebugEnabled ()Z
+	public fun isEnabled ()Z
+	public fun isErrorEnabled ()Z
+	public fun isInfoEnabled ()Z
+	public fun isVerboseEnabled ()Z
+	public fun isWarningEnabled ()Z
 	public fun verbose0 (Ljava/lang/String;)V
 	public fun verbose0 (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning0 (Ljava/lang/String;)V
