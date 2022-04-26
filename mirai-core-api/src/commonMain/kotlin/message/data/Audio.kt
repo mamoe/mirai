@@ -218,7 +218,7 @@ public interface OfflineAudio : Audio {
         }
 
         public companion object INSTANCE :
-            Factory by loadService("net.mamoe.mirai.internal.message.OfflineAudioFactoryImpl")
+            Factory by loadService("net.mamoe.mirai.internal.message.data.OfflineAudioFactoryImpl")
     }
 }
 
