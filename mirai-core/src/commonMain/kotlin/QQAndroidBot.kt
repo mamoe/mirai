@@ -190,6 +190,7 @@ internal open class QQAndroidBot constructor(
         set(
             NoticeProcessorPipeline,
             NoticeProcessorPipelineImpl.create(
+                bot,
                 MsgInfoDecoder(pipelineLogger.subLogger("MsgInfoDecoder")),
                 GroupNotificationDecoder(),
 
