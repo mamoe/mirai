@@ -359,6 +359,19 @@ public expect open class PlatformLogger @JvmOverloads constructor(
 public object SilentLogger : PlatformLogger() {
     public override val identity: String? = null
 
+    override val isEnabled: Boolean
+        get() = false
+    override val isVerboseEnabled: Boolean
+        get() = false
+    override val isDebugEnabled: Boolean
+        get() = false
+    override val isInfoEnabled: Boolean
+        get() = false
+    override val isWarningEnabled: Boolean
+        get() = false
+    override val isErrorEnabled: Boolean
+        get() = false
+
     public override fun error0(message: String?): Unit = Unit
     public override fun debug0(message: String?): Unit = Unit
     public override fun warning0(message: String?): Unit = Unit
