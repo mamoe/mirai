@@ -22,24 +22,24 @@ object Versions {
     val consoleIntellij = "221-$project-162-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
-    const val kotlinCompiler = "1.6.0"
+    const val kotlinCompiler = "1.6.21"
     const val kotlinStdlib = kotlinCompiler
-    const val dokka = "1.6.0"
+    const val dokka = "1.6.20"
 
     const val kotlinCompilerForIdeaPlugin = "1.6.20"
 
-    const val coroutines = "1.6.0"
-    const val atomicFU = "0.17.0"
-    const val serialization = "1.2.2"
-    const val ktor = "1.6.5"
+    const val coroutines = "1.6.1"
+    const val atomicFU = "0.17.2"
+    const val serialization = "1.3.2"
+    const val ktor = "1.6.7"
 
     const val binaryValidator = "0.4.0"
 
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "2.0.0-160.3"
-    const val dynamicDelegation = "0.2.0-160.1"
+    const val blockingBridge = "2.0.0-162.1"
+    const val dynamicDelegation = "0.3.0-162.2"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
@@ -57,8 +57,6 @@ object Versions {
     const val mavenResolverProvider = "3.8.4"
 
     const val junit = "5.7.2"
-
-    // If you the versions below, you need to sync changes to mirai-console/buildSrc/src/main/kotlin/Versions.kt
 
     const val yamlkt = "0.10.2"
     const val intellijGradlePlugin = "1.5.3"

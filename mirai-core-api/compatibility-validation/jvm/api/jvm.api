@@ -7,6 +7,7 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public fun closeAndJoin (Ljava/lang/Throwable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun closeAndJoin$default (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;ILjava/lang/Object;)V
 	public static synthetic fun closeAndJoin$default (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun closeAndJoin$suspendImpl (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun findInstance (J)Lnet/mamoe/mirai/Bot;
 	public abstract fun getAsFriend ()Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getAsStranger ()Lnet/mamoe/mirai/contact/Stranger;
@@ -31,6 +32,7 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun isOnline ()Z
 	public fun join ()V
 	public fun join (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun join$suspendImpl (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun login ()V
 	public abstract fun login (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/BotNudge;
@@ -82,6 +84,7 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun acceptNewFriendRequest (Lnet/mamoe/mirai/event/events/NewFriendRequestEvent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;)V
 	public fun broadcastEvent (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun broadcastEvent$suspendImpl (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun calculateGroupCodeByGroupUin (J)J
 	public fun calculateGroupUinByGroupCode (J)J
 	public abstract fun constructMessageSource (JLnet/mamoe/mirai/message/data/MessageSourceKind;JJ[II[ILnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/OfflineMessageSource;
@@ -173,7 +176,10 @@ public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/ma
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/AnonymousMember;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/AnonymousMember;Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadImage$suspendImpl (Lnet/mamoe/mirai/contact/AnonymousMember;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/AudioSupported : net/mamoe/mirai/contact/Contact {
@@ -253,6 +259,7 @@ public abstract interface class net/mamoe/mirai/contact/Contact : kotlinx/corout
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/Contact;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadImage (Lnet/mamoe/mirai/contact/Contact;Ljava/io/File;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadImage (Lnet/mamoe/mirai/contact/Contact;Ljava/io/File;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/Image;
 	public static fun uploadImage (Lnet/mamoe/mirai/contact/Contact;Ljava/io/File;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -357,6 +364,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/Friend;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
@@ -383,6 +391,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun setEssenceMessage (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;)Z
 	public static fun setEssenceMessage (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;)Z
@@ -474,6 +483,7 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun kick (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun kick (Ljava/lang/String;Z)V
 	public abstract fun kick (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun kick$suspendImpl (Lnet/mamoe/mirai/contact/NormalMember;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyAdmin (Z)V
 	public abstract fun modifyAdmin (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
@@ -483,6 +493,7 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/NormalMember;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setNameCard (Ljava/lang/String;)V
 	public abstract fun setSpecialTitle (Ljava/lang/String;)V
 	public fun unmute ()V
@@ -502,7 +513,9 @@ public abstract interface class net/mamoe/mirai/contact/OtherClient : net/mamoe/
 	public fun getId ()J
 	public abstract fun getInfo ()Lnet/mamoe/mirai/contact/OtherClientInfo;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadImage$suspendImpl (Lnet/mamoe/mirai/contact/OtherClient;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/OtherClientInfo {
@@ -571,6 +584,7 @@ public abstract interface class net/mamoe/mirai/contact/Stranger : kotlinx/corou
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/Stranger;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/StrangerKt {
@@ -584,10 +598,12 @@ public abstract interface class net/mamoe/mirai/contact/User : kotlinx/coroutine
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
 	public fun queryProfile ()Lnet/mamoe/mirai/data/UserProfile;
 	public fun queryProfile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun queryProfile$suspendImpl (Lnet/mamoe/mirai/contact/User;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/User;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/UserKt {
@@ -611,6 +627,7 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public static fun publishAnnouncement (Lnet/mamoe/mirai/contact/Group;Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publishTo (Lnet/mamoe/mirai/contact/Group;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public fun publishTo (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun publishTo$suspendImpl (Lnet/mamoe/mirai/contact/announcement/Announcement;Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/announcement/Announcement$Companion {
@@ -736,6 +753,7 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toList ()Ljava/util/List;
 	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -746,7 +764,6 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OfflineAnno
 	public static fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
 	public static fun create (Ljava/lang/String;Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
 	public static fun from (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OfflineAnnouncement;
-	public static fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncement$Companion {
@@ -769,6 +786,7 @@ public final class net/mamoe/mirai/contact/announcement/OfflineAnnouncementKt {
 public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnouncement : net/mamoe/mirai/contact/announcement/Announcement {
 	public fun delete ()Z
 	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun delete$suspendImpl (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getAllConfirmed ()Z
 	public abstract fun getConfirmedMembersCount ()I
 	public abstract fun getFid ()Ljava/lang/String;
@@ -888,6 +906,7 @@ public abstract interface class net/mamoe/mirai/contact/file/RemoteFiles {
 	public fun uploadNewFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/file/AbsoluteFile;
 	public static synthetic fun uploadNewFile$default (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun uploadNewFile$suspendImpl (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessage {
@@ -919,12 +938,14 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages 
 	public fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun getAllMessages$suspendImpl (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAllMessagesStream ()Ljava/util/stream/Stream;
 	public fun getAllMessagesStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAllMessagesStream (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Ljava/util/stream/Stream;
 	public fun getAllMessagesStream (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Ljava/util/stream/Stream;
 	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun getAllMessagesStream$suspendImpl (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getMessagesIn$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
@@ -4186,6 +4207,7 @@ public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/m
 	public abstract fun toAbsoluteFile (Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toRemoteFile (Lnet/mamoe/mirai/contact/FileSupported;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public fun toRemoteFile (Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toRemoteFile$suspendImpl (Lnet/mamoe/mirai/message/data/FileMessage;Lnet/mamoe/mirai/contact/FileSupported;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/message/data/FileMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -4665,6 +4687,7 @@ public final class net/mamoe/mirai/message/data/MessageChain$Companion {
 	public final fun serializeToJsonString (Lnet/mamoe/mirai/message/data/MessageChain;Lkotlinx/serialization/json/Json;)Ljava/lang/String;
 	public static synthetic fun serializeToJsonString$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Ljava/lang/String;
 	public final fun serializeToString (Lnet/mamoe/mirai/message/data/MessageChain;Lkotlinx/serialization/StringFormat;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/MessageChain$Serializer : kotlinx/serialization/KSerializer {
@@ -6222,6 +6245,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun getPath ()Ljava/lang/String;
 	public fun isDirectory ()Z
 	public fun isDirectory (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun isDirectory$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isFile ()Z
 	public abstract fun isFile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun length ()J
@@ -6230,6 +6254,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun listFiles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun listFilesCollection ()Ljava/util/List;
 	public fun listFilesCollection (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun listFilesCollection$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun listFilesIterator (Z)Ljava/util/Iterator;
 	public abstract fun listFilesIterator (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun mkdir ()Z
@@ -6238,6 +6263,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public fun moveTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;)Z
 	public abstract fun moveTo (Lnet/mamoe/mirai/utils/RemoteFile;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun moveTo$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameTo (Ljava/lang/String;)Z
 	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun resolve (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
@@ -6248,6 +6274,7 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public abstract fun resolveById (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun resolveById$default (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public static synthetic fun resolveById$default (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun resolveById$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun resolveSibling (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public abstract fun resolveSibling (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -6273,6 +6300,9 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static synthetic fun upload$default (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun upload$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun upload$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun upload$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/data/FileMessage;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun uploadFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/data/FileMessage;
