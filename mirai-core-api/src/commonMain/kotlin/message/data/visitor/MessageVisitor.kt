@@ -22,19 +22,11 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 public interface MessageVisitor<in D, out R> {
     public fun visitMessage(message: Message, data: D): R
 
+    // region SingleMessage
     public fun visitSingleMessage(message: SingleMessage, data: D): R
-    public fun visitMessageChain(messageChain: MessageChain, data: D): R
-    public fun visitCombinedMessage(message: CombinedMessage, data: D): R
 
+    // region MessageContent
     public fun visitMessageContent(message: MessageContent, data: D): R
-    public fun visitMessageMetadata(message: MessageMetadata, data: D): R
-
-    public fun visitMessageOrigin(message: MessageOrigin, data: D): R
-    public fun visitMessageSource(message: MessageSource, data: D): R
-    public fun visitQuoteReply(message: QuoteReply, data: D): R
-    public fun visitCustomMessageMetadata(message: CustomMessageMetadata, data: D): R
-    public fun visitShowImageFlag(message: ShowImageFlag, data: D): R
-
 
     public fun visitPlainText(message: PlainText, data: D): R
     public fun visitAt(message: At, data: D): R
@@ -43,25 +35,56 @@ public interface MessageVisitor<in D, out R> {
     @Suppress("DEPRECATION_ERROR")
     public fun visitVoice(message: net.mamoe.mirai.message.data.Voice, data: D): R
     public fun visitAudio(message: Audio, data: D): R
+
+    // region HummerMessage
     public fun visitHummerMessage(message: HummerMessage, data: D): R
     public fun visitFlashImage(message: FlashImage, data: D): R
     public fun visitPokeMessage(message: PokeMessage, data: D): R
     public fun visitVipFace(message: VipFace, data: D): R
+
+    // region MarketFace
     public fun visitMarketFace(message: MarketFace, data: D): R
     public fun visitDice(message: Dice, data: D): R
+
+    // endregion
+    // endregion
+
     public fun visitFace(message: Face, data: D): R
     public fun visitFileMessage(message: FileMessage, data: D): R
     public fun visitImage(message: Image, data: D): R
     public fun visitForwardMessage(message: ForwardMessage, data: D): R
     public fun visitMusicShare(message: MusicShare, data: D): R
 
+    // region RichMessage
     public fun visitRichMessage(message: RichMessage, data: D): R
     public fun visitServiceMessage(message: ServiceMessage, data: D): R
     public fun visitSimpleServiceMessage(message: SimpleServiceMessage, data: D): R
     public fun visitLightApp(message: LightApp, data: D): R
     public fun visitAbstractServiceMessage(message: AbstractServiceMessage, data: D): R
 
+    // endregion
+
     public fun visitUnsupportedMessage(message: UnsupportedMessage, data: D): R
+    // endregion
+
+    // region MessageMetadata
+    public fun visitMessageMetadata(message: MessageMetadata, data: D): R
+
+    public fun visitMessageOrigin(message: MessageOrigin, data: D): R
+    public fun visitMessageSource(message: MessageSource, data: D): R
+    public fun visitQuoteReply(message: QuoteReply, data: D): R
+    public fun visitCustomMessageMetadata(message: CustomMessageMetadata, data: D): R
+    public fun visitShowImageFlag(message: ShowImageFlag, data: D): R
+
+    // endregion
+
+    // endregion
+
+    // region MessageChain
+    public fun visitMessageChain(messageChain: MessageChain, data: D): R
+    public fun visitCombinedMessage(message: CombinedMessage, data: D): R
+
+    // endregion
 }
 
 /**
