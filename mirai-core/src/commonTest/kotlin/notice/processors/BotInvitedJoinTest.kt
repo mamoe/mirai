@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -104,8 +104,8 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
     suspend fun `invited join, accepted`() {
         // https://github.com/mamoe/mirai/issues/1213
         suspend fun runTest() = use(
-            createContext = { bot, attributes ->
-                object : NoticeProcessorPipelineImpl.ContextImpl(bot, attributes) {
+            createContext = { attributes ->
+                object : NoticeProcessorPipelineImpl.ContextImpl(attributes) {
                     override suspend fun QQAndroidBot.addNewGroupByCode(code: Long): GroupImpl {
                         assertEquals(2230203, code)
                         return bot.addGroup(2230203, 1230001, name = "testtest").apply {
@@ -154,8 +154,8 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `invitation accepted`() {
         suspend fun runTest() =
-            use(createContext = { bot, attributes ->
-                object : NoticeProcessorPipelineImpl.ContextImpl(bot, attributes) {
+            use(createContext = { attributes ->
+                object : NoticeProcessorPipelineImpl.ContextImpl(attributes) {
                     override suspend fun QQAndroidBot.addNewGroupByCode(code: Long): GroupImpl {
                         assertEquals(2230203, code)
                         return bot.addGroup(2230203, 1230002, name = "testtest").apply {
