@@ -157,7 +157,7 @@ internal class CombinedMessageTest {
     @Test
     fun acceptChildrenTest() {
         val list = buildList {
-            complexCombined.acceptChildren(object : MessageVisitorUnit<Unit>() {
+            complexCombined.acceptChildren(object : MessageVisitorUnit() {
                 override fun visitMessage(message: Message, data: Unit) {
                     add(message)
                     super.visitMessage(message, data)

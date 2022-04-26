@@ -209,10 +209,10 @@ public abstract class AbstractMessageVisitor<in D, out R> : MessageVisitor<D, R>
  * @since 2.12
  */
 @MiraiInternalApi
-public abstract class RecursiveMessageVisitor<D> : MessageVisitorUnit<D>() {
+public abstract class RecursiveMessageVisitor<D> : MessageVisitorUnit() {
     protected open fun isFinished(): Boolean = false
 
-    override fun visitMessage(message: Message, data: D) {
+    override fun visitMessage(message: Message, data: Unit) {
         if (isFinished()) return
         message.acceptChildren(this, data)
     }
@@ -223,8 +223,8 @@ public abstract class RecursiveMessageVisitor<D> : MessageVisitorUnit<D>() {
  * @since 2.12
  */
 @MiraiInternalApi
-public abstract class MessageVisitorUnit<in D> : AbstractMessageVisitor<D, Unit>() {
-    override fun visitMessage(message: Message, data: D): Unit = Unit
+public abstract class MessageVisitorUnit : AbstractMessageVisitor<Unit, Unit>() {
+    override fun visitMessage(message: Message, data: Unit): Unit = Unit
 }
 
 /**

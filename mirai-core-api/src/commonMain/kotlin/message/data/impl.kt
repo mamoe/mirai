@@ -117,12 +117,6 @@ internal object ConstrainSingleHelper {
 
 }
 
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
-internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
-    return this.asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
-}
-
 @RequiresOptIn
 internal annotation class MessageChainConstructor
 
