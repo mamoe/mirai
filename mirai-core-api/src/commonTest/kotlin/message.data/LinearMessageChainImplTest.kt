@@ -65,7 +65,7 @@ internal class LinearMessageChainImplTest {
     @Test
     fun acceptChildrenTest() {
         val list = buildList {
-            complexLinearChain.acceptChildren(object : MessageVisitorUnit<Unit>() {
+            complexLinearChain.acceptChildren(object : MessageVisitorUnit() {
                 override fun visitMessage(message: Message, data: Unit) {
                     add(message)
                     super.visitMessage(message, data)
