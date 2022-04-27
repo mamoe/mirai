@@ -16,11 +16,11 @@ import java.io.Closeable
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-internal interface Processor<C : ProcessorPipelineContext<*, *>> {
-    suspend fun process(context: C, data: Any?)
+internal interface Processor<C : ProcessorPipelineContext<D, *>, D> {
+    suspend fun process(context: C, data: D)
 }
 
-internal interface ProcessorPipeline<P : Processor<*>, D, R> {
+internal interface ProcessorPipeline<P : Processor<out ProcessorPipelineContext<D, *>, D>, D, R> {
     val processors: Collection<P>
 
     fun interface DisposableRegistry : Closeable {
@@ -79,13 +79,13 @@ internal interface ProcessorPipelineContext<D, R> {
      * and throws a [contextualBugReportException] or logs something.
      */
     @ConsumptionMarker
-    fun Processor<*>.markAsConsumed(marker: Any = this)
+    fun Processor<*, D>.markAsConsumed(marker: Any = this)
 
     /**
      * Marks the input as not consumed, if it was marked by this [NoticeProcessor].
      */
     @ConsumptionMarker
-    fun Processor<*>.markNotConsumed(marker: Any = this)
+    fun Processor<*, D>.markNotConsumed(marker: Any = this)
 
     @DslMarker
     annotation class ConsumptionMarker // to give an explicit color.
@@ -106,12 +106,12 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
     private val consumers: Stack<Any> = Stack()
 
     override val isConsumed: Boolean get() = consumers.isNotEmpty()
-    override fun Processor<*>.markAsConsumed(marker: Any) {
+    override fun Processor<*, D>.markAsConsumed(marker: Any) {
         traceLogging.info { "markAsConsumed: marker=$marker" }
         consumers.push(marker)
     }
 
-    override fun Processor<*>.markNotConsumed(marker: Any) {
+    override fun Processor<*, D>.markNotConsumed(marker: Any) {
         if (consumers.peek() === marker) {
             consumers.pop()
             traceLogging.info { "markNotConsumed: Y, marker=$marker" }
@@ -133,10 +133,12 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
     }
 }
 
-internal abstract class AbstractProcessorPipeline<P : Processor<C>, C : ProcessorPipelineContext<D, R>, D, R>
+internal abstract class AbstractProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineContext<D, R>, D, R>
 protected constructor(
     val traceLogging: MiraiLogger,
 ) : ProcessorPipeline<P, D, R> {
+    constructor() : this(SilentLogger)
+
     /**
      * Must be ordered
      */
@@ -169,9 +171,7 @@ protected constructor(
         attributes: TypeSafeMap,
         processor: P,
         e: Throwable
-    ) {
-        throw e
-    }
+    ): Unit = throw e
 
     override suspend fun process(data: D, attributes: TypeSafeMap): Collection<R> {
         traceLogging.info { "process: data=$data" }

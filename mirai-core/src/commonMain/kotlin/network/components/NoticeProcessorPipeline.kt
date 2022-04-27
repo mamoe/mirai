@@ -34,7 +34,6 @@ import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KClass
 
 /**
@@ -84,18 +83,6 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
     traceLogging: MiraiLogger = defaultTraceLogging,
 ) : NoticeProcessorPipeline,
     AbstractProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet>(traceLogging) {
-    /**
-     * Must be ordered
-     */
-    override val processors = ConcurrentLinkedQueue<NoticeProcessor>()
-
-    override fun registerProcessor(processor: NoticeProcessor): ProcessorPipeline.DisposableRegistry {
-        processors.add(processor)
-        return ProcessorPipeline.DisposableRegistry {
-            processors.remove(processor)
-        }
-    }
-
 
     open inner class ContextImpl(
         attributes: TypeSafeMap,
@@ -133,45 +120,6 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
         )
     }
 
-    override suspend fun process(
-        data: ProtocolStruct,
-        attributes: TypeSafeMap
-    ): Collection<Packet> {
-        traceLogging.info { "process: data=$data" }
-        val context = createContext(attributes)
-
-        val diff = if (traceLogging.isEnabled) CollectionDiff<Packet>() else null
-        diff?.save(context.collected.data)
-
-        for (processor in processors) {
-
-            val result = kotlin.runCatching {
-                processor.process(context, data)
-            }.onFailure { e ->
-                context.collect(
-                    ParseErrorPacket(
-                        data,
-                        IllegalStateException(
-                            "Exception in $processor while processing packet ${packetToString(data)}.",
-                            e,
-                        ),
-                    ),
-                )
-            }
-
-            diff?.run {
-                val diffPackets = subtractAndSave(context.collected.data)
-
-                traceLogging.info {
-                    "Finished ${
-                        processor.toString().replace("net.mamoe.mirai.internal.network.notice.", "")
-                    }, success=${result.isSuccess}, consumed=${context.isConsumed}, diff=$diffPackets"
-                }
-            }
-        }
-        return context.collected.data
-    }
-
     override fun createContext(attributes: TypeSafeMap): NoticePipelineContext = ContextImpl(attributes)
 
     protected open fun packetToString(data: Any?): String =
@@ -195,7 +143,7 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
 /**
  * A processor handling some specific type of message.
  */
-internal interface NoticeProcessor : Processor<NoticePipelineContext>
+internal interface NoticeProcessor : Processor<NoticePipelineContext, ProtocolStruct>
 
 internal abstract class AnyNoticeProcessor : SimpleNoticeProcessor<ProtocolStruct>(type())
 
@@ -203,7 +151,7 @@ internal abstract class SimpleNoticeProcessor<in T : ProtocolStruct>(
     private val type: KClass<T>,
 ) : NoticeProcessor {
 
-    final override suspend fun process(context: NoticePipelineContext, data: Any?) {
+    final override suspend fun process(context: NoticePipelineContext, data: ProtocolStruct) {
         if (type.isInstance(data)) {
             context.processImpl(data.uncheckedCast())
         }
