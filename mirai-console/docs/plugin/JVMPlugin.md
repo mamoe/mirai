@@ -1,0 +1,436 @@
+# Mirai Console Backend - JVM Plugins
+
+[`Plugin`]: ../../backend/mirai-console/src/plugin/Plugin.kt
+
+[`PluginDescription`]: ../../backend/mirai-console/src/plugin/description/PluginDescription.kt
+
+[`PluginLoader`]: ../../backend/mirai-console/src/plugin/loader/PluginLoader.kt
+
+[`PluginManager`]: ../../backend/mirai-console/src/plugin/PluginManager.kt
+
+[`JvmPluginLoader`]: ../../backend/mirai-console/src/plugin/jvm/JvmPluginLoader.kt
+
+[`JvmPlugin`]: ../../backend/mirai-console/src/plugin/jvm/JvmPlugin.kt
+
+[`JvmPluginDescription`]: ../../backend/mirai-console/src/plugin/jvm/JvmPluginDescription.kt
+
+[`AbstractJvmPlugin`]: ../../backend/mirai-console/src/plugin/jvm/AbstractJvmPlugin.kt
+
+[`KotlinPlugin`]: ../../backend/mirai-console/src/plugin/jvm/KotlinPlugin.kt
+
+[`JavaPlugin`]: ../../backend/mirai-console/src/plugin/jvm/JavaPlugin.kt
+
+
+[`PluginData`]: ../../backend/mirai-console/src/data/PluginData.kt
+
+[`PluginConfig`]: ../../backend/mirai-console/src/data/PluginConfig.kt
+
+[`PluginDataStorage`]: ../../backend/mirai-console/src/data/PluginDataStorage.kt
+
+[`ExportManager`]: ../../backend/mirai-console/src/plugin/jvm/ExportManager.kt
+
+[`MiraiConsole`]: ../../backend/mirai-console/src/MiraiConsole.kt
+
+[`MiraiConsoleImplementation`]: ../../backend/mirai-console/src/MiraiConsoleImplementation.kt
+<!--[MiraiConsoleFrontEnd]: ../../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
+
+[`Command`]: ../../backend/mirai-console/src/command/Command.kt
+
+[`CompositeCommand`]: ../../backend/mirai-console/src/command/CompositeCommand.kt
+
+[`SimpleCommand`]: ../../backend/mirai-console/src/command/SimpleCommand.kt
+
+[`RawCommand`]: ../../backend/mirai-console/src/command/RawCommand.kt
+
+[`CommandManager`]: ../../backend/mirai-console/src/command/CommandManager.kt
+
+[`Annotations`]: ../../backend/mirai-console/src/util/Annotations.kt
+
+[`ConsoleInput`]: ../../backend/mirai-console/src/util/ConsoleInput.kt
+
+[`JavaPluginScheduler`]: ../../backend/mirai-console/src/plugin/jvm/JavaPluginScheduler.kt
+
+[`ResourceContainer`]: ../../backend/mirai-console/src/plugin/ResourceContainer.kt
+
+[`PluginFileExtensions`]: ../../backend/mirai-console/src/plugin/PluginFileExtensions.kt
+
+[`AutoSavePluginDataHolder`]: ../../backend/mirai-console/src/data/PluginDataHolder.kt#L45
+
+[Kotlin]: https://www.kotlincn.net/
+
+[Java]: https://www.java.com/zh_CN/
+
+[JVM]: https://zh.wikipedia.org/zh-cn/Java%E8%99%9A%E6%8B%9F%E6%9C%BA
+
+[JAR]: https://zh.wikipedia.org/zh-cn/JAR_(%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F)
+
+[为什么不支持热加载和卸载插件？]: ../QA.md#为什么不支持热加载和卸载插件
+
+[使用 AutoService]: ../QA.md#使用-autoservice
+
+[MCI]: ../../tools/intellij-plugin/
+
+[MiraiPixel]: ../../tools/intellij-plugin/resources/icons/pluginMainDeclaration.png
+
+本章节介绍 JVM 平台的插件。
+
+## JVM 平台插件接口 - [`JvmPlugin`]
+
+所有的 JVM 插件（特别地，打包为 `JAR` 的）都必须实现 [`JvmPlugin`]，否则不会被 [`JvmPluginLoader`]
+识别和加载。
+
+[`JvmPlugin`] 派生为 [`KotlinPlugin`] 和 [`JavaPlugin`]，其关系图如下所示。
+
+![](.JVMPlugin_images/75227ef5.png)
+
+其中 `AbstractJvmPlugin` 是 Console 提供的基础实现，如数据目录等。
+
+## 主类
+
+JVM 平台插件的主类应被实现为一个单例（Kotlin `object`，Java 静态初始化的类，详见下文示例）。
+
+**Kotlin 使用者的插件主类应继承 [`KotlinPlugin`]。**  
+**其他 JVM 语言（如 Java）使用者的插件主类应继承 [`JavaPlugin`]。**
+
+### 定义主类
+
+Mirai Console 使用类似 Java `ServiceLoader` 但更灵活的机制加载插件。
+
+一个正确的主类定义可以是以下三种任一。注意 "描述" 将会在[下文](#描述)解释。
+
+1. Kotlin `object`
+
+```kotlin
+object A : KotlinPlugin( /* 描述 */)
+```
+
+2. Java 静态初始化单例 `class`
+
+```java
+public final class A extends JavaPlugin {
+    public static final A INSTANCE = new A(); // 必须 public static, 必须名为 INSTANCE
+
+    private A() {
+        super( /* 描述 */);
+    }
+}
+```
+
+3. Java `class`
+
+使用这种方法时，插件实例由 Console 在合适的时机创建。
+
+```java
+public final class A extends JavaPlugin {
+    public A() { // 必须公开且无参
+        super( /* 描述 */);
+    }
+}
+```
+
+### 确认主类正确定义
+
+在 [IDE 插件][MCI] 的帮助下，一个正确的插件主类定义的行号处会显示 Mirai 像素风格形象图：![MiraiPixel]
+
+![PluginMainDeclaration](.images/PluginMainDeclaration.png)
+
+### 配置主类服务
+
+#### 自动配置主类服务
+
+[IDE 插件][MCI] 会自动检查主类服务的配置。在没有正确配置时，IDE 将会警告并为你自动配置：  
+![PluginMainServiceNotConfigured](.images/PluginMainServiceNotConfigured.png)
+
+#### 手动配置主类服务
+
+若无法使用 IntelliJ
+插件，可在资源目录 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin`
+文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名或以 `#` 起始的注释）。
+
+也可以使用各种自动化工具配置 service 信息，如使用 Google
+的 [AutoService](https://github.com/google/auto/tree/master/service)
+。附[在 Kotlin 使用的方法][使用 AutoService]。
+
+> 备注：Console 虽然使用这种常用的 service 配置方式，但不使用 ServiceLoader 加载插件实例。Console
+> 的加载方式更灵活。
+
+## 描述
+
+插件主类需要提供一份描述信息。
+
+插件可以通过资源文件提供静态的信息，也可以通过构造器动态传递。
+
+描述拥有如下属性：
+
+[语义化版本 2.0.0]: https://semver.org/lang/zh-CN/
+
+| 属性           | 可空  | 备注                          |
+|--------------|-----|-----------------------------|
+| id           | 否   | 唯一识别标识符，仅能包含英文字母、数字、`.`、`-` |
+| version      | 否   | 版本号，见补充说明                   |
+| name         | 是   | 供用户阅读的名称，可包含任意字符            |
+| author       | 是   | 作者信息                        |
+| dependencies | 是   | 依赖其他插件的 ID 及版本范围            |
+| info         | 是   | 供用户阅读的描述信息                  |
+
+### 有关插件版本号的补充说明
+
+- 插件自身的版本要求遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)
+  规范，合格的版本例如：`1.0.0`、`1.0`、`1.0-M1`、`1.0-pre-1`；
+
+### 有关插件依赖的说明
+
+- 插件依赖的版本遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)
+  规范，同时支持 [Apache Ivy 风格表示方法](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html)
+  。
+
+在定义时需使用 ID，因为 ID 是唯一的。不支持使用名称（name）。
+
+定义必须依赖 net.mamoe.chat-command：
+
+```yaml
+dependencies:
+    - "net.mamoe.chat-command"
+```
+
+定义可选依赖 net.mamoe.chat-command：
+
+```yaml
+dependencies:
+    - "net.mamoe.chat-command?"
+```
+
+定义必须依赖 1.0 及以上， 2.0 （不包含）以下的 net.mamoe.chat-command 插件：
+
+```yaml
+dependencies:
+    - "net.mamoe.chat-command:[1.0, 2.0)"
+```
+
+定义可选依赖 1.0 及以上， 2.0 （不包含）以下的 net.mamoe.chat-command 插件：
+
+```yaml
+dependencies:
+    - "net.mamoe.chat-command:[1.0, 2.0)?"
+```
+
+插件的依赖将在下文 [依赖其他插件][#依赖其他插件] 详细说明。
+
+### 通过资源文件提供静态信息
+
+在资源文件目录（如 `src/main/resources`）创建 `plugin.yml`，并填写上述属性，示例：
+
+```yaml
+id: net.mamoe.chat-command
+version: 0.3.0
+name: Chat Command
+author: Mamoe Technologies
+dependencies: [ ] # 或者不写这行
+info: 允许在聊天环境执行指令。
+```
+
+然后在插件主类指定从资源加载：
+
+*Kotlin*
+
+```kotlin
+object A : KotlinPlugin(JvmPluginDescription.loadFromResource())
+```
+
+*Java*
+
+```java
+public final class JExample extends JavaPlugin {
+    public static final JExample INSTANCE = new JExample();
+
+    private JExample() {
+        super(JvmPluginDescription.loadFromResource());
+    }
+}
+```
+
+注意，尽管 `loadFromResource` 支持读取任意路径的文件，但也建议使用默认的 `plugin.yml`
+。因为目前有计划修改插件信息的读取方式，这种 `plugin.yml` 的读取方式很有可能会继续得到支持。
+
+### 在构造器动态提供
+
+*注意：由于目前有计划修改插件信息的读取方式，这种构造器动态提供的方法已不再推荐。*
+
+在构造器动态构造 `JvmPluginDescription`：
+
+*Kotlin*
+
+```kotlin
+object MyPlugin : KotlinPlugin(
+    JvmPluginDescription(
+        // 必要属性
+        id = "net.mamoe.chat-command",
+        version = "1.0.0",
+    ) {
+        // 非必须属性
+        name("Chat Command")
+        // author("...")
+        // dependsOn("...") // 与 YAML 方式类似，如 "net.mamoe.chat-command:[1.0, 2.0)?"
+    }
+)
+```
+
+*Java*
+
+```java
+public final class JExample extends JavaPlugin {
+    public static final JExample INSTANCE = new JExample();
+
+    private JExample() {
+        super(new JvmPluginDescriptionBuilder( // 必要属性
+                        "org.example.test-plugin", // id
+                        "1.0.0" // version
+                ).author("...") // 可选属性，可以不提供， 直接 build
+                        .info("...")
+                        .build()
+        );
+    }
+}
+```
+
+## 插件生命周期与依赖管理
+
+每个 JVM 插件有如下状态：初始化、加载、启用、禁用。
+
+[//]: # (预加载、)
+
+[//]: # (- 预加载：Console 识别插件的静态依赖信息。)
+
+- 初始化：插件主类由插件加载器识别并创建实例（如有必要）。插件的依赖将完成链接（**因此在初始化之后才允许调用依赖**）；
+- 加载：插件加载器已经识别了所有的插件并根据依赖关系确定了加载顺序。这时插件的 `onLoad()` 回调将会被调用，插件做一次性初始化工作；
+- 启用：插件加载器已经加载了所有的插件并调用它们的 `onLoad()`。这时插件的 `onEnable()`
+  回调将会被调用，插件开始正常工作；
+- 禁用：当用户要求关闭某个插件，或者 Console 正在关闭时插件会被禁用，`onEnable()`
+  回调将会被调用，插件停止一切在启用状态时创建的工作。
+
+每个插件一定会经历初始化和加载，但可能会经历零次到任意次启用和禁用。根据不同 Console
+前端的行为和用户的设置，插件可能只会加载不会启用，也有可能会在禁用后被重新启用。因此插件必须只在 `onEnable`
+时创建事件监听等任务，且在禁用时停止这些任务。
+
+多个插件的加载是*顺序的*，意味着若一个插件的 `onLoad`
+等回调处理缓慢，后续插件的加载也会被延后，即使它们可能没有依赖关系。因此需要让 `onLoad`，`onEnable`，`onDisable`
+快速返回。
+
+### 有依赖时的加载顺序
+
+若插件 A 需要调用另一个插件 B，那么就认为 A 依赖
+B。当存在依赖关系时，被依赖的插件（B）将总是会早于（A）加载。这适用于所有上述回调，即 B 的 `onLoad`、`onEnable` 会早于
+A 调用，而 `onDisable` 会晚于 A 调用。
+
+### 不支持热加载和热卸载
+
+Mirai Console 不提供热加载和热卸载功能，所有插件只能在服务器启动前加载，在 Console
+停止时卸载。（[为什么不支持热加载和卸载插件？]）
+
+只有当插件 A 在其描述中定义了依赖时，才会被允许调用 B 的接口。要了解如何定义，可参考上文 [有关插件依赖的说明]。
+
+### Kotlin 协程生命周期管理
+
+[`JvmPlugin`] 实现 `CoroutineScope`，并由 Console 内部实现提供其 `coroutineContext`。
+
+**所有插件启动的协程都应该受 `JvmPlugin` 作用域的管理**，如要启动一个协程，正确的做法是：
+
+```kotlin
+object MyPluginMain : KotlinPlugin( /* ... */) {
+    override fun onEnable() {
+        // 即 MyPluginMain.launch，在当前协程作用域创建任务。
+        launch {
+            delay(1000)
+            println("一秒钟过去了。")
+        }
+
+        // globalEventChannel 在当前协程作用域创建事件通道，会在 onDisable 自动关闭。
+        globalEventChannel().subscribeAlways<MemberLeaveEvent> {
+            println("有人离开了群。")
+        }
+    }
+}
+```
+
+### Java 线程生命周期管理
+
+插件创建的所有线程或异步任务都需要在 `onDisable()` 时关闭。
+
+[JavaPluginScheduler]: ../../backend/mirai-console/src/plugin/jvm/JavaPluginScheduler.kt
+
+若要执行简单的异步、延迟、重复任务，可使用 `getScheduler()` 获取到简单任务调度器。示例：
+
+```java
+public final class JExample extends JavaPlugin {
+    public static final JExample INSTANCE = new JExample();
+
+    private JExample() {
+        // ...
+    }
+
+    @Override
+    public onEnable() {
+        getScheduler().delayed(1000L, () -> System.out.println("一秒钟过去了。"));
+    }
+}
+```
+
+详细查看 [JavaPluginScheduler]。
+
+## 访问数据目录和配置目录
+
+[`JvmPlugin`] 实现接口 [`PluginFileExtensions`]。插件可通过 `resolveDataFile`
+，`resolveConfigFile` 等方法取得数据目录或配置目录下的文件。
+
+- 数据目录（dataFolder）用来存放只供插件内部读取的数据；
+- 配置目录（configFolder）用来存放可由用户修改的配置。
+
+可以在任何时刻使用这些方法。
+
+详见 [`PluginFileExtensions`]。
+
+*Java*
+
+```java
+File dataFile=JExample.INSTANCE.resolveDataFile("myDataFile.txt");
+        File configFile=JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
+```
+
+### 物理目录路径
+
+用 `$root` 表示 Mirai Console 运行路径，`$name` 表示插件名，
+在终端前端（Terminal），插件数据目录一般在 `$root/data/$name`
+，插件配置目录一般在 `$root/config/$name`。**但是插件不应该依赖这些物理路径，因为在其他前端上没有保证。**
+
+### 访问 [JAR] 包内资源文件
+
+[`JvmPlugin`] 实现接口 [`ResourceContainer`]。插件可通过 `getResource`
+，`getResourceAsStream` 等取得插件 [JAR] 包内资源文件。
+
+可以在任何时刻使用这些方法。
+
+详见 [`ResourceContainer`]。
+
+## 打包和分发插件
+
+执行 Gradle 任务 `buildPlugin` 即可打包后缀为 `.mirai.jar` 的插件
+JAR。打包结果输出在 `build/mirai/`。
+
+这个文件就是插件的可分发文件。可以放入 Console `plugins` 目录中使用。
+
+### 插件依赖打包机制
+
+TODO
+
+### 类加载隔离
+
+插件仅能访问自身、依赖的库、Console、以及在描述中定义了的依赖的插件。每个插件依赖的库都会被隔离，不同插件可以使用不同版本的同一个库，互不冲突。
+
+### 发布插件到 mirai-console-loader
+
+插件中心仍在开发中。
+
+> 下一步，[Commands](../Commands.md#mirai-console-backend---commands)
+>
+> 返回 [开发文档索引](../README.md#mirai-console)
+
