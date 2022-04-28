@@ -9,13 +9,11 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
+import net.mamoe.mirai.internal.message.PB_RESERVE_FOR_ELSE
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
 import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.TypeSafeMap
-import net.mamoe.mirai.utils.systemProp
-import net.mamoe.mirai.utils.withSwitch
+import net.mamoe.mirai.utils.*
 
 private val defaultTraceLogging: MiraiLogger by lazy {
     MiraiLogger.Factory.create(MessageEncoderPipelineImpl::class, "MessageEncoderPipeline")
@@ -28,7 +26,12 @@ internal open class MessageEncoderPipelineImpl :
     ),
     MessageEncoderPipeline {
 
-    inner class MessageEncoderContextImpl(attributes: TypeSafeMap) : MessageEncoderContext, BaseContextImpl(attributes)
+    inner class MessageEncoderContextImpl(attributes: TypeSafeMap) : MessageEncoderContext,
+        BaseContextImpl(attributes) {
+        override var generalFlags: ImMsgBody.Elem by lateinitMutableProperty {
+            ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE))
+        }
+    }
 
     override fun createContext(attributes: TypeSafeMap): MessageEncoderContext = MessageEncoderContextImpl(attributes)
 }

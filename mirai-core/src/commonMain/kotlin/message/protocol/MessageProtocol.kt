@@ -9,12 +9,18 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.pipeline.PipelineConsumptionMarker
 import net.mamoe.mirai.internal.pipeline.Processor
 import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.uncheckedCast
 import java.util.*
 import kotlin.reflect.KClass
@@ -28,12 +34,20 @@ internal abstract class ProcessorCollector {
     abstract fun add(decoder: MessageDecoder)
 }
 
-internal abstract class MessageProtocol {
+internal abstract class MessageProtocol(
+    private val priority: UInt = 1000u // the higher, the prior it being called
+) {
     fun collectProcessors(processorCollector: ProcessorCollector) {
         processorCollector.collectProcessorsImpl()
     }
 
     protected abstract fun ProcessorCollector.collectProcessorsImpl()
+
+    companion object {
+        const val PRIORITY_METADATA: UInt = 10000u
+        const val PRIORITY_CONTENT: UInt = 1000u
+        const val PRIORITY_UNSUPPORTED: UInt = 100u
+    }
 }
 
 internal object MessageProtocols {
@@ -67,10 +81,14 @@ internal object MessageProtocols {
 ///////////////////////////////////////////////////////////////////////////
 
 internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.Elem, Message> {
-
+    companion object {
+        val BOT = TypeKey<Bot>("bot")
+        val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
+        val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
+    }
 }
 
-internal interface MessageDecoder {
+internal interface MessageDecoder : PipelineConsumptionMarker {
     suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem)
 }
 
@@ -82,6 +100,7 @@ internal class MessageDecoderProcessor(
 ) : Processor<MessageDecoderContext, ImMsgBody.Elem> {
     override suspend fun process(context: MessageDecoderContext, data: ImMsgBody.Elem) {
         decoder.run { context.process(data) }
+        // TODO: 2022/4/27 handle exceptions
     }
 }
 
@@ -93,10 +112,39 @@ internal interface MessageDecoderPipeline : ProcessorPipeline<MessageDecoderProc
 
 internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessage, ImMsgBody.Elem> {
 
+    /**
+     * General flags that should be appended to the end of the result.
+     *
+     * Do not update this property directly, but call [collectGeneralFlags].
+     */
+    var generalFlags: ImMsgBody.Elem
+
+    companion object {
+        val ADD_GENERAL_FLAGS = TypeKey<Boolean>("addGeneralFlags")
+        val MessageEncoderContext.addGeneralFlags get() = attributes[ADD_GENERAL_FLAGS]
+
+        /**
+         * Override default generalFlags if needed
+         */
+        inline fun MessageEncoderContext.collectGeneralFlags(block: () -> ImMsgBody.Elem) {
+            if (addGeneralFlags) {
+                generalFlags = block()
+            }
+        }
+
+        val CONTACT = TypeKey<Contact>("contact")
+        val MessageEncoderContext.contact get() = attributes[CONTACT]
+
+        val ORIGINAL_MESSAGE = TypeKey<MessageChain>("originalMessage")
+        val MessageEncoderContext.originalMessage get() = attributes[ORIGINAL_MESSAGE]
+
+        val IS_FORWARD = TypeKey<Boolean>("isForward")
+        val MessageEncoderContext.isForward get() = attributes[IS_FORWARD]
+    }
 }
 
 
-internal interface MessageEncoder<T : SingleMessage> {
+internal fun interface MessageEncoder<T : SingleMessage> : PipelineConsumptionMarker {
     suspend fun MessageEncoderContext.process(data: T)
 }
 
@@ -110,6 +158,7 @@ internal class MessageEncoderProcessor<T : SingleMessage>(
     override suspend fun process(context: MessageEncoderContext, data: SingleMessage) {
         if (elementType.isInstance(data)) {
             encoder.run { context.process(data.uncheckedCast()) }
+            // TODO: 2022/4/27 handle exceptions
         }
     }
 }
