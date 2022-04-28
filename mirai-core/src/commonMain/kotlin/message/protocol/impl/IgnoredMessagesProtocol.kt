@@ -17,18 +17,24 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.ShowImageFlag
 import net.mamoe.mirai.message.data.SingleMessage
 
-internal class IgnoredMessagesProtocol : MessageProtocol() {
+internal class IgnoredMessagesProtocol : MessageProtocol(PRIORITY_IGNORE) {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Encoder())
         add(Decoder())
+
+        // 所有未处理的 Elem 都会变成 UnsupportedMessage 所有不用在这里处理
     }
 
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
-            when (data) {
+            when {
+                data.elemFlags2 != null
+                        || data.extraInfo != null
+                        || data.generalFlags != null
+                        || data.anonGroupMsg != null
+                -> markAsConsumed()
             }
         }
-
     }
 
     private class Encoder : MessageEncoder<SingleMessage> {

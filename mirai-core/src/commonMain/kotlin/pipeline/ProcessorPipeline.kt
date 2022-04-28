@@ -49,6 +49,10 @@ internal value class MutableProcessResult<R>(
 internal interface PipelineConsumptionMarker
 
 internal interface ProcessorPipelineContext<D, R> {
+
+    /**
+     * Child processes ([processAlso]) will inherit [attributes] from its parent, while any other properties from the context will not.
+     */
     val attributes: TypeSafeMap
 
     val collected: MutableProcessResult<R>
@@ -135,11 +139,16 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
     }
 }
 
+internal class PipelineConfiguration(
+    var stopWhenConsumed: Boolean
+)
+
 internal abstract class AbstractProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineContext<D, R>, D, R>
 protected constructor(
+    val configuration: PipelineConfiguration,
     val traceLogging: MiraiLogger,
 ) : ProcessorPipeline<P, D, R> {
-    constructor() : this(SilentLogger)
+    constructor(configuration: PipelineConfiguration) : this(configuration, SilentLogger)
 
     /**
      * Must be ordered
@@ -198,6 +207,12 @@ protected constructor(
                         processor.toString().replace("net.mamoe.mirai.internal.network.notice.", "")
                     }, success=${result.isSuccess}, consumed=${context.isConsumed}, diff=$diffPackets"
                 }
+            }
+
+            if (context.isConsumed && configuration.stopWhenConsumed) {
+                traceLogging.info { "stopWhenConsumed=true, stopped." }
+
+                break
             }
         }
         return context.collected.data

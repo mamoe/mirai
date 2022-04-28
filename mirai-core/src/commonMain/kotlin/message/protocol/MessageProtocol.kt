@@ -9,33 +9,12 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.pipeline.PipelineConsumptionMarker
-import net.mamoe.mirai.internal.pipeline.Processor
-import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.utils.TypeKey
-import net.mamoe.mirai.utils.uncheckedCast
-import java.util.*
 import kotlin.reflect.KClass
 
-internal abstract class ProcessorCollector {
-    inline fun <reified T : SingleMessage> add(encoder: MessageEncoder<T>) = add(encoder, T::class)
-
-
-    abstract fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>)
-
-    abstract fun add(decoder: MessageDecoder)
-}
-
+// Loaded by ServiceLoader
 internal abstract class MessageProtocol(
-    private val priority: UInt = 1000u // the higher, the prior it being called
+    val priority: UInt = PRIORITY_CONTENT // the higher, the prior it being called
 ) {
     fun collectProcessors(processorCollector: ProcessorCollector) {
         processorCollector.collectProcessorsImpl()
@@ -46,124 +25,36 @@ internal abstract class MessageProtocol(
     companion object {
         const val PRIORITY_METADATA: UInt = 10000u
         const val PRIORITY_CONTENT: UInt = 1000u
+        const val PRIORITY_IGNORE: UInt = 500u
         const val PRIORITY_UNSUPPORTED: UInt = 100u
     }
-}
 
-internal object MessageProtocols {
-    val instances: List<MessageProtocol> = initialize()
+    object PriorityComparator : Comparator<MessageProtocol> {
+        override fun compare(o1: MessageProtocol, o2: MessageProtocol): Int {
 
-    private fun initialize(): List<MessageProtocol> {
-        val encoderPipeline = MessageEncoderPipelineImpl()
-        val decoderPipeline = MessageDecoderPipelineImpl()
+            // Do not use o1.compareTo
+            // > Task :mirai-core:checkAndroidApiLevel
+            // > /Users/runner/work/mirai/mirai/mirai-core/build/classes/kotlin/android/main/net/mamoe/mirai/internal/message/protocol/MessageProtocol$PriorityComparator.class
+            //    > Method compare(Lnet/mamoe/mirai/internal/message/protocol/MessageProtocol;Lnet/mamoe/mirai/internal/message/protocol/MessageProtocol;)I
+            //      > Invoke method java/lang/Integer.compareUnsigned(II)I
+            //          Couldn't access java/lang/Integer.compareUnsigned(II)I: java/lang/Integer.compareUnsigned(II)I since api level 26
 
-        val instances = ServiceLoader.load(MessageProtocol::class.java).iterator().asSequence().toList()
-        for (instance in instances) {
-            instance.collectProcessors(object : ProcessorCollector() {
-                override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {
-                    encoderPipeline.registerProcessor(MessageEncoderProcessor(encoder, elementType))
-                }
-
-                override fun add(decoder: MessageDecoder) {
-                    decoderPipeline.registerProcessor(MessageDecoderProcessor(decoder))
-                }
-
-            })
+            return uintCompare(o1.priority.toInt(), o2.priority.toInt())
         }
 
-        return instances
-    }
-
-}
-
-///////////////////////////////////////////////////////////////////////////
-// decoders
-///////////////////////////////////////////////////////////////////////////
-
-internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.Elem, Message> {
-    companion object {
-        val BOT = TypeKey<Bot>("bot")
-        val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
-        val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
+        private fun uintCompare(v1: Int, v2: Int): Int = (v1 xor Int.MIN_VALUE).compareTo(v2 xor Int.MIN_VALUE)
     }
 }
 
-internal interface MessageDecoder : PipelineConsumptionMarker {
-    suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem)
+internal abstract class ProcessorCollector {
+    inline fun <reified T : SingleMessage> add(encoder: MessageEncoder<T>) = add(encoder, T::class)
+
+
+    abstract fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>)
+
+    abstract fun add(decoder: MessageDecoder)
 }
 
-/**
- * Adapter for [MessageDecoder] to be used as [Processor].
- */
-internal class MessageDecoderProcessor(
-    private val decoder: MessageDecoder
-) : Processor<MessageDecoderContext, ImMsgBody.Elem> {
-    override suspend fun process(context: MessageDecoderContext, data: ImMsgBody.Elem) {
-        decoder.run { context.process(data) }
-        // TODO: 2022/4/27 handle exceptions
-    }
-}
-
-internal interface MessageDecoderPipeline : ProcessorPipeline<MessageDecoderProcessor, ImMsgBody.Elem, Message>
-
-///////////////////////////////////////////////////////////////////////////
-// encoders
-///////////////////////////////////////////////////////////////////////////
-
-internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessage, ImMsgBody.Elem> {
-
-    /**
-     * General flags that should be appended to the end of the result.
-     *
-     * Do not update this property directly, but call [collectGeneralFlags].
-     */
-    var generalFlags: ImMsgBody.Elem
-
-    companion object {
-        val ADD_GENERAL_FLAGS = TypeKey<Boolean>("addGeneralFlags")
-        val MessageEncoderContext.addGeneralFlags get() = attributes[ADD_GENERAL_FLAGS]
-
-        /**
-         * Override default generalFlags if needed
-         */
-        inline fun MessageEncoderContext.collectGeneralFlags(block: () -> ImMsgBody.Elem) {
-            if (addGeneralFlags) {
-                generalFlags = block()
-            }
-        }
-
-        val CONTACT = TypeKey<Contact>("contact")
-        val MessageEncoderContext.contact get() = attributes[CONTACT]
-
-        val ORIGINAL_MESSAGE = TypeKey<MessageChain>("originalMessage")
-        val MessageEncoderContext.originalMessage get() = attributes[ORIGINAL_MESSAGE]
-
-        val IS_FORWARD = TypeKey<Boolean>("isForward")
-        val MessageEncoderContext.isForward get() = attributes[IS_FORWARD]
-    }
-}
-
-
-internal fun interface MessageEncoder<T : SingleMessage> : PipelineConsumptionMarker {
-    suspend fun MessageEncoderContext.process(data: T)
-}
-
-/**
- * Adapter for [MessageEncoder] to be used as [Processor].
- */
-internal class MessageEncoderProcessor<T : SingleMessage>(
-    private val encoder: MessageEncoder<T>,
-    private val elementType: KClass<T>,
-) : Processor<MessageEncoderContext, SingleMessage> {
-    override suspend fun process(context: MessageEncoderContext, data: SingleMessage) {
-        if (elementType.isInstance(data)) {
-            encoder.run { context.process(data.uncheckedCast()) }
-            // TODO: 2022/4/27 handle exceptions
-        }
-    }
-}
-
-internal interface MessageEncoderPipeline : ProcessorPipeline<MessageEncoderProcessor<*>, SingleMessage, ImMsgBody.Elem>
 
 ///////////////////////////////////////////////////////////////////////////
 // refiners

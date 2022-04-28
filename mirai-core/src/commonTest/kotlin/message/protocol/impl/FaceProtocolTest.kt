@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.messageChainOf
@@ -16,6 +17,7 @@ import net.mamoe.mirai.utils.hexToBytes
 import org.junit.jupiter.api.Test
 
 internal class FaceProtocolTest : AbstractMessageProtocolTest() {
+    override val protocol: MessageProtocol = FaceProtocol()
 
     @Test
     fun `can encode`() {
@@ -27,7 +29,6 @@ internal class FaceProtocolTest : AbstractMessageProtocolTest() {
                     buf = "00 01 00 04 52 CC F5 D0".hexToBytes(),
                 ),
             ),
-            FaceProtocol()
         ) {
             encode(
                 messageChainOf(Face(Face.PIE_ZUI)),
@@ -40,7 +41,6 @@ internal class FaceProtocolTest : AbstractMessageProtocolTest() {
     fun `can decode`() {
         doDecoderChecks(
             messageChainOf(Face(Face.YIN_XIAN)),
-            FaceProtocol()
         ) {
             decode(
                 listOf(
@@ -58,4 +58,5 @@ internal class FaceProtocolTest : AbstractMessageProtocolTest() {
         }
 
     }
+
 }

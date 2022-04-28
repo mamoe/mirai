@@ -40,6 +40,7 @@ internal class TextProtocol : MessageProtocol() {
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             val text = data.text ?: return
+            markAsConsumed()
             if (text.attr6Buf.isEmpty()) {
                 collect(PlainText(text.str))
             } else {
@@ -59,16 +60,18 @@ internal class TextProtocol : MessageProtocol() {
 
     private class PlainTextEncoder : MessageEncoder<PlainText> {
         override suspend fun MessageEncoderContext.process(data: PlainText) {
+            markAsConsumed()
             collect(ImMsgBody.Elem(text = ImMsgBody.Text(str = data.content)))
         }
     }
 
     private class AtEncoder : MessageEncoder<At> {
         override suspend fun MessageEncoderContext.process(data: At) {
+            markAsConsumed()
             collected += ImMsgBody.Elem(
                 text = data.toJceData(
                     attributes[CONTACT].safeCast(),
-                    originalMessage[MessageSource],
+                    originalMessage.sourceOrNull,
                     isForward,
                 )
             )
@@ -148,6 +151,7 @@ internal class TextProtocol : MessageProtocol() {
 
     private class AtAllEncoder : MessageEncoder<AtAll> {
         override suspend fun MessageEncoderContext.process(data: AtAll) {
+            markAsConsumed()
             collect(jceData)
         }
 

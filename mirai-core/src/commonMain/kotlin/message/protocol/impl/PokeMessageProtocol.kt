@@ -9,15 +9,19 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.message.UNSUPPORTED_POKE_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.protocol.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.PokeMessage
 
 internal class PokeMessageProtocol : MessageProtocol() {
+    companion object {
+        val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
+    }
+
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Encoder())
         add(Decoder())
@@ -25,6 +29,7 @@ internal class PokeMessageProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<PokeMessage> {
         override suspend fun MessageEncoderContext.process(data: PokeMessage) {
+            markAsConsumed()
             collect(
                 ImMsgBody.Elem(
                     commonElem = ImMsgBody.CommonElem(
@@ -41,13 +46,13 @@ internal class PokeMessageProtocol : MessageProtocol() {
             )
             processAlso(UNSUPPORTED_POKE_MESSAGE_PLAIN)
         }
-
     }
 
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             if (data.commonElem == null) return
             if (data.commonElem.serviceType != 2) return
+            markAsConsumed()
 
             val proto =
                 data.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())

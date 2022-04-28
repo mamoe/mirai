@@ -26,6 +26,7 @@ internal class PttMessageProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<PttMessage> {
         override suspend fun MessageEncoderContext.process(data: PttMessage) {
+            markAsConsumed()
             collect(
                 ImMsgBody.Elem(
                     extraInfo = ImMsgBody.ExtraInfo(flags = 16, groupMask = 1)

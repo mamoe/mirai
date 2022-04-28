@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
-import net.mamoe.mirai.internal.message.PB_RESERVE_FOR_ELSE
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
+import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.*
 
@@ -22,6 +22,7 @@ private val defaultTraceLogging: MiraiLogger by lazy {
 
 internal open class MessageEncoderPipelineImpl :
     AbstractProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem>(
+        PipelineConfiguration(stopWhenConsumed = true),
         defaultTraceLogging
     ),
     MessageEncoderPipeline {
@@ -34,4 +35,8 @@ internal open class MessageEncoderPipelineImpl :
     }
 
     override fun createContext(attributes: TypeSafeMap): MessageEncoderContext = MessageEncoderContextImpl(attributes)
+
+    private companion object {
+        private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
+    }
 }

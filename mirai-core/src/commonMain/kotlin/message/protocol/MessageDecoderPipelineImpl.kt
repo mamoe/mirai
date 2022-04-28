@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.message.protocol
 
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
+import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TypeSafeMap
@@ -25,6 +26,7 @@ private val defaultTraceLogging: MiraiLogger by lazy {
 
 internal open class MessageDecoderPipelineImpl :
     AbstractProcessorPipeline<MessageDecoderProcessor, MessageDecoderContext, ImMsgBody.Elem, Message>(
+        PipelineConfiguration(stopWhenConsumed = true),
         defaultTraceLogging
     ),
     MessageDecoderPipeline {

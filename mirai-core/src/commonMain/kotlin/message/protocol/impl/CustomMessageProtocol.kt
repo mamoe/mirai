@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.message.MIRAI_CUSTOM_ELEM_TYPE
 import net.mamoe.mirai.internal.message.protocol.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.CustomMessage
@@ -24,6 +23,8 @@ internal class CustomMessageProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<CustomMessage> {
         override suspend fun MessageEncoderContext.process(data: CustomMessage) {
+            markAsConsumed()
+
             @Suppress("UNCHECKED_CAST")
             collect(
                 ImMsgBody.Elem(
@@ -37,12 +38,16 @@ internal class CustomMessageProtocol : MessageProtocol() {
                 )
             )
         }
+
+        private companion object {
+            private val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
+        }
     }
 
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             if (data.customElem == null) return
-
+            markAsConsumed()
             kotlin.runCatching {
                 data.customElem.data.read {
                     CustomMessage.load(this)
