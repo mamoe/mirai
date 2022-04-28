@@ -13,7 +13,6 @@ package net.mamoe.mirai.internal.message.visitor
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.data.MarketFaceImpl
-import net.mamoe.mirai.internal.message.data.MarketFaceInternal
 import net.mamoe.mirai.internal.message.flags.*
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.message.data.MessageSource
@@ -36,10 +35,6 @@ internal interface MessageVisitorEx<in D, out R> : MessageVisitor<D, R> {
 
     fun visitLongMessageInternal(message: LongMessageInternal, data: D): R {
         return visitAbstractServiceMessage(message, data)
-    }
-
-    fun visitMarketFaceInternal(message: MarketFaceInternal, data: D): R {
-        return visitMarketFace(message, data)
     }
 
     fun visitMarketFaceImpl(message: MarketFaceImpl, data: D): R {

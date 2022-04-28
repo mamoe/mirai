@@ -16,7 +16,7 @@ import java.io.Closeable
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-internal interface Processor<C : ProcessorPipelineContext<D, *>, D> {
+internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineConsumptionMarker {
     suspend fun process(context: C, data: D)
 }
 
@@ -45,6 +45,8 @@ internal value class MutableProcessResult<R>(
     val data: MutableCollection<R>
 )
 
+
+internal interface PipelineConsumptionMarker
 
 internal interface ProcessorPipelineContext<D, R> {
     val attributes: TypeSafeMap
@@ -79,13 +81,13 @@ internal interface ProcessorPipelineContext<D, R> {
      * and throws a [contextualBugReportException] or logs something.
      */
     @ConsumptionMarker
-    fun Processor<*, D>.markAsConsumed(marker: Any = this)
+    fun PipelineConsumptionMarker.markAsConsumed(marker: Any = this)
 
     /**
      * Marks the input as not consumed, if it was marked by this [NoticeProcessor].
      */
     @ConsumptionMarker
-    fun Processor<*, D>.markNotConsumed(marker: Any = this)
+    fun PipelineConsumptionMarker.markNotConsumed(marker: Any = this)
 
     @DslMarker
     annotation class ConsumptionMarker // to give an explicit color.
@@ -106,12 +108,12 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
     private val consumers: Stack<Any> = Stack()
 
     override val isConsumed: Boolean get() = consumers.isNotEmpty()
-    override fun Processor<*, D>.markAsConsumed(marker: Any) {
+    override fun PipelineConsumptionMarker.markAsConsumed(marker: Any) {
         traceLogging.info { "markAsConsumed: marker=$marker" }
         consumers.push(marker)
     }
 
-    override fun Processor<*, D>.markNotConsumed(marker: Any) {
+    override fun PipelineConsumptionMarker.markNotConsumed(marker: Any) {
         if (consumers.peek() === marker) {
             consumers.pop()
             traceLogging.info { "markNotConsumed: Y, marker=$marker" }
