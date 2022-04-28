@@ -31,6 +31,11 @@ internal class FileMessageProtocol : MessageProtocol() {
             if (data.transElemInfo == null) return
             if (data.transElemInfo.elemType != 24) return
 
+            markAsConsumed()
+
+            processAlso(data)
+            process(data)
+
             data.transElemInfo.elemValue.read {
                 // group file feed
                 // 01 00 77 08 06 12 0A 61 61 61 61 61 61 2E 74 78 74 1A 06 31 35 42 79 74 65 3A 5F 12 5D 08 66 12 25 2F 64 37 34 62 62 66 33 61 2D 37 62 32 35 2D 31 31 65 62 2D 38 34 66 38 2D 35 34 35 32 30 30 37 62 35 64 39 66 18 0F 22 0A 61 61 61 61 61 61 2E 74 78 74 28 00 3A 00 42 20 61 33 32 35 66 36 33 34 33 30 65 37 61 30 31 31 66 37 64 30 38 37 66 63 33 32 34 37 35 34 39 63

@@ -9,23 +9,17 @@
 
 package net.mamoe.mirai.internal.bootstrap
 
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline
+import net.mamoe.mirai.internal.message.protocol.MessageDecoderProcessor
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
-import net.mamoe.mirai.internal.testFramework.notice.RecordingNoticeProcessor
+import net.mamoe.mirai.internal.testFramework.message.protocol.MessageDecodingRecorder
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.readResource
 import net.mamoe.yamlkt.Yaml
 import kotlin.concurrent.thread
-
-@Serializable
-data class LocalAccount(
-    val id: Long,
-    val password: String
-)
 
 suspend fun main() {
     Runtime.getRuntime().addShutdownHook(thread(start = false) {
@@ -44,7 +38,7 @@ suspend fun main() {
         protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE
     }.asQQAndroidBot()
 
-    bot.components[NoticeProcessorPipeline].registerProcessor(RecordingNoticeProcessor())
+    MessageProtocolFacade.decoderPipeline.registerBefore(MessageDecoderProcessor(MessageDecodingRecorder()))
 
     bot.login()
 

@@ -24,6 +24,7 @@ internal class VipFaceProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<VipFace> {
         override suspend fun MessageEncoderContext.process(data: VipFace) {
+            markAsConsumed()
             processAlso(PlainText(data.contentToString()))
         }
     }
@@ -32,6 +33,7 @@ internal class VipFaceProtocol : MessageProtocol() {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             if (data.commonElem == null) return
             if (data.commonElem.serviceType != 23) return
+            markAsConsumed()
 
             val proto =
                 data.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype23.serializer())

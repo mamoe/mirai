@@ -17,10 +17,18 @@ import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageC
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
+import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.BOT
+import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.GROUP_ID
+import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.MESSAGE_SOURCE_KIND
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Companion.UNSUPPORTED_POKE_MESSAGE_PLAIN
+import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.buildTypeSafeMap
 import net.mamoe.mirai.utils.toLongUnsigned
 
 /**
@@ -147,68 +155,16 @@ internal object ReceiveMessageTransformer {
         bot: Bot,
         builder: MessageChainBuilder,
     ) {
-        //        ProtoBuf.encodeToHexString(elements).soutv("join")
-        // (this._miraiContentToString().soutv())
-        for (element in elements) {
-            transformElement(element, groupIdOrZero, messageSourceKind, bot, builder)
-            when {
-                element.richMsg != null -> {
-                    // removed
-                }
-            }
+        val pipeline = MessageProtocolFacade.decoderPipeline
+
+        val attributes = buildTypeSafeMap {
+            set(BOT, bot)
+            set(MESSAGE_SOURCE_KIND, messageSourceKind)
+            set(GROUP_ID, groupIdOrZero)
         }
-    }
 
-    private fun transformElement(
-        element: ImMsgBody.Elem,
-        groupIdOrZero: Long,
-        messageSourceKind: MessageSourceKind,
-        bot: Bot,
-        builder: MessageChainBuilder,
-    ) {
-        when {
-            element.srcMsg != null -> {
-                // removed
-            }
-            element.notOnlineImage != null -> {
-                // removed
-            }
-            element.customFace != null -> {
-                // removed
-            }
-            element.face != null -> {
-                // removed
-            }
-            element.text != null -> {
-                // removed
-            }
-            element.marketFace != null -> {
-                // removed
-            }
-            element.lightApp != null -> {
-                // removed
-            }
-            element.customElem != null -> {
-                // removed
-            }
-            element.commonElem != null -> {
-                // removed
-            }
-            element.transElemInfo != null -> {
-                // removed
-            }
-
-            element.elemFlags2 != null
-                    || element.extraInfo != null
-                    || element.generalFlags != null
-                    || element.anonGroupMsg != null
-            -> {
-                // ignore
-            }
-            else -> {
-                // removed
-                // println(it._miraiContentToString())
-            }
+        runCoroutineInPlace {
+            elements.forEach { builder.addAll(pipeline.process(it, attributes)) }
         }
     }
 
@@ -313,27 +269,6 @@ internal object ReceiveMessageTransformer {
         builder.compressContinuousPlainText()
 
         return builder.asMessageChain()
-    }
-
-    private fun decodeText(text: ImMsgBody.Text, list: MessageChainBuilder) {
-        // removed
-    }
-
-    private fun decodeSrcMsg(
-        srcMsg: ImMsgBody.SourceMsg,
-        list: MessageChainBuilder,
-        bot: Bot,
-        messageSourceKind: MessageSourceKind,
-        groupIdOrZero: Long,
-    ) {
-        // removed
-    }
-
-    private fun decodeLightApp(
-        lightApp: ImMsgBody.LightAppElem,
-        list: MessageChainBuilder,
-    ) {
-        // removed
     }
 
     fun ImMsgBody.Ptt.toAudio() = OnlineAudioImpl(

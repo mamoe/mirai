@@ -28,6 +28,7 @@ internal class FaceProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<Face> {
         override suspend fun MessageEncoderContext.process(data: Face) {
+            markAsConsumed()
             collect(
                 if (data.id >= 260) {
                     ImMsgBody.Elem(commonElem = data.toCommData())
@@ -67,6 +68,7 @@ internal class FaceProtocol : MessageProtocol() {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             val commonElem = data.commonElem ?: return
             if (commonElem.serviceType != 33) return
+            markAsConsumed()
 
             val proto =
                 commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype33.serializer())

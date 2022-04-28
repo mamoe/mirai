@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.User
-import net.mamoe.mirai.internal.message.UNSUPPORTED_FLASH_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.image.OnlineFriendImageImpl
 import net.mamoe.mirai.internal.message.image.OnlineGroupImageImpl
 import net.mamoe.mirai.internal.message.image.friendImageId
@@ -23,6 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.FlashImage
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.hexToBytes
 
 internal class FlashImageProtocol : MessageProtocol() {
@@ -35,6 +35,8 @@ internal class FlashImageProtocol : MessageProtocol() {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             if (data.commonElem == null) return
             if (data.commonElem.serviceType != 3) return
+
+            markAsConsumed()
 
             val proto =
                 data.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
@@ -51,6 +53,8 @@ internal class FlashImageProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<FlashImage> {
         override suspend fun MessageEncoderContext.process(data: FlashImage) {
+            markAsConsumed()
+
             collect(data.toJceData(contact))
             processAlso(UNSUPPORTED_FLASH_MESSAGE_PLAIN)
             collectGeneralFlags {
@@ -61,6 +65,7 @@ internal class FlashImageProtocol : MessageProtocol() {
         private companion object {
             @Suppress("SpellCheckingInspection")
             private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
+            private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
             private fun FlashImage.toJceData(messageTarget: ContactOrBot?): ImMsgBody.Elem {
                 return if (messageTarget is User) {

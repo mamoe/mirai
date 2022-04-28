@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import kotlinx.io.core.toByteArray
-import net.mamoe.mirai.internal.message.UNSUPPORTED_MERGED_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.data.LightAppInternal
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
@@ -32,6 +31,10 @@ import net.mamoe.mirai.utils.zip
  * - [ForwardMessage]
  */
 internal class RichMessageProtocol : MessageProtocol() {
+    companion object {
+        val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
+    }
+
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(RichMsgDecoder())
         add(LightAppDecoder())
@@ -41,6 +44,7 @@ internal class RichMessageProtocol : MessageProtocol() {
 
     private class Encoder : MessageEncoder<RichMessage> {
         override suspend fun MessageEncoderContext.process(data: RichMessage) {
+            markAsConsumed()
             val content = data.content.toByteArray().zip()
             var longTextResId: String? = null
             when (data) {
@@ -92,7 +96,7 @@ internal class RichMessageProtocol : MessageProtocol() {
                     ImMsgBody.Elem(
                         generalFlags = ImMsgBody.GeneralFlags(
                             longTextFlag = 1,
-                            longTextResid = longTextResId!!,
+                            longTextResid = longTextResId,
                             pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
                         )
                     )
@@ -112,6 +116,7 @@ internal class RichMessageProtocol : MessageProtocol() {
     private class LightAppDecoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             val lightApp = data.lightApp ?: return
+            markAsConsumed()
 
             val content = runWithBugReport("解析 lightApp",
                 { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {

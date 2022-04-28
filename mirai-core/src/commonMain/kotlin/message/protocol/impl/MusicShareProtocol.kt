@@ -17,10 +17,13 @@ import net.mamoe.mirai.message.data.content
 
 internal class MusicShareProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
+        add(Encoder())
+//        add(Decoder())
     }
 
     private class Encoder : MessageEncoder<MusicShare> {
         override suspend fun MessageEncoderContext.process(data: MusicShare) {
+            markAsConsumed()
             // 只有在 QuoteReply 的 source 里才会进行 MusicShare 转换, 因此可以转 PT.
             // 发送消息时会被特殊处理
             processAlso(PlainText(data.content))

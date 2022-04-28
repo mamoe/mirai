@@ -28,10 +28,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushTransMsg
 import net.mamoe.mirai.internal.network.toPacket
-import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.Processor
-import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
+import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
 import kotlin.reflect.KClass
@@ -82,7 +79,9 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
     private val bot: QQAndroidBot,
     traceLogging: MiraiLogger = defaultTraceLogging,
 ) : NoticeProcessorPipeline,
-    AbstractProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet>(traceLogging) {
+    AbstractProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet>(
+        PipelineConfiguration(stopWhenConsumed = false), traceLogging
+    ) {
 
     open inner class ContextImpl(
         attributes: TypeSafeMap,

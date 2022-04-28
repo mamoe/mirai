@@ -29,15 +29,22 @@ internal class ImageProtocol : MessageProtocol() {
 
     private class ImageDecoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
-            if (data.notOnlineImage != null) collect(OnlineFriendImageImpl(data.notOnlineImage))
-            if (data.customFace != null) {
-                collect(OnlineGroupImageImpl(data.customFace))
-                data.customFace.pbReserve.let {
-                    if (it.isNotEmpty() && it.loadAs(CustomFace.ResvAttr.serializer()).msgImageShow != null) {
-                        collect(ShowImageFlag)
+            markAsConsumed()
+            when {
+                data.notOnlineImage != null -> {
+                    collect(OnlineFriendImageImpl(data.notOnlineImage))
+                }
+                data.customFace != null -> {
+                    collect(OnlineGroupImageImpl(data.customFace))
+                    data.customFace.pbReserve.let {
+                        if (it.isNotEmpty() && it.loadAs(CustomFace.ResvAttr.serializer()).msgImageShow != null) {
+                            collect(ShowImageFlag)
+                        }
                     }
                 }
-
+                else -> {
+                    markNotConsumed()
+                }
             }
         }
 
@@ -45,6 +52,8 @@ internal class ImageProtocol : MessageProtocol() {
 
     private class ImageEncoder : MessageEncoder<AbstractImage> {
         override suspend fun MessageEncoderContext.process(data: AbstractImage) {
+            markAsConsumed()
+
             when (data) {
                 is OfflineGroupImage -> {
                     if (contact is User) {

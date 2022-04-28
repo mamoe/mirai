@@ -13,7 +13,7 @@ import net.mamoe.mirai.internal.message.data.UnsupportedMessageImpl
 import net.mamoe.mirai.internal.message.protocol.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 
-internal class UnsupportedMessageProtocol : MessageProtocol(priority = 100u) {
+internal class UnsupportedMessageProtocol : MessageProtocol(priority = PRIORITY_UNSUPPORTED) {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Decoder())
         add(Encoder())
@@ -21,13 +21,16 @@ internal class UnsupportedMessageProtocol : MessageProtocol(priority = 100u) {
 
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
-            val struct = UnsupportedMessageImpl(data).takeIf { it.struct.isNotEmpty() } ?: return
+            markAsConsumed()
+            val struct = UnsupportedMessageImpl(data)
+            if (struct.struct.isEmpty()) return
             collect(struct)
         }
     }
 
     private class Encoder : MessageEncoder<UnsupportedMessageImpl> {
         override suspend fun MessageEncoderContext.process(data: UnsupportedMessageImpl) {
+            markAsConsumed()
             collect(data.structElem)
         }
     }
