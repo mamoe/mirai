@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.message.data
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.contact.takeSingleContent
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
-import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -164,11 +164,11 @@ internal open class MultiMsgUploader(
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = msgChain.toRichTextElems(
-                            handler.contact,
+                        elems = MessageProtocolFacade.encode(
+                            msgChain, messageTarget = handler.contact,
                             withGeneralFlags = false,
-                            isForward = true,
-                        ).toMutableList()
+                            isForward = true
+                        )
                     )
                 )
             )

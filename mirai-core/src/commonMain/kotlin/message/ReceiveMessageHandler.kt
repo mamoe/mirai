@@ -17,18 +17,13 @@ import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageC
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.BOT
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.GROUP_ID
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.MESSAGE_SOURCE_KIND
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Companion.UNSUPPORTED_POKE_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.buildTypeSafeMap
 import net.mamoe.mirai.utils.toLongUnsigned
 
 /**
@@ -155,17 +150,7 @@ internal object ReceiveMessageTransformer {
         bot: Bot,
         builder: MessageChainBuilder,
     ) {
-        val pipeline = MessageProtocolFacade.decoderPipeline
-
-        val attributes = buildTypeSafeMap {
-            set(BOT, bot)
-            set(MESSAGE_SOURCE_KIND, messageSourceKind)
-            set(GROUP_ID, groupIdOrZero)
-        }
-
-        runCoroutineInPlace {
-            elements.forEach { builder.addAll(pipeline.process(it, attributes)) }
-        }
+        return MessageProtocolFacade.decode(elements, groupIdOrZero, messageSourceKind, bot, builder)
     }
 
     fun MessageChainBuilder.compressContinuousPlainText() {

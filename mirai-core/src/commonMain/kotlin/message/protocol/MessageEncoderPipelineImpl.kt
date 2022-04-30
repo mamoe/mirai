@@ -15,19 +15,16 @@ import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.*
 
-private val defaultTraceLogging: MiraiLogger by lazy {
-    MiraiLogger.Factory.create(MessageEncoderPipelineImpl::class, "MessageEncoderPipeline")
-        .withSwitch(systemProp("mirai.message.encoder.pipeline.log.full", false))
-}
 
 internal open class MessageEncoderPipelineImpl :
     AbstractProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem>(
         PipelineConfiguration(stopWhenConsumed = true),
+        @OptIn(TestOnly::class)
         defaultTraceLogging
     ),
     MessageEncoderPipeline {
 
-    inner class MessageEncoderContextImpl(attributes: TypeSafeMap) : MessageEncoderContext,
+    private inner class MessageEncoderContextImpl(attributes: TypeSafeMap) : MessageEncoderContext,
         BaseContextImpl(attributes) {
         override var generalFlags: ImMsgBody.Elem by lateinitMutableProperty {
             ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE))
@@ -36,7 +33,13 @@ internal open class MessageEncoderPipelineImpl :
 
     override fun createContext(attributes: TypeSafeMap): MessageEncoderContext = MessageEncoderContextImpl(attributes)
 
-    private companion object {
+    companion object {
         private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
+
+        @TestOnly
+        val defaultTraceLogging: MiraiLoggerWithSwitch by lazy {
+            MiraiLogger.Factory.create(MessageEncoderPipelineImpl::class, "MessageEncoderPipeline")
+                .withSwitch(systemProp("mirai.message.encoder.pipeline.log.full", false))
+        }
     }
 }

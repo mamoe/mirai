@@ -13,20 +13,13 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.TypeSafeMap
-import net.mamoe.mirai.utils.systemProp
-import net.mamoe.mirai.utils.withSwitch
-
-private val defaultTraceLogging: MiraiLogger by lazy {
-    MiraiLogger.Factory.create(MessageDecoderPipelineImpl::class, "MessageDecoderPipeline")
-        .withSwitch(systemProp("mirai.message.decoder.pipeline.log.full", false))
-}
+import net.mamoe.mirai.utils.*
 
 
 internal open class MessageDecoderPipelineImpl :
     AbstractProcessorPipeline<MessageDecoderProcessor, MessageDecoderContext, ImMsgBody.Elem, Message>(
         PipelineConfiguration(stopWhenConsumed = true),
+        @OptIn(TestOnly::class)
         defaultTraceLogging
     ),
     MessageDecoderPipeline {
@@ -34,4 +27,12 @@ internal open class MessageDecoderPipelineImpl :
     inner class MessageDecoderContextImpl(attributes: TypeSafeMap) : MessageDecoderContext, BaseContextImpl(attributes)
 
     override fun createContext(attributes: TypeSafeMap): MessageDecoderContext = MessageDecoderContextImpl(attributes)
+
+    companion object {
+        @TestOnly
+        val defaultTraceLogging: MiraiLoggerWithSwitch by lazy {
+            MiraiLogger.Factory.create(MessageDecoderPipelineImpl::class, "MessageDecoderPipeline")
+                .withSwitch(systemProp("mirai.message.decoder.pipeline.log.full", false))
+        }
+    }
 }

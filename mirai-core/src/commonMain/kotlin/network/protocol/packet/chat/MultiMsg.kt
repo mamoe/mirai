@@ -15,8 +15,8 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
-import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.PacketCodec
@@ -86,12 +86,12 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationData(
             ),
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
-                    elems = chain.messageChain.toMessageChain()
-                        .toRichTextElems(
-                            handler.contact,
-                            withGeneralFlags = false,
-                            isForward = true,
-                        ).toMutableList()
+                    elems = MessageProtocolFacade.encode(
+                        chain.messageChain.toMessageChain(),
+                        handler.contact,
+                        withGeneralFlags = false,
+                        isForward = true
+                    )
                 )
             )
         )

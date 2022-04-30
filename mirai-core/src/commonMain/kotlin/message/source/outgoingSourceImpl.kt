@@ -20,7 +20,7 @@ import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
-import net.mamoe.mirai.internal.message.toRichTextElems
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
-    val elements = originalMessage.toRichTextElems(subject, withGeneralFlags = true)
+    val elements = MessageProtocolFacade.encode(originalMessage, subject, withGeneralFlags = true)
 
     val pdReserve = SourceMsg.ResvAttr(
         origUids = sequenceIds.zip(internalIds)
@@ -215,7 +215,7 @@ internal class OnlineMessageSourceToGroupImpl(
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
     private val jceData: ImMsgBody.SourceMsg by lazy {
-        val elements = originalMessage.toRichTextElems(subject, withGeneralFlags = true)
+        val elements = MessageProtocolFacade.encode(originalMessage, subject, withGeneralFlags = true)
         ImMsgBody.SourceMsg(
             origSeqs = sequenceIds,
             senderUin = fromId,
