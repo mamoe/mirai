@@ -34,8 +34,8 @@ public sealed interface TypeSafeMap {
     public operator fun <T : S, S> get(key: TypeKey<T>, defaultValue: S): S
     public operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
 
-    public fun toMapBoxed(): Map<TypeKey<*>, Any?>
-    public fun toMap(): Map<String, Any?>
+    public fun toMapBoxed(): Map<TypeKey<*>, Any>
+    public fun toMap(): Map<String, Any>
 
     public companion object {
         public val EMPTY: TypeSafeMap = TypeSafeMapImpl(emptyMap())
@@ -59,10 +59,11 @@ public sealed interface MutableTypeSafeMap : TypeSafeMap {
     public fun setAll(other: TypeSafeMap)
 }
 
+private val NULL: Any = Symbol("NULL")!!
 
 @PublishedApi
 internal open class TypeSafeMapImpl(
-    @PublishedApi internal open val map: Map<String, Any?> = ConcurrentHashMap()
+    @PublishedApi internal open val map: Map<String, Any> = ConcurrentHashMap()
 ) : TypeSafeMap {
     override val size: Int get() = map.size
 
@@ -78,21 +79,29 @@ internal open class TypeSafeMapImpl(
         return "TypeSafeMapImpl(map=$map)"
     }
 
-    override operator fun <T> get(key: TypeKey<T>): T =
-        map[key.name]?.uncheckedCast() ?: throw NoSuchElementException(key.toString())
+    override operator fun <T> get(key: TypeKey<T>): T {
+        val value = map[key.name]
+        if (value === NULL) {
+            return null.uncheckedCast()
+        }
+        return value?.uncheckedCast() ?: throw NoSuchElementException(key.toString())
+    }
 
-    override operator fun <T : S, S> get(key: TypeKey<T>, defaultValue: S): S =
-        map[key.name]?.uncheckedCast() ?: defaultValue
+    override operator fun <T : S, S> get(key: TypeKey<T>, defaultValue: S): S {
+        val value = map[key.name]
+        if (value === NULL) return defaultValue
+        return value?.uncheckedCast() ?: defaultValue
+    }
 
     override operator fun <T> contains(key: TypeKey<T>): Boolean = map.containsKey(key.name)
 
-    override fun toMapBoxed(): Map<TypeKey<*>, Any?> = map.mapKeys { TypeKey<Any?>(it.key) }
-    override fun toMap(): Map<String, Any?> = map
+    override fun toMapBoxed(): Map<TypeKey<*>, Any> = map.mapKeys { TypeKey<Any?>(it.key) }
+    override fun toMap(): Map<String, Any> = map
 }
 
 @PublishedApi
 internal class MutableTypeSafeMapImpl(
-    @PublishedApi override val map: MutableMap<String, Any?> = ConcurrentHashMap()
+    @PublishedApi override val map: MutableMap<String, Any> = ConcurrentHashMap()
 ) : TypeSafeMap, MutableTypeSafeMap, TypeSafeMapImpl(map) {
     override fun equals(other: Any?): Boolean {
         return other is MutableTypeSafeMapImpl && other.map == this.map
@@ -107,7 +116,11 @@ internal class MutableTypeSafeMapImpl(
     }
 
     override operator fun <T> set(key: TypeKey<T>, value: T) {
-        map[key.name] = value
+        if (value == null) {
+            map[key.name] = NULL
+        } else {
+            map[key.name] = value
+        }
     }
 
     override fun setAll(other: TypeSafeMap) {
@@ -118,18 +131,23 @@ internal class MutableTypeSafeMapImpl(
         }
     }
 
-    override fun <T> remove(key: TypeKey<T>): T? = map.remove(key.name)?.uncheckedCast()
+    override fun <T> remove(key: TypeKey<T>): T? {
+        val value = map.remove(key.name)
+        return if (value == NULL) {
+            null
+        } else {
+            value?.uncheckedCast()
+        }
+    }
 }
 
 public fun TypeSafeMap.toMutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMap(this.toMap())
 
 public inline fun MutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMapImpl()
-public inline fun MutableTypeSafeMap(map: Map<String, Any?>): MutableTypeSafeMap =
+public inline fun MutableTypeSafeMap(map: Map<String, Any>): MutableTypeSafeMap =
     MutableTypeSafeMapImpl().also { it.map.putAll(map) }
 
 public inline fun TypeSafeMap(): TypeSafeMap = TypeSafeMap.EMPTY
-public inline fun TypeSafeMap(map: Map<String, Any?>): TypeSafeMap =
-    MutableTypeSafeMapImpl().also { it.map.putAll(map) }
 
 public inline fun buildTypeSafeMap(block: MutableTypeSafeMap.() -> Unit): MutableTypeSafeMap {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
