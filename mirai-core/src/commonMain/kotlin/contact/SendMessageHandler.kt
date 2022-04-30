@@ -13,6 +13,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeoutOrNull
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.GlobalEventChannel
@@ -51,6 +52,17 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.currentTimeSeconds
 
+internal fun ContactOrBot.inferMessageSourceKind(): MessageSourceKind {
+    return when (this) {
+        is Group -> MessageSourceKind.GROUP
+        is Friend -> MessageSourceKind.FRIEND
+        is Member -> MessageSourceKind.TEMP
+        is Stranger -> MessageSourceKind.STRANGER
+        is Bot -> MessageSourceKind.FRIEND
+        else -> error("Unsupported contact: $this")
+    }
+}
+
 /**
  * 处理 mirai 消息系统 `Message` 到协议数据结构的转换.
  *
@@ -62,13 +74,7 @@ internal abstract class SendMessageHandler<C : Contact> {
 
     val messageSourceKind: MessageSourceKind
         get() {
-            return when (contact) {
-                is Group -> MessageSourceKind.GROUP
-                is Friend -> MessageSourceKind.FRIEND
-                is Member -> MessageSourceKind.TEMP
-                is Stranger -> MessageSourceKind.STRANGER
-                else -> error("Unsupported contact: $contact")
-            }
+            return contact.inferMessageSourceKind()
         }
 
     val bot get() = contact.bot.asQQAndroidBot()
