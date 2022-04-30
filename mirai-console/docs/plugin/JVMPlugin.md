@@ -392,8 +392,8 @@ public final class JExample extends JavaPlugin {
 *Java*
 
 ```java
-File dataFile=JExample.INSTANCE.resolveDataFile("myDataFile.txt");
-        File configFile=JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
+File dataFile = JExample.INSTANCE.resolveDataFile("myDataFile.txt");
+File configFile = JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
 ```
 
 ### 物理目录路径
@@ -420,7 +420,17 @@ JAR。打包结果输出在 `build/mirai/`。
 
 ### 插件依赖打包机制
 
-TODO
+在打包插件时, 所有使用的外部依赖<sup>(1)</sup>
+都将会存放于 jar 内的一个依赖列表中 <sup>(2)</sup>.
+并在运行时由 console 动态下载并加载
+
+特别的, 一些特殊的依赖 <sup>(3)</sup> 将会直接打包进 jar
+
+
+> - (1): 外部依赖, 即来自 Maven Central 的依赖, 如 `net.mamoe:mirai-core-api`
+> - (2): 具体文件路径 `META-INF/mirai-console-plugin/dependencies-private.txt`
+> - (3): 包括直接依赖的本地 jar (如 `fileTree('libs')`), 子项目 (`project(':subproject')`)
+>   和其他显式声明直接打包的依赖, 更多见 [mirai-console-gradle](../../tools/gradle-plugin)
 
 ### 类加载隔离
 
