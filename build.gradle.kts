@@ -38,7 +38,6 @@ plugins {
     kotlin("jvm") // version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("org.jetbrains.dokka") version Versions.dokka
-//    id("org.jetbrains.dokka") version Versions.dokka
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("me.him188.kotlin-dynamic-delegation") version Versions.dynamicDelegation
     id("com.gradle.plugin-publish") version "0.12.0" apply false
