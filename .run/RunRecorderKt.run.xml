@@ -14,7 +14,7 @@
         <shortenClasspath name="NONE"/>
         <option name="VM_PARAMETERS"
                 value="-Dmirai.debug.network.state.observer.logging=true -Dmirai.debug.network.show.all.components=true -Dkotlinx.coroutines.debug=on -Dmirai.debug.network.show.packet.details=true"/>
-        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test"/>
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/run"/>
         <method v="2">
             <option name="Make" enabled="true"/>
         </method>
