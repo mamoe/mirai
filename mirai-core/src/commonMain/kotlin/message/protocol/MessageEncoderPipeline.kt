@@ -19,12 +19,14 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.uncheckedCast
+import kotlin.coroutines.RestrictsSuspension
 import kotlin.reflect.KClass
 
 internal interface MessageEncoderPipeline :
     ProcessorPipeline<MessageEncoderProcessor<*>, SingleMessage, ImMsgBody.Elem> {
 }
 
+@RestrictsSuspension
 internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessage, ImMsgBody.Elem> {
 
     /**
@@ -72,6 +74,7 @@ internal class MessageEncoderProcessor<T : SingleMessage>(
 ) : Processor<MessageEncoderContext, SingleMessage> {
     override suspend fun process(context: MessageEncoderContext, data: SingleMessage) {
         if (elementType.isInstance(data)) {
+            @Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
             encoder.run { context.process(data.uncheckedCast()) }
             // TODO: 2022/4/27 handle exceptions
         }

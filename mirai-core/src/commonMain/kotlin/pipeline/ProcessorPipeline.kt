@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.components.NoticeProcessor
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 
 internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineConsumptionMarker {
@@ -31,7 +32,9 @@ internal interface ProcessorPipeline<P : Processor<out ProcessorPipelineContext<
         }
     }
 
-    fun registerProcessor(processor: P): DisposableRegistry
+    fun registerProcessor(processor: P): DisposableRegistry // after
+
+    fun registerBefore(processor: P): DisposableRegistry
 
     suspend fun process(
         data: D,
@@ -153,10 +156,17 @@ protected constructor(
     /**
      * Must be ordered
      */
-    override val processors = ConcurrentLinkedQueue<P>()
+    override val processors = ConcurrentLinkedDeque<P>()
 
     override fun registerProcessor(processor: P): ProcessorPipeline.DisposableRegistry {
         processors.add(processor)
+        return ProcessorPipeline.DisposableRegistry {
+            processors.remove(processor)
+        }
+    }
+
+    override fun registerBefore(processor: P): ProcessorPipeline.DisposableRegistry {
+        processors.addFirst(processor)
         return ProcessorPipeline.DisposableRegistry {
             processors.remove(processor)
         }

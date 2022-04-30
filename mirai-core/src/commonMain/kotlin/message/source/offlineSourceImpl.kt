@@ -14,8 +14,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
-import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -64,8 +64,8 @@ internal class OfflineMessageSourceImplData(
             senderUin = fromId,
             toUin = 0,
             flag = 1,
-            elems = originElems ?: originalMessage.toRichTextElems(
-                null, //forGroup = kind == MessageSourceKind.GROUP,
+            elems = originElems ?: MessageProtocolFacade.encode(
+                originalMessage, messageTarget = null, //forGroup = kind == MessageSourceKind.GROUP,
                 withGeneralFlags = false
             ),
             type = 0,

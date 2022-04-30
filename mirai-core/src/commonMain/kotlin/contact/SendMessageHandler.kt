@@ -298,7 +298,7 @@ internal abstract class SendMessageHandler<C : Contact> {
 
 /**
  * 处理需要 `suspend` 操作的消息转换. 这个转换只会在发送消息时进行, 而不会在处理合并转发 [net.mamoe.mirai.internal.network.protocol.packet.chat.calculateValidationData] 等其他操作时进行.
- * 在发包前还会进行最后的 [net.mamoe.mirai.internal.message.toRichTextElems] 转换, 这个转换会为所有操作使用.
+ * 在发包前还会进行最后的 [net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade.encode] 转换, 这个转换会为所有操作使用.
  *
  * - [ForwardMessage] -> [ForwardMessageInternal] (by uploading through highway)
  * - ... any others for future

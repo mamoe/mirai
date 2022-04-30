@@ -22,11 +22,11 @@ import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.data.toPtt
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
-import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
@@ -198,7 +198,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             fragmentTranslator = {
                 ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = it.toRichTextElems(messageTarget = target, withGeneralFlags = true),
+                        elems = MessageProtocolFacade.encode(it, messageTarget = target, withGeneralFlags = true),
                     ),
                 )
             },
@@ -257,7 +257,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             fragmentTranslator = { subChain ->
                 ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = subChain.toRichTextElems(messageTarget = targetFriend, withGeneralFlags = true),
+                        elems = MessageProtocolFacade.encode(
+                            subChain,
+                            messageTarget = targetFriend,
+                            withGeneralFlags = true
+                        ),
                         ptt = subChain.findPtt(),
                     ),
                 )
@@ -345,7 +349,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 contentHead = MsgComm.ContentHead(pkgNum = 1),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = message.toRichTextElems(messageTarget = targetMember, withGeneralFlags = true),
+                        elems = MessageProtocolFacade.encode(
+                            message,
+                            messageTarget = targetMember,
+                            withGeneralFlags = true
+                        ),
                     ),
                 ),
                 msgSeq = source.sequenceIds.single(),
@@ -375,7 +383,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             fragmentTranslator = { subChain ->
                 ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = subChain.toRichTextElems(messageTarget = targetGroup, withGeneralFlags = true),
+                        elems = MessageProtocolFacade.encode(
+                            subChain,
+                            messageTarget = targetGroup,
+                            withGeneralFlags = true
+                        ),
                         ptt = subChain.findPtt(),
 
                         ),

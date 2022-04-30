@@ -16,7 +16,15 @@ import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.loadService
 
 
+/**
+ * Do not call this inside [Any.toString]. [StackOverflowError] may happen. Call [structureToStringIfAvailable] instead.
+ */
 internal fun Any?.structureToString(): String = StructureToStringTransformer.instance.transform(this)
+internal fun Any?.structureToStringIfAvailable(): String? {
+    return if (StructureToStringTransformer.available) {
+        StructureToStringTransformer.instance.transform(this)
+    } else null
+}
 
 private val SoutvLogger: MiraiLogger by lazy {
     MiraiLogger.Factory.create(
@@ -40,6 +48,8 @@ internal fun interface StructureToStringTransformer {
         val instance by lazy {
             loadService(StructureToStringTransformer::class) { ObjectToStringStructureToStringTransformer() }
         }
+
+        val available = instance !is ObjectToStringStructureToStringTransformer
     }
 }
 
