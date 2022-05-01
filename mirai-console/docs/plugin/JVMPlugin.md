@@ -392,8 +392,8 @@ public final class JExample extends JavaPlugin {
 *Java*
 
 ```java
-File dataFile = JExample.INSTANCE.resolveDataFile("myDataFile.txt");
-File configFile = JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
+File dataFile=JExample.INSTANCE.resolveDataFile("myDataFile.txt");
+        File configFile=JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
 ```
 
 ### 物理目录路径
@@ -411,30 +411,92 @@ File configFile = JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
 
 详见 [`ResourceContainer`]。
 
-## 打包和分发插件
+## 构建
 
-执行 Gradle 任务 `buildPlugin` 即可打包后缀为 `.mirai.jar` 的插件
+构建 mirai-console
+插件推荐使用 [mirai-console-gradle](../../tools/gradle-plugin/README.md)
+（若使用推荐方式创建项目则默认使用）。
+
+> 要执行一个名为 `taskName` 的 Gradle 任务，可在项目目录使用 `./gradlew taskName`。
+
+### 打包和分发插件
+
+执行 Gradle 任务 [`buildPlugin`](../../tools/gradle-plugin/README.md#打包依赖)
+即可打包后缀为 `.mirai2.jar` 的插件
 JAR。打包结果输出在 `build/mirai/`。
 
 这个文件就是插件的可分发文件。可以放入 Console `plugins` 目录中使用。
 
+#### 自 2.11 的变更
+
+在 2.11 以前，插件文件后缀为 `.mirai.jar`，而在 2.11 时插件文件后缀修改为了 `.mirai2.jar`
+。这是因为依赖打包机制有修改。2.11 起不再打包全部的依赖，而是只打包必要和开发者强制指定的（详见 [插件依赖打包机制](#插件依赖打包机制)
+）。
+
+- Console 2.11 及以上在扫描插件时若同时发现 `.mirai.jar` 和 `.mirai2.jar`
+  ，只会加载 `.mirai2.jar`。
+- Console 2.11 以前则会都加载。
+
+由于 2.10 及以前版本编译的插件也能在 2.11 运行，用户可以顺利地从 2.10 升级到 2.11。但无法直接从 2.11 降级到
+2.10，降级时需要删除 `.mirai2.jar`。
+
 ### 插件依赖打包机制
 
-在打包插件时, 所有使用的外部依赖<sup>(1)</sup>
-都将会存放于 jar 内的一个依赖列表中 <sup>(2)</sup>.
-并在运行时由 console 动态下载并加载
+在打包插件时, 所有使用的*外部依赖*<sup>(1)</sup>
+都将会存放于 JAR 内的一个*依赖列表*<sup>(2)</sup>中。
 
-特别的, 一些特殊的依赖 <sup>(3)</sup> 将会直接打包进 jar
+依赖将会在用户侧 Console 启动时从[远程仓库](#默认的远程仓库列表)下载并加载。
 
+特别地，直接依赖的本地 JAR 和子项目依赖将会直接打包进插件 JAR。
 
+> 注释
 > - (1): 外部依赖, 即来自 Maven Central 的依赖, 如 `net.mamoe:mirai-core-api`
 > - (2): 具体文件路径 `META-INF/mirai-console-plugin/dependencies-private.txt`
-> - (3): 包括直接依赖的本地 jar (如 `fileTree('libs')`), 子项目 (`project(':subproject')`)
->   和其他显式声明直接打包的依赖, 更多见 [mirai-console-gradle](../../tools/gradle-plugin)
+> - (3): 包括直接依赖的本地 JAR (如 `fileTree('libs')`),
+    子项目 (`project(':subproject')`)    
+    和其他显式声明直接打包的依赖,
+    更多见 [mirai-console-gradle](../../tools/gradle-plugin/README.md)
+
+#### 默认的远程仓库列表
+
+- Maven
+  Central：[repo.maven.apache.org](https://repo.maven.apache.org/maven2/)
+- 阿里云 Maven Central
+  中国代理：[maven.aliyun.com](https://maven.aliyun.com/repository/central)
+
+默认优先使用阿里云代理仓库，在失败时使用 Maven Central。注意，使用阿里云仓库是不受保证的 – 将来可能会换用其他仓库，但
+Maven
+Central 官方仓库不会删除（除非用户在配置中删除，当然这不属于开发插件时的考虑范畴）。
+
+用户也可以在配置中自行定义代理仓库，但插件开发者不应该期望于用户自行添加包含插件使用的依赖的仓库。**所以插件只应该使用在 Maven
+Central
+的依赖，且将使用的其他所有依赖[打包](#调整依赖打包策略)到插件 JAR。**
 
 ### 类加载隔离
 
-插件仅能访问自身、依赖的库、Console、以及在描述中定义了的依赖的插件。每个插件依赖的库都会被隔离，不同插件可以使用不同版本的同一个库，互不冲突。
+插件仅能访问自身项目、依赖的库、Console、以及在描述中定义了的依赖的插件。每个插件依赖的库都会被隔离，不同插件可以使用不同版本的同一个库，互不冲突。**
+但不应该在依赖另一个插件时使用不同版本的依赖，这可能导致不确定的后果。**
+
+#### 优先加载插件自身及依赖
+
+在有潜在类冲突时，将优先选择插件内部实现以及定义的依赖。每个类的搜索顺序是：
+
+- 插件自身以及[强制打包](#调整依赖打包策略)的依赖
+- 插件定义的仓库依赖
+- 插件定义的其他插件依赖及它们的依赖（间接）
+- mirai-console 及 mirai-core 使用的公开依赖，包含：
+    - kotlin-reflect
+    - kotlinx-coroutines-jdk8
+    - kotlinx-serialization-json
+    - ktor-client-okhttp
+  > 这些依赖的版本可在 [buildSrc](../../../buildSrc/src/main/kotlin/Versions.kt)
+  查看
+
+### 调整依赖打包策略
+
+要强制打包或忽略某个依赖，请参阅 [Gradle 插件文档](../../tools/gradle-plugin/README.md#打包依赖)
+。  
+要了解什么情况下需要强制打包，请参阅 [插件依赖打包机制](#插件依赖打包机制)。
 
 ### 发布插件到 mirai-console-loader
 
