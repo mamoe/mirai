@@ -25,7 +25,6 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.utils.*
 import java.io.File
-import java.io.InputStream
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
@@ -42,6 +41,28 @@ internal class BuiltInJvmPluginLoaderImpl(
 
     companion object {
         internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
+    }
+
+    fun pluginsFilesSequence(
+        files: Sequence<File> = PluginManager.pluginsFolder.listFiles().orEmpty().asSequence()
+    ): Sequence<File> {
+        val raw = files
+            .filter { it.isFile && it.name.endsWith(fileSuffix, ignoreCase = true) }
+            .toMutableList()
+
+        val mirai2List = raw.filter { it.name.endsWith(".mirai2.jar", ignoreCase = true) }
+        for (mirai2Plugin in mirai2List) {
+            val name = mirai2Plugin.name.substringBeforeLast('.').substringBeforeLast('.') // without ext.
+            raw.removeAll {
+                it !== mirai2Plugin && it.name.substringBeforeLast('.').substringBeforeLast('.') == name
+            } // remove those with .mirai.jar
+        }
+
+        return raw.asSequence()
+    }
+
+    override fun listPlugins(): List<JvmPlugin> {
+        return pluginsFilesSequence().extractPlugins()
     }
 
     override val configStorage: PluginDataStorage

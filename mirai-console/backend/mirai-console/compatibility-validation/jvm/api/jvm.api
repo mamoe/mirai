@@ -2288,7 +2288,7 @@ public abstract class net/mamoe/mirai/console/plugin/loader/AbstractFilePluginLo
 	public fun <init> (Ljava/lang/String;)V
 	protected abstract fun extractPlugins (Lkotlin/sequences/Sequence;)Ljava/util/List;
 	public fun getFileSuffix ()Ljava/lang/String;
-	public final fun listPlugins ()Ljava/util/List;
+	public fun listPlugins ()Ljava/util/List;
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/loader/FilePluginLoader : net/mamoe/mirai/console/plugin/loader/PluginLoader {

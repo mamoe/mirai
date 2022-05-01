@@ -35,6 +35,9 @@ import javax.inject.Inject
 
 @Suppress("RedundantLambdaArrow", "RemoveExplicitTypeArguments")
 public open class BuildMiraiPluginV2 : Jar() {
+    public companion object {
+        public const val FILE_SUFFIX: String = "mirai2.jar"
+    }
 
     // @get:Internal
     private lateinit var metadataTask: GenMetadataTask
@@ -243,7 +246,7 @@ public open class BuildMiraiPluginV2 : Jar() {
 
     internal fun init(target: KotlinTarget) {
         dependsOn(metadataTask)
-        archiveExtension.set("mirai.jar")
+        archiveExtension.set(FILE_SUFFIX)
         duplicatesStrategy = DuplicatesStrategy.WARN
 
         val compilations = target.compilations.filter { it.name == KotlinCompilation.MAIN_COMPILATION_NAME }
@@ -256,4 +259,5 @@ public open class BuildMiraiPluginV2 : Jar() {
             elm.path.startsWith("META-INF/") && elm.name.endsWith(".sf", ignoreCase = true)
         }
     }
+
 }

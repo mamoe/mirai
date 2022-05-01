@@ -30,9 +30,11 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 public class MiraiConsoleGradlePlugin : Plugin<Project> {
-    internal companion object {
-        const val MIRAI_SHADOW_CONF_NAME: String = "shadowLink"
-        const val MIRAI_AS_NORMAL_DEP_CONF_NAME: String = "asNormalDep"
+    public companion object {
+        internal const val MIRAI_SHADOW_CONF_NAME: String = "shadowLink"
+        internal const val MIRAI_AS_NORMAL_DEP_CONF_NAME: String = "asNormalDep"
+
+        public const val FILE_SUFFIX: String = "mirai.jar"
     }
 
     private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
@@ -137,7 +139,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
             ).apply shadow@{
                 group = "mirai"
 
-                archiveExtension.set("legacy.mirai.jar")
+                archiveExtension.set(FILE_SUFFIX)
 
                 val compilations = target.compilations.filter { it.name == MAIN_COMPILATION_NAME }
 

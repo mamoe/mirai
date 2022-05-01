@@ -204,7 +204,7 @@ class TestBuildPlugin : AbstractTest() {
         }
     }
 
-    private fun findJar(): File = tempDir.resolve("build/mirai").listFiles()!!.first { it.name.endsWith(".mirai.jar") }
+    private fun findJar(): File = tempDir.resolve("build/mirai").listFiles()!!.first { it.name.endsWith(".mirai2.jar") }
 
     private fun checkOutput() {
         val jar = findJar()
