@@ -21,7 +21,7 @@
 
 [Mirai Console IntelliJ]: /mirai-console/tools/intellij-plugin
 
-[Mirai Console IntelliJ-JB]: /mirai-console/tools/intellij-plugin
+[Mirai Console IntelliJ-JB]: https://plugins.jetbrains.com/plugin/15094-mirai-console
 
 [Mirai Console IntelliJ-OK]: https://plugins.jetbrains.com/embeddable/install/15094
 
