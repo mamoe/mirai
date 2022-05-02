@@ -78,7 +78,12 @@ internal class TarsInput(
         if (input.endOfInput) {
             return null
         }
-        val var2 = input.readUByte()
+        val var2 = try {
+            input.readUByte()
+        } catch (e: EOFException) {
+            // somehow `endOfInput` still returns false
+            return null
+        }
         val type = var2 and 15u
         var tag = var2.toUInt() shr 4
         if (tag == 15u) {
