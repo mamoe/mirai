@@ -300,6 +300,21 @@ public open class BotConfiguration { // open for Java
     // Device
     ///////////////////////////////////////////////////////////////////////////
 
+    @JvmField
+    internal var accountSecrets: Boolean = true
+
+    /**
+     * 禁止保存 `account.secrets`.
+     *
+     * `account.secrets` 保存账号的会话信息。
+     * 它可加速登录过程，也可能可以减少出现验证码的次数。如果遇到一段时间后无法接收消息通知等同步问题时可尝试禁用。
+     *
+     * @since 2.11
+     */
+    public fun disableAccountSecretes() {
+        accountSecrets = false
+    }
+
     /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
      * @see fileBasedDeviceInfo 使用指定文件存储设备信息
@@ -598,6 +613,7 @@ public open class BotConfiguration { // open for Java
             new.loginSolver = loginSolver
             new.protocol = protocol
             new.highwayUploadCoroutineCount = highwayUploadCoroutineCount
+            new.accountSecrets = accountSecrets
             new.deviceInfo = deviceInfo
             new.botLoggerSupplier = botLoggerSupplier
             new.networkLoggerSupplier = networkLoggerSupplier
