@@ -83,7 +83,7 @@
 
 [`JvmPlugin`] 派生为 [`KotlinPlugin`] 和 [`JavaPlugin`]，其关系图如下所示。
 
-![](.JVMPlugin_images/75227ef5.png)
+![](JVMPlugin_images/75227ef5.png)
 
 其中 `AbstractJvmPlugin` 是 Console 提供的基础实现，如数据目录等。
 
@@ -134,14 +134,14 @@ public final class A extends JavaPlugin {
 
 在 [IDE 插件][MCI] 的帮助下，一个正确的插件主类定义的行号处会显示 Mirai 像素风格形象图：![MiraiPixel]
 
-![PluginMainDeclaration](.images/PluginMainDeclaration.png)
+![PluginMainDeclaration](images/PluginMainDeclaration.png)
 
 ### 配置主类服务
 
 #### 自动配置主类服务
 
 [IDE 插件][MCI] 会自动检查主类服务的配置。在没有正确配置时，IDE 将会警告并为你自动配置：  
-![PluginMainServiceNotConfigured](.images/PluginMainServiceNotConfigured.png)
+![PluginMainServiceNotConfigured](images/PluginMainServiceNotConfigured.png)
 
 #### 手动配置主类服务
 
