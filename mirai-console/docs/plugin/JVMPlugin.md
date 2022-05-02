@@ -54,7 +54,7 @@
 
 [`PluginFileExtensions`]: ../../backend/mirai-console/src/plugin/PluginFileExtensions.kt
 
-[`AutoSavePluginDataHolder`]: ../../backend/mirai-console/src/data/PluginDataHolder.kt#L45
+[`AutoSavePluginDataHolder`]: ../../backend/mirai-console/src/data/PluginDataHolder.kt
 
 [MiraiLogger]: ../../../mirai-core-api/src/commonMain/kotlin/utils/MiraiLogger.kt
 
@@ -464,11 +464,22 @@ public final class JExample extends JavaPlugin {
 
 详见 [`PluginFileExtensions`]。
 
-*Java*
+*Java* （Kotlin 类似）
 
 ```java
-File dataFile=JExample.INSTANCE.resolveDataFile("myDataFile.txt");
-        File configFile=JExample.INSTANCE.resolveConfigFile("myConfigFile.txt");
+public final class JExample extends JavaPlugin {
+    public static final JExample INSTANCE = new JExample();
+
+    private JExample() {
+        // ...
+    }
+
+    @Override
+    public onEnable() {
+        File dataFile = resolveDataFile("myDataFile.txt");
+        File configFile = resolveConfigFile("myConfigFile.txt");
+    }
+}
 ```
 
 ### 物理目录路径
