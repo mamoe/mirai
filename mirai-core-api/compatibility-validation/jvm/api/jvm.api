@@ -6078,7 +6078,9 @@ public final class net/mamoe/mirai/utils/LoggerAdapters {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/LoggerAdapters;
 	public static final fun asMiraiLogger (Ljava/util/logging/Logger;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public static final fun asMiraiLogger (Lorg/apache/logging/log4j/Logger;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static final fun asMiraiLogger (Lorg/apache/logging/log4j/Logger;Lorg/apache/logging/log4j/Marker;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public static final fun asMiraiLogger (Lorg/slf4j/Logger;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public static final fun useLog4j2 ()V
 }
 
 public abstract class net/mamoe/mirai/utils/LoginSolver {
