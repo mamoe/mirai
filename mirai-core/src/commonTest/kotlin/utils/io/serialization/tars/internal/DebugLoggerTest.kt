@@ -74,6 +74,8 @@ class DebugLoggerTest : AbstractTest() {
                 name=str
                 decodeElementIndex: TarsHead(tag=3, type=0(Byte))
                 skipping Byte
+                decodeElementIndex EOF
+            endStructure: net.mamoe.mirai.internal.utils.io.serialization.tars.internal.DebugLoggerTest.Struct, null, null
         """.trimIndent().trim(), exception.message!!.trim().uniteLine()
         )
     }
