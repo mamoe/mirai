@@ -119,18 +119,24 @@ internal class SsoProcessorImpl(
     @Throws(LoginFailedException::class)
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
         components[BdhSessionSyncer].loadServerListFromCache()
-        if (client.wLoginSigInfoInitialized) {
-            ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
-            kotlin.runCatching {
-                FastLoginImpl(handler).doLogin()
-            }.onFailure { e ->
-                collectException(e)
+        try {
+            if (client.wLoginSigInfoInitialized) {
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
+                kotlin.runCatching {
+                    FastLoginImpl(handler).doLogin()
+                }.onFailure { e ->
+                    collectException(e)
+                    SlowLoginImpl(handler).doLogin()
+                }
+            } else {
+                client = createClient(ssoContext.bot)
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
                 SlowLoginImpl(handler).doLogin()
             }
-        } else {
-            client = createClient(ssoContext.bot)
-            ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
-            SlowLoginImpl(handler).doLogin()
+        } catch (e: Exception) {
+            // Failed to log in, invalidate secrets.
+            ssoContext.bot.components[AccountSecretsManager].invalidate()
+            throw e
         }
         components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
         registerClientOnline(handler)
