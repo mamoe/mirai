@@ -120,7 +120,7 @@ internal class DynLibClassLoader(
     }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
-        if (name.startsWith("java.")) return Class.forName(name, false, null)
+        if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
         val pt = this.parent
         val topPt: ClassLoader? = if (pt is DynLibClassLoader) {
             pt.findButNoSystem(name)?.let { return it }
@@ -303,7 +303,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     override fun loadClass(name: String, resolve: Boolean): Class<*> = loadClass(name)
 
     override fun loadClass(name: String): Class<*> {
-        if (name.startsWith("java.")) return Class.forName(name, false, null)
+        if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
         if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
             return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
         }
@@ -409,6 +409,16 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         return "JvmPluginClassLoader{${file.name}}"
     }
 
+}
+
+private val JavaSystemPlatformClassLoader: ClassLoader by lazy {
+    kotlin.runCatching {
+        ClassLoader::class.java.methods.asSequence().filter {
+            it.name == "getPlatformClassLoader"
+        }.filter {
+            java.lang.reflect.Modifier.isStatic(it.modifiers)
+        }.firstOrNull()?.invoke(null) as ClassLoader?
+    }.getOrNull() ?: ClassLoader.getSystemClassLoader().parent
 }
 
 private fun String.pkgName(): String = substringBeforeLast('.', "")
