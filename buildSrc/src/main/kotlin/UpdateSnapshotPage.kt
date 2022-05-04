@@ -28,7 +28,7 @@ object UpdateSnapshotPage {
         }
         val content = JsonObject().also { data ->
             data.addProperty("name", "Snapshot Build Output")
-            data.addProperty("head_sha", sha)
+            data.addProperty("head_sha", sha.trim())
             data.addProperty("conclusion", "success")
             data.add("output", JsonObject().also { output ->
                 output.addProperty("title", "Snapshot build ($ver)")
