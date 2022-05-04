@@ -88,6 +88,7 @@ public object ContactUtils {
             is Group -> "Group $name($id)"
             is Friend -> "Friend $nick($id)"
             is Member -> "Member $nameCardOrNick(${group.id}.$id)"
+            is Stranger -> "Stranger $nick($id)"
             else -> error("Illegal type for ContactOrBot: ${this::class.qualifiedNameOrTip}")
         }
     }
