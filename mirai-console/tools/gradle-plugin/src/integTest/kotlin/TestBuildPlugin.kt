@@ -204,6 +204,30 @@ class TestBuildPlugin : AbstractTest() {
         }
     }
 
+    @Test
+    fun `can build with bom dependencies 2`() {
+        tempDir.resolve("build.gradle").appendText(
+            """
+            dependencies {
+                implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
+            }
+        """.trimIndent()
+        )
+        gradleRunner()
+            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
+            .build()
+
+        ZipFile(findJar()).use { zipFile ->
+
+            val dpPrivate = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-private.txt")
+            ).use { it.readBytes().decodeToString() }
+
+            assertFalse { dpPrivate.contains("com.fasterxml.jackson:jackson-bom") }
+            assertTrue { dpPrivate.contains("com.fasterxml.jackson.core:jackson-annotations") }
+        }
+    }
+
     private fun findJar(): File = tempDir.resolve("build/mirai").listFiles()!!.first { it.name.endsWith(".mirai2.jar") }
 
     private fun checkOutput() {
