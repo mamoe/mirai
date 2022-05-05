@@ -140,7 +140,12 @@ public open class BuildMiraiPluginV2 : Jar() {
             }
 
             fun linkDependencyTo(resolvedDependency: ResolvedDependency, dependencies: MutableCollection<String>) {
-                dependencies.add(resolvedDependency.module.toString())
+
+                // bom files
+                if (resolvedDependency.allModuleArtifacts.any { it.extension == "jar" }) {
+                    dependencies.add(resolvedDependency.module.toString())
+                }
+
                 resolvedDependency.children.forEach { linkDependencyTo(it, dependencies) }
             }
 
@@ -149,9 +154,6 @@ public open class BuildMiraiPluginV2 : Jar() {
                 logger.info { "resolving         : $depId" }
                 if (depId in linkedDependencies) {
                     markAsResolved(resolvedDependency)
-
-                    // bom files
-                    if (resolvedDependency.allModuleArtifacts.none { it.extension == "jar" }) return
 
                     linkDependencyTo(resolvedDependency, runtime)
                     if (depId in linkToApi) {
