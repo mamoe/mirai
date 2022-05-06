@@ -11,7 +11,7 @@
 
 ### 后端插件开发基础
 
-- 插件 - [Plugin 模块](Plugins.md)
+- 插件 - [Plugin 模块](plugin/Plugins.md)
 - 指令 - [Command 模块](Commands.md)
 - 存储 - [PluginData 模块](PluginData.md)
 - 权限 - [Permission 模块](Permissions.md)
