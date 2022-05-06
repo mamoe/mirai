@@ -245,6 +245,7 @@ public interface MiraiConsole : CoroutineScope {
          * Console 会在一个合适的时间进行关闭, 并不是调用马上关闭 Console
          */
         @ConsoleExperimentalApi
+        @JvmStatic
         public fun shutdownConsole() {
             val consoleJob = job
             if (!consoleJob.isActive) return

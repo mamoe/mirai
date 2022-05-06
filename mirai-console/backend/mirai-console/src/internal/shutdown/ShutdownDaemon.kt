@@ -31,6 +31,7 @@ internal object ShutdownDaemon {
             if (crtTime - startTime >= timeout) {
                 pluginDisablingThreads.forEach { threadKill(it) }
                 threadKill(thread)
+                pluginDisablingThreads.clear()
                 return
             }
             Thread.sleep(1000)
