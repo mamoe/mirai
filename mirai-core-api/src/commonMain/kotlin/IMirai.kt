@@ -31,6 +31,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.*
+import java.util.ServiceLoader
+import kotlin.reflect.full.companionObjectInstance
 
 /**
  * [IMirai] 实例.
@@ -354,4 +356,10 @@ internal object _MiraiInstance {
 }
 
 @JvmSynthetic
-internal expect fun findMiraiInstance(): IMirai
+internal fun findMiraiInstance(): IMirai {
+    ServiceLoader.load(IMirai::class.java).firstOrNull()?.let { return it }
+
+    val implClass = Class.forName("net.mamoe.mirai.internal.MiraiImpl")
+    (implClass.kotlin.companionObjectInstance as? IMirai)?.let { return it }
+    return implClass.asSubclass(IMirai::class.java).getConstructor().newInstance()
+}
