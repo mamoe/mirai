@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
+import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -396,10 +397,30 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             override val resolvedPlugins: MutableList<Plugin> get() = MiraiConsole.pluginManagerImpl.resolvedPlugins
         }
 
+        internal suspend fun shutdown() {
+            val bridge = currentBridge ?: return
+            if (!bridge.isActive) return
+            if (!bridge.isShutdowning.compareAndSet(false, true)) return
+
+            ShutdownDaemon.start()
+            Bot.instances.forEach { bot ->
+                lateinit var logger: MiraiLogger
+                kotlin.runCatching {
+                    logger = bot.logger
+                    bot.closeAndJoin()
+                }.onFailure { t ->
+                    kotlin.runCatching { logger.error("Error in closing bot", t) }
+                }
+            }
+            MiraiConsole.job.cancelAndJoin()
+        }
+
         init {
-            Runtime.getRuntime().addShutdownHook(thread(false) {
+            Runtime.getRuntime().addShutdownHook(thread(false, name = "Mirai Console Shutdown Hook") {
                 if (instanceInitialized) {
-                    runBlocking { MiraiConsole.job.cancelAndJoin() }
+                    runBlocking {
+                        shutdown()
+                    }
                 }
             })
         }

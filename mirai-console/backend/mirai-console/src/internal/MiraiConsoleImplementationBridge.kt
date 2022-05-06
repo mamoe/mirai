@@ -58,6 +58,7 @@ import net.mamoe.mirai.utils.*
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.reflect.KProperty
@@ -85,6 +86,7 @@ internal class MiraiConsoleImplementationBridge(
 
     // used internally
     val globalComponentStorage: GlobalComponentStorageImpl by lazy { GlobalComponentStorageImpl() }
+    val isShutdowning: AtomicBoolean = AtomicBoolean(false)
 
     // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
     @Volatile

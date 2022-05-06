@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -54,7 +53,6 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.sendAnsiMessage
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryMXBean
 import java.lang.management.MemoryUsage
@@ -140,16 +138,7 @@ public object BuiltInCommands {
                         if (!MiraiConsole.isActive) return@withLock
                         sendMessage("Stopping mirai-console")
                         kotlin.runCatching {
-                            Bot.instances.forEach { bot ->
-                                lateinit var logger: MiraiLogger
-                                kotlin.runCatching {
-                                    logger = bot.logger
-                                    bot.closeAndJoin()
-                                }.onFailure { t ->
-                                    kotlin.runCatching { logger.error("Error in closing bot", t) }
-                                }
-                            }
-                            MiraiConsole.job.cancelAndJoin()
+                            MiraiConsoleImplementation.shutdown()
                         }.fold(
                             onSuccess = {
                                 runIgnoreException<EventCancelledException> { sendMessage("mirai-console stopped successfully.") }
