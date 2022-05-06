@@ -108,7 +108,11 @@ internal abstract class NetworkHandlerSupport(
                 throwLast()
             } finally {
                 packetListeners.remove(listener)
-                listener.result.completeExceptionally(getLast() ?: IllegalStateException("No response"))
+                if (listener.result.isActive) {
+                    listener.result.completeExceptionally(
+                        getLast() ?: IllegalStateException("Internal error: sendAndExpect failed without an exception.")
+                    )
+                }
             }
         }
     }
