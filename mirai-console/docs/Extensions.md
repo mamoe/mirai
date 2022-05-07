@@ -32,6 +32,24 @@ object MyPlugin : KotlinPlugin( /* ... */ ) {
 
 ```
 
+```java
+// java
+public class MyPlugin extends JavaPlugin {
+    public MyPlugin() {
+        // ...
+    }
+
+    @Override
+    public void onLoad(PluginComponentStorage pcs) {
+        pcs.contributePermissionService(() -> { /* ... */ });
+        pcs.contributePluginLoader(() -> { /* ... */ });
+        pcs.contribute(ExtensionPoint, () -> { /* ... */ });
+    }
+}
+```
+
+
+
 ### 可用扩展
 
 查看 [extensions](../backend/mirai-console/src/extensions)。每个文件对应一个扩展。

@@ -322,7 +322,7 @@ public final class JExample extends JavaPlugin {
     }
 
     @Override
-    public onEnable() {
+    public void onEnable() {
         if (getLogger().isInfoEnabled()) {
             getLogger().info("一条 INFO 级别的日志"); // 当日志被用户启用时才会执行
         }
@@ -444,7 +444,7 @@ public final class JExample extends JavaPlugin {
     }
 
     @Override
-    public onEnable() {
+    public void onEnable() {
         getScheduler().delayed(1000L, () -> System.out.println("一秒钟过去了。"));
     }
 }
@@ -475,7 +475,7 @@ public final class JExample extends JavaPlugin {
     }
 
     @Override
-    public onEnable() {
+    public void onEnable() {
         File dataFile = resolveDataFile("myDataFile.txt");
         File configFile = resolveConfigFile("myConfigFile.txt");
     }
