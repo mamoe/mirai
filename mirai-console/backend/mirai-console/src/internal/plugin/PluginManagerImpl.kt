@@ -22,6 +22,8 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.plugin.id
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
@@ -174,7 +176,14 @@ internal class PluginManagerImpl(
     }
 
     internal fun enableAllLoadedPlugins() {
-        resolvedPlugins.forEach { enablePlugin(it) }
+        resolvedPlugins.forEach {
+            try {
+                enablePlugin(it)
+            }catch (e:Exception){
+                logger.error(e)
+                logger.error("Cannot enable plugin ${it.id}")
+            }
+        }
     }
 
     @kotlin.jvm.Throws(PluginLoadException::class)
