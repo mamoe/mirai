@@ -56,9 +56,9 @@ class MiraiConsoleIntegrationTestBootstrap {
             }.filterNot {
                 it.startsWith("-Xmx")
             }.toTypedArray(),
-            *System.getenv("IT_ARGS")!!.splitToSequence(",").map {
+            *System.getenv("IT_ARGS")?.splitToSequence(",")?.map {
                 Base64.getDecoder().decode(it).decodeToString()
-            }.filter { it.isNotEmpty() }.toList().toTypedArray()
+            }?.filter { it.isNotEmpty() }?.toList()?.toTypedArray()?: arrayOf("")
         )
         launcher.launch()
     }
