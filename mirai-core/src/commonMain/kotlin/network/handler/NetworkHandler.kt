@@ -26,9 +26,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespTy
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
- * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
+ * Coroutine-based network framework. Usually wrapped with [SelectorNetworkHandler] to enable retrying.
  *
- * Implementation is usually subclass of [NetworkHandlerSupport].
+ * Implementation is typically subclass of [NetworkHandlerSupport].
  *
  * Instances are often created by [NetworkHandlerFactory].
  *
