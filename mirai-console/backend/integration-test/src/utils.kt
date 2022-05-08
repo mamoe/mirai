@@ -15,10 +15,10 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import java.io.File
-import java.util.UUID
+import java.util.*
 
 internal fun readStringListFromEnv(key: String): MutableList<String> {
-    val size = System.getenv(key)!!.toInt()
+    val size = System.getenv(key)?.toInt() ?: 0
     val rsp = mutableListOf<String>()
     for (i in 0 until size) {
         rsp.add(System.getenv("${key}_$i")!!)
