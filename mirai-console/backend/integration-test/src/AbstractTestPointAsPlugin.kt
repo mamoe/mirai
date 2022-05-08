@@ -28,6 +28,7 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
     protected open fun KotlinPlugin.onLoad0(storage: PluginComponentStorage) {}
     protected open fun KotlinPlugin.onEnable0() {}
     protected open fun KotlinPlugin.onDisable0() {}
+    protected var exceptedExceptionMessages: Array<String> = arrayOf()
 
 
     @Suppress("unused")
@@ -51,7 +52,8 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
             try {
                 impl.apply { onDisable0() }
             } catch (e: Throwable) {
-                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                if(e.message !in this.impl.exceptedExceptionMessages)
+                    IntegrationTestBootstrapContext.failures.add(impl.javaClass)
                 throw e
             }
         }
@@ -60,7 +62,8 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
             try {
                 impl.apply { onEnable0() }
             } catch (e: Throwable) {
-                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                if(e.message !in impl.exceptedExceptionMessages)
+                    IntegrationTestBootstrapContext.failures.add(impl.javaClass)
                 throw e
             }
         }
