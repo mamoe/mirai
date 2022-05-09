@@ -114,18 +114,26 @@ internal class TimeBasedHeartbeatSchedulerImpl(
                 }
 
                 try {
-                    val result = withTimeoutOrNull(timeout()) { action() }
+                    var cause: Throwable? = null
+                    val result = try {
+                        withTimeoutOrNull(timeout()) { action() }
+                    } catch (e: TimeoutCancellationException) {
+                        // from `action`
+                        cause = e
+                        null
+                    }
                     if (result == null) {
                         onHeartFailure(
                             name,
                             PacketTimeoutException(
                                 "$coroutineName: Timeout receiving action response",
-                                CancellationException("Dummy exception for stacktrace")
+                                cause
                             ) // This is a NetworkException that is recoverable
                         )
                         return@async
                     }
                 } catch (e: Throwable) {
+                    // catch other errors
                     onHeartFailure(
                         name,
                         IllegalStateException("$coroutineName: Internal error: caught unexpected exception", e)
