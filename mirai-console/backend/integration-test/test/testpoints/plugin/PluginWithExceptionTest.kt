@@ -41,7 +41,10 @@ internal object PluginWithExceptionTest : AbstractTestPointAsPlugin() {
 
     override fun onConsoleStartSuccessfully() {
         assertFalse {
-            PluginManager.plugins.first { it.id == "net.mamoe.testpoint.plugin-with-exception-test" }.isEnabled
+            PluginManager
+                .plugins
+                .first { it.id == "net.mamoe.testpoint.plugin-with-exception-test" }
+                .isEnabled
         }
     }
 }
