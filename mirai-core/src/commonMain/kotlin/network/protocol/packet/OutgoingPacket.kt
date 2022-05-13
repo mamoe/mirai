@@ -49,7 +49,7 @@ internal class IncomingPacket private constructor(
     val commandName: String,
     val sequenceId: Int,
 
-    val result: Either<Throwable, Packet?>
+    val result: Either<Throwable, Packet?> // exception will be the same as caught from PacketFactory.decode. So they can be ISE, NPE, etc.
 ) {
     companion object {
         operator fun invoke(commandName: String, sequenceId: Int, data: Packet?) =

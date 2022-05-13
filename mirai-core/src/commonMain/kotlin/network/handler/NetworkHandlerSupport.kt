@@ -43,6 +43,11 @@ internal abstract class NetworkHandlerSupport(
             .plus(CoroutineExceptionHandler.fromMiraiLogger(logger))
 
     protected abstract fun initialState(): BaseStateImpl
+
+    /**
+     * It's not guaranteed whether this function sends the packet in-place or launches a coroutine for it.
+     * Caller should not rely on this property.
+     */
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
 
     protected fun collectUnknownPacket(raw: RawIncomingPacket) {
