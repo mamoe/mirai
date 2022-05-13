@@ -1,17 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -95,7 +93,9 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
     }
 
     private fun launchRecovery(bot: AbstractBot) {
-        bot.launch(start = CoroutineStart.UNDISPATCHED) {
+        // Run this coroutine in EventDispatcher, so joinBroadcast will work.
+        // EventDispatcher is in Bot's components level so won't be closed by network.
+        bot.components[EventDispatcher].broadcastAsync {
             val success: Boolean
             val time = measureTimeMillis {
                 success = kotlin.runCatching {
@@ -106,6 +106,8 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
             if (success) {
                 bot.logger.info { "Reconnected successfully in ${time.millisToHumanReadableString()}." }
             }
+
+            null
         }
     }
 
