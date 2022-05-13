@@ -51,8 +51,10 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
      */
     @Test
     fun `can recover on heartbeat failure with NettyChannelException`() = runBlockingUnit {
-        // We allow IOException to cause a reconnect.
+        // We allow NetworkException to cause a reconnect.
         testRecoverWhenHeartbeatFailWith { NettyChannelException("test IO ex") }
+
+        bot.components[EventDispatcher].joinBroadcast() // Wait our async connector to complete.
 
         // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
         assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.LOADING, NetworkHandler.State.OK)
@@ -85,6 +87,8 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
         bot.network.context[EventDispatcher].joinBroadcast()
         assertState(NetworkHandler.State.OK)
 
+        println("1")
         heartbeatScheduler.onHeartFailure("Test", exception())
+        println("2")
     }
 }
