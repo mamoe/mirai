@@ -18,7 +18,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.TestOnly
 
 /**
  * 表示一个事件.
@@ -165,9 +164,9 @@ public suspend fun <E : Event> E.broadcast(): E {
 @MiraiExperimentalApi
 @Deprecated(
     "Deprecated without replacement. If you really need this, please file an issue.",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
+@DeprecatedSinceMirai(errorSince = "2.12")
 public var EventDisabled: Boolean = false
 
 /**
