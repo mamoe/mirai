@@ -13,14 +13,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.sync.Semaphore
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendEvent
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
@@ -38,23 +35,11 @@ internal class EventChannelTest : AbstractEventTest() {
         val y: Int = 1,
     ) : AbstractEvent()
 
-    val semaphore = Semaphore(1)
-
-    @BeforeEach
-    fun x() {
-        runBlocking { semaphore.acquire() }
-    }
-
-    @AfterEach
-    fun s() {
-        EventChannelToEventDispatcherAdapter.instance.eventListeners.clear()
-    }
-
     @Test
     fun singleFilter() {
         runBlocking {
             val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
+                globalEventChannel()
                     .filterIsInstance<TE>()
                     .filter {
                         true
@@ -86,7 +71,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun multipleFilters() {
         runBlocking {
             val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
+                globalEventChannel()
                     .filterIsInstance<TE>()
                     .filter {
                         true
@@ -124,44 +109,46 @@ internal class EventChannelTest : AbstractEventTest() {
     @Test
     fun multipleContexts1() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
-                    .parentScope(CoroutineScope(CoroutineName("1")))
-                    .context(CoroutineName("2"))
-                    .context(CoroutineName("3"))
-                    .subscribeOnce<TE>(CoroutineName("4")) {
-                        assertEquals("4", currentCoroutineContext()[CoroutineName]!!.name)
-                        cont.resume(it.x)
+            withContext(CoroutineName("1")) {
+                val received = suspendCoroutine<Int> { cont ->
+                    globalEventChannel()
+                        .context(CoroutineName("2"))
+                        .context(CoroutineName("3"))
+                        .subscribeOnce<TE>(CoroutineName("4")) {
+                            assertEquals("4", currentCoroutineContext()[CoroutineName]!!.name)
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        TE(2, 2).broadcast()
                     }
-
-                launch {
-                    TE(2, 2).broadcast()
                 }
-            }
 
-            assertEquals(2, received)
+                assertEquals(2, received)
+            }
         }
     }
 
     @Test
     fun multipleContexts2() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
-                    .parentScope(CoroutineScope(CoroutineName("1")))
-                    .context(CoroutineName("2"))
-                    .context(CoroutineName("3"))
-                    .subscribeOnce<TE> {
-                        assertEquals("3", currentCoroutineContext()[CoroutineName]!!.name)
-                        cont.resume(it.x)
+            withContext(CoroutineName("1")) {
+                val received = suspendCoroutine<Int> { cont ->
+                    globalEventChannel()
+                        .context(CoroutineName("2"))
+                        .context(CoroutineName("3"))
+                        .subscribeOnce<TE> {
+                            assertEquals("3", currentCoroutineContext()[CoroutineName]!!.name)
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        TE(2, 2).broadcast()
                     }
-
-                launch {
-                    TE(2, 2).broadcast()
                 }
-            }
 
-            assertEquals(2, received)
+                assertEquals(2, received)
+            }
         }
     }
 
@@ -169,66 +156,43 @@ internal class EventChannelTest : AbstractEventTest() {
     @Test
     fun multipleContexts3() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
-                    .parentScope(CoroutineScope(CoroutineName("1")))
-                    .context(CoroutineName("2"))
-                    .subscribeOnce<TE> {
-                        assertEquals("2", currentCoroutineContext()[CoroutineName]!!.name)
-                        cont.resume(it.x)
+            withContext(CoroutineName("1")) {
+                val received = suspendCoroutine<Int> { cont ->
+                    globalEventChannel()
+                        .context(CoroutineName("2"))
+                        .subscribeOnce<TE> {
+                            assertEquals("2", currentCoroutineContext()[CoroutineName]!!.name)
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        TE(2, 2).broadcast()
                     }
-
-                launch {
-                    TE(2, 2).broadcast()
                 }
-            }
 
-            assertEquals(2, received)
+                assertEquals(2, received)
+            }
         }
     }
 
     @Test
     fun multipleContexts4() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
-                GlobalEventChannel
-                    .parentScope(CoroutineScope(CoroutineName("1")))
-                    .subscribeOnce<TE> {
-                        assertEquals("1", currentCoroutineContext()[CoroutineName]!!.name)
-                        cont.resume(it.x)
+            withContext(CoroutineName("1")) {
+                val received = suspendCoroutine<Int> { cont ->
+                    globalEventChannel()
+                        .subscribeOnce<TE> {
+                            assertEquals("1", currentCoroutineContext()[CoroutineName]!!.name)
+                            cont.resume(it.x)
+                        }
+
+                    launch {
+                        TE(2, 2).broadcast()
                     }
-
-                launch {
-                    TE(2, 2).broadcast()
                 }
+
+                assertEquals(2, received)
             }
-
-            assertEquals(2, received)
-        }
-    }
-
-    @Test
-    fun testAsChannel() {
-        runBlocking {
-            @Suppress("DEPRECATION")
-            val channel = GlobalEventChannel
-                .filterIsInstance<TE>()
-                .filter { true }
-                .filter { it.x == 2 }
-                .filter { true }
-                .asChannel(Channel.BUFFERED)
-
-            println("Broadcast 1")
-            TE(1).broadcast()
-            println("Broadcast 2")
-            TE(2).broadcast()
-            println("Broadcast done")
-            channel.close()
-
-            val list = channel.receiveAsFlow().toList()
-
-            assertEquals(1, list.size)
-            assertEquals(TE(2), list.single())
         }
     }
 
@@ -236,7 +200,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun `test forwardToChannel`() {
         runBlocking {
             val channel = Channel<TE>(Channel.BUFFERED)
-            val listener = GlobalEventChannel
+            val listener = globalEventChannel()
                 .filterIsInstance<TE>()
                 .filter { true }
                 .filter { it.x == 2 }
@@ -261,7 +225,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun `test forwardToChannel listener completes if channel closed`() {
         runBlocking {
             val channel = Channel<TE>(Channel.BUFFERED)
-            val listener = GlobalEventChannel
+            val listener = globalEventChannel()
                 .filterIsInstance<TE>()
                 .filter { true }
                 .filter { it.x == 2 }
@@ -285,10 +249,10 @@ internal class EventChannelTest : AbstractEventTest() {
 
     @Test
     fun testExceptionInFilter() {
-        runBlocking {
-            assertFailsWith<ExceptionInEventChannelFilterException> {
+        assertFailsWith<ExceptionInEventChannelFilterException> {
+            runBlocking {
                 suspendCoroutine<Int> { cont ->
-                    GlobalEventChannel
+                    globalEventChannel()
                         .exceptionHandler {
                             cont.resumeWithException(it)
                         }
@@ -305,9 +269,9 @@ internal class EventChannelTest : AbstractEventTest() {
                         println("Broadcast done")
                     }
                 }
-            }.run {
-                assertEquals("test error", cause.message)
             }
+        }.run {
+            assertEquals("test error", cause.message)
         }
     }
 
@@ -320,7 +284,7 @@ internal class EventChannelTest : AbstractEventTest() {
                         cont.resumeWithException(throwable)
                     }
 
-                    GlobalEventChannel
+                    val listener = globalEventChannel()
                         .context(handler)
                         .subscribeOnce<TE> {
                             assertSame(handler, currentCoroutineContext()[CoroutineExceptionHandler])
@@ -331,6 +295,7 @@ internal class EventChannelTest : AbstractEventTest() {
                         println("Broadcast 1")
                         TE(1).broadcast()
                         println("Broadcast done")
+                        listener.complete()
                     }
                 }
             }.run {

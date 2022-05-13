@@ -143,7 +143,7 @@ internal class JvmMethodEventsTest : AbstractEventTest() {
         }
 
         TestClass().run {
-            GlobalEventChannel.registerListenerHost(this)
+            globalEventChannel().registerListenerHost(this)
 
             runBlocking {
                 TestEvent().broadcast()
@@ -215,7 +215,7 @@ internal class JvmMethodEventsTest : AbstractEventTest() {
         }
         runBlocking {
 
-            TestingListener().runTesting {
+            TestingListener().runTesting(this.globalEventChannel()) {
                 TestEvent().broadcast()
                 assertTrue { handled }
             }
@@ -245,7 +245,7 @@ internal class JvmMethodEventsTest : AbstractEventTest() {
     }
 
     private inline fun <T> T.runTesting(
-        channel: EventChannel<*> = GlobalEventChannel,
+        channel: EventChannel<*>,
         block: T.(T) -> Unit
     ) where T : SimpleListenerHost {
         contract {
