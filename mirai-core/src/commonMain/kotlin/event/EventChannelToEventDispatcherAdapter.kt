@@ -14,9 +14,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
-/**
- * @since 2.11
- */
 @OptIn(DangerousEventChannelImplConstructor::class)
 internal class EventChannelToEventDispatcherAdapter<E : Event> private constructor(
     baseEventClass: KClass<out E>, defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
