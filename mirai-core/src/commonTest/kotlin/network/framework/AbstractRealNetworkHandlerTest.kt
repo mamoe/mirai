@@ -29,6 +29,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import network.framework.components.TestEventDispatcherImpl
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -44,7 +45,13 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
 
-    var bot: QQAndroidBot by lateinitMutableProperty { createBot() }
+    private var botInit = false
+    var bot: QQAndroidBot by lateinitMutableProperty { botInit = true; createBot() }
+
+    @AfterEach
+    fun afterEach() {
+        if (botInit) bot.close()
+    }
 
     protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
         return object : QQAndroidBot(account, MockConfiguration.copy()) {
