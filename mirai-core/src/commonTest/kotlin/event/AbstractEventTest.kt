@@ -13,6 +13,6 @@ import net.mamoe.mirai.internal.test.AbstractTest
 
 internal abstract class AbstractEventTest : AbstractTest() {
     init {
-        System.setProperty("mirai.event.trace", "true")
+//        System.setProperty("mirai.event.trace", "true") // Do not set it to true by default, or the concurrency stress test will become extremely slow.
     }
 }
