@@ -154,15 +154,8 @@ public interface CancellableEvent : Event {
  */
 @JvmBlockingBridge
 public suspend fun <E : Event> E.broadcast(): E {
-    @OptIn(TestOnly::class)
-    EventBroadcast.implementation.invoke(this)
+    Mirai.broadcastEvent(this)
     return this
-}
-
-// 由测试覆盖
-@TestOnly
-internal object EventBroadcast {
-    internal val implementation: suspend (Event) -> Unit = { Mirai.broadcastEvent(it) }
 }
 
 /**
