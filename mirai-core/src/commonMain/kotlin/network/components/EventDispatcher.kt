@@ -22,6 +22,8 @@ import kotlin.coroutines.EmptyCoroutineContext
  * All events will be caught and forwarded to [EventDispatcher]. Invocation of [Event.broadcast] and [EventDispatcher.broadcast] are effectively equal.
  */
 internal interface EventDispatcher {
+    val isActive: Boolean
+
     /**
      * Implement [Event.broadcast]
      */
@@ -90,6 +92,9 @@ internal open class EventDispatcherImpl(
     CoroutineScope by lifecycleContext
         .addNameHierarchically("EventDispatcher")
         .childScope() {
+
+    override val isActive: Boolean
+        get() = this.coroutineContext.isActive
 
     override suspend fun broadcast(event: Event) {
         try {
