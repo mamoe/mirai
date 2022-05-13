@@ -11,4 +11,8 @@ package net.mamoe.mirai.internal.event
 
 import net.mamoe.mirai.internal.test.AbstractTest
 
-internal abstract class AbstractEventTest : AbstractTest()
+internal abstract class AbstractEventTest : AbstractTest() {
+    init {
+        System.setProperty("mirai.event.trace", "true")
+    }
+}

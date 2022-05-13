@@ -15,6 +15,10 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.internal.network.components.EVENT_LAUNCH_UNDISPATCHED
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.systemProp
+import net.mamoe.mirai.utils.withSwitch
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KClass
@@ -27,6 +31,12 @@ internal class ListenerRegistry(
 
 
 internal class EventListeners {
+    companion object {
+        private val logger by lazy {
+            MiraiLogger.Factory.create(EventListeners::class).withSwitch(systemProp("mirai.event.trace", false))
+        }
+    }
+
     private val map: Map<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>
 
     init {
@@ -85,6 +95,7 @@ internal class EventListeners {
     }
 
     internal fun <E : Event> addListener(eventClass: KClass<E>, listener: Listener<E>) {
+        logger.info { "Add listener: $listener for $eventClass" }
         val listeners = get(listener.priority)
 
         @Suppress("UNCHECKED_CAST")
@@ -101,6 +112,7 @@ internal class EventListeners {
         listener: Listener<Event>,
         event: E,
     ) {
+        logger.info { "Invoke listener: $listener" }
         when (listener.concurrencyKind) {
             ConcurrencyKind.LOCKED -> {
                 (listener as SafeListener).lock!!.withLock {
@@ -115,5 +127,6 @@ internal class EventListeners {
                 }
             }
         }
+        logger.info { "Finished listener: $listener" }
     }
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.systemProp
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -25,6 +26,7 @@ internal class SafeListener<in E : Event> internal constructor(
     private val listenerBlock: suspend (E) -> ListeningStatus,
     override val concurrencyKind: ConcurrencyKind,
     override val priority: EventPriority,
+    private val creationStacktrace: Exception? = if (traceEnabled) Exception() else null
 ) : Listener<E>, CompletableJob by SupervisorJob(parentJob) { // avoid being cancelled on handling event
 
     private val subscriberContext: CoroutineContext = subscriberContext + this // override Job.
@@ -32,6 +34,19 @@ internal class SafeListener<in E : Event> internal constructor(
     val lock: Mutex? = when (concurrencyKind) {
         ConcurrencyKind.LOCKED -> Mutex()
         else -> null
+    }
+
+    override fun toString(): String {
+        return if (creationStacktrace != null) {
+            "SafeListener(concurrency=${concurrencyKind}" +
+                    ", priority=$priority" +
+                    ", subscriberContext=${subscriberContext.minusKey(Job)}" +
+                    ", trace=${creationStacktrace.stackTraceToString()})"
+        } else {
+            return "SafeListener(concurrency=${concurrencyKind}" +
+                    ", priority=$priority" +
+                    ", subscriberContext=${subscriberContext.minusKey(Job)})" // remove this
+        }
     }
 
     @Suppress("unused")
@@ -71,3 +86,5 @@ internal class SafeListener<in E : Event> internal constructor(
         }
     }
 }
+
+private val traceEnabled by lazy { systemProp("mirai.event.trace", true) }
