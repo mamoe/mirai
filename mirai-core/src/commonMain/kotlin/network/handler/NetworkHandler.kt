@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -131,6 +133,10 @@ internal interface NetworkHandler : CoroutineScope {
      * Coroutine suspension may happen if connection is not yet available however,
      * [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
      *
+     * @throws TimeoutCancellationException if timeout has been reached.
+     * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
+     * @throws IllegalArgumentException if [timeout] or [attempts] are invalid.
+     *
      * @param attempts ranges `1..INFINITY`
      */
     suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): Packet?
@@ -141,6 +147,9 @@ internal interface NetworkHandler : CoroutineScope {
      * Response is still being processed but not passed as a return value of this function, so it does not suspends this function (due to awaiting for the response).
      * However, coroutine is still suspended if connection is not yet available,
      * and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     * legalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     *
+     * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 

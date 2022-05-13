@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitorImpl
+import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
 import net.mamoe.mirai.internal.network.framework.TestNettyNH
 import net.mamoe.mirai.internal.network.framework.setSsoProcessor
@@ -27,6 +28,7 @@ import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 
@@ -93,8 +95,9 @@ internal class NettyBotNormalLoginTest : AbstractNettyNHTest() {
 //    }
 
     @Test
-    fun `test resume after MsfOffline received`() = runBlockingUnit {
+    fun `test resume after MsfOffline received after first login`() = runBlockingUnit {
         bot.login()
+        assertEquals(FirstLoginResult.PASSED, firstLoginResult)
         bot.network.close(StatSvc.ReqMSFOffline.MsfOfflineToken(0, 0, 0))
 
         eventDispatcher.joinBroadcast()

@@ -145,6 +145,7 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
     fun `BotOffline from OK TO CLOSED by bot close`() = runBlockingUnit {
         bot.login()
         assertState(OK)
+        assertEquals(FirstLoginResult.PASSED, firstLoginResult)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<Event>(1) {
             assertTrue { bot.isActive }

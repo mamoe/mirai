@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework
@@ -117,6 +117,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
             override suspend fun init() {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
+                bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
             }
         })
         set(ServerList, ServerListImpl())
@@ -161,6 +162,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]
+    val firstLoginResult: FirstLoginResult? get() = bot.components[SsoProcessor].firstLoginResult.value
 }
 
 internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {
