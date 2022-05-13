@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.network.impl.netty
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -119,12 +118,6 @@ internal class NettyHandlerEventTest : AbstractNettyNHTest() {
             assertEquals(BotOnlineEvent::class, event[0]::class)
             assertEquals(BotReloginEvent::class, event[1]::class)
         }
-    }
-
-
-    @Test
-    fun testPreconditions() = runBlockingUnit {
-        assertEventBroadcasts<Event>(1) { BotOfflineEvent.Active(bot, null).broadcast() }
     }
 
     @Test
