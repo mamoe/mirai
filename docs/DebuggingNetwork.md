@@ -25,6 +25,7 @@
 | `mirai.network.show.verbose.packets`                | `true`/`false`                   | 在日志记录数据包时包含冗长的数据包 (如 `MessageSvc.PbGetMsg`, `OnlinePush.ReqPush`, `StatSvc.SimpleGet`) |
 | `mirai.network.show.packet.details`                 | `true`/`false`                   | 在日志记录数据包时包含 mirai 解析结果                                                                 |
 | `mirai.event.show.verbose.events`                   | `true`/`false`                   | 在日志记录事件时包含冗长的事件 (如 `GroupMessagePreSendEvent`, `GroupMessagePostSendEvent`)            |
+| `mirai.event.trace`                                 | `true`/`false`                   | 在日志记录事件监听器创建及使用的信息                                                                     |
 | `mirai.message.allow.sending.file.message`          | `true`/`false`                   | 允许发送 `FileMessage`, 用于兼容旧代码 ([#1715])                                                  |
 | `mirai.jce.deserializer.debug`                      | `true`/`false`                   | 启用数据包解析错误的详细信息显示                                                                       |
 
