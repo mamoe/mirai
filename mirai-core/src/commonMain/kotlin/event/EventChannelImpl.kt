@@ -37,7 +37,7 @@ internal annotation class DangerousEventChannelImplConstructor
 internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstructor constructor(
     baseEventClass: KClass<out E>, defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : EventChannel<E>(baseEventClass, defaultCoroutineContext) {
-    val eventListeners = EventListeners()
+    private val eventListeners = EventListeners()
 
     // drop any unsubscribed events
     private val flow = MutableSharedFlow<Event>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -48,6 +48,7 @@ internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstr
 
     suspend fun callListeners(event: Event) {
         event as AbstractEvent
+        logEvent(event)
         eventListeners.callListeners(event)
         flow.emit(event)
     }
@@ -86,10 +87,7 @@ internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstr
         }
         event.broadCastLock.withLock {
             event._intercepted = false
-            @Suppress("DEPRECATION")
-            if (EventDisabled) return@withLock
-            logEvent(event)
-            eventListeners.callListeners(event)
+            callListeners(event)
         }
 
         return event
