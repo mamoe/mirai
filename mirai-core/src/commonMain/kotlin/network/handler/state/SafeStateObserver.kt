@@ -76,7 +76,7 @@ internal class SafeStateObserver(
         }
     }
 
-    override fun beforeStateResume(networkHandler: NetworkHandler, state: NetworkHandlerSupport.BaseStateImpl) {
+    override suspend fun beforeStateResume(networkHandler: NetworkHandler, state: NetworkHandlerSupport.BaseStateImpl) {
         try {
             delegate.beforeStateResume(networkHandler, state)
         } catch (e: Throwable) {
@@ -87,7 +87,7 @@ internal class SafeStateObserver(
         }
     }
 
-    override fun afterStateResume(
+    override suspend fun afterStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
         result: Result<Unit>,

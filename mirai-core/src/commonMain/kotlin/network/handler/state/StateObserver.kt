@@ -49,14 +49,14 @@ internal interface StateObserver {
     ) {
     }
 
-    fun beforeStateResume(
+    suspend fun beforeStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
     ) {
 
     }
 
-    fun afterStateResume(
+    suspend fun afterStateResume(
         networkHandler: NetworkHandler,
         state: NetworkHandlerSupport.BaseStateImpl,
         result: Result<Unit>,
