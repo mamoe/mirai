@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.MockConfiguration
@@ -131,7 +132,12 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
 
         set(
             EventDispatcher,
-            TestEventDispatcherImpl(bot.coroutineContext, bot.logger.subLogger("TestEventDispatcherImpl"))
+            // Note that in real we use 'bot.coroutineContext', but here we override with a new, independent job
+            // to allow BotOfflineEvent.Active to be broadcast and joinBroadcast works even if bot coroutineScope is closed.
+            TestEventDispatcherImpl(
+                bot.coroutineContext + SupervisorJob(),
+                bot.logger.subLogger("TestEventDispatcherImpl")
+            )
         )
         // set(StateObserver, bot.run { stateObserverChain() })
     }

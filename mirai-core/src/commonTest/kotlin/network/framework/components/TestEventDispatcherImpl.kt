@@ -10,7 +10,6 @@
 package network.framework.components
 
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.Event

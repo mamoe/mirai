@@ -11,9 +11,9 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -148,7 +148,17 @@ internal open class QQAndroidBot constructor(
                     cause is BotClosedByEvent -> {}
                     else -> {
                         // any other unexpected exceptions considered as an error
-                        runBlocking { eventDispatcher.broadcast(BotOfflineEvent.Active(bot, cause)) }
+
+                        // When bot is closed, eventDispatcher.isActive will be false.
+                        // While in TestEventDispatcherImpl, eventDispatcher.isActive will always be true to enable catching the event.
+                        if (eventDispatcher.isActive) {
+                            eventDispatcher.broadcastAsync { BotOfflineEvent.Active(bot, cause) }
+                        } else {
+                            @OptIn(DelicateCoroutinesApi::class)
+                            GlobalScope.launch {
+                                BotOfflineEvent.Active(bot, cause).broadcast()
+                            }
+                        }
                     }
                 }
             },
