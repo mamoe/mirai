@@ -400,9 +400,8 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         internal suspend fun shutdown() {
             val bridge = currentBridge ?: return
             if (!bridge.isActive) return
-            if (!bridge.isShutdowning.compareAndSet(false, true)) return
+            bridge.shutdownDaemon.tryStart()
 
-            ShutdownDaemon.start()
             Bot.instances.forEach { bot ->
                 lateinit var logger: MiraiLogger
                 kotlin.runCatching {

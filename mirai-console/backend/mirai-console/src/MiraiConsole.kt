@@ -246,7 +246,7 @@ public interface MiraiConsole : CoroutineScope {
          */
         @ConsoleExperimentalApi
         @JvmStatic
-        public fun shutdownConsole() {
+        public fun shutdown() {
             val consoleJob = job
             if (!consoleJob.isActive) return
             @OptIn(DelicateCoroutinesApi::class)

@@ -9,9 +9,12 @@
 
 package net.mamoe.mirai.console.internal.shutdown
 
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description
+import net.mamoe.mirai.utils.debug
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -23,10 +26,25 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.writeText
 
 internal object ShutdownDaemon {
+    @Suppress("RemoveRedundantQualifierName")
+    internal class DaemonStarter(
+        private val consoleImplementationBridge: MiraiConsoleImplementationBridge
+    ) {
+        private val started = AtomicBoolean(false)
+        fun tryStart() {
+            if (started.compareAndSet(false, true)) {
+                ShutdownDaemon.start(consoleImplementationBridge)
+            }
+        }
+    }
+
     private object ThreadInfoJava9Access {
         private val isDaemonM: Method?
         private val getPriorityM: Method?
@@ -63,9 +81,30 @@ internal object ShutdownDaemon {
     private val Thread.State.isWaiting: Boolean
         get() = this == Thread.State.WAITING || this == Thread.State.TIMED_WAITING
 
-    fun start() {
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun start(bridge: MiraiConsoleImplementationBridge) {
         val crtThread = Thread.currentThread()
-        thread(name = "Mirai Console Shutdown Daemon", isDaemon = true) { listen(crtThread) }
+        val isConsoleRunning = AtomicBoolean(true)
+        // 1 thread to run main daemon
+        // 1 thread to listen console shutdown running
+        // 1 thread reserved
+        val executor = Executors.newFixedThreadPool(3, object : ThreadFactory {
+            private val counter = AtomicInteger(0)
+            override fun newThread(r: Runnable): Thread {
+                return Thread(r, "Mirai Console Shutdown Daemon #" + counter.getAndIncrement()).also {
+                    it.isDaemon = true
+                }
+            }
+        })
+        executor.execute {
+            listen(crtThread, isConsoleRunning)
+            executor.shutdown()
+        }
+        GlobalScope.launch(executor.asCoroutineDispatcher()) {
+            bridge.coroutineContext.job.join()
+            isConsoleRunning.set(false)
+        }
+        bridge.mainLogger.debug { "SHUTDOWN DAEMON STARTED........." }
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -217,10 +256,10 @@ internal object ShutdownDaemon {
         }
     }
 
-    private fun listen(thread: Thread) {
+    private fun listen(thread: Thread, consoleRunning: AtomicBoolean) {
         val startTime = System.currentTimeMillis()
         val timeout = 1000L * 60
-        while (thread.isAlive) {
+        while (consoleRunning.get()) {
             val crtTime = System.currentTimeMillis()
             if (crtTime - startTime >= timeout) {
                 kotlin.runCatching {
