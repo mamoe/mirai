@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SHOW_VERBOSE_EVENT
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.verbose
@@ -27,14 +28,27 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
-// You probably should only use EventChannelToEventDispatcherAdapter.instance, or just use EventDispatchers. Event.broadcast is also good to use internally!
+// See docs below
 @RequiresOptIn(
-    "Every EventChannelImpl has dedicated EventListeners registries. Use the constructor only when you know what you are doing.",
+    "You must not use this API unless you are writing Event infrastructure.",
     level = RequiresOptIn.Level.ERROR
 )
-internal annotation class DangerousEventChannelImplConstructor
+internal annotation class InternalEventMechanism
 
-internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstructor constructor(
+// Note: You probably should only use EventChannelToEventDispatcherAdapter.instance, or just use EventDispatchers. Event.broadcast is also good to use internally!
+/**
+ * Implementation of [EventChannel]. Every [EventChannelImpl] holds its own list of listeners, so one [EventChannelImpl] instance, [EventChannelToEventDispatcherAdapter] is shared in mirai.
+ *
+ * ## Broadcasting an event
+ *
+ * You should first consider using [EventDispatcher.broadcast] or [EventDispatcher.broadcastAsync].
+ * Use [Event.broadcast] if you have no access to [EventDispatcher] (though you should have).
+ *
+ * Note: using [Event.broadcast] for [BotEvent] is the same as using [EventDispatcher.broadcast] but the former is slower. So it's recommended to use [EventDispatcher].
+ *
+ * **Never ever** use [EventChannelToEventDispatcherAdapter.instance] directly.
+ */
+internal sealed class EventChannelImpl<E : Event> constructor(
     baseEventClass: KClass<out E>, defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : EventChannel<E>(baseEventClass, defaultCoroutineContext) {
     private val eventListeners = EventListeners()
@@ -46,7 +60,26 @@ internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstr
         private val logger by lazy { MiraiLogger.Factory.create(EventChannelImpl::class, "EventChannelImpl") }
     }
 
-    suspend fun callListeners(event: Event) {
+    /**
+     * Basic entrance for broadcasting an event.
+     */
+    @InternalEventMechanism
+    suspend fun <E : Event> broadcastEventImpl(event: E): E {
+        require(event is AbstractEvent) { "Events must extend AbstractEvent" }
+
+        if (event is BroadcastControllable && !event.shouldBroadcast) {
+            return event
+        }
+        event.broadCastLock.withLock {
+            event._intercepted = false
+            callListeners(event)
+        }
+
+        return event
+    }
+
+    @InternalEventMechanism
+    private suspend fun callListeners(event: Event) {
         event as AbstractEvent
         logEvent(event)
         eventListeners.callListeners(event)
@@ -76,21 +109,6 @@ internal open class EventChannelImpl<E : Event> @DangerousEventChannelImplConstr
             concurrencyKind = concurrencyKind,
             priority = priority
         )
-    }
-
-
-    private suspend fun <E : Event> broadcastImpl(event: E): E {
-        check(event is AbstractEvent) { "Events must extend AbstractEvent" }
-
-        if (event is BroadcastControllable && !event.shouldBroadcast) {
-            return event
-        }
-        event.broadCastLock.withLock {
-            event._intercepted = false
-            callListeners(event)
-        }
-
-        return event
     }
 
     private fun isVerboseEvent(event: Event): Boolean {

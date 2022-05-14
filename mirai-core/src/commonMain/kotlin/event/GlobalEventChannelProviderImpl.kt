@@ -13,7 +13,11 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.InternalGlobalEventChannelProvider
 
+@InternalEventMechanism
 internal class GlobalEventChannelProviderImpl : InternalGlobalEventChannelProvider {
+    @InternalEventMechanism
     val instance = EventChannelToEventDispatcherAdapter.instance
+
+    @OptIn(InternalEventMechanism::class)
     override fun getInstance(): EventChannel<Event> = instance
 }

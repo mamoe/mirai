@@ -64,7 +64,7 @@ public fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext 
 }
 
 /**
- * @since 2.11
+ * @since 2.12
  */
 @MiraiInternalApi
 public interface InternalGlobalEventChannelProvider {
