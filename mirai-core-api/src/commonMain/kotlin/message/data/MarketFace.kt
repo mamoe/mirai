@@ -35,7 +35,7 @@ public interface MarketFace : HummerMessage {
 
     override val key: MessageKey<MarketFace> get() = Key
 
-    override fun contentToString(): String = name
+    override fun contentToString(): String = name.ifEmpty { "[商城表情]" }
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() }) {
