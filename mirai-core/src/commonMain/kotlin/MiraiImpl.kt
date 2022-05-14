@@ -14,8 +14,6 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.util.*
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.Json
@@ -34,6 +32,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
+import net.mamoe.mirai.internal.event.InternalEventMechanism
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.network.components.EventDispatcher
@@ -299,6 +298,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent) =
         solveInvitedJoinGroupRequest(event, accept = false)
 
+    @OptIn(InternalEventMechanism::class)
     override suspend fun broadcastEvent(event: Event) {
         if (event is BotEvent) {
             val bot = event.bot
@@ -306,7 +306,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 bot.components[EventDispatcher].broadcast(event)
             }
         } else {
-            EventChannelToEventDispatcherAdapter.instance.callListeners(event)
+            EventChannelToEventDispatcherAdapter.instance.broadcastEventImpl(event)
         }
     }
 

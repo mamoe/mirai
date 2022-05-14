@@ -14,11 +14,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
 
-@OptIn(DangerousEventChannelImplConstructor::class)
 internal class EventChannelToEventDispatcherAdapter<E : Event> private constructor(
     baseEventClass: KClass<out E>, defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : EventChannelImpl<E>(baseEventClass, defaultCoroutineContext) {
     companion object {
+        @InternalEventMechanism
         val instance by lazy { EventChannelToEventDispatcherAdapter(Event::class, EmptyCoroutineContext) }
     }
 }

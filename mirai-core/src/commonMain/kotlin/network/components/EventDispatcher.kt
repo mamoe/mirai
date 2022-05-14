@@ -10,11 +10,13 @@
 package net.mamoe.mirai.internal.network.components
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.EventChannel
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
+import net.mamoe.mirai.internal.event.InternalEventMechanism
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.utils.*
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -25,18 +27,12 @@ internal interface EventDispatcher {
     val isActive: Boolean
 
     /**
-     * Implement [Event.broadcast]
+     * Broadcast an event using [EventChannel]. It's safe to use this function internally.
      */
     suspend fun broadcast(event: Event)
 
-    /**
-     * Implementor must call `event.broadcast()` within a coroutine with [EventDispatcherScopeFlag]
-     */
     fun broadcastAsync(event: Event, additionalContext: CoroutineContext = EmptyCoroutineContext): EventBroadcastJob
 
-    /**
-     * Implementor must call `event.broadcast()` within a coroutine with [EventDispatcherScopeFlag]
-     */
     fun broadcastAsync(
         additionalContext: CoroutineContext = EmptyCoroutineContext,
         event: suspend () -> Event?,
@@ -96,9 +92,10 @@ internal open class EventDispatcherImpl(
     override val isActive: Boolean
         get() = this.coroutineContext.isActive
 
+    @OptIn(InternalEventMechanism::class)
     override suspend fun broadcast(event: Event) {
         try {
-            EventChannelToEventDispatcherAdapter.instance.callListeners(event)
+            EventChannelToEventDispatcherAdapter.instance.broadcastEventImpl(event)
         } catch (e: Exception) {
             if (e is CancellationException) return
             if (logger.isEnabled) {
