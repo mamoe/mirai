@@ -79,7 +79,7 @@ import kotlin.reflect.KClass
  *
  * 使用 [EventChannel.forwardToChannel] 可将事件转发到指定 [SendChannel].
  */
-@NotStableForInheritance // since 2.11, before it was `final class`.
+@NotStableForInheritance // since 2.12, before it was `final class`.
 public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi public constructor(
     public val baseEventClass: KClass<out BaseEvent>,
     /**
@@ -177,7 +177,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      * **注意**: [context], [parentJob] 等控制 [EventChannel.defaultCoroutineContext] 的操作对 [asFlow] 无效. 因为 [asFlow] 并不创建协程.
      *
      * @see Flow
-     * @since 2.11
+     * @since 2.12
      */
     public abstract fun asFlow(): Flow<BaseEvent>
 
