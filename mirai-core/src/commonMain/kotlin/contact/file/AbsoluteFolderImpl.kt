@@ -389,7 +389,7 @@ internal class AbsoluteFolderImpl(
 
         if (!deep) return null
 
-        return folders().map { it.resolveFileById(id, deep) }.firstOrNull()
+        return folders().map { it.resolveFileById(id, deep) }.firstOrNull { it != null })
     }
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {
