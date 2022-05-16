@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.message.protocol.*
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.message.protocol.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.message.data.MusicShare
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.content
@@ -18,6 +20,7 @@ import net.mamoe.mirai.message.data.content
 internal class MusicShareProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Encoder())
+        // no decoder. refined from LightApp
 //        add(Decoder())
     }
 
@@ -28,12 +31,5 @@ internal class MusicShareProtocol : MessageProtocol() {
             // 发送消息时会被特殊处理
             processAlso(PlainText(data.content))
         }
-    }
-
-    private class Decoder : MessageDecoder {
-        override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
-
-        }
-
     }
 }
