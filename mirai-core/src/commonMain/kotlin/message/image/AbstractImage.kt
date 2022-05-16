@@ -26,8 +26,6 @@ internal sealed class AbstractImage : Image {
         get() = 0
     override val height: Int
         get() = 0
-    override val imageType: ImageType
-        get() = ImageType.UNKNOWN
 
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = if (isEmoji) {
