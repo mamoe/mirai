@@ -47,9 +47,9 @@ OnlineFriendImage() {
     override val height: Int
         get() = delegate.picHeight
     override val imageType: ImageType
-        get() = getImageTypeById(delegate.imgType)
+        get() = OnlineImageIds.speculateImageType(delegate.filePath, delegate.imgType)
     override val imageId: String = kotlin.run {
-        val imageType = getImageType(delegate.imgType)
+        val imageType = imageType.formatName
         generateImageIdFromResourceId(delegate.resId, imageType)
             ?: kotlin.run {
                 if (delegate.picMd5.size == 16) generateImageId(delegate.picMd5, imageType)
@@ -118,16 +118,11 @@ internal class OnlineGroupImageImpl(
     override val height: Int
         get() = delegate.height
     override val imageType: ImageType
-        get() = getImageTypeById(delegate.imageType)
+        get() = OnlineImageIds.speculateImageType(delegate.filePath, delegate.imageType)
 
     override val imageId: String = generateImageId(
         delegate.picMd5,
-        delegate.filePath.substringAfterLast('.').lowercase().let { ext ->
-            if (ext == "null") {
-                // official clients might send `null`
-                getImageType(delegate.imageType)
-            } else ext
-        }
+        OnlineImageIds.speculateImageTypeNameFromFilePath(delegate.filePath)
     ).takeIf {
         Image.IMAGE_ID_REGEX.matches(it)
     } ?: generateImageId(delegate.picMd5)
@@ -139,5 +134,28 @@ internal class OnlineGroupImageImpl(
 
     override val isEmoji: Boolean by lazy {
         delegate.pbReserve.pbImageResv_checkIsEmoji(CustomFaceExtPb.ResvAttr.serializer())
+    }
+}
+
+private object OnlineImageIds {
+
+    fun speculateImageType(filePath: String, imageTypeInt: Int): ImageType {
+        return getImageTypeById(imageTypeInt) ?: speculateImageTypeFromImageId(filePath) ?: ImageType.UNKNOWN
+    }
+
+    fun speculateImageTypeFromImageId(filePathOrImageId: String): ImageType? {
+        return speculateImageTypeNameFromFilePath(filePathOrImageId)?.let { ImageType.matchOrNull(it) }
+    }
+
+    /**
+     * @param filePath should ends with `.type`
+     */
+    fun speculateImageTypeNameFromFilePath(filePath: String): String? {
+        return filePath.substringAfterLast('.').lowercase().let { ext ->
+            if (ext == "null") {
+                // official clients might send `null`
+                null
+            } else ext
+        }
     }
 }

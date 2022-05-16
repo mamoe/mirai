@@ -120,7 +120,7 @@ internal sealed class AbstractUser(
                         },
                         width = fileWidth,
                         height = fileHeight,
-                        imageType = getImageTypeById(fileType),
+                        imageType = getImageTypeById(fileType) ?: ImageType.UNKNOWN,
                         size = resource.size
                     )
                 }.also {

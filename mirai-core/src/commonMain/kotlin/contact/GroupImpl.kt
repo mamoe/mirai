@@ -241,7 +241,7 @@ internal class GroupImpl constructor(
                         imageId = resourceId,
                         height = fileHeight,
                         width = fileWidth,
-                        imageType = getImageTypeById(fileType),
+                        imageType = getImageTypeById(fileType) ?: ImageType.UNKNOWN,
                         size = resource.size
                     )
                 }

@@ -31,11 +31,11 @@ internal data class ImageInfo(val width: Int = 0, val height: Int = 0, val image
 
 internal val UNKNOWN_IMAGE_TYPE_PROMPT_ENABLED = systemProp("mirai.unknown.image.type.logging", false)
 
-internal fun getImageTypeById(id: Int): ImageType {
+internal fun getImageTypeById(id: Int): ImageType? {
     return if (id == 2001) {
         ImageType.APNG
     } else {
-        ImageType.match(getImageType(id))
+        ImageType.matchOrNull(getImageType(id))
     }
 }
 

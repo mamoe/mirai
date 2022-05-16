@@ -19,8 +19,8 @@ import kotlin.contracts.contract
 
 
 @JvmOverloads
-public fun generateImageId(md5: ByteArray, format: String = "mirai"): String {
-    return """{${generateUUID(md5)}}.$format"""
+public fun generateImageId(md5: ByteArray, format: String? = null): String {
+    return """{${generateUUID(md5)}}.${format ?: "mirai"}"""
 }
 
 @JvmOverloads
