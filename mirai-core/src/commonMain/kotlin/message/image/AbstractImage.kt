@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.message.image
 
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
@@ -42,7 +41,12 @@ internal sealed class AbstractImage : Image {
     final override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is Image) return false
-        return this.imageId == other.imageId
+        return this.imageId == other.imageId &&
+                this.width == other.width &&
+                this.height == other.height &&
+                this.isEmoji == other.isEmoji &&
+                this.imageType == other.imageType &&
+                this.size == other.size
     }
 }
 
