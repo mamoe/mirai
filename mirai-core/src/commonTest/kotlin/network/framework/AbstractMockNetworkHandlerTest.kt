@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
 import net.mamoe.mirai.internal.network.handler.state.SafeStateObserver
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import network.framework.components.TestEventDispatcherImpl
@@ -60,6 +61,7 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
                 MiraiLogger.Factory.create(SafeStateObserver::class, "StateObserver errors")
             )
         )
+        set(ImagePatcher, ImagePatcher())
     }
 
     fun NetworkHandler.assertState(state: NetworkHandler.State) {
