@@ -30,7 +30,7 @@ import kotlin.contracts.contract
 
 internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandlerTest(), GroupExtensions {
 
-    protected abstract val protocol: MessageProtocol
+    protected abstract val protocols: Array<out MessageProtocol>
     protected var defaultTarget: ContactOrBot? = null
 
     private var decoderLoggerEnabled = false
@@ -60,12 +60,12 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
 
     protected fun doEncoderChecks(
         expectedStruct: List<ImMsgBody.Elem>,
-        protocol: MessageProtocol,
+        protocols: Array<out MessageProtocol>,
         encode: MessageProtocolFacade.() -> List<ImMsgBody.Elem>
     ) {
         asserter.assertEquals(
             expectedStruct,
-            facadeOf(protocol).encode(),
+            facadeOf(*protocols).encode(),
             message = "Failed to check single Protocol"
         )
         asserter.assertEquals(
@@ -87,12 +87,12 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
 
     protected fun doDecoderChecks(
         expectedChain: MessageChain,
-        protocol: MessageProtocol = this.protocol,
+        protocols: Array<out MessageProtocol> = this.protocols,
         decode: MessageProtocolFacade.() -> MessageChain
     ) {
         asserter.assertEquals(
             expectedChain.toList(),
-            facadeOf(protocol).decode().toList(),
+            facadeOf(*protocols).decode().toList(),
             message = "Failed to check single Protocol"
         )
         asserter.assertEquals(
@@ -104,9 +104,9 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
 
     protected fun doEncoderChecks(
         vararg expectedStruct: ImMsgBody.Elem,
-        protocol: MessageProtocol = this.protocol,
+        protocols: Array<out MessageProtocol> = this.protocols,
         encode: MessageProtocolFacade.() -> List<ImMsgBody.Elem>
-    ): Unit = doEncoderChecks(expectedStruct.toList(), protocol, encode)
+    ): Unit = doEncoderChecks(expectedStruct.toList(), protocols, encode)
 
 
     inner class ChecksBuilder {
@@ -175,7 +175,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     @OptIn(ExperimentalCoroutinesApi::class)
     protected open fun Deferred<ChecksConfiguration>.doEncoderChecks() {
         val config = this.getCompleted()
-        doEncoderChecks(config.elems, protocol) {
+        doEncoderChecks(config.elems, protocols) {
             encode(
                 config.messageChain,
                 config.target,
@@ -188,8 +188,8 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     @OptIn(ExperimentalCoroutinesApi::class)
     protected open fun Deferred<ChecksConfiguration>.doDecoderChecks() {
         val config = this.getCompleted()
-        doDecoderChecks(config.messageChain, protocol) {
-            decode(config.elems, config.groupIdOrZero, config.messageSourceKind, bot)
+        doDecoderChecks(config.messageChain, protocols) {
+            decodeAndRefineLight(config.elems, config.groupIdOrZero, config.messageSourceKind, bot)
         }
     }
 

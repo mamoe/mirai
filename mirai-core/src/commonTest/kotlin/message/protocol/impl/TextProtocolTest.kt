@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.PlainText
@@ -18,8 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class TextProtocolTest : AbstractMessageProtocolTest() {
-
-    override val protocol = TextProtocol()
+    override val protocols: Array<out MessageProtocol> = arrayOf(TextProtocol())
 
     @BeforeEach
     fun `init group`() {

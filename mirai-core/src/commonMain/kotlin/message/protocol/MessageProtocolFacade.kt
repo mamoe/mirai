@@ -11,6 +11,10 @@ package net.mamoe.mirai.internal.message.protocol
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ContactOrBot
+import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.EmptyRefineContext
+import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
+import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.message.data.*
@@ -49,6 +53,23 @@ internal interface MessageProtocolFacade {
 
     companion object INSTANCE : MessageProtocolFacade by MessageProtocolFacadeImpl()
 }
+
+internal fun MessageProtocolFacade.decodeAndRefineLight(
+    elements: List<ImMsgBody.Elem>,
+    groupIdOrZero: Long,
+    messageSourceKind: MessageSourceKind,
+    bot: Bot,
+    refineContext: RefineContext = EmptyRefineContext
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineLight(bot, refineContext)
+
+internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
+    elements: List<ImMsgBody.Elem>,
+    groupIdOrZero: Long,
+    messageSourceKind: MessageSourceKind,
+    bot: Bot,
+    refineContext: RefineContext = EmptyRefineContext
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineDeep(bot, refineContext)
+
 
 internal class MessageProtocolFacadeImpl(
     protocols: Iterable<MessageProtocol> = ServiceLoader.load(MessageProtocol::class.java)
