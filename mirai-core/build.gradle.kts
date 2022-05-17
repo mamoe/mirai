@@ -10,7 +10,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     kotlin("multiplatform")
@@ -23,54 +22,40 @@ plugins {
 
 description = "Mirai Protocol implementation for QQ Android"
 
-afterEvaluate {
-    tasks.getByName("compileKotlinCommon").enabled = false
-    tasks.getByName("compileTestKotlinCommon").enabled = false
-
-    tasks.getByName("compileCommonMainKotlinMetadata").enabled = false
-    tasks.getByName("compileKotlinMetadata").enabled = false
-}
-
 kotlin {
     explicitApi()
 
-    if (isAndroidSDKAvailable) {
-        jvm("android") {
-            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-        }
-    } else {
-        printAndroidNotInstalled()
-    }
-
-    jvm("common") {
-        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
-    }
-
-    jvm("jvm")
+    configureHMPPJvm()
 
     sourceSets.apply {
 
         val commonMain by getting {
             dependencies {
                 api(project(":mirai-core-api"))
-                api(`kotlinx-serialization-core-jvm`)
-                api(`kotlinx-serialization-json-jvm`)
-                api(`kotlinx-coroutines-core-jvm`)
+                api(`kotlinx-serialization-core`)
+                api(`kotlinx-serialization-json`)
+                api(`kotlinx-coroutines-core`)
 
                 implementation(project(":mirai-core-utils"))
-                implementation(`kotlinx-serialization-protobuf-jvm`)
-                implementation(`kotlinx-atomicfu-jvm`)
-                implementation(`netty-all`)
-                implementation(`log4j-api`)
-                implementation(bouncycastle)
-                implementationKotlinxIoJvm()
+                implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-atomicfu`)
+                implementationKotlinxIo(`kotlinx-io-common`)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
-                api(`yamlkt-jvm`)
+                api(yamlkt)
+            }
+        }
+
+        val jvmBaseMain by getting {
+            dependencies {
+                implementation(bouncycastle)
+                implementation(`log4j-api`)
+                implementation(`netty-all`)
+                implementationKotlinxIo(`kotlinx-io-jvm`)
             }
         }
 
@@ -103,6 +88,12 @@ kotlin {
             dependencies {
                 api(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
+            }
+        }
+
+        val nativeMain by getting {
+            dependencies {
+                implementationKotlinxIo(`kotlinx-io-native`)
             }
         }
     }

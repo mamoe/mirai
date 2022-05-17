@@ -19,6 +19,7 @@ import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 
@@ -56,6 +57,7 @@ fun Project.preConfigureJvmTarget() {
         targetCompatibility = defaultVer.toString()
     }
 }
+
 fun Project.configureJvmTarget() {
     val defaultVer = jvmVersion()
 
@@ -125,7 +127,7 @@ fun Project.configureKotlinTestSettings() {
 
                 when {
                     sourceSet.name == "commonTest" -> {
-                        if (target?.platformType == KotlinPlatformType.jvm || target?.platformType == KotlinPlatformType.androidJvm) {
+                        if (isJvmLikePlatform(target)) {
                             configureJvmTest(sourceSet)
                         } else {
                             sourceSet.dependencies {
@@ -135,13 +137,18 @@ fun Project.configureKotlinTestSettings() {
                         }
                     }
                     sourceSet.name.contains("test", ignoreCase = true) -> {
-                        configureJvmTest(sourceSet)
+                        if (isJvmLikePlatform(target)) {
+                            configureJvmTest(sourceSet)
+                        }
                     }
                 }
             }
         }
     }
 }
+
+private fun isJvmLikePlatform(target: KotlinTarget?) =
+    target?.platformType == KotlinPlatformType.jvm || target?.platformType == KotlinPlatformType.androidJvm
 
 val testExperimentalAnnotations = arrayOf(
     "kotlin.ExperimentalUnsignedTypes",

@@ -7,20 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("UnusedImport")
+package net.mamoe.mirai.utils
 
-plugins {
-    kotlin("multiplatform")
-    `maven-publish`
+public actual fun String.decodeBase64(): ByteArray {
+    TODO("Not yet implemented")
 }
 
-version = Versions.console
-description = "Mirai Console compiler annotations"
-
-kotlin {
-    explicitApi()
-
-    configureHMPPJvm()
+public actual fun ByteArray.encodeBase64(): String {
+    TODO("Not yet implemented")
 }
-
-configureMppPublishing()

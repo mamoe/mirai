@@ -58,7 +58,7 @@ object Versions {
 
     const val junit = "5.7.2"
 
-    const val yamlkt = "0.10.2"
+    const val yamlkt = "0.11.0"
     const val intellijGradlePlugin = "1.5.3"
 
     //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
@@ -72,23 +72,20 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 @Suppress("unused")
 fun ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$version"
 
-
-// Why using `-jvm`?
-// All target platforms are JVM. Root modules like 'coroutines-core' will be resolved to 'coroutines-common' for commonMain,
-// which make IDE code analysis not working.
-
-val `kotlinx-coroutines-core-jvm` = kotlinx("coroutines-core-jvm", Versions.coroutines)
+val `kotlinx-coroutines-core` = kotlinx("coroutines-core", Versions.coroutines)
 val `kotlinx-coroutines-jdk8` = kotlinx("coroutines-jdk8", Versions.coroutines)
 val `kotlinx-coroutines-swing` = kotlinx("coroutines-swing", Versions.coroutines)
 val `kotlinx-coroutines-debug` = kotlinx("coroutines-debug", Versions.coroutines)
-val `kotlinx-serialization-core-jvm` = kotlinx("serialization-core-jvm", Versions.serialization)
-val `kotlinx-serialization-json-jvm` = kotlinx("serialization-json-jvm", Versions.serialization)
-val `kotlinx-serialization-protobuf-jvm` = kotlinx("serialization-protobuf-jvm", Versions.serialization)
-const val `kotlinx-atomicfu-jvm` = "org.jetbrains.kotlinx:atomicfu-jvm:${Versions.atomicFU}"
+val `kotlinx-serialization-core` = kotlinx("serialization-core", Versions.serialization)
+val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serialization)
+val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
+const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}"
+val `kotlinx-io-common` = kotlinx("io", Versions.io)
 val `kotlinx-io-jvm` = kotlinx("io-jvm", Versions.io)
+val `kotlinx-io-native` = kotlinx("io-macosx64", Versions.io)
 
-fun KotlinDependencyHandler.implementationKotlinxIoJvm() {
-    implementation(`kotlinx-io-jvm`) {
+fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
+    implementation(module) {
         /*
                     |    +--- org.jetbrains.kotlinx:kotlinx-io-jvm:0.1.16
                     |    |    +--- org.jetbrains.kotlin:kotlin-stdlib:1.3.60 -> 1.5.30 (*)
@@ -103,17 +100,17 @@ fun KotlinDependencyHandler.implementationKotlinxIoJvm() {
     }
 }
 
-val `kotlinx-coroutines-io-jvm` = kotlinx("coroutines-io-jvm", Versions.coroutinesIo)
+val `kotlinx-coroutines-io` = kotlinx("coroutines-io", Versions.coroutinesIo)
 
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
-val `ktor-client-core-jvm` = ktor("client-core-jvm", Versions.ktor)
-val `ktor-client-cio-jvm` = ktor("client-cio-jvm", Versions.ktor)
+val `ktor-client-core` = ktor("client-core-jvm", Versions.ktor)
+val `ktor-client-cio` = ktor("client-cio-jvm", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
-val `ktor-client-logging-jvm` = ktor("client-logging-jvm", Versions.ktor)
-val `ktor-network-jvm` = ktor("network-jvm", Versions.ktor)
-val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
+val `ktor-client-logging` = ktor("client-logging-jvm", Versions.ktor)
+val `ktor-network` = ktor("network-jvm", Versions.ktor)
+val `ktor-client-serialization` = ktor("client-serialization-jvm", Versions.ktor)
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 
@@ -141,7 +138,7 @@ const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Vers
 //const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
 //const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
 
-const val `yamlkt-jvm` = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
+const val `yamlkt` = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 
 const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
