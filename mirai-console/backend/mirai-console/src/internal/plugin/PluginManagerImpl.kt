@@ -176,7 +176,7 @@ internal class PluginManagerImpl(
         resolvedPlugins.forEach { plugin ->
             val tmp = plugin.dependencies.firstOrNull { d -> !PluginManager.plugins.first { it.id == d.id }.isEnabled }
             if (tmp != null) {
-                logger.error("Cannot enable plugin ${plugin.id}, because mirai failed to enable ${tmp.id}")
+                logger.error("Cannot enable plugin '${plugin.id}', because it depends on '${tmp.id}' which was not enabled")
             } else {
                 try {
                     enablePlugin(plugin)
