@@ -12,6 +12,9 @@
 
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 public inline fun <A, reified B> Array<A>.mapToArray(block: (element: A) -> B): Array<B> {
     val result = arrayOfNulls<B>(size)
     this.forEachIndexed { index, element ->

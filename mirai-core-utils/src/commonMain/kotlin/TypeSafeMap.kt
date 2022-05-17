@@ -12,12 +12,12 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.serialization.Serializable
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline

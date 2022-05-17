@@ -16,6 +16,10 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.ByteReadPacket
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 @JvmOverloads

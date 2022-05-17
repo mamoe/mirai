@@ -9,15 +9,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
-
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
-
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
+internal actual fun getProperty(name: String, default: String): String? {
+    TODO("Not yet implemented")
 }

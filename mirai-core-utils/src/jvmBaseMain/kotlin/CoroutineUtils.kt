@@ -9,15 +9,13 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
+public actual suspend inline fun <R> runBIO(
+    noinline block: () -> R,
+): R = runInterruptible(context = Dispatchers.IO, block = block)
 
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
-}
+public actual suspend inline fun <T, R> T.runBIO(
+    crossinline block: T.() -> R,
+): R = runInterruptible(context = Dispatchers.IO, block = { block() })

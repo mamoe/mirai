@@ -14,6 +14,9 @@
 
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 /*
  * 类型转换 Utils.
  * 这些函数为内部函数, 可能会改变

@@ -11,6 +11,8 @@ package net.mamoe.mirai.utils
 
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.Synchronized
+import kotlin.jvm.Volatile
 
 public open class ExceptionCollector {
 
@@ -50,16 +52,6 @@ public open class ExceptionCollector {
         receiver.addSuppressed(e)
     }
 
-    private fun hash(e: Throwable): Long {
-        return e.stackTrace.fold(0L) { acc, stackTraceElement ->
-            acc * 31 + hash(stackTraceElement).toLongUnsigned()
-        }
-    }
-
-    private fun hash(element: StackTraceElement): Int {
-        return element.lineNumber.hashCode() xor element.className.hashCode() xor element.methodName.hashCode()
-    }
-
     public fun collectGet(e: Throwable?): Throwable {
         this.collect(e)
         return getLast()!!
@@ -90,7 +82,8 @@ public open class ExceptionCollector {
     @TestOnly // very slow
     public fun asSequence(): Sequence<Throwable> {
         fun Throwable.itr(): Iterator<Throwable> {
-            return (sequenceOf(this) + this.suppressed.asSequence().flatMap { it.itr().asSequence() }).iterator()
+            return (sequenceOf(this) + this.suppressedExceptions.asSequence()
+                .flatMap { it.itr().asSequence() }).iterator()
         }
 
         val last = getLast() ?: return emptySequence()
@@ -137,3 +130,5 @@ public inline fun <R> ExceptionCollector.withExceptionCollector(action: Exceptio
         }
     }
 }
+
+internal expect fun hash(e: Throwable): Long

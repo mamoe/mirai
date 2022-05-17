@@ -11,6 +11,10 @@
 
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmName
+
 /**
  * Safe union of two types.
  */

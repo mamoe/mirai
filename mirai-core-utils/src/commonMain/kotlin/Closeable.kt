@@ -9,15 +9,9 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
+import kotlinx.io.errors.IOException
 
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
-
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
+public expect interface Closeable {
+    @Throws(IOException::class)
+    public fun close()
 }

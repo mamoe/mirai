@@ -12,9 +12,10 @@
 
 package net.mamoe.mirai.utils
 
-import java.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 public inline fun <reified T> Any?.cast(): T {
     contract { returns() implies (this@cast is T) }
@@ -56,34 +57,6 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     while (li.hasNext()) {
         li.set(operator(li.next()))
     }
-}
-
-public fun <T> Collection<T>.asImmutable(): Collection<T> {
-    return when (this) {
-        is List<T> -> asImmutable()
-        is Set<T> -> asImmutable()
-        else -> Collections.unmodifiableCollection(this)
-    }
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Collection<T>.asImmutableStrict(): Collection<T> {
-    return Collections.unmodifiableCollection(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> List<T>.asImmutable(): List<T> {
-    return Collections.unmodifiableList(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Set<T>.asImmutable(): Set<T> {
-    return Collections.unmodifiableSet(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <K, V> Map<K, V>.asImmutable(): Map<K, V> {
-    return Collections.unmodifiableMap(this)
 }
 
 public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
@@ -156,7 +129,7 @@ public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwab
     findCause(maxDepth, filter) ?: this
 
 public fun String.capitalize(): String {
-    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
 
 public fun String.truncated(length: Int, truncated: String = "..."): String {
