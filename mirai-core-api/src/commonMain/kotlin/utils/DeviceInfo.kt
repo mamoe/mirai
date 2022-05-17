@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.utils
@@ -12,6 +12,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -21,98 +22,85 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.DeviceInfoManager.Version.Companion.trans
-import java.io.File
+import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmStatic
 import kotlin.random.Random
 
-@Serializable
-public class DeviceInfo(
-    public val display: ByteArray,
-    public val product: ByteArray,
-    public val device: ByteArray,
-    public val board: ByteArray,
-    public val brand: ByteArray,
-    public val model: ByteArray,
-    public val bootloader: ByteArray,
-    public val fingerprint: ByteArray,
-    public val bootId: ByteArray,
-    public val procVersion: ByteArray,
-    public val baseBand: ByteArray,
-    public val version: Version,
-    public val simInfo: ByteArray,
-    public val osType: ByteArray,
-    public val macAddress: ByteArray,
-    public val wifiBSSID: ByteArray,
-    public val wifiSSID: ByteArray,
-    public val imsiMd5: ByteArray,
-    public val imei: String,
-    public val apn: ByteArray
+public expect class DeviceInfo(
+    display: ByteArray,
+    product: ByteArray,
+    device: ByteArray,
+    board: ByteArray,
+    brand: ByteArray,
+    model: ByteArray,
+    bootloader: ByteArray,
+    fingerprint: ByteArray,
+    bootId: ByteArray,
+    procVersion: ByteArray,
+    baseBand: ByteArray,
+    version: Version,
+    simInfo: ByteArray,
+    osType: ByteArray,
+    macAddress: ByteArray,
+    wifiBSSID: ByteArray,
+    wifiSSID: ByteArray,
+    imsiMd5: ByteArray,
+    imei: String,
+    apn: ByteArray
 ) {
-    public val androidId: ByteArray get() = display
-    public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
-    init {
-        require(imsiMd5.size == 16) { "Bad `imsiMd5.size`. Required 16, given ${imsiMd5.size}." }
-    }
+    public val display: ByteArray
+    public val product: ByteArray
+    public val device: ByteArray
+    public val board: ByteArray
+    public val brand: ByteArray
+    public val model: ByteArray
+    public val bootloader: ByteArray
+    public val fingerprint: ByteArray
+    public val bootId: ByteArray
+    public val procVersion: ByteArray
+    public val baseBand: ByteArray
+    public val version: Version
+    public val simInfo: ByteArray
+    public val osType: ByteArray
+    public val macAddress: ByteArray
+    public val wifiBSSID: ByteArray
+    public val wifiSSID: ByteArray
+    public val imsiMd5: ByteArray
+    public val imei: String
+    public val apn: ByteArray
+
+    public val androidId: ByteArray
+    public val ipAddress: ByteArray
 
     @Transient
     @MiraiInternalApi
-    public val guid: ByteArray = generateGuid(androidId, macAddress)
+    public val guid: ByteArray
 
-    @Serializable
     public class Version(
-        public val incremental: ByteArray = "5891938".toByteArray(),
-        public val release: ByteArray = "10".toByteArray(),
-        public val codename: ByteArray = "REL".toByteArray(),
-        public val sdk: Int = 29
+        incremental: ByteArray = "5891938".toByteArray(),
+        release: ByteArray = "10".toByteArray(),
+        codename: ByteArray = "REL".toByteArray(),
+        sdk: Int = 29
     ) {
-        /**
-         * @since 2.9
-         */
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Version
-
-            if (!incremental.contentEquals(other.incremental)) return false
-            if (!release.contentEquals(other.release)) return false
-            if (!codename.contentEquals(other.codename)) return false
-            if (sdk != other.sdk) return false
-
-            return true
-        }
+        public val incremental: ByteArray
+        public val release: ByteArray
+        public val codename: ByteArray
+        public val sdk: Int
 
         /**
          * @since 2.9
          */
-        override fun hashCode(): Int {
-            var result = incremental.contentHashCode()
-            result = 31 * result + release.contentHashCode()
-            result = 31 * result + codename.contentHashCode()
-            result = 31 * result + sdk
-            return result
-        }
+        override fun equals(other: Any?): Boolean
+
+        /**
+         * @since 2.9
+         */
+        override fun hashCode(): Int
     }
 
     public companion object {
-        internal val logger = MiraiLogger.Factory.create(DeviceInfo::class, "DeviceInfo")
-
-        /**
-         * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
-         */
-        @JvmOverloads
-        @JvmStatic
-        @JvmName("from")
-        public fun File.loadAsDeviceInfo(
-            json: Json = DeviceInfoManager.format
-        ): DeviceInfo {
-            if (!this.exists() || this.length() == 0L) {
-                return random().also {
-                    this.writeText(DeviceInfoManager.serialize(it, json))
-                }
-            }
-            return DeviceInfoManager.deserialize(this.readText(), json)
-        }
+        internal val logger: MiraiLogger
 
         /**
          * 生成随机 [DeviceInfo]
@@ -120,7 +108,7 @@ public class DeviceInfo(
          * @since 2.0
          */
         @JvmStatic
-        public fun random(): DeviceInfo = random(Random.Default)
+        public fun random(): DeviceInfo
 
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
@@ -128,61 +116,72 @@ public class DeviceInfo(
          * @since 2.9
          */
         @JvmStatic
-        public fun random(random: Random): DeviceInfo {
-            return DeviceInfo(
-                display = "MIRAI.${getRandomString(6, '0'..'9', random)}.001".toByteArray(),
-                product = "mirai".toByteArray(),
-                device = "mirai".toByteArray(),
-                board = "mirai".toByteArray(),
-                brand = "mamoe".toByteArray(),
-                model = "mirai".toByteArray(),
-                bootloader = "unknown".toByteArray(),
-                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${
-                    getRandomIntString(7, random)
-                }:user/release-keys".toByteArray(),
-                bootId = generateUUID(getRandomByteArray(16, random).md5()).toByteArray(),
-                procVersion = "Linux version 3.0.31-${
-                    getRandomString(8, random)
-                } (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
-                baseBand = byteArrayOf(),
-                version = Version(),
-                simInfo = "T-Mobile".toByteArray(),
-                osType = "android".toByteArray(),
-                macAddress = "02:00:00:00:00:00".toByteArray(),
-                wifiBSSID = "02:00:00:00:00:00".toByteArray(),
-                wifiSSID = "<unknown ssid>".toByteArray(),
-                imsiMd5 = getRandomByteArray(16, random).md5(),
-                imei = "86${getRandomIntString(12, random)}".let { it + luhn(it) },
-                apn = "wifi".toByteArray()
-            )
-        }
-
-        /**
-         * 计算 imei 校验位
-         */
-        private fun luhn(imei: String): Int {
-            var odd = false
-            val zero = '0'
-            val sum = imei.sumOf { char ->
-                odd = !odd
-                if (odd) {
-                    char.code - zero.code
-                } else {
-                    val s = (char.code - zero.code) * 2
-                    s % 10 + s / 10
-                }
-            }
-            return (10 - sum % 10) % 10
-        }
+        public fun random(random: Random): DeviceInfo
     }
 
     /**
      * @since 2.9
      */
     @Suppress("DuplicatedCode")
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+    override fun equals(other: Any?): Boolean
+
+    /**
+     * @since 2.9
+     */
+    override fun hashCode(): Int
+}
+
+internal object DeviceInfoCommonImpl {
+    fun randomDeviceInfo(random: Random) = DeviceInfo(
+        display = "MIRAI.${getRandomString(6, '0'..'9', random)}.001".toByteArray(),
+        product = "mirai".toByteArray(),
+        device = "mirai".toByteArray(),
+        board = "mirai".toByteArray(),
+        brand = "mamoe".toByteArray(),
+        model = "mirai".toByteArray(),
+        bootloader = "unknown".toByteArray(),
+        fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${
+            getRandomIntString(7, random)
+        }:user/release-keys".toByteArray(),
+        bootId = generateUUID(getRandomByteArray(16, random).md5()).toByteArray(),
+        procVersion = "Linux version 3.0.31-${
+            getRandomString(8, random)
+        } (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
+        baseBand = byteArrayOf(),
+        version = DeviceInfo.Version(),
+        simInfo = "T-Mobile".toByteArray(),
+        osType = "android".toByteArray(),
+        macAddress = "02:00:00:00:00:00".toByteArray(),
+        wifiBSSID = "02:00:00:00:00:00".toByteArray(),
+        wifiSSID = "<unknown ssid>".toByteArray(),
+        imsiMd5 = getRandomByteArray(16, random).md5(),
+        imei = "86${getRandomIntString(12, random)}".let { it + luhn(it) },
+        apn = "wifi".toByteArray()
+    )
+
+    /**
+     * 计算 imei 校验位
+     */
+    private fun luhn(imei: String): Int {
+        var odd = false
+        val zero = '0'
+        val sum = imei.sumOf { char ->
+            odd = !odd
+            if (odd) {
+                char.code - zero.code
+            } else {
+                val s = (char.code - zero.code) * 2
+                s % 10 + s / 10
+            }
+        }
+        return (10 - sum % 10) % 10
+    }
+
+
+    @Suppress("DuplicatedCode")
+    fun equalsImpl(deviceInfo: DeviceInfo, other: Any?): Boolean = deviceInfo.run {
+        if (deviceInfo === other) return true
+        if (other !is DeviceInfo) return false
 
         other as DeviceInfo
 
@@ -211,10 +210,8 @@ public class DeviceInfo(
         return true
     }
 
-    /**
-     * @since 2.9
-     */
-    override fun hashCode(): Int {
+    @Suppress("DuplicatedCode")
+    fun hashCodeImpl(deviceInfo: DeviceInfo): Int = deviceInfo.run {
         var result = display.contentHashCode()
         result = 31 * result + product.contentHashCode()
         result = 31 * result + device.contentHashCode()
@@ -293,6 +290,9 @@ internal object DeviceInfoManager {
         val data: T
     )
 
+    @Serializer(forClass = DeviceInfo.Version::class)
+    private object DeviceInfoVersionSerializer
+
     @Serializable
     class V1(
         val display: ByteArray,
@@ -306,7 +306,7 @@ internal object DeviceInfoManager {
         val bootId: ByteArray,
         val procVersion: ByteArray,
         val baseBand: ByteArray,
-        val version: DeviceInfo.Version,
+        val version: @Serializable(DeviceInfoVersionSerializer::class) DeviceInfo.Version,
         val simInfo: ByteArray,
         val osType: ByteArray,
         val macAddress: ByteArray,
@@ -472,7 +472,7 @@ internal object DeviceInfoManager {
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
 @Suppress("RemoveRedundantQualifierName") // bug
-private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
+internal fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
     (androidId + macAddress).md5()
 
 

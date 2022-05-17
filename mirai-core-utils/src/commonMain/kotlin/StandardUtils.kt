@@ -7,14 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiUtils")
+@file:JvmName("StandardUtilsKt_common")
 
 package net.mamoe.mirai.utils
 
-import java.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmName
 
 public inline fun <reified T> Any?.cast(): T {
     contract { returns() implies (this@cast is T) }
@@ -56,34 +55,6 @@ public inline fun <E> MutableList<E>.replaceAllKotlin(operator: (E) -> E) {
     while (li.hasNext()) {
         li.set(operator(li.next()))
     }
-}
-
-public fun <T> Collection<T>.asImmutable(): Collection<T> {
-    return when (this) {
-        is List<T> -> asImmutable()
-        is Set<T> -> asImmutable()
-        else -> Collections.unmodifiableCollection(this)
-    }
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Collection<T>.asImmutableStrict(): Collection<T> {
-    return Collections.unmodifiableCollection(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> List<T>.asImmutable(): List<T> {
-    return Collections.unmodifiableList(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Set<T>.asImmutable(): Set<T> {
-    return Collections.unmodifiableSet(this)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <K, V> Map<K, V>.asImmutable(): Map<K, V> {
-    return Collections.unmodifiableMap(this)
 }
 
 public fun Throwable.getRootCause(maxDepth: Int = 20): Throwable {
@@ -156,7 +127,7 @@ public inline fun Throwable.findCauseOrSelf(maxDepth: Int = 20, filter: (Throwab
     findCause(maxDepth, filter) ?: this
 
 public fun String.capitalize(): String {
-    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
 
 public fun String.truncated(length: Int, truncated: String = "..."): String {
@@ -178,3 +149,21 @@ public inline fun <T> T.context(block: T.() -> Unit) {
 
 public fun assertUnreachable(hint: String? = null): Nothing =
     error("This clause should not be reached. " + hint.orEmpty())
+
+public fun isSameClass(object1: Any?, object2: Any?): Boolean {
+    if (object1 == null || object2 == null) {
+        return object1 == null && object2 == null
+    }
+    return isSameClassPlatform(object1, object2)
+}
+
+internal expect fun isSameClassPlatform(object1: Any, object2: Any): Boolean
+
+public inline fun <reified T> isSameType(thisObject: T, other: Any?): Boolean {
+    contract {
+        returns() implies (other is T)
+    }
+    if (other == null) return false
+    if (other !is T) return false
+    return isSameClass(thisObject, other)
+}
