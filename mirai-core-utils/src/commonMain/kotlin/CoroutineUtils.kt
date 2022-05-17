@@ -7,8 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiUtils")
+
+@file:JvmName("CoroutineUtils_common")
 
 package net.mamoe.mirai.utils
 
@@ -17,25 +17,15 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmName
 
-@Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DeprecatedCallableAddReplaceWith")
-@Deprecated(
-    message = "Use runBIO which delegates to `runInterruptible`. " +
-            "Technically remove suspend call in `block` and remove CoroutineScope parameter usages.",
-    level = DeprecationLevel.HIDDEN
-)
-@kotlin.internal.LowPriorityInOverloadResolution
-public suspend inline fun <R> runBIO(
-    noinline block: suspend CoroutineScope.() -> R,
-): R = withContext(Dispatchers.IO, block)
-
-public suspend inline fun <R> runBIO(
+public expect suspend inline fun <R> runBIO(
     noinline block: () -> R,
-): R = runInterruptible(context = Dispatchers.IO, block = block)
+): R
 
-public suspend inline fun <T, R> T.runBIO(
+public expect suspend inline fun <T, R> T.runBIO(
     crossinline block: T.() -> R,
-): R = runInterruptible(context = Dispatchers.IO, block = { block() })
+): R
 
 public inline fun CoroutineScope.launchWithPermit(
     semaphore: Semaphore,
