@@ -225,7 +225,12 @@ public interface Image : Message, MessageContent, CodableMessage {
         @SerialName(SERIAL_NAME)
         @Serializable
         private data class Delegate(
-            val imageId: String
+            val imageId: String,
+            val size: Long = 0,
+            val type: ImageType = ImageType.UNKNOWN,
+            val width: Int = 0,
+            val height: Int = 0,
+            val isEmoji: Boolean = false
         )
     }
 
