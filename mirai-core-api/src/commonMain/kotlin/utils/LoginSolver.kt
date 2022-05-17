@@ -11,9 +11,8 @@ package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
-import java.io.File
+import kotlin.jvm.JvmField
 
 /**
  * 验证码, 设备锁解决器
@@ -80,11 +79,4 @@ public expect abstract class LoginSolver() {
         public fun getDefault(): LoginSolver
     }
 
-}
-
-internal fun getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
-    return {
-        @Suppress("DEPRECATION_ERROR")
-        file().loadAsDeviceInfo(BotConfiguration.json)
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,7 +11,8 @@ package net.mamoe.mirai.spi
 
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
-import java.util.*
+import kotlin.jvm.JvmField
+import kotlin.reflect.KClass
 
 /**
  * 基本 SPI 接口
@@ -23,25 +24,16 @@ public interface BaseService {
     public val priority: Int get() = 5
 }
 
-internal class SPIServiceLoader<T : BaseService>(
-    @JvmField val defaultService: T,
-    @JvmField val serviceType: Class<T>,
+internal expect class SPIServiceLoader<T : BaseService>(
+    defaultService: T,
+    serviceType: KClass<T>,
 ) {
     @JvmField
-    var service: T = defaultService
+    var service: T
 
-    fun reload() {
-        val loader = ServiceLoader.load(serviceType)
-        service = loader.minByOrNull { it.priority } ?: defaultService
-    }
-
-    init {
-        reload()
-    }
+    fun reload()
 
     companion object {
-        val SPI_SERVICE_LOADER_LOGGER by lazy {
-            MiraiLogger.Factory.create(SPIServiceLoader::class.java, "spi-service-loader")
-        }
+        val SPI_SERVICE_LOADER_LOGGER: MiraiLogger
     }
 }
