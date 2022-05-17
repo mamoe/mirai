@@ -9,7 +9,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     kotlin("multiplatform")
@@ -27,47 +26,39 @@ description = "Mirai API module"
 
 kotlin {
     explicitApi()
-
-    if (isAndroidSDKAvailable) {
-        jvm("android") {
-            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-        }
-    } else {
-        printAndroidNotInstalled()
-    }
-
-    jvm("common") {
-        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
-    }
-
-    jvm("jvm")
+    configureHMPPJvm()
 
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(kotlin("reflect"))
-                api(`kotlinx-serialization-core-jvm`)
-                api(`kotlinx-serialization-json-jvm`)
-                api(`kotlinx-coroutines-core-jvm`) // don't remove it, otherwise IDE will complain
-                api(`kotlinx-coroutines-jdk8`)
-                api(`ktor-client-okhttp`)
+                api(`kotlinx-serialization-core`)
+                api(`kotlinx-serialization-json`)
+                api(`kotlinx-coroutines-core`) // don't remove it, otherwise IDE will complain
 
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
-                implementation(`kotlinx-serialization-protobuf-jvm`)
-                implementation(`jetbrains-annotations`)
-                implementation(`log4j-api`)
-                implementation(`kotlinx-atomicfu-jvm`)
-                implementationKotlinxIoJvm()
-
-                compileOnly(`slf4j-api`)
+                implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-atomicfu`)
+                implementationKotlinxIo(`kotlinx-io-common`)
             }
         }
 
         commonTest {
             dependencies {
                 runtimeOnly(`log4j-core`)
+            }
+        }
+
+        val jvmBaseMain by getting {
+            dependencies {
+                api(`ktor-client-okhttp`)
+                api(`kotlinx-coroutines-jdk8`)
+                implementation(`jetbrains-annotations`)
+                implementation(`log4j-api`)
+                compileOnly(`slf4j-api`)
+                implementationKotlinxIo(`kotlinx-io-jvm`)
             }
         }
 
@@ -88,6 +79,12 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
+            }
+        }
+
+        val nativeMain by getting {
+            dependencies {
+                implementationKotlinxIo(`kotlinx-io-native`)
             }
         }
     }
