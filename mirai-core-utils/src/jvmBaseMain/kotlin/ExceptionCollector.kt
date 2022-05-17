@@ -9,15 +9,12 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
-
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
-
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
+internal actual fun hash(e: Throwable): Long {
+    return e.stackTrace.fold(0L) { acc, stackTraceElement ->
+        acc * 31 + hash(stackTraceElement).toLongUnsigned()
     }
+}
+
+private fun hash(element: StackTraceElement): Int {
+    return element.lineNumber.hashCode() xor element.className.hashCode() xor element.methodName.hashCode()
 }

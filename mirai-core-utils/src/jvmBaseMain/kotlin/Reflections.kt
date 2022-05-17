@@ -9,15 +9,13 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
 
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
+public fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
+    objectInstance?.let { return it }
+    val noArgsConstructor = constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
+        ?: return null
 
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
+    return noArgsConstructor.callBy(emptyMap())
 }

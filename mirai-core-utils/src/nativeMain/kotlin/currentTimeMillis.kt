@@ -9,15 +9,11 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmName
-
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
-
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
+/**
+ * 时间戳
+ *
+ * @see System.currentTimeMillis
+ */
+public actual fun currentTimeMillis(): Long {
+    TODO("Not yet implemented")
 }

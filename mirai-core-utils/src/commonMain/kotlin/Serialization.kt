@@ -7,41 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiUtils")
-
-
 package net.mamoe.mirai.utils
 
-import kotlinx.serialization.BinaryFormat
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.StringFormat
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.io.File
-
-public fun <T> File.loadNotBlankAs(
-    serializer: DeserializationStrategy<T>,
-    stringFormat: StringFormat,
-): T? {
-    if (!this.exists() || this.length() == 0L) {
-        return null
-    }
-    return stringFormat.decodeFromString(serializer, this.readText())
-}
-
-public fun <T> File.loadNotBlankAs(
-    serializer: DeserializationStrategy<T>,
-    binaryFormat: BinaryFormat,
-): T? {
-    if (!this.exists() || this.length() == 0L) {
-        return null
-    }
-    return binaryFormat.decodeFromByteArray(serializer, this.readBytes())
-}
-
 
 public fun SerialDescriptor.copy(newName: String): SerialDescriptor =
     buildClassSerialDescriptor(newName) { takeElementsFrom(this@copy) }

@@ -6,18 +6,4 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
-
 package net.mamoe.mirai.utils
-
-import kotlin.jvm.JvmName
-
-public class Symbol private constructor(name: String) {
-    private val str = "Symbol($name)"
-    override fun toString(): String = str
-
-    public companion object {
-        @Suppress("RedundantNullableReturnType")
-        @JvmName("create")
-        public operator fun invoke(name: String): Any? = Symbol(name) // calls constructor
-    }
-}
