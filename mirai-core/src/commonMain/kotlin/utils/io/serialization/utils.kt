@@ -13,8 +13,8 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization
 
-import kotlinx.io.core.*
-import kotlinx.io.streams.asInput
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.asInput
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor

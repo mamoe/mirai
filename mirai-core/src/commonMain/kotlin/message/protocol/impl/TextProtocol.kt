@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol

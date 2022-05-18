@@ -12,9 +12,8 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.Closeable
-import kotlinx.io.core.toByteArray
-import kotlinx.io.core.use
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.Closeable
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass

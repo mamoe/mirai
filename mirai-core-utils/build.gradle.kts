@@ -35,7 +35,7 @@ kotlin {
 
                 implementation(`kotlinx-atomicfu`)
                 implementation(`kotlinx-serialization-protobuf`)
-                implementationKotlinxIo(`kotlinx-io-common`)
+                implementation(`ktor-io`)
             }
         }
 
@@ -47,7 +47,6 @@ kotlin {
 
         val jvmBaseMain by getting {
             dependencies {
-                implementationKotlinxIo(`kotlinx-io-jvm`)
             }
         }
 
@@ -71,7 +70,6 @@ kotlin {
 
         val nativeMain by getting {
             dependencies {
-                implementationKotlinxIo(`kotlinx-io-native`)
             }
         }
     }

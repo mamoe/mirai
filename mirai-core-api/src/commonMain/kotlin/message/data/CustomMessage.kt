@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

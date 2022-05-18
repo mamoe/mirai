@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
-import kotlinx.io.core.ByteReadPacket
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet

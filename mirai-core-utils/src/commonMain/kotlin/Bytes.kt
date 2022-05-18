@@ -13,7 +13,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.ByteReadPacket
+import io.ktor.utils.io.core.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass

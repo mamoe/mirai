@@ -14,8 +14,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
+import io.ktor.utils.io.core.readBytes
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
