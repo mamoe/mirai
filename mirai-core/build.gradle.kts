@@ -25,7 +25,7 @@ description = "Mirai Protocol implementation for QQ Android"
 kotlin {
     explicitApi()
 
-    configureHMPPJvm()
+    configureHMPP()
 
     sourceSets.apply {
 
@@ -40,6 +40,7 @@ kotlin {
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
                 implementation(`ktor-io`)
+                implementation(`ktor-client-core`)
             }
         }
 
@@ -55,6 +56,12 @@ kotlin {
                 implementation(bouncycastle)
                 implementation(`log4j-api`)
                 implementation(`netty-all`)
+            }
+        }
+
+        val jvmBaseTest by getting {
+            dependencies {
+                implementation(`kotlinx-coroutines-debug`)
             }
         }
 

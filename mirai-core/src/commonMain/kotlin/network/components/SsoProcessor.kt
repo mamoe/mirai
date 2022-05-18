@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
-import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
@@ -31,6 +30,8 @@ import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.withExceptionCollector
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.jvm.Volatile
 
 /**
  * Handles login, and acts also as a mediator of [BotInitProcessor]
@@ -46,7 +47,7 @@ internal interface SsoProcessor {
     /**
      * Do login. Throws [LoginFailedException] if failed
      */
-    @Throws(LoginFailedException::class)
+    @Throws(LoginFailedException::class, CancellationException::class)
     suspend fun login(handler: NetworkHandler)
 
     suspend fun logout(handler: NetworkHandler)
@@ -88,7 +89,7 @@ internal interface SsoSession {
  *
  * And allows to retire the [session][ssoSession] after success.
  *
- * Used by [NettyNetworkHandler.StateConnecting].
+ * Used by `NettyNetworkHandler.StateConnecting`.
  */
 internal class SsoProcessorImpl(
     val ssoContext: SsoProcessorContext,
@@ -115,7 +116,6 @@ internal class SsoProcessorImpl(
     /**
      * Do login. Throws [LoginFailedException] if failed
      */
-    @Throws(LoginFailedException::class)
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
         components[BdhSessionSyncer].loadServerListFromCache()
         try {
@@ -278,7 +278,7 @@ internal class SsoProcessorImpl(
 
                     is LoginPacketResponse.Error -> {
                         if (response.message.contains("0x9a")) { //Error(title=登录失败, message=请你稍后重试。(0x9a), errorInfo=)
-                            collectThrow(RetryLaterException().initCause(IllegalStateException("Login failed: $response")))
+                            collectThrow(RetryLaterException(IllegalStateException("Login failed: $response")))
                         }
                         val msg = response.toString()
                         collectThrow(WrongPasswordException(buildString(capacity = msg.length) {

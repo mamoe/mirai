@@ -22,11 +22,11 @@ object Versions {
     val consoleIntellij = "221-$project-162-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
-    const val kotlinCompiler = "1.6.21"
+    const val kotlinCompiler = "1.7.0-RC"
     const val kotlinStdlib = kotlinCompiler
-    const val dokka = "1.6.20"
+    const val dokka = "1.6.21"
 
-    const val kotlinCompilerForIdeaPlugin = "1.6.20"
+    const val kotlinCompilerForIdeaPlugin = "1.7.0-RC"
 
     const val coroutines = "1.6.1"
     const val atomicFU = "0.17.2"
@@ -38,8 +38,8 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "2.1.0-162.1"
-    const val dynamicDelegation = "0.3.0-162.4"
+    const val blockingBridge = "2.1.0-170.1"
+    const val dynamicDelegation = "0.3.0-170.1"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
@@ -106,13 +106,13 @@ val `kotlinx-coroutines-io` = kotlinx("coroutines-io", Versions.coroutinesIo)
 
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
-val `ktor-client-core` = ktor("client-core-jvm", Versions.ktor)
-val `ktor-client-cio` = ktor("client-cio-jvm", Versions.ktor)
+val `ktor-client-core` = ktor("client-core", Versions.ktor)
+val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
-val `ktor-client-logging` = ktor("client-logging-jvm", Versions.ktor)
+val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network-jvm", Versions.ktor)
-val `ktor-client-serialization` = ktor("client-serialization-jvm", Versions.ktor)
+val `ktor-client-serialization` = ktor("client-serialization", Versions.ktor)
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 

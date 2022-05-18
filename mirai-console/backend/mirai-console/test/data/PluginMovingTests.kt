@@ -18,7 +18,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class PluginMovingTests : AbstractConsoleInstanceTest() {
     private val mockPluginWithName = object : KotlinPlugin(JvmPluginDescription("org.test1.test1", "1.0.0", "test1")) {}

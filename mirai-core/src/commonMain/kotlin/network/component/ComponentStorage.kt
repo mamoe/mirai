@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.component
 
-import org.jetbrains.annotations.TestOnly
+import net.mamoe.mirai.utils.TestOnly
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -23,7 +23,7 @@ import kotlin.contracts.contract
  * @see withFallback
  */
 internal interface ComponentStorage {
-    @get:TestOnly
+    @TestOnly
     val size: Int
 
     @Throws(NoSuchComponentException::class)
@@ -57,6 +57,7 @@ private class CombinedComponentStorage(
     val fallback: ComponentStorage,
 ) : ComponentStorage {
     override val keys: Set<ComponentKey<*>> get() = main.keys + fallback.keys
+    @TestOnly
     override val size: Int get() = main.size + fallback.size
 
     override fun <T : Any> get(key: ComponentKey<T>): T {

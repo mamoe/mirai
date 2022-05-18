@@ -42,22 +42,16 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.Clock
-import net.mamoe.mirai.utils.lateinitMutableProperty
-import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toUHexString
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.test.Asserter
-import kotlin.test.assertEquals
-import kotlin.test.asserter
+import kotlin.test.*
 
+@OptIn(TestOnly::class)
 internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandlerTest(), GroupExtensions {
     init {
-        System.setProperty("mirai.message.protocol.log.full", "true")
-        System.setProperty("mirai.message.outgoing.pipeline.log.full", "true")
+        setSystemProp("mirai.message.protocol.log.full", "true")
+        setSystemProp("mirai.message.outgoing.pipeline.log.full", "true")
     }
 
     override fun createAccount(): BotAccount = BotAccount(1230001L, "pwd")
@@ -72,7 +66,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     private var decoderLoggerEnabled = false
     private var encoderLoggerEnabled = false
 
-    @BeforeEach
+    @BeforeTest
     fun beforeEach() {
         decoderLoggerEnabled = MessageDecoderPipelineImpl.defaultTraceLogging.isEnabled
         MessageDecoderPipelineImpl.defaultTraceLogging.enable()
@@ -80,7 +74,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
         MessageEncoderPipelineImpl.defaultTraceLogging.enable()
     }
 
-    @AfterEach
+    @AfterTest
     fun afterEach() {
         if (!decoderLoggerEnabled) {
             MessageDecoderPipelineImpl.defaultTraceLogging.disable()
@@ -322,13 +316,11 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
             val expectedChain = expected.toMessageChain()
             val actualChain = actual.toMessageChain()
 
-            val message = String.format(
-                """
-                Expected: %s
+            val message = """
+                Expected: $1
                                 
-                Actual: %s
-            """.trimIndent(), expectedChain.render(), actualChain.render()
-            )
+                Actual: $2
+            """.trimIndent().replace("$1", expectedChain.render()).replace("$2", actualChain.render())
             assertEquals(expectedChain.size, actualChain.size, message)
             asserter.assertEquals(message, expectedChain, actualChain)
         }
@@ -337,14 +329,12 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
             val expectedChain = expected.toMessageChain()
             val actualChain = actual.toMessageChain()
 
-            val message = String.format(
-                """
+            val message = """
                 Facade: ${this.remark}
-                Expected: %s
+                Expected: $1
                                 
-                Actual: %s
-            """.trimIndent(), expectedChain.render(), actualChain.render()
-            )
+                Actual: $2
+            """.trimIndent().replace("$1", expectedChain.render()).replace("$2", actualChain.render())
             assertEquals(expectedChain.size, actualChain.size, message)
             asserter.assertEquals(message, expectedChain, actualChain)
         }

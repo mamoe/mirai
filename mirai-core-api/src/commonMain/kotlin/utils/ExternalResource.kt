@@ -216,7 +216,8 @@ public expect interface ExternalResource : Closeable {
          *
          * @see ExternalResource.formatName
          */
-        public val DEFAULT_FORMAT_NAME: String
+        @Suppress("CONST_VAL_WITHOUT_INITIALIZER") // compile bug
+        public const val DEFAULT_FORMAT_NAME: String
 
         ///////////////////////////////////////////////////////////////////////////
         // region toExternalResource

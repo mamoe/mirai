@@ -19,7 +19,7 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(QuoteReplyProtocol(), TextProtocol())

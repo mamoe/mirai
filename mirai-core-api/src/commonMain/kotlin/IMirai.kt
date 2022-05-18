@@ -15,7 +15,6 @@
 package net.mamoe.mirai
 
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
@@ -30,8 +29,9 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.*
-import java.util.ServiceLoader
-import kotlin.reflect.full.companionObjectInstance
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
  * [IMirai] 实例.
@@ -336,11 +336,10 @@ public suspend inline fun IMirai.recallMessage(bot: Bot, message: MessageChain):
 @PublishedApi // for tests and potential public uses.
 @Suppress("ClassName")
 internal object _MiraiInstance {
-    private var instance: IMirai? = null
 
     @JvmStatic
     fun set(instance: IMirai) {
-        this.instance = instance
+        miraiInstance = instance
     }
 
     /**
@@ -348,15 +347,14 @@ internal object _MiraiInstance {
      */
     @JvmStatic
     fun get(): IMirai {
-        return instance ?: findMiraiInstance().also { instance = it }
+        return miraiInstance ?: findMiraiInstance().also { miraiInstance = it }
     }
 }
 
+// to overcome native gc issue
+private var miraiInstance: IMirai? = null
+
 @JvmSynthetic
 internal fun findMiraiInstance(): IMirai {
-    ServiceLoader.load(IMirai::class.java).firstOrNull()?.let { return it }
-
-    val implClass = Class.forName("net.mamoe.mirai.internal.MiraiImpl")
-    (implClass.kotlin.companionObjectInstance as? IMirai)?.let { return it }
-    return implClass.asSubclass(IMirai::class.java).getConstructor().newInstance()
+    return loadService(IMirai::class, "net.mamoe.mirai.internal.MiraiImpl")
 }

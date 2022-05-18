@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("DuplicatedCode")
@@ -19,6 +19,9 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -404,7 +407,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     @Suppress("unused")
     @JvmName("invoke-RNyhSv4")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public fun MessageSelectionTimeoutChecker.invoke000(block: suspend () -> R): Void? {
+    public fun MessageSelectionTimeoutChecker.invoke000(block: suspend () -> R): Nothing? {
         invoke(block)
         return null
     }
@@ -417,7 +420,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("reply-RNyhSv4")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.reply000(block: suspend () -> Any?): Void? {
+    public infix fun MessageSelectionTimeoutChecker.reply000(block: suspend () -> Any?): Nothing? {
         reply(block)
         return null
     }
@@ -430,7 +433,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("reply-sCZ5gAI")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.reply000(message: String): Void? {
+    public infix fun MessageSelectionTimeoutChecker.reply000(message: String): Nothing? {
         reply(message)
         return null
     }
@@ -443,7 +446,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("reply-AVDwu3U")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.reply000(message: Message): Void? {
+    public infix fun MessageSelectionTimeoutChecker.reply000(message: Message): Nothing? {
         reply(message)
         return null
     }
@@ -457,7 +460,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("quoteReply-RNyhSv4")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.quoteReply000(block: suspend () -> Any?): Void? {
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(block: suspend () -> Any?): Nothing? {
         reply(block)
         return null
     }
@@ -470,7 +473,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("quoteReply-sCZ5gAI")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: String): Void? {
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: String): Nothing? {
         reply(message)
         return null
     }
@@ -483,7 +486,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
 
     @JvmName("quoteReply-AVDwu3U")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: Message): Void? {
+    public infix fun MessageSelectionTimeoutChecker.quoteReply000(message: Message): Nothing? {
         reply(message)
         return null
     }

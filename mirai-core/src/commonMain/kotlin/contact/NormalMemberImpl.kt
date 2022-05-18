@@ -186,8 +186,8 @@ internal class NormalMemberImpl constructor(
         if (response.ret == 255) error("Operation too fast") // https://github.com/mamoe/mirai/issues/1503
         check(response.success) { "kick failed: ${response.ret}" }
 
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
+
+        group.members.delegate.removeAll { it.id == this@NormalMemberImpl.id }
         this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
         MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
     }

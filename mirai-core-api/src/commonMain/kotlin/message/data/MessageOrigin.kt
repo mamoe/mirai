@@ -18,6 +18,7 @@ import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.isSameClass
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -71,9 +72,7 @@ public class MessageOrigin(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MessageOrigin
+        if (other !is MessageOrigin || !isSameClass(this, other)) return false
 
         if (origin != other.origin) return false
         if (resourceId != other.resourceId) return false

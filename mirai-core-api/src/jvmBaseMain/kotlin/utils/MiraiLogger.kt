@@ -13,6 +13,7 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.utils.*
+import java.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -89,7 +90,7 @@ public actual interface MiraiLogger {
         @MiraiExperimentalApi
         @Deprecated("Deprecated.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
         @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
-        public actual val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
+        public val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
 
         /**
          * 已弃用, 请实现 service [net.mamoe.mirai.utils.MiraiLogger.Factory] 并以 [ServiceLoader] 支持的方式提供.
@@ -101,7 +102,7 @@ public actual interface MiraiLogger {
         ) // deprecated since 2.7
         @JvmStatic
         @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally, for internal uses.
-        public actual fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
+        public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
             DefaultFactoryOverrides.override { _, identity -> creator(identity) }
         }
 
@@ -118,7 +119,7 @@ public actual interface MiraiLogger {
         ) // deprecated since 2.7
         @JvmStatic
         @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
-        public actual fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
+        public fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
     }
 
     /**
@@ -193,20 +194,10 @@ public actual interface MiraiLogger {
      */
     public actual val isErrorEnabled: Boolean get() = isEnabled
 
-    /**
-     * 随从. 在 this 中调用所有方法后都应继续往 [follower] 传递调用.
-     * [follower] 的存在可以让一次日志被多个日志记录器记录.
-     *
-     * 一般不建议直接修改这个属性. 请通过 [plus] 来连接两个日志记录器.
-     * 如: `val logger = bot.logger + MyLogger()`
-     * 当调用 `logger.info()` 时, `bot.logger` 会首先记录, `MyLogger` 会随后记录.
-     *
-     * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MynLogger() + MyLogger2()`
-     */
     @Suppress("UNUSED_PARAMETER")
     @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
-    public actual var follower: MiraiLogger?
+    public var follower: MiraiLogger?
         get() = null
         set(value) {}
 
@@ -258,22 +249,10 @@ public actual interface MiraiLogger {
     public actual fun call(priority: SimpleLogger.LogPriority, message: String?, e: Throwable?): Unit =
         priority.correspondingFunction(this, message, e)
 
-    /**
-     * 添加一个 [follower], 返回 [follower]
-     * 它只会把 `this` 的属性 [MiraiLogger.follower] 修改为这个函数的参数 [follower], 然后返回这个参数.
-     * 若 [MiraiLogger.follower] 已经有值, 则会替换掉这个值.
-     * ```
-     *   +------+      +----------+      +----------+      +----------+
-     *   | base | <--  | follower | <--  | follower | <--  | follower |
-     *   +------+      +----------+      +----------+      +----------+
-     * ```
-     *
-     * @return [follower]
-     */
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
-    public actual operator fun <T : MiraiLogger> plus(follower: T): T = follower
+    public operator fun <T : MiraiLogger> plus(follower: T): T = follower
 }
 
 

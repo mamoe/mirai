@@ -125,7 +125,7 @@ internal open class MultiMsgUploader(
 
     open suspend fun emit(id: String, msgs: Collection<ForwardMessage.INode>) {
         val nds = mutableListOf<MsgComm.Msg>().let { tmp ->
-            nestedMsgs.putIfAbsent(id, tmp) ?: tmp
+            nestedMsgs.getOrPut(id) { tmp }
         }
 
         val existsIds = mutableSetOf<Long>()
