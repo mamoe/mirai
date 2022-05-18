@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.io.core.Input
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory

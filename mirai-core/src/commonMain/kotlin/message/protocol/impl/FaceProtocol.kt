@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder

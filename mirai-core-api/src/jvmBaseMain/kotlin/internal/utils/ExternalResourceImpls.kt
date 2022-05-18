@@ -9,15 +9,18 @@
 
 package net.mamoe.mirai.internal.utils
 
+import io.ktor.utils.io.core.Input
+import io.ktor.utils.io.streams.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.io.core.Input
-import kotlinx.io.streams.asInput
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.io.InputStream
 import java.io.RandomAccessFile
+import kotlin.io.buffered
+import kotlin.io.inputStream
+import kotlin.io.use
 
 
 internal fun InputStream.detectFileTypeAndClose(): String? {

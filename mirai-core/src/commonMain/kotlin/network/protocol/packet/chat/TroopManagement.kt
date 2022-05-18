@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl

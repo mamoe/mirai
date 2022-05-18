@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.core.Input
+import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.io.core.Input
-import kotlinx.io.errors.IOException
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
@@ -34,6 +34,8 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
+import kotlin.io.inputStream
+import kotlin.io.use
 
 /**
  * 一个*不可变的*外部资源. 仅包含资源内容, 大小, 文件类型, 校验值而不包含文件名, 文件位置等. 外部资源有可能是一个文件, 也有可能只存在于内存, 或者以任意其他方式实现.

@@ -11,8 +11,8 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.io.errors.IOException
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
