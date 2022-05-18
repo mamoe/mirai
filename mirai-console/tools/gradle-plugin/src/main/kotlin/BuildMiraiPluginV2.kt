@@ -73,6 +73,8 @@ public open class BuildMiraiPluginV2 : Jar() {
             val shadowedDependencies = mutableSetOf<String>()
             val subprojects = mutableSetOf<String>()
             val subprojects_fullpath = mutableSetOf<String>()
+            // val subprojects_unlinked_fullpath = mutableSetOf<String>()
+            val subprojects_linked_fullpath = mutableSetOf<String>()
 
             project.configurations.findByName(MiraiConsoleGradlePlugin.MIRAI_SHADOW_CONF_NAME)?.allDependencies?.forEach { dep ->
                 if (dep is ExternalModuleDependency) {
@@ -80,10 +82,16 @@ public open class BuildMiraiPluginV2 : Jar() {
                     shadowedDependencies.add(artId)
                 }
             }
-            project.configurations.findByName(MiraiConsoleGradlePlugin.MIRAI_AS_NORMAL_DEP_CONF_NAME)?.allDependencies?.forEach { dep ->
-                if (dep is ProjectDependency) {
-                    linkedDependencies.add("${dep.group}:${dep.name}")
+            project.configurations.findByName(MiraiConsoleGradlePlugin.MIRAI_AS_NORMAL_DEP_CONF_NAME)?.allDependencies?.forEach { dep1 ->
+                fun resolve0(dep: Dependency) {
+                    if (dep is ProjectDependency) {
+                        linkedDependencies.add("${dep.group}:${dep.name}")
+                        subprojects_linked_fullpath.add(dep.dependencyProject.path)
+                        dep.dependencyProject.configurations.findByName("apiElements")?.allDependencies?.forEach { resolve0(it) }
+                        dep.dependencyProject.configurations.findByName("implementation")?.allDependencies?.forEach { resolve0(it) }
+                    }
                 }
+                resolve0(dep1)
             }
 
             fun deepForeachDependencies(conf: Configuration?, action: (Dependency) -> Unit) {
@@ -168,11 +176,20 @@ public open class BuildMiraiPluginV2 : Jar() {
             }
             runtimeClasspath.firstLevelModuleDependencies.forEach { resolveDependency(it) }
 
+            /*subprojects_fullpath.forEach { usedProject ->
+                val subProj = project.project(usedProject)
+                if ("${subProj.group}:${subProj.name}" !in linkedDependencies) {
+                    subprojects_unlinked_fullpath.add(usedProject)
+                }
+            }*/
+
             logger.info { "linkedDependencies: $linkedDependencies" }
             logger.info { "linkToAPi         : $linkToApi" }
             logger.info { "api               : $api" }
             logger.info { "runtime           : $runtime" }
             logger.info { "subprojects       : $subprojects" }
+            logger.info { "subprojects_linked: $subprojects_linked_fullpath" }
+            // logger.info { "subprojects_unlink: $subprojects_unlinked_fullpath" }
 
             val lenientConfiguration = runtimeClasspath.lenientConfiguration
             if (lenientConfiguration is DefaultLenientConfiguration) {
@@ -207,7 +224,7 @@ public open class BuildMiraiPluginV2 : Jar() {
                 }
                 val cid = artId.componentIdentifier
                 if (cid is ProjectComponentIdentifier) {
-                    if (cid.projectPath in subprojects_fullpath) {
+                    if (cid.projectPath in subprojects_linked_fullpath) {
                         return@forEach
                     }
                 }
