@@ -13,7 +13,7 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.message.data.visitor.AbstractMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
 internal class MessageVisitorTest {

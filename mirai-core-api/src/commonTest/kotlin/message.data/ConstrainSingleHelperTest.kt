@@ -10,7 +10,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.safeCast
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

@@ -44,6 +44,7 @@ public expect fun ByteArray.gzip(offset: Int = 0, length: Int = size - offset): 
 
 public expect fun ByteArray.zip(offset: Int = 0, length: Int = size - offset): ByteArray
 
+public expect fun availableProcessors(): Int
 
 public inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
     contract {

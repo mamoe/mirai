@@ -20,7 +20,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
-import kotlin.io.use
 
 
 /**

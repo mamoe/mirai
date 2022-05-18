@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.message.data
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertIs
 
 internal class MessageChainImplTest {

@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.isSameType
 
 /**
  * One after one, hierarchically.
@@ -166,9 +167,7 @@ public class CombinedMessage @MessageChainConstructor constructor(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CombinedMessage
+        if (!isSameType(this, other)) return false
 
         if (element != other.element) return false
         if (tail != other.tail) return false

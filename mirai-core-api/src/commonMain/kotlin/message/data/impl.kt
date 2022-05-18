@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.asImmutable
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.replaceAllKotlin
 

@@ -38,7 +38,7 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "2.0.0-162.1"
+    const val blockingBridge = "2.1.0-162.1"
     const val dynamicDelegation = "0.3.0-162.4"
 
     const val androidGradlePlugin = "4.1.1"
@@ -58,7 +58,7 @@ object Versions {
 
     const val junit = "5.7.2"
 
-    const val yamlkt = "0.11.0"
+    const val yamlkt = "0.12.0"
     const val intellijGradlePlugin = "1.5.3"
 
     //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler

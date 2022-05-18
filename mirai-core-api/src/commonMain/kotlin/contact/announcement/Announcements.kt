@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,19 +7,15 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmBlockingBridge
 @file:Suppress("INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.contact.announcement
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.toList
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
-import java.util.stream.Stream
 
 
 /**
@@ -44,7 +40,7 @@ import java.util.stream.Stream
  * @since 2.7
  */
 @NotStableForInheritance
-public interface Announcements {
+public expect interface Announcements {
     /**
      * 创建一个能获取该群内所有群公告列表的 [Flow]. 在 [Flow] 被使用时才会分页下载 [OnlineAnnouncement].
      *
@@ -53,22 +49,13 @@ public interface Announcements {
     public suspend fun asFlow(): Flow<OnlineAnnouncement>
 
     /**
-     * 创建一个能获取该群内所有群公告列表的 [Stream]. 在 [Stream] 被使用时才会分页下载 [OnlineAnnouncement].
-     *
-     * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [OfflineAnnouncement] 和 [Stream] 的[收集][Stream.collect].
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [asFlow], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [asFlow].
-     */
-    public fun asStream(): Stream<OnlineAnnouncement>
-
-    /**
      * 获取所有群公告列表, 将全部 [OnlineAnnouncement] 都下载后再返回.
      *
      * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取并返回已经成功获取到的 [OfflineAnnouncement] 列表.
      *
      * @return 此时刻的群公告只读列表.
      */
-    public suspend fun toList(): List<OnlineAnnouncement> = asFlow().toList()
+    public open suspend fun toList(): List<OnlineAnnouncement>
 
 
     /**

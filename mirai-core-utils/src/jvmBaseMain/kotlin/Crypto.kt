@@ -116,3 +116,5 @@ public actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
         return it.take(deflater.deflate(it)).toByteArray().also { deflater.end() }
     }
 }
+
+public actual fun availableProcessors(): Int = Runtime.getRuntime().availableProcessors()
