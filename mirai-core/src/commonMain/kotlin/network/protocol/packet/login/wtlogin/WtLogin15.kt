@@ -14,8 +14,8 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
-import java.util.*
 import kotlin.math.abs
+import kotlin.random.Random
 
 internal object WtLogin15 : WtLoginExt {
     private const val subCommand = 15.toShort()
@@ -132,9 +132,8 @@ internal object WtLogin15 : WtLoginExt {
 }
 
 @Suppress("FunctionName", "SpellCheckingInspection")
-internal fun get_mpasswd(): String {
+internal fun get_mpasswd(random: Random = Random): String {
     var var5: String
-    val random = Random()
     run label41@{
         val var6 = ByteArray(16)
         random.nextBytes(var6)
@@ -145,7 +144,7 @@ internal fun get_mpasswd(): String {
             if (var0 >= var6.size) {
                 return var5
             }
-            val var3: Boolean = Random().nextBoolean()
+            val var3: Boolean = random.nextBoolean()
             val var2: Int = abs(var6[var0] % 26)
 
             val var1: Byte = if (var3) {

@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.extension
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorageImpl
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class GlobalComponentStorageTest : AbstractConsoleInstanceTest() {

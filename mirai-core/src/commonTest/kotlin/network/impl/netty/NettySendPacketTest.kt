@@ -24,9 +24,9 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import org.junit.jupiter.api.Test
 import java.net.SocketAddress
 import java.util.concurrent.Executors
+import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 

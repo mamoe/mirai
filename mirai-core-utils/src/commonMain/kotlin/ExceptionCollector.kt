@@ -7,10 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("ExceptionCollectorKt_common")
+
 package net.mamoe.mirai.utils
 
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmName
 import kotlin.jvm.Synchronized
 import kotlin.jvm.Volatile
 

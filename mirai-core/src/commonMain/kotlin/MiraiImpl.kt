@@ -10,11 +10,10 @@
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.utils.io.core.readBytes
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -157,7 +156,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
     @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
-    override var Http: HttpClient = HttpClient(OkHttp) {
+    override var Http: HttpClient = HttpClient() {
         install(HttpTimeout) {
             this.requestTimeoutMillis = 30_0000
             this.connectTimeoutMillis = 30_0000
@@ -467,7 +466,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         source.ensureSequenceIdAvailable()
 
         @Suppress("BooleanLiteralArgument", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER") // false positive
-        check(!source.isRecalledOrPlanned.get() && source.isRecalledOrPlanned.compareAndSet(false, true)) {
+        check(!source.isRecalledOrPlanned.value && source.isRecalledOrPlanned.compareAndSet(false, true)) {
             "$source had already been recalled."
         }
 

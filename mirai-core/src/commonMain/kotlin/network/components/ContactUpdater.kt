@@ -42,6 +42,8 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.retryCatching
 import net.mamoe.mirai.utils.verbose
+import kotlin.jvm.Synchronized
+import kotlin.jvm.Volatile
 
 /**
  * Manager of caches for [Contact]s.

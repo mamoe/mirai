@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
@@ -32,8 +33,7 @@ import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.*
 import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
-import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
-import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.impl.ForceOfflineException
 import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
 import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
@@ -275,7 +275,7 @@ internal open class QQAndroidBot constructor(
                     networkLogger,
                     createNetworkLevelComponents(),
                 )
-                NettyNetworkHandlerFactory.create(
+                NetworkHandlerFactory.getPlatformDefault().create(
                     context,
                     context[ServerList].pollAny().toSocketAddress(),
                 )

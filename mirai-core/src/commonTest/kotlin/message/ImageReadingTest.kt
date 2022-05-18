@@ -9,15 +9,15 @@
 
 package net.mamoe.mirai.internal.message
 
+import io.ktor.utils.io.errors.*
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.File
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.withUse
-import org.junit.jupiter.api.Test
-import java.io.File
-import java.io.IOException
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -66,9 +66,9 @@ internal class ImageReadingTest : AbstractTest() {
         "FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 78 00 78 00 00 FF D0 FF D1 FF D2 FF D3 FF D4 FF D5 FF D6 FF D7 FF E1 00 5A 45 78 69 66 00 00 4D 4D 00 2A 00 00 00 08 00 05 03 01 00 05 00 00 00 01 00 00 00 4A 03 03 00 01 00 00 00 01 00 00 00 00 51 10 00 01 00 00 00 01 01 00 00 00 51 11 00 04 00 00 00 01 00 00 12 74 51 12 00 04 00 00 00 01 00 00 12 74 00 00 00 00 00 01 86 A0 00 00 B1 8F FF DB 00 43 00 02 01 01 02 01 01 02 02 02 02 02 02 02 02 03 05 03 03 03 03 03 06 04 04 03 05 07 06 07 07 07 06 07 07 08 09 0B 09 08 08 0A 08 07 07 0A 0D 0A 0A 0B 0C 0C 0C 0C 07 09 0E 0F 0D 0C 0E 0B 0C 0C 0C FF DB 00 43 01 02 02 02 03 03 03 06 03 03 06 0C 08 07 08 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C 0C FF C2 00 11 08 01 90 01 E0 03 01 22 00 02 11 01 03 11 01 FF DA".testMatch(
             ImageType.JPG
         )
-        println("Current path: "+File(".").absolutePath)
+        println("Current path: " + net.mamoe.mirai.utils.File.create(".").absolutePath)
         //Issue 1610
-        File("./src/commonTest/resources/image/jpeg-header-issue-1610.bin").readBytes().testRead(
+        File.create("./src/commonTest/resources/image/jpeg-header-issue-1610.bin").readBytes().testRead(
             ImageType.JPG
         )
         //Failed to find
@@ -109,6 +109,7 @@ internal class ImageReadingTest : AbstractTest() {
             }
         }
     }
+
     private fun String.testMatch(type: ImageType) {
         this.hexToBytes().toExternalResource().withUse {
             calculateImageInfo().run {

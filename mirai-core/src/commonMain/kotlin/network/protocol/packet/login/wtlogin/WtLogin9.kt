@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
-import io.ktor.utils.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin

@@ -23,6 +23,7 @@ import net.mamoe.mirai.utils.addNameHierarchically
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.info
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.Volatile
 
 internal interface MessageSvcSyncer {
     suspend fun startSync()

@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact.file
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
@@ -16,6 +17,7 @@ import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.utils.isSameClass
 import net.mamoe.mirai.utils.toUHexString
 
 internal class AbsoluteFileImpl(
@@ -158,10 +160,8 @@ internal class AbsoluteFileImpl(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (other !is AbsoluteFileImpl || !isSameClass(this, other)) return false
         if (!super.equals(other)) return false
-
-        other as AbsoluteFileImpl
 
         if (expiryTime != other.expiryTime) return false
         if (size != other.size) return false

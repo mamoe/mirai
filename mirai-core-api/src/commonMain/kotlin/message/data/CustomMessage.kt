@@ -7,8 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:OptIn(MiraiInternalApi::class)
-
 package net.mamoe.mirai.message.data
 
 import io.ktor.utils.io.core.*
@@ -19,9 +17,9 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.ConcurrentLinkedDeque
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * 自定义消息
@@ -117,7 +115,7 @@ public sealed class CustomMessage : SingleMessage {
     }
 
     public companion object {
-        private val factories: ConcurrentLinkedQueue<Factory<*>> = ConcurrentLinkedQueue()
+        private val factories: MutableCollection<Factory<*>> = ConcurrentLinkedDeque()
 
         internal fun register(factory: Factory<out CustomMessage>) {
             factories.removeAll { it::class == factory::class }

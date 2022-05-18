@@ -11,19 +11,19 @@ package net.mamoe.mirai.internal.event
 
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.broadcast
-import org.junit.jupiter.api.Test
+import net.mamoe.mirai.internal.test.runBlockingUnit
+import kotlin.test.Test
 import kotlin.test.assertIs
 
 @JvmBlockingBridge
 internal class EventChannelFlowTest : AbstractEventTest() {
 
     @Test
-    suspend fun asFlow(): Unit = coroutineScope {
+    fun asFlow(): Unit = runBlockingUnit() {
         val channel = GlobalEventChannel
         val job = async(start = CoroutineStart.UNDISPATCHED) {
             channel.asFlow().first()

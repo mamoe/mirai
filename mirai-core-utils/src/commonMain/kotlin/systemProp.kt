@@ -18,6 +18,10 @@ import kotlin.jvm.JvmName
 
 internal expect fun getProperty(name: String, default: String): String?
 
+internal expect fun setProperty(name: String, value: String)
+
+public fun setSystemProp(name: String, value: String): Unit = setProperty(name, value)
+
 public fun systemProp(name: String, default: String): String =
     getProperty(name, default) ?: default
 

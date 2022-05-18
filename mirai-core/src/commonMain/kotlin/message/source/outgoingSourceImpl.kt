@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.internal.message.source
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
@@ -32,7 +34,6 @@ import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.loadService
 import net.mamoe.mirai.utils.toLongUnsigned
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
@@ -96,7 +97,7 @@ internal class OnlineMessageSourceToFriendImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -129,7 +130,7 @@ internal class OnlineMessageSourceToStrangerImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -162,7 +163,7 @@ internal class OnlineMessageSourceToTempImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -191,7 +192,7 @@ internal class OnlineMessageSourceToGroupImpl(
         get() = sequenceIds
     override val bot: Bot
         get() = sender
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
 
     /**
      * Note that in tests result of this Deferred is always `null`. See TestMessageSourceSequenceIdAwaiter.

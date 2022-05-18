@@ -22,7 +22,6 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByByteArray
 import net.mamoe.mirai.internal.utils.ExternalResourceImplByFile
-import net.mamoe.mirai.internal.utils.inputStream
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Image
@@ -31,10 +30,10 @@ import net.mamoe.mirai.message.data.toVoice
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import java.io.Closeable
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
-import kotlin.io.inputStream
 import kotlin.io.use
 
 /**

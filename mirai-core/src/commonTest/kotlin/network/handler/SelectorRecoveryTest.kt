@@ -19,21 +19,18 @@ import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.impl.netty.NettyChannelException
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInfo
-import kotlin.test.assertFails
+import kotlin.test.*
 
 /**
  * Test whether the selector can recover the connection after first successful login.
  */
 internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
-    @BeforeEach
+    @BeforeTest
     fun beforeTest(info: TestInfo) {
         println("=".repeat(30) + "BEGIN: ${info.displayName}" + "=".repeat(30))
     }
 
-    @AfterEach
+    @AfterTest
     fun afterTest(info: TestInfo) {
         println("=".repeat(31) + "END: ${info.displayName}" + "=".repeat(31))
     }

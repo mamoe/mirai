@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /**

@@ -15,12 +15,12 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.javaio.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.copyTo
 import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.withUse
-import java.io.InputStream
 
 
 /**
@@ -32,7 +32,7 @@ internal fun ExternalResource.consumeAsWriteChannelContent(contentType: ContentT
         override val contentLength: Long = size
 
         override suspend fun writeTo(channel: ByteWriteChannel) {
-            inputStream().withUse { copyTo(channel) }
+            input().withUse { copyTo(channel) }
         }
     }
 }

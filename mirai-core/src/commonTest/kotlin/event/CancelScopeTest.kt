@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.event
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.globalEventChannel
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertFalse
 
 

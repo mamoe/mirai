@@ -31,15 +31,11 @@ import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import network.framework.components.TestEventDispatcherImpl
-import org.junit.jupiter.api.TestInstance
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.test.assertEquals
 
-/**
- * Mock network, can only test implementation of the framework of [NetworkHandler].
- */
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+
 internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerTest() {
     protected open fun createNetworkHandlerContext() = TestNetworkHandlerContext(bot, logger, components)
     protected open fun createNetworkHandler() = TestNetworkHandler(bot, createNetworkHandlerContext())

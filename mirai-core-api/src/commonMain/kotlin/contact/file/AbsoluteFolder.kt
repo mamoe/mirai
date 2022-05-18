@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,10 +16,9 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.ProgressionCallback
-import java.util.stream.Stream
+import kotlin.jvm.JvmOverloads
 
 /**
  * 绝对目录标识. 精确表示一个远程目录. 不会受同名文件或目录的影响.
@@ -30,7 +29,7 @@ import java.util.stream.Stream
  * @see AbsoluteFileFolder
  */
 @NotStableForInheritance
-public interface AbsoluteFolder : AbsoluteFileFolder {
+public expect interface AbsoluteFolder : AbsoluteFileFolder {
     /**
      * 当前快照中文件数量, 当有文件更新时(上传/删除文件) 该属性不会更新.
      *
@@ -43,7 +42,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     /**
      * 当该目录为空时返回 `true`.
      */
-    public fun isEmpty(): Boolean = contentsCount == 0
+    public open fun isEmpty(): Boolean
 
     /**
      * 返回更新了文件或目录信息 ([lastModifiedTime] 等) 的, 指向相同文件的 [AbsoluteFileFolder].
@@ -64,41 +63,17 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
      */
     public suspend fun folders(): Flow<AbsoluteFolder>
 
-    /**
-     * 获取该目录下所有子目录列表.
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [folders], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [folders].
-     */
-    @JavaFriendlyAPI
-    public suspend fun foldersStream(): Stream<AbsoluteFolder>
-
 
     /**
      * 获取该目录下所有文件列表.
      */
     public suspend fun files(): Flow<AbsoluteFile>
 
-    /**
-     * 获取该目录下所有文件列表.
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [files], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [files].
-     */
-    @JavaFriendlyAPI
-    public suspend fun filesStream(): Stream<AbsoluteFile>
-
 
     /**
      * 获取该目录下所有文件和子目录列表.
      */
     public suspend fun children(): Flow<AbsoluteFileFolder>
-
-    /**
-     * 获取该目录下所有文件和子目录列表.
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [children], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [children].
-     */
-    @JavaFriendlyAPI
-    public suspend fun childrenStream(): Stream<AbsoluteFileFolder>
 
     ///////////////////////////////////////////////////////////////////////////
     // resolve and upload
@@ -145,31 +120,11 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
     ): Flow<AbsoluteFile>
 
     /**
-     * 根据路径获取指向的所有路径为 [path] 的文件列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件.
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveFiles], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveFiles].
-     */
-    @JavaFriendlyAPI
-    public suspend fun resolveFilesStream(
-        path: String
-    ): Stream<AbsoluteFile>
-
-    /**
      * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件和目录.
      */
     public suspend fun resolveAll(
         path: String
     ): Flow<AbsoluteFileFolder>
-
-    /**
-     * 根据路径获取指向的所有路径为 [path] 的文件和目录列表. 同时支持相对路径和绝对路径. 支持获取子目录内的文件和目录.
-     *
-     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [resolveAll], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [resolveAll].
-     */
-    @JavaFriendlyAPI
-    public suspend fun resolveAllStream(
-        path: String
-    ): Stream<AbsoluteFileFolder>
 
     /**
      * 上传一个文件到该目录, 返回上传成功的文件标识.
@@ -200,6 +155,7 @@ public interface AbsoluteFolder : AbsoluteFileFolder {
          * 根目录 folder ID.
          * @see id
          */
-        public const val ROOT_FOLDER_ID: String = "/"
+        @Suppress("CONST_VAL_WITHOUT_INITIALIZER") // compiler bug
+        public const val ROOT_FOLDER_ID: String
     }
 }

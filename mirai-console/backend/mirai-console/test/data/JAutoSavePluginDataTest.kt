@@ -13,7 +13,7 @@ import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.console.util.JavaFriendlyApi
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 

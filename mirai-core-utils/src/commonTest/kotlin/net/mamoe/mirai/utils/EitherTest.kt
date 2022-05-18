@@ -23,10 +23,9 @@ import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.onRight
 import net.mamoe.mirai.utils.Either.Companion.right
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -38,8 +37,8 @@ internal class EitherTest {
         Either<CharSequence, Int>("")
         Either<CharSequence, Int>(1)
 
-        assertThrows<IllegalArgumentException> { Either.invoke<CharSequence, String>("") }
-        assertThrows<IllegalArgumentException> { Either.invoke<String, CharSequence>("") }
+        assertFailsWith<IllegalArgumentException> { Either.invoke<CharSequence, String>("") }
+        assertFailsWith<IllegalArgumentException> { Either.invoke<String, CharSequence>("") }
     }
 
     @Test

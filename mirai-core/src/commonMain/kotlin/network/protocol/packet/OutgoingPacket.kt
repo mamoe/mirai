@@ -94,7 +94,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacke
             writeByte(0)
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeStringUtf8(it)
+                writeText(it)
             }
             encryptAndWrite(key) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
@@ -125,7 +125,7 @@ internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacke
             writeByte(0)
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeStringUtf8(it)
+                writeText(it)
             }
             encryptAndWrite(key) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
@@ -146,7 +146,7 @@ private inline fun BytePacketBuilder.writeUniPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         commandName.let {
             writeInt(it.length + 4)
-            writeStringUtf8(it)
+            writeText(it)
         }
 
         writeInt(4 + 4)
@@ -192,7 +192,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPac
 
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeStringUtf8(it)
+                writeText(it)
             }
 
             if (key === NO_ENCRYPT) {
@@ -247,7 +247,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         }
         commandName.let {
             writeInt(it.length + 4)
-            writeStringUtf8(it)
+            writeText(it)
         }
 
         writeInt(4 + 4)
@@ -255,7 +255,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
 
         client.device.imei.let {
             writeInt(it.length + 4)
-            writeStringUtf8(it)
+            writeText(it)
         }
 
         writeInt(4)

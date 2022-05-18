@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmInline
 
 /**
  * All events will be caught and forwarded to [EventDispatcher]. Invocation of [Event.broadcast] and [EventDispatcher.broadcast] are effectively equal.
@@ -128,7 +129,7 @@ internal open class EventDispatcherImpl(
     }
 
     protected fun optimizeEventToString(event: Event): String {
-        val qualified = event::class.java.canonicalName ?: return event.toString()
+        val qualified = event::class.qualifiedName ?: return event.toString()
         return qualified.substringAfter("net.mamoe.mirai.event.events.", "").ifEmpty { event.toString() }
     }
 

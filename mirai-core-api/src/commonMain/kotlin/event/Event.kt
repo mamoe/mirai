@@ -18,6 +18,8 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.jvm.JvmField
+import kotlin.jvm.Volatile
 
 /**
  * 表示一个事件.

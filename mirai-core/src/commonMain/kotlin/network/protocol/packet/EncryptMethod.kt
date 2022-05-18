@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet
 
-import io.ktor.utils.io.core.BytePacketBuilder
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.writeFully
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
 import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey

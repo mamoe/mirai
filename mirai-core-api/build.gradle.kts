@@ -36,6 +36,7 @@ kotlin {
                 api(`kotlinx-serialization-core`)
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`) // don't remove it, otherwise IDE will complain
+                implementation(`ktor-client-core`)
 
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))

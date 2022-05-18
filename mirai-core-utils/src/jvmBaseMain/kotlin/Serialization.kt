@@ -14,24 +14,3 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.StringFormat
 import java.io.File
 
-
-public fun <T> File.loadNotBlankAs(
-    serializer: DeserializationStrategy<T>,
-    stringFormat: StringFormat,
-): T? {
-    if (!this.exists() || this.length() == 0L) {
-        return null
-    }
-    return stringFormat.decodeFromString(serializer, this.readText())
-}
-
-public fun <T> File.loadNotBlankAs(
-    serializer: DeserializationStrategy<T>,
-    binaryFormat: BinaryFormat,
-): T? {
-    if (!this.exists() || this.length() == 0L) {
-        return null
-    }
-    return binaryFormat.decodeFromByteArray(serializer, this.readBytes())
-}
-

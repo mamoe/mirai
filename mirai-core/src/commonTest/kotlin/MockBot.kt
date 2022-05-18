@@ -9,6 +9,7 @@
 
 
 @file:Suppress("unused")
+@file:OptIn(TestOnly::class)
 
 package net.mamoe.mirai.internal
 
@@ -17,6 +18,7 @@ import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.TestOnly
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.absoluteValue

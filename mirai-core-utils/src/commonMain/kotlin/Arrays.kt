@@ -36,5 +36,13 @@ public inline fun <A> Collection<A>.mapToIntArray(block: (element: A) -> Int): I
     this.forEachIndexed { index, element ->
         result[index] = block(element)
     }
-    return result.cast()
+    return result
+}
+
+public inline fun <A> Collection<A>.mapToByteArray(block: (element: A) -> Byte): ByteArray {
+    val result = ByteArray(size)
+    this.forEachIndexed { index, element ->
+        result[index] = block(element)
+    }
+    return result
 }

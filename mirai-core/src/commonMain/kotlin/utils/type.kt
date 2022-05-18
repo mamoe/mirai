@@ -15,7 +15,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.chineseLength
 import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.toLongUnsigned
-import java.net.Inet4Address
 
 
 internal fun Int.toIpV4AddressString(): String {
@@ -31,19 +30,6 @@ internal fun Int.toIpV4AddressString(): String {
         }
     }
 }
-
-internal fun String.toIpV4Long(): Long {
-    return if (isEmpty()) {
-        0
-    } else {
-        try {
-            Inet4Address.getByName(this).address.toInt().toLongUnsigned()
-        } catch (e: UnknownHostException) {
-            -2
-        }
-    }
-}
-
 internal fun Iterable<SingleMessage>.estimateLength(target: ContactOrBot, upTo: Int): Int =
     sumUpTo(upTo) { it, up ->
         it.estimateLength(target, up)

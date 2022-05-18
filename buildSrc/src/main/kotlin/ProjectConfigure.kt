@@ -61,8 +61,8 @@ fun Project.preConfigureJvmTarget() {
 fun Project.configureJvmTarget() {
     val defaultVer = jvmVersion()
 
-    tasks.withType(KotlinJvmCompile::class)
-        .filter { it.name.startsWith("compileTestKotlin") }
+    tasks.withType(KotlinCompile::class)
+        .filter { it.name.contains("test", ignoreCase = true) }
         .forEach { task ->
             task.kotlinOptions.freeCompilerArgs += "-Xopt-in=net.mamoe.mirai.utils.TestOnly"
         }

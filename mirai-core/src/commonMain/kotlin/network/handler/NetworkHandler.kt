@@ -26,6 +26,8 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.uncheckedCast
+import kotlin.jvm.JvmName
 
 /**
  * Coroutine-based network framework. Usually wrapped with [SelectorNetworkHandler] to enable retrying.

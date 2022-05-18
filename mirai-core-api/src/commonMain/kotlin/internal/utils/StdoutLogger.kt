@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 /**
@@ -101,11 +99,8 @@ internal open class StdoutLogger constructor(
         else debug(message.toString())
     }
 
-    protected open val timeFormat: SimpleDateFormat by threadLocal {
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    }
 
-    private val currentTimeFormatted get() = timeFormat.format(Date())
+    private val currentTimeFormatted get() = currentTimeFormatted(null)
 
     @MiraiExperimentalApi("This is subject to change.")
     protected enum class Color(private val format: String) {

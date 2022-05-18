@@ -9,4 +9,20 @@
 
 package net.mamoe.mirai.utils
 
+import java.text.SimpleDateFormat
+import java.util.*
+
 public actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+
+
+private val timeFormat: SimpleDateFormat by threadLocal {
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+}
+
+public actual fun currentTimeFormatted(format: String?): String {
+    return if (format == null) {
+        timeFormat.format(Date())
+    } else {
+        SimpleDateFormat(format, Locale.getDefault()).format(Date())
+    }
+}

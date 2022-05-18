@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,21 +12,19 @@ package net.mamoe.mirai.utils
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class DeviceInfoTest {
+class CommonDeviceInfoTest {
     @Test
     fun `DeviceInfo_random with custom Random is stable`() {
-        val time = System.currentTimeMillis()
+        val time = currentTimeMillis()
         assertEquals(DeviceInfo.random(Random(time)), DeviceInfo.random(Random(time)))
     }
+
 
     class HexStringTest {
         @Test
@@ -43,22 +41,10 @@ class DeviceInfoTest {
         }
     }
 
-    @TempDir
-    lateinit var dir: File
-
     @Test
     fun `can serialize and deserialize v2`() {
         val device = DeviceInfo.random()
         assertEquals(device, DeviceInfoManager.deserialize(DeviceInfoManager.serialize(device)))
-    }
-
-    @Test
-    fun `can write and read v2`() {
-        val device = DeviceInfo.random()
-        val file = dir.resolve("device.json")
-
-        file.writeText(DeviceInfoManager.serialize(device))
-        assertEquals(device, file.loadAsDeviceInfo())
     }
 
     @Test
@@ -110,14 +96,5 @@ class DeviceInfoTest {
             imsiMd5
         )
         assertTrue { imsiMd5 matches Regex("""[a-z0-9]+""") }
-    }
-
-    @Test
-    fun `can read legacy v1`() {
-        val device = DeviceInfo.random()
-        val file = dir.resolve("device.json")
-
-        file.writeText(Json.encodeToString(DeviceInfo.serializer(), device))
-        assertEquals(device, file.loadAsDeviceInfo())
     }
 }

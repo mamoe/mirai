@@ -27,6 +27,8 @@ public expect fun currentTimeMillis(): Long
  */
 public fun currentTimeSeconds(): Long = currentTimeMillis() / 1000
 
+public expect fun currentTimeFormatted(format: String? = null): String
+
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.
 // 内联属性, 则将来删除这些 API 将不会导致二进制不兼容.

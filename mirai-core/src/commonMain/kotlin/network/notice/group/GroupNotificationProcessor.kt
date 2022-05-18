@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmName
 
 internal class GroupNotificationProcessor(
     private val logger: MiraiLogger,

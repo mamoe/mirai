@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.event
 
 import kotlinx.atomicfu.atomic
-import java.util.concurrent.ConcurrentLinkedDeque
+import net.mamoe.mirai.utils.ConcurrentLinkedDeque
 
 class StepUtil {
     val step = atomic(0)

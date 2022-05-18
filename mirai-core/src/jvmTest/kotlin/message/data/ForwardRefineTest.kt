@@ -17,7 +17,7 @@ import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

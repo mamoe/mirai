@@ -20,6 +20,8 @@ import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**
@@ -105,7 +107,7 @@ public data class GroupTempMessagePreSendEvent @MiraiInternalApi constructor(
     public override val target: NormalMember,
     /** 待发送的消息. 修改后将会同时应用于发送. */
     public override var message: Message
-) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message) {
+) : @Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message) {
     public override val group: Group get() = target.group
 }
 

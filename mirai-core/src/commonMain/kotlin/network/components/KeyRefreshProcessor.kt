@@ -18,11 +18,12 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.millisToHumanReadableString
 import net.mamoe.mirai.utils.minutesToMillis
+import kotlin.coroutines.cancellation.CancellationException
 
 internal interface KeyRefreshProcessor {
     suspend fun keyRefreshLoop(handler: NetworkHandler)
 
-    @Throws(LoginFailedException::class)
+    @Throws(LoginFailedException::class, CancellationException::class)
     suspend fun refreshKeysNow(handler: NetworkHandler)
 
     companion object : ComponentKey<KeyRefreshProcessor>

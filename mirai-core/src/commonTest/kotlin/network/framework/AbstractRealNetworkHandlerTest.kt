@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.SupervisorJob
@@ -23,17 +25,13 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.SocketAddress
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.lateinitMutableProperty
+import net.mamoe.mirai.utils.*
 import network.framework.components.TestEventDispatcherImpl
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.TestInstance
-import java.net.InetSocketAddress
-import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.test.AfterTest
 import kotlin.test.assertEquals
 
 /**
@@ -41,7 +39,6 @@ import kotlin.test.assertEquals
  *
  * Extend [AbstractNettyNHTestWithSelector] or [AbstractNettyNHTest].
  */
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
@@ -49,7 +46,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     private var botInit = false
     var bot: QQAndroidBot by lateinitMutableProperty { botInit = true; createBot() }
 
-    @AfterEach
+    @AfterTest
     fun afterEach() {
         if (botInit) bot.close()
     }
@@ -79,6 +76,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     /**
      * This overrides [QQAndroidBot.components]
      */
+    @OptIn(TestOnly::class)
     val overrideComponents = ConcurrentComponentStorage().apply {
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
@@ -152,8 +150,8 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
 
     //Use overrideComponents to avoid StackOverflowError when applying components
-    open fun createAddress(): InetSocketAddress =
-        overrideComponents[ServerList].pollAny().let { InetSocketAddress.createUnresolved(it.host, it.port) }
+    open fun createAddress(): SocketAddress =
+        overrideComponents[ServerList].pollAny().let { SocketAddress(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions

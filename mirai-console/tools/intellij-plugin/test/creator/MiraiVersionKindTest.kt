@@ -9,7 +9,7 @@
 package creator
 
 import net.mamoe.mirai.console.intellij.wizard.sortVersionsDescending
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MiraiVersionKindTest {

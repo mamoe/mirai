@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.testFramework.desensitizer
 
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.decodeFromString
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
@@ -24,11 +25,7 @@ import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
-import java.io.File
-import java.net.URL
 import kotlin.reflect.KType
-import kotlin.reflect.full.createInstance
-import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
 private val logger: MiraiLogger by lazy { MiraiLogger.Factory.create(Desensitizer::class) }
@@ -118,24 +115,26 @@ internal class Desensitizer private constructor(
                         error("Replacement '$replacement' must not be longer than '$value'")
                     }
                     else -> {
-                        map.putIfAbsent(value.toByteArray().toUHexString(), replacement.toByteArray().toUHexString())
+                        map.getOrPut(value.toByteArray().toUHexString()) { replacement.toByteArray().toUHexString() }
+                        map.getOrDefault()
                     }
                 }
             }
 
             fun addExtraRulesForNumber(value: Long, replacement: Long) {
-                map.putIfAbsent(value.toString(), replacement.toString())
+                map.getOrPut(value.toString()) { replacement.toString() }
 
                 // 某些地方会 readLong, readInt, desensitizer visit 不到这些目标
-                map.putIfAbsent(value.toByteArray().toUHexString(), replacement.toByteArray().toUHexString())
+                map.getOrPut(value.toByteArray().toUHexString()) { replacement.toByteArray().toUHexString() }
 
                 if (value in Int.MIN_VALUE.toLong()..UInt.MAX_VALUE.toLong()
                     && replacement in Int.MIN_VALUE.toLong()..UInt.MAX_VALUE.toLong()
                 ) {
-                    map.putIfAbsent(
-                        value.toInt().toByteArray().toUHexString(),
+                    map.getOrPut(
+                        value.toInt().toByteArray().toUHexString()
+                    ) {
                         replacement.toInt().toByteArray().toUHexString()
-                    )
+                    }
                 }
                 // 不需要处理 proto, 所有 proto 都会被反序列化为结构类型由 desensitizer 处理
             }

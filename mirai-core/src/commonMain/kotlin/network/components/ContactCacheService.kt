@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.FriendListCache
 import net.mamoe.mirai.internal.network.GroupMemberListCaches
@@ -43,8 +44,12 @@ internal class ContactCacheServiceImpl(
     // contact cache
     ///////////////////////////////////////////////////////////////////////////
 
-    @Suppress("DEPRECATION_ERROR")
-    inline val json get() = configuration.json
+    val json = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
+
 
     override val friendListCache: FriendListCache? by lazy {
         if (!configuration.contactListCache.friendListCacheEnabled) return@lazy null

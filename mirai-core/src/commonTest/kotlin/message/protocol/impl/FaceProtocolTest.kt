@@ -15,7 +15,7 @@ import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 internal class FaceProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(FaceProtocol())

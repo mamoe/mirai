@@ -21,6 +21,9 @@ import net.mamoe.mirai.utils.map
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 表示在本地构建的 [Announcement].

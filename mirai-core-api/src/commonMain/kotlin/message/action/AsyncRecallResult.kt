@@ -8,85 +8,41 @@
  */
 
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.message.action
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
-import java.util.concurrent.CompletableFuture
 
 /**
  * [MessageSource.recallIn] 的结果.
  *
  * @see MessageSource.recallIn
  */
-public class AsyncRecallResult internal constructor(
+public expect class AsyncRecallResult internal constructor(
     /**
-     * 撤回时产生的异常. Kotlin [Deferred] API.
+     * 撤回时产生的异常.
      */
-    public val exception: Deferred<Throwable?>,
+    exception: Deferred<Throwable?>,
 ) {
-    /**
-     * 撤回时产生的异常. Java [CompletableFuture] API.
-     */
-    public val exceptionFuture: CompletableFuture<Throwable?> by lazy { exception.asCompletableFuture() }
+    public val exception: Deferred<Throwable?>
 
     /**
-     * 撤回是否成功. Kotlin [Deferred] API.
+     * 撤回是否成功.
      */
-    public val isSuccess: Deferred<Boolean> by lazy {
-        CompletableDeferred<Boolean>().apply {
-            exception.invokeOnCompletion {
-                complete(it == null)
-            }
-        }
-    }
-
-    /**
-     * 撤回是否成功. Java [CompletableFuture] API.
-     */
-    public val isSuccessFuture: CompletableFuture<Boolean> by lazy { isSuccess.asCompletableFuture() }
+    public val isSuccess: Deferred<Boolean>
 
     /**
      * 等待撤回完成, 返回撤回时产生的异常.
      */
-    @JvmBlockingBridge
-    public suspend fun awaitException(): Throwable? {
-        return exception.await()
-    }
+    public suspend fun awaitException(): Throwable?
 
     /**
      * 等待撤回完成, 返回撤回的结果.
      */
-    @JvmBlockingBridge
-    public suspend fun awaitIsSuccess(): Boolean {
-        return isSuccess.await()
-    }
+    public suspend fun awaitIsSuccess(): Boolean
 }
 
-
-// copied from kotlinx-coroutines-jdk8
-private fun <T> Deferred<T>.asCompletableFuture(): CompletableFuture<T> {
-    val future = CompletableFuture<T>()
-    setupCancellation(future)
-    invokeOnCompletion {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        try {
-            future.complete(getCompleted())
-        } catch (t: Throwable) {
-            future.completeExceptionally(t)
-        }
-    }
-    return future
-}
-
-// copied from kotlinx-coroutines-jdk8
-private fun Job.setupCancellation(future: CompletableFuture<*>) {
-    future.whenComplete { _, exception ->
-        cancel(exception?.let {
-            it as? CancellationException ?: CancellationException("CompletableFuture was completed exceptionally", it)
-        })
-    }
-}

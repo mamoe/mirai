@@ -40,7 +40,7 @@ import net.mamoe.mirai.utils.*
  */
 internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), GroupExtensions {
     init {
-        System.setProperty("mirai.network.notice.pipeline.log.full", "true")
+        setSystemProp("mirai.network.notice.pipeline.log.full", "true")
     }
 
     protected class UseTestContext(

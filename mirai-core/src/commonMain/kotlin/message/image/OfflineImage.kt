@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.image
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType

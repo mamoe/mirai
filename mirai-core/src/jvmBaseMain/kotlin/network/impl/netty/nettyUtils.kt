@@ -16,13 +16,8 @@ import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelOutboundInvoker
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.SimpleLogger
-import net.mamoe.mirai.utils.SimpleLogger.LogPriority.ERROR
 import net.mamoe.mirai.utils.withUse
 
 
@@ -49,18 +44,6 @@ internal fun ByteBuf.toReadPacket(): ByteReadPacket {
     }
 }
 
-
-internal fun MiraiLogger.asCoroutineExceptionHandler(
-    priority: SimpleLogger.LogPriority = ERROR,
-): CoroutineExceptionHandler {
-    return CoroutineExceptionHandler { context, e ->
-        call(
-            priority,
-            context[CoroutineName]?.let { "Exception in coroutine '${it.name}'." } ?: "Exception in unnamed coroutine.",
-            e
-        )
-    }
-}
 
 internal fun ChannelOutboundInvoker.writeAndFlushOrCloseAsync(msg: Any?): ChannelFuture? {
     return writeAndFlush(msg)

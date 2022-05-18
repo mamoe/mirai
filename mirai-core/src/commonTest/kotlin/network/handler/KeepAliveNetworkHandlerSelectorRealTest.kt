@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import io.netty.channel.Channel
 import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
@@ -20,11 +19,7 @@ import net.mamoe.mirai.internal.network.handler.selector.MaxAttemptsReachedExcep
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.*
 
 internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
 
@@ -49,11 +44,11 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
             }
 
             val selector = TestSelector(3) { createHandler() }
-            assertThrows<Throwable> { selector.awaitResumeInstance() }
+            assertFailsWith<Throwable> { selector.awaitResumeInstance() }
         }
 
         // Since #1963, any error during first login will close the bot. So we assume first login succeed to do our test.
-        @BeforeEach
+        @BeforeTest
         private fun setFirstLoginPassed() {
             assertEquals(null, bot.components[SsoProcessor].firstLoginResult.value)
             bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
@@ -67,7 +62,7 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
             }
 
             val selector = TestSelector(3) { createHandler() }
-            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+            assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<NetworkException>(it.cause)
             }
         }
@@ -78,7 +73,7 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
                 throw MyException()
             }
             val selector = TestSelector(3) { createHandler() }
-            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+            assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<MyException>(it.cause)
             }
         }

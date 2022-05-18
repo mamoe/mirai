@@ -7,7 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("ClockKt_common")
+
 package net.mamoe.mirai.utils
+
+import kotlin.jvm.JvmName
 
 public interface Clock {
     public fun currentTimeMillis(): Long
@@ -28,3 +32,5 @@ public class AdjustedClock(
     override fun currentTimeMillis(): Long = clock.currentTimeMillis() + diffMillis
     override fun currentTimeSeconds(): Long = (clock.currentTimeMillis() + diffMillis) / 1000
 }
+
+public expect inline fun measureTimeMillis(block: () -> Unit): Long

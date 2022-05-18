@@ -35,6 +35,9 @@ private val miraiPlatform = Attribute.of(
 fun Project.configureHMPPJvm() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         jvm("jvmBase") {
+            compilations.all {
+                this.compileKotlinTask.enabled = false // IDE complain
+            }
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // avoid resolving by others
 //            attributes.attribute(miraiPlatform, "jvmBase")
         }

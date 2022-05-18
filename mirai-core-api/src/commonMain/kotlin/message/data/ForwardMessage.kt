@@ -19,7 +19,8 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
-
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 未通过 [DisplayStrategy] 渲染的合并转发消息. [RawForwardMessage] 仅作为一个中间件, 用于 [ForwardMessageBuilder].

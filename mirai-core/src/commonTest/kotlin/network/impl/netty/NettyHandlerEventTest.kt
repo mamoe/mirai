@@ -25,9 +25,9 @@ import net.mamoe.mirai.internal.test.assertEventBroadcasts
 import net.mamoe.mirai.internal.test.assertEventNotBroadcast
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.supervisorJob
-import org.junit.jupiter.api.TestInstance
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
+import kotlin.test.TestInstance
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.permission.PermissionImpl
-import org.junit.jupiter.api.Test
 import kotlin.test.*
 
 internal class PermissionServiceTest {

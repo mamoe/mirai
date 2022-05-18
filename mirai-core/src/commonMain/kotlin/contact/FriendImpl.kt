@@ -14,6 +14,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend

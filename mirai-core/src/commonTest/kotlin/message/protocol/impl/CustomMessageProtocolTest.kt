@@ -18,20 +18,20 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.CustomMessage
 import net.mamoe.mirai.message.data.CustomMessageMetadata
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 internal class CustomMessageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(CustomMessageProtocol(), TextProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)
         }
     }
 
-    @BeforeEach
+    @BeforeTest
     fun init() {
         MyCustomMessage(1) // register
     }

@@ -17,7 +17,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.NotStableForInheritance
-import java.io.File
+import kotlin.jvm.JvmStatic
 
 /**
  * 绝对文件或目录标识. 精确表示一个远程文件. 不会受同名文件或目录的影响.
@@ -174,7 +174,7 @@ public sealed interface AbsoluteFileFolder {
          *
          * 不会包含 `:*?"<>|/\` 任一字符.
          *
-         * @see File.extension
+         * @see java.io.File.extension
          */
         @get:JvmStatic
         public val AbsoluteFileFolder.extension: String

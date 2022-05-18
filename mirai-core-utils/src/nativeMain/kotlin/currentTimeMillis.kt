@@ -17,3 +17,7 @@ package net.mamoe.mirai.utils
 public actual fun currentTimeMillis(): Long {
     TODO("Not yet implemented")
 }
+
+public actual fun currentTimeFormatted(format: String?): String {
+    TODO("Not yet implemented")
+}

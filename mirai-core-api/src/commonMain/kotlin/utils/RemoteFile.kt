@@ -532,7 +532,8 @@ public expect interface RemoteFile {
          * 根目录路径
          * @see RemoteFile.path
          */
-        public val ROOT_PATH: String
+        @Suppress("CONST_VAL_WITHOUT_INITIALIZER") // compiler bug
+        public const val ROOT_PATH: String
 
         /**
          * 上传文件并获取文件消息, 但不发送.

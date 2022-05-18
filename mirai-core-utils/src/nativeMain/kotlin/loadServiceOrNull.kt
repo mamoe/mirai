@@ -24,3 +24,7 @@ public actual fun <T : Any> loadService(
 ): T {
     TODO("Not yet implemented")
 }
+
+public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
+    TODO("Not yet implemented")
+}

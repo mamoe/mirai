@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -8,7 +8,8 @@
  */
 package net.mamoe.mirai.internal.network.protocol
 
-import java.util.*
+import net.mamoe.mirai.utils.LinkedList
+import kotlin.jvm.Synchronized
 
 internal class SyncingCacheList<E>(private val size: Int = 50) {
     private val packetIdList = LinkedList<E>()
@@ -16,7 +17,7 @@ internal class SyncingCacheList<E>(private val size: Int = 50) {
     @Synchronized // faster than suspending Mutex
     fun addCache(element: E): Boolean {
         if (packetIdList.contains(element)) return false // duplicate
-        packetIdList.addLast(element)
+        packetIdList.add(element)
         if (packetIdList.size >= size) packetIdList.removeFirst()
         return true
     }

@@ -24,6 +24,8 @@ import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**

@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
+import kotlin.jvm.JvmField
 
 /**
  * VIP 表情.

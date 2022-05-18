@@ -10,6 +10,8 @@
 
 package net.mamoe.mirai.internal.message.source
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
@@ -25,8 +27,8 @@ import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OfflineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.isSameType
 import net.mamoe.mirai.utils.mapToIntArray
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OfflineMessageSourceImplData.Serializer::class)
@@ -58,7 +60,7 @@ internal class OfflineMessageSourceImplData(
 
     @Transient
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
 
     override fun toJceData(): ImMsgBody.SourceMsg {
         return jceData ?: ImMsgBody.SourceMsg(
@@ -79,9 +81,7 @@ internal class OfflineMessageSourceImplData(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as OfflineMessageSourceImplData
+        if (!isSameType(this, other)) return false
 
         val originElems = originElems
         if (originElems != null) {

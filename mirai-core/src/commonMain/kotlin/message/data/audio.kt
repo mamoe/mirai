@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.copy
+import net.mamoe.mirai.utils.isSameType
 import net.mamoe.mirai.utils.map
 
 
@@ -123,9 +124,7 @@ internal class OnlineAudioImpl(
     @Suppress("DuplicatedCode")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as OnlineAudioImpl
+        if (!isSameType(this, other)) return false
 
         if (filename != other.filename) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
@@ -232,9 +231,7 @@ internal class OfflineAudioImpl(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as OfflineAudioImpl
+        if (!isSameType(this, other)) return false
 
         if (filename != other.filename) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false

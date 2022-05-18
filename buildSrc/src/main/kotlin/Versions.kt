@@ -106,13 +106,13 @@ val `kotlinx-coroutines-io` = kotlinx("coroutines-io", Versions.coroutinesIo)
 
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
-val `ktor-client-core` = ktor("client-core-jvm", Versions.ktor)
-val `ktor-client-cio` = ktor("client-cio-jvm", Versions.ktor)
+val `ktor-client-core` = ktor("client-core", Versions.ktor)
+val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
-val `ktor-client-logging` = ktor("client-logging-jvm", Versions.ktor)
+val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network-jvm", Versions.ktor)
-val `ktor-client-serialization` = ktor("client-serialization-jvm", Versions.ktor)
+val `ktor-client-serialization` = ktor("client-serialization", Versions.ktor)
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 

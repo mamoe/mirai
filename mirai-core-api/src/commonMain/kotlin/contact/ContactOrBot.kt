@@ -12,6 +12,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.NotStableForInheritance
+import kotlin.jvm.JvmName
 
 /**
  * 拥有 [id] 的对象.

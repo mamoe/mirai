@@ -12,9 +12,9 @@
 package net.mamoe.mirai.console.gradle
 
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.util.zip.ZipFile
+import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull

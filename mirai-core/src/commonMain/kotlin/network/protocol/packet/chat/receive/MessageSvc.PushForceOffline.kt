@@ -13,7 +13,7 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
 import net.mamoe.mirai.internal.network.components.BotInitProcessor
-import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
+import net.mamoe.mirai.internal.network.impl.ForceOfflineException
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket

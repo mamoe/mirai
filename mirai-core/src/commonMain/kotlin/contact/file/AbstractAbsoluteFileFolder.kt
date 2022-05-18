@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.internal.utils.FileSystem
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.isSameType
 
 internal fun AbstractAbsoluteFileFolder.api(): AbsoluteFileFolder = this.cast()
 internal fun AbsoluteFileFolder.impl(): AbstractAbsoluteFileFolder = this.cast()
@@ -115,9 +116,7 @@ internal abstract class AbstractAbsoluteFileFolder(
     @Suppress("DuplicatedCode")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as AbstractAbsoluteFileFolder
+        if (!isSameType(this, other)) return false
 
         if (contact != other.contact) return false
         if (parent != other.parent) return false

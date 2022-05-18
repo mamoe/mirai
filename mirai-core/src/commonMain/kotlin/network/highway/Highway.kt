@@ -9,9 +9,8 @@
 
 package net.mamoe.mirai.internal.network.highway
 
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.writeFully
+import io.ktor.utils.io.core.*
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -32,11 +31,10 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.retryWithServers
 import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.Volatile
 import kotlin.math.roundToInt
-import kotlin.system.measureTimeMillis
 
 internal object Highway {
 
@@ -383,9 +381,9 @@ internal fun highwayPacketSession(
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
-    val ticket = AtomicReference(initialTicket)
+    val ticket = atomic(initialTicket)
 
-    return ChunkedFlowSession(data.inputStream(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
+    return ChunkedFlowSession(data.input(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
         val head = CSDataHighwayHead.ReqDataHighwayHead(
             msgBasehead = CSDataHighwayHead.DataHighwayHead(
                 version = 1,
@@ -403,7 +401,7 @@ internal fun highwayPacketSession(
                 datalength = size,
                 dataoffset = offset,
                 filesize = data.size,
-                serviceticket = ticket.get(),
+                serviceticket = ticket.value,
                 md5 = buffer.md5(0, size),
                 fileMd5 = fileMd5,
                 flag = 0,

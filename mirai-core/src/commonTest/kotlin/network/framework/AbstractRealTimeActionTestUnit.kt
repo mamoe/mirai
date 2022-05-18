@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.KeyWithCreationTime
 import net.mamoe.mirai.internal.network.KeyWithExpiry
 import net.mamoe.mirai.internal.network.WLoginSigInfo
@@ -16,10 +17,10 @@ import net.mamoe.mirai.internal.network.WLoginSimpleInfo
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
+import kotlin.test.BeforeTest
 
 internal abstract class AbstractRealTimeActionTestUnit : AbstractNettyNHTest(), GroupExtensions {
-    @BeforeEach
+    @BeforeTest
     internal fun prepareEnv() {
         bot.client.wLoginSigInfoField = WLoginSigInfo(
             uin = bot.id,

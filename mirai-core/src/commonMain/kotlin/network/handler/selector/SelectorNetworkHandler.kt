@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -23,6 +25,7 @@ import net.mamoe.mirai.utils.addNameHierarchically
 import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.jvm.Volatile
 
 /**
  * A proxy to [NetworkHandler] that delegates calls to instance returned by [NetworkHandlerSelector.awaitResumeInstance].
@@ -51,6 +54,7 @@ internal open class SelectorNetworkHandler<out H : NetworkHandler>(
             .addNameHierarchically("SelectorNetworkHandler")
             .childScope()
     }
+    private val lock = SynchronizedObject()
 
     protected suspend inline fun instance(): H {
         if (!scope.isActive) {
@@ -87,7 +91,7 @@ internal open class SelectorNetworkHandler<out H : NetworkHandler>(
             selector.getCurrentInstanceOrNull()?.close(cause)
             return
         }
-        synchronized(scope) {
+        synchronized(lock) {
             if (scope.isActive) {
                 lastCancellationCause = cause
                 scope.cancel()
