@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.*
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
@@ -18,9 +20,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.streams.outputStream
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority.ERROR
