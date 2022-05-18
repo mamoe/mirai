@@ -13,7 +13,10 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.modules.*
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.overwriteWith
+import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
@@ -21,9 +24,8 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import net.mamoe.mirai.utils.map
 import net.mamoe.mirai.utils.takeElementsFrom
+import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
-import kotlin.reflect.full.allSuperclasses
-import kotlin.reflect.full.isSubclassOf
 
 @MiraiInternalApi
 public open class MessageSourceSerializerImpl(serialName: String) :
@@ -208,37 +210,25 @@ internal object MessageSerializersImpl : MessageSerializers {
     }
 }
 
-internal fun <M : Any> SerializersModule.overwritePolymorphicWith(
+internal expect fun <M : Any> SerializersModule.overwritePolymorphicWith(
     type: KClass<M>,
     serializer: KSerializer<M>
-): SerializersModule {
-    return overwriteWith(SerializersModule {
-        // contextual(type, serializer)
-        for (superclass in type.allSuperclasses) {
-            if (superclass.isFinal) continue
-            if (!superclass.isSubclassOf(SingleMessage::class)) continue
-            @Suppress("UNCHECKED_CAST")
-            polymorphic(superclass as KClass<Any>) {
-                subclass(type, serializer)
-            }
-        }
-    })
-}
+): SerializersModule
 
-private inline fun <reified M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(serializer: KSerializer<M>) =
-    hierarchicallyPolymorphic(M::class, serializer)
-
-private fun <M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(
-    type: KClass<M>,
-    serializer: KSerializer<M>
-) {
-    // contextual(type, serializer)
-    for (superclass in type.allSuperclasses) {
-        if (superclass.isFinal) continue
-        if (!superclass.isSubclassOf(SingleMessage::class)) continue
-        @Suppress("UNCHECKED_CAST")
-        polymorphic(superclass as KClass<Any>) {
-            subclass(type, serializer)
-        }
-    }
-}
+//private inline fun <reified M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(serializer: KSerializer<M>) =
+//    hierarchicallyPolymorphic(M::class, serializer)
+//
+//private fun <M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(
+//    type: KClass<M>,
+//    serializer: KSerializer<M>
+//) {
+//    // contextual(type, serializer)
+//    for (superclass in type.allSuperclasses) {
+//        if (superclass.isFinal) continue
+//        if (!superclass.isSubclassOf(SingleMessage::class)) continue
+//        @Suppress("UNCHECKED_CAST")
+//        polymorphic(superclass as KClass<Any>) {
+//            subclass(type, serializer)
+//        }
+//    }
+//}

@@ -10,3 +10,8 @@
 package net.mamoe.mirai.utils
 
 internal actual fun getProperty(name: String, default: String): String? = System.getProperty(name, default)
+
+internal actual fun setProperty(name: String, value: String) {
+    System.setProperty(name, value)
+}
+

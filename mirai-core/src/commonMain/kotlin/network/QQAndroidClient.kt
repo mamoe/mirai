@@ -25,6 +25,8 @@ import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.Synchronized
+import kotlin.jvm.Volatile
 import kotlin.random.Random
 
 

@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
@@ -23,7 +24,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Pa
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -32,7 +33,7 @@ import kotlin.test.assertEquals
 internal class LoginCommandTest : AbstractCommandTest() {
 
     @Test
-    suspend fun `login with provided password`() {
+    fun `login with provided password`() = runBlocking {
         val myId = 123L
         val myPwd = "password001"
 
@@ -52,7 +53,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    suspend fun `login with saved plain password`() {
+    fun `login with saved plain password`() = runBlocking {
         val myId = 123L
         val myPwd = "password001"
 
@@ -81,7 +82,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    suspend fun `login with saved md5 password`() {
+    fun `login with saved md5 password`() = runBlocking {
         val myId = 123L
         val myPwd = "password001"
 

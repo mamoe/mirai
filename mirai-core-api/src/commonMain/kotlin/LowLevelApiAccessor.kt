@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,7 +17,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.WeakRef
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -52,7 +51,7 @@ public interface LowLevelApiAccessor {
     public suspend fun refreshKeys(bot: Bot)
 
     /**
-     * 构造一个 [Friend] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     * 构造一个 [Friend] 对象.
      *
      * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
@@ -61,7 +60,7 @@ public interface LowLevelApiAccessor {
     public fun newFriend(bot: Bot, friendInfo: FriendInfo): Friend
 
     /**
-     * 构造一个 [Stranger] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     * 构造一个 [Stranger] 对象.
      *
      * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.

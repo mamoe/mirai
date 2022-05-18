@@ -1,17 +1,18 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.component
 
 import net.mamoe.mirai.internal.network.component.ComponentKey.Companion.componentName
+import net.mamoe.mirai.utils.ConcurrentHashMap
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.systemProp
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.LazyThreadSafetyMode.NONE
 
 /**
@@ -25,11 +26,12 @@ internal class ConcurrentComponentStorage(
     private val map = ConcurrentHashMap<ComponentKey<*>, Any?>()
 
     override val keys: Set<ComponentKey<*>> get() = map.keys
+    @TestOnly
     override val size: Int get() = map.size
 
     override operator fun <T : Any> get(key: ComponentKey<T>): T {
         return getOrNull(key)
-            ?: throw NoSuchComponentException(key, this).apply { creationStacktrace?.let(this::initCause) }
+            ?: throw NoSuchComponentException(key, this, creationStacktrace)
     }
 
     override fun <T : Any> getOrNull(key: ComponentKey<T>): T? {

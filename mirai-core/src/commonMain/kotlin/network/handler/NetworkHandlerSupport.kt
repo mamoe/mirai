@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -27,7 +29,6 @@ import net.mamoe.mirai.internal.utils.fromMiraiLogger
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KClass
@@ -148,7 +149,7 @@ internal abstract class NetworkHandlerSupport(
             this.commandName == packet.commandName && this.sequenceId == packet.sequenceId
     }
 
-    private val packetListeners = ConcurrentLinkedQueue<PacketListener>()
+    private val packetListeners = ConcurrentLinkedDeque<PacketListener>()
 
     ///////////////////////////////////////////////////////////////////////////
     // state impl
@@ -267,7 +268,7 @@ internal abstract class NetworkHandlerSupport(
     }
 
     private val lock = SingleEntrantLock()
-    private val lockForSetStateWithOldInstance = Any()
+    private val lockForSetStateWithOldInstance = SynchronizedObject()
 
     /**
      * This can only be called by [setState] or in tests.

@@ -10,28 +10,21 @@
 package net.mamoe.mirai.utils
 
 import java.util.*
+import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.reflect.KClass
 
 
-public fun <T> Collection<T>.asImmutable(): Collection<T> {
-    return when (this) {
-        is List<T> -> asImmutable()
-        is Set<T> -> asImmutable()
-        else -> Collections.unmodifiableCollection(this)
-    }
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Collection<T>.asImmutableStrict(): Collection<T> {
+public actual fun <T> Collection<T>.asImmutable(): Collection<T> {
     return Collections.unmodifiableCollection(this)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun <T> List<T>.asImmutable(): List<T> {
+public actual inline fun <T> List<T>.asImmutable(): List<T> {
     return Collections.unmodifiableList(this)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Set<T>.asImmutable(): Set<T> {
+public actual inline fun <T> Set<T>.asImmutable(): Set<T> {
     return Collections.unmodifiableSet(this)
 }
 
@@ -43,4 +36,22 @@ public inline fun <K, V> Map<K, V>.asImmutable(): Map<K, V> {
 @Suppress("FunctionName")
 public actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
     return java.util.concurrent.ConcurrentHashMap()
+}
+
+public actual typealias LinkedList<E> = java.util.LinkedList<E>
+
+
+public actual typealias MutableDeque<E> = java.util.Deque<E>
+
+public actual typealias MutableQueue<E> = java.util.Queue<E>
+
+
+@Suppress("FunctionName")
+public actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> {
+    return EnumMap(clazz.java)
+}
+
+@Suppress("FunctionName")
+public actual fun <E> ConcurrentSet(): MutableSet<E> {
+    return CopyOnWriteArraySet()
 }

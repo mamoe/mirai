@@ -25,12 +25,14 @@ import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.internal.event.registerEventHandler
-import net.mamoe.mirai.utils.*
-import org.jetbrains.annotations.Contract
-import java.util.function.Consumer
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.context
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 /**
@@ -54,7 +56,7 @@ import kotlin.reflect.KClass
  *
  * ### 对通道的操作
  * - 过滤通道: 通过 [EventChannel.filter]. 例如 `filter { it is BotEvent }` 得到一个只能监听到 [BotEvent] 的事件通道.
- * - 转换为 Kotlin 协程 [Channel]: [EventChannel.asChannel]
+ * - 转换为 Kotlin 协程 [Channel]: [EventChannel.forwardToChannel]
  * - 添加 [CoroutineContext]: [context], [parentJob], [parentScope], [exceptionHandler]
  *
  * ### 创建事件监听
@@ -80,38 +82,17 @@ import kotlin.reflect.KClass
  * 使用 [EventChannel.forwardToChannel] 可将事件转发到指定 [SendChannel].
  */
 @NotStableForInheritance // since 2.12, before it was `final class`.
-public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi public constructor(
-    public val baseEventClass: KClass<out BaseEvent>,
+public expect abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi public constructor(
+    baseEventClass: KClass<out BaseEvent>,
+
+    defaultCoroutineContext: CoroutineContext,
+) {
     /**
      * 此事件通道的默认 [CoroutineScope.coroutineContext]. 将会被添加给所有注册的事件监听器.
      */
-    public val defaultCoroutineContext: CoroutineContext,
-) {
-    /**
-     * 创建事件监听并将监听结果发送在 [Channel]. 将返回值 [Channel] [关闭][Channel.close] 时将会同时关闭事件监听.
-     *
-     * @param capacity Channel 容量. 详见 [Channel] 构造.
-     *
-     * @see subscribeAlways
-     * @see Channel
-     */
-    @Deprecated(
-        "Please use forwardToChannel instead.",
-        replaceWith = ReplaceWith(
-            "Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }",
-            "kotlinx.coroutines.channels.Channel"
-        ),
-        level = DeprecationLevel.ERROR,
-    )
-    @DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
-    @MiraiExperimentalApi
-    public fun asChannel(
-        capacity: Int = Channel.RENDEZVOUS,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        @Suppress("UNUSED_PARAMETER") concurrency: ConcurrencyKind = CONCURRENT,
-        priority: EventPriority = EventPriority.NORMAL,
-    ): Channel<out BaseEvent> =
-        Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }
+    public val defaultCoroutineContext: CoroutineContext
+
+    public val baseEventClass: KClass<out BaseEvent>
 
     /**
      * 创建事件监听并将监听结果转发到 [channel]. 当 [Channel.send] 抛出 [ClosedSendChannelException] 时停止 [Listener] 监听和转发.
@@ -139,16 +120,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         channel: SendChannel<@UnsafeVariance BaseEvent>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.MONITOR,
-    ): Listener<@UnsafeVariance BaseEvent> {
-        return subscribe(baseEventClass, coroutineContext, priority = priority) {
-            try {
-                channel.send(it)
-                ListeningStatus.LISTENING
-            } catch (_: ClosedSendChannelException) {
-                ListeningStatus.STOPPED
-            }
-        }
-    }
+    ): Listener<@UnsafeVariance BaseEvent>
 
     /**
      * 通过 [Flow] 接收此通道内的所有事件.
@@ -216,9 +188,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      * @see filterIsInstance 过滤指定类型的事件
      */
     @JvmSynthetic
-    public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return FilterEventChannel(this, filter)
-    }
+    public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent>
 
     /**
      * [EventChannel.filter] 的 Java 版本.
@@ -258,32 +228,20 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      */
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
-    public fun filter(filter: (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return filter { runBIO { filter(it) } }
-    }
+    public fun filter(filter: (event: BaseEvent) -> Boolean): EventChannel<BaseEvent>
 
     /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
     @JvmSynthetic
-    public inline fun <reified E : Event> filterIsInstance(): EventChannel<E> =
-        filterIsInstance(E::class)
+    public inline fun <reified E : Event> filterIsInstance(): EventChannel<E>
 
     /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<E> {
-        return filter { kClass.isInstance(it) }.cast()
-    }
-
-    /**
-     * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
-     * @see filter 获取更多信息
-     */
-    public fun <E : Event> filterIsInstance(clazz: Class<out E>): EventChannel<E> =
-        filterIsInstance(clazz.kotlin)
+    public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<E>
 
 
     /**
@@ -300,19 +258,13 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      */
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
-    public fun exceptionHandler(coroutineExceptionHandler: CoroutineExceptionHandler): EventChannel<BaseEvent> {
-        return context(coroutineExceptionHandler)
-    }
+    public fun exceptionHandler(coroutineExceptionHandler: CoroutineExceptionHandler): EventChannel<BaseEvent>
 
     /**
      * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [`this.coroutineContext`][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
      * @see context
      */
-    public fun exceptionHandler(coroutineExceptionHandler: (exception: Throwable) -> Unit): EventChannel<BaseEvent> {
-        return context(CoroutineExceptionHandler { _, throwable ->
-            coroutineExceptionHandler(throwable)
-        })
-    }
+    public fun exceptionHandler(coroutineExceptionHandler: (exception: Throwable) -> Unit): EventChannel<BaseEvent>
 
     /**
      * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [`this.coroutineContext`][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
@@ -337,9 +289,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      *
      * @see CoroutineScope.globalEventChannel `GlobalEventChannel.parentScope()` 的扩展
      */
-    public fun parentScope(coroutineScope: CoroutineScope): EventChannel<BaseEvent> {
-        return context(coroutineScope.coroutineContext)
-    }
+    public fun parentScope(coroutineScope: CoroutineScope): EventChannel<BaseEvent>
 
     /**
      * 指定协程父 [Job]. 之后在此 [EventChannel] 下创建的事件监听器都会成为 [job] 的子任务, 当 [job] 被取消时, 所有的事件监听器都会被取消.
@@ -349,9 +299,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
      * @see parentScope
      * @see context
      */
-    public fun parentJob(job: Job): EventChannel<BaseEvent> {
-        return context(job)
-    }
+    public fun parentJob(job: Job): EventChannel<BaseEvent>
 
     // endregion
 
@@ -452,7 +400,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> ListeningStatus,
-    ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority, handler)
+    ): Listener<E>
 
     /**
      * 与 [subscribe] 的区别是接受 [eventClass] 参数, 而不使用 `reified` 泛型. 通常推荐使用具体化类型参数.
@@ -467,10 +415,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         concurrency: ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
         handler: suspend E.(E) -> ListeningStatus,
-    ): Listener<E> = subscribeInternal(
-        eventClass,
-        createListener(coroutineContext, concurrency, priority) { it.handler(it); }
-    )
+    ): Listener<E>
 
     /**
      * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件.
@@ -492,7 +437,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> Unit,
-    ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority, handler)
+    ): Listener<E>
 
 
     /**
@@ -506,10 +451,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         concurrency: ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
         handler: suspend E.(E) -> Unit,
-    ): Listener<E> = subscribeInternal(
-        eventClass,
-        createListener(coroutineContext, concurrency, priority) { it.handler(it); ListeningStatus.LISTENING }
-    )
+    ): Listener<E>
 
     /**
      * 创建一个事件监听器, 监听事件通道中所有 [E] 及其子类事件, 只监听一次.
@@ -527,7 +469,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> Unit,
-    ): Listener<E> = subscribeOnce(E::class, coroutineContext, priority, handler)
+    ): Listener<E>
 
     /**
      * @see subscribeOnce
@@ -537,155 +479,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
         handler: suspend E.(E) -> Unit,
-    ): Listener<E> = subscribeInternal(
-        eventClass,
-        createListener(coroutineContext, LOCKED, priority) { it.handler(it); ListeningStatus.STOPPED }
-    )
-
-    // endregion
-
-    /**
-     * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel]. 查看 [EventHandler].
-     *
-     * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
-     *
-     * @see subscribe
-     * @see EventHandler
-     * @see ListenerHost
-     */
-    @JvmOverloads
-    public fun registerListenerHost(
-        host: ListenerHost,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    ) {
-        val jobOfListenerHost: Job?
-        val coroutineContext0 = if (host is SimpleListenerHost) {
-            val listenerCoroutineContext = host.coroutineContext
-            val listenerJob = listenerCoroutineContext[Job]
-
-            val rsp = listenerCoroutineContext.minusKey(Job) +
-                    coroutineContext +
-                    (listenerCoroutineContext[CoroutineExceptionHandler] ?: EmptyCoroutineContext)
-
-            val registerCancelHook = when {
-                listenerJob === null -> false
-
-                // Registering cancellation hook is needless
-                // if [Job] of [EventChannel] is same as [Job] of [SimpleListenerHost]
-                (rsp[Job] ?: this.defaultCoroutineContext[Job]) === listenerJob -> false
-
-                else -> true
-            }
-
-            jobOfListenerHost = if (registerCancelHook) {
-                listenerCoroutineContext[Job]
-            } else {
-                null
-            }
-            rsp
-        } else {
-            jobOfListenerHost = null
-            coroutineContext
-        }
-        for (method in host.javaClass.declaredMethods) {
-            method.getAnnotation(EventHandler::class.java)?.let {
-                val listener = method.registerEventHandler(host, this, it, coroutineContext0)
-                // For [SimpleListenerHost.cancelAll]
-                jobOfListenerHost?.invokeOnCompletion { exception ->
-                    listener.cancel(
-                        when (exception) {
-                            is CancellationException -> exception
-                            is Throwable -> CancellationException(null, exception)
-                            else -> null
-                        }
-                    )
-                }
-            }
-        }
-    }
-
-    // region Java API
-
-    /**
-     * Java API. 查看 [subscribeAlways] 获取更多信息.
-     *
-     * ```java
-     * eventChannel.subscribeAlways(GroupMessageEvent.class, (event) -> { });
-     * ```
-     *
-     * @see subscribe
-     * @see subscribeAlways
-     */
-    @JvmOverloads
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    public fun <E : Event> subscribeAlways(
-        eventClass: Class<out E>,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: ConcurrencyKind = CONCURRENT,
-        priority: EventPriority = EventPriority.NORMAL,
-        handler: Consumer<E>,
-    ): Listener<E> = subscribeInternal(
-        eventClass.kotlin,
-        createListener(coroutineContext, concurrency, priority) { event ->
-            runInterruptible(Dispatchers.IO) { handler.accept(event) }
-            ListeningStatus.LISTENING
-        }
-    )
-
-    /**
-     * Java API. 查看 [subscribe] 获取更多信息.
-     *
-     * ```java
-     * eventChannel.subscribe(GroupMessageEvent.class, (event) -> {
-     *     return ListeningStatus.LISTENING;
-     * });
-     * ```
-     *
-     * @see subscribe
-     */
-    @JvmOverloads
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    public fun <E : Event> subscribe(
-        eventClass: Class<out E>,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: ConcurrencyKind = CONCURRENT,
-        priority: EventPriority = EventPriority.NORMAL,
-        handler: java.util.function.Function<E, ListeningStatus>,
-    ): Listener<E> = subscribeInternal(
-        eventClass.kotlin,
-        createListener(coroutineContext, concurrency, priority) { event ->
-            runInterruptible(Dispatchers.IO) { handler.apply(event) }
-        }
-    )
-
-    /**
-     * Java API. 查看 [subscribeOnce] 获取更多信息.
-     *
-     * ```java
-     * eventChannel.subscribeOnce(GroupMessageEvent.class, (event) -> { });
-     * ```
-     *
-     * @see subscribe
-     * @see subscribeOnce
-     */
-    @JvmOverloads
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    public fun <E : Event> subscribeOnce(
-        eventClass: Class<out E>,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        concurrency: ConcurrencyKind = CONCURRENT,
-        priority: EventPriority = EventPriority.NORMAL,
-        handler: Consumer<E>,
-    ): Listener<E> = subscribeInternal(
-        eventClass.kotlin,
-        createListener(coroutineContext, concurrency, priority) { event ->
-            runInterruptible(Dispatchers.IO) { handler.accept(event) }
-            ListeningStatus.STOPPED
-        }
-    )
+    ): Listener<E>
 
     // endregion
 
@@ -697,19 +491,12 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
     protected abstract fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>)
 
     // to overcome visibility issue
-    internal fun <E : Event> registerListener0(eventClass: KClass<out E>, listener: Listener<E>) {
-        return registerListener(eventClass, listener)
-    }
-
-    private fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
-        registerListener(eventClass, listener)
-        return listener
-    }
+    internal fun <E : Event> registerListener0(eventClass: KClass<out E>, listener: Listener<E>)
 
     /**
      * Creates [Listener] instance using the [listenerBlock] action.
      */
-    @Contract("_ -> new") // always creates new instance
+//    @Contract("_ -> new") // always creates new instance
     @MiraiInternalApi
     protected abstract fun <E : Event> createListener(
         coroutineContext: CoroutineContext,
@@ -724,7 +511,7 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
         concurrencyKind: ConcurrencyKind,
         priority: EventPriority,
         listenerBlock: suspend (E) -> ListeningStatus,
-    ): Listener<E> = createListener(coroutineContext, concurrencyKind, priority, listenerBlock)
+    ): Listener<E>
 
     // endregion
 }

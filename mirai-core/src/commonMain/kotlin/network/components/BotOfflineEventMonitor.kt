@@ -20,11 +20,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
-import net.mamoe.mirai.utils.castOrNull
-import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.millisToHumanReadableString
-import net.mamoe.mirai.utils.warning
-import kotlin.system.measureTimeMillis
+import net.mamoe.mirai.utils.*
 
 /**
  * Handles [BotOfflineEvent]
@@ -96,7 +92,7 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
         // Run this coroutine in EventDispatcher, so joinBroadcast will work.
         // EventDispatcher is in Bot's components level so won't be closed by network.
         bot.components[EventDispatcher].broadcastAsync {
-            val success: Boolean
+            var success = false
             val time = measureTimeMillis {
                 success = kotlin.runCatching {
                     bot.network.resumeConnection()

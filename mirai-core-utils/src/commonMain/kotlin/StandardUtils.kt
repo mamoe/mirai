@@ -161,9 +161,17 @@ internal expect fun isSameClassPlatform(object1: Any, object2: Any): Boolean
 
 public inline fun <reified T> isSameType(thisObject: T, other: Any?): Boolean {
     contract {
-        returns() implies (other is T)
+        returns(true) implies (other is T)
     }
     if (other == null) return false
     if (other !is T) return false
     return isSameClass(thisObject, other)
 }
+
+public expect fun availableProcessors(): Int
+
+
+/**
+ * Localhost 解析
+ */
+public expect fun localIpAddress(): String

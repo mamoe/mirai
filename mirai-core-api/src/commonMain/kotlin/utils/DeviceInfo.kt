@@ -181,9 +181,7 @@ internal object DeviceInfoCommonImpl {
     @Suppress("DuplicatedCode")
     fun equalsImpl(deviceInfo: DeviceInfo, other: Any?): Boolean = deviceInfo.run {
         if (deviceInfo === other) return true
-        if (other !is DeviceInfo) return false
-
-        other as DeviceInfo
+        if (!isSameType(this, other)) return false
 
         if (!display.contentEquals(other.display)) return false
         if (!product.contentEquals(other.product)) return false

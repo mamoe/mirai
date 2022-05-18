@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,6 +11,8 @@ package net.mamoe.mirai.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.isSameClass
+import kotlin.jvm.JvmStatic
 
 
 /**
@@ -47,9 +49,7 @@ public class AnnouncementImage private constructor(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as AnnouncementImage
+        if (other !is AnnouncementImage || !isSameClass(this, other)) return false
 
         if (id != other.id) return false
         if (height != other.height) return false

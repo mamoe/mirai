@@ -24,10 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack.SvcReqPushMsg
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 /**
  * Decodes [SvcReqPushMsg] to [MsgInfo] then re-fire [MsgType0x210] or [MsgType0x2DC]
@@ -87,9 +84,7 @@ internal data class MsgType0x2DC(
 ) : ProtocolStruct, BaseMsgType0x2DC<ByteArray> {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MsgType0x2DC
+        if (!isSameType(this, other)) return false
 
         if (kind != other.kind) return false
         if (group != other.group) return false

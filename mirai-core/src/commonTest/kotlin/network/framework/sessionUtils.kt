@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework
@@ -16,12 +16,12 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.components.AccountSecrets
 import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.components.SsoSession
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.MiraiFile
 import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.withUse
-import java.io.File
+import net.mamoe.mirai.utils.writeBytes
+
 
 internal class TestSsoSession(
     private val accountSecrets: AccountSecrets,
@@ -32,13 +32,13 @@ internal class TestSsoSession(
     override val randomKey: ByteArray by accountSecrets::randomKey
 }
 
-internal fun loadSession(
-    resourceName: String,
-): AccountSecretsImpl {
-    val bytes = ClassLoader.getSystemResourceAsStream(resourceName)?.withUse { readBytes() }
-        ?: error("AccountSecrets resource '$resourceName' not found.")
-    return bytes.loadAs(AccountSecretsImpl.serializer())
-}
+//internal fun loadSession(
+//    resourceName: String,
+//): AccountSecretsImpl {
+//    val bytes = ClassLoader.getSystemResourceAsStream(resourceName)?.withUse { readBytes() }
+//        ?: error("AccountSecrets resource '$resourceName' not found.")
+//    return bytes.loadAs(AccountSecretsImpl.serializer())
+//}
 
 /**
  * Secure to share with others. Designed to save real data for tests.
@@ -54,7 +54,7 @@ internal fun QQAndroidClient.dumpSessionSafe(): ByteArray {
     return secrets.toByteArray(AccountSecretsImpl.serializer())
 }
 
-internal fun QQAndroidBot.scheduleSafeSessionDump(outputFile: File) {
+internal fun QQAndroidBot.scheduleSafeSessionDump(outputFile: MiraiFile) {
     this.eventChannel.subscribeAlways<BotOnlineEvent> {
         outputFile.writeBytes(client.dumpSessionSafe())
         bot.logger.debug { "Dumped safe session to " }

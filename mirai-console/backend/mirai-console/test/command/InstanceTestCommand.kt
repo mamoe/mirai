@@ -28,9 +28,6 @@ import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import net.mamoe.mirai.message.data.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.time.*
 import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
@@ -158,7 +155,6 @@ class TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
 private val sender get() = ConsoleCommandSender
 private val owner get() = ConsoleCommandOwner
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     private val manager by lazy { MiraiConsoleImplementation.getBridge().commandManager as CommandManagerImpl }
@@ -167,7 +163,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     private val rawCommand by lazy { TestRawCommand() }
     private val compositeCommand by lazy { TestCompositeCommand() }
 
-    @BeforeEach
+    @BeforeTest
     fun grantPermission() {
         ConsoleCommandSender.permit(simpleCommand.permission)
         ConsoleCommandSender.permit(compositeCommand.permission)

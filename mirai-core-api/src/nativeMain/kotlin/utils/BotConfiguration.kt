@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("RedundantVisibilityModifier")
+
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
@@ -325,7 +327,10 @@ public actual open class BotConfiguration { // open for Java
      */
     @ConfigurationDsl
     public actual fun fileBasedDeviceInfo(filepath: String) {
-        deviceInfo = TODO("native")
+        deviceInfo = {
+            val file = MiraiFile.create(workingDir).resolve(filepath)
+            Json.decodeFromString(DeviceInfo.serializer(), file.readText())
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -406,7 +411,7 @@ public actual open class BotConfiguration { // open for Java
      *
      * @since 2.4
      */
-    public var cacheDir: String = workingDir + "/cache"
+    public var cacheDir: String = "$workingDir/cache"
 
     /**
      * 联系人信息缓存配置. 将会保存在 [cacheDir] 中 `contacts` 目录

@@ -15,6 +15,7 @@ import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toUHexString
 import kotlin.experimental.and
 import kotlin.experimental.xor
+import kotlin.jvm.JvmStatic
 import kotlin.random.Random
 
 /**

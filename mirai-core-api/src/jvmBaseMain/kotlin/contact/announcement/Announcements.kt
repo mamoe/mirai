@@ -43,7 +43,6 @@ import java.util.stream.Stream
  *
  * @since 2.7
  */
-@JvmBlockingBridge
 @NotStableForInheritance
 public actual interface Announcements {
     /**

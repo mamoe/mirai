@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -13,6 +13,8 @@
 
 package net.mamoe.mirai.event.events
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
@@ -23,7 +25,9 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiInternalApi
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**
@@ -80,7 +84,7 @@ public data class NewFriendRequestEvent @MiraiInternalApi public constructor(
     public val fromNick: String,
 ) : BotEvent, Packet, AbstractEvent(), FriendInfoChangeEvent {
     @JvmField
-    internal val responded: AtomicBoolean = AtomicBoolean(false)
+    internal val responded: AtomicBoolean = atomic(false)
 
     /**
      * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`

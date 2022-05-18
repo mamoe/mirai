@@ -31,14 +31,14 @@ internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
     var eventName: String? = null
     return kotlin.runCatching {
         eventConstructor(this, message).also {
-            eventName = it.javaClass.simpleName
+            eventName = it::class.simpleName
         }.broadcast()
     }.onSuccess {
         check(!it.isCancelled) {
             throw EventCancelledException("cancelled by $eventName")
         }
     }.getOrElse {
-        eventName = eventName ?: (this@broadcastMessagePreSendEvent.javaClass.simpleName + "MessagePreSendEvent")
+        eventName = eventName ?: (this@broadcastMessagePreSendEvent::class.simpleName + "MessagePreSendEvent")
         throw EventCancelledException("exception thrown when broadcasting $eventName", it)
     }.message.toMessageChain()
 }
