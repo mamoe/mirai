@@ -113,7 +113,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
             Mirai.createFileMessage(id, internalId, name, size)
     }
 
-    public object Serializer : KSerializer<FileMessage> by FallbackSerializer("FileMessage") // not polymorphic
+    public object Serializer : KSerializer<FileMessage> by FallbackSerializer(SERIAL_NAME) // not polymorphic
 
     @MiraiInternalApi
     private open class FallbackSerializer(serialName: String) : KSerializer<FileMessage> by Delegate.serializer().map(
@@ -121,7 +121,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
         serialize = { Delegate(id, internalId, name, size) },
         deserialize = { Mirai.createFileMessage(id, internalId, name, size) },
     ) {
-        @SerialName(Image.SERIAL_NAME)
+        @SerialName(SERIAL_NAME)
         @Serializable
         data class Delegate(
             val id: String,
