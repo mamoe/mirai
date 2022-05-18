@@ -17,6 +17,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.coroutines.resume
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 

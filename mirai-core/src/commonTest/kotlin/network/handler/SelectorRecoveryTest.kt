@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.CoroutineScope
@@ -14,29 +16,26 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.HeartbeatFailureHandler
 import net.mamoe.mirai.internal.network.components.HeartbeatScheduler
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTestWithSelector
-import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
-import net.mamoe.mirai.internal.network.impl.netty.NettyChannelException
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTestWithSelector
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInfo
+import net.mamoe.mirai.utils.TestOnly
+import kotlin.test.Test
 import kotlin.test.assertFails
 
 /**
  * Test whether the selector can recover the connection after first successful login.
  */
-internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
-    @BeforeEach
-    fun beforeTest(info: TestInfo) {
-        println("=".repeat(30) + "BEGIN: ${info.displayName}" + "=".repeat(30))
-    }
-
-    @AfterEach
-    fun afterTest(info: TestInfo) {
-        println("=".repeat(31) + "END: ${info.displayName}" + "=".repeat(31))
-    }
+internal class SelectorRecoveryTest : AbstractCommonNHTestWithSelector() {
+//    @BeforeTest
+//    fun beforeTest(info: TestInfo) {
+//        println("=".repeat(30) + "BEGIN: ${info.displayName}" + "=".repeat(30))
+//    }
+//
+//    @AfterTest
+//    fun afterTest(info: TestInfo) {
+//        println("=".repeat(31) + "END: ${info.displayName}" + "=".repeat(31))
+//    }
 
     @Test
     fun `stop on manual close`() = runBlockingUnit {
@@ -47,12 +46,11 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
 
     /**
      * Emulates system hibernation and network failure.
-     * @see HeartbeatFailedException
      */
     @Test
     fun `can recover on heartbeat failure with NettyChannelException`() = runBlockingUnit {
         // We allow NetworkException to cause a reconnect.
-        testRecoverWhenHeartbeatFailWith { NettyChannelException("test IO ex") }
+        testRecoverWhenHeartbeatFailWith { NetworkException("test IO ex", true) }
 
         bot.components[EventDispatcher].joinBroadcast() // Wait our async connector to complete.
 

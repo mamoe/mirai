@@ -7,12 +7,10 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiUtils")
+@file:JvmName("TimeUtilsKt_common")
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.floor
@@ -26,6 +24,8 @@ public expect fun currentTimeMillis(): Long
  * 时间戳到秒
  */
 public fun currentTimeSeconds(): Long = currentTimeMillis() / 1000
+
+public expect fun currentTimeFormatted(format: String? = null): String
 
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.

@@ -645,12 +645,12 @@ public actual open class BotConfiguration { // open for Java
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
         public actual val Default: BotConfiguration = BotConfiguration()
-    }
-}
 
-internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
-    return {
-        @Suppress("DEPRECATION_ERROR")
-        file().loadAsDeviceInfo(json)
+        internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
+            return {
+                @Suppress("DEPRECATION_ERROR")
+                file().loadAsDeviceInfo(json)
+            }
+        }
     }
 }

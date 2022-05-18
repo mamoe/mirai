@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.utils
 
+import net.mamoe.mirai.internal.utils.StdoutLogger
+
 /**
  * 当前平台的默认的日志记录器.
  * - 在 _JVM 控制台_ 端的实现为 [println]
@@ -34,27 +36,35 @@ package net.mamoe.mirai.utils
  */
 @MiraiInternalApi
 public actual open class PlatformLogger actual constructor(identity: String?) :
-    MiraiLoggerPlatformBase() {
-    override val identity: String?
-        get() = TODO("Not yet implemented")
+    MiraiLoggerPlatformBase(), MiraiLogger {
+
+    private val delegate = StdoutLogger(identity)
+
+    override val identity: String? get() = delegate.identity
+    override val isEnabled: Boolean get() = delegate.isEnabled
+    override val isVerboseEnabled: Boolean get() = delegate.isVerboseEnabled
+    override val isDebugEnabled: Boolean get() = delegate.isDebugEnabled
+    override val isInfoEnabled: Boolean get() = delegate.isInfoEnabled
+    override val isWarningEnabled: Boolean get() = delegate.isWarningEnabled
+    override val isErrorEnabled: Boolean get() = delegate.isErrorEnabled
 
     override fun verbose0(message: String?, e: Throwable?) {
-        TODO("Not yet implemented")
+        delegate.verbose0(message, e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        TODO("Not yet implemented")
+        delegate.debug(message, e)
     }
 
     override fun info0(message: String?, e: Throwable?) {
-        TODO("Not yet implemented")
+        delegate.info0(message, e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        TODO("Not yet implemented")
+        delegate.warning(message, e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        TODO("Not yet implemented")
+        delegate.error0(message, e)
     }
 }

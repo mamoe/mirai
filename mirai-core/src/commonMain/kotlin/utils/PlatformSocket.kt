@@ -10,117 +10,56 @@
 package net.mamoe.mirai.internal.utils
 
 import io.ktor.utils.io.core.*
-import io.ktor.utils.io.streams.readPacketAtMost
-import io.ktor.utils.io.streams.writePacket
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.suspendCancellableCoroutine
+import io.ktor.utils.io.errors.*
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
-import net.mamoe.mirai.utils.withUse
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.IOException
-import java.net.Socket
-import java.util.concurrent.Executors
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 /**
  * TCP Socket.
  */
-internal class PlatformSocket : Closeable, HighwayProtocolChannel {
-    private lateinit var socket: Socket
-
+internal expect class PlatformSocket : Closeable, HighwayProtocolChannel {
     val isOpen: Boolean
-        get() =
-            if (::socket.isInitialized)
-                socket.isConnected
-            else false
 
-    override fun close() {
-        if (::socket.isInitialized) {
-            socket.close()
-        }
-        thread.shutdownNow()
-        kotlin.runCatching { writeChannel.close() }
-        kotlin.runCatching { readChannel.close() }
-    }
+    override fun close()
 
-    @PublishedApi
-    internal lateinit var writeChannel: BufferedOutputStream
-
-    @PublishedApi
-    internal lateinit var readChannel: BufferedInputStream
-
-    suspend fun send(packet: ByteArray, offset: Int, length: Int) {
-        runInterruptible(Dispatchers.IO) {
-            writeChannel.write(packet, offset, length)
-            writeChannel.flush()
-        }
-    }
+    suspend fun send(packet: ByteArray, offset: Int, length: Int)
 
     /**
      * @throws SendPacketInternalException
      */
-    override suspend fun send(packet: ByteReadPacket) {
-        runInterruptible(Dispatchers.IO) {
-            try {
-                writeChannel.writePacket(packet)
-                writeChannel.flush()
-            } catch (e: IOException) {
-                throw SendPacketInternalException(e)
-            }
-        }
-    }
-
-    private val thread = Executors.newSingleThreadExecutor()
+    override suspend fun send(packet: ByteReadPacket)
 
     /**
      * @throws ReadPacketInternalException
      */
-    override suspend fun read(): ByteReadPacket = suspendCancellableCoroutine { cont ->
-        val task = thread.submit {
-            kotlin.runCatching {
-                readChannel.readPacketAtMost(Long.MAX_VALUE)
-            }.let {
-                cont.resumeWith(it)
-            }
-        }
-        cont.invokeOnCancellation {
-            kotlin.runCatching { task.cancel(true) }
-        }
-    }
-
-    suspend fun connect(serverHost: String, serverPort: Int) {
-        runInterruptible(Dispatchers.IO) {
-            socket = Socket(serverHost, serverPort)
-            readChannel = socket.getInputStream().buffered()
-            writeChannel = socket.getOutputStream().buffered()
-        }
-    }
+    override suspend fun read(): ByteReadPacket
+    suspend fun connect(serverHost: String, serverPort: Int)
 
     companion object {
         suspend fun connect(
             serverIp: String,
             serverPort: Int,
-        ): PlatformSocket {
-            val socket = PlatformSocket()
-            socket.connect(serverIp, serverPort)
-            return socket
-        }
+        ): PlatformSocket
 
         suspend inline fun <R> withConnection(
             serverIp: String,
             serverPort: Int,
             block: PlatformSocket.() -> R,
-        ): R {
-            contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-            return connect(serverIp, serverPort).withUse(block)
-        }
+        ): R
     }
 }
 
 
-internal typealias SocketException = java.net.SocketException
-internal typealias NoRouteToHostException = NoRouteToHostException
-internal typealias UnknownHostException = UnknownHostException
+internal expect class SocketException : IOException {
+    constructor()
+    constructor(message: String)
+}
+
+internal expect class NoRouteToHostException : IOException {
+    constructor()
+    constructor(message: String)
+}
+
+internal expect class UnknownHostException : IOException {
+    constructor()
+    constructor(message: String)
+}

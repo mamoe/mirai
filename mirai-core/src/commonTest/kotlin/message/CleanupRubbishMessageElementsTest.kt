@@ -16,11 +16,9 @@ import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Compan
 import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.message.data.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class CleanupRubbishMessageElementsTest {
     //region
     private val replySource = OfflineMessageSourceImplData(

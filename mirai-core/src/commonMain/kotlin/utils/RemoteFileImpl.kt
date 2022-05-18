@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.utils
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Contact
@@ -30,11 +31,9 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.RemoteFile.Companion.ROOT_PATH
-import java.io.File
-import java.util.*
 import kotlin.contracts.contract
+import kotlin.jvm.Volatile
 
 private val fs = FileSystem
 
@@ -99,17 +98,22 @@ internal class RemoteFileInfo(
     }
 }
 
-internal fun RemoteFile.checkIsImpl(): RemoteFileImpl {
+internal fun RemoteFile.checkIsImpl(): CommonRemoteFileImpl {
     contract { returns() implies (this@checkIsImpl is RemoteFileImpl) }
     return this as? RemoteFileImpl ?: error("RemoteFile must not be implemented manually.")
 }
 
-internal class RemoteFileImpl(
+internal expect class RemoteFileImpl(
+    contact: Group,
+    path: String, // absolute
+) : CommonRemoteFileImpl {
+    constructor(contact: Group, parent: String, name: String)
+}
+
+internal abstract class CommonRemoteFileImpl(
     override val contact: Group,
     override val path: String, // absolute
 ) : RemoteFile {
-
-    constructor(contact: Group, parent: String, name: String) : this(contact, fs.normalize(parent, name))
 
     override var id: String? = null
 
@@ -119,7 +123,7 @@ internal class RemoteFileImpl(
     private val bot get() = contact.bot.asQQAndroidBot()
     private val client get() = bot.client
 
-    override val parent: RemoteFileImpl?
+    override val parent: CommonRemoteFileImpl?
         get() {
             if (path == ROOT_PATH) return null
             val s = path.substringBeforeLast('/')
@@ -133,10 +137,10 @@ internal class RemoteFileImpl(
         var nameMatching: Oidb0x6d8.GetFileListRspBody.Item? = null
 
         val idMatching = firstOrNull {
-            if (it.name == this@RemoteFileImpl.name) {
+            if (it.name == this@CommonRemoteFileImpl.name) {
                 nameMatching = it
             }
-            it.id == this@RemoteFileImpl.id
+            it.id == this@CommonRemoteFileImpl.id
         }
 
         return idMatching ?: nameMatching
@@ -582,44 +586,10 @@ internal class RemoteFileImpl(
         return upload(resource, null)
     }
 
-    // compiler bug
-    @Deprecated(
-        "Use uploadAndSend instead.",
-        replaceWith = ReplaceWith("this.uploadAndSend(file, callback)"),
-        level = DeprecationLevel.ERROR
-    )
-    @Suppress("DEPRECATION_ERROR")
-    override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
-        file.toExternalResource().use { upload(it, callback) }
-
-    //compiler bug
-    @Deprecated(
-        "Use sendFile instead.",
-        replaceWith = ReplaceWith("this.uploadAndSend(file)"),
-        level = DeprecationLevel.ERROR
-    )
-    @Suppress("DEPRECATION_ERROR")
-    override suspend fun upload(file: File): FileMessage {
-        // Dear compiler:
-        //
-        // Please generate invokeinterface.
-        //
-        // Yours Sincerely
-        // Him188
-        return file.toExternalResource().use { upload(it) }
-    }
-
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         @Suppress("DEPRECATION")
         return contact.sendMessage(uploadInternal(resource, null) + MiraiInternalMessageFlag)
     }
-
-    // compiler bug
-    override suspend fun uploadAndSend(file: File): MessageReceipt<Contact> =
-        file.toExternalResource().use { uploadAndSend(it) }
-
-    //    override suspend fun writeSession(resource: ExternalResource): FileUploadSession {
-    //    }
 
     override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {
         val info = getFileFolderInfo() ?: return null

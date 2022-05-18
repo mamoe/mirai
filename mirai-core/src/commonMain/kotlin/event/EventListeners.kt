@@ -15,12 +15,7 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.internal.network.components.EVENT_LAUNCH_UNDISPATCHED
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.systemProp
-import net.mamoe.mirai.utils.withSwitch
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
+import net.mamoe.mirai.utils.*
 import kotlin.reflect.KClass
 
 
@@ -37,13 +32,13 @@ internal class EventListeners {
         }
     }
 
-    private val map: Map<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>
+    private val map: Map<EventPriority, MutableCollection<ListenerRegistry>>
 
     init {
         val map =
-            EnumMap<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>(EventPriority::class.java)
+            EnumMap<EventPriority, MutableCollection<ListenerRegistry>>(EventPriority::class)
         EventPriority.values().forEach {
-            map[it] = ConcurrentLinkedQueue()
+            map[it] = ConcurrentLinkedDeque()
         }
         this.map = map
     }

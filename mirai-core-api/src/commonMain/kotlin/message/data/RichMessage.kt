@@ -23,6 +23,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
+import kotlin.jvm.*
 
 /**
  * XML, JSON 消息等富文本消息.

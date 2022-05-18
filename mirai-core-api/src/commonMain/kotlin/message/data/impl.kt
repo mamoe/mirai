@@ -19,8 +19,13 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.asImmutable
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.replaceAllKotlin
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 // region image
 
@@ -111,7 +116,7 @@ internal object ConstrainSingleHelper {
             }
         }
 
-        return ConstrainSingleData(list.filterNotNull().asImmutable(), hasConstrainSingle)
+        return ConstrainSingleData(list.filterNotNull(), hasConstrainSingle)
     }
 
 }
@@ -126,6 +131,9 @@ internal annotation class MessageChainConstructor
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(MessageChain.Serializer::class)
 internal class LinearMessageChainImpl @MessageChainConstructor private constructor(
+    /**
+     * Must be guaranteed to be immutable
+     */
     @JvmField
     internal val delegate: List<SingleMessage>,
     override val hasConstrainSingle: Boolean
@@ -207,7 +215,7 @@ internal class LinearMessageChainImpl @MessageChainConstructor private construct
             return if (delegate.isEmpty()) {
                 emptyMessageChain()
             } else {
-                LinearMessageChainImpl(delegate, hasConstrainSingle)
+                LinearMessageChainImpl(delegate.asImmutable(), hasConstrainSingle)
             }
         }
 

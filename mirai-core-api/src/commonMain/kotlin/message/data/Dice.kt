@@ -19,8 +19,11 @@ import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.annotations.Range
 import net.mamoe.mirai.utils.safeCast
-import org.jetbrains.annotations.Range
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 import kotlin.random.Random
 import kotlin.random.nextInt
 

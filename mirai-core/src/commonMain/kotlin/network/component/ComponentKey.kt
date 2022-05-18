@@ -7,11 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("ComponentKeyKt_common")
+
 package net.mamoe.mirai.internal.network.component
 
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import kotlin.jvm.JvmName
 import kotlin.reflect.*
-import kotlin.reflect.full.allSupertypes
 
 /**
  * A key for specific component [T]. Components are not polymorphic.
@@ -80,12 +82,7 @@ internal interface ComponentKey<T : Any> {
                 else -> upperBounds.joinToString(" & ") { it.renderType(fullName) }
             }
         }
-
-        private fun ComponentKey<*>.getComponentTypeArgument(): KTypeProjection? {
-            val thisType = this::class.allSupertypes.find { it.classifier == COMPONENT_KEY_K_CLASS }
-            return thisType?.arguments?.firstOrNull()
-        }
-
-        private val COMPONENT_KEY_K_CLASS = ComponentKey::class
     }
 }
+
+internal expect fun ComponentKey<*>.getComponentTypeArgument(): KTypeProjection?

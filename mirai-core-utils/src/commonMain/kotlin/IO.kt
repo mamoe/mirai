@@ -14,8 +14,12 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.internal.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -24,6 +28,20 @@ public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
 
 public val DECRYPTER_16_ZERO: ByteArray = ByteArray(16)
 public val KEY_16_ZEROS: ByteArray = ByteArray(16)
+
+public inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return use(block)
+}
+
+public inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return use { output.use { block(this, output) } }
+}
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public inline fun <R> ByteReadPacket.useBytes(
@@ -133,3 +151,22 @@ public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF
 
 public fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 public fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
+
+public suspend fun Input.copyTo(output: ByteWriteChannel): Long {
+    val buffer = ChunkBuffer.Pool.borrow()
+    var copied = 0L
+
+    try {
+        do {
+            buffer.resetForWrite()
+            val rc = readAvailable(buffer)
+            if (rc == -1) break
+            copied += rc
+            output.writeFully(buffer)
+        } while (true)
+
+        return copied
+    } finally {
+        buffer.release(ChunkBuffer.Pool)
+    }
+}

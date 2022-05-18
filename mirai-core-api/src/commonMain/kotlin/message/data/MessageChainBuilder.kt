@@ -15,6 +15,9 @@ package net.mamoe.mirai.message.data
 
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 构建一个 [MessageChain]. 用法查看 [MessageChainBuilder].

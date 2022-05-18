@@ -42,7 +42,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.*
-import java.util.*
 import kotlin.reflect.KClass
 
 internal interface MessageProtocolFacade {
@@ -161,7 +160,7 @@ internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
 
 
 internal class MessageProtocolFacadeImpl(
-    private val protocols: Iterable<MessageProtocol> = ServiceLoader.load(MessageProtocol::class.java),
+    private val protocols: Iterable<MessageProtocol> = loadServices(MessageProtocol::class).asIterable(),
     override val remark: String = "MessageProtocolFacade"
 ) : MessageProtocolFacade {
     override val encoderPipeline: MessageEncoderPipeline = MessageEncoderPipelineImpl()
@@ -170,8 +169,8 @@ internal class MessageProtocolFacadeImpl(
     override val outgoingPipeline: OutgoingMessagePipeline = OutgoingMessagePipelineImpl()
 
     override val loaded: List<MessageProtocol> = kotlin.run {
-        val instances: PriorityQueue<MessageProtocol> = protocols
-            .toCollection(PriorityQueue(MessageProtocol.PriorityComparator.reversed()))
+        val instances = protocols
+            .sortedWith(MessageProtocol.PriorityComparator.reversed())
         for (instance in instances) {
             instance.collectProcessors(object : ProcessorCollector() {
                 override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {

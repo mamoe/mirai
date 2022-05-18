@@ -18,6 +18,9 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.isSameClass
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**
@@ -78,9 +81,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as FriendRecall
+            if (other !is FriendRecall || !isSameClass(this, other)) return false
 
             if (bot != other.bot) return false
             if (!messageIds.contentEquals(other.messageIds)) return false
@@ -123,9 +124,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as GroupRecall
+            if (other !is GroupRecall || !isSameClass(this, other)) return false
 
             if (bot != other.bot) return false
             if (authorId != other.authorId) return false

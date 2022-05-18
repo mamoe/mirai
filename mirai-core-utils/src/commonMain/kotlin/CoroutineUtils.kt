@@ -8,7 +8,7 @@
  */
 
 
-@file:JvmName("CoroutineUtils_common")
+@file:JvmName("CoroutineUtilsKt_common")
 
 package net.mamoe.mirai.utils
 

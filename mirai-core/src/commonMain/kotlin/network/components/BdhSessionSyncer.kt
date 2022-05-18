@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -19,10 +19,8 @@ import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.utils.actualCacheDir
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
-import java.io.File
-import java.util.concurrent.CopyOnWriteArraySet
+import net.mamoe.mirai.utils.*
+import kotlin.jvm.Volatile
 
 internal interface BdhSessionSyncer {
     val bdhSession: CompletableDeferred<BdhSession>
@@ -45,8 +43,8 @@ internal interface BdhSessionSyncer {
 internal class BdhSession(
     val sigSession: ByteArray,
     val sessionKey: ByteArray,
-    var ssoAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
-    var otherAddresses: MutableSet<Pair<Int, Int>> = CopyOnWriteArraySet(),
+    var ssoAddresses: MutableSet<Pair<Int, Int>> = ConcurrentSet(),
+    var otherAddresses: MutableSet<Pair<Int, Int>> = ConcurrentSet(),
 )
 
 private val ServerListSerializer: KSerializer<Set<ServerAddress>> =
@@ -74,9 +72,9 @@ internal class BdhSessionSyncerImpl(
         }
     }
 
-    private val sessionCacheFile: File
+    private val sessionCacheFile: MiraiFile
         get() = configuration.actualCacheDir().resolve("session.bin")
-    private val serverListCacheFile: File
+    private val serverListCacheFile: MiraiFile
         get() = configuration.actualCacheDir().resolve("servers.json")
 
     override fun loadServerListFromCache() {
@@ -114,7 +112,7 @@ internal class BdhSessionSyncerImpl(
 
     override fun saveServerListToCache() {
         val serverListCacheFile = this.serverListCacheFile
-        serverListCacheFile.parentFile?.mkdirs()
+        serverListCacheFile.parent?.mkdirs()
 
         logger.verbose("Saving server list to cache")
         kotlin.runCatching {
@@ -131,7 +129,7 @@ internal class BdhSessionSyncerImpl(
 
     override fun saveToCache() {
         val sessionCacheFile = this.sessionCacheFile
-        sessionCacheFile.parentFile?.mkdirs()
+        sessionCacheFile.parent?.mkdirs()
         if (bdhSession.isCompleted) {
             logger.verbose("Saving bdh session to cache")
             kotlin.runCatching {

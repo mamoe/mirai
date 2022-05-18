@@ -34,9 +34,8 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
-import java.util.stream.Stream
+import kotlin.jvm.*
 import kotlin.reflect.KProperty
-import kotlin.streams.asSequence
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_ABSTRACT_MESSAGE_KEYS as RAMK
 
 /**
@@ -491,12 +490,6 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
 @JvmName("newChain")
 public fun Sequence<Message>.toMessageChain(): MessageChain =
     LinearMessageChainImpl.create(ConstrainSingleHelper.constrainSingleMessages(this))
-
-/**
- * 扁平化 [this] 并创建一个 [MessageChain].
- */
-@JvmName("newChain")
-public fun Stream<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
 
 /**
  * 扁平化 [this] 并创建一个 [MessageChain].
