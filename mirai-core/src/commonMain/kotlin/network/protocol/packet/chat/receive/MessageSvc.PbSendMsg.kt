@@ -9,10 +9,9 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member

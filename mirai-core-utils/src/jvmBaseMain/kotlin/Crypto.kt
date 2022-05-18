@@ -12,7 +12,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.use
+import io.ktor.utils.io.core.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream

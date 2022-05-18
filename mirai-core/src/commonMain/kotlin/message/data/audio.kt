@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.message.data
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

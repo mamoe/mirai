@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.io.core.readUShort
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.message.data.checkIsImpl

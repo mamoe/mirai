@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.data.LightAppInternal
 import net.mamoe.mirai.internal.message.data.LongMessageInternal

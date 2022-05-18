@@ -84,6 +84,8 @@ val `kotlinx-io-common` = kotlinx("io", Versions.io)
 val `kotlinx-io-jvm` = kotlinx("io-jvm", Versions.io)
 val `kotlinx-io-native` = kotlinx("io-macosx64", Versions.io)
 
+val `ktor-io` = ktor("io", Versions.ktor)
+
 fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
     implementation(module) {
         /*

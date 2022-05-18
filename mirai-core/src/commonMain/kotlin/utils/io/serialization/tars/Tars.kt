@@ -11,9 +11,8 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.charsets.Charsets
-import kotlinx.io.core.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
