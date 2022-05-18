@@ -17,25 +17,42 @@ import java.io.File
 import java.util.zip.ZipFile
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TestBuildPlugin : AbstractTest() {
+    private fun File.wt(text: String) {
+        parentFile?.mkdirs()
+        writeText(text)
+    }
 
     @Test
     @DisplayName("project as normal dependency")
     fun buildWithMultiProjectsAsNormalDependency() {
         settingsFile.appendText(
             """
-            include("nested")
+            include("nested1")
+            include("nested0")
         """.trimIndent()
         )
-        tempDir.resolve("nested").also { it.mkdirs() }.resolve("build.gradle").writeText(
+        tempDir.resolve("nested1/build.gradle").wt(
+            """
+            plugins {
+                id("org.jetbrains.kotlin.jvm")
+            }
+            repositories {
+                mavenCentral()
+            }
+        """.trimIndent()
+        )
+        tempDir.resolve("nested0/build.gradle").wt(
             """
             plugins {
                 id("org.jetbrains.kotlin.jvm")
                 id("net.mamoe.mirai-console")
             }
             dependencies {
+                api project(":nested1") 
                 api "com.zaxxer:SparseBitSet:1.2"
             }
             repositories {
@@ -47,9 +64,27 @@ class TestBuildPlugin : AbstractTest() {
         tempDir.resolve("build.gradle").appendText(
             """
             dependencies {
-                implementation project(":nested") 
-                asNormalDep project(":nested") 
+                implementation project(":nested0") 
+                asNormalDep project(":nested0")
             }
+        """.trimIndent()
+        )
+        tempDir.resolve("nested0/src/main/kotlin/test.kt").wt(
+            """
+            package nested
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("nested1/src/main/kotlin/test.kt").wt(
+            """
+            package nested1
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("src/main/kotlin/test.kt").wt(
+            """
+            package thetop
+            public class TestClass
         """.trimIndent()
         )
 
@@ -69,7 +104,97 @@ class TestBuildPlugin : AbstractTest() {
 
             assertFalse { dpShared.contains("com.zaxxer:SparseBitSet:1.2") }
             assertTrue { dpPrivate.contains("com.zaxxer:SparseBitSet:1.2") }
-            assertTrue { dpPrivate.contains(":nested") }
+            assertTrue { dpPrivate.contains(":nested0") }
+            assertTrue { dpPrivate.contains(":nested1") }
+            assertNotNull(zipFile.getEntry("thetop/TestClass.class"))
+            assertNull(zipFile.getEntry("nested/TestClass.class"))
+            assertNull(zipFile.getEntry("nested1/TestClass.class"))
+        }
+    }
+
+    @Test
+    @DisplayName("project as normal dependency 2")
+    fun buildWithMultiProjectsAsNormalDependency2() {
+        settingsFile.appendText(
+            """
+            include("nested1")
+            include("nested0")
+        """.trimIndent()
+        )
+        tempDir.resolve("nested1/build.gradle").wt(
+            """
+            plugins {
+                id("org.jetbrains.kotlin.jvm")
+            }
+            repositories {
+                mavenCentral()
+            }
+        """.trimIndent()
+        )
+        tempDir.resolve("nested0/build.gradle").wt(
+            """
+            plugins {
+                id("org.jetbrains.kotlin.jvm")
+                id("net.mamoe.mirai-console")
+            }
+            dependencies {
+                api project(":nested1") 
+                api "com.zaxxer:SparseBitSet:1.2"
+            }
+            repositories {
+                mavenCentral()
+            }
+        """.trimIndent()
+        )
+
+        tempDir.resolve("build.gradle").appendText(
+            """
+            dependencies {
+                implementation project(":nested0") 
+                asNormalDep project(":nested1")
+            }
+        """.trimIndent()
+        )
+        tempDir.resolve("nested0/src/main/kotlin/test.kt").wt(
+            """
+            package nested
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("nested1/src/main/kotlin/test.kt").wt(
+            """
+            package nested1
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("src/main/kotlin/test.kt").wt(
+            """
+            package thetop
+            public class TestClass
+        """.trimIndent()
+        )
+
+        gradleRunner()
+            .withArguments(":buildPlugin", "--stacktrace", "--info")
+            .build()
+
+
+        ZipFile(findJar()).use { zipFile ->
+
+            val dpPrivate = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-private.txt")
+            ).use { it.readBytes().decodeToString() }
+            val dpShared = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-shared.txt")
+            ).use { it.readBytes().decodeToString() }
+
+            assertFalse { dpShared.contains("com.zaxxer:SparseBitSet:1.2") }
+            assertTrue { dpPrivate.contains("com.zaxxer:SparseBitSet:1.2") }
+            assertFalse { dpPrivate.contains(":nested0") }
+            assertTrue { dpPrivate.contains(":nested1") }
+            assertNotNull(zipFile.getEntry("thetop/TestClass.class"))
+            assertNotNull(zipFile.getEntry("nested/TestClass.class"))
+            assertNull(zipFile.getEntry("nested1/TestClass.class"))
         }
     }
 
@@ -81,7 +206,7 @@ class TestBuildPlugin : AbstractTest() {
             include("nested")
         """.trimIndent()
         )
-        tempDir.resolve("nested").also { it.mkdirs() }.resolve("build.gradle").writeText(
+        tempDir.resolve("nested/build.gradle").wt(
             """
             plugins {
                 id("org.jetbrains.kotlin.jvm")
@@ -104,6 +229,19 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
+        tempDir.resolve("nested/src/main/kotlin/test.kt").wt(
+            """
+            package nested
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("src/main/kotlin/test.kt").wt(
+            """
+            package thetop
+            public class TestClass
+        """.trimIndent()
+        )
+
         gradleRunner()
             .withArguments(":buildPlugin", "--stacktrace", "--info")
             .build()
@@ -120,6 +258,9 @@ class TestBuildPlugin : AbstractTest() {
 
             assertFalse { dpShared.contains("com.zaxxer:SparseBitSet:1.2") }
             assertTrue { dpPrivate.contains("com.zaxxer:SparseBitSet:1.2") }
+
+            assertNotNull(zipFile.getEntry("thetop/TestClass.class"))
+            assertNotNull(zipFile.getEntry("nested/TestClass.class"))
         }
     }
 
@@ -131,7 +272,7 @@ class TestBuildPlugin : AbstractTest() {
             include("nested")
         """.trimIndent()
         )
-        tempDir.resolve("nested").also { it.mkdirs() }.resolve("build.gradle").writeText(
+        tempDir.resolve("nested/build.gradle").wt(
             """
             plugins {
                 id("org.jetbrains.kotlin.jvm")
@@ -157,10 +298,28 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
+        tempDir.resolve("nested/src/main/kotlin/test.kt").wt(
+            """
+            package nested
+            public class TestClass
+        """.trimIndent()
+        )
+        tempDir.resolve("src/main/kotlin/test.kt").wt(
+            """
+            package thetop
+            public class TestClass
+        """.trimIndent()
+        )
+
         gradleRunner()
             .withArguments(":buildPlugin", "dependencies", "--stacktrace", "--info")
             .build()
         checkOutput()
+
+        ZipFile(findJar()).use { zipFile ->
+            assertNotNull(zipFile.getEntry("thetop/TestClass.class"))
+            assertNotNull(zipFile.getEntry("nested/TestClass.class"))
+        }
     }
 
     @Test
