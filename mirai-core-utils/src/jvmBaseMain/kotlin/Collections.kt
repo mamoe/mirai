@@ -10,6 +10,8 @@
 package net.mamoe.mirai.utils
 
 import java.util.*
+import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.reflect.KClass
 
 
 public fun <T> Collection<T>.asImmutable(): Collection<T> {
@@ -43,4 +45,32 @@ public inline fun <K, V> Map<K, V>.asImmutable(): Map<K, V> {
 @Suppress("FunctionName")
 public actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
     return java.util.concurrent.ConcurrentHashMap()
+}
+
+@Suppress("FunctionName")
+public actual fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E> {
+    return java.util.PriorityQueue()
+}
+
+@Suppress("FunctionName")
+public actual fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E> {
+    return java.util.PriorityQueue(comparator)
+}
+
+public actual typealias LinkedList<E> = java.util.LinkedList<E>
+
+
+public actual typealias MutableDeque<E> = java.util.Deque<E>
+
+public actual typealias MutableQueue<E> = java.util.Queue<E>
+
+
+@Suppress("FunctionName")
+public actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> {
+    return EnumMap(clazz.java)
+}
+
+@Suppress("FunctionName")
+public actual fun <E> ConcurrentSet(): MutableSet<E> {
+    return CopyOnWriteArraySet()
 }

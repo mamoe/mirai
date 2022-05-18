@@ -14,22 +14,18 @@ package net.mamoe.mirai.internal.event
 import kotlinx.coroutines.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.event.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import java.util.concurrent.Executors
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
+import net.mamoe.mirai.internal.test.runBlockingUnit
+import kotlin.test.*
 
 @JvmBlockingBridge
 internal class NextEventTest : AbstractEventTest() {
-    private val dispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatcher: CoroutineDispatcher = newSingleThreadContext("NextEventTest")
 
-    @AfterEach
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @AfterTest
     fun stopDispatcher() {
-        dispatcher.close()
+        (dispatcher as CloseableCoroutineDispatcher).close()
     }
 
 
@@ -46,7 +42,7 @@ internal class NextEventTest : AbstractEventTest() {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    suspend fun `nextEvent can receive`() {
+    fun `nextEvent can receive`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
         withContext(dispatcher) {
@@ -62,7 +58,7 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEvent can filter type`() {
+    fun `nextEvent can filter type`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
         withContext(dispatcher) {
@@ -82,7 +78,7 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEvent can filter by filter`() {
+    fun `nextEvent can filter by filter`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
         withContext(dispatcher) {
@@ -102,18 +98,18 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEvent can timeout`() {
+    fun `nextEvent can timeout`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
         withContext(dispatcher) {
-            assertThrows<TimeoutCancellationException> {
+            assertFailsWith<TimeoutCancellationException> {
                 withTimeout(timeMillis = 1) { channel.nextEvent<TE>(EventPriority.MONITOR) }
             }
         }
     }
 
     @Test
-    suspend fun `nextEvent can cancel`() {
+    fun `nextEvent can cancel`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
         withContext(dispatcher) {
@@ -136,7 +132,7 @@ internal class NextEventTest : AbstractEventTest() {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    suspend fun `nextEventOrNull can receive`() {
+    fun `nextEventOrNull can receive`() = runBlockingUnit {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
@@ -150,7 +146,7 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEventOrNull can filter type`() {
+    fun `nextEventOrNull can filter type`() = runBlockingUnit {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
@@ -168,7 +164,7 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEventOrNull can filter by filter`() {
+    fun `nextEventOrNull can filter by filter`() = runBlockingUnit {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) { it.x == 2 } }
@@ -186,7 +182,7 @@ internal class NextEventTest : AbstractEventTest() {
     }
 
     @Test
-    suspend fun `nextEventOrNull can timeout`() {
+    fun `nextEventOrNull can timeout`() = runBlockingUnit {
         withContext(dispatcher) {
             assertEquals(null,
                 withTimeoutOrNull<TE>(timeMillis = 1) { globalEventChannel().nextEvent(EventPriority.MONITOR) })

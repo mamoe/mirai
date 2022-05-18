@@ -18,8 +18,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.assertFailsWith
+import kotlin.test.Test
 
 internal class RecallTest : AbstractNoticeProcessorTest() {
 
@@ -99,7 +99,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
             // sender
             addMember(1, permission = MemberPermission.MEMBER)
         }
-        assertThrows<PermissionDeniedException> {
+        assertFailsWith<PermissionDeniedException> {
             Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
@@ -125,7 +125,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
             // sender
             addMember(1, permission = MemberPermission.ADMINISTRATOR)
         }
-        assertThrows<PermissionDeniedException> {
+        assertFailsWith<PermissionDeniedException> {
             Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
@@ -147,7 +147,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
             // sender
             addMember(1, permission = MemberPermission.OWNER)
         }
-        assertThrows<PermissionDeniedException> {
+        assertFailsWith<PermissionDeniedException> {
             Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }

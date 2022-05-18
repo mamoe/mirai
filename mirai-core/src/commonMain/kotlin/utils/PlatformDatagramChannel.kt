@@ -10,41 +10,34 @@
 package net.mamoe.mirai.internal.utils
 
 import io.ktor.utils.io.core.*
-import io.ktor.utils.io.nio.readPacketAtMost
-import io.ktor.utils.io.nio.writePacket
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.net.InetSocketAddress
-import java.nio.channels.DatagramChannel
-import java.nio.channels.ReadableByteChannel
-import java.nio.channels.WritableByteChannel
 
-/**
- * 多平台适配的 DatagramChannel.
- */
-internal class PlatformDatagramChannel(serverHost: String, serverPort: Short) : Closeable {
-    @PublishedApi
-    internal val channel: DatagramChannel =
-        DatagramChannel.open().connect(InetSocketAddress(serverHost, serverPort.toInt()))
-    val isOpen: Boolean get() = channel.isOpen
-    override fun close() = channel.close()
-
-    suspend inline fun send(packet: ByteReadPacket): Boolean = withContext(Dispatchers.IO) {
-        try {
-            (channel as WritableByteChannel).writePacket(packet)
-        } catch (e: Throwable) {
-            throw SendPacketInternalException(e)
-        }
-    }
-
-    suspend inline fun read(): ByteReadPacket = withContext(Dispatchers.IO) {
-        try {
-            (channel as ReadableByteChannel).readPacketAtMost(Long.MAX_VALUE)
-        } catch (e: Throwable) {
-            throw ReadPacketInternalException(e)
-        }
-    }
-}
+//
+///**
+// * 多平台适配的 DatagramChannel.
+// */
+//internal class PlatformDatagramChannel(serverHost: String, serverPort: Short) : Closeable {
+//    @PublishedApi
+//    internal val channel: DatagramChannel =
+//        DatagramChannel.open().connect(InetSocketAddress(serverHost, serverPort.toInt()))
+//    val isOpen: Boolean get() = channel.isOpen
+//    override fun close() = channel.close()
+//
+//    suspend inline fun send(packet: ByteReadPacket): Boolean = withContext(Dispatchers.IO) {
+//        try {
+//            (channel as WritableByteChannel).writePacket(packet)
+//        } catch (e: Throwable) {
+//            throw SendPacketInternalException(e)
+//        }
+//    }
+//
+//    suspend inline fun read(): ByteReadPacket = withContext(Dispatchers.IO) {
+//        try {
+//            (channel as ReadableByteChannel).readPacketAtMost(Long.MAX_VALUE)
+//        } catch (e: Throwable) {
+//            throw ReadPacketInternalException(e)
+//        }
+//    }
+//}
 
 /*
 

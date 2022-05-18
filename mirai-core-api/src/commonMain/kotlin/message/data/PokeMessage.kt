@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.castOrNull
+import kotlin.jvm.JvmField
 
 /**
  * 戳一戳. 可以发送给好友或群.

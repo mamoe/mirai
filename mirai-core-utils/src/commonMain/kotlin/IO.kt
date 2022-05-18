@@ -14,8 +14,10 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.internal.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -133,3 +135,22 @@ public inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF
 
 public fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 public fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
+
+public suspend fun Input.copyTo(output: ByteWriteChannel): Long {
+    val buffer = ChunkBuffer.Pool.borrow()
+    var copied = 0L
+
+    try {
+        do {
+            buffer.resetForWrite()
+            val rc = readAvailable(buffer)
+            if (rc == -1) break
+            copied += rc
+            output.writeFully(buffer)
+        } while (true)
+
+        return copied
+    } finally {
+        buffer.release(ChunkBuffer.Pool)
+    }
+}

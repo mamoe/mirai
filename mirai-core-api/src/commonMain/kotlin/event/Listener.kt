@@ -18,6 +18,8 @@ import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.event.EventPriority.*
 import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * 订阅者的状态

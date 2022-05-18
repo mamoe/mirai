@@ -7,11 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress(
-    "MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE",
-    "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE",
-    "INAPPLICABLE_JVM_NAME"
-)
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
@@ -27,7 +22,9 @@ import net.mamoe.mirai.message.code.MiraiCode.serializeToMiraiCode
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
-import kotlin.internal.LowPriorityInOverloadResolution
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -200,7 +197,8 @@ public interface Message {
      *
      * @param ignoreCase 为 `true` 时忽略大小写
      */
-    @LowPriorityInOverloadResolution
+    @kotlin.internal.LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     public fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
         contentEquals(another, ignoreCase, false)
 
@@ -281,6 +279,7 @@ public interface Message {
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
+    @Suppress("INAPPLICABLE_JVM_NAME")
     public operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).toMessageChain()
 
@@ -360,7 +359,7 @@ public inline fun Message.repeat(count: Int): MessageChain {
         return this.toMessageChain()
     }
     return buildMessageChain(count) {
-        repeat(count) {
+        repeat(count) l@{
             add(this@repeat)
         }
     }

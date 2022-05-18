@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
+import kotlin.jvm.JvmName
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**

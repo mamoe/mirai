@@ -26,8 +26,8 @@ import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.cast
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
 import java.io.IOException
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse

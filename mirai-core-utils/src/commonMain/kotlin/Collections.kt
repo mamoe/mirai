@@ -7,7 +7,67 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("CollectionsKt_common")
+
 package net.mamoe.mirai.utils
+
+import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 
 @Suppress("FunctionName")
 public expect fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V>
+
+@Suppress("FunctionName")
+public expect fun <E> ConcurrentLinkedDeque(): MutableDeque<E>
+
+@Suppress("FunctionName")
+public fun <E> ConcurrentLinkedQueue(): MutableQueue<E> = ConcurrentLinkedDeque()
+
+@Suppress("FunctionName")
+public expect fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E>
+
+@Suppress("FunctionName")
+public expect fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E>
+
+public expect class LinkedList<E> constructor() : MutableList<E> {
+    public fun addLast(element: E)
+}
+
+public expect interface MutableQueue<E> : MutableCollection<E> {
+    /**
+     * Adds the specified element to the collection.
+     *
+     * @return `true` if the element has been added, `false` if the collection does not support duplicates
+     * and the element is already contained in the collection.
+     * @throws IllegalStateException if the queue is full.
+     */
+    public override fun add(element: E): Boolean
+
+    /**
+     * Removes and returns the head of the queue, `null` otherwise.
+     */
+    public fun poll(): E?
+
+
+    /**
+     * Adds an element into the queue.
+     * @return `true` if the element has been added, `false` if queue is full.
+     */
+    public fun offer(element: E): Boolean
+}
+
+public expect interface MutableDeque<E> : MutableQueue<E> {
+    public fun addFirst(element: E)
+}
+
+@Suppress("FunctionName")
+public expect fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V>
+
+@Suppress("FunctionName")
+public expect fun <E> ConcurrentSet(): MutableSet<E>
+
+@Deprecated("", ReplaceWith("getOrElse(key) { default }"))
+public fun <K, V : R, R> Map<K, V>.getOrDefault(key: K, default: R): R = getOrElse(key) { default }
+
+@Deprecated("", ReplaceWith("getOrPut(key) { value }"))
+public fun <K, V> MutableMap<K, V>.putIfAbsent(key: K, value: V): V = getOrPut(key) { value }

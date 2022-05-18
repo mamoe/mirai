@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.descriptors.*
@@ -21,23 +22,22 @@ import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.PrintStream
 
 internal class DebugLogger(
-    val out: PrintStream?
+    val out: Output?
 ) {
     var structureHierarchy: Int = 0
 
     fun println(message: Any?) {
-        out?.println("    ".repeat(structureHierarchy) + message)
+        out?.appendLine("    ".repeat(structureHierarchy) + message)
     }
 
     fun println() {
-        out?.println()
+        out?.appendLine()
     }
 
     inline fun println(lazyMessage: () -> String) {
-        out?.println("    ".repeat(structureHierarchy) + lazyMessage())
+        out?.appendLine("    ".repeat(structureHierarchy) + lazyMessage())
     }
 }
 

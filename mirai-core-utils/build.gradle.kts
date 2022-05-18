@@ -47,6 +47,7 @@ kotlin {
 
         val jvmBaseMain by getting {
             dependencies {
+                implementation(`jetbrains-annotations`)
             }
         }
 

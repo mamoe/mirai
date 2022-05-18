@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.util.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
@@ -44,15 +43,19 @@ import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
-import java.util.stream.Stream
 
-internal class AnnouncementsImpl(
-    private val group: GroupImpl,
-    private val logger: MiraiLogger,
+internal expect class AnnouncementsImpl(
+    group: GroupImpl,
+    logger: MiraiLogger,
+) : CommonAnnouncementsImpl
+
+internal abstract class CommonAnnouncementsImpl(
+    protected val group: GroupImpl,
+    protected val logger: MiraiLogger,
 ) : Announcements {
     inline val bot get() = group.bot
 
-    private suspend fun getGroupAnnouncementList(i: Int): GroupAnnouncementList? {
+    protected suspend fun getGroupAnnouncementList(i: Int): GroupAnnouncementList? {
         return bot.getRawGroupAnnouncements(group.id, i).onLeft {
             if (logger.isEnabled) { // createException
                 logger.warning(
@@ -77,19 +80,6 @@ internal class AnnouncementsImpl(
         }.map { it.toAnnouncement(group) }
     }
 
-    override fun asStream(): Stream<OnlineAnnouncement> {
-        return stream {
-            var i = 1
-            while (true) {
-                val result = runBlocking { getGroupAnnouncementList(i++) } ?: break
-
-                if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty()) break
-
-                result.inst?.let { yieldAll(it) }
-                result.feeds?.let { yieldAll(it) }
-            }
-        }.map { it.toAnnouncement(group) }
-    }
 
     override suspend fun delete(fid: String): Boolean {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }

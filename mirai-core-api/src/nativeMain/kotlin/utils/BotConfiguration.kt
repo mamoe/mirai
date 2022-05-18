@@ -406,7 +406,7 @@ public actual open class BotConfiguration { // open for Java
      *
      * @since 2.4
      */
-    public var cacheDir: String = workingDir + "/cache"
+    public var cacheDir: String = "$workingDir/cache"
 
     /**
      * 联系人信息缓存配置. 将会保存在 [cacheDir] 中 `contacts` 目录

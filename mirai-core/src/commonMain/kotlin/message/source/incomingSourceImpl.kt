@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.internal.message.source
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
@@ -36,7 +38,6 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.encodeBase64
 import net.mamoe.mirai.utils.mapToIntArray
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
@@ -47,7 +48,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
@@ -80,7 +81,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
@@ -153,7 +154,7 @@ internal class OnlineMessageSourceFromTempImpl(
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     override val ids: IntArray get() = sequenceIds //
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
@@ -189,7 +190,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
     @Transient
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
     override val ids: IntArray get() = sequenceIds

@@ -23,15 +23,15 @@ import net.mamoe.mirai.message.data.MusicKind.NeteaseCloudMusic
 import net.mamoe.mirai.message.data.MusicShare
 import net.mamoe.mirai.utils.castUp
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> =
         arrayOf(TextProtocol(), MusicShareProtocol(), RichMessageProtocol(), GeneralMessageSenderProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)

@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.testFramework.codegen.descriptors.transform
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArrayAsHexStringTransformer
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.ValueDescToStringRenderer
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class OptimizeByteArrayAsHexStringTransformerTest : AbstractTest() {

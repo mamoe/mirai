@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -21,6 +23,7 @@ import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmField
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -102,7 +105,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     // == false 表示第一次登录失败, 且此失败没必要重试
                     logIfEnabled { "[FIRST LOGIN ERROR] current = $current" }
                     logIfEnabled { "[FIRST LOGIN ERROR] current.state = ${current.state}" }
-                    throw current.getLastFailure() ?: exceptionCollector.getLast() ?: error("Failed to login with unknown reason.")
+                    throw current.getLastFailure() ?: exceptionCollector.getLast()
+                    ?: error("Failed to login with unknown reason.")
                 }
             }
 
@@ -195,8 +199,9 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
         }
     }
 
+    private val lock = SynchronizedObject()
     protected open fun refreshInstance() {
-        synchronized(this) { // avoid concurrent `createInstance()`
+        synchronized(lock) { // avoid concurrent `createInstance()`
             if (getCurrentInstanceOrNull() == null) this.current.compareAndSet(null, createInstance())
         }
     }

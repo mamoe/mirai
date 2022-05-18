@@ -9,18 +9,19 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 internal class ImageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(ImageProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)

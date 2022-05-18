@@ -21,10 +21,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.contact.file.AbsoluteFolderImpl
-import net.mamoe.mirai.internal.contact.file.createChildFile
-import net.mamoe.mirai.internal.contact.file.impl
-import net.mamoe.mirai.internal.contact.file.resolved
+import net.mamoe.mirai.internal.contact.file.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8.GetFileListRspBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
@@ -71,7 +68,7 @@ internal data class FileMessageImpl(
                 ?.resolved(root) as AbsoluteFolderImpl?
                 ?: kotlin.run {
                     for (folder in folders) {
-                        AbsoluteFolderImpl.getItemsFlow(
+                        CommonAbsoluteFolderImpl.getItemsFlow(
                             (contact.bot as QQAndroidBot).client,
                             contact,
                             folder.folderInfo!!.folderId

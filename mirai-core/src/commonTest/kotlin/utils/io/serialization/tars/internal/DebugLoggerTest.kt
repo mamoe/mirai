@@ -18,9 +18,9 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.toReadPacket
 import net.mamoe.mirai.utils.toUHexString
-import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 

@@ -128,5 +128,5 @@ public inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)
     }
-    return this.toReadPacket().withUse(t)
+    return this.toReadPacket().use(t)
 }

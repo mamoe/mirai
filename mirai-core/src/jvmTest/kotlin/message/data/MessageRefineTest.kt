@@ -31,8 +31,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.utils.PlatformLogger
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
 import kotlin.random.Random
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 

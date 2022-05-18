@@ -9,14 +9,20 @@
 
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import kotlin.jvm.Volatile
+
 
 internal class SingleEntrantLock {
     @Volatile
     @PublishedApi
     internal var locker: Any? = null
 
+    private val lock = SynchronizedObject()
+
     inline fun <R> withLock(locker: Any, crossinline block: () -> R): R? {
-        return synchronized(this) {
+        return synchronized(lock) {
             if (this.locker === locker) return null
             this.locker = locker
             block().also {
