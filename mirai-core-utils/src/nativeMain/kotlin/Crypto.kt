@@ -38,3 +38,7 @@ public actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray {
 public actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
+
+public actual fun availableProcessors(): Int {
+    TODO("Not yet implemented")
+}

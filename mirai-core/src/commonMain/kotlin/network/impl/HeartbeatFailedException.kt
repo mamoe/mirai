@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.impl.netty
+package net.mamoe.mirai.internal.network.impl
 
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 

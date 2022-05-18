@@ -12,6 +12,8 @@ package net.mamoe.mirai.internal.utils
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.io.core.Input
+import kotlinx.io.streams.asInput
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.io.InputStream
@@ -96,6 +98,8 @@ internal abstract class ExternalResourceHolder : Closeable {
 
 internal interface ExternalResourceInternal : ExternalResource {
     val holder: ExternalResourceHolder
+
+    override fun input(): Input = inputStream().asInput()
 }
 
 internal class ExternalResourceImplByFile(
@@ -157,6 +161,10 @@ internal class ExternalResourceImplByByteArray(
         get() = data//.clone()
 
     override fun inputStream(): InputStream = data.inputStream()
+    override fun input(): Input {
+        return data.inputStream().asInput()
+    }
+
     override fun close() {
         kotlin.runCatching { closed.complete(Unit) }
     }
