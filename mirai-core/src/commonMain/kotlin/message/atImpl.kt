@@ -7,11 +7,3 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils
-
-import io.ktor.utils.io.errors.*
-
-public expect interface Closeable {
-    @Throws(IOException::class)
-    public fun close()
-}

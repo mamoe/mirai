@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight

@@ -9,9 +9,7 @@
 
 package net.mamoe.mirai.internal.network.notice.priv
 
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUShort
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.contact.User

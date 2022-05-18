@@ -1,29 +1,26 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.utils
 
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.readPacketAtMost
+import io.ktor.utils.io.streams.writePacket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Closeable
-import kotlinx.io.streams.readPacketAtMost
-import kotlinx.io.streams.writePacket
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
 import net.mamoe.mirai.utils.withUse
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.IOException
-import java.net.NoRouteToHostException
 import java.net.Socket
-import java.net.UnknownHostException
 import java.util.concurrent.Executors
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

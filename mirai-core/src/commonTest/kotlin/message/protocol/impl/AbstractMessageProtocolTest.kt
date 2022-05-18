@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group

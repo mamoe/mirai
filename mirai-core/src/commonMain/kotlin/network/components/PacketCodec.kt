@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey

@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.message.image
 
-import kotlinx.io.core.*
-import kotlinx.io.streams.asInput
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.asInput
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.*
 import java.io.IOException

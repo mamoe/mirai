@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.errors.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.io.errors.IOException
 import net.mamoe.mirai.internal.utils.ExternalResourceHolder
 import net.mamoe.mirai.internal.utils.ExternalResourceLeakObserver
 import net.mamoe.mirai.internal.utils.detectFileTypeAndClose

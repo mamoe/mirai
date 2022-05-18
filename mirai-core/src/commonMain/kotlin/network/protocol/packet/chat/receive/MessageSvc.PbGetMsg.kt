@@ -11,10 +11,10 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.events.BotEvent

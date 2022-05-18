@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet
 
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.appClientVersion

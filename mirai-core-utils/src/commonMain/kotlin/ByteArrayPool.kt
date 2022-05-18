@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.pool.DefaultPool
+import io.ktor.utils.io.pool.*
 
 /**
  * 缓存 [ByteArray] 实例的 [ObjectPool]

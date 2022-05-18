@@ -173,7 +173,7 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.console.util.ConsoleInternalApi",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
 
-    "kotlinx.io.core.internal.DangerousInternalIoApi"
+    "io.ktor.utils.io.core.internal.DangerousInternalIoApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

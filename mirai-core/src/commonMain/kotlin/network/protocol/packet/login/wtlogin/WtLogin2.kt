@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.miscBitMap
 import net.mamoe.mirai.internal.network.protocol.packet.*

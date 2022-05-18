@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.core.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 
 

@@ -14,9 +14,8 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.charsets.Charsets
-import kotlinx.io.core.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.core.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic

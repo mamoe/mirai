@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.spi
 
-import kotlinx.io.errors.IOException
+import io.ktor.utils.io.errors.*
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmStatic

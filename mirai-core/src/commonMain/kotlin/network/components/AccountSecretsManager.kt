@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount

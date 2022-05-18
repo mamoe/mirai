@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.LoginExtraData
 import net.mamoe.mirai.internal.network.QQAndroidClient
