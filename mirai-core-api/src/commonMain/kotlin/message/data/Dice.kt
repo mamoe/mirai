@@ -44,7 +44,7 @@ public data class Dice(
     }
 
     override val name: String
-        get() = "[骰子:$value]"
+        get() = "[骰子:$value]" // 官方名称应该是 "[随机骰子]"
 
     @MiraiExperimentalApi
     override val id: Int
