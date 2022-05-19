@@ -13,9 +13,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoNumber
 import kotlinx.serialization.protobuf.ProtoType
+import net.mamoe.mirai.internal.utils.io.NestedStructure
+import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.unzip
 
 @Serializable
 internal class ImCommon : ProtoBuf {
@@ -538,9 +541,25 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal class LightAppElem(
+        @NestedStructure(LightAppElemDesensitizer::class)
         @ProtoNumber(1) @JvmField val data: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+
+    internal object LightAppElemDesensitizer : NestedStructureDesensitizer<LightAppElem, ByteArray> {
+
+        // unzip
+        override fun deserialize(context: LightAppElem, byteArray: ByteArray): ByteArray {
+            if (byteArray.isEmpty()) return byteArray
+
+            return when (byteArray[0].toInt()) {
+                0 -> byteArrayOf(0) + byteArray.decodeToString(startIndex = 1).toByteArray()
+                1 -> byteArrayOf(0) + byteArray.unzip(offset = 1).decodeToString().toByteArray()
+                else -> error("unknown compression flag=${byteArray[0]}")
+            }
+        }
+
+    }
 
     @Serializable
     internal class LocationInfo(
