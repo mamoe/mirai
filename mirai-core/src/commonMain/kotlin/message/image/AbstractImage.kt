@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.MiraiLogger
  */
 // moved from mirai-core-api since 2.11
 internal sealed class AbstractImage : Image {
-    private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId]" }
+    private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId, width=$width, height=$height, size=$size, type=$imageType, isEmoji=$isEmoji]" }
 
     override val size: Long
         get() = 0L
