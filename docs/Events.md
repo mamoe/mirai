@@ -63,33 +63,46 @@ GlobalEventChannel.parentScope(coroutineScope).subscribeAlways<GroupMessageEvent
 
 
 // 如果不想限制生命周期，可获取 listener 处理
-val listener: CompletableJob = GlobalEventChannel.subscribeAlways<GroupMessageEvent> { event -> }
+val listener: CompletableJob =
+    GlobalEventChannel.subscribeAlways<GroupMessageEvent> { event -> }
 
 listener.complete() // 停止监听
 ```
 
 异常默认会被相关 `Bot` 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
+
 ```
 .exceptionHandler { e -> e.printStackTrace() }
 ```
+
+**注意**：如果要在 Mirai Console 插件中监听事件，请不要使用使用无作用域控制的 `GlobalEventChannel`
+，如 `GlobalEventChannel.subscribeAlways`
+。请使用插件主类的扩展函数 `globalEventChannel()`
+或者 `GlobalEventChannel.parentScope(scope)` 等方式控制监听器协程作用域。
 
 ### Java
 
 ```java
 // 创建监听
-Listener listener = GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
-    MessageChain chain = event.getMessage(); // 可获取到消息内容等, 详细查阅 `GroupMessageEvent`
-    
-    event.getSubject().sendMessage("Hello!"); // 回复消息
-})
+Listener listener=GlobalEventChannel.INSTANCE.parentScope(scope).subscribeAlways(GroupMessageEvent.class,event->{
+        MessageChain chain=event.getMessage(); // 可获取到消息内容等, 详细查阅 `GroupMessageEvent`
 
-listener.complete(); // 停止监听 
+        event.getSubject().sendMessage("Hello!"); // 回复消息
+        })
+
+        listener.complete(); // 停止监听 
 ```
 
 异常默认会被相关 `Bot` 日志记录。可以在 `subscribeAlways` 之前添加如下内容来处理异常。
+
 ```java
-.exceptionHandler(e -> e.printStackTrace())
+.exceptionHandler(e->e.printStackTrace())
 ```
+
+**注意**：如果要在 Mirai Console 插件中监听事件，请不要使用使用无作用域控制的 `GlobalEventChannel`
+，如 `GlobalEventChannel.subscribeAlways`
+。请使用 `GlobalEventChannel.parentScope(PluginMain.INSTANCE)`
+等方式控制监听器协程作用域。
 
 > 你已经了解了基本事件操作。现在你可以继续阅读通道处理和扩展等内容，或：
 >
