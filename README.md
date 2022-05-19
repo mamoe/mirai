@@ -119,7 +119,8 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ## 开始
 
 - **用户手册**: [UserManual](docs/UserManual.md)
-- 开发文档: [docs](docs/README.md), [docs.mirai.mamoe.net](https://docs.mirai.mamoe.net/)
+- 开发文档: [在 GitHub 阅读](docs/README.md)
+  或 [在 docs.mirai.mamoe.net 阅读](https://docs.mirai.mamoe.net/)
 - 论坛: [Mirai Forum](https://mirai.mamoe.net/)
   > *Mirai 只有唯一一个官方论坛 Mirai Forum*
 
