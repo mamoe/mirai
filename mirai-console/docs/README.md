@@ -2,7 +2,7 @@
 
 欢迎来到 mirai-console 开发文档!
 
-**Mirai Console 基于 [mirai-core](/)，因此请先阅读 [Mirai 文档](/docs/CoreAPI.md)
+**Mirai Console 基于 mirai-core，因此建议先阅读 [Mirai 文档](/docs/CoreAPI.md)
 。**
 
 > 其他链接：
