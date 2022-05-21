@@ -26,6 +26,16 @@ internal fun Any?.structureToStringIfAvailable(): String? {
     } else null
 }
 
+
+internal fun Any?.structureToStringAndDesensitize(): String =
+    StructureToStringTransformer.instance.transformAndDesensitize(this)
+
+internal fun Any?.structureToStringAndDesensitizeIfAvailable(): String? {
+    return if (StructureToStringTransformer.available) {
+        StructureToStringTransformer.instance.transformAndDesensitize(this)
+    } else null
+}
+
 private val SoutvLogger: MiraiLogger by lazy {
     MiraiLogger.Factory.create(
         StructureToStringTransformer::class,
@@ -37,12 +47,15 @@ internal fun Any?.printStructure(name: String = "unnamed") {
     return SoutvLogger.debug { "$name = ${this.structureToString()}" }
 }
 
-internal fun interface StructureToStringTransformer {
+internal interface StructureToStringTransformer {
     fun transform(any: Any?): String
+
+    fun transformAndDesensitize(any: Any?): String
 
     companion object {
         private class ObjectToStringStructureToStringTransformer : StructureToStringTransformer {
             override fun transform(any: Any?): String = any.toString()
+            override fun transformAndDesensitize(any: Any?): String = any.toString()
         }
 
         val instance by lazy {
