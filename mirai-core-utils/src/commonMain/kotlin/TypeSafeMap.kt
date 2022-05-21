@@ -15,6 +15,9 @@ import kotlinx.serialization.Serializable
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.properties.ReadOnlyProperty
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 @Serializable
 @JvmInline
@@ -37,9 +40,22 @@ public sealed interface TypeSafeMap {
     public fun toMapBoxed(): Map<TypeKey<*>, Any>
     public fun toMap(): Map<String, Any>
 
+    public operator fun <T> provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T> {
+        val typeKey = TypeKey<T>(property.name)
+        return ReadOnlyProperty { _, _ -> get(typeKey) }
+    }
+
     public companion object {
         public val EMPTY: TypeSafeMap = TypeSafeMapImpl(emptyMap())
     }
+}
+
+public fun <T> TypeSafeMap.property(name: String): ReadOnlyProperty<Any?, T> {
+    return property(TypeKey(name))
+}
+
+public fun <T> TypeSafeMap.property(typeKey: TypeKey<T>): ReadOnlyProperty<Any?, T> {
+    return ReadOnlyProperty { _, _ -> get(typeKey) }
 }
 
 public operator fun TypeSafeMap.plus(other: TypeSafeMap): TypeSafeMap {
@@ -57,6 +73,24 @@ public sealed interface MutableTypeSafeMap : TypeSafeMap {
     public operator fun <T> set(key: TypeKey<T>, value: T)
     public fun <T> remove(key: TypeKey<T>): T?
     public fun setAll(other: TypeSafeMap)
+
+
+    public override operator fun <T> provideDelegate(
+        thisRef: Any?,
+        property: KProperty<*>
+    ): ReadWriteProperty<Any?, T> {
+        val typeKey = TypeKey<T>(property.name)
+        return object : ReadWriteProperty<Any?, T> {
+            override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+                return get(typeKey)
+            }
+
+            override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+                set(typeKey, value)
+            }
+        }
+    }
+
 }
 
 private val NULL: Any = Symbol("NULL")!!
