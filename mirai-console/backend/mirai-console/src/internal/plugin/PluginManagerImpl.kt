@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
@@ -74,13 +73,8 @@ internal class PluginManagerImpl(
     override val pluginLoaders: List<PluginLoader<*, *>>
         get() = _pluginLoaders.toList()
 
-    override fun getPluginDescription(plugin: Plugin): PluginDescription = if (plugin is JvmPlugin) {
+    override fun getPluginDescription(plugin: Plugin): PluginDescription =
         plugin.safeLoader.getPluginDescription(plugin)
-    } else resolvedPlugins.firstOrNull { it == plugin }
-        ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
-        ?.getPluginDescription(plugin)
-        ?: error("Plugin is unloaded")
-
 
     init {
         MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
