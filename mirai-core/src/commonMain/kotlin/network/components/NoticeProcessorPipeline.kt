@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushP
 import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
+import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
 import kotlin.reflect.KClass
 
@@ -93,10 +94,10 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
             data: ProtocolStruct,
             attributes: TypeSafeMap
         ): Collection<Packet> {
-            traceLogging.info { "processAlso: data=$data" }
-            return process(data, this.attributes + attributes).also {
-                this.collected.data += it
-                traceLogging.info { "processAlso: result=$it" }
+            traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
+            return process(data, this.attributes + attributes).also { packets ->
+                this.collected.data += packets
+                traceLogging.info { "processAlso: result=$packets" }
             }
         }
     }
