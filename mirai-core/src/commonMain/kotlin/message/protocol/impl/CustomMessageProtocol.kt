@@ -21,6 +21,10 @@ internal class CustomMessageProtocol : MessageProtocol() {
         add(Decoder())
     }
 
+    private companion object {
+        private const val MIRAI_CUSTOM_ELEM_TYPE = 103904510 // "mirai.hashCode()"
+    }
+
     private class Encoder : MessageEncoder<CustomMessage> {
         override suspend fun MessageEncoderContext.process(data: CustomMessage) {
             markAsConsumed()
@@ -39,9 +43,6 @@ internal class CustomMessageProtocol : MessageProtocol() {
             )
         }
 
-        private companion object {
-            private const val MIRAI_CUSTOM_ELEM_TYPE = 103904510 // "mirai.hashCode()"
-        }
     }
 
     private class Decoder : MessageDecoder {
@@ -49,6 +50,7 @@ internal class CustomMessageProtocol : MessageProtocol() {
             if (data.customElem == null) return
             markAsConsumed()
             kotlin.runCatching {
+                if (data.customElem.enumType != MIRAI_CUSTOM_ELEM_TYPE) return
                 data.customElem.data.read {
                     CustomMessage.load(this)
                 }
