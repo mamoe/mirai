@@ -52,6 +52,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.contracts.contract
+import kotlin.time.Duration.Companion.seconds
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -73,7 +74,9 @@ internal open class QQAndroidBot constructor(
         if (!this.isActive) return
         runBlocking {
             try { // this may not be very good but
-                components[SsoProcessor].logout(network)
+                withTimeoutOrNull(5.seconds) {
+                    components[SsoProcessor].logout(network)
+                }
             } catch (ignored: Exception) {
             }
         }
