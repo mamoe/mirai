@@ -85,5 +85,5 @@ internal data class FileMessageImpl(
         return folder.createChildFile(result.fileInfo)
     }
 
-    override fun toString(): String = "[mirai:file:$name,$id,$size,$busId]"
+    override fun toString(): String = "[mirai:file:$name, id=$id, internalId=$busId, size=$size]"
 }
