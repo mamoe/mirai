@@ -105,6 +105,8 @@ internal class DynLibClassLoader(
     }
 
     internal fun findButNoSystem(name: String): Class<*>? {
+        if (name.startsWith("java.")) return null
+
         val pt = this.parent
         if (pt is DynLibClassLoader) {
             pt.findButNoSystem(name)?.let { return it }
@@ -280,10 +282,10 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
     internal fun resolvePluginSharedLibAndPluginClass(name: String): Class<*>? {
         return try {
-            pluginSharedCL.loadClass(name)
+            pluginSharedCL.findButNoSystem(name)
         } catch (e: ClassNotFoundException) {
-            resolvePluginPublicClass(name)
-        }
+            null
+        } ?: resolvePluginPublicClass(name)
     }
 
     internal fun resolvePluginPublicClass(name: String): Class<*>? {
@@ -322,7 +324,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         // Search in independent class loader
         // @context: pluginIndependentCL.parent = pluinSharedCL
         try {
-            return pluginIndependentCL.loadClass(name)
+            pluginIndependentCL.findButNoSystem(name)?.let { return it }
         } catch (ignored: ClassNotFoundException) {
         }
 

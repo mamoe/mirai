@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+package pluginuseconsoledepsfallback
+
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription

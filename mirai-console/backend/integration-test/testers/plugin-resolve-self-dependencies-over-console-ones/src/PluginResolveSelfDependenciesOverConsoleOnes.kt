@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+package pluginresolveselfdepoverconsoleones
+
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.resources.*

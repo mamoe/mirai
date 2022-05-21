@@ -36,6 +36,8 @@ configurations.create("consoleRuntimeClasspath").attributes {
     attribute(Usage.USAGE_ATTRIBUTE,
         project.objects.named(Usage::class.java, Usage.JAVA_API)
     )
+}.also { consoleRuntimeClasspath ->
+    consoleRuntimeClasspath.exclude(group = "io.ktor")
 }
 
 dependencies {
