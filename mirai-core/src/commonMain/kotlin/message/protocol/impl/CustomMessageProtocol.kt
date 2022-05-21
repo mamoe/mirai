@@ -40,7 +40,7 @@ internal class CustomMessageProtocol : MessageProtocol() {
         }
 
         private companion object {
-            private val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
+            private const val MIRAI_CUSTOM_ELEM_TYPE = 103904510 // "mirai.hashCode()"
         }
     }
 
