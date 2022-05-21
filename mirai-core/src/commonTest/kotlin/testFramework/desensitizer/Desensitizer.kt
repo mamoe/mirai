@@ -165,7 +165,7 @@ private val format = Yaml {
 }
 
 
-private class DesensitizationVisitor(
+internal class DesensitizationVisitor(
     private val desensitizer: Desensitizer,
 ) : ValueDescTransformerNotNull<Nothing?>() {
     override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc {

@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.pipeline
 
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
+import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.util.*
@@ -178,7 +179,7 @@ protected constructor(
         attributes: TypeSafeMap,
     ) : AbstractProcessorPipelineContext<D, R>(attributes, traceLogging) {
         override suspend fun processAlso(data: D, attributes: TypeSafeMap): Collection<R> {
-            traceLogging.info { "processAlso: data=$data" }
+            traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
             return process(data, this.attributes + attributes).also {
                 this.collected.data += it
                 traceLogging.info { "processAlso: result=$it" }
@@ -195,7 +196,7 @@ protected constructor(
     ): Unit = throw e
 
     override suspend fun process(data: D, attributes: TypeSafeMap): Collection<R> {
-        traceLogging.info { "process: data=$data" }
+        traceLogging.info { "process: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
         val context = createContext(attributes)
 
         val diff = if (traceLogging.isEnabled) CollectionDiff<R>() else null

@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
 import net.mamoe.mirai.utils.toUHexString
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
@@ -20,6 +21,7 @@ import kotlin.reflect.jvm.javaField
 
 internal class StructureToStringTransformerLegacy : StructureToStringTransformer {
     override fun transform(any: Any?): String = any._miraiContentToString()
+    override fun transformAndDesensitize(any: Any?): String = Desensitizer.desensitize(any._miraiContentToString())
 
     private val indent: String = " ".repeat(4)
 

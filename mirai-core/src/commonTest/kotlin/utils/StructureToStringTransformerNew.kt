@@ -15,6 +15,8 @@ import net.mamoe.mirai.internal.testFramework.codegen.descriptors.transform
 import net.mamoe.mirai.internal.testFramework.codegen.removeDefaultValues
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArrayAsHexStringTransformer
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
+import net.mamoe.mirai.internal.testFramework.desensitizer.DesensitizationVisitor
+import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
 
 internal class StructureToStringTransformerNew : StructureToStringTransformer {
     private val legacy = StructureToStringTransformerLegacy()
@@ -26,4 +28,15 @@ internal class StructureToStringTransformerNew : StructureToStringTransformer {
                 .removeDefaultValues()
                 .renderToString()
         }.getOrNull() ?: legacy.transform(any)
+
+    override fun transformAndDesensitize(any: Any?): String {
+        val desensitizer = Desensitizer.local
+        return kotlin.runCatching {
+            ValueDescAnalyzer.analyze(any)
+                .transform(OptimizeByteArrayAsHexStringTransformer())
+                .removeDefaultValues()
+                .transform(DesensitizationVisitor(desensitizer))
+                .renderToString()
+        }.getOrNull() ?: legacy.transform(any)
+    }
 }
