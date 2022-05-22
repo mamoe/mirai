@@ -15,6 +15,8 @@ import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.EmptyRefineContext
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.RefineContext
+import net.mamoe.mirai.internal.message.protocol.decode.*
+import net.mamoe.mirai.internal.message.protocol.encode.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.message.data.*

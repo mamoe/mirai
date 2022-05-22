@@ -7,14 +7,29 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message.protocol
+package net.mamoe.mirai.internal.message.protocol.decode
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
+import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
+import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
+import kotlin.coroutines.RestrictsSuspension
 
+internal interface MessageDecoderPipeline : ProcessorPipeline<MessageDecoderProcessor, ImMsgBody.Elem, Message>
+
+@RestrictsSuspension // Implementor can only call `MessageDecoderContext.process` and `processAlso` so there will be no suspension point
+internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.Elem, Message> {
+    companion object {
+        val BOT = TypeKey<Bot>("bot")
+        val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
+        val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
+    }
+}
 
 internal open class MessageDecoderPipelineImpl :
     AbstractProcessorPipeline<MessageDecoderProcessor, MessageDecoderContext, ImMsgBody.Elem, Message>(

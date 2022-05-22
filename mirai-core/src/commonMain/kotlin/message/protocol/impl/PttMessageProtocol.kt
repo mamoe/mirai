@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.message.protocol.MessageEncoder
-import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext
-import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext.Companion.collectGeneralFlags
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.PttMessage
 import net.mamoe.mirai.utils.hexToBytes

@@ -15,7 +15,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.contact.inferMessageSourceKind
-import net.mamoe.mirai.internal.message.protocol.*
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacadeImpl
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderPipelineImpl
+import net.mamoe.mirai.internal.message.protocol.decodeAndRefineLight
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderPipelineImpl
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions

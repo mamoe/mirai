@@ -7,20 +7,18 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message.protocol
+package net.mamoe.mirai.internal.message.protocol.encode
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.pipeline.PipelineConsumptionMarker
-import net.mamoe.mirai.internal.pipeline.Processor
+import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
+import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
 import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.utils.TypeKey
-import net.mamoe.mirai.utils.uncheckedCast
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.RestrictsSuspension
-import kotlin.reflect.KClass
 
 internal interface MessageEncoderPipeline :
     ProcessorPipeline<MessageEncoderProcessor<*>, SingleMessage, ImMsgBody.Elem> {
@@ -60,23 +58,30 @@ internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessag
     }
 }
 
+internal open class MessageEncoderPipelineImpl :
+    AbstractProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem>(
+        PipelineConfiguration(stopWhenConsumed = true),
+        @OptIn(TestOnly::class)
+        defaultTraceLogging
+    ),
+    MessageEncoderPipeline {
 
-internal fun interface MessageEncoder<T : SingleMessage> : PipelineConsumptionMarker {
-    suspend fun MessageEncoderContext.process(data: T)
-}
+    private inner class MessageEncoderContextImpl(attributes: TypeSafeMap) : MessageEncoderContext,
+        BaseContextImpl(attributes) {
+        override var generalFlags: ImMsgBody.Elem by lateinitMutableProperty {
+            ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE))
+        }
+    }
 
-/**
- * Adapter for [MessageEncoder] to be used as [Processor].
- */
-internal class MessageEncoderProcessor<T : SingleMessage>(
-    private val encoder: MessageEncoder<T>,
-    private val elementType: KClass<T>,
-) : Processor<MessageEncoderContext, SingleMessage> {
-    override suspend fun process(context: MessageEncoderContext, data: SingleMessage) {
-        if (elementType.isInstance(data)) {
-            @Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
-            encoder.run { context.process(data.uncheckedCast()) }
-            // TODO: 2022/4/27 handle exceptions
+    override fun createContext(attributes: TypeSafeMap): MessageEncoderContext = MessageEncoderContextImpl(attributes)
+
+    companion object {
+        private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
+
+        @TestOnly
+        val defaultTraceLogging: MiraiLoggerWithSwitch by lazy {
+            MiraiLogger.Factory.create(MessageEncoderPipelineImpl::class, "MessageEncoderPipeline")
+                .withSwitch(systemProp("mirai.message.encoder.pipeline.log.full", false))
         }
     }
 }

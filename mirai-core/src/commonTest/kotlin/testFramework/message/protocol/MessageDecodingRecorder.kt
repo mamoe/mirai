@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.testFramework.message.protocol
 
-import net.mamoe.mirai.internal.message.protocol.MessageDecoder
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.testFramework.codegen.ValueDescAnalyzer
 import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer.Companion.generateAndDesensitize

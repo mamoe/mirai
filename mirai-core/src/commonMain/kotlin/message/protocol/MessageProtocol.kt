@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KClass
 
