@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.RestrictsSuspension
 
 internal interface MessageEncoderPipeline :
-    ProcessorPipeline<MessageEncoderProcessor<*>, SingleMessage, ImMsgBody.Elem> {
+    ProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem> {
 }
 
 @RestrictsSuspension
@@ -73,7 +73,8 @@ internal open class MessageEncoderPipelineImpl :
         }
     }
 
-    override fun createContext(attributes: TypeSafeMap): MessageEncoderContext = MessageEncoderContextImpl(attributes)
+    override fun createContext(data: SingleMessage, attributes: TypeSafeMap): MessageEncoderContext =
+        MessageEncoderContextImpl(attributes)
 
     companion object {
         private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()

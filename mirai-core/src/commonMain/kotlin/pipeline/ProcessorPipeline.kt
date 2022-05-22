@@ -19,11 +19,13 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 
 internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineConsumptionMarker {
+    val origin: Any get() = this
+
     suspend fun process(context: C, data: D)
 }
 
-internal interface ProcessorPipeline<P : Processor<out ProcessorPipelineContext<D, *>, D>, D, R> {
-    val processors: Collection<P>
+internal interface ProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineContext<D, R>, D, R> {
+    val processors: MutableCollection<ProcessorBox<P>>
 
     fun interface DisposableRegistry : Closeable {
         fun dispose()
@@ -37,15 +39,51 @@ internal interface ProcessorPipeline<P : Processor<out ProcessorPipelineContext<
 
     fun registerBefore(processor: P): DisposableRegistry
 
+
+    /**
+     * Process using the [context].
+     */
+    suspend fun process(
+        data: D,
+        context: C,
+        attributes: TypeSafeMap = TypeSafeMap.EMPTY,
+    ): ProcessResult<C, R>
+
+    /**
+     * Process with a new context
+     */
     suspend fun process(
         data: D,
         attributes: TypeSafeMap = TypeSafeMap.EMPTY
-    ): Collection<R>
-
+    ): ProcessResult<C, R>
 }
 
+internal inline fun <P : Processor<*, *>, Pip : ProcessorPipeline<P, *, *, *>> Pip.replaceProcessor(
+    predicate: (origin: Any) -> Boolean,
+    processor: P
+): Boolean {
+    for (box in processors) {
+        val value = box.value
+        if (predicate(value.origin)) {
+            box.value = processor
+            return true
+        }
+    }
+    return false
+}
+
+
+internal data class ProcessorBox<P : Processor<*, *>>(
+    var value: P
+)
+
+internal data class ProcessResult<C : ProcessorPipelineContext<*, R>, R>(
+    val context: C,
+    val collected: Collection<R>,
+)
+
 @JvmInline
-internal value class MutableProcessResult<R>(
+internal value class MutablePipelineResult<R>(
     val data: MutableCollection<R>
 )
 
@@ -59,10 +97,10 @@ internal interface ProcessorPipelineContext<D, R> {
      */
     val attributes: TypeSafeMap
 
-    val collected: MutableProcessResult<R>
+    val collected: MutablePipelineResult<R>
 
     // DSL to simplify some expressions
-    operator fun MutableProcessResult<R>.plusAssign(result: R?) {
+    operator fun MutablePipelineResult<R>.plusAssign(result: R?) {
         if (result != null) collect(result)
     }
 
@@ -103,10 +141,13 @@ internal interface ProcessorPipelineContext<D, R> {
     /**
      * Fire the [data] into the processor pipeline, and collect the results to current [collected].
      *
-     * @param attributes extra attributes
+     * @param extraAttributes extra attributes
      * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
      */
-    suspend fun processAlso(data: D, attributes: TypeSafeMap = TypeSafeMap.EMPTY): Collection<R>
+    suspend fun processAlso(
+        data: D,
+        extraAttributes: TypeSafeMap = TypeSafeMap.EMPTY
+    ): ProcessResult<out ProcessorPipelineContext<D, R>, R>
 }
 
 internal abstract class AbstractProcessorPipelineContext<D, R>(
@@ -130,7 +171,7 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
         }
     }
 
-    override val collected: MutableProcessResult<R> = MutableProcessResult(ConcurrentLinkedQueue())
+    override val collected: MutablePipelineResult<R> = MutablePipelineResult(ConcurrentLinkedQueue())
 
     override fun collect(result: R) {
         collected.data.add(result)
@@ -151,37 +192,42 @@ internal abstract class AbstractProcessorPipeline<P : Processor<C, D>, C : Proce
 protected constructor(
     val configuration: PipelineConfiguration,
     val traceLogging: MiraiLogger,
-) : ProcessorPipeline<P, D, R> {
+) : ProcessorPipeline<P, C, D, R> {
     constructor(configuration: PipelineConfiguration) : this(configuration, SilentLogger)
 
     /**
      * Must be ordered
      */
-    override val processors = ConcurrentLinkedDeque<P>()
+    override val processors: ConcurrentLinkedDeque<ProcessorBox<P>> = ConcurrentLinkedDeque()
 
     override fun registerProcessor(processor: P): ProcessorPipeline.DisposableRegistry {
-        processors.add(processor)
+        val box = ProcessorBox(processor)
+        processors.add(box)
         return ProcessorPipeline.DisposableRegistry {
-            processors.remove(processor)
+            processors.remove(box)
         }
     }
 
     override fun registerBefore(processor: P): ProcessorPipeline.DisposableRegistry {
-        processors.addFirst(processor)
+        val box = ProcessorBox(processor)
+        processors.addFirst(box)
         return ProcessorPipeline.DisposableRegistry {
-            processors.remove(processor)
+            processors.remove(box)
         }
     }
 
-    protected abstract fun createContext(attributes: TypeSafeMap): C
+    protected abstract fun createContext(data: D, attributes: TypeSafeMap): C
 
     abstract inner class BaseContextImpl(
         attributes: TypeSafeMap,
     ) : AbstractProcessorPipelineContext<D, R>(attributes, traceLogging) {
-        override suspend fun processAlso(data: D, attributes: TypeSafeMap): Collection<R> {
+        override suspend fun processAlso(
+            data: D,
+            extraAttributes: TypeSafeMap
+        ): ProcessResult<out ProcessorPipelineContext<D, R>, R> {
             traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
-            return process(data, this.attributes + attributes).also {
-                this.collected.data += it
+            return process(data, this.attributes + extraAttributes).also {
+                this.collected.data += it.collected
                 traceLogging.info { "processAlso: result=$it" }
             }
         }
@@ -195,14 +241,17 @@ protected constructor(
         e: Throwable
     ): Unit = throw e
 
-    override suspend fun process(data: D, attributes: TypeSafeMap): Collection<R> {
+    override suspend fun process(data: D, attributes: TypeSafeMap): ProcessResult<C, R> {
+        return process(data, createContext(data, attributes), attributes)
+    }
+
+    override suspend fun process(data: D, context: C, attributes: TypeSafeMap): ProcessResult<C, R> {
         traceLogging.info { "process: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
-        val context = createContext(attributes)
 
         val diff = if (traceLogging.isEnabled) CollectionDiff<R>() else null
         diff?.save(context.collected.data)
 
-        for (processor in processors) {
+        for ((processor) in processors) {
 
             val result = kotlin.runCatching {
                 processor.process(context, data)
@@ -226,6 +275,6 @@ protected constructor(
                 break
             }
         }
-        return context.collected.data
+        return ProcessResult(context, context.collected.data)
     }
 }

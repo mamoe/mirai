@@ -13,6 +13,7 @@
 package net.mamoe.mirai.internal.contact
 
 import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -28,11 +29,12 @@ import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
-import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.message.image.getIdByImageType
 import net.mamoe.mirai.internal.message.image.getImageTypeById
+import net.mamoe.mirai.internal.message.protocol.outgoing.GroupMessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -60,7 +62,6 @@ import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     contract { returns() implies (instance is GroupImpl) }
@@ -114,6 +115,9 @@ private val logger by lazy {
     MiraiLogger.Factory.create(GroupImpl::class.java, "Group")
 }
 
+internal fun Bot.nickIn(context: Contact): String =
+    if (context is Group) context.botAsMember.nameCardOrNick else bot.nick
+
 @Suppress("PropertyName")
 internal class GroupImpl constructor(
     bot: QQAndroidBot,
@@ -149,6 +153,8 @@ internal class GroupImpl constructor(
 
     val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
+    private val messageProtocolStrategy: MessageProtocolStrategy<GroupImpl> = GroupMessageProtocolStrategy(this)
+
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
 
@@ -178,29 +184,15 @@ internal class GroupImpl constructor(
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
-        val isMiraiInternal = if (message is MessageChain) {
-            message.anyIsInstance<MiraiInternalMessageFlag>()
-        } else false
-
-        require(isMiraiInternal || !message.isContentEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this, message) }
-
-        val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, ::GroupMessagePreSendEvent)
-
-        val result = GroupSendMessageHandler(this)
-            .runCatching { sendMessage(message, chain, isMiraiInternal, SendMessageStep.FIRST) }
-
-        if (result.isSuccess) {
-            // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-            logMessageSent(chain)
-        }
-        if (!isMiraiInternal) {
-            GroupMessagePostSendEvent(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
-        }
-        return result.getOrThrow()
+        return sendMessageImpl(
+            message,
+            messageProtocolStrategy,
+            ::GroupMessagePreSendEvent,
+            ::GroupMessagePostSendEvent.cast()
+        )
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun uploadImage(resource: ExternalResource): Image = resource.withAutoClose {
         if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")

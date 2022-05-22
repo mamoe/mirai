@@ -19,6 +19,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.internal.message.protocol.outgoing.GroupTempMessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -41,18 +43,19 @@ internal class NormalMemberImpl constructor(
     override val joinTimestamp: Int get() = info.joinTimestamp
     override val lastSpeakTimestamp: Int get() = info.lastSpeakTimestamp
 
-    override fun toString(): String = "NormalMember($id)"
+    private val messageProtocolStrategy: MessageProtocolStrategy<NormalMemberImpl> = GroupTempMessageProtocolStrategy
 
-    private val handler: GroupTempSendMessageHandler by lazy { GroupTempSendMessageHandler(this) }
+    override fun toString(): String = "NormalMember($id)"
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
         return asFriendOrNull()?.sendMessage(message)?.convert()
             ?: asStrangerOrNull()?.sendMessage(message)?.convert()
-            ?: handler.sendMessageImpl<NormalMember>(
+            ?: sendMessageImpl(
                 message = message,
                 preSendEventConstructor = ::GroupTempMessagePreSendEvent,
                 postSendEventConstructor = ::GroupTempMessagePostSendEvent.cast(),
+                messageProtocolStrategy = messageProtocolStrategy
             )
     }
 

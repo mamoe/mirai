@@ -27,6 +27,8 @@ internal class MessageEncoderProcessor<T : SingleMessage>(
     private val encoder: MessageEncoder<T>,
     private val elementType: KClass<T>,
 ) : Processor<MessageEncoderContext, SingleMessage> {
+    override val origin: Any get() = this
+
     override suspend fun process(context: MessageEncoderContext, data: SingleMessage) {
         if (elementType.isInstance(data)) {
             @Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")

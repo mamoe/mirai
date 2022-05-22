@@ -24,6 +24,8 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
+import net.mamoe.mirai.internal.message.protocol.outgoing.FriendMessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -64,6 +66,9 @@ internal class FriendImpl(
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override var nick: String by info::nick
     override var remark: String by info::remark
+
+    private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
+
     override suspend fun delete() {
         check(bot.friends[id] != null) {
             "Friend $id had already been deleted"
@@ -73,12 +78,13 @@ internal class FriendImpl(
         }
     }
 
-
-    private val handler: FriendSendMessageHandler by lazy { FriendSendMessageHandler(this) }
-
-    @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
-        return handler.sendMessageImpl(message, ::FriendMessagePreSendEvent, ::FriendMessagePostSendEvent)
+        return sendMessageImpl(
+            message,
+            messageProtocolStrategy,
+            ::FriendMessagePreSendEvent,
+            ::FriendMessagePostSendEvent.cast()
+        )
     }
 
     override fun toString(): String = "Friend($id)"

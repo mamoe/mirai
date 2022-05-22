@@ -13,67 +13,14 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
-import net.mamoe.mirai.internal.message.data.LongMessageInternal
-import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.verbose
 
 internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
 internal inline val Group.groupCode: Long get() = this.id
 internal inline val User.uin: Long get() = this.id
 internal inline val Bot.uin: Long get() = this.id
-
-internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessageInternal) {
-        bot.logger.verbose("$this <- $message".replaceMagicCodes())
-    }
-}
-
-internal fun Iterable<SingleMessage>.countImages(): Int = this.count { it is Image }
-
-private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
-
-private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
-
-internal fun Message.verifySendingValid() {
-//    fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
-    when (this) {
-        is MessageChain -> {
-            this.forEach { it.verifySendingValid() }
-        }
-        is FileMessage -> {
-            if (!ALLOW_SENDING_FILE_MESSAGE) { // #1715
-                if (this !is FileMessageImpl) error("Customized FileMessage cannot be send")
-                if (!this.allowSend) error(
-                    "Sending FileMessage is not allowed, as it may cause unexpected results. " +
-                            "Add JVM argument `-Dmirai.message.allow.sending.file.message=true` to disable this check. " +
-                            "Do this only for compatibility!"
-                )
-            }
-        }
-    }
-}
-
-internal fun Iterable<SingleMessage>.verifyLength(
-    originalMessage: Message, target: Contact,
-): Int {
-    val chain = this
-    val length = estimateLength(target, 15001)
-    if (length > 15000 || countImages() > 50) {
-        throw MessageTooLargeException(
-            target, originalMessage, this.toMessageChain(),
-            "message(${
-                chain.joinToString("", limit = 10).let { rsp ->
-                    if (rsp.length > 100) {
-                        rsp.take(100) + "..."
-                    } else rsp
-                }
-            }) is too large. Allow up to 50 images or 5000 chars"
-        )
-    }
-    return length
-}
 
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
@@ -168,7 +115,3 @@ internal fun String.replaceMagicCodes(): String = this
 
 internal fun Message.takeContent(length: Int): String =
     this.toMessageChain().joinToString("", limit = length) { it.content }
-
-internal inline fun <reified T : MessageContent> Message.takeSingleContent(): T? {
-    return this as? T ?: this.castOrNull<MessageChain>()?.findIsInstance()
-}

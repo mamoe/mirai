@@ -37,7 +37,8 @@ import kotlin.reflect.KClass
 /**
  * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
  */
-internal interface NoticeProcessorPipeline : ProcessorPipeline<NoticeProcessor, ProtocolStruct, Packet> {
+internal interface NoticeProcessorPipeline :
+    ProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet> {
     companion object : ComponentKey<NoticeProcessorPipeline> {
         val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
 
@@ -46,7 +47,7 @@ internal interface NoticeProcessorPipeline : ProcessorPipeline<NoticeProcessor, 
             data: ProtocolStruct,
             attributes: TypeSafeMap = TypeSafeMap.EMPTY,
         ): Packet {
-            return components.noticeProcessorPipeline.process(data, attributes).toPacket()
+            return components.noticeProcessorPipeline.process(data, attributes).collected.toPacket()
         }
     }
 }
@@ -93,10 +94,10 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
         override suspend fun processAlso(
             data: ProtocolStruct,
             attributes: TypeSafeMap
-        ): Collection<Packet> {
+        ): ProcessResult<out ProcessorPipelineContext<ProtocolStruct, Packet>, Packet> {
             traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
             return process(data, this.attributes + attributes).also { packets ->
-                this.collected.data += packets
+                this.collected.data += packets.collected
                 traceLogging.info { "processAlso: result=$packets" }
             }
         }
@@ -120,7 +121,8 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
         )
     }
 
-    override fun createContext(attributes: TypeSafeMap): NoticePipelineContext = ContextImpl(attributes)
+    override fun createContext(data: ProtocolStruct, attributes: TypeSafeMap): NoticePipelineContext =
+        ContextImpl(attributes)
 
     protected open fun packetToString(data: Any?): String =
         data.toDebugString("mirai.network.notice.pipeline.log.full")
