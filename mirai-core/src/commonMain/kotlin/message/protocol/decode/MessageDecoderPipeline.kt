@@ -20,7 +20,8 @@ import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.RestrictsSuspension
 
-internal interface MessageDecoderPipeline : ProcessorPipeline<MessageDecoderProcessor, ImMsgBody.Elem, Message>
+internal interface MessageDecoderPipeline :
+    ProcessorPipeline<MessageDecoderProcessor, MessageDecoderContext, ImMsgBody.Elem, Message>
 
 @RestrictsSuspension // Implementor can only call `MessageDecoderContext.process` and `processAlso` so there will be no suspension point
 internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.Elem, Message> {
@@ -41,7 +42,8 @@ internal open class MessageDecoderPipelineImpl :
 
     inner class MessageDecoderContextImpl(attributes: TypeSafeMap) : MessageDecoderContext, BaseContextImpl(attributes)
 
-    override fun createContext(attributes: TypeSafeMap): MessageDecoderContext = MessageDecoderContextImpl(attributes)
+    override fun createContext(data: ImMsgBody.Elem, attributes: TypeSafeMap): MessageDecoderContext =
+        MessageDecoderContextImpl(attributes)
 
     companion object {
         @TestOnly

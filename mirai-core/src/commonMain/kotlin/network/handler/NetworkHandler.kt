@@ -147,7 +147,6 @@ internal interface NetworkHandler : CoroutineScope {
      */
     suspend fun <P : Packet?> sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): P
 
-
     /**
      * Sends [packet] and does not expect any response.
      *

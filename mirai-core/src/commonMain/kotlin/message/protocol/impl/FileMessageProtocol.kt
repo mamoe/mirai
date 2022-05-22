@@ -9,21 +9,92 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.io.core.readUShort
+import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.checkIsImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
+import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
+import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
+import net.mamoe.mirai.message.data.visitor.acceptChildren
 import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.systemProp
 
 internal class FileMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         // no encoder
         add(Decoder())
+
+        add(OutgoingMessageTransformer {
+            if (attributes[OutgoingMessagePipelineContext.STEP] == SendMessageStep.FIRST
+            ) {
+                verifyFileMessage(currentMessageChain)
+            }
+        })
+
+        add(FileMessageSender())
+    }
+
+    companion object {
+        private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
+
+        fun verifyFileMessage(message: MessageChain) {
+            message.acceptChildren(object : RecursiveMessageVisitor<Unit>() {
+                override fun visitFileMessage(message: FileMessage, data: Unit) {
+                    if (ALLOW_SENDING_FILE_MESSAGE) return
+                    // #1715
+                    if (message !is FileMessageImpl) error("Customized FileMessage cannot be send")
+                    if (!message.allowSend) error(
+                        "Sending FileMessage is not allowed, as it may cause unexpected results. " +
+                                "Add JVM argument `-Dmirai.message.allow.sending.file.message=true` to disable this check. " +
+                                "Do this only for compatibility!"
+                    )
+                }
+            })
+
+        }
+    }
+
+    private class FileMessageSender : OutgoingMessageSender {
+        override suspend fun OutgoingMessagePipelineContext.process() {
+            val file = currentMessageChain[FileMessage] ?: return
+            markAsConsumed()
+
+            file.checkIsImpl()
+
+            val contact = attributes[CONTACT]
+            val bot = contact.bot
+
+            val strategy = attributes[PROTOCOL_STRATEGY]
+
+            val source = coroutineScope {
+                val source = async {
+                    strategy.constructSourceForSpecialMessage(currentMessageChain, 2021)
+                }
+
+                bot.network.sendAndExpect(FileManagement.Feed(bot.client, contact.id, file.busId, file.id))
+
+                source.await()
+            }
+
+            collect(source.createMessageReceipt(contact, true))
+        }
     }
 
     private class Decoder : MessageDecoder {

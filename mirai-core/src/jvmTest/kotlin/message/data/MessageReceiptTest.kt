@@ -9,35 +9,29 @@
 
 package net.mamoe.mirai.internal.message.data
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.AbstractTestWithMiraiImpl
 import net.mamoe.mirai.internal.MockBot
-import net.mamoe.mirai.internal.contact.*
-import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
+import net.mamoe.mirai.internal.contact.AbstractContact
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.impl.GeneralMessageSenderProtocol
+import net.mamoe.mirai.internal.message.protocol.outgoing.*
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.message.source.createMessageReceipt
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.notice.processors.GroupExtensions
+import net.mamoe.mirai.internal.pipeline.replaceProcessor
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.ForwardMessage
+import net.mamoe.mirai.message.data.buildForwardMessage
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.currentTimeSeconds
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
-internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
-    override suspend fun uploadMessageHighway(
-        bot: Bot,
-        sendMessageHandler: SendMessageHandler<*>,
-        message: Collection<ForwardMessage.INode>,
-        isLong: Boolean,
-    ): String {
-        return "id"
-    }
-
+internal class MessageReceiptTest : AbstractTest(), GroupExtensions {
     private val bot = MockBot()
 
     /**
@@ -45,38 +39,56 @@ internal class MessageReceiptTest : AbstractTestWithMiraiImpl() {
      */ // We need #1304
     @Test
     fun `refine ForwardMessageInternal for MessageReceipt`() = runBlockingUnit {
-        val group =
-            GroupImpl(bot, bot.coroutineContext, 1, GroupInfoImpl(StTroopNum(1, 1, dwGroupOwnerUin = 2)), sequenceOf())
+        val group = bot.addGroup(123, 2)
 
         val forward = buildForwardMessage(group) {
             2 says "ok"
         }
         val message = forward.toMessageChain()
 
-        val handler = object : GroupSendMessageHandler(group) {
-            override val messageSvcSendMessage: (client: QQAndroidClient, contact: GroupImpl, message: MessageChain, fragmented: Boolean, sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit) -> List<OutgoingPacket> =
-                { _, _, message, _, sourceCallback ->
+        val facade = MessageProtocolFacade.INSTANCE.copy()
 
-                    assertIs<ForwardMessageInternal>(message[ForwardMessageInternal])
-                    assertSame(forward, message[ForwardMessageInternal]?.origin)
+        assertTrue {
+            facade.preprocessorPipeline.replaceProcessor(
+                { it is GeneralMessageSenderProtocol.GeneralMessageSender },
+                OutgoingMessageProcessorAdapter(object : OutgoingMessageSender {
+                    override suspend fun OutgoingMessagePipelineContext.process() {
+                        assertIs<ForwardMessageInternal>(currentMessageChain[ForwardMessageInternal])
+                        assertSame(forward, currentMessageChain[ForwardMessageInternal]?.origin)
 
-                    sourceCallback(
-                        CompletableDeferred(
-                            OnlineMessageSourceToGroupImpl(
-                                group,
-                                internalIds = intArrayOf(1),
-                                sender = bot,
-                                target = group,
-                                time = currentTimeSeconds().toInt(),
-                                originalMessage = message //,
-                                //   sourceMessage = message
-                            )
+                        val source = OnlineMessageSourceToGroupImpl(
+                            group,
+                            internalIds = intArrayOf(1),
+                            sender = bot,
+                            target = group,
+                            time = currentTimeSeconds().toInt(),
+                            originalMessage = currentMessageChain //,
+                            //   sourceMessage = message
                         )
-                    )
-                    listOf()
-                }
+
+                        collect(source.createMessageReceipt(group, true))
+                    }
+                })
+            )
         }
-        val result = handler.sendMessage(message, message, false, SendMessageStep.FIRST)
+
+        val result = facade.preprocessAndSendOutgoing(group, message, ConcurrentComponentStorage {
+            set(MessageProtocolStrategy, object : GroupMessageProtocolStrategy(group) {
+
+            })
+            set(HighwayUploader, object : HighwayUploader {
+                override suspend fun uploadMessages(
+                    contact: AbstractContact,
+                    strategy: MessageProtocolStrategy<*>,
+                    nodes: Collection<ForwardMessage.INode>,
+                    isLong: Boolean,
+                    facade: MessageProtocolFacade,
+                    senderName: String
+                ): String {
+                    return "id"
+                }
+            })
+        })
 
         assertIs<ForwardMessage>(result.source.originalMessage[ForwardMessage])
         assertEquals(message, result.source.originalMessage)

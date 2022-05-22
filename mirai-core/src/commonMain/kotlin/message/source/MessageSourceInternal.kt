@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.message.source
 
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.internal.contact.SendMessageHandler
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.visitor.ex
@@ -60,8 +59,6 @@ internal interface OutgoingMessageSourceInternal : MessageSourceInternal {
 
     /**
      * This 'overrides' [MessageSource.originalMessage].
-     *
-     * @see SendMessageHandler.sendMessagePacket
      */
     var originalMessage: MessageChain
 }

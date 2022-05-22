@@ -14,7 +14,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.contact.inferMessageSourceKind
+import net.mamoe.mirai.internal.message.data.inferMessageSourceKind
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacadeImpl

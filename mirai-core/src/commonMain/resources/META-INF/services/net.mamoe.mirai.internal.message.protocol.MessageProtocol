@@ -21,4 +21,7 @@ net.mamoe.mirai.internal.message.protocol.impl.QuoteReplyProtocol
 net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.TextProtocol
 net.mamoe.mirai.internal.message.protocol.impl.VipFaceProtocol
+net.mamoe.mirai.internal.message.protocol.impl.ForwardMessageProtocol
+net.mamoe.mirai.internal.message.protocol.impl.LongMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.UnsupportedMessageProtocol
+net.mamoe.mirai.internal.message.protocol.impl.GeneralMessageSenderProtocol

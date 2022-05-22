@@ -25,6 +25,8 @@ import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.event.events.StrangerMessagePostSendEvent
 import net.mamoe.mirai.event.events.StrangerMessagePreSendEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.StrangerMessageProtocolStrategy
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
@@ -59,13 +61,14 @@ internal class StrangerImpl(
         }
     }
 
-    private val handler: StrangerSendMessageHandler by lazy { StrangerSendMessageHandler(this) }
+    private val messageProtocolStrategy: MessageProtocolStrategy<StrangerImpl> = StrangerMessageProtocolStrategy
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Stranger> {
         return asFriendOrNull()?.sendMessage(message)?.convert()
-            ?: handler.sendMessageImpl<Stranger>(
+            ?: sendMessageImpl(
                 message = message,
+                messageProtocolStrategy = messageProtocolStrategy,
                 preSendEventConstructor = ::StrangerMessagePreSendEvent,
                 postSendEventConstructor = ::StrangerMessagePostSendEvent.cast()
             )

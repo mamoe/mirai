@@ -63,7 +63,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
         bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
         val handler = LoggingPacketHandlerAdapter(PacketLoggingStrategyImpl(bot), bot.logger)
         val context = UseTestContext(attributes.toMutableTypeSafeMap())
-        return pipeline.process(block(context), context.attributes).also { list ->
+        return pipeline.process(block(context), context.attributes).collected.also { list ->
             for (packet in list) {
                 handler.handlePacket(IncomingPacket("test", packet))
             }
@@ -77,10 +77,10 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
     ): Collection<Packet> =
         use(attributes, pipeline = object : NoticeProcessorPipelineImpl(bot) {
             init {
-                bot.components.noticeProcessorPipeline.processors.forEach { registerProcessor(it) }
+                bot.components.noticeProcessorPipeline.processors.forEach { registerProcessor(it.value) }
             }
 
-            override fun createContext(attributes: TypeSafeMap): NoticePipelineContext =
+            override fun createContext(data: ProtocolStruct, attributes: TypeSafeMap): NoticePipelineContext =
                 createContext(this, attributes)
         }, block)
 

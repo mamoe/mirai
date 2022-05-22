@@ -21,6 +21,10 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.image.*
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -98,15 +102,14 @@ internal sealed class AbstractUser(
 
         return when (resp) {
             is LongConn.OffPicUp.Response.FileExists -> {
-                val imageType = getImageType(resp.imageInfo.fileType)
-                    .takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
-                    ?: resource.formatName
+                val imageType =
+                    getImageType(resp.imageInfo.fileType).takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
+                        ?: resource.formatName
 
                 resp.imageInfo.run {
                     OfflineFriendImage(
                         imageId = generateImageIdFromResourceId(
-                            resourceId = resp.resourceId,
-                            format = imageType
+                            resourceId = resp.resourceId, format = imageType
                         ) ?: kotlin.run {
                             if (resp.imageInfo.fileMd5.size == 16) {
                                 generateImageId(resp.imageInfo.fileMd5, imageType)
@@ -164,8 +167,7 @@ internal sealed class AbstractUser(
                         }
                         is ImgStore.GroupPicUp.Response.RequireUpload -> {
                             // val servers = response.uploadIpList.zip(response.uploadPortList)
-                            Highway.uploadResourceBdh(
-                                bot = bot,
+                            Highway.uploadResourceBdh(bot = bot,
                                 resource = resource,
                                 kind = PRIVATE_IMAGE,
                                 commandId = 2,
@@ -176,8 +178,7 @@ internal sealed class AbstractUser(
                                         ssoAddresses = response.uploadIpList.zip(response.uploadPortList)
                                             .toMutableSet(),
                                     )
-                                }
-                            )
+                                })
                         }
                     }
                 }.recoverCatchingSuppressed {
@@ -198,9 +199,9 @@ internal sealed class AbstractUser(
                         resourceKind = PRIVATE_IMAGE,
                         channelKind = ChannelKind.HTTP
                     ) { ip, port ->
-                        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                        Mirai.Http.postImage(
-                            serverIp = ip, serverPort = port,
+                        @Suppress("DEPRECATION", "DEPRECATION_ERROR") Mirai.Http.postImage(
+                            serverIp = ip,
+                            serverPort = port,
                             htcmd = "0x6ff0070",
                             uin = bot.id,
                             groupcode = null,
@@ -210,8 +211,7 @@ internal sealed class AbstractUser(
                     }
                 }.recoverCatchingSuppressed {
                     // try upload by http on fallback server
-                    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                    Mirai.Http.postImage(
+                    @Suppress("DEPRECATION", "DEPRECATION_ERROR") Mirai.Http.postImage(
                         serverIp = "htdata2.qq.com",
                         htcmd = "0x6ff0070",
                         uin = bot.id,
@@ -242,9 +242,10 @@ internal sealed class AbstractUser(
     }
 }
 
-@Suppress("DuplicatedCode")
-internal suspend fun <C : User> SendMessageHandler<out C>.sendMessageImpl(
+
+internal suspend fun <C : AbstractContact> C.sendMessageImpl(
     message: Message,
+    messageProtocolStrategy: MessageProtocolStrategy<C>,
     preSendEventConstructor: (C, Message) -> MessagePreSendEvent,
     postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<C>,
 ): MessageReceipt<C> {
@@ -252,20 +253,24 @@ internal suspend fun <C : User> SendMessageHandler<out C>.sendMessageImpl(
         message.anyIsInstance<MiraiInternalMessageFlag>()
     } else false
 
-    require(isMiraiInternal || !message.isContentEmpty()) { "message is empty" }
+    require(!message.isContentEmpty()) { "message is empty" }
 
-    val chain = contact.broadcastMessagePreSendEvent(message, isMiraiInternal, preSendEventConstructor)
+    val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, preSendEventConstructor)
 
-    val result = this
-        .runCatching { sendMessage(message, chain, isMiraiInternal, SendMessageStep.FIRST) }
+    val result = kotlin.runCatching {
+        MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
+            set(MessageProtocolStrategy, messageProtocolStrategy)
+            set(HighwayUploader, HighwayUploader.Default)
+        })
+    }
 
     if (result.isSuccess) {
         // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-        contact.logMessageSent(chain)
+        bot.logger.verbose("$this <- $chain".replaceMagicCodes())
     }
 
     if (!isMiraiInternal) {
-        postSendEventConstructor(contact, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
+        postSendEventConstructor(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
     }
 
     return result.getOrThrow()

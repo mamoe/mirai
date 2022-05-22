@@ -21,8 +21,10 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Co
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
+import net.mamoe.mirai.internal.message.source.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -32,6 +34,10 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Encoder())
         add(Decoder())
+
+        add(OutgoingMessagePreprocessor {
+            currentMessageChain[QuoteReply]?.source?.ensureSequenceIdAvailable()
+        })
     }
 
     private class Decoder : MessageDecoder {

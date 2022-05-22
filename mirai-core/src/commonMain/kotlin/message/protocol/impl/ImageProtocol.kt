@@ -10,6 +10,9 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.message.data.transform
 import net.mamoe.mirai.internal.message.image.*
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
@@ -18,8 +21,12 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.CustomFace
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.message.data.ShowImageFlag
@@ -30,6 +37,29 @@ internal class ImageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(ImageEncoder())
         add(ImageDecoder())
+
+        add(ImagePatcherForGroup())
+    }
+
+    private class ImagePatcherForGroup : OutgoingMessagePreprocessor {
+        override suspend fun OutgoingMessagePipelineContext.process() {
+            val contact = attributes[CONTACT]
+            if (contact !is GroupImpl) return
+
+            val patcher = contact.bot.asQQAndroidBot().components[ImagePatcher]
+            currentMessageChain = currentMessageChain.transform { element ->
+                when (element) {
+                    is OfflineGroupImage -> {
+                        patcher.patchOfflineGroupImage(contact, element)
+                        element
+                    }
+                    is FriendImage -> {
+                        patcher.patchFriendImageToGroupImage(contact, element)
+                    }
+                    else -> element
+                }
+            }
+        }
     }
 
     private class ImageDecoder : MessageDecoder {

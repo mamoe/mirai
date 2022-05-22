@@ -649,25 +649,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
-    internal open suspend fun uploadMessageHighway(
-        bot: Bot,
-        sendMessageHandler: SendMessageHandler<*>,
-        message: Collection<ForwardMessage.INode>,
-        isLong: Boolean,
-    ): String {
-        bot.asQQAndroidBot()
-        message.forEach {
-            it.messageChain.ensureSequenceIdAvailable()
-        }
-        val uploader = MultiMsgUploader(
-            client = bot.client,
-            isLong = isLong,
-            handler = sendMessageHandler,
-        ).also { it.emitMain(message) }
-
-        return uploader.uploadAndReturnResId()
-    }
-
     override suspend fun solveNewFriendRequestEvent(
         bot: Bot,
         eventId: Long,

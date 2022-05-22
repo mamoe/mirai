@@ -11,6 +11,10 @@ package net.mamoe.mirai.internal.message.protocol
 
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePostprocessor
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KClass
 
@@ -29,6 +33,7 @@ internal abstract class MessageProtocol(
         const val PRIORITY_CONTENT: UInt = 1000u
         const val PRIORITY_IGNORE: UInt = 500u
         const val PRIORITY_UNSUPPORTED: UInt = 100u
+        const val PRIORITY_GENERAL_SENDER: UInt = 100u
     }
 
     object PriorityComparator : Comparator<MessageProtocol> {
@@ -55,6 +60,12 @@ internal abstract class ProcessorCollector {
     abstract fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>)
 
     abstract fun add(decoder: MessageDecoder)
+
+
+    abstract fun add(preprocessor: OutgoingMessagePreprocessor)
+    abstract fun add(transformer: OutgoingMessageTransformer)
+    abstract fun add(sender: OutgoingMessageSender)
+    abstract fun add(postprocessor: OutgoingMessagePostprocessor)
 }
 
 

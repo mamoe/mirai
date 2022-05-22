@@ -19,7 +19,7 @@ internal data class ContextualBugReportException(
 
 internal fun contextualBugReportException(
     context: String,
-    forDebug: String,
+    forDebug: String?,
     e: Throwable? = null,
     additional: String = "",
 ): ContextualBugReportException {

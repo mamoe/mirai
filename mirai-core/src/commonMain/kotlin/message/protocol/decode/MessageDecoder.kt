@@ -24,6 +24,8 @@ internal interface MessageDecoder : PipelineConsumptionMarker {
 internal class MessageDecoderProcessor(
     private val decoder: MessageDecoder,
 ) : Processor<MessageDecoderContext, ImMsgBody.Elem> {
+    override val origin: Any get() = this
+
     override suspend fun process(context: MessageDecoderContext, data: ImMsgBody.Elem) {
         @Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
         decoder.run { context.process(data) }

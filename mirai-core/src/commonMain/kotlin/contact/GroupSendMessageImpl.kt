@@ -45,5 +45,21 @@ internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
 
 
 internal enum class SendMessageStep {
-    FIRST, LONG_MESSAGE, FRAGMENTED
+    FIRST {
+        override fun nextStepOrNull(): SendMessageStep {
+            return LONG_MESSAGE
+        }
+    },
+    LONG_MESSAGE {
+        override fun nextStepOrNull(): SendMessageStep {
+            return FRAGMENTED
+        }
+    },
+    FRAGMENTED {
+        override fun nextStepOrNull(): SendMessageStep? {
+            return null
+        }
+    };
+
+    abstract fun nextStepOrNull(): SendMessageStep?
 }
