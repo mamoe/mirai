@@ -11,10 +11,10 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import kotlinx.io.core.readUShort
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
-import net.mamoe.mirai.internal.message.protocol.MessageDecoder
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf

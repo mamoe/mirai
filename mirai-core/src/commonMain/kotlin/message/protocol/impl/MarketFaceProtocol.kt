@@ -10,8 +10,13 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.internal.message.data.MarketFaceImpl
-import net.mamoe.mirai.internal.message.protocol.*
-import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.PlainText

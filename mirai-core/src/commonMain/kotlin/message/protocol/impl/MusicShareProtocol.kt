@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.message.protocol.MessageEncoder
-import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.message.data.MusicShare
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.content

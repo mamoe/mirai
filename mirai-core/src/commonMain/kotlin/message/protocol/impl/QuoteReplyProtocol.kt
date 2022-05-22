@@ -11,11 +11,16 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.message.protocol.*
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.BOT
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.GROUP_ID
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderContext.Companion.MESSAGE_SOURCE_KIND
-import net.mamoe.mirai.internal.message.protocol.MessageEncoderContext.Companion.contact
+import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.BOT
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.GROUP_ID
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.MESSAGE_SOURCE_KIND
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody

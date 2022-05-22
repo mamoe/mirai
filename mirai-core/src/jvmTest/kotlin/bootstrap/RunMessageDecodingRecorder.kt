@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.bootstrap
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.message.protocol.MessageDecoderProcessor
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderProcessor
 import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
 import net.mamoe.mirai.internal.testFramework.message.protocol.MessageDecodingRecorder
 import net.mamoe.mirai.utils.BotConfiguration
