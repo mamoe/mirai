@@ -30,7 +30,7 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test PlainText`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
@@ -44,7 +44,7 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test AtAll`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
@@ -59,7 +59,7 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `AtAll auto append spaces`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
@@ -79,7 +79,7 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test At`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
@@ -94,7 +94,7 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `At auto append spaces`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(

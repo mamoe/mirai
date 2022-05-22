@@ -27,7 +27,7 @@ internal class RichMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `decode from Android`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     richMsg = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.RichMsg(
@@ -59,7 +59,7 @@ internal class RichMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun encode() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     richMsg = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.RichMsg(

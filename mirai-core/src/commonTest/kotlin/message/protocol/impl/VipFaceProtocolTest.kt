@@ -28,7 +28,7 @@ internal class VipFaceProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test decode`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     commonElem = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CommonElem(

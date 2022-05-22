@@ -33,7 +33,7 @@ internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `decode from Android`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     lightApp = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.LightAppElem(

@@ -33,7 +33,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image receive from macOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -68,7 +68,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image receive from macOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -107,7 +107,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image receive from Android`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -150,7 +150,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image receive from Android`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -193,7 +193,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image receive from iOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -232,7 +232,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image receive from iOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -275,7 +275,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image receive from Windows`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -315,7 +315,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image receive from Windows`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -357,7 +357,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image receive from iPadOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -397,7 +397,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image receive from iPadOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -440,7 +440,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image send without dimension`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -464,7 +464,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `friend Image send without dimension`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -493,7 +493,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `group Image send with dimension`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomFace(
@@ -522,13 +522,13 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
         }.doEncoderChecks()
     }
 
-    private fun ChecksBuilder.targetGroup() {
+    private fun CodingChecksBuilder.targetGroup() {
         target(bot.addGroup(1, 1))
     }
 
     @Test
     fun `friend Image send with dimension`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     notOnlineImage = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.NotOnlineImage(
@@ -557,7 +557,7 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
         }.doEncoderChecks()
     }
 
-    private fun ChecksBuilder.targetFriend() {
+    private fun CodingChecksBuilder.targetFriend() {
         target(bot.addFriend(1))
     }
 

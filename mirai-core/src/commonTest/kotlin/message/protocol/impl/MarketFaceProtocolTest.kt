@@ -29,7 +29,7 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `decode Dice`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
@@ -65,7 +65,7 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `encode Dice`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
@@ -99,7 +99,7 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `encode decode MarketFace from Android`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
@@ -147,7 +147,7 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `encode decode MarketFace from macOS`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(

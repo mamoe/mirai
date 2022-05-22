@@ -28,7 +28,7 @@ internal class FileMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test decode`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     elemFlags2 = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ElemFlags2(
