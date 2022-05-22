@@ -63,6 +63,10 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
         return MessageProtocolFacadeImpl(protocols.toList())
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // coding
+    ///////////////////////////////////////////////////////////////////////////
+
     protected fun doEncoderChecks(
         expectedStruct: List<ImMsgBody.Elem>,
         protocols: Array<out MessageProtocol>,
@@ -114,7 +118,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     ): Unit = doEncoderChecks(expectedStruct.toList(), protocols, encode)
 
 
-    inner class ChecksBuilder {
+    inner class CodingChecksBuilder {
         var elems: MutableList<ImMsgBody.Elem> = mutableListOf()
         var messages: MessageChainBuilder = MessageChainBuilder()
 
@@ -170,11 +174,11 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     )
 
     @Suppress("DeferredIsResult")
-    protected fun buildChecks(
-        builderAction: ChecksBuilder.() -> Unit,
+    protected fun buildCodingChecks(
+        builderAction: CodingChecksBuilder.() -> Unit,
     ): Deferred<ChecksConfiguration> { // IDE will warn you if you forget to call .do
         contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
-        return CompletableDeferred(ChecksBuilder().apply(builderAction).build())
+        return CompletableDeferred(CodingChecksBuilder().apply(builderAction).build())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -202,4 +206,10 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
         doEncoderChecks()
         doDecoderChecks()
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // sending
+    ///////////////////////////////////////////////////////////////////////////
+
+
 }

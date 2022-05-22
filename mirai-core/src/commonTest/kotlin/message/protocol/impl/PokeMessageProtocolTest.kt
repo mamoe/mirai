@@ -28,7 +28,7 @@ internal class PokeMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test PokeMessage`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     commonElem = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CommonElem(
@@ -64,7 +64,7 @@ internal class PokeMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun encode() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     commonElem = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CommonElem(

@@ -55,7 +55,7 @@ internal class CustomMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test encode`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customElem = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomElem(
@@ -70,7 +70,7 @@ internal class CustomMessageProtocolTest : AbstractMessageProtocolTest() {
 
     @Test
     fun `test decode`() {
-        buildChecks {
+        buildCodingChecks {
             elem(
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     customElem = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.CustomElem(
