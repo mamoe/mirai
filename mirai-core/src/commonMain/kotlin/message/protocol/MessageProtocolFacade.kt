@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.message.protocol.encode.*
 import net.mamoe.mirai.internal.message.protocol.outgoing.*
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.pipeline.ProcessResult
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageReceipt
@@ -31,6 +32,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.MutableTypeSafeMap
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.buildTypeSafeMap
 import net.mamoe.mirai.utils.castUp
 import java.util.*
@@ -98,6 +100,19 @@ internal interface MessageProtocolFacade {
         message: Message,
         components: ComponentStorage,
     ): MessageReceipt<C>
+
+
+    /**
+     * Preprocess and send a message
+     * @see OutgoingMessagePreprocessor
+     * @see OutgoingMessageProcessor
+     */
+    @TestOnly
+    suspend fun <C : AbstractContact> preprocessAndSendOutgoingImpl(
+        target: C,
+        message: Message,
+        components: ComponentStorage,
+    ): ProcessResult<OutgoingMessagePipelineContext, MessageReceipt<*>>
 
     /**
      * Decode list of low-level and protocol-specific [ImMsgBody.Elem]s to give a high-level [MessageChain].
@@ -254,12 +269,20 @@ internal class MessageProtocolFacadeImpl(
         message: Message,
         components: ComponentStorage
     ): MessageReceipt<C> {
+        @OptIn(TestOnly::class)
+        return getSingleReceipt(preprocessAndSendOutgoingImpl(target, message, components).collected, message)
+    }
+
+    @TestOnly
+    override suspend fun <C : AbstractContact> preprocessAndSendOutgoingImpl(
+        target: C,
+        message: Message,
+        components: ComponentStorage
+    ): ProcessResult<OutgoingMessagePipelineContext, MessageReceipt<*>> {
         val attributes = createAttributesForOutgoingMessage(target, message, components)
 
         val (context, _) = preprocessorPipeline.process(message.toMessageChain(), attributes)
-        val (_, result) = outgoingPipeline.process(message.toMessageChain(), context, attributes)
-
-        return getSingleReceipt(result, message)
+        return outgoingPipeline.process(message.toMessageChain(), context, attributes)
     }
 
     override fun copy(): MessageProtocolFacade {
