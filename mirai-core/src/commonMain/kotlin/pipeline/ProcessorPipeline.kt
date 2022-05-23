@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.pipeline
 
 import net.mamoe.mirai.internal.message.contextualBugReportException
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
 import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
@@ -39,6 +40,7 @@ internal interface ProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineC
 
     fun registerBefore(processor: P): DisposableRegistry
 
+    fun createContext(data: D, attributes: TypeSafeMap): C
 
     /**
      * Process using the [context].
@@ -139,7 +141,7 @@ internal interface ProcessorPipelineContext<D, R> {
     annotation class ConsumptionMarker // to give an explicit color.
 
     /**
-     * Fire the [data] into the processor pipeline, and collect the results to current [collected].
+     * Fire the [data] into the processor pipeline, and collect the results to current [collected], updating *some mutable properties* in contexts, e.g. [OutgoingMessagePipelineContext.currentMessageChain]
      *
      * @param extraAttributes extra attributes
      * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
@@ -216,8 +218,6 @@ protected constructor(
         }
     }
 
-    protected abstract fun createContext(data: D, attributes: TypeSafeMap): C
-
     abstract inner class BaseContextImpl(
         attributes: TypeSafeMap,
     ) : AbstractProcessorPipelineContext<D, R>(attributes, traceLogging) {
@@ -226,7 +226,10 @@ protected constructor(
             extraAttributes: TypeSafeMap
         ): ProcessResult<out ProcessorPipelineContext<D, R>, R> {
             traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
-            return process(data, this.attributes + extraAttributes).also {
+            traceLogging.info { "extraAttributes = $extraAttributes" }
+            val newAttributes = this.attributes + extraAttributes
+            traceLogging.info { "newAttributes = $newAttributes" }
+            return process(data, newAttributes).also {
                 this.collected.data += it.collected
                 traceLogging.info { "processAlso: result=$it" }
             }

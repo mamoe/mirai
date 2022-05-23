@@ -16,10 +16,7 @@ import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.source.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
-import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
+import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -38,12 +35,21 @@ internal interface OutgoingMessagePipeline :
 
 internal open class OutgoingMessagePipelineImpl :
     AbstractProcessorPipeline<OutgoingMessagePipelineProcessor, OutgoingMessagePipelineContext, OutgoingMessagePipelineInput, MessageReceipt<*>>(
-        PipelineConfiguration(stopWhenConsumed = false), @OptIn(TestOnly::class) defaultTraceLogging
+        PipelineConfiguration(stopWhenConsumed = true), @OptIn(TestOnly::class) defaultTraceLogging
     ), OutgoingMessagePipeline {
 
     inner class OutgoingMessagePipelineContextImpl(
         attributes: TypeSafeMap, override var currentMessageChain: MessageChain
-    ) : OutgoingMessagePipelineContext, BaseContextImpl(attributes)
+    ) : OutgoingMessagePipelineContext, BaseContextImpl(attributes) {
+        override suspend fun processAlso(
+            data: OutgoingMessagePipelineInput,
+            extraAttributes: TypeSafeMap
+        ): ProcessResult<out ProcessorPipelineContext<OutgoingMessagePipelineInput, MessageReceipt<*>>, MessageReceipt<*>> {
+            return super.processAlso(data, extraAttributes).also { (context, _) ->
+                this.currentMessageChain = (context as OutgoingMessagePipelineContext).currentMessageChain
+            }
+        }
+    }
 
     override fun createContext(
         data: OutgoingMessagePipelineInput, attributes: TypeSafeMap
@@ -61,6 +67,9 @@ internal open class OutgoingMessagePipelineImpl :
 
 internal interface OutgoingMessagePipelineContext :
     ProcessorPipelineContext<OutgoingMessagePipelineInput, MessageReceipt<*>> {
+    /**
+     * Current message chain updated throughout the process. Will be updated from the [sub-processes][processAlso].
+     */
     var currentMessageChain: MessageChain
 
     suspend fun MessageSource.tryEnsureSequenceIdAvailable() {
@@ -110,6 +119,10 @@ internal interface OutgoingMessagePipelineContext :
          */
         val ORIGINAL_MESSAGE_AS_CHAIN = TypeKey<MessageChain>("originalMessageAsChain")
 
+        /**
+         * Message chain used when retrying with next [step][SendMessageStep]s.
+         */
+        val MESSAGE_TO_RETRY = TypeKey<MessageChain>("messageToRetry")
 
         /**
          * Message target

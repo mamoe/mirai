@@ -22,11 +22,18 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.decode.*
 import net.mamoe.mirai.internal.message.protocol.encode.*
 import net.mamoe.mirai.internal.message.protocol.outgoing.*
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.COMPONENTS
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.MESSAGE_TO_RETRY
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.pipeline.ProcessResult
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.internal.utils.structureToString
@@ -34,10 +41,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
-import net.mamoe.mirai.utils.MutableTypeSafeMap
-import net.mamoe.mirai.utils.TestOnly
-import net.mamoe.mirai.utils.buildTypeSafeMap
-import net.mamoe.mirai.utils.castUp
+import net.mamoe.mirai.utils.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -72,6 +76,7 @@ internal interface MessageProtocolFacade {
         messageSourceKind: MessageSourceKind,
         bot: Bot,
         builder: MessageChainBuilder,
+        containingMsg: MsgComm.Msg? = null,
     )
 
 
@@ -127,7 +132,7 @@ internal interface MessageProtocolFacade {
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-    ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this) }
+    ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this, null) }
 
     fun copy(): MessageProtocolFacade
 
@@ -235,7 +240,8 @@ internal class MessageProtocolFacadeImpl(
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-        builder: MessageChainBuilder
+        builder: MessageChainBuilder,
+        containingMsg: MsgComm.Msg?
     ) {
         val pipeline = decoderPipeline
 
@@ -243,6 +249,7 @@ internal class MessageProtocolFacadeImpl(
             set(MessageDecoderContext.BOT, bot)
             set(MessageDecoderContext.MESSAGE_SOURCE_KIND, messageSourceKind)
             set(MessageDecoderContext.GROUP_ID, groupIdOrZero)
+            set(MessageDecoderContext.CONTAINING_MSG, containingMsg)
         }
 
         runCoroutineInPlace {
@@ -297,8 +304,15 @@ internal class MessageProtocolFacadeImpl(
     ): ProcessResult<OutgoingMessagePipelineContext, MessageReceipt<*>> {
         val attributes = createAttributesForOutgoingMessage(target, message, components)
 
-        val (context, _) = preprocessorPipeline.process(message.toMessageChain(), attributes)
-        return outgoingPipeline.process(message.toMessageChain(), context, attributes)
+        val data = message.toMessageChain()
+        val (context, _) = preprocessorPipeline.process(data, attributes)
+        val preprocessed = context.currentMessageChain
+
+        return outgoingPipeline.process(
+            data,
+            outgoingPipeline.createContext(preprocessed, context.attributes.plus(MESSAGE_TO_RETRY to preprocessed)),
+            attributes
+        )
     }
 
     override fun copy(): MessageProtocolFacade {
@@ -327,12 +341,14 @@ internal class MessageProtocolFacadeImpl(
         message: Message,
         context: ComponentStorage
     ): MutableTypeSafeMap {
+        val chain = message.toMessageChain()
         val attributes = buildTypeSafeMap {
-            set(OutgoingMessagePipelineContext.CONTACT, target.impl())
-            set(OutgoingMessagePipelineContext.ORIGINAL_MESSAGE, message)
-            set(OutgoingMessagePipelineContext.ORIGINAL_MESSAGE_AS_CHAIN, message.toMessageChain())
-            set(OutgoingMessagePipelineContext.STEP, SendMessageStep.FIRST)
-            set(OutgoingMessagePipelineContext.COMPONENTS, thisComponentStorage.withFallback(context))
+            set(CONTACT, target.impl())
+            set(ORIGINAL_MESSAGE, message)
+            set(ORIGINAL_MESSAGE_AS_CHAIN, chain)
+            set(STEP, SendMessageStep.FIRST)
+            set(COMPONENTS, thisComponentStorage.withFallback(context))
+            set(MESSAGE_TO_RETRY, chain)
         }
         return attributes
     }

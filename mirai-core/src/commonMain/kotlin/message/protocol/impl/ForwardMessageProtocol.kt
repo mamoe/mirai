@@ -53,7 +53,7 @@ internal class ForwardMessageProtocol : MessageProtocol() {
                 false
             )
 
-            currentMessageChain = RichMessage.forwardMessage(
+            currentMessageChain += RichMessage.forwardMessage(
                 resId = resId,
                 fileName = components[ClockHolder].local.currentTimeSeconds().toString(),
                 forwardMessage = forward,

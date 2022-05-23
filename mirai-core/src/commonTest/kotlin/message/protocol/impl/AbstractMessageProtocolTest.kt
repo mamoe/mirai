@@ -16,7 +16,9 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.message.data.inferMessageSourceKind
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
@@ -41,6 +43,7 @@ import net.mamoe.mirai.internal.notice.processors.GroupExtensions
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.Clock
+import net.mamoe.mirai.utils.lateinitMutableProperty
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
 import org.junit.jupiter.api.AfterEach
@@ -52,9 +55,19 @@ import kotlin.test.assertEquals
 import kotlin.test.asserter
 
 internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandlerTest(), GroupExtensions {
+    init {
+        System.setProperty("mirai.message.protocol.log.full", "true")
+        System.setProperty("mirai.message.outgoing.pipeline.log.full", "true")
+    }
+
+    override fun createAccount(): BotAccount = BotAccount(1230001L, "pwd")
 
     protected abstract val protocols: Array<out MessageProtocol>
-    protected var defaultTarget: ContactOrBot? = null
+    protected var defaultTarget: ContactOrBot by lateinitMutableProperty {
+        bot.addGroup(123, 1230003).apply {
+            addMember(1230003, "user3", MemberPermission.OWNER)
+        }
+    }
 
     private var decoderLoggerEnabled = false
     private var encoderLoggerEnabled = false
@@ -144,8 +157,8 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
         var messages: MessageChainBuilder = MessageChainBuilder()
 
         var groupIdOrZero: Long = 0
-        var messageSourceKind: MessageSourceKind = MessageSourceKind.GROUP
-        var target: ContactOrBot? = defaultTarget
+        var target: ContactOrBot = defaultTarget
+        var messageSourceKind: MessageSourceKind by lateinitMutableProperty { target.inferMessageSourceKind() }
         var withGeneralFlags = true
         var isForward = false
 
@@ -157,12 +170,10 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
             messages.addAll(message)
         }
 
-        fun target(target: ContactOrBot?) {
+        fun target(target: ContactOrBot) {
             this.target = target
 
-            if (target != null) {
-                messageSourceKind = target.inferMessageSourceKind()
-            }
+            messageSourceKind = target.inferMessageSourceKind()
 
             if (target is Group) {
                 groupIdOrZero = target.id
@@ -232,51 +243,53 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     // sending
     ///////////////////////////////////////////////////////////////////////////
 
-    init {
-        components[MessageProtocolStrategy] = object : MessageProtocolStrategy<AbstractContact> {
-            override suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet {
-                assertEquals(0x123, packet.sequenceId)
-                return MessageSvcPbSendMsg.Response.SUCCESS
-            }
-
-            override suspend fun createPacketsForGeneralMessage(
-                client: QQAndroidClient,
-                contact: AbstractContact,
-                message: MessageChain,
-                originalMessage: MessageChain,
-                fragmented: Boolean,
-                sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
-            ): List<OutgoingPacket> {
-                sourceCallback(CompletableDeferred(constructSourceForSpecialMessage(originalMessage, 1000)))
-                return listOf(OutgoingPacket("Test", "test", 0x123, ByteReadPacket.Empty))
-            }
-
-            override suspend fun constructSourceForSpecialMessage(
-                originalMessage: MessageChain,
-                fromAppId: Int
-            ): OnlineMessageSource.Outgoing {
-                return when (val defaultTarget = defaultTarget) {
-                    is Group -> OnlineMessageSourceToGroupImpl(
-                        coroutineScope = defaultTarget,
-                        internalIds = intArrayOf(1),
-                        time = 1,
-                        originalMessage = originalMessage,
-                        sender = bot,
-                        target = defaultTarget
-                    )
-                    is Friend -> OnlineMessageSourceToFriendImpl(
-                        sequenceIds = intArrayOf(1),
-                        internalIds = intArrayOf(1),
-                        time = 1,
-                        originalMessage = originalMessage,
-                        sender = bot,
-                        target = defaultTarget
-                    )
-                    else -> error("Unexpected target: $defaultTarget")
-                }
-            }
-
+    open inner class TestMessageProtocolStrategy : MessageProtocolStrategy<AbstractContact> {
+        override suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet {
+            assertEquals(0x123, packet.sequenceId)
+            return MessageSvcPbSendMsg.Response.SUCCESS
         }
+
+        override suspend fun createPacketsForGeneralMessage(
+            client: QQAndroidClient,
+            contact: AbstractContact,
+            message: MessageChain,
+            originalMessage: MessageChain,
+            fragmented: Boolean,
+            sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
+        ): List<OutgoingPacket> {
+            sourceCallback(CompletableDeferred(constructSourceForSpecialMessage(originalMessage, 1000)))
+            return listOf(OutgoingPacket("Test", "test", 0x123, ByteReadPacket.Empty))
+        }
+
+        override suspend fun constructSourceForSpecialMessage(
+            originalMessage: MessageChain,
+            fromAppId: Int
+        ): OnlineMessageSource.Outgoing {
+            return when (val defaultTarget = defaultTarget) {
+                is Group -> OnlineMessageSourceToGroupImpl(
+                    coroutineScope = defaultTarget,
+                    internalIds = intArrayOf(1),
+                    time = 1,
+                    originalMessage = originalMessage,
+                    sender = bot,
+                    target = defaultTarget
+                )
+                is Friend -> OnlineMessageSourceToFriendImpl(
+                    sequenceIds = intArrayOf(1),
+                    internalIds = intArrayOf(1),
+                    time = 1,
+                    originalMessage = originalMessage,
+                    sender = bot,
+                    target = defaultTarget
+                )
+                else -> error("Unexpected target: $defaultTarget")
+            }
+        }
+
+    }
+
+    init {
+        components[MessageProtocolStrategy] = TestMessageProtocolStrategy()
         components[HighwayUploader] = object : HighwayUploader {
             override suspend fun uploadMessages(
                 contact: AbstractContact,
@@ -300,7 +313,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     fun runWithFacade(action: suspend MessageProtocolFacade.() -> Unit) {
         runBlockingUnit {
             facadeOf(*protocols).run { action() }
-            MessageProtocolFacade.INSTANCE.run { action() }
+            MessageProtocolFacade.INSTANCE.copy().run { action() }
         }
     }
 

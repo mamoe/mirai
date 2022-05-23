@@ -13,7 +13,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.joinToMessageChain
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
@@ -34,10 +33,11 @@ internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long,
     refineContext: RefineContext = EmptyRefineContext,
+    facade: MessageProtocolFacade = MessageProtocolFacade
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
-        joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, this)
+        facade.decode(elements, groupIdOrZero, messageSourceKind, bot, this, null)
     }.cleanupRubbishMessageElements().refineLight(bot, refineContext)
 }
 
@@ -47,13 +47,15 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
     refineContext: RefineContext = EmptyRefineContext,
+    facade: MessageProtocolFacade = MessageProtocolFacade
 ): MessageChain {
-    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind).refineDeep(bot, refineContext)
+    return toMessageChain(bot, groupIdOrZero, true, messageSourceKind, facade).refineDeep(bot, refineContext)
 }
 
 internal suspend fun MsgComm.Msg.toMessageChainOnline(
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext,
+    facade: MessageProtocolFacade = MessageProtocolFacade,
 ): MessageChain {
     fun getSourceKind(c2cCmd: Int): MessageSourceKind {
         return when (c2cCmd) {
@@ -69,7 +71,7 @@ internal suspend fun MsgComm.Msg.toMessageChainOnline(
         MessageSourceKind.GROUP -> msgHead.groupInfo?.groupCode ?: 0
         else -> 0
     }
-    return listOf(this).toMessageChainOnline(bot, groupId, kind, refineContext)
+    return listOf(this).toMessageChainOnline(bot, groupId, kind, refineContext, facade)
 }
 
 //internal fun List<MsgComm.Msg>.toMessageChainOffline(
@@ -95,20 +97,21 @@ private fun List<MsgComm.Msg>.toMessageChain(
     groupIdOrZero: Long,
     onlineSource: Boolean?,
     messageSourceKind: MessageSourceKind,
+    facade: MessageProtocolFacade = MessageProtocolFacade,
 ): MessageChain {
     val messageList = this
 
 
-    val elements = messageList.flatMap { it.msgBody.richText.elems }
-
-    val builder = MessageChainBuilder(elements.size)
+    val builder = MessageChainBuilder(messageList.sumOf { it.msgBody.richText.elems.size })
 
     if (onlineSource != null) {
         builder.add(ReceiveMessageTransformer.createMessageSource(bot, onlineSource, messageSourceKind, messageList))
     }
 
 
-    joinToMessageChain(elements, groupIdOrZero, messageSourceKind, bot, builder)
+    messageList.forEach { msg ->
+        facade.decode(msg.msgBody.richText.elems, groupIdOrZero, messageSourceKind, bot, builder, msg)
+    }
 
     for (msg in messageList) {
         msg.msgBody.richText.ptt?.toAudio()?.let { builder.add(it) }
@@ -141,16 +144,6 @@ internal object ReceiveMessageTransformer {
                 OfflineMessageSourceImplData(bot, messageList, messageSourceKind)
             }
         }
-    }
-
-    fun joinToMessageChain(
-        elements: List<ImMsgBody.Elem>,
-        groupIdOrZero: Long,
-        messageSourceKind: MessageSourceKind,
-        bot: Bot,
-        builder: MessageChainBuilder,
-    ) {
-        return MessageProtocolFacade.decode(elements, groupIdOrZero, messageSourceKind, bot, builder)
     }
 
     fun MessageChainBuilder.compressContinuousPlainText() {

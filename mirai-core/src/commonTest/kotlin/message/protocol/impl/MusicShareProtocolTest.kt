@@ -10,19 +10,26 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageProcessorAdapter
+import net.mamoe.mirai.internal.pipeline.replaceProcessor
 import net.mamoe.mirai.message.data.LightApp
 import net.mamoe.mirai.message.data.MessageOrigin
 import net.mamoe.mirai.message.data.MessageOriginKind
 import net.mamoe.mirai.message.data.MusicKind.NeteaseCloudMusic
 import net.mamoe.mirai.message.data.MusicShare
+import net.mamoe.mirai.utils.castUp
 import net.mamoe.mirai.utils.hexToBytes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
 
 internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> =
-        arrayOf(TextProtocol(), MusicShareProtocol(), RichMessageProtocol())
+        arrayOf(TextProtocol(), MusicShareProtocol(), RichMessageProtocol(), GeneralMessageSenderProtocol())
 
     @BeforeEach
     fun `init group`() {
@@ -73,5 +80,40 @@ internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
         }.doDecoderChecks()
     }
 
-    // no encoder. specially handled, no test for now.
+    @Test
+    fun `can send MusicShare to group`() {
+        val message = MusicShare(
+            kind = NeteaseCloudMusic,
+            title = "ジェリーフィッシュ",
+            summary = "Yunomi/ローラーガール",
+            jumpUrl = "https://y.music.163.com/m/song?id=562591636&uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&app_version=8.7.46",
+            pictureUrl = "http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg",
+            musicUrl = "http://music.163.com/song/media/outer/url?id=562591636&userid=324076307&sc=wmv&tn=",
+            brief = "[分享]ジェリーフィッシュ",
+        )
+
+        runWithFacade {
+            assertTrue {
+                outgoingPipeline.replaceProcessor(
+                    { it is MusicShareProtocol.Sender },
+                    OutgoingMessageProcessorAdapter(object : MusicShareProtocol.Sender() {
+                        override suspend fun sendMusicSharePacket(
+                            bot: QQAndroidBot,
+                            musicShare: MusicShare,
+                            contact: AbstractContact,
+                            strategy: MessageProtocolStrategy<*>
+                        ) {
+                            // nop
+                        }
+                    })
+                )
+            }
+            preprocessAndSendOutgoingImpl(defaultTarget.castUp(), message, components).let { (context, receipts) ->
+                val receipt = receipts.single()
+                assertMessageEquals(message, receipt.source.originalMessage)
+                assertMessageEquals(message, context.currentMessageChain)
+            }
+        }
+    }
+
 }
