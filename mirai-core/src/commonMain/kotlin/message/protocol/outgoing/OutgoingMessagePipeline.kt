@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.MessageTooLargeException
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.source.ensureSequenceIdAvailable
+import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
 import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
@@ -104,6 +105,11 @@ internal interface OutgoingMessagePipelineContext :
          */
         val ORIGINAL_MESSAGE = TypeKey<Message>("originalMessage")
 
+        /**
+         * You should only use [ORIGINAL_MESSAGE_AS_CHAIN] if you can't use [ORIGINAL_MESSAGE]
+         */
+        val ORIGINAL_MESSAGE_AS_CHAIN = TypeKey<MessageChain>("originalMessageAsChain")
+
 
         /**
          * Message target
@@ -112,9 +118,8 @@ internal interface OutgoingMessagePipelineContext :
 
         val STEP = TypeKey<SendMessageStep>("step")
 
-        val PROTOCOL_STRATEGY = TypeKey<MessageProtocolStrategy<AbstractContact>>("protocolStrategy")
-
-        val HIGHWAY_UPLOADER = TypeKey<HighwayUploader>("highwayUploader")
+        val COMPONENTS = TypeKey<ComponentStorage>("components")
+        val OutgoingMessagePipelineContext.components: ComponentStorage get() = attributes[COMPONENTS]
     }
 }
 

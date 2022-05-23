@@ -14,8 +14,11 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
@@ -55,8 +58,8 @@ internal class MusicShareProtocol : MessageProtocol() {
             val result = bot.network.sendAndExpect(packet)
             result.pkg.checkSuccess("send music share")
 
-            val strategy = attributes[OutgoingMessagePipelineContext.PROTOCOL_STRATEGY]
-            val source = strategy.constructSourceForSpecialMessage(currentMessageChain, 3116)
+            val strategy = components[MessageProtocolStrategy]
+            val source = strategy.constructSourceForSpecialMessage(attributes[ORIGINAL_MESSAGE_AS_CHAIN], 3116)
             source.tryEnsureSequenceIdAvailable()
 
             collect(source.createMessageReceipt(contact, true))

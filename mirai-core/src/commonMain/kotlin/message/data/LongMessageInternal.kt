@@ -152,34 +152,6 @@ internal data class ForwardMessageInternal(
     }
 }
 
-
-internal fun RichMessage.Key.longMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
-    val limited: String = if (brief.length > 30) {
-        brief.take(30) + "…"
-    } else {
-        brief
-    }
-
-    val template = """
-                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-                <msg serviceID="35" templateID="1" action="viewMultiMsg"
-                     brief="$limited"
-                     m_resid="$resId"
-                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
-                     flag="3" adverSign="0" multiMsgFlag="1">
-                    <item layout="1">
-                        <title>$limited</title>
-                        <hr hidden="false" style="0"/>
-                        <summary>点击查看完整消息</summary>
-                    </item>
-                    <source name="聊天记录" icon="" action="" appid="-1"/>
-                </msg>
-            """.trimIndent().trim()
-
-    return LongMessageInternal(template, resId)
-}
-
-
 private fun String.xmlEnc(): String {
     return this.replace("&", "&amp;")
 }

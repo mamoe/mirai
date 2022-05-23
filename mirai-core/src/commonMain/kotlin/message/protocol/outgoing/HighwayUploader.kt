@@ -12,19 +12,20 @@ package net.mamoe.mirai.internal.message.protocol.outgoing
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.nickIn
 import net.mamoe.mirai.internal.message.data.MultiMsgUploader
-import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.MessageChain
+import kotlin.random.Random
 
 internal interface HighwayUploader {
     suspend fun uploadMessages(
         contact: AbstractContact,
-        strategy: MessageProtocolStrategy<*>,
+        components: ComponentStorage,
         nodes: Collection<ForwardMessage.INode>,
         isLong: Boolean,
-        facade: MessageProtocolFacade = MessageProtocolFacade,
         senderName: String = contact.bot.nickIn(contact),
     ): String {
         nodes.forEach { it.messageChain.ensureSequenceIdAvailable() }
@@ -32,10 +33,10 @@ internal interface HighwayUploader {
         val uploader = MultiMsgUploader(
             client = contact.bot.client,
             isLong = isLong,
-            facade = facade,
             contact = contact,
+            random = Random(components[ClockHolder].local.currentTimeSeconds()),
             senderName = senderName,
-            strategy = strategy
+            components = components
         ).also { it.emitMain(nodes) }
 
         return uploader.uploadAndReturnResId()
@@ -43,7 +44,7 @@ internal interface HighwayUploader {
 
     suspend fun uploadLongMessage(
         contact: AbstractContact,
-        strategy: MessageProtocolStrategy<*>,
+        components: ComponentStorage,
         chain: MessageChain,
         timeSeconds: Int,
         senderName: String = contact.bot.nickIn(contact),
@@ -51,7 +52,7 @@ internal interface HighwayUploader {
         val bot = contact.bot
         return uploadMessages(
             contact,
-            strategy,
+            components,
             listOf(
                 ForwardMessage.Node(
                     senderId = bot.id,
@@ -61,7 +62,7 @@ internal interface HighwayUploader {
                 )
             ),
             true,
-            senderName = senderName
+            senderName = senderName,
         )
     }
 

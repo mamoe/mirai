@@ -12,14 +12,17 @@ package net.mamoe.mirai.internal.message.protocol.impl
 import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -41,7 +44,8 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
         override suspend fun OutgoingMessagePipelineContext.process() {
             markAsConsumed()
 
-            val strategy = attributes[PROTOCOL_STRATEGY]
+            @Suppress("UNCHECKED_CAST")
+            val strategy = components[MessageProtocolStrategy] as MessageProtocolStrategy<AbstractContact>
             val step = attributes[STEP]
             val contact = attributes[CONTACT]
             val bot = contact.bot
@@ -52,9 +56,9 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                 client = bot.client,
                 contact = contact,
                 message = currentMessageChain,
-                fragmented = step == SendMessageStep.FRAGMENTED,
-                sourceCallback = { source = it }
-            )
+                originalMessage = attributes[ORIGINAL_MESSAGE_AS_CHAIN],
+                fragmented = step == SendMessageStep.FRAGMENTED
+            ) { source = it }
 
             sendAllPackets(bot, step, contact, packets)
 
@@ -70,7 +74,7 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             packets: List<OutgoingPacket>
         ) = packets.forEach { packet ->
             val originalMessage = attributes[ORIGINAL_MESSAGE]
-            val protocolStrategy = attributes[PROTOCOL_STRATEGY]
+            val protocolStrategy = components[MessageProtocolStrategy]
             val finalMessage = currentMessageChain
 
             val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response

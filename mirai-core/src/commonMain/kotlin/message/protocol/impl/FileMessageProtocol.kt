@@ -19,9 +19,11 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
@@ -81,11 +83,11 @@ internal class FileMessageProtocol : MessageProtocol() {
             val contact = attributes[CONTACT]
             val bot = contact.bot
 
-            val strategy = attributes[PROTOCOL_STRATEGY]
+            val strategy = components[MessageProtocolStrategy]
 
             val source = coroutineScope {
                 val source = async {
-                    strategy.constructSourceForSpecialMessage(currentMessageChain, 2021)
+                    strategy.constructSourceForSpecialMessage(attributes[ORIGINAL_MESSAGE_AS_CHAIN], 2021)
                 }
 
                 bot.network.sendAndExpect(FileManagement.Feed(bot.client, contact.id, file.busId, file.id))

@@ -26,6 +26,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.components.BdhSession
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
@@ -261,6 +262,7 @@ internal suspend fun <C : AbstractContact> C.sendMessageImpl(
         MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
             set(MessageProtocolStrategy, messageProtocolStrategy)
             set(HighwayUploader, HighwayUploader.Default)
+            set(ClockHolder, bot.components[ClockHolder])
         })
     }
 

@@ -37,13 +37,14 @@ internal interface MessageProtocolStrategy<in C : AbstractContact> {
     suspend fun createPacketsForGeneralMessage(
         client: QQAndroidClient,
         contact: C,
-        message: MessageChain,
+        message: MessageChain, // to send
+        originalMessage: MessageChain, // to create Receipt
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit,
     ): List<OutgoingPacket>
 
     suspend fun constructSourceForSpecialMessage(
-        finalMessage: MessageChain,
+        originalMessage: MessageChain,
         fromAppId: Int,
     ): OnlineMessageSource.Outgoing
 
@@ -52,7 +53,7 @@ internal interface MessageProtocolStrategy<in C : AbstractContact> {
 
 internal sealed class UserMessageProtocolStrategy<C : AbstractUser> : MessageProtocolStrategy<C> {
     override suspend fun constructSourceForSpecialMessage(
-        finalMessage: MessageChain,
+        originalMessage: MessageChain,
         fromAppId: Int
     ): OnlineMessageSource.Outgoing {
         throw UnsupportedOperationException("Sending MusicShare or FileMessage to User is not yet supported")
@@ -66,14 +67,15 @@ internal class FriendMessageProtocolStrategy(
         client: QQAndroidClient,
         contact: FriendImpl,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
-        return MessageSvcPbSendMsg.createToFriend(client, contact, message, fragmented, sourceCallback)
+        return MessageSvcPbSendMsg.createToFriend(client, contact, message, originalMessage, fragmented, sourceCallback)
     }
 
     override suspend fun constructSourceForSpecialMessage(
-        finalMessage: MessageChain,
+        originalMessage: MessageChain,
         fromAppId: Int
     ): OnlineMessageSource.Outgoing {
         val receipt: PrivateMessageProcessor.SendPrivateMessageReceipt = withTimeoutOrNull(3000) {
@@ -88,7 +90,7 @@ internal class FriendMessageProtocolStrategy(
             sender = contact.bot,
             target = contact,
             time = contact.bot.clock.server.currentTimeSeconds().toInt(),
-            originalMessage = finalMessage
+            originalMessage = originalMessage
         )
     }
 }
@@ -98,10 +100,18 @@ internal object StrangerMessageProtocolStrategy : UserMessageProtocolStrategy<St
         client: QQAndroidClient,
         contact: StrangerImpl,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
-        return MessageSvcPbSendMsg.createToStranger(client, contact, message, fragmented, sourceCallback)
+        return MessageSvcPbSendMsg.createToStranger(
+            client,
+            contact,
+            message,
+            originalMessage,
+            fragmented,
+            sourceCallback
+        )
     }
 }
 
@@ -110,10 +120,11 @@ internal object GroupTempMessageProtocolStrategy : UserMessageProtocolStrategy<N
         client: QQAndroidClient,
         contact: NormalMemberImpl,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
-        return MessageSvcPbSendMsg.createToTemp(client, contact, message, fragmented, sourceCallback)
+        return MessageSvcPbSendMsg.createToTemp(client, contact, message, originalMessage, fragmented, sourceCallback)
     }
 }
 
@@ -124,14 +135,15 @@ internal open class GroupMessageProtocolStrategy(
         client: QQAndroidClient,
         contact: GroupImpl,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
-        return MessageSvcPbSendMsg.createToGroup(client, contact, message, fragmented, sourceCallback)
+        return MessageSvcPbSendMsg.createToGroup(client, contact, message, originalMessage, fragmented, sourceCallback)
     }
 
     override suspend fun constructSourceForSpecialMessage(
-        finalMessage: MessageChain,
+        originalMessage: MessageChain,
         fromAppId: Int
     ): OnlineMessageSource.Outgoing {
         val receipt: GroupMessageProcessor.SendGroupMessageReceipt = withTimeoutOrNull(3000) {
@@ -147,7 +159,7 @@ internal open class GroupMessageProtocolStrategy(
             sender = contact.bot,
             target = contact,
             time = contact.bot.clock.server.currentTimeSeconds().toInt(),
-            originalMessage = finalMessage
+            originalMessage = originalMessage
         )
     }
 

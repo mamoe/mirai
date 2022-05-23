@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.network.component
 
 import org.jetbrains.annotations.TestOnly
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Mediator for [component][ComponentKey]s accessing each other.
@@ -38,6 +40,7 @@ internal interface ComponentStorage {
 }
 
 internal fun buildComponentStorage(builderAction: MutableComponentStorage.() -> Unit): ComponentStorage {
+    contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
     return ConcurrentComponentStorage(builderAction)
 }
 
