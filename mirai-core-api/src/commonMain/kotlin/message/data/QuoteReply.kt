@@ -54,7 +54,7 @@ public data class QuoteReply(
     public override val key: MessageKey<QuoteReply> get() = Key
 
     public override fun toString(): String =
-        "[mirai:quote:${source.ids.contentToString()},${source.internalIds.contentToString()}]"
+        "[mirai:quote:$source, content=${if (source.isOriginalMessageInitialized) source.originalMessage.toString() else "<not yet initialized>"}]"
 
     public override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
     public override fun hashCode(): Int = source.hashCode()
