@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.User
-import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.data.transform
 import net.mamoe.mirai.internal.message.image.*
@@ -46,7 +45,7 @@ internal class ImageProtocol : MessageProtocol() {
             val contact = attributes[CONTACT]
             if (contact !is GroupImpl) return
 
-            val patcher = contact.bot.asQQAndroidBot().components[ImagePatcher]
+            val patcher = contact.bot.components[ImagePatcher]
             currentMessageChain = currentMessageChain.transform { element ->
                 when (element) {
                     is OfflineGroupImage -> {

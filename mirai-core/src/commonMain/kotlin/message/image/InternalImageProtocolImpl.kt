@@ -19,7 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.utils.ImagePatcher
-import net.mamoe.mirai.internal.utils.ImagePatcher.Companion.withCache
+import net.mamoe.mirai.internal.utils.withCache
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.message.data.InternalImageProtocol
