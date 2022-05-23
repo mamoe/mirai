@@ -9,13 +9,13 @@
 
 package net.mamoe.mirai.console.compiler.common
 
-import org.intellij.lang.annotations.Language
+import kotlin.jvm.JvmField
 
 /**
  * @suppress 这是内部 API. 可能在任意时刻变动
  */
 public object CheckerConstants {
-    @Language("RegExp")
+    //    @Language("RegExp")
     public const val PLUGIN_ID_PATTERN: String = """([a-zA-Z]\w*(?:\.[a-zA-Z]\w*)*)\.([a-zA-Z]\w*(?:-\w+)*)"""
 
     @JvmField
