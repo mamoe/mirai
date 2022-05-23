@@ -4834,6 +4834,7 @@ public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mir
 	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun getTargetId ()J
 	public abstract fun getTime ()I
+	public abstract fun isOriginalMessageInitialized ()Z
 	public static final fun quote (Lnet/mamoe/mirai/message/data/MessageChain;)Lnet/mamoe/mirai/message/data/QuoteReply;
 	public static final fun quote (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/QuoteReply;
 	public static final fun recall (Lnet/mamoe/mirai/message/data/MessageChain;)V
