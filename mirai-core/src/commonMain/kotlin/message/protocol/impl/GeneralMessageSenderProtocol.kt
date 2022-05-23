@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
@@ -68,10 +69,11 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             contact: Contact,
             packets: List<OutgoingPacket>
         ) = packets.forEach { packet ->
-            val originalMessage = attributes[OutgoingMessagePipelineContext.ORIGINAL_MESSAGE]
+            val originalMessage = attributes[ORIGINAL_MESSAGE]
+            val protocolStrategy = attributes[PROTOCOL_STRATEGY]
             val finalMessage = currentMessageChain
 
-            val resp = bot.network.sendAndExpect(packet) as MessageSvcPbSendMsg.Response
+            val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
             if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                 val next = step.nextStepOrNull()
                     ?: throw MessageTooLargeException(

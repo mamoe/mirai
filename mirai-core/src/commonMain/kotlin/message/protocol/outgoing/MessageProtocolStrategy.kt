@@ -14,9 +14,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.nextEvent
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
@@ -27,7 +29,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 
-internal sealed interface MessageProtocolStrategy<in C : AbstractContact> {
+internal interface MessageProtocolStrategy<in C : AbstractContact> {
+    suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet? {
+        return bot.network.sendAndExpect(packet)
+    }
 
     suspend fun createPacketsForGeneralMessage(
         client: QQAndroidClient,
