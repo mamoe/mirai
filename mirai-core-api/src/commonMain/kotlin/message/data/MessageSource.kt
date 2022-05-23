@@ -178,7 +178,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
-    public abstract val originalMessage: MessageChain
+    public abstract val originalMessage: MessageChain // see OutgoingMessageSourceInternal.originalMessage
 
     /**
      * 返回 `"[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"`
