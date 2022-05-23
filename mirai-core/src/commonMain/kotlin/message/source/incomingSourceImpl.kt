@@ -57,6 +57,9 @@ internal class OnlineMessageSourceFromFriendImpl(
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.FRIEND)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
     override val sender: Friend = bot.getFriendOrFail(msg.first().msgHead.fromUin)
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
@@ -87,6 +90,9 @@ internal class OnlineMessageSourceFromStrangerImpl(
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.STRANGER)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
     override val sender: Stranger = bot.getStrangerOrFail(msg.first().msgHead.fromUin)
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
@@ -154,6 +160,9 @@ internal class OnlineMessageSourceFromTempImpl(
         msg.toMessageChainNoSource(bot, groupIdOrZero = 0, MessageSourceKind.TEMP)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
     override val sender: Member = with(msg.first().msgHead) {
         // it must be uin, see #1410
         // corresponding test: net.mamoe.mirai.internal.notice.processors.MessageTest.group temp message test 2
@@ -189,6 +198,9 @@ internal class OnlineMessageSourceFromGroupImpl(
         msg.toMessageChainNoSource(bot, groupIdOrZero = group.id, MessageSourceKind.GROUP)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
 
     override val subject: GroupImpl by lazy {
         val groupCode = msg.first().msgHead.groupInfo?.groupCode

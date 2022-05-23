@@ -180,6 +180,13 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      */
     public abstract val originalMessage: MessageChain // see OutgoingMessageSourceInternal.originalMessage
 
+    /**
+     * 当 [originalMessage] 已被初始化后返回 `true`.
+     *
+     * @since 2.12
+     */
+    public abstract val isOriginalMessageInitialized: Boolean
+
     public abstract override fun toString(): String
 
     @MiraiInternalApi

@@ -88,6 +88,9 @@ internal class OnlineMessageSourceToFriendImpl(
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal, OutgoingMessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
 
+    override val isOriginalMessageInitialized: Boolean
+        get() = true
+
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -119,6 +122,8 @@ internal class OnlineMessageSourceToStrangerImpl(
 
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
 
+    override val isOriginalMessageInitialized: Boolean
+        get() = true
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -149,6 +154,9 @@ internal class OnlineMessageSourceToTempImpl(
 
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
 
+    override val isOriginalMessageInitialized: Boolean
+        get() = true
+
     override val bot: Bot
         get() = sender
     override val ids: IntArray
@@ -174,6 +182,9 @@ internal class OnlineMessageSourceToGroupImpl(
     providedSequenceIds: IntArray? = null,
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal, OutgoingMessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+
+    override val isOriginalMessageInitialized: Boolean
+        get() = true
 
     override val ids: IntArray
         get() = sequenceIds

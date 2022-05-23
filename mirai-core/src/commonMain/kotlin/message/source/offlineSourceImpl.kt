@@ -37,13 +37,15 @@ internal class OfflineMessageSourceImplData(
     override val time: Int,
     override val fromId: Long,
     override val targetId: Long,
-    originalMessageLazy: Lazy<MessageChain>,
+    private val originalMessageLazy: Lazy<MessageChain>,
     override val internalIds: IntArray,
 ) : OfflineMessageSource(), MessageSourceInternal {
     object Serializer : MessageSourceSerializerImpl("OfflineMessageSource")
 
     override val sequenceIds: IntArray get() = ids
     override val originalMessage: MessageChain by originalMessageLazy
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
 
     // for override.
     // if provided, no need to serialize from message
@@ -157,7 +159,9 @@ internal fun OfflineMessageSourceImplData(
     targetId = targetId,
     originalMessageLazy = lazyOf(originalMessage),
     internalIds = internalIds
-)
+).also {
+    it.originalMessage // initialize lazy, to make isOriginalMessageInitialized true.
+}
 
 internal fun OfflineMessageSourceImplData(
     delegate: ImMsgBody.SourceMsg,
