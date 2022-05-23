@@ -4842,7 +4842,7 @@ public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mir
 	public static final fun recall (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun recallIn (Lnet/mamoe/mirai/message/data/MessageChain;J)Lnet/mamoe/mirai/message/action/AsyncRecallResult;
 	public static final fun recallIn (Lnet/mamoe/mirai/message/data/MessageSource;J)Lnet/mamoe/mirai/message/action/AsyncRecallResult;
-	public final fun toString ()Ljava/lang/String;
+	public abstract fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/MessageSource$Key : net/mamoe/mirai/message/data/AbstractMessageKey {
@@ -5079,6 +5079,7 @@ public abstract class net/mamoe/mirai/message/data/OfflineMessageSource : net/ma
 	public static final field Key Lnet/mamoe/mirai/message/data/OfflineMessageSource$Key;
 	public fun <init> ()V
 	public abstract fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OfflineMessageSource$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5118,6 +5119,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5131,6 +5133,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$
 	public fun getSubject ()Lnet/mamoe/mirai/contact/Group;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
 	public final fun getTarget ()Lnet/mamoe/mirai/contact/Group;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromGroup$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5143,6 +5146,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
 	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromStranger$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5156,6 +5160,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Member;
 	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromTemp$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5183,6 +5188,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Friend;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToFriend$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5193,6 +5199,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Group;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToGroup$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5203,6 +5210,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Stranger;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToStranger$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5214,6 +5222,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Member;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Member;
+	public final fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
