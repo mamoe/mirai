@@ -11,4 +11,7 @@ package net.mamoe.console.integrationtest.mod.serviceimpl
 import net.mamoe.console.integrationtest.mod.servicetypedef.ServiceTypedef
 
 public class ServiceImpl : ServiceTypedef {
+    override fun act() {
+        Throwable("Stacktrace").printStackTrace(System.out)
+    }
 }

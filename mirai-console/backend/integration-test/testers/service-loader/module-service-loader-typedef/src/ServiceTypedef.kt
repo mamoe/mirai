@@ -10,4 +10,5 @@
 package net.mamoe.console.integrationtest.mod.servicetypedef
 
 public interface ServiceTypedef {
+    public fun act() {}
 }

@@ -51,13 +51,32 @@ internal class JvmPluginsLoadingCtx(
     }
 }
 
-internal class DynLibClassLoader(
-    parent: ClassLoader?,
-    private val clName: String? = null,
-) : URLClassLoader(arrayOf(), parent) {
+internal class DynLibClassLoader : URLClassLoader {
+    private val clName: String?
+
+    private constructor(parent: ClassLoader?, clName: String?) : super(arrayOf(), parent) {
+        this.clName = clName
+    }
+
+    @Suppress("Since15")
+    private constructor(parent: ClassLoader?, clName: String?, vmName: String?) : super(vmName, arrayOf(), parent) {
+        this.clName = clName
+    }
+
+
     companion object {
+        internal val java9: Boolean
+
         init {
             ClassLoader.registerAsParallelCapable()
+            java9 = kotlin.runCatching { Class.forName("java.lang.Module") }.isSuccess
+        }
+
+        fun newInstance(parent: ClassLoader?, clName: String?, vmName: String?): DynLibClassLoader {
+            return when {
+                java9 -> DynLibClassLoader(parent, clName, vmName)
+                else -> DynLibClassLoader(parent, clName)
+            }
         }
     }
 
@@ -192,8 +211,12 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                     pluginMainPackages.add(pkg)
                 }
         }
-        pluginSharedCL = DynLibClassLoader(ctx.sharedLibrariesLoader, "SharedCL{${file.name}}")
-        pluginIndependentCL = DynLibClassLoader(pluginSharedCL, "IndependentCL{${file.name}}")
+        pluginSharedCL = DynLibClassLoader.newInstance(
+            ctx.sharedLibrariesLoader, "SharedCL{${file.name}}", "${file.name}[shared]"
+        )
+        pluginIndependentCL = DynLibClassLoader.newInstance(
+            pluginSharedCL, "IndependentCL{${file.name}}", "${file.name}[private]"
+        )
         addURL(file.toURI().toURL())
     }
 
@@ -265,16 +288,14 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     }
 
     companion object {
-        private val java9: Boolean
 
         init {
             ClassLoader.registerAsParallelCapable()
-            java9 = kotlin.runCatching { Class.forName("java.lang.Module") }.isSuccess
         }
 
         fun newLoader(file: File, ctx: JvmPluginsLoadingCtx): JvmPluginClassLoaderN {
             return when {
-                java9 -> JvmPluginClassLoaderN(file, ctx)
+                DynLibClassLoader.java9 -> JvmPluginClassLoaderN(file, ctx)
                 else -> JvmPluginClassLoaderN(file, ctx, Unit)
             }
         }
