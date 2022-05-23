@@ -39,6 +39,19 @@ public fun File.assertNotExists() {
         fail { "Except ${this.absolutePath} not exists but this file exists in disk" }
     }
 }
+
+public fun assertClassSame(expected: Class<*>?, actually: Class<*>?) {
+    fun vt(c: Class<*>?): String {
+        if (c == null) return "<null>"
+        return "$c from ${c.classLoader}"
+    }
+    if (expected === actually) return
+    fail {
+        "Class not same:\n" +
+                "Class excepted: ${vt(expected)}\n" +
+                "Class actually: ${vt(actually)}"
+    }
+}
 // endregion
 
 // region JVM Utils
@@ -48,7 +61,7 @@ public val vmClassfileVersion: Int = runCatching {
     classobj.version
 }.recoverCatching {
     val ccl = object : ClassLoader(null) {
-        fun canLoad(ver: Int) : Boolean{
+        fun canLoad(ver: Int): Boolean {
             val klass = ClassWriter(ClassWriter.COMPUTE_MAXS)
             val cname =
                 "net/mamoe/console/integrationtest/vtest/C${ver}_${System.currentTimeMillis()}_${UUID.randomUUID()}"

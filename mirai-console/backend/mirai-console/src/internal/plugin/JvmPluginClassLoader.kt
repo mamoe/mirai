@@ -79,6 +79,22 @@ internal class DynLibClassLoader : URLClassLoader {
                 else -> DynLibClassLoader(parent, clName)
             }
         }
+
+        fun tryFastOrStrictResolve(name: String): Class<*>? {
+            if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
+
+            // All mirai-core hard-linked should use same version to avoid errors (ClassCastException).
+            if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
+                return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
+            }
+            if (name.startsWith("net.mamoe.mirai.")) { // Avoid plugin classing cheating
+                try {
+                    return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
+                } catch (ignored: ClassNotFoundException) {
+                }
+            }
+            return null
+        }
     }
 
     internal fun loadClassInThisClassLoader(name: String): Class<*>? {
@@ -142,7 +158,8 @@ internal class DynLibClassLoader : URLClassLoader {
     }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
-        if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
+        tryFastOrStrictResolve(name)?.let { return it }
+
         val pt = this.parent
         val topPt: ClassLoader? = if (pt is DynLibClassLoader) {
             pt.findButNoSystem(name)?.let { return it }
@@ -331,16 +348,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     override fun loadClass(name: String, resolve: Boolean): Class<*> = loadClass(name)
 
     override fun loadClass(name: String): Class<*> {
-        if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
-        if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
-            return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
-        }
-        if (name.startsWith("net.mamoe.mirai.")) { // Avoid plugin classing cheating
-            try {
-                return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
-            } catch (ignored: ClassNotFoundException) {
-            }
-        }
+        DynLibClassLoader.tryFastOrStrictResolve(name)?.let { return it }
+
         sharedLibrariesLogger.loadClassInThisClassLoader(name)?.let { return it }
 
         // Search dependencies first
