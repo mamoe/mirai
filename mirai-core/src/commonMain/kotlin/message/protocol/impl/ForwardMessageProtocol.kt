@@ -14,15 +14,15 @@ import net.mamoe.mirai.internal.message.data.forwardMessage
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.HIGHWAY_UPLOADER
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.RichMessage
 import net.mamoe.mirai.message.data.toMessageChain
-import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal class ForwardMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
@@ -46,16 +46,16 @@ internal class ForwardMessageProtocol : MessageProtocol() {
                 }.asIterable().verifyLength(forward, contact)
             }
 
-            val resId = attributes[HIGHWAY_UPLOADER].uploadMessages(
+            val resId = components[HighwayUploader].uploadMessages(
                 contact,
-                attributes[PROTOCOL_STRATEGY],
+                components,
                 forward.nodeList,
                 false
             )
 
             currentMessageChain = RichMessage.forwardMessage(
                 resId = resId,
-                fileName = currentTimeSeconds().toString(),
+                fileName = components[ClockHolder].local.currentTimeSeconds().toString(),
                 forwardMessage = forward,
             ).toMessageChain()
         }

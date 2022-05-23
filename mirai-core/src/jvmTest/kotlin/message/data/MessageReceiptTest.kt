@@ -16,7 +16,9 @@ import net.mamoe.mirai.internal.message.protocol.impl.GeneralMessageSenderProtoc
 import net.mamoe.mirai.internal.message.protocol.outgoing.*
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
+import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions
 import net.mamoe.mirai.internal.pipeline.replaceProcessor
 import net.mamoe.mirai.internal.test.AbstractTest
@@ -24,6 +26,7 @@ import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.buildForwardMessage
 import net.mamoe.mirai.message.data.toMessageChain
+import net.mamoe.mirai.utils.Clock
 import net.mamoe.mirai.utils.currentTimeSeconds
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -79,13 +82,19 @@ internal class MessageReceiptTest : AbstractTest(), GroupExtensions {
             set(HighwayUploader, object : HighwayUploader {
                 override suspend fun uploadMessages(
                     contact: AbstractContact,
-                    strategy: MessageProtocolStrategy<*>,
+                    components: ComponentStorage,
                     nodes: Collection<ForwardMessage.INode>,
                     isLong: Boolean,
-                    facade: MessageProtocolFacade,
                     senderName: String
                 ): String {
                     return "id"
+                }
+            })
+            set(ClockHolder, object : ClockHolder() {
+                override val local: Clock = object : Clock {
+                    override fun currentTimeMillis(): Long {
+                        return 160023456
+                    }
                 }
             })
         })

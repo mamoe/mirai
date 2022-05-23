@@ -33,8 +33,11 @@ internal class MessageProtocolFacadeTest : AbstractTest() {
                 PttMessageProtocol
                 RichMessageProtocol
                 TextProtocol
-                UnsupportedMessageProtocol
                 VipFaceProtocol
+                ForwardMessageProtocol
+                LongMessageProtocol
+                UnsupportedMessageProtocol
+                GeneralMessageSenderProtocol
             """.trimIndent(),
             MessageProtocolFacadeImpl().loaded.joinToString("\n") { it::class.simpleName.toString() }
         )

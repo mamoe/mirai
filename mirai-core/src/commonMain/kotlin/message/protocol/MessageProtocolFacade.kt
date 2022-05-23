@@ -22,7 +22,10 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.decode.*
 import net.mamoe.mirai.internal.message.protocol.encode.*
 import net.mamoe.mirai.internal.message.protocol.outgoing.*
+import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.component.buildComponentStorage
+import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.pipeline.ProcessResult
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
@@ -39,6 +42,8 @@ import java.util.*
 import kotlin.reflect.KClass
 
 internal interface MessageProtocolFacade {
+    val remark: String get() = "MessageProtocolFacade"
+
     val encoderPipeline: MessageEncoderPipeline
     val decoderPipeline: MessageDecoderPipeline
     val preprocessorPipeline: OutgoingMessagePipeline
@@ -129,7 +134,8 @@ internal interface MessageProtocolFacade {
     /**
      * The default global instance.
      */
-    companion object INSTANCE : MessageProtocolFacade by MessageProtocolFacadeImpl()
+    companion object INSTANCE : MessageProtocolFacade by MessageProtocolFacadeImpl(),
+        ComponentKey<MessageProtocolFacade>
 }
 
 internal fun MessageProtocolFacade.decodeAndRefineLight(
@@ -150,7 +156,8 @@ internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
 
 
 internal class MessageProtocolFacadeImpl(
-    private val protocols: Iterable<MessageProtocol> = ServiceLoader.load(MessageProtocol::class.java)
+    private val protocols: Iterable<MessageProtocol> = ServiceLoader.load(MessageProtocol::class.java),
+    override val remark: String = "MessageProtocolFacade"
 ) : MessageProtocolFacade {
     override val encoderPipeline: MessageEncoderPipeline = MessageEncoderPipelineImpl()
     override val decoderPipeline: MessageDecoderPipeline = MessageDecoderPipelineImpl()
@@ -243,6 +250,15 @@ internal class MessageProtocolFacadeImpl(
         }
     }
 
+    private val thisComponentStorage by lazy {
+        buildComponentStorage {
+            set(
+                MessageProtocolFacade,
+                this@MessageProtocolFacadeImpl
+            )
+        }
+    }
+
     override suspend fun <C : AbstractContact> preprocess(
         target: C,
         message: Message,
@@ -314,9 +330,9 @@ internal class MessageProtocolFacadeImpl(
         val attributes = buildTypeSafeMap {
             set(OutgoingMessagePipelineContext.CONTACT, target.impl())
             set(OutgoingMessagePipelineContext.ORIGINAL_MESSAGE, message)
+            set(OutgoingMessagePipelineContext.ORIGINAL_MESSAGE_AS_CHAIN, message.toMessageChain())
             set(OutgoingMessagePipelineContext.STEP, SendMessageStep.FIRST)
-            set(OutgoingMessagePipelineContext.PROTOCOL_STRATEGY, context[MessageProtocolStrategy].castUp())
-            set(OutgoingMessagePipelineContext.HIGHWAY_UPLOADER, context[HighwayUploader])
+            set(OutgoingMessagePipelineContext.COMPONENTS, thisComponentStorage.withFallback(context))
         }
         return attributes
     }

@@ -12,8 +12,12 @@ package net.mamoe.mirai.internal.message.protocol.impl
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.ContactOrBot
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.AbstractBot
+import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.message.data.inferMessageSourceKind
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
@@ -21,17 +25,31 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacadeImpl
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderPipelineImpl
 import net.mamoe.mirai.internal.message.protocol.decodeAndRefineLight
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderPipelineImpl
+import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.component.ComponentStorage
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.internal.network.framework.AbstractMockNetworkHandlerTest
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageChainBuilder
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.Clock
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toUHexString
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.test.Asserter
+import kotlin.test.assertEquals
+import kotlin.test.asserter
 
 internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandlerTest(), GroupExtensions {
 
@@ -60,7 +78,10 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     }
 
     protected fun facadeOf(vararg protocols: MessageProtocol): MessageProtocolFacade {
-        return MessageProtocolFacadeImpl(protocols.toList())
+        return MessageProtocolFacadeImpl(
+            protocols.toList(),
+            remark = "MessageProtocolFacade with ${protocols.joinToString { it::class.simpleName!! }}"
+        )
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -211,5 +232,121 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     // sending
     ///////////////////////////////////////////////////////////////////////////
 
+    init {
+        components[MessageProtocolStrategy] = object : MessageProtocolStrategy<AbstractContact> {
+            override suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet {
+                assertEquals(0x123, packet.sequenceId)
+                return MessageSvcPbSendMsg.Response.SUCCESS
+            }
 
+            override suspend fun createPacketsForGeneralMessage(
+                client: QQAndroidClient,
+                contact: AbstractContact,
+                message: MessageChain,
+                originalMessage: MessageChain,
+                fragmented: Boolean,
+                sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
+            ): List<OutgoingPacket> {
+                sourceCallback(CompletableDeferred(constructSourceForSpecialMessage(originalMessage, 1000)))
+                return listOf(OutgoingPacket("Test", "test", 0x123, ByteReadPacket.Empty))
+            }
+
+            override suspend fun constructSourceForSpecialMessage(
+                originalMessage: MessageChain,
+                fromAppId: Int
+            ): OnlineMessageSource.Outgoing {
+                return when (val defaultTarget = defaultTarget) {
+                    is Group -> OnlineMessageSourceToGroupImpl(
+                        coroutineScope = defaultTarget,
+                        internalIds = intArrayOf(1),
+                        time = 1,
+                        originalMessage = originalMessage,
+                        sender = bot,
+                        target = defaultTarget
+                    )
+                    is Friend -> OnlineMessageSourceToFriendImpl(
+                        sequenceIds = intArrayOf(1),
+                        internalIds = intArrayOf(1),
+                        time = 1,
+                        originalMessage = originalMessage,
+                        sender = bot,
+                        target = defaultTarget
+                    )
+                    else -> error("Unexpected target: $defaultTarget")
+                }
+            }
+
+        }
+        components[HighwayUploader] = object : HighwayUploader {
+            override suspend fun uploadMessages(
+                contact: AbstractContact,
+                components: ComponentStorage,
+                nodes: Collection<ForwardMessage.INode>,
+                isLong: Boolean,
+                senderName: String
+            ): String {
+                return "(size=${nodes.size})${
+                    nodes.joinToString().replace(bot.id.toString(), "123123").md5().toUHexString("")
+                }"
+            }
+        }
+        components[ClockHolder] = object : ClockHolder() {
+            override val local: Clock = object : Clock {
+                override fun currentTimeMillis(): Long = 160023456
+            }
+        }
+    }
+
+    fun runWithFacade(action: suspend MessageProtocolFacade.() -> Unit) {
+        runBlockingUnit {
+            facadeOf(*protocols).run { action() }
+            MessageProtocolFacade.INSTANCE.run { action() }
+        }
+    }
+
+    companion object {
+        fun assertMessageEquals(expected: Message, actual: Message) {
+            val expectedChain = expected.toMessageChain()
+            val actualChain = actual.toMessageChain()
+
+            val message = String.format(
+                """
+                Expected: %s
+                                
+                Actual: %s
+            """.trimIndent(), expectedChain.render(), actualChain.render()
+            )
+            assertEquals(expectedChain.size, actualChain.size, message)
+            asserter.assertEquals(message, expectedChain, actualChain)
+        }
+
+        fun MessageProtocolFacade.assertMessageEquals(expected: Message, actual: Message) {
+            val expectedChain = expected.toMessageChain()
+            val actualChain = actual.toMessageChain()
+
+            val message = String.format(
+                """
+                Facade: ${this.remark}
+                Expected: %s
+                                
+                Actual: %s
+            """.trimIndent(), expectedChain.render(), actualChain.render()
+            )
+            assertEquals(expectedChain.size, actualChain.size, message)
+            asserter.assertEquals(message, expectedChain, actualChain)
+        }
+
+        inline fun Asserter.assertEquals(crossinline message: () -> String, expected: Any?, actual: Any?) {
+            assertTrue({ message() + ". Expected <$expected>, actual <$actual>." }, actual == expected)
+        }
+
+
+        fun MessageChain.render(): String = buildString {
+            appendLine("size = $size")
+            for (singleMessage in distinct()) {
+                val count = this@render.count { it == singleMessage }
+                appendLine("$count x [${singleMessage::class.simpleName}] $singleMessage")
+            }
+        }
+    }
 }

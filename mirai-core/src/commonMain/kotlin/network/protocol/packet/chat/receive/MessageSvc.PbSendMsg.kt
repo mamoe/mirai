@@ -186,6 +186,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         target: Stranger,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         source: (OnlineMessageSourceToStrangerImpl) -> Unit,
     ): List<OutgoingPacket> {
@@ -226,7 +227,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         target = target,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),
                         sequenceIds = sequenceIds.get(),
-                        originalMessage = message,
+                        originalMessage = originalMessage,
                     ),
                 )
             },
@@ -242,6 +243,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         targetFriend: Friend,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         crossinline sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit,
     ): List<OutgoingPacket> {
@@ -290,7 +292,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         target = targetFriend,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),
                         sequenceIds = sequenceIds.get(),
-                        originalMessage = message,
+                        originalMessage = originalMessage,
                     ),
                 )
             },
@@ -372,6 +374,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         targetGroup: Group,
         message: MessageChain,
+        originalMessage: MessageChain,
         fragmented: Boolean,
         crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit,
     ): List<OutgoingPacket> {
@@ -422,7 +425,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         sender = client.bot,
                         target = targetGroup,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),
-                        originalMessage = message, //,
+                        originalMessage = originalMessage, //,
                         //   sourceMessage = message
                     ),
                 )
@@ -500,6 +503,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
     client: QQAndroidClient,
     member: Member,
     message: MessageChain,
+    originalMessage: MessageChain,
     fragmented: Boolean,
     crossinline sourceCallback: (Deferred<OnlineMessageSourceToTempImpl>) -> Unit,
 ): List<OutgoingPacket> {
@@ -512,7 +516,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         target = member,
         time = client.bot.clock.server.currentTimeSeconds().toInt(),
         sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
-        originalMessage = message,
+        originalMessage = originalMessage,
     )
     sourceCallback(CompletableDeferred(source))
     return createToTempImpl(
@@ -526,7 +530,8 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
 internal inline fun MessageSvcPbSendMsg.createToStranger(
     client: QQAndroidClient,
     stranger: Stranger,
-    message: MessageChain,
+    message: MessageChain, // to send
+    originalMessage: MessageChain, // for Receipt
     fragmented: Boolean,
     crossinline sourceCallback: (Deferred<OnlineMessageSourceToStrangerImpl>) -> Unit,
 ): List<OutgoingPacket> {
@@ -537,6 +542,7 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
         client,
         stranger,
         message,
+        originalMessage,
         fragmented,
     ) { sourceCallback(CompletableDeferred(it)) }
 }
@@ -545,6 +551,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
     client: QQAndroidClient,
     qq: Friend,
     message: MessageChain,
+    originalMessage: MessageChain,
     fragmented: Boolean,
     crossinline sourceCallback: (Deferred<OnlineMessageSourceToFriendImpl>) -> Unit,
 ): List<OutgoingPacket> {
@@ -555,6 +562,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
         client,
         qq,
         message,
+        originalMessage,
         fragmented,
     ) { sourceCallback(CompletableDeferred(it)) }
 }
@@ -564,6 +572,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     client: QQAndroidClient,
     group: Group,
     message: MessageChain,
+    originalMessage: MessageChain,
     fragmented: Boolean,
     crossinline sourceCallback: (Deferred<OnlineMessageSourceToGroupImpl>) -> Unit,
 ): List<OutgoingPacket> {
@@ -574,6 +583,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
         client,
         group,
         message,
+        originalMessage,
         fragmented,
     ) { sourceCallback(CompletableDeferred(it)) }
 }

@@ -17,11 +17,9 @@ import net.mamoe.mirai.internal.contact.impl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.contact.userIdOrNull
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
-import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
-import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.component.buildComponentStorage
+import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -42,21 +40,19 @@ import kotlin.random.Random
 internal open class MultiMsgUploader(
     val client: QQAndroidClient,
     val isLong: Boolean,
-    val tmpRand: Random = Random.Default,
-    val facade: MessageProtocolFacade,
+    val random: Random,
     val contact: Contact,
-    val strategy: MessageProtocolStrategy<*>,
+    val components: ComponentStorage,
     val senderName: String
 ) {
 
     protected open fun newUploader(): MultiMsgUploader = MultiMsgUploader(
-        isLong = isLong,
         client = client,
-        tmpRand = tmpRand,
-        facade = facade,
+        isLong = isLong,
+        random = random,
         contact = contact,
-        senderName = senderName,
-        strategy = strategy
+        components = components,
+        senderName = senderName
     )
 
     val mainMsg = mutableListOf<MsgComm.Msg>()
@@ -69,7 +65,7 @@ internal open class MultiMsgUploader(
     protected open fun newNid(): String {
         var nid: String
         do {
-            nid = "${tmpRand.nextInt().absoluteValue}"
+            nid = "${random.nextInt().absoluteValue}"
         } while (nestedMsgs.containsKey(nid))
         return nid
     }
@@ -140,10 +136,7 @@ internal open class MultiMsgUploader(
                 msgChain = convertNestedForwardMessage(nestedForward, msgChain)
             }
 
-            msgChain = facade.preprocess(contact.impl(), msgChain, buildComponentStorage {
-                set(MessageProtocolStrategy, strategy)
-                set(HighwayUploader, HighwayUploader.Default)
-            })
+            msgChain = components[MessageProtocolFacade].preprocess(contact.impl(), msgChain, components)
 
             var seq: Int = -1
             var uid: Int = -1
@@ -157,8 +150,8 @@ internal open class MultiMsgUploader(
                 if (seq != -1 && uid != -1) {
                     if (existsIds.add(seq.concatAsLong(uid))) break
                 }
-                seq = tmpRand.nextInt().absoluteValue
-                uid = tmpRand.nextInt().absoluteValue
+                seq = random.nextInt().absoluteValue
+                uid = random.nextInt().absoluteValue
             }
 
             val msg0 = MsgComm.Msg(
@@ -176,18 +169,13 @@ internal open class MultiMsgUploader(
                     ),
                     msgType = 82, // troop,
                     groupInfo = if (contact is Group) MsgComm.GroupInfo(
-                        groupCode = contact.groupCode,
-                        groupCard = senderName // Cinnamon
+                        groupCode = contact.groupCode, groupCard = senderName // Cinnamon
                     ) else null,
                     isSrcMsg = false,
-                ),
-                msgBody = ImMsgBody.MsgBody(
+                ), msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
                         elems = MessageProtocolFacade.encode(
-                            msgChain,
-                            messageTarget = contact,
-                            withGeneralFlags = false,
-                            isForward = true
+                            msgChain, messageTarget = contact, withGeneralFlags = false, isForward = true
                         )
                     )
                 )
@@ -197,17 +185,13 @@ internal open class MultiMsgUploader(
     }
 
     open fun toMessageValidationData(): MessageValidationData {
-        val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
-            msg = mainMsg,
-            pbItemList = nestedMsgs.asSequence()
-                .map { (name, msgList) ->
-                    MsgTransmit.PbMultiMsgItem(
-                        fileName = name,
-                        buffer = MsgTransmit.PbMultiMsgNew(msgList).toByteArray(MsgTransmit.PbMultiMsgNew.serializer())
-                    )
-                }
-                .toList()
-        )
+        val msgTransmit =
+            MsgTransmit.PbMultiMsgTransmit(msg = mainMsg, pbItemList = nestedMsgs.asSequence().map { (name, msgList) ->
+                MsgTransmit.PbMultiMsgItem(
+                    fileName = name,
+                    buffer = MsgTransmit.PbMultiMsgNew(msgList).toByteArray(MsgTransmit.PbMultiMsgNew.serializer())
+                )
+            }.toList())
         val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())
 
         return MessageValidationData(bytes.gzip())
@@ -218,27 +202,20 @@ internal open class MultiMsgUploader(
 
         val response = client.bot.network.sendAndExpect(
             MultiMsg.ApplyUp.createForGroup(
-                buType = if (isLong) 1 else 2,
-                client = client,
-                messageData = data,
-                dstUin = contact.uin
+                buType = if (isLong) 1 else 2, client = client, messageData = data, dstUin = contact.uin
             )
         )
 
         lateinit var resId: String
         when (response) {
-            is MultiMsg.ApplyUp.Response.MessageTooLarge ->
-                error(
-                    "Internal error: message is too large, but this should be handled before sending. "
-                )
+            is MultiMsg.ApplyUp.Response.MessageTooLarge -> error(
+                "Internal error: message is too large, but this should be handled before sending. "
+            )
             is MultiMsg.ApplyUp.Response.RequireUpload -> {
                 resId = response.proto.msgResid
 
                 val body = LongMsg.ReqBody(
-                    subcmd = 1,
-                    platformType = 9,
-                    termType = 5,
-                    msgUpReq = listOf(
+                    subcmd = 1, platformType = 9, termType = 5, msgUpReq = listOf(
                         LongMsg.MsgUpReq(
                             msgType = 3, // group
                             dstUin = contact.uin,
@@ -253,14 +230,10 @@ internal open class MultiMsgUploader(
 
                 body.toExternalResource().use { resource ->
                     Highway.uploadResourceBdh(
-                        bot = client.bot,
-                        resource = resource,
-                        kind = when (isLong) {
+                        bot = client.bot, resource = resource, kind = when (isLong) {
                             true -> ResourceKind.LONG_MESSAGE
                             false -> ResourceKind.FORWARD_MESSAGE
-                        },
-                        commandId = 27,
-                        initialTicket = response.proto.msgSig
+                        }, commandId = 27, initialTicket = response.proto.msgSig
                     )
                 }
             }

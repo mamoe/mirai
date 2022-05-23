@@ -12,22 +12,21 @@ package net.mamoe.mirai.internal.message.protocol.impl
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.contact.takeContent
-import net.mamoe.mirai.internal.message.data.longMessage
+import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.flags.DontAsLongMessage
 import net.mamoe.mirai.internal.message.flags.ForceAsLongMessage
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
-import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.HIGHWAY_UPLOADER
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.PROTOCOL_STRATEGY
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
+import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.RichMessage
-import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.truncated
 
 internal class LongMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
@@ -36,24 +35,25 @@ internal class LongMessageProtocol : MessageProtocol() {
                 convertToLongMessageIfNeeded(
                     currentMessageChain,
                     attributes[STEP],
-                    attributes[CONTACT],
-                    attributes[PROTOCOL_STRATEGY]
+                    attributes[CONTACT]
                 )
         })
     }
 
+    /**
+     * Convert to [LongMessageInternal] iff [SendMessageStep.FIRST] has failed.
+     */
     private suspend fun OutgoingMessagePipelineContext.convertToLongMessageIfNeeded(
         chain: MessageChain,
         step: SendMessageStep,
         contact: AbstractContact,
-        strategy: MessageProtocolStrategy<*>
     ): MessageChain {
-        val uploader = attributes[HIGHWAY_UPLOADER]
+        val uploader = components[HighwayUploader]
 
         suspend fun sendLongImpl(): MessageChain {
-            val time = currentTimeSeconds()
-            val resId = uploader.uploadLongMessage(contact, strategy, chain, time.toInt())
-            return chain + RichMessage.longMessage(
+            val time = components[ClockHolder].local.currentTimeSeconds()
+            val resId = uploader.uploadLongMessage(contact, components, chain, time.toInt())
+            return chain + createLongMessage(
                 brief = chain.takeContent(27),
                 resId = resId,
                 timeSeconds = time
@@ -81,4 +81,26 @@ internal class LongMessageProtocol : MessageProtocol() {
             SendMessageStep.FRAGMENTED -> chain
         }
     }
+
+    private fun createLongMessage(brief: String, resId: String, timeSeconds: Long): LongMessageInternal {
+        val limited: String = brief.truncated(30)
+        val template = """
+                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+                <msg serviceID="35" templateID="1" action="viewMultiMsg"
+                     brief="$limited"
+                     m_resid="$resId"
+                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
+                     flag="3" adverSign="0" multiMsgFlag="1">
+                    <item layout="1">
+                        <title>$limited</title>
+                        <hr hidden="false" style="0"/>
+                        <summary>点击查看完整消息</summary>
+                    </item>
+                    <source name="聊天记录" icon="" action="" appid="-1"/>
+                </msg>
+            """.trimIndent().trim()
+
+        return LongMessageInternal(template, resId)
+    }
+
 }
