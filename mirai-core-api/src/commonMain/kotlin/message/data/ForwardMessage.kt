@@ -525,6 +525,10 @@ public class ForwardMessageBuilder private constructor(
         @ForwardMessageDsl
         public inline infix fun says(chain: @ForwardMessageDsl MessageChainBuilder.() -> Unit): ForwardMessageBuilder =
             says(MessageChainBuilder().apply(chain).asMessageChain())
+
+        override fun toString(): String {
+            return "BuilderNode(senderId=$senderId, time=$time, senderName='$senderName', messageChain=$messageChain)"
+        }
     }
 
     // region general `says`

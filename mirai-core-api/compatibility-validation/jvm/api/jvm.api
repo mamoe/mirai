@@ -4468,6 +4468,7 @@ public final class net/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNod
 	public fun setSenderName (Ljava/lang/String;)V
 	public fun setTime (I)V
 	public final fun time (I)Lnet/mamoe/mirai/message/data/ForwardMessageBuilder$BuilderNode;
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface annotation class net/mamoe/mirai/message/data/ForwardMessageDsl : java/lang/annotation/Annotation {
