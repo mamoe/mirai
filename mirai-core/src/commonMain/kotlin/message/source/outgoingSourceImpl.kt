@@ -30,6 +30,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.loadService
 import net.mamoe.mirai.utils.toLongUnsigned
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -192,26 +193,11 @@ internal class OnlineMessageSourceToGroupImpl(
         get() = sender
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
+    /**
+     * Note that in tests result of this Deferred is always `null`. See TestMessageSourceSequenceIdAwaiter.
+     */
     private val sequenceIdDeferred: Deferred<IntArray?> = providedSequenceIds?.let { CompletableDeferred(it) } ?: run {
-        val multi = mutableMapOf<Int, Int>()
-        coroutineScope.async {
-            withTimeoutOrNull(
-                timeMillis = 3000L * this@OnlineMessageSourceToGroupImpl.internalIds.size
-            ) {
-                GlobalEventChannel.parentScope(this)
-                    .syncFromEvent<SendGroupMessageReceipt, IntArray>(EventPriority.MONITOR) { receipt ->
-                        if (receipt.bot !== bot) return@syncFromEvent null
-                        if (receipt.messageRandom in this@OnlineMessageSourceToGroupImpl.internalIds) {
-                            multi[receipt.messageRandom] = receipt.sequenceId
-                            if (multi.size == this@OnlineMessageSourceToGroupImpl.internalIds.size) {
-                                IntArray(multi.size) { index ->
-                                    multi[this@OnlineMessageSourceToGroupImpl.internalIds[index]]!!
-                                }
-                            } else null
-                        } else null
-                    }
-            }
-        }
+        MessageSourceSequenceIdAwaiter.instance.getSequenceIdAsync(this, coroutineScope)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -265,5 +251,37 @@ internal class OnlineMessageSourceToGroupImpl(
 
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return super<OutgoingMessageSourceInternal>.accept(visitor, data)
+    }
+}
+
+internal open class MessageSourceSequenceIdAwaiter {
+    open fun getSequenceIdAsync(
+        sourceToGroupImpl: OnlineMessageSourceToGroupImpl,
+        coroutineScope: CoroutineScope
+    ): Deferred<IntArray?> {
+        val multi = mutableMapOf<Int, Int>()
+        return coroutineScope.async {
+            withTimeoutOrNull(
+                timeMillis = 3000L * sourceToGroupImpl.internalIds.size
+            ) {
+                GlobalEventChannel.parentScope(this)
+                    .syncFromEvent<SendGroupMessageReceipt, IntArray>(EventPriority.MONITOR) { receipt ->
+                        if (receipt.bot !== sourceToGroupImpl.bot) return@syncFromEvent null
+                        if (receipt.messageRandom in sourceToGroupImpl.internalIds) {
+                            multi[receipt.messageRandom] = receipt.sequenceId
+                            if (multi.size == sourceToGroupImpl.internalIds.size) {
+                                IntArray(multi.size) { index ->
+                                    multi[sourceToGroupImpl.internalIds[index]]!!
+                                }
+                            } else null
+                        } else null
+                    }
+            }
+        }
+    }
+
+    companion object {
+        val instance =
+            loadService(MessageSourceSequenceIdAwaiter::class) { MessageSourceSequenceIdAwaiter() }
     }
 }
