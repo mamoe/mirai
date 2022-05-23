@@ -47,6 +47,7 @@ import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.ImagePatcher
+import net.mamoe.mirai.internal.utils.ImagePatcherImpl
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -249,7 +250,7 @@ internal open class QQAndroidBot constructor(
             AccountSecretsManager,
             configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager")),
         )
-        set(ImagePatcher, ImagePatcher())
+        set(ImagePatcher, ImagePatcherImpl())
     }
 
     /**
