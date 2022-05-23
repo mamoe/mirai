@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginClassLoaderAccess
 import net.mamoe.mirai.utils.*
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.graph.DependencyFilter
@@ -163,6 +164,7 @@ internal class DynLibClassLoader : URLClassLoader {
 
 @Suppress("JoinDeclarationAndAssignment")
 internal class JvmPluginClassLoaderN : URLClassLoader {
+    val openaccess: JvmPluginClassLoaderAccess = OpenAccess()
     val file: File
     val ctx: JvmPluginsLoadingCtx
     val sharedLibrariesLogger: DynLibClassLoader
@@ -224,10 +226,12 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     internal var declaredFilter: ExportManager? = null
 
     val sharedClLoadedDependencies = mutableSetOf<String>()
+    val privateClLoadedDependencies = mutableSetOf<String>()
     internal fun containsSharedDependency(
         dependency: String
     ): Boolean {
         if (dependency in sharedClLoadedDependencies) return true
+        if (dependency in privateClLoadedDependencies) return true
         return dependencies.any { it.containsSharedDependency(dependency) }
     }
 
@@ -282,6 +286,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                 sharedClLoadedDependencies.add(artifact.depId())
             } else {
                 pluginIndependentCL.addLib(lib)
+                privateClLoadedDependencies.add(artifact.depId())
             }
             logger.debug { "Linked $artifact $linkType <${if (shared) pluginSharedCL else pluginIndependentCL}>" }
         }
@@ -432,6 +437,50 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         return "JvmPluginClassLoader{${file.name}}"
     }
 
+    inner class OpenAccess : JvmPluginClassLoaderAccess {
+        override val pluginFile: File
+            get() = this@JvmPluginClassLoaderN.file
+
+        override val pluginClassLoader: ClassLoader
+            get() = this@JvmPluginClassLoaderN
+
+        override val pluginSharedLibrariesClassLoader: ClassLoader
+            get() = pluginSharedCL
+        override val pluginIndependentLibrariesClassLoader: ClassLoader
+            get() = pluginIndependentCL
+
+        private val permitted by lazy {
+            arrayOf(
+                this@JvmPluginClassLoaderN,
+                pluginSharedCL,
+                pluginIndependentCL,
+            )
+        }
+
+        override fun addToPath(classLoader: ClassLoader, file: File) {
+            if (classLoader !in permitted) {
+                throw IllegalArgumentException("Unsupported classloader or cross plugin accessing: $classLoader")
+            }
+            if (classLoader == this@JvmPluginClassLoaderN) {
+                this@JvmPluginClassLoaderN.addURL(file.toURI().toURL())
+                return
+            }
+            classLoader as DynLibClassLoader
+            classLoader.addLib(file)
+        }
+
+        override fun downloadAndAddToPath(classLoader: ClassLoader, dependencies: Collection<String>) {
+            if (classLoader !in permitted) {
+                throw IllegalArgumentException("Unsupported classloader or cross plugin accessing: $classLoader")
+            }
+            if (classLoader === this@JvmPluginClassLoaderN) {
+                throw IllegalArgumentException("Only support download dependencies to `plugin[Shared/Independent]LibrariesClassLoader`")
+            }
+            this@JvmPluginClassLoaderN.linkLibraries(
+                linkedLogger, dependencies, classLoader === pluginSharedCL
+            )
+        }
+    }
 }
 
 private val JavaSystemPlatformClassLoader: ClassLoader by lazy {

@@ -2157,6 +2157,7 @@ public abstract class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin : net
 	public synthetic fun <init> (Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getAutoSaveIntervalMillis ()Lkotlin/ranges/LongRange;
 	public final fun getDataHolderName ()Ljava/lang/String;
+	protected final fun getJvmPluginClassLoaderAccess ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginClassLoaderAccess;
 	public final fun getLoader ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader;
 	public synthetic fun getLoader ()Lnet/mamoe/mirai/console/plugin/loader/PluginLoader;
 	public final fun permissionId (Ljava/lang/String;)Lnet/mamoe/mirai/console/permission/PermissionId;
@@ -2211,6 +2212,15 @@ public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPlugin : k
 
 public final class net/mamoe/mirai/console/plugin/jvm/JvmPlugin$Companion {
 	public final synthetic fun onLoad (Lnet/mamoe/mirai/console/plugin/jvm/JvmPlugin;Lnet/mamoe/mirai/console/extension/PluginComponentStorage;)V
+}
+
+public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginClassLoaderAccess {
+	public abstract fun addToPath (Ljava/lang/ClassLoader;Ljava/io/File;)V
+	public abstract fun downloadAndAddToPath (Ljava/lang/ClassLoader;Ljava/util/Collection;)V
+	public abstract fun getPluginClassLoader ()Ljava/lang/ClassLoader;
+	public abstract fun getPluginFile ()Ljava/io/File;
+	public abstract fun getPluginIndependentLibrariesClassLoader ()Ljava/lang/ClassLoader;
+	public abstract fun getPluginSharedLibrariesClassLoader ()Ljava/lang/ClassLoader;
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription : net/mamoe/mirai/console/plugin/description/PluginDescription {

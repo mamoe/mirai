@@ -11,7 +11,6 @@
 
 package net.mamoe.console.itest.serviceloader
 
-import net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
@@ -21,9 +20,10 @@ import kotlin.test.assertEquals
 
 internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.itest.serviceloader", "0.0.0")) {
     init {
-        val cl = PMain.javaClass.classLoader as JvmPluginClassLoaderN
-        cl.pluginSharedCL.addLib(File("modules/module-service-loader-typedef-0.0.0.jar"))
-        cl.pluginSharedCL.addLib(File("modules/module-service-loader-impl-0.0.0.jar"))
+        val access = jvmPluginClassLoaderAccess
+        val sharedCL = access.pluginSharedLibrariesClassLoader
+        access.addToPath(sharedCL, File("modules/module-service-loader-typedef-0.0.0.jar"))
+        access.addToPath(sharedCL, File("modules/module-service-loader-impl-0.0.0.jar"))
     }
 
     override fun onEnable() {
