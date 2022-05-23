@@ -30,7 +30,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushP
 import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
-import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
 import kotlin.reflect.KClass
 
@@ -90,17 +89,6 @@ internal open class NoticeProcessorPipelineImpl protected constructor(
     ) : BaseContextImpl(attributes), NoticePipelineContext {
         override val bot: QQAndroidBot
             get() = this@NoticeProcessorPipelineImpl.bot
-
-        override suspend fun processAlso(
-            data: ProtocolStruct,
-            attributes: TypeSafeMap
-        ): ProcessResult<out ProcessorPipelineContext<ProtocolStruct, Packet>, Packet> {
-            traceLogging.info { "processAlso: data=${data.structureToStringAndDesensitizeIfAvailable()}" }
-            return process(data, this.attributes + attributes).also { packets ->
-                this.collected.data += packets.collected
-                traceLogging.info { "processAlso: result=$packets" }
-            }
-        }
     }
 
     override fun handleExceptionInProcess(

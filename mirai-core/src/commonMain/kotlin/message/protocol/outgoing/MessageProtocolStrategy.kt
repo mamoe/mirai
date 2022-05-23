@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -34,6 +35,13 @@ internal interface MessageProtocolStrategy<in C : AbstractContact> {
         return bot.network.sendAndExpect(packet)
     }
 
+    suspend fun <R : Packet?> sendPacket(bot: AbstractBot, packet: OutgoingPacketWithRespType<R>): R {
+        return bot.network.sendAndExpect(packet)
+    }
+
+    /**
+     * If [fragmented] is false, returned list must contain at most one element.
+     */
     suspend fun createPacketsForGeneralMessage(
         client: QQAndroidClient,
         contact: C,

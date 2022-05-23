@@ -16,12 +16,19 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreproc
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
 import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.systemProp
+import net.mamoe.mirai.utils.withSwitch
 import kotlin.reflect.KClass
 
 // Loaded by ServiceLoader
 internal abstract class MessageProtocol(
     val priority: UInt = PRIORITY_CONTENT // the higher, the prior it being called
 ) {
+    val logger: MiraiLogger by lazy {
+        MiraiLogger.Factory.create(this::class).withSwitch(systemProp("mirai.message.protocol.log.full", false))
+    }
+
     fun collectProcessors(processorCollector: ProcessorCollector) {
         processorCollector.collectProcessorsImpl()
     }

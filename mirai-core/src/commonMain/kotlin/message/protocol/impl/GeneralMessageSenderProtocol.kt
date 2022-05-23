@@ -14,11 +14,13 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.SendMessageStep
+import net.mamoe.mirai.internal.message.flags.ForceAsFragmentedMessage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
+import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.MESSAGE_TO_RETRY
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
@@ -30,17 +32,20 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.message.data.toMessageChain
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.buildTypeSafeMap
+import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.truncated
 
 internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_SENDER) {
     override fun ProcessorCollector.collectProcessorsImpl() {
-        add(GeneralMessageSender())
+        add(GeneralMessageSender(logger))
     }
 
 
-    class GeneralMessageSender : OutgoingMessageSender {
+    class GeneralMessageSender(
+        private val logger: MiraiLogger,
+    ) : OutgoingMessageSender {
         override suspend fun OutgoingMessagePipelineContext.process() {
             markAsConsumed()
 
@@ -57,28 +62,49 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                 contact = contact,
                 message = currentMessageChain,
                 originalMessage = attributes[ORIGINAL_MESSAGE_AS_CHAIN],
-                fragmented = step == SendMessageStep.FRAGMENTED
+                fragmented = step == SendMessageStep.FRAGMENTED || currentMessageChain.contains(ForceAsFragmentedMessage)
             ) { source = it }
 
-            sendAllPackets(bot, step, contact, packets)
-
-            val sourceAwait = source?.await() ?: error("Internal error: source is not initialized")
-            sourceAwait.tryEnsureSequenceIdAvailable()
-            collect(sourceAwait.createMessageReceipt(contact, true))
+            if (sendAllPackets(bot, step, contact, packets)) {
+                val sourceAwait = source?.await() ?: error("Internal error: source is not initialized")
+                sourceAwait.tryEnsureSequenceIdAvailable()
+                collect(sourceAwait.createMessageReceipt(contact, true))
+            }
         }
 
+        /**
+         * @return `true`, if source needs to be added
+         */
         private suspend fun OutgoingMessagePipelineContext.sendAllPackets(
             bot: AbstractBot,
             step: SendMessageStep,
             contact: Contact,
             packets: List<OutgoingPacket>
-        ) = packets.forEach { packet ->
+        ): Boolean {
+            if (!step.allowMultiplePackets && packets.size != 1) {
+                throw IllegalStateException("Internal error: step $step doesn't allow multiple packets while found ${packets.size} ones.")
+            }
+
+            packets.forEach { packet ->
+                if (!sendSinglePacket(bot, packet, step, contact)) return@sendAllPackets false
+            }
+
+            return true
+        }
+
+        private suspend fun OutgoingMessagePipelineContext.sendSinglePacket(
+            bot: AbstractBot,
+            packet: OutgoingPacket,
+            step: SendMessageStep,
+            contact: Contact,
+        ): Boolean {
             val originalMessage = attributes[ORIGINAL_MESSAGE]
             val protocolStrategy = components[MessageProtocolStrategy]
             val finalMessage = currentMessageChain
 
             val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
             if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                logger.info { "STEP $step: message too large." }
                 val next = step.nextStepOrNull()
                     ?: throw MessageTooLargeException(
                         contact,
@@ -88,13 +114,16 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                     )
 
                 // retry with next step
-                processAlso(
-                    originalMessage.toMessageChain(),
+                logger.info { "Retrying with STEP $next" }
+                val (_, receipts) = processAlso(
+                    attributes[MESSAGE_TO_RETRY],
                     extraAttributes = buildTypeSafeMap {
                         set(STEP, next)
                     },
-                ) // We expect to get a Receipt from processAlso
-                return@forEach
+                )
+                check(receipts.size == 1) { "Internal error: expected exactly one receipt collected from sub-process, but found ${receipts.size}." }
+                // We expect to get a Receipt from processAlso
+                return false
             }
             if (resp is MessageSvcPbSendMsg.Response.ServiceUnavailable) {
                 throw IllegalStateException("Send message to $contact failed, server service is unavailable.")
@@ -117,7 +146,7 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
                 "Send message failed: $resp"
             }
-
+            return true
         }
 
     }

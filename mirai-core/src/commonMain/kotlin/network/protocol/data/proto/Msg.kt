@@ -16,6 +16,7 @@ import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.internal.utils.io.NestedStructure
 import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.unzip
@@ -1005,10 +1006,17 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(6) @JvmField val type: Int = 0,
         @ProtoNumber(7) @JvmField val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(8) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @NestedStructure(SrcMsgDesensitizer::class)
         @ProtoNumber(9) @JvmField val srcMsg: ByteArray? = null,
         @ProtoNumber(10) @JvmField val toUin: Long = 0L,
         @ProtoNumber(11) @JvmField val troopName: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+
+    internal object SrcMsgDesensitizer : NestedStructureDesensitizer<SourceMsg, MsgComm.Msg> {
+        override fun deserialize(context: SourceMsg, byteArray: ByteArray): MsgComm.Msg {
+            return byteArray.loadAs(MsgComm.Msg.serializer())
+        }
+    }
 
     @Serializable
     internal class Text(

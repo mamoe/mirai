@@ -37,11 +37,8 @@ import kotlin.test.assertTrue
 internal class MessageReceiptTest : AbstractTest(), GroupExtensions {
     private val bot = MockBot()
 
-    /**
-     * This test is very ugly, but we cannot do anything else.
-     */ // We need #1304
     @Test
-    fun `refine ForwardMessageInternal for MessageReceipt`() = runBlockingUnit {
+    fun `refine ForwardMessageInternal for MessageReceipt's original MessageChain`() = runBlockingUnit {
         val group = bot.addGroup(123, 2)
 
         val forward = buildForwardMessage(group) {
@@ -52,7 +49,7 @@ internal class MessageReceiptTest : AbstractTest(), GroupExtensions {
         val facade = MessageProtocolFacade.INSTANCE.copy()
 
         assertTrue {
-            facade.preprocessorPipeline.replaceProcessor(
+            facade.outgoingPipeline.replaceProcessor(
                 { it is GeneralMessageSenderProtocol.GeneralMessageSender },
                 OutgoingMessageProcessorAdapter(object : OutgoingMessageSender {
                     override suspend fun OutgoingMessagePipelineContext.process() {

@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
@@ -45,24 +47,35 @@ internal class MusicShareProtocol : MessageProtocol() {
         }
     }
 
-    private class Sender : OutgoingMessageSender {
+    open class Sender : OutgoingMessageSender {
         override suspend fun OutgoingMessagePipelineContext.process() {
-            val contact = attributes[CONTACT]
-            val bot = contact.bot
             val musicShare = currentMessageChain[MusicShare] ?: return
+            markAsConsumed()
 
-            val packet = MusicSharePacket(
-                bot.client, musicShare, contact.id,
-                targetKind = if (contact is Group) MessageSourceKind.GROUP else MessageSourceKind.FRIEND // always FRIEND
-            )
-            val result = bot.network.sendAndExpect(packet)
-            result.pkg.checkSuccess("send music share")
-
+            val contact = attributes[CONTACT]
             val strategy = components[MessageProtocolStrategy]
+            val bot = contact.bot
+
+            sendMusicSharePacket(bot, musicShare, contact, strategy)
+
             val source = strategy.constructSourceForSpecialMessage(attributes[ORIGINAL_MESSAGE_AS_CHAIN], 3116)
             source.tryEnsureSequenceIdAvailable()
 
             collect(source.createMessageReceipt(contact, true))
+        }
+
+        protected open suspend fun sendMusicSharePacket(
+            bot: QQAndroidBot,
+            musicShare: MusicShare,
+            contact: AbstractContact,
+            strategy: MessageProtocolStrategy<*>
+        ) {
+            val packet = MusicSharePacket(
+                bot.client, musicShare, contact.id,
+                targetKind = if (contact is Group) MessageSourceKind.GROUP else MessageSourceKind.FRIEND // always FRIEND
+            )
+            val result = strategy.sendPacket(bot, packet)
+            result.pkg.checkSuccess("send music share")
         }
     }
 }

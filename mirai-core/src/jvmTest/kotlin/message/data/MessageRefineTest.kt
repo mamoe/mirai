@@ -18,9 +18,9 @@ import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer
 import net.mamoe.mirai.internal.message.RefinableMessage
 import net.mamoe.mirai.internal.message.RefineContext
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -326,7 +326,7 @@ private fun sourceStub(
 
 private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: MessageChain, isLight: Boolean) {
     val actual = buildMessageChain {
-        ReceiveMessageTransformer.joinToMessageChain(list, 0, MessageSourceKind.GROUP, bot, this)
+        MessageProtocolFacade.decode(list, 0, MessageSourceKind.GROUP, bot, this, null)
     }.let { c ->
         if (isLight) {
             c.refineLight(bot)

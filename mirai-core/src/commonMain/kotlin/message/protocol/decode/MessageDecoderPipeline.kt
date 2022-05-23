@@ -10,11 +10,11 @@
 package net.mamoe.mirai.internal.message.protocol.decode
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.CONTAINING_MSG
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
-import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.pipeline.*
+import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
@@ -29,6 +29,7 @@ internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.El
         val BOT = TypeKey<Bot>("bot")
         val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
         val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
+        val CONTAINING_MSG = TypeKey<MsgComm.Msg?>("containingMsg")
     }
 }
 
@@ -44,6 +45,17 @@ internal open class MessageDecoderPipelineImpl :
 
     override fun createContext(data: ImMsgBody.Elem, attributes: TypeSafeMap): MessageDecoderContext =
         MessageDecoderContextImpl(attributes)
+
+    override suspend fun process(
+        data: ImMsgBody.Elem,
+        context: MessageDecoderContext,
+        attributes: TypeSafeMap
+    ): ProcessResult<MessageDecoderContext, Message> {
+        context.attributes[CONTAINING_MSG]?.let { msg ->
+            traceLogging.info { "Processing MsgCommon.Msg: ${msg.structureToStringAndDesensitizeIfAvailable()}" }
+        }
+        return super.process(data, context, attributes)
+    }
 
     companion object {
         @TestOnly

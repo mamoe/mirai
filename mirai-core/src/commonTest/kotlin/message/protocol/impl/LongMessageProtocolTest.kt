@@ -10,13 +10,19 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.flags.ForceAsLongMessage
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.repeat
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.castUp
 import net.mamoe.mirai.utils.getRandomString
@@ -82,6 +88,48 @@ internal class LongMessageProtocolTest : AbstractMessageProtocolTest() {
                             </msg>
                 """.trimIndent(), "(size=1)DBD2AB20196EEB631C95DEF40E20C709"
                     ) + IgnoreLengthCheck + ForceAsLongMessage, context.currentMessageChain
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `can convert messages failed to send at FIRST step to LongMessageInternal`() {
+        val message = "test".toPlainText().toMessageChain()
+
+        runWithFacade {
+            components[MessageProtocolStrategy] = object : TestMessageProtocolStrategy() {
+                var count = 0
+                override suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet {
+                    println("MessageProtocolStrategy.sendPacket called: $count")
+                    if (count++ == 0) { // fail the first attempt
+                        return MessageSvcPbSendMsg.Response.MessageTooLarge
+                    }
+                    return super.sendPacket(bot, packet)
+                }
+            }
+            preprocessAndSendOutgoingImpl(defaultTarget.castUp(), message, components).let { (context, receipts) ->
+                val receipt = receipts.single()
+                assertMessageEquals(message.dropMiraiInternalFlags(), receipt.source.originalMessage)
+
+                assertMessageEquals(
+                    LongMessageInternal(
+                        """
+                            <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+                            <msg serviceID="35" templateID="1" action="viewMultiMsg"
+                                 brief="test"
+                                 m_resid="(size=1)8698F15C27DA63648CEF9A93EA76B084"
+                                 m_fileName="160023" sourceMsgId="0" url=""
+                                 flag="3" adverSign="0" multiMsgFlag="1">
+                                <item layout="1">
+                                    <title>test</title>
+                                    <hr hidden="false" style="0"/>
+                                    <summary>点击查看完整消息</summary>
+                                </item>
+                                <source name="聊天记录" icon="" action="" appid="-1"/>
+                            </msg>
+                        """.trimIndent(), "(size=1)8698F15C27DA63648CEF9A93EA76B084"
+                    ), context.currentMessageChain
                 )
             }
         }

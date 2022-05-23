@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -31,6 +32,8 @@ import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import network.framework.components.TestEventDispatcherImpl
 import org.junit.jupiter.api.TestInstance
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 import kotlin.test.assertEquals
 
 /**
@@ -41,9 +44,13 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
     protected open fun createNetworkHandlerContext() = TestNetworkHandlerContext(bot, logger, components)
     protected open fun createNetworkHandler() = TestNetworkHandler(bot, createNetworkHandlerContext())
 
-    protected val bot: QQAndroidBot = MockBot {
-        nhProvider = { createNetworkHandler() }
-        additionalComponentsProvider = { this@AbstractMockNetworkHandlerTest.components }
+    protected open fun createAccount() = BotAccount(Random.nextLong().absoluteValue.mod(1000L), "pwd")
+
+    protected val bot: QQAndroidBot by lazy {
+        MockBot(createAccount()) {
+            nhProvider = { createNetworkHandler() }
+            additionalComponentsProvider = { this@AbstractMockNetworkHandlerTest.components }
+        }
     }
     protected val logger = MiraiLogger.Factory.create(Bot::class, "test")
     protected val components = ConcurrentComponentStorage().apply {

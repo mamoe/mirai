@@ -49,6 +49,10 @@ internal interface MessageVisitorEx<in D, out R> : MessageVisitor<D, R> {
         return visitInternalFlagOnlyMessage(message, data)
     }
 
+    fun visitForceAsFragmentedMessage(message: ForceAsFragmentedMessage, data: D): R {
+        return visitInternalFlagOnlyMessage(message, data)
+    }
+
     fun visitDontAsLongMessage(message: DontAsLongMessage, data: D): R {
         return visitInternalFlagOnlyMessage(message, data)
     }

@@ -12,10 +12,7 @@
 package net.mamoe.mirai.internal.message.flags
 
 import net.mamoe.mirai.internal.message.visitor.ex
-import net.mamoe.mirai.message.data.AbstractMessageKey
-import net.mamoe.mirai.message.data.ConstrainSingle
-import net.mamoe.mirai.message.data.MessageKey
-import net.mamoe.mirai.message.data.MessageMetadata
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.safeCast
 
@@ -24,17 +21,35 @@ import net.mamoe.mirai.utils.safeCast
  */
 internal sealed interface InternalFlagOnlyMessage : MessageMetadata
 
+internal sealed interface ForceAs : InternalFlagOnlyMessage, ConstrainSingle {
+    companion object Key : AbstractMessageKey<ForceAs>({ it.safeCast() })
+}
+
 /**
  * 内部 flag, 放入 chain 强制作为 long 发送
  */
-internal object ForceAsLongMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
-    AbstractMessageKey<ForceAsLongMessage>({ it.safeCast() }) {
+internal object ForceAsLongMessage : ForceAs,
+    AbstractPolymorphicMessageKey<ForceAs, ForceAsLongMessage>(ForceAs, { it.safeCast() }) {
     override val key: MessageKey<ForceAsLongMessage> get() = this
 
     override fun toString(): String = ""
 
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
-        return visitor.ex()?.visitForceAsLongMessage(this, data) ?: super<InternalFlagOnlyMessage>.accept(visitor, data)
+        return visitor.ex()?.visitForceAsLongMessage(this, data) ?: super.accept(visitor, data)
+    }
+}
+
+/**
+ * 内部 flag, 放入 chain 强制作为 fragmented 发送
+ */
+internal object ForceAsFragmentedMessage : ForceAs,
+    AbstractPolymorphicMessageKey<ForceAs, ForceAsFragmentedMessage>(ForceAs, { it.safeCast() }) {
+    override val key: MessageKey<ForceAsFragmentedMessage> get() = this
+
+    override fun toString(): String = ""
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.ex()?.visitForceAsFragmentedMessage(this, data) ?: super.accept(visitor, data)
     }
 }
 
