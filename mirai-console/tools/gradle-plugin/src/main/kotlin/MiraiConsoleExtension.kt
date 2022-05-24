@@ -18,6 +18,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.XmlProvider
 import org.gradle.api.plugins.PluginContainer
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.JavaExec
 
 /**
  * ```
@@ -90,8 +91,18 @@ public open class MiraiConsoleExtension {
      */
     public var dontConfigureKotlinJvmDefault: Boolean = false
 
+    /**
+     * 配置 gradle task runConsole. 将此项设置为 `false` 时不会配置测试环境
+     */
+    public var consoleTestRuntime: Boolean = true
+
     internal val shadowConfigurations: MutableList<ShadowJar.() -> Unit> = mutableListOf()
     internal val excludedDependencies: MutableSet<ExcludedDependency> = mutableSetOf()
+    internal val consoleTestRuntimeConf: MutableList<JavaExec.() -> Unit> = mutableListOf()
+
+    public fun setupConsoleTestRuntime(configure: JavaExec.() -> Unit) {
+        consoleTestRuntimeConf.add(configure)
+    }
 
     internal data class ExcludedDependency(
         val group: String,
