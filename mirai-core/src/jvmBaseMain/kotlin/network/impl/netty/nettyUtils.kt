@@ -14,9 +14,6 @@ import io.ktor.utils.io.streams.*
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import io.netty.channel.ChannelFuture
-import io.netty.channel.ChannelFutureListener
-import io.netty.channel.ChannelOutboundInvoker
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.utils.withUse
 
@@ -42,16 +39,4 @@ internal fun ByteBuf.toReadPacket(): ByteReadPacket {
     return buildPacket {
         ByteBufInputStream(buf).withUse { copyTo(outputStream()) }
     }
-}
-
-
-internal fun ChannelOutboundInvoker.writeAndFlushOrCloseAsync(msg: Any?): ChannelFuture? {
-    return writeAndFlush(msg)
-        .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
-        .addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
-}
-
-
-internal suspend inline fun joinCompleted(job: Job) {
-    if (job.isCompleted) job.join()
 }
