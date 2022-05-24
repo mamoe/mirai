@@ -1,15 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework
 
-import io.netty.channel.Channel
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -19,9 +19,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.ConcurrentLinkedQueue
 import net.mamoe.mirai.utils.TestOnly
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * States are manually set.
@@ -29,13 +28,15 @@ import java.util.concurrent.atomic.AtomicInteger
 internal open class TestNetworkHandler(
     override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
-) : NetworkHandlerSupport(context), ITestNetworkHandler {
+) : NetworkHandlerSupport(context), ITestNetworkHandler<TestNetworkHandler.Connection> {
+    class Connection
+
     @Suppress("EXPOSED_SUPER_CLASS")
     internal open inner class TestState(
         correspondingState: NetworkHandler.State
     ) : BaseStateImpl(correspondingState) {
         val resumeDeferred = CompletableDeferred<Unit>()
-        val resumeCount = AtomicInteger(0)
+        val resumeCount = atomic(0)
         val onResume get() = resumeDeferred.onJoin
         private val mutex = Mutex()
 
@@ -81,12 +82,12 @@ internal open class TestNetworkHandler(
         return setState(NetworkHandler.State.CONNECTING)
     }
 
-    override fun setStateOK(channel: Channel, exception: Throwable?): TestState? {
+    override fun setStateOK(conn: Connection, exception: Throwable?): TestState? {
         exception?.printStackTrace()
         return setState(NetworkHandler.State.OK)
     }
 
-    override fun setStateLoading(channel: Channel): TestState? {
+    override fun setStateLoading(conn: Connection): TestState? {
         return setState(NetworkHandler.State.LOADING)
     }
 }

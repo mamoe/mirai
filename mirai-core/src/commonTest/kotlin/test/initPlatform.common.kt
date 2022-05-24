@@ -9,48 +9,36 @@
 
 package net.mamoe.mirai.internal.test
 
-import net.mamoe.mirai.IMirai
-import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
-import net.mamoe.mirai.utils.MiraiLogger
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Timeout
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
+import kotlin.test.AfterTest
 import kotlin.test.Test
 
 internal expect fun initPlatform()
 
+
+@Suppress("UnnecessaryOptInAnnotation") // on JVM
+@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+internal abstract class CommonAbstractTest {
+    private val dispatchers = mutableListOf<CloseableCoroutineDispatcher>()
+
+    fun borrowSingleThreadDispatcher(): CoroutineDispatcher {
+        return newSingleThreadContext(this::class.simpleName ?: "CommonAbstractTest")
+    }
+
+    @AfterTest
+    fun closeAllDispatchers() {
+        for (dispatcher in dispatchers) {
+            dispatcher.close()
+        }
+    }
+}
+
 /**
  * All test classes should inherit from [AbstractTest]
  */
-@Timeout(value = 7, unit = TimeUnit.MINUTES)
-abstract class AbstractTest {
-    init {
-        initPlatform()
+internal expect abstract class AbstractTest() : CommonAbstractTest {
 
-        restoreLoggerFactory()
-
-        System.setProperty("mirai.network.packet.logger", "true")
-        System.setProperty("mirai.network.state.observer.logging", "true")
-        System.setProperty("mirai.network.show.all.components", "true")
-        System.setProperty("mirai.network.show.components.creation.stacktrace", "true")
-        System.setProperty("mirai.network.handle.selector.logging", "true")
-
-    }
-
-    @AfterEach
-    protected fun restoreLoggerFactory() {
-        @Suppress("DEPRECATION_ERROR")
-        MiraiLogger.setDefaultLoggerCreator {
-            SynchronizedStdoutLogger(it)
-        }
-    }
-
-    companion object {
-        init {
-            Exception() // create a exception to load relevant classes to estimate invocation time of test cases more accurately.
-            IMirai::class.simpleName // similarly, load classes.
-        }
-    }
+    companion object
 }
 
 internal expect class PlatformInitializationTest() : AbstractTest {

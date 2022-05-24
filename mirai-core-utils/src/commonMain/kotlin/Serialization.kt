@@ -66,7 +66,7 @@ public inline fun <T, R> KSerializer<T>.mapPrimitive(
 }
 
 
-public fun <T> File.loadNotBlankAs(
+public fun <T> MiraiFile.loadNotBlankAs(
     serializer: DeserializationStrategy<T>,
     stringFormat: StringFormat,
 ): T? {
@@ -76,7 +76,7 @@ public fun <T> File.loadNotBlankAs(
     return stringFormat.decodeFromString(serializer, this.readText())
 }
 
-public fun <T> File.loadNotBlankAs(
+public fun <T> MiraiFile.loadNotBlankAs(
     serializer: DeserializationStrategy<T>,
     binaryFormat: BinaryFormat,
 ): T? {

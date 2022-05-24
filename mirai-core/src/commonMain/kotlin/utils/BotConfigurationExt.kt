@@ -12,7 +12,7 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.File
+import net.mamoe.mirai.utils.MiraiFile
 import net.mamoe.mirai.utils.resolveCreateFile
 import net.mamoe.mirai.utils.resolveMkdir
 import kotlin.jvm.JvmName
@@ -22,9 +22,11 @@ internal expect val BotConfiguration.workingDirPath: String
 
 internal expect val BotConfiguration.cacheDirPath: String
 
-internal fun BotConfiguration.actualCacheDir(): File = File.create(workingDirPath).resolveMkdir(cacheDirPath)
-internal fun BotConfiguration.contactCacheDir(): File = actualCacheDir().resolveMkdir("contacts")
-internal fun BotConfiguration.friendCacheFile(): File = contactCacheDir().resolveCreateFile("friends.json")
-internal fun BotConfiguration.groupCacheDir(): File = contactCacheDir().resolveMkdir("groups")
-internal fun BotConfiguration.groupCacheFile(groupId: Long): File = groupCacheDir().resolveCreateFile("$groupId.json")
-internal fun BotConfiguration.accountSecretsFile(): File = actualCacheDir().resolve("account.secrets")
+internal fun BotConfiguration.actualCacheDir(): MiraiFile = MiraiFile.create(workingDirPath).resolveMkdir(cacheDirPath)
+internal fun BotConfiguration.contactCacheDir(): MiraiFile = actualCacheDir().resolveMkdir("contacts")
+internal fun BotConfiguration.friendCacheFile(): MiraiFile = contactCacheDir().resolveCreateFile("friends.json")
+internal fun BotConfiguration.groupCacheDir(): MiraiFile = contactCacheDir().resolveMkdir("groups")
+internal fun BotConfiguration.groupCacheFile(groupId: Long): MiraiFile =
+    groupCacheDir().resolveCreateFile("$groupId.json")
+
+internal fun BotConfiguration.accountSecretsFile(): MiraiFile = actualCacheDir().resolve("account.secrets")

@@ -19,8 +19,7 @@ import kotlin.test.*
 
 @JvmBlockingBridge
 internal class NextEventTest : AbstractEventTest() {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher: CoroutineDispatcher = newSingleThreadContext("NextEventTest")
+    private val dispatcher: CoroutineDispatcher = borrowSingleThreadDispatcher()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @AfterTest

@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.notice.processors
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.MemberPermission
@@ -16,10 +17,11 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.assertFailsWith
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 internal class RecallTest : AbstractNoticeProcessorTest() {
 
@@ -91,7 +93,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
         )
 
     @Test
-    suspend fun `recall member message without permission`() {
+    fun `recall member message without permission`() = runBlockingUnit {
         val bot = setBot(2)
         val group = bot.addGroup(5, 3, MemberPermission.MEMBER).apply {
             // owner
@@ -105,7 +107,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `recall member message`() {
+    fun `recall member message`() = runBlockingUnit {
         val bot = setBot(2)
         val group = bot.addGroup(5, 3, MemberPermission.ADMINISTRATOR).apply {
             // owner
@@ -117,7 +119,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `recall administrator message`() {
+    fun `recall administrator message`() = runBlockingUnit {
         val bot = setBot(2)
         val group = bot.addGroup(5, 3, MemberPermission.ADMINISTRATOR).apply {
             // owner
@@ -129,9 +131,9 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
             Mirai.recallMessage(bot, source(bot, 1, group.id, group.botPermission))
         }
     }
-    
+
     @Test
-    suspend fun `recall administrator message as owner`() {
+    fun `recall administrator message as owner`() = runBlockingUnit {
         val bot = setBot(2)
         val group = bot.addGroup(5, 2, MemberPermission.OWNER).apply {
             // sender
@@ -141,7 +143,7 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `recall owner message`() {
+    fun `recall owner message`() = runBlockingUnit {
         val bot = setBot(2)
         val group = bot.addGroup(5, 1, MemberPermission.ADMINISTRATOR).apply {
             // sender

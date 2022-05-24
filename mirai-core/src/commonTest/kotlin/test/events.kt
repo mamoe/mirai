@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.utils.ConcurrentLinkedQueue
 import net.mamoe.mirai.utils.cast
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.test.assertEquals

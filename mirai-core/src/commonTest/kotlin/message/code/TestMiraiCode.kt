@@ -19,7 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class TestMiraiCode : AbstractTest() {
+internal class TestMiraiCode : AbstractTest() {
     @Test
     fun testDynamicMiraiCodeParser() {
         fun runTest(args: Int, code: String, parse: (args: Array<String>) -> Unit) {

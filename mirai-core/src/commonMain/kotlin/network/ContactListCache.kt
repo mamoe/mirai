@@ -85,9 +85,9 @@ internal class GroupMemberListCaches(
         return ret
     }
 
-    private val cacheDir: File by lazy { bot.configuration.groupCacheDir() }
+    private val cacheDir: MiraiFile by lazy { bot.configuration.groupCacheDir() }
 
-    private fun resolveCacheFile(groupCode: Long): File {
+    private fun resolveCacheFile(groupCode: Long): MiraiFile {
         cacheDir.mkdirs()
         return cacheDir.resolve("$groupCode.json")
     }

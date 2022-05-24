@@ -148,7 +148,7 @@ internal class ServerListImpl(
      */
     @Synchronized
     override fun pollCurrent(): ServerAddress? {
-        return current.firstOrNull()?.also { address ->
+        return current.removeFirstOrNull()?.also { address ->
             lastPolledAddress = address
         }
     }

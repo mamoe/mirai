@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
-internal abstract class NetworkException : Exception {
+internal open class NetworkException : Exception {
     /**
      * If true, the selector may recover the network handler by some means.
      */

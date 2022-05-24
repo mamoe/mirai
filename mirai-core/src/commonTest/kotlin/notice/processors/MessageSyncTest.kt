@@ -9,11 +9,16 @@
 
 package net.mamoe.mirai.internal.notice.processors
 
+import io.ktor.utils.io.core.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.FriendMessageSyncEvent
 import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.content
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,18 +28,18 @@ import kotlin.test.assertIs
 internal class MessageSyncTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `can receive group sync from macOS client`() {
+    fun `can receive group sync from macOS client`() = runBlockingUnit {
         suspend fun runTest() = use {
-            net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush.PbPushMsg(
-                msg = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
-                    msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
+            MsgOnlinePush.PbPushMsg(
+                msg = MsgComm.Msg(
+                    msgHead = MsgComm.MsgHead(
                         fromUin = 1230002,
                         toUin = 1230002,
                         msgType = 82,
                         msgSeq = 1772,
                         msgTime = 1640029614,
                         msgUid = 144115188088832082,
-                        groupInfo = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.GroupInfo(
+                        groupInfo = MsgComm.GroupInfo(
                             groupCode = 2230203,
                             groupType = 1,
                             groupInfoSeq = 657,
@@ -47,9 +52,9 @@ internal class MessageSyncTest : AbstractNoticeProcessorTest() {
                         fromInstid = 537067835,
                         userActive = 1,
                     ),
-                    msgBody = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MsgBody(
-                        richText = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.RichText(
-                            attr = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Attr(
+                    msgBody = ImMsgBody.MsgBody(
+                        richText = ImMsgBody.RichText(
+                            attr = ImMsgBody.Attr(
                                 codePage = 0,
                                 time = 1640029614,
                                 random = 25984994,
@@ -60,23 +65,23 @@ internal class MessageSyncTest : AbstractNoticeProcessorTest() {
                                 fontName = "Helvetica",
                             ),
                             elems = mutableListOf(
-                                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                                ImMsgBody.Elem(
+                                    text = ImMsgBody.Text(
                                         str = "s",
                                     ),
                                 ),
-                                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    elemFlags2 = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ElemFlags2(
+                                ImMsgBody.Elem(
+                                    elemFlags2 = ImMsgBody.ElemFlags2(
                                         msgRptCnt = 1,
                                     ),
                                 ),
-                                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    generalFlags = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.GeneralFlags(
+                                ImMsgBody.Elem(
+                                    generalFlags = ImMsgBody.GeneralFlags(
                                         pbReserve = "".hexToBytes(),
                                     ),
                                 ),
-                                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
-                                    extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                                ImMsgBody.Elem(
+                                    extraInfo = ImMsgBody.ExtraInfo(
                                         nick = "user2",
                                         level = 1,
                                         groupMask = 1,
@@ -112,7 +117,7 @@ internal class MessageSyncTest : AbstractNoticeProcessorTest() {
 
 
     @Test
-    suspend fun `can receive friend sync from macOS client`() {
+    fun `can receive friend sync from macOS client`() = runBlockingUnit {
         suspend fun runTest() = use {
             attributes[KEY_FROM_SYNC] = true
 

@@ -18,8 +18,9 @@ import net.mamoe.mirai.internal.network.components.AccountSecretsImpl
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.utils.File
+import net.mamoe.mirai.utils.MiraiFile
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.writeBytes
 
 
 internal class TestSsoSession(
@@ -53,7 +54,7 @@ internal fun QQAndroidClient.dumpSessionSafe(): ByteArray {
     return secrets.toByteArray(AccountSecretsImpl.serializer())
 }
 
-internal fun QQAndroidBot.scheduleSafeSessionDump(outputFile: File) {
+internal fun QQAndroidBot.scheduleSafeSessionDump(outputFile: MiraiFile) {
     this.eventChannel.subscribeAlways<BotOnlineEvent> {
         outputFile.writeBytes(client.dumpSessionSafe())
         bot.logger.debug { "Dumped safe session to " }

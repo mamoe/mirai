@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.io.JceStruct
@@ -18,13 +19,11 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.toReadPacket
 import net.mamoe.mirai.utils.toUHexString
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-class DebugLoggerTest : AbstractTest() {
+internal class DebugLoggerTest : AbstractTest() {
 
     fun String.uniteLine(): String = replace("\r\n", "\n").replace("\r", "\n")
 
@@ -36,8 +35,8 @@ class DebugLoggerTest : AbstractTest() {
 
     @Test
     fun `can log`() {
-        val out = ByteArrayOutputStream()
-        val logger = DebugLogger(PrintStream(out))
+        val out = BytePacketBuilder()
+        val logger = DebugLogger(out)
         val original = Struct("string", 1)
         val bytes = original.toByteArray(Struct.serializer())
         val value = bytes.toReadPacket().use { Tars.UTF_8.load(Struct.serializer(), it, logger) }
@@ -51,7 +50,7 @@ class DebugLoggerTest : AbstractTest() {
                 name=int
                 decodeElementIndex: currentHead == null
             endStructure: net.mamoe.mirai.internal.utils.io.serialization.tars.internal.DebugLoggerTest.Struct, null, null
-        """.trimIndent(), out.toByteArray().decodeToString().trim().uniteLine()
+        """.trimIndent(), out.build().readBytes().decodeToString().trim().uniteLine()
         )
     }
 

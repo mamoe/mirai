@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
-import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.internal.network.handler.selector.NetworkChannelException
 
 internal data class NettyChannelException(
     override val message: String? = null,
     override val cause: Throwable? = null,
-) : NetworkException(true)
+) : NetworkChannelException()

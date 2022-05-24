@@ -11,11 +11,9 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.internal.BotAccount
-import net.mamoe.mirai.internal.MockAccount
-import net.mamoe.mirai.internal.MockConfiguration
-import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.*
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
@@ -37,9 +35,9 @@ import kotlin.test.assertEquals
 /**
  * With real factory and components as in [QQAndroidBot.components].
  *
- * Extend [AbstractNettyNHTestWithSelector] or [AbstractNettyNHTest].
+ * Extend [AbstractCommonNHTestWithSelector] or [AbstractCommonNHTest].
  */
-internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
+internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
 
@@ -137,8 +135,14 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
                 bot.logger.subLogger("TestEventDispatcherImpl")
             )
         )
+
+        set(BotOfflineEventMonitor, object : BotOfflineEventMonitor {
+            override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
+            }
+        })
         // set(StateObserver, bot.run { stateObserverChain() })
     }
+
 
     fun <T : Any> setComponent(key: ComponentKey<in T>, instance: T): T {
         overrideComponents[key] = instance

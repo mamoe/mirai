@@ -13,26 +13,28 @@ package net.mamoe.mirai.internal.network.handler
 
 import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
-import net.mamoe.mirai.internal.network.framework.TestNettyNH
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
+import net.mamoe.mirai.internal.network.framework.PlatformConn
+import net.mamoe.mirai.internal.network.framework.TestCommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.MaxAttemptsReachedException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
 import kotlin.test.*
 
-internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
+internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractCommonNHTest() {
 
-    internal class FakeFailOnCreatingConnection : AbstractNettyNHTest() {
+    internal class FakeFailOnCreatingConnection : AbstractCommonNHTest() {
         private class MyException : Exception()
 
         private lateinit var throwException: () -> Nothing
 
-        override val factory: NetworkHandlerFactory<TestNettyNH> =
-            NetworkHandlerFactory<TestNettyNH> { context, address ->
-                object : TestNettyNH(bot, context, address) {
-                    override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
+        override val factory: NetworkHandlerFactory<TestCommonNetworkHandler> =
+            NetworkHandlerFactory<TestCommonNetworkHandler> { context, address ->
+                object : TestCommonNetworkHandler(bot, context, address) {
+                    override suspend fun createConnection(): PlatformConn {
                         throwException()
+                    }
                 }
             }
 

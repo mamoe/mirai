@@ -9,55 +9,76 @@
 
 package net.mamoe.mirai.utils
 
-public interface File {
+import io.ktor.utils.io.core.*
+
+/**
+ * Multiplatform implementation of file operations.
+ */
+public expect interface MiraiFile {
     public val name: String
-    public val path: String
+    public val parent: MiraiFile?
+
     public val absolutePath: String
 
     public val length: Long
-
-    public val parent: File?
 
     public val isFile: Boolean
     public val isDirectory: Boolean
 
     public fun exists(): Boolean
 
-    public fun resolve(path: String): File
-    public fun resolve(file: File): File
+    public fun resolve(path: String): MiraiFile
+    public fun resolve(file: MiraiFile): MiraiFile
 
-    public fun createNewFile()
-    public fun delete()
-    public fun mkdirs()
+    public fun createNewFile(): Boolean
+    public fun delete(): Boolean
 
-    public fun readText(): String
-    public fun readBytes(): ByteArray
+    public fun mkdir(): Boolean
+    public fun mkdirs(): Boolean
 
-    public fun writeBytes(data: ByteArray)
-    public fun writeText(text: String)
+    public fun input(): Input
+    public fun output(): Output
 
     public companion object {
-        public fun create(path: String): File {
-            TODO("")
-        }
+        public fun create(absolutePath: String): MiraiFile
     }
 
 }
 
-public fun File.createFileIfNotExists() {
+public fun MiraiFile.writeBytes(data: ByteArray) {
+    return output().use { it.writeFully(data) }
+}
+
+public fun MiraiFile.writeText(text: String) {
+    return output().use { it.writeText(text) }
+}
+
+public fun MiraiFile.readText(): String {
+    return input().use { it.readText() }
+}
+
+public fun MiraiFile.readBytes(): ByteArray {
+    return input().use { it.readBytes() }
+}
+
+
+public fun MiraiFile.createFileIfNotExists() {
     if (!this.exists()) {
         this.parent?.mkdirs()
         this.createNewFile()
     }
 }
 
-public fun File.resolveCreateFile(relative: String): File = this.resolve(relative).apply { createFileIfNotExists() }
-public fun File.resolveCreateFile(relative: File): File = this.resolve(relative).apply { createFileIfNotExists() }
+public fun MiraiFile.resolveCreateFile(relative: String): MiraiFile =
+    this.resolve(relative).apply { createFileIfNotExists() }
 
-public fun File.resolveMkdir(relative: String): File = this.resolve(relative).apply { mkdirs() }
-public fun File.resolveMkdir(relative: File): File = this.resolve(relative).apply { mkdirs() }
+public fun MiraiFile.resolveCreateFile(relative: MiraiFile): MiraiFile =
+    this.resolve(relative).apply { createFileIfNotExists() }
 
-public fun File.touch(): File = apply {
+public fun MiraiFile.resolveMkdir(relative: String): MiraiFile = this.resolve(relative).apply { mkdirs() }
+public fun MiraiFile.resolveMkdir(relative: MiraiFile): MiraiFile = this.resolve(relative).apply { mkdirs() }
+
+public fun MiraiFile.touch(): MiraiFile = apply {
     parent?.mkdirs()
     createNewFile()
 }

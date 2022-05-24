@@ -120,7 +120,7 @@ fun Project.configureHMPPJvm() {
         androidMain.dependsOn(jvmBaseMain)
 
         jvmTest.dependsOn(jvmBaseTest)
-        androidTest.dependsOn(commonTest)
+        androidTest.dependsOn(jvmBaseTest)
 
         nativeMain.dependsOn(commonMain)
         nativeTest.dependsOn(commonTest)
