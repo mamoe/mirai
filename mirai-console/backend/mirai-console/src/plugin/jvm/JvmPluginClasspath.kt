@@ -10,15 +10,14 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import java.io.File
-import java.io.IOException
 
 /**
- * 动态注册类搜索路径
+ * [JvmPlugin] 的类路径
  *
  * @since 2.12
- * @see AbstractJvmPlugin.jvmPluginClassLoaderAccess
+ * @see AbstractJvmPlugin.jvmPluginClasspath
  */
-public interface JvmPluginClassLoaderAccess {
+public interface JvmPluginClasspath {
     public val pluginFile: File
 
     /**

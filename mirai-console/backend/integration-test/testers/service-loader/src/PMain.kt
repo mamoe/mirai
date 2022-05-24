@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 
 internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.itest.serviceloader", "0.0.0")) {
     init {
-        val access = jvmPluginClassLoaderAccess
+        val access = jvmPluginClasspath
         val sharedCL = access.pluginSharedLibrariesClassLoader
         access.addToPath(sharedCL, File("modules/module-service-loader-typedef-0.0.0.jar"))
         access.addToPath(sharedCL, File("modules/module-service-loader-impl-0.0.0.jar"))

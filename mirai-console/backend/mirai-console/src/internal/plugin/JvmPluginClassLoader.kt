@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginClassLoaderAccess
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginClasspath
 import net.mamoe.mirai.utils.*
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.graph.DependencyFilter
@@ -181,7 +181,7 @@ internal class DynLibClassLoader : URLClassLoader {
 
 @Suppress("JoinDeclarationAndAssignment")
 internal class JvmPluginClassLoaderN : URLClassLoader {
-    val openaccess: JvmPluginClassLoaderAccess = OpenAccess()
+    val openaccess: JvmPluginClasspath = OpenAccess()
     val file: File
     val ctx: JvmPluginsLoadingCtx
     val sharedLibrariesLogger: DynLibClassLoader
@@ -446,7 +446,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         return "JvmPluginClassLoader{${file.name}}"
     }
 
-    inner class OpenAccess : JvmPluginClassLoaderAccess {
+    inner class OpenAccess : JvmPluginClasspath {
         override val pluginFile: File
             get() = this@JvmPluginClassLoaderN.file
 

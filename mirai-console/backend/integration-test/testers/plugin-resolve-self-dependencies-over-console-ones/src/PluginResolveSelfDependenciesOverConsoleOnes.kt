@@ -29,6 +29,6 @@ public class PluginResolveSelfDependenciesOverConsoleOnes :
             }.toString()
         }
         val hcC = Class.forName("io.ktor.client.HttpClient")
-        assertClassSame(hcC, jvmPluginClassLoaderAccess.pluginIndependentLibrariesClassLoader.loadClass(hcC.name))
+        assertClassSame(hcC, jvmPluginClasspath.pluginIndependentLibrariesClassLoader.loadClass(hcC.name))
     }
 }

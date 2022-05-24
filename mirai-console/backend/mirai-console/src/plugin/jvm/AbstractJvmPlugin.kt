@@ -80,18 +80,18 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToMillis
 
     /**
-     * 获取 [JvmPluginClassLoaderAccess]
+     * 获取 [JvmPluginClasspath]
      *
      * 注: 仅插件通过 console 内置插件加载器加载时可用
      *
      * @since 2.12
      */
-    protected val jvmPluginClassLoaderAccess: JvmPluginClassLoaderAccess by lazy {
+    protected val jvmPluginClasspath: JvmPluginClasspath by lazy {
         val classLoader = this@AbstractJvmPlugin.javaClass.classLoader
         if (classLoader is JvmPluginClassLoaderN) {
             return@lazy classLoader.openaccess
         }
-        error("jvmPluginClassLoaderAccess not available for $classLoader")
+        error("jvmPluginClasspath not available for $classLoader")
     }
 }
 
