@@ -245,6 +245,9 @@ internal class BuiltInJvmPluginLoaderImpl(
                 }.mapNotNull { it.javaClass.classLoader.safeCast<JvmPluginClassLoaderN>() }.forEach { dependency ->
                     plugin.logger.debug { "Linked  dependency: $dependency" }
                     jvmPluginClassLoaderN.dependencies.add(dependency)
+                    jvmPluginClassLoaderN.pluginSharedCL.dependencies.cast<MutableList<DynLibClassLoader>>().add(
+                        dependency.pluginSharedCL
+                    )
                 }
                 jvmPluginClassLoaderN.linkPluginLibraries(plugin.logger)
             }

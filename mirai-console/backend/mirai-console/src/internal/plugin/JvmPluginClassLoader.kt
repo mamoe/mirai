@@ -54,6 +54,7 @@ internal class JvmPluginsLoadingCtx(
 
 internal class DynLibClassLoader : URLClassLoader {
     private val clName: String?
+    internal var dependencies: List<DynLibClassLoader> = emptyList()
 
     private constructor(parent: ClassLoader?, clName: String?) : super(arrayOf(), parent) {
         this.clName = clName
@@ -140,13 +141,22 @@ internal class DynLibClassLoader : URLClassLoader {
         }
     }
 
-    internal fun findButNoSystem(name: String): Class<*>? {
+    internal fun findButNoSystem(name: String): Class<*>? = findButNoSystem(name, mutableListOf())
+    private fun findButNoSystem(name: String, track: MutableList<DynLibClassLoader>): Class<*>? {
         if (name.startsWith("java.")) return null
+
+        // Skip duplicated searching, for faster speed.
+        if (this in track) return null
+        track.add(this)
 
         val pt = this.parent
         if (pt is DynLibClassLoader) {
-            pt.findButNoSystem(name)?.let { return it }
+            pt.findButNoSystem(name, track)?.let { return it }
         }
+        dependencies.forEach { dep ->
+            dep.findButNoSystem(name, track)?.let { return it }
+        }
+
         synchronized(getClassLoadingLock(name)) {
             findLoadedClass(name)?.let { return it }
             try {
@@ -160,22 +170,10 @@ internal class DynLibClassLoader : URLClassLoader {
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
         tryFastOrStrictResolve(name)?.let { return it }
 
-        val pt = this.parent
-        val topPt: ClassLoader? = if (pt is DynLibClassLoader) {
-            pt.findButNoSystem(name)?.let { return it }
+        findButNoSystem(name)?.let { return it }
 
-            generateSequence<ClassLoader>(pt) { it.parent }.firstOrNull { it !is DynLibClassLoader }
-        } else pt
-
-
-        synchronized(getClassLoadingLock(name)) {
-            findLoadedClass(name)?.let { return it }
-            try {
-                return findClass(name)
-            } catch (ignored: ClassNotFoundException) {
-            }
-            return Class.forName(name, false, topPt)
-        }
+        val topParent = generateSequence<ClassLoader>(this) { it.parent }.firstOrNull { it !is DynLibClassLoader }
+        return Class.forName(name, false, topParent)
     }
 }
 
@@ -236,6 +234,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         pluginIndependentCL = DynLibClassLoader.newInstance(
             pluginSharedCL, "IndependentCL{${file.name}}", "${file.name}[private]"
         )
+        pluginSharedCL.dependencies = mutableListOf()
         addURL(file.toURI().toURL())
     }
 
