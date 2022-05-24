@@ -20,6 +20,8 @@ import net.mamoe.mirai.console.terminal.ConsoleTerminalExperimentalApi
 import net.mamoe.mirai.console.terminal.ConsoleTerminalSettings
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.sha1
+import net.mamoe.mirai.utils.toUHexString
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -29,6 +31,7 @@ import java.io.FileOutputStream
 import java.io.PrintStream
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import kotlin.system.exitProcess
 
@@ -118,18 +121,64 @@ loggers:
   Bot: ALL
 """
     )
+    fun saveSha1(t: File) {
+        val sfile = File(t.path + ".sha1")
+        sfile.writeText(t.readBytes().sha1().toUHexString(separator = "").lowercase())
+    }
 
-    readStringListFromEnv("IT_PLUGINS").forEach { path ->
+    readStringListFromEnv("IT_PLUGINS").forEach plLoop@{ path ->
         val jarFile = File(path)
-        if (jarFile.name.startsWith("module-")) {
+        ZipFile(jarFile).use { zipFile ->
+            zipFile.getEntry("mvn.txt")?.let { zipFile.getInputStream(it) }?.bufferedReader()?.useLines { lines ->
+                val libName = lines.filterNot { it.isBlank() }.filterNot { it[0] == '#' }.first()
+                // net.mamoe:test:1.0.0
+                val (gid, art, ver) = libName.split(':')
+                val targetDir = File("plugin-libraries").resolve(gid.replace('.', '/'))
+                    .resolve(art).resolve(ver).also { it.mkdirs() }
+                val fname = "$art-$ver"
+                val pom = """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>$gid</groupId>
+                    <artifactId>$art</artifactId>
+                    <version>$ver</version>
+                    </project>
+                """.trimIndent()
+                targetDir.resolve("$fname.pom").let { it.writeText(pom); saveSha1(it) }
+                targetDir.resolve("$fname.jar").let {
+                    jarFile.copyTo(it, overwrite = true)
+                    saveSha1(it)
+                }
+                targetDir.resolve("_remote.repositories").writeText(
+                    """
+                        $fname.pom>=
+                        $fname.jar>=
+                    """.trimIndent()
+                )
+                println("[MCIT] Copied module: $libName $jarFile -> $targetDir")
+                return@plLoop
+            }
+            if (zipFile.getEntry("module.txt") == null) {
+                if (zipFile.entries().asSequence().any {
+                        it.name.contains("services/net.mamoe.mirai.console.plugin.jvm")
+                    }
+                ) {
+                    var target = File("plugins/${jarFile.name}").mkparents()
+                    var counter = 0
+                    while (target.exists()) {
+                        target = File("plugins/${jarFile.nameWithoutExtension}${counter}.${jarFile.extension}")
+                        counter++
+                    }
+                    jarFile.copyTo(target, overwrite = true)
+                    println("[MCIT] Copied external plugin: $jarFile -> $target")
+                    return@plLoop
+                }
+            }
             // DYN MODULE
             val target = File("modules/${jarFile.name}").mkparents()
             jarFile.copyTo(target, overwrite = true)
             println("[MCIT] Copied module: $jarFile")
-        } else {
-            val target = File("plugins/${jarFile.name}").mkparents()
-            jarFile.copyTo(target, overwrite = true)
-            println("[MCIT] Copied external plugin: $jarFile")
         }
     }
 }
