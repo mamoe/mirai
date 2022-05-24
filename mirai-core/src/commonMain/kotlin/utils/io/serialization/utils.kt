@@ -73,33 +73,32 @@ private fun <T : JceStruct> ByteArray.doLoadAs(
             Tars.UTF_8.load(deserializer, input)
         }
     } catch (originalException: Exception) {
-        val log = BytePacketBuilder()
-        val build by lazy { log.build() }
-        try {
-            val value = log.use { stream ->
-                stream.appendLine("\nData: ")
-                stream.appendLine(this.toUHexString(offset = offset, length = length))
-                stream.appendLine("Trace:")
+        BytePacketBuilder().use { log ->
+            val build by lazy { log.build() }
+            try {
+                log.appendLine("\nData: ")
+                log.appendLine(this.toUHexString(offset = offset, length = length))
+                log.appendLine("Trace:")
 
-                this.toReadPacket(offset = offset, length = length).use { input ->
-                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(stream))
+                val value = this.toReadPacket(offset = offset, length = length).use { input ->
+                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(log))
                 }
-            }
-            return value.also {
-                TarsDecoder.logger.warning(
-                    contextualBugReportException(
-                        "解析 " + deserializer.descriptor.serialName,
-                        "启用 debug 模式后解析正常: $value \n\n${build.readText()}",
-                        originalException
+                return value.also {
+                    TarsDecoder.logger.warning(
+                        contextualBugReportException(
+                            "解析 " + deserializer.descriptor.serialName,
+                            "启用 debug 模式后解析正常: $value \n\n${build.readText()}",
+                            originalException
+                        )
                     )
+                }
+            } catch (secondFailure: Exception) {
+                throw contextualBugReportException(
+                    "解析 " + deserializer.descriptor.serialName,
+                    build.readText(),
+                    ExceptionCollector.compressExceptions(originalException, secondFailure)
                 )
             }
-        } catch (secondFailure: Exception) {
-            throw contextualBugReportException(
-                "解析 " + deserializer.descriptor.serialName,
-                build.readText(),
-                ExceptionCollector.compressExceptions(originalException, secondFailure)
-            )
         }
     }
 }

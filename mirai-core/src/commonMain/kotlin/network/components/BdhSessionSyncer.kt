@@ -19,10 +19,7 @@ import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.utils.actualCacheDir
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.ConcurrentSet
-import net.mamoe.mirai.utils.File
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import kotlin.jvm.Volatile
 
 internal interface BdhSessionSyncer {
@@ -75,9 +72,9 @@ internal class BdhSessionSyncerImpl(
         }
     }
 
-    private val sessionCacheFile: File
+    private val sessionCacheFile: MiraiFile
         get() = configuration.actualCacheDir().resolve("session.bin")
-    private val serverListCacheFile: File
+    private val serverListCacheFile: MiraiFile
         get() = configuration.actualCacheDir().resolve("servers.json")
 
     override fun loadServerListFromCache() {

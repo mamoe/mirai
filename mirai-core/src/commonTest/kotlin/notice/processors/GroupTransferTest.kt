@@ -14,6 +14,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -22,7 +23,7 @@ import kotlin.test.assertIs
 internal class GroupTransferTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `owner transfers group to other member`() {
+    fun `owner transfers group to other member`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,
@@ -63,7 +64,7 @@ internal class GroupTransferTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `owner transfers group to bot`() {
+    fun `owner transfers group to bot`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,

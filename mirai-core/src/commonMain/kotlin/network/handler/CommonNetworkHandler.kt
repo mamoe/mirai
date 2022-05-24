@@ -83,9 +83,10 @@ internal abstract class CommonNetworkHandler<Conn>(
      */
     protected abstract fun Conn.writeAndFlushOrCloseAsync(packet: OutgoingPacket)
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
     protected abstract fun Conn.close()
 
-    protected inner class PacketDecodePipeline(parentContext: CoroutineContext) :
+    internal inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
         private val packetCodec: PacketCodec by lazy { context[PacketCodec] }
 

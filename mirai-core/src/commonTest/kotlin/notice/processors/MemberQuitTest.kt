@@ -14,6 +14,8 @@ package net.mamoe.mirai.internal.notice.processors
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.MemberLeaveEvent
+import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -21,9 +23,9 @@ import kotlin.test.assertIs
 internal class MemberQuitTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `member active quit`() {
+    fun `member active quit`() = runBlockingUnit {
         suspend fun runTest() = use {
-            net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
+            OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,
                 toUin = 1230003,
                 msgType = 34,
@@ -33,7 +35,7 @@ internal class MemberQuitTest : AbstractNoticeProcessorTest() {
                 realMsgTime = 1629,
                 msgData = "00 22 07 BB 01 00 12 C4 B1 02 00 30 39 41 36 36 41 32 31 32 33 35 37 32 43 39 35 38 42 42 36 38 45 32 36 44 34 34 32 38 45 32 32 37 32 36 44 39 44 45 41 31 34 41 44 37 30 31 46 31".hexToBytes(),
                 svrIp = 618,
-                extGroupKeyInfo = net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.ExtGroupKeyInfo(
+                extGroupKeyInfo = OnlinePushTrans.ExtGroupKeyInfo(
                     curMaxSeq = 1626,
                     curTime = 16298,
                 ),
@@ -58,7 +60,7 @@ internal class MemberQuitTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member kick`() {
+    fun `member kick`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,

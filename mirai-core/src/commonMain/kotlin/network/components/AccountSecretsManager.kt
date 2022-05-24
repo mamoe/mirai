@@ -175,7 +175,7 @@ internal class MemoryAccountSecretsManager : AccountSecretsManager {
 
 
 internal class FileCacheAccountSecretsManager(
-    val file: File,
+    val file: MiraiFile,
     val logger: MiraiLogger,
 ) : AccountSecretsManager {
     @Synchronized
@@ -214,7 +214,7 @@ internal class FileCacheAccountSecretsManager(
     }
 
     companion object {
-        fun saveSecretsToFile(file: File, account: BotAccount, secrets: AccountSecrets) {
+        fun saveSecretsToFile(file: MiraiFile, account: BotAccount, secrets: AccountSecrets) {
             file.writeBytes(
                 TEA.encrypt(
                     AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),

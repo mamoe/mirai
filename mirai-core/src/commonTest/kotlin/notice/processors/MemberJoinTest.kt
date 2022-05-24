@@ -15,20 +15,22 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.*
 
 internal class MemberJoinTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `member actively request join`() {
+    fun `member actively request join`() = runBlockingUnit {
         suspend fun runTest() = use {
-            net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.StructMsg(
+            Structmsg.StructMsg(
                 version = 1,
                 msgType = 2,
                 msgSeq = 16300,
                 msgTime = 1630,
                 reqUin = 1230001,
-                msg = net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsg(
+                msg = Structmsg.SystemMsg(
                     subType = 1,
                     msgTitle = "加群申请",
                     msgDescribe = "申请加入 %group_name%",
@@ -36,26 +38,26 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
                     srcId = 1,
                     subSrcId = 5,
                     actions = mutableListOf(
-                        net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgAction(
+                        Structmsg.SystemMsgAction(
                             name = "拒绝",
                             result = "已拒绝",
-                            actionInfo = net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgActionInfo(
+                            actionInfo = Structmsg.SystemMsgActionInfo(
                                 type = 12,
                                 groupCode = 2230203,
                             ),
                             detailName = "拒绝",
-                        ), net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgAction(
+                        ), Structmsg.SystemMsgAction(
                             name = "同意",
                             result = "已同意",
-                            actionInfo = net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgActionInfo(
+                            actionInfo = Structmsg.SystemMsgActionInfo(
                                 type = 11,
                                 groupCode = 2230203,
                             ),
                             detailName = "同意",
-                        ), net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgAction(
+                        ), Structmsg.SystemMsgAction(
                             name = "忽略",
                             result = "已忽略",
-                            actionInfo = net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.SystemMsgActionInfo(
+                            actionInfo = Structmsg.SystemMsgActionInfo(
                                 type = 14,
                                 groupCode = 2230203,
                             ),
@@ -64,7 +66,7 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
                     ),
                     groupCode = 2230203,
                     groupMsgType = 1,
-                    groupInfo = net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg.GroupInfo(
+                    groupInfo = Structmsg.GroupInfo(
                         appPrivilegeFlag = 67698880,
                     ),
                     groupFlagext3 = 128,
@@ -96,7 +98,7 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member request accepted by other admin`() {
+    fun `member request accepted by other admin`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -143,7 +145,7 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member request accepted by bot as admin`() {
+    fun `member request accepted by bot as admin`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -191,7 +193,7 @@ internal class MemberJoinTest : AbstractNoticeProcessorTest() {
 
 
     @Test
-    suspend fun `member joins directly when group allows anyone`() {
+    fun `member joins directly when group allows anyone`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(

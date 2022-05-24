@@ -27,7 +27,7 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
@@ -38,7 +38,7 @@ import net.mamoe.mirai.utils.*
 /**
  * To add breakpoint, see [NoticeProcessorPipelineImpl.process]
  */
-internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), GroupExtensions {
+internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), GroupExtensions {
     init {
         setSystemProp("mirai.network.notice.pipeline.log.full", "true")
     }

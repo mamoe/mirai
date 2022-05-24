@@ -7,26 +7,29 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.components.BotInitProcessor
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTestWithSelector
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTestWithSelector
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPushForceOffline
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.TestOnly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class BotInitProcessorTest {
-    class WithoutSelector : AbstractNettyNHTest() {
+    class WithoutSelector : AbstractCommonNHTest() {
         @Test
         fun `BotInitProcessor halted`() = runBlockingUnit {
             val p = setComponent(BotInitProcessor, object : BotInitProcessor {
@@ -43,7 +46,7 @@ internal class BotInitProcessorTest {
                 }
             })
             assertTrue { network.isActive }
-            network.setStateLoading(channel)
+            network.setStateLoading(conn)
             assertEquals(1, p.ranTimes)
             assertEquals(0, p.haltedTimes)
             assertState(NetworkHandler.State.LOADING)
@@ -61,7 +64,7 @@ internal class BotInitProcessorTest {
         }
     }
 
-    class WithSelector : AbstractNettyNHTestWithSelector() {
+    class WithSelector : AbstractCommonNHTestWithSelector() {
         @Test
         fun `BotInitProcessor halted`() = runBlockingUnit {
             bot.configuration.autoReconnectOnForceOffline = true
@@ -79,7 +82,7 @@ internal class BotInitProcessorTest {
                 }
             })
             assertTrue { network.isActive }
-            network.setStateLoading(channel)
+            network.setStateLoading(conn)
             assertEquals(1, p.ranTimes)
             assertEquals(0, p.haltedTimes)
             assertState(NetworkHandler.State.LOADING)

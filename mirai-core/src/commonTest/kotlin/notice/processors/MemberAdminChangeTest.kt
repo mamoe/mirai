@@ -15,6 +15,8 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
+import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -26,9 +28,9 @@ import kotlin.test.assertIs
 internal class MemberAdminChangeTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `bot member to admin`() {
+    fun `bot member to admin`() = runBlockingUnit {
         suspend fun runTest() = use {
-            net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
+            OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,
                 toUin = 1230003,
                 msgType = 44,
@@ -74,7 +76,7 @@ internal class MemberAdminChangeTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `bot admin to member`() {
+    fun `bot admin to member`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,
@@ -119,7 +121,7 @@ internal class MemberAdminChangeTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member member to admin`() {
+    fun `member member to admin`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,
@@ -168,7 +170,7 @@ internal class MemberAdminChangeTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member admin to member`() {
+    fun `member admin to member`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo(
                 fromUin = 2230203,

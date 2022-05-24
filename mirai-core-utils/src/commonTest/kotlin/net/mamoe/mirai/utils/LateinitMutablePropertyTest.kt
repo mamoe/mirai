@@ -39,15 +39,15 @@ internal class LateinitMutablePropertyTest {
     @Test
     fun initializerCalledOnce() {
         val value = Symbol("expected")
-        val counter = atomic(0)
+        var counter = 0
 
         val prop by lateinitMutableProperty {
-            counter.incrementAndGet()
+            counter++
             value
         }
         assertSame(value, prop)
         assertSame(value, prop)
-        assertEquals(1, counter.value)
+        assertEquals(1, counter)
     }
 
     @Test

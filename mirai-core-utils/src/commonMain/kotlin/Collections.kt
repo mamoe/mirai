@@ -69,5 +69,6 @@ public expect fun <E> ConcurrentSet(): MutableSet<E>
 @Deprecated("", ReplaceWith("getOrElse(key) { default }"))
 public fun <K, V : R, R> Map<K, V>.getOrDefault(key: K, default: R): R = getOrElse(key) { default }
 
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER") // JDK 1.8
 @Deprecated("", ReplaceWith("getOrPut(key) { value }"))
 public fun <K, V> MutableMap<K, V>.putIfAbsent(key: K, value: V): V = getOrPut(key) { value }

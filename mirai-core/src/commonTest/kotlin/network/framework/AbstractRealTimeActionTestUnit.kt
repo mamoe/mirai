@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
 
-internal abstract class AbstractRealTimeActionTestUnit : AbstractNettyNHTest(), GroupExtensions {
+internal abstract class AbstractRealTimeActionTestUnit : AbstractCommonNHTest(), GroupExtensions {
     @BeforeTest
     internal fun prepareEnv() {
         bot.client.wLoginSigInfoField = WLoginSigInfo(
@@ -67,7 +67,7 @@ internal abstract class AbstractRealTimeActionTestUnit : AbstractNettyNHTest(), 
             deviceToken = "Winserver datacenter 2077".toByteArray(),
         )
         bot.client._bot = bot
-        network.setStateOK(channel)
+        network.setStateOK(conn)
         removeOutgoingPacketEncoder()
     }
 }

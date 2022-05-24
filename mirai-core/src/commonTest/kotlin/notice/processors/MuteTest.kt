@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.events.MemberUnmuteEvent
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.internal.network.protocol.data.jce.ShareData
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,7 +29,7 @@ import kotlin.test.assertIs
 
 internal class MuteTest : AbstractNoticeProcessorTest() {
     @Test
-    suspend fun `bot mute`() {
+    fun `bot mute`() = runBlockingUnit {
         suspend fun MuteTest.runTest() = use {
             OnlinePushPack.SvcReqPushMsg(
                 uin = 1230001,
@@ -79,7 +80,7 @@ internal class MuteTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `bot unmute`() {
+    fun `bot unmute`() = runBlockingUnit {
         suspend fun MuteTest.runTest() = use {
             OnlinePushPack.SvcReqPushMsg(
                 uin = 1230001,
@@ -146,7 +147,7 @@ internal class MuteTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `member mute`() {
+    fun `member mute`() = runBlockingUnit {
         suspend fun MuteTest.runTest() = use {
             OnlinePushPack.SvcReqPushMsg(
                 uin = 1230001,
@@ -198,7 +199,7 @@ internal class MuteTest : AbstractNoticeProcessorTest() {
 
 
     @Test
-    suspend fun `member unmute`() {
+    fun `member unmute`() = runBlockingUnit {
         suspend fun MuteTest.runTest() = use {
             OnlinePushPack.SvcReqPushMsg(
                 uin = 1230001,

@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network
 
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.selects.select
@@ -73,8 +72,7 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
     }
 
     // single thread so we can use [yield] to transfer dispatch
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val singleThreadDispatcher: CoroutineDispatcher = newSingleThreadContext("AwaitStateTest")
+    private val singleThreadDispatcher: CoroutineDispatcher = borrowSingleThreadDispatcher()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @AfterTest

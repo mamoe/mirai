@@ -9,6 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 

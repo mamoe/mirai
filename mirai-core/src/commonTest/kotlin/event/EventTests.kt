@@ -190,8 +190,7 @@ internal class EventTests : AbstractEventTest() {
 
     private fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
         // runBlocking 会完全堵死, 没法退出
-        @OptIn(ExperimentalCoroutinesApi::class)
-        val scope = CoroutineScope(newSingleThreadContext("EventTests singleThreaded worker"))
+        val scope = CoroutineScope(borrowSingleThreadDispatcher())
         val job = scope.launch {
             invoke(scope.globalEventChannel())
         }
