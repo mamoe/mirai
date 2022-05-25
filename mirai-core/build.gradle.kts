@@ -59,6 +59,12 @@ kotlin {
             }
         }
 
+        val jvmBaseTest by getting {
+            dependencies {
+                implementation(`kotlinx-coroutines-debug`)
+            }
+        }
+
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependsOn(commonMain)
