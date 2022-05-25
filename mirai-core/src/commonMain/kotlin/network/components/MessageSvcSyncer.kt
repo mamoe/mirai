@@ -18,7 +18,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.addNameHierarchically
 import net.mamoe.mirai.utils.childScope
@@ -64,7 +63,7 @@ internal class MessageSvcSyncerImpl(
                     it.bot == this@MessageSvcSyncerImpl.bot
                 }
             }
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect(bot)
+            bot.network.sendAndExpect(MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null))
         } ?: error("timeout syncing friend message history.")
         logger.info { "Syncing friend message history: Success." }
     }

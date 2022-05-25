@@ -11,12 +11,10 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 
 import kotlinx.io.core.*
-import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.appClientVersion
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
@@ -75,36 +73,6 @@ internal class IncomingPacket private constructor(
         )
     }
 }
-
-@Suppress("UNCHECKED_CAST")
-internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-    network: NetworkHandler,
-    timeoutMillis: Long = 5000,
-    retry: Int = 2
-): E = network.sendAndExpect(this, timeoutMillis, retry) as E
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
-@kotlin.internal.LowPriorityInOverloadResolution
-internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
-    network: NetworkHandler,
-    timeoutMillis: Long = 5000,
-    retry: Int = 2
-): E = network.sendAndExpect(this, timeoutMillis, retry) as E
-
-internal suspend inline fun <E : Packet> OutgoingPacketWithRespType<E>.sendAndExpect(
-    bot: QQAndroidBot,
-    timeoutMillis: Long = 5000,
-    retry: Int = 2
-): E = (this@sendAndExpect as OutgoingPacket).sendAndExpect(bot.network, timeoutMillis, retry)
-
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
-@kotlin.internal.LowPriorityInOverloadResolution
-internal suspend inline fun <E : Packet> OutgoingPacket.sendAndExpect(
-    bot: QQAndroidBot,
-    timeoutMillis: Long = 5000,
-    retry: Int = 2
-): E = bot.network.sendAndExpect(this, timeoutMillis, retry) as E
-
 
 @Suppress("DuplicatedCode")
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(

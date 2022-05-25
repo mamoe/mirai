@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.contact.file.resolved
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8.GetFileListRspBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.cast
 import kotlin.contracts.contract
@@ -51,8 +50,8 @@ internal data class FileMessageImpl(
         get() = busId
 
     override suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile? {
-        val result = FileManagement.GetFileInfo(contact.bot.asQQAndroidBot().client, contact.id, id, busId)
-            .sendAndExpect(contact.bot.asQQAndroidBot())
+        val result = contact.bot.asQQAndroidBot().network
+            .sendAndExpect(FileManagement.GetFileInfo(contact.bot.asQQAndroidBot().client, contact.id, id, busId))
             .toResult("FileMessage.toAbsoluteFile").getOrThrow()
         if (result.fileInfo == null) return null
 

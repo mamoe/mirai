@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.contact
@@ -24,7 +24,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.GroupOperation
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement.SwitchAnonymousChat
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 
 @Suppress("SetterBackingFieldAssignment")
 internal class GroupSettingsImpl(
@@ -43,9 +42,7 @@ internal class GroupSettingsImpl(
         val oldValue = getter()
         setter(newValue)
         launch {
-            bot.network.run {
-                packetConstructor(bot.client, id, newValue).sendWithoutExpect()
-            }
+            bot.network.sendWithoutExpect(packetConstructor(bot.client, id, newValue))
             eventConstructor(oldValue).broadcast()
         }
     }
@@ -98,7 +95,7 @@ internal class GroupSettingsImpl(
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 launch {
                     //Handle it in NoticePipelineContext#processAllowAnonymousChat
-                    SwitchAnonymousChat(bot.client, id, newValue).sendAndExpect(bot.network)
+                    bot.network.sendAndExpect(SwitchAnonymousChat(bot.client, id, newValue))
                 }
             }
         }

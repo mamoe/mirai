@@ -52,7 +52,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
@@ -257,7 +256,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getOnlineOtherClientsList(bot: Bot, mayIncludeSelf: Boolean): List<OtherClientInfo> {
         bot.asQQAndroidBot()
         val response = bot.network.run {
-            StatSvc.GetDevLoginInfo(bot.client).sendAndExpect()
+            bot.network.sendAndExpect(StatSvc.GetDevLoginInfo(bot.client))
         }
 
         fun SvcDevLoginInfo.toOtherClientInfo() = OtherClientInfo(
@@ -355,7 +354,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getRawGroupList(bot: Bot): Sequence<Long> {
         bot.asQQAndroidBot()
         return bot.network.run {
-            FriendList.GetTroopListSimplify(bot.client).sendAndExpect(retry = 2)
+            bot.network.sendAndExpect(FriendList.GetTroopListSimplify(bot.client))
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
@@ -365,44 +364,45 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         groupUin: Long,
         groupCode: Long,
         ownerId: Long
-    ): Sequence<MemberInfo> =
-        bot.asQQAndroidBot().network.run {
-            var nextUin = 0L
-            var sequence = sequenceOf<MemberInfoImpl>()
-            while (true) {
-                val data = FriendList.GetTroopMemberList(
+    ): Sequence<MemberInfo> {
+        var nextUin = 0L
+        var sequence = sequenceOf<MemberInfoImpl>()
+        while (true) {
+            val data = bot.asQQAndroidBot().network.sendAndExpect(
+                FriendList.GetTroopMemberList(
                     client = bot.client,
                     targetGroupUin = groupUin,
                     targetGroupCode = groupCode,
                     nextUin = nextUin
-                ).sendAndExpect(retry = 3)
-                sequence += data.members.asSequence().map { troopMemberInfo ->
-                    MemberInfoImpl(bot.client, troopMemberInfo, ownerId)
-                }
-                nextUin = data.nextUin
-                if (nextUin == 0L) {
-                    break
-                }
+                ), 5000, 3
+            )
+            sequence += data.members.asSequence().map { troopMemberInfo ->
+                MemberInfoImpl(bot.client, troopMemberInfo, ownerId)
             }
-            return sequence
+            nextUin = data.nextUin
+            if (nextUin == 0L) {
+                break
+            }
         }
+        return sequence
+    }
 
     override suspend fun recallGroupMessageRaw(
         bot: Bot,
         groupCode: Long,
         messageIds: IntArray,
         messageInternalIds: IntArray,
-    ): Boolean = bot.asQQAndroidBot().run {
-        val response = network.run {
+    ): Boolean {
+        val response = bot.asQQAndroidBot().network.sendAndExpect(
             PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
-                client,
+                bot.client,
                 groupCode,
                 messageIds,
                 messageInternalIds
-            ).sendAndExpect()
-        }
+            ), 5000, 2
+        )
 
-        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+        return response is PbMessageSvc.PbMsgWithDraw.Response.Success
     }
 
     override suspend fun recallFriendMessageRaw(
@@ -411,18 +411,18 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         messageIds: IntArray,
         messageInternalIds: IntArray,
         time: Int,
-    ): Boolean = bot.asQQAndroidBot().run {
-        val response = network.run {
+    ): Boolean {
+        val response = bot.asQQAndroidBot().network.sendAndExpect(
             PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
-                client,
+                bot.client,
                 targetId,
                 messageIds,
                 messageInternalIds,
                 time,
-            ).sendAndExpect()
-        }
+            ), 5000, 2
+        )
 
-        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+        return response is PbMessageSvc.PbMsgWithDraw.Response.Success
     }
 
     override suspend fun recallGroupTempMessageRaw(
@@ -432,19 +432,19 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         messageIds: IntArray,
         messageInternalIds: IntArray,
         time: Int
-    ): Boolean = bot.asQQAndroidBot().run {
-        val response = network.run {
+    ): Boolean {
+        val response = bot.asQQAndroidBot().network.sendAndExpect(
             PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
-                client,
+                bot.client,
                 groupUin,
                 targetId,
                 messageIds,
                 messageInternalIds,
                 time,
-            ).sendAndExpect()
-        }
+            ), 5000, 2
+        )
 
-        response is PbMessageSvc.PbMsgWithDraw.Response.Success
+        return response is PbMessageSvc.PbMsgWithDraw.Response.Success
     }
 
     @Suppress("RemoveExplicitTypeArguments") // false positive
@@ -477,81 +477,92 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     }
                 }
 
-                network.run {
+
+                bot.asQQAndroidBot().network.sendAndExpect(
                     PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
                         bot.asQQAndroidBot().client,
                         group.id,
                         source.sequenceIds,
                         source.internalIds
-                    ).sendAndExpect()
-                }
+                    ), 5000, 2
+                )
             }
             is OnlineMessageSourceFromFriendImpl,
             is OnlineMessageSourceToFriendImpl,
             is OnlineMessageSourceFromStrangerImpl,
             is OnlineMessageSourceToStrangerImpl,
-            -> network.run {
+            -> {
                 check(source.fromId == bot.id) {
                     "can only recall a message sent by bot"
                 }
-                PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
-                    bot.client,
-                    source.targetId,
-                    source.sequenceIds,
-                    source.internalIds,
-                    source.time
-                ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                bot.asQQAndroidBot().network.sendAndExpect(
+                    PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
+                        bot.client,
+                        source.targetId,
+                        source.sequenceIds,
+                        source.internalIds,
+                        source.time
+                    ), 5000, 2
+                )
             }
             is OnlineMessageSourceFromTempImpl,
             is OnlineMessageSourceToTempImpl
-            -> network.run {
+            -> {
                 check(source.fromId == bot.id) {
                     "can only recall a message sent by bot"
                 }
                 source as OnlineMessageSourceToTempImpl
-                PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
-                    bot.client,
-                    (source.target.group as GroupImpl).uin,
-                    source.targetId,
-                    source.sequenceIds,
-                    source.internalIds,
-                    source.time
-                ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                bot.asQQAndroidBot().network.sendAndExpect(
+                    PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
+                        bot.client,
+                        (source.target.group as GroupImpl).uin,
+                        source.targetId,
+                        source.sequenceIds,
+                        source.internalIds,
+                        source.time
+                    ), 5000, 2
+                )
             }
-            is OfflineMessageSource -> network.run {
+            is OfflineMessageSource -> {
                 when (source.kind) {
                     MessageSourceKind.FRIEND, MessageSourceKind.STRANGER -> {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }
-                        PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
-                            bot.client,
-                            source.targetId,
-                            source.sequenceIds,
-                            source.internalIds,
-                            source.time
-                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                        bot.asQQAndroidBot().network.sendAndExpect(
+                            PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
+                                bot.client,
+                                source.targetId,
+                                source.sequenceIds,
+                                source.internalIds,
+                                source.time
+                            ), 5000, 2
+                        )
                     }
                     MessageSourceKind.TEMP -> {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }
-                        PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
-                            bot.client,
-                            source.targetId, // groupUin
-                            source.targetId, // memberUin
-                            source.sequenceIds,
-                            source.internalIds,
-                            source.time
-                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                        bot.asQQAndroidBot().network.sendAndExpect(
+                            PbMessageSvc.PbMsgWithDraw.createForGroupTempMessage(
+                                bot.client,
+                                source.targetId, // groupUin
+                                source.targetId, // memberUin
+                                source.sequenceIds,
+                                source.internalIds,
+                                source.time
+                            ), 5000, 2
+                        )
                     }
                     MessageSourceKind.GROUP -> {
-                        PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
-                            bot.client,
-                            source.targetId,
-                            source.sequenceIds,
-                            source.internalIds
-                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                        bot.asQQAndroidBot().network.sendAndExpect(
+                            PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
+                                bot.client,
+                                source.targetId,
+                                source.sequenceIds,
+                                source.internalIds
+                            ), 5000, 2
+                        )
                     }
                 }
             }
@@ -651,20 +662,20 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         accept: Boolean,
         blackList: Boolean
     ): Unit = bot.asQQAndroidBot().run {
-        network.apply {
+        network.sendWithoutExpect(
             NewContact.SystemMsgNewFriend.Action(
                 bot.client,
                 eventId = eventId,
                 fromId = fromId,
                 accept = accept,
                 blackList = blackList
-            ).sendWithoutExpect()
+            )
+        )
 
-            if (!accept) return@apply
+        if (!accept) return
 
-            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
-        }
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
     }
 
     override suspend fun solveBotInvitedJoinGroupRequestEvent(
@@ -673,8 +684,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         invitorId: Long,
         groupId: Long,
         accept: Boolean
-    ) = bot.asQQAndroidBot().run {
-        network.run {
+    ) {
+        bot.asQQAndroidBot().network.sendWithoutExpect(
             NewContact.SystemMsgNewGroup.Action(
                 bot.client,
                 eventId = eventId,
@@ -682,8 +693,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 groupId = groupId,
                 isInvited = true,
                 accept = accept
-            ).sendWithoutExpect()
-        }
+            )
+        )
     }
 
     override suspend fun solveMemberJoinRequestEvent(
@@ -695,8 +706,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         accept: Boolean?,
         blackList: Boolean,
         message: String
-    ) = bot.asQQAndroidBot().run {
-        network.run {
+    ) {
+        bot.asQQAndroidBot().network.sendWithoutExpect(
             NewContact.SystemMsgNewGroup.Action(
                 bot.client,
                 eventId = eventId,
@@ -706,8 +717,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 accept = accept,
                 blackList = blackList,
                 message = message
-            ).sendWithoutExpect()
-        }
+            )
+        )
         // Add member in MsgOnlinePush.PbPushMsg
     }
 
@@ -718,10 +729,12 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         groupId: Long,
         dstUin: Long
     ): String {
-        bot.asQQAndroidBot().network.run {
-            val response = PttStore.GroupPttDown(bot.client, groupId, dstUin, md5).sendAndExpect()
-            return "http://${response.strDomain}${response.downPara.decodeToString()}"
-        }
+        val response = bot.asQQAndroidBot().network.sendAndExpect(
+            PttStore.GroupPttDown(bot.client, groupId, dstUin, md5),
+            5000,
+            2
+        )
+        return "http://${response.strDomain}${response.downPara.decodeToString()}"
     }
 
     override suspend fun muteAnonymousMember(
@@ -772,10 +785,11 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile {
-        bot.asQQAndroidBot().network.apply {
-            return SummaryCard.ReqSummaryCard(bot.client, targetId)
-                .sendAndExpect()
-        }
+
+        return bot.asQQAndroidBot().network.sendAndExpect(
+            SummaryCard.ReqSummaryCard(bot.client, targetId),
+            5000, 2
+        )
     }
 
     override suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean {
@@ -787,17 +801,21 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         bot.network.run {
             return if (receiver is Group) {
                 receiver.checkIsGroupImpl()
-                NudgePacket.troopInvoke(
-                    client = bot.client,
-                    messageReceiverGroupCode = receiver.id,
-                    nudgeTargetId = nudge.target.id,
-                ).sendAndExpect<NudgePacket.Response>().success
+                bot.network.sendAndExpect(
+                    NudgePacket.troopInvoke(
+                        client = bot.client,
+                        messageReceiverGroupCode = receiver.id,
+                        nudgeTargetId = nudge.target.id,
+                    )
+                ).success
             } else {
-                NudgePacket.friendInvoke(
-                    client = bot.client,
-                    messageReceiverUin = receiver.id,
-                    nudgeTargetId = nudge.target.id,
-                ).sendAndExpect<NudgePacket.Response>().success
+                bot.network.sendAndExpect(
+                    NudgePacket.friendInvoke(
+                        client = bot.client,
+                        messageReceiverUin = receiver.id,
+                        nudgeTargetId = nudge.target.id,
+                    )
+                ).success
             }
         }
     }
@@ -879,7 +897,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         resourceKind: ResourceKind,
     ): MsgTransmit.PbMultiMsgTransmit {
         bot.asQQAndroidBot()
-        when (val resp = MultiMsg.ApplyDown(bot.client, 2, resourceId, 1).sendAndExpect(bot)) {
+        when (val resp = bot.network.sendAndExpect(MultiMsg.ApplyDown(bot.client, 2, resourceId, 1))) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
                 @Suppress("DEPRECATION", "DEPRECATION_ERROR")
                 val http = Mirai.Http
