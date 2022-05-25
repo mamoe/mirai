@@ -138,7 +138,7 @@ internal abstract class SendMessageHandler<C : Contact> {
                 fragmented = step == SendMessageStep.FRAGMENTED
             ) { source = it }.forEach { packet ->
 
-                when (val resp = packet.sendAndExpect<Packet>()) {
+                when (val resp = bot.network.sendAndExpect<Packet>(packet, 5000, 2)) {
                     is MessageSvcPbSendMsg.Response -> {
                         if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                             return when (step) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,7 +18,6 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.ImagePatcher.Companion.withCache
 import net.mamoe.mirai.message.data.Image
@@ -66,18 +65,20 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
             width: Int,
             height: Int
         ): Boolean {
-            val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
-                bot.client,
-                uin = bot.id,
-                groupCode = context.id,
-                md5 = md5,
-                size = size,
-                filename = "${md5.toUHexString("")}.${type.formatName}",
-                picWidth = width,
-                picHeight = height,
-                picType = getIdByImageType(type),
-                originalPic = 1
-            ).sendAndExpect(bot)
+            val response: ImgStore.GroupPicUp.Response = bot.network.sendAndExpect(
+                ImgStore.GroupPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    groupCode = context.id,
+                    md5 = md5,
+                    size = size,
+                    filename = "${md5.toUHexString("")}.${type.formatName}",
+                    picWidth = width,
+                    picHeight = height,
+                    picType = getIdByImageType(type),
+                    originalPic = 1
+                )
+            )
 
             return response is ImgStore.GroupPicUp.Response.FileExists
         }
@@ -93,22 +94,24 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
             width: Int,
             height: Int
         ): Boolean {
-            val resp = LongConn.OffPicUp(
-                bot.client,
-                Cmd0x352.TryUpImgReq(
-                    buType = 1,
-                    srcUin = bot.id,
-                    dstUin = context.id,
-                    fileMd5 = md5,
-                    fileSize = size,
-                    imgWidth = width,
-                    imgHeight = height,
-                    imgType = getIdByImageType(type),
-                    fileName = "${md5.toUHexString("")}.${type.formatName}",
-                    imgOriginal = true,
-                    buildVer = bot.client.buildVer,
-                ),
-            ).sendAndExpect<LongConn.OffPicUp.Response>(bot)
+            val resp = bot.network.sendAndExpect(
+                LongConn.OffPicUp(
+                    bot.client,
+                    Cmd0x352.TryUpImgReq(
+                        buType = 1,
+                        srcUin = bot.id,
+                        dstUin = context.id,
+                        fileMd5 = md5,
+                        fileSize = size,
+                        imgWidth = width,
+                        imgHeight = height,
+                        imgType = getIdByImageType(type),
+                        fileName = "${md5.toUHexString("")}.${type.formatName}",
+                        imgOriginal = true,
+                        buildVer = bot.client.buildVer,
+                    ),
+                )
+            )
 
             return resp is LongConn.OffPicUp.Response.FileExists
         }
@@ -124,18 +127,20 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
             width: Int,
             height: Int
         ): Boolean {
-            val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
-                bot.client,
-                uin = bot.id,
-                groupCode = 1,
-                md5 = md5,
-                size = size,
-                filename = "${md5.toUHexString("")}.${type.formatName}",
-                picWidth = width,
-                picHeight = height,
-                picType = getIdByImageType(type),
-                originalPic = 1
-            ).sendAndExpect(bot)
+            val response: ImgStore.GroupPicUp.Response = bot.network.sendAndExpect(
+                ImgStore.GroupPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    groupCode = 1,
+                    md5 = md5,
+                    size = size,
+                    filename = "${md5.toUHexString("")}.${type.formatName}",
+                    picWidth = width,
+                    picHeight = height,
+                    picType = getIdByImageType(type),
+                    originalPic = 1
+                )
+            )
 
             return response is ImgStore.GroupPicUp.Response.FileExists
         }

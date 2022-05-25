@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.network.highway.tryServersUpload
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.structureToString
@@ -76,7 +75,7 @@ internal sealed class AbstractUser(
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
         val imageInfo = runBIO { resource.calculateImageInfo() }
-        val resp = bot.network.run {
+        val resp = bot.network.sendAndExpect(
             LongConn.OffPicUp(
                 bot.client,
                 Cmd0x352.TryUpImgReq(
@@ -92,8 +91,8 @@ internal sealed class AbstractUser(
                     imgOriginal = true,
                     buildVer = bot.client.buildVer,
                 ),
-            ).sendAndExpect<LongConn.OffPicUp.Response>()
-        }
+            ), 5000, 2
+        )
 
         return when (resp) {
             is LongConn.OffPicUp.Response.FileExists -> {
@@ -141,16 +140,18 @@ internal sealed class AbstractUser(
                     )
                 }.recoverCatchingSuppressed {
                     // try upload as group image
-                    val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
-                        bot.client,
-                        uin = bot.id,
-                        groupCode = id,
-                        md5 = resource.md5,
-                        size = resource.size,
-                        picWidth = imageInfo.width,
-                        picHeight = imageInfo.height,
-                        picType = getIdByImageType(imageInfo.imageType),
-                    ).sendAndExpect(bot)
+                    val response: ImgStore.GroupPicUp.Response = bot.network.sendAndExpect(
+                        ImgStore.GroupPicUp(
+                            bot.client,
+                            uin = bot.id,
+                            groupCode = id,
+                            md5 = resource.md5,
+                            size = resource.size,
+                            picWidth = imageInfo.width,
+                            picHeight = imageInfo.height,
+                            picType = getIdByImageType(imageInfo.imageType),
+                        )
+                    )
 
                     when (response) {
                         is ImgStore.GroupPicUp.Response.Failed -> {

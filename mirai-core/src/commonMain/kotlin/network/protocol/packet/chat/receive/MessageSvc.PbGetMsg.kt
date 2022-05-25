@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -113,9 +113,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             //                .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
             bot.network.launch(CoroutineName("MessageSvcPushNotify.retry")) {
                 delay(500 + Random.nextLong(0, 1000))
-                bot.network.run {
-                    MessageSvcPbGetMsg(bot.client, syncCookie = null).sendWithoutExpect()
-                }
+                bot.network.sendWithoutExpect(MessageSvcPbGetMsg(bot.client, syncCookie = null))
             }
             return EmptyResponse(bot)
         }
@@ -170,24 +168,24 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             }
 
             MsgSvc.SyncFlag.START -> {
-                network.run {
+                network.sendAndExpect(
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.syncController.syncCookie,
-                    ).sendAndExpect()
-                }
+                    ), 5000, 2
+                )
                 return
             }
 
             MsgSvc.SyncFlag.CONTINUE -> {
-                network.run {
+                network.sendAndExpect(
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
                         bot.syncController.syncCookie,
-                    ).sendAndExpect()
-                }
+                    ), 5000, 2
+                )
                 return
             }
         }

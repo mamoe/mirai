@@ -127,6 +127,12 @@ internal interface NetworkHandler : CoroutineScope {
     suspend fun resumeConnection()
 
 
+    suspend fun <P : Packet?> sendAndExpect(
+        packet: OutgoingPacketWithRespType<P>,
+        timeout: Long = 5000,
+        attempts: Int = 2
+    ): P
+
     /**
      * Sends [packet], suspends and expects to receive a response from the server.
      *
@@ -139,7 +145,8 @@ internal interface NetworkHandler : CoroutineScope {
      *
      * @param attempts ranges `1..INFINITY`
      */
-    suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): Packet?
+    suspend fun <P : Packet?> sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): P
+
 
     /**
      * Sends [packet] and does not expect any response.
@@ -163,32 +170,6 @@ internal interface NetworkHandler : CoroutineScope {
     ///////////////////////////////////////////////////////////////////////////
     // compatibility
     ///////////////////////////////////////////////////////////////////////////
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendWithoutExpect] without extension receiver instead.
-     */
-    suspend fun OutgoingPacket.sendWithoutExpect(
-        antiCollisionParam: Any? = null,
-    ) = this@NetworkHandler.sendWithoutExpect(this)
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
-     */
-    @Suppress("UNCHECKED_CAST")
-    suspend fun <R> OutgoingPacket.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2,
-        antiCollisionParam: Any? = null, // signature collision
-    ): R = sendAndExpect(this, timeoutMillis, retry) as R
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
-     */
-    @Suppress("UNCHECKED_CAST")
-    suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2,
-    ): R = sendAndExpect(this, timeoutMillis, retry) as R
 }
 
 internal val NetworkHandler.logger: MiraiLogger get() = context.logger

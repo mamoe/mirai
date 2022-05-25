@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.image
@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -24,8 +23,8 @@ internal class LongConn {
 
     internal object OffPicUp : OutgoingPacketFactory<OffPicUp.Response>("LongConn.OffPicUp") {
 
-        operator fun invoke(client: QQAndroidClient, req: Cmd0x352.TryUpImgReq): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
+        operator fun invoke(client: QQAndroidClient, req: Cmd0x352.TryUpImgReq) =
+            buildOutgoingUniPacket(client) {
                 writeProtoBuf(
                     Cmd0x352.ReqBody.serializer(),
                     Cmd0x352.ReqBody(
@@ -37,7 +36,6 @@ internal class LongConn {
                     )
                 )
             }
-        }
 
 
         //08 01 12 7D 08 00 10 AB E1 9D DF 07 18 00 28 01 32 1C 0A 10 8E C4 9D 72 26 AE 20 C0 5D A2 B6 78 4D 12 B7 3A 10 E9 07 18 86 1F 20 30 28 30 52 25 2F 61 30 30 39 32 64 61 39 2D 64 39 31 38 2D 34 38 31 62 2D 38 34 30 63 2D 33 32 33 64 64 33 39 33 34 35 37 63 5A 25 2F 61 30 30 39 32 64 61 39 2D 64 39 31 38 2D 34 38 31 62 2D 38 34 30 63 2D 33 32 33 64 64 33 39 33 34 35 37 63 60 00 68 80 40 20 01

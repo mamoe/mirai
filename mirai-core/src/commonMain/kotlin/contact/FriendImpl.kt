@@ -30,7 +30,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
@@ -69,10 +68,8 @@ internal class FriendImpl(
         check(bot.friends[id] != null) {
             "Friend $id had already been deleted"
         }
-        bot.network.run {
-            FriendList.DelFriend.invoke(bot.client, this@FriendImpl).sendAndExpect().also {
-                check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
-            }
+        bot.network.sendAndExpect(FriendList.DelFriend.invoke(bot.client, this@FriendImpl), 5000, 2).let {
+            check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
         }
     }
 
@@ -120,7 +117,7 @@ internal class FriendImpl(
                 )
             )
         }.recoverCatchingSuppressed {
-            when (val resp = PttStore.GroupPttUp(bot.client, bot.id, id, res).sendAndExpect(bot)) {
+            when (val resp = bot.network.sendAndExpect(PttStore.GroupPttUp(bot.client, bot.id, id, res))) {
                 is PttStore.GroupPttUp.Response.RequireUpload -> {
                     tryServersUpload(
                         bot,

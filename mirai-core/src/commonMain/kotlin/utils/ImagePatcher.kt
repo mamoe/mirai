@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.message.FriendImage
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.ResourceAccessLock
 import net.mamoe.mirai.utils.UnsafeMutableNonNullProperty
 import net.mamoe.mirai.utils.currentTimeMillis
@@ -117,13 +116,15 @@ internal open class ImagePatcher {
 
         val bot = group.bot
 
-        val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
-            bot.client,
-            uin = bot.id,
-            groupCode = group.id,
-            md5 = image.md5,
-            size = 1,
-        ).sendAndExpect(bot)
+        val response: ImgStore.GroupPicUp.Response = bot.network.sendAndExpect(
+            ImgStore.GroupPicUp(
+                bot.client,
+                uin = bot.id,
+                groupCode = group.id,
+                md5 = image.md5,
+                size = 1,
+            )
+        )
 
         when (response) {
             is ImgStore.GroupPicUp.Response.Failed -> {
@@ -154,13 +155,15 @@ internal open class ImagePatcher {
 
         val bot = group.bot
 
-        val response = ImgStore.GroupPicUp(
-            bot.client,
-            uin = bot.id,
-            groupCode = group.id,
-            md5 = image.md5,
-            size = image.size
-        ).sendAndExpect(bot.network)
+        val response = bot.network.sendAndExpect(
+            ImgStore.GroupPicUp(
+                bot.client,
+                uin = bot.id,
+                groupCode = group.id,
+                md5 = image.md5,
+                size = image.size
+            )
+        )
 
         return OfflineGroupImage(
             imageId = image.imageId,
