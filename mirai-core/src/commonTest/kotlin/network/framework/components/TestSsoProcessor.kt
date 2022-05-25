@@ -18,13 +18,22 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
+import kotlin.random.Random
 
 internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcessor {
     val deviceInfo = bot.configuration.createDeviceInfo(bot)
     override var client: QQAndroidClient by lateinitMutableProperty {
-        QQAndroidClient(bot.account, device = deviceInfo, accountSecrets = AccountSecretsImpl(deviceInfo, bot.account))
+        QQAndroidClient(
+            bot.account,
+            device = deviceInfo,
+            accountSecrets = bot.components[AccountSecretsManager].getSecretsOrCreate(
+                bot.account,
+                DeviceInfo.random(Random(1))
+            )
+        )
     }
     override val ssoSession: SsoSession get() = bot.client
     override val firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)

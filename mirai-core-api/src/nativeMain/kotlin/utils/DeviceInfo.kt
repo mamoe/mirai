@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.random.Random
@@ -48,13 +47,12 @@ public actual class DeviceInfo actual constructor(
     @MiraiInternalApi
     public actual val guid: ByteArray = generateGuid(androidId, macAddress)
 
-    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // serializable
     @Serializable
     public actual class Version actual constructor(
-        public actual val incremental: ByteArray = "5891938".toByteArray(),
-        public actual val release: ByteArray = "10".toByteArray(),
-        public actual val codename: ByteArray = "REL".toByteArray(),
-        public actual val sdk: Int = 29
+        public actual val incremental: ByteArray,
+        public actual val release: ByteArray,
+        public actual val codename: ByteArray,
+        public actual val sdk: Int
     ) {
         /**
          * @since 2.9

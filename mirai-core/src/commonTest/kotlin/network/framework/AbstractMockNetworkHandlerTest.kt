@@ -17,10 +17,7 @@ import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
-import net.mamoe.mirai.internal.network.components.EventDispatcher
-import net.mamoe.mirai.internal.network.components.PacketLoggingStrategy
-import net.mamoe.mirai.internal.network.components.PacketLoggingStrategyImpl
-import net.mamoe.mirai.internal.network.components.SsoProcessor
+import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.framework.components.TestImagePatcher
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -69,9 +66,10 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
         )
         set(ImagePatcher, TestImagePatcher())
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
+        set(AccountSecretsManager, MemoryAccountSecretsManager())
     }
 
     fun NetworkHandler.assertState(state: NetworkHandler.State) {
-        assertEquals(state, state)
+        assertEquals(this.state, state)
     }
 }

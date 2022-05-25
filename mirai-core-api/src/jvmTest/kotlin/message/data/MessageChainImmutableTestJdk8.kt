@@ -14,10 +14,10 @@ package net.mamoe.mirai.message.data
 import kotlin.test.Test
 import kotlin.test.assertFails
 
-internal class MessageChainImmutableTest_JDK8 : MessageChainImmutableTest() {
+internal class MessageChainImmutableTestJdk8 : MessageChainImmutableTest() {
     @Test
     fun `access with JDK8 lambda`() {
-        val chain = msgAsJdk()
+        val chain = messageChainOf(AtAll, PlainText("Hello!"), At(114514)) as java.util.List<SingleMessage>
         assertFails { chain.removeIf { true } }
         assertFails { chain.replaceAll { AtAll } }
         assertFails { chain.sort { o1, o2 -> o1.javaClass.name.compareTo(o2.javaClass.name) } }

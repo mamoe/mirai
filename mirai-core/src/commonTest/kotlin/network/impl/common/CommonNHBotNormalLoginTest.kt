@@ -14,6 +14,11 @@ package net.mamoe.mirai.internal.network.impl.common
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import net.mamoe.mirai.internal.BotAccount
+import net.mamoe.mirai.internal.MockConfiguration
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
+import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitor
 import net.mamoe.mirai.internal.network.components.BotOfflineEventMonitorImpl
 import net.mamoe.mirai.internal.network.components.FirstLoginResult
@@ -38,15 +43,22 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
     }
 
     val selector = KeepAliveNetworkHandlerSelector(selectorLogger) {
-        super.factory.create(createContext(), createAddress())
+        factory.create(createContext(), createAddress())
     }
 
     override val network: TestCommonNetworkHandler
-        get() = bot.network.cast<SelectorNetworkHandler<*>>().selector.getCurrentInstanceOrCreate().cast()
+        get() = selector.getCurrentInstanceOrCreate().cast()
 
-    override fun createHandler(): NetworkHandler {
-        return SelectorNetworkHandler(selector)
+    override fun createBot(account: BotAccount): QQAndroidBot {
+        return object : QQAndroidBot(account, MockConfiguration.copy()) {
+            override fun createBotLevelComponents(): ConcurrentComponentStorage =
+                super.createBotLevelComponents().apply { setAll(overrideComponents) }
+
+            override fun createNetworkHandler(): NetworkHandler =
+                SelectorNetworkHandler(selector)
+        }
     }
+
 
     class CusLoginException(message: String?) : CustomLoginFailedException(true, message)
 

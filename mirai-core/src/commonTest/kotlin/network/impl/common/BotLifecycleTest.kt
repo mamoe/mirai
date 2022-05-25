@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.network.impl.common
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
@@ -84,7 +85,7 @@ internal class BotLifecycleTest : AbstractCommonNHTest() {
             conf {
                 parentCoroutineContext = CoroutineName("Overrode")
             }
-            networkHandlerProvider { createHandler() }
+            networkHandlerProvider { factory.create(createContext(), createAddress()) }
         }
         assertEquals("Overrode", bot.coroutineContext[CoroutineName]!!.name)
     }
@@ -96,7 +97,7 @@ internal class BotLifecycleTest : AbstractCommonNHTest() {
             conf {
                 parentCoroutineContext = parentJob
             }
-            networkHandlerProvider { createHandler() }
+            networkHandlerProvider { factory.create(createContext(), createAddress()) }
         }
         assertEquals(1, parentJob.children.count())
         assertEquals(bot.supervisorJob, parentJob.children.first())
@@ -121,8 +122,9 @@ internal class BotLifecycleTest : AbstractCommonNHTest() {
                 data = StatSvc.SimpleGet.Response.Error(1, "test error"),
             )
         )
-        assertFalse { network.isActive }
+        network.coroutineContext.job.join()
         network.assertState(CLOSED) // we do not use selector in this test so it will be CLOSED. It will recover (reconnect) instead in real.
+        assertFalse { network.isActive }
     }
 
 

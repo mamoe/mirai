@@ -83,7 +83,6 @@ object ValueDescAnalyzer {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 inline fun <reified T> ValueDescAnalyzer.analyze(value: T): ValueDesc {
     return analyze(value, typeOf<T>())
 }

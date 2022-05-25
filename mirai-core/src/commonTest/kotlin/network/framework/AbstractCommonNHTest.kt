@@ -11,7 +11,9 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.*
+import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.ExceptionCollector
 
@@ -28,6 +30,23 @@ internal abstract class TestCommonNetworkHandler(
     }
 
     override fun PlatformConn.writeAndFlushOrCloseAsync(packet: OutgoingPacket) {
+        for (packetReplier in packetRepliers) {
+            packetReplier.run {
+                object : PacketReplierContext {
+                    override fun reply(incoming: IncomingPacket) {
+                        collectReceived(incoming)
+                    }
+
+                    override fun reply(incoming: Packet) {
+                        reply(IncomingPacket(packet.commandName, packet.sequenceId, incoming))
+                    }
+
+                    override fun reply(incoming: Throwable) {
+                        reply(IncomingPacket(packet.commandName, packet.sequenceId, incoming))
+                    }
+                }.onSend(packet)
+            }
+        }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
@@ -51,6 +70,24 @@ internal abstract class TestCommonNetworkHandler(
         return setState { StateLoading(conn) }
     }
 
+    private val packetRepliers = mutableListOf<PacketReplier>()
+
+    fun addPacketReplier(packetReplier: PacketReplier) {
+        packetRepliers.add(packetReplier)
+    }
+}
+
+/**
+ * 应答器, 模拟服务器返回.
+ */
+internal fun interface PacketReplier {
+    fun PacketReplierContext.onSend(packet: OutgoingPacket)
+}
+
+internal interface PacketReplierContext {
+    fun reply(incoming: IncomingPacket)
+    fun reply(incoming: Packet)
+    fun reply(incoming: Throwable)
 }
 
 /**

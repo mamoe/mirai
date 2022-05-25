@@ -45,7 +45,7 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractCommonNHTest() 
                 throw MyException()
             }
 
-            val selector = TestSelector(3) { createHandler() }
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
             assertFailsWith<Throwable> { selector.awaitResumeInstance() }
         }
 
@@ -63,7 +63,7 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractCommonNHTest() 
                 throw object : NetworkException(true) {}
             }
 
-            val selector = TestSelector(3) { createHandler() }
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
             assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<NetworkException>(it.cause)
             }
@@ -74,7 +74,7 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractCommonNHTest() 
             throwException = {
                 throw MyException()
             }
-            val selector = TestSelector(3) { createHandler() }
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
             assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<MyException>(it.cause)
             }

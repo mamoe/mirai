@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.notice.processors
 
 import kotlinx.serialization.SerializationStrategy
@@ -84,7 +86,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), Gr
                 createContext(this, attributes)
         }, block)
 
-    fun setBot(id: Long): QQAndroidBot {
+    open fun setBot(id: Long): QQAndroidBot {
         bot = createBot(BotAccount(id, "a"))
         return bot
     }

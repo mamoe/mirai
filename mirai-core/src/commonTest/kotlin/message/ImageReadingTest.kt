@@ -78,7 +78,7 @@ internal class ImageReadingTest : AbstractTest() {
                 ImageType.JPG
             )
         }
-        assertFailsWith(IOException::class) {
+        assertFailsWith(IllegalStateException::class) {
             "FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 78 00 78 00 00 FF E1 00 5A".testMatch(
                 ImageType.JPG
             )
