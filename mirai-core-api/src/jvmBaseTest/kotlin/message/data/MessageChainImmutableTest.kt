@@ -13,30 +13,30 @@ package net.mamoe.mirai.message.data
 
 import kotlin.test.Test
 import kotlin.test.assertFails
-import java.util.List as JdkList
 
 internal open class MessageChainImmutableTest {
-    private fun msg0(): MessageChain = messageChainOf(
-        AtAll, PlainText("Hello!"), At(114514),
-    )
 
-    fun msgAsJdk(): JdkList<SingleMessage> {
-        return msg0() as java.util.List<SingleMessage>
+    @Test
+    fun `LinearMessageChainImpl is immutable`() {
+        runCheck(
+            messageChainOf(
+                AtAll, PlainText("Hello!"), At(114514),
+            ) as java.util.List<SingleMessage>
+        )
     }
 
     @Test
-    fun `direct access`() {
-        val chain = msgAsJdk()
+    fun `CombinedMessage is immutable`() {
+        runCheck(
+            (AtAll + PlainText("Hello!")) as java.util.List<SingleMessage>,
+        )
+    }
 
+    private fun runCheck(chain: java.util.List<SingleMessage>) {
         assertFails { chain.set(0, AtAll) }
         assertFails { chain.remove(0) }
         assertFails { chain.clear() }
         assertFails { chain.add(PlainText("Hey Hey!")) }
-    }
-
-    @Test
-    fun `iterator access`() {
-        val chain = msgAsJdk()
         assertFails { chain.iterator().remove() }
         assertFails { chain.iterator().also { it.next() }.remove() }
         assertFails { chain.listIterator().remove() }

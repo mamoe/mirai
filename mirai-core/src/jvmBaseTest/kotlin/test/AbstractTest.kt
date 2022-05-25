@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.test
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.debug.DebugProbes
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
 import net.mamoe.mirai.utils.MiraiLogger
@@ -18,9 +20,12 @@ import java.util.concurrent.TimeUnit
 
 @Timeout(value = 7, unit = TimeUnit.MINUTES)
 internal actual abstract class AbstractTest actual constructor() : CommonAbstractTest() {
+    @OptIn(ExperimentalCoroutinesApi::class)
     actual companion object {
         init {
             initPlatform()
+
+            DebugProbes.install()
 
             @Suppress("DEPRECATION_ERROR")
             MiraiLogger.setDefaultLoggerCreator {

@@ -14,13 +14,16 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 internal class RecallTest : AbstractNoticeProcessorTest() {
@@ -91,6 +94,16 @@ internal class RecallTest : AbstractNoticeProcessorTest() {
                 )
             )
         )
+
+    override fun setBot(id: Long): QQAndroidBot {
+        return super.setBot(id).also { bot ->
+            runBlockingUnit { bot.login() }
+            network.addPacketReplier {
+                assertEquals("PbMessageSvc.PbMsgWithDraw", it.commandName)
+                reply(PbMessageSvc.PbMsgWithDraw.Response.Success)
+            }
+        }
+    }
 
     @Test
     fun `recall member message without permission`() = runBlockingUnit {

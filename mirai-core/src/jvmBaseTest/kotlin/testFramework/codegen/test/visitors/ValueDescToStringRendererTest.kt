@@ -126,14 +126,15 @@ internal class ValueDescToStringRendererTest {
         val self: MyClass?,
     )
 
+    @Suppress("ClassName")
+    data class `MyClass$3`(
+        val str: String,
+        val int: Int,
+        val self: `MyClass$3`?,
+    )
+
     @Test
     fun `class value`() {
-        data class MyClass2(
-            val str: String,
-            val int: Int,
-            val self: MyClass2?,
-        )
-
         assertEquals(
             """
                 ${MyClass::class.qualifiedName}(
@@ -144,10 +145,19 @@ internal class ValueDescToStringRendererTest {
             """.trimIndent(),
             ValueDescAnalyzer.analyze(MyClass("str", 1, null)).renderToString(renderer)
         )
+    }
+
+    @Test
+    fun `local class`() {
+        data class MyClass2(
+            val str: String,
+            val int: Int,
+            val self: MyClass2?,
+        )
 
         assertEquals(
             """
-                `${MyClass2::class.java.name}`(
+                ${MyClass2::class.simpleName}(
                     str = "str",
                     int = 1,
                     self = null,
@@ -156,6 +166,21 @@ internal class ValueDescToStringRendererTest {
             ValueDescAnalyzer.analyze(MyClass2("str", 1, null)).renderToString(renderer)
         )
     }
+
+    @Test
+    fun `class with special name`() {
+        assertEquals(
+            """
+                `${`MyClass$3`::class.qualifiedName}`(
+                    str = "str",
+                    int = 1,
+                    self = null,
+                )
+            """.trimIndent(),
+            ValueDescAnalyzer.analyze(`MyClass$3`("str", 1, null)).renderToString(renderer)
+        )
+    }
+
 
     @Test
     fun `class value nested`() {
@@ -182,10 +207,10 @@ internal class ValueDescToStringRendererTest {
 
         assertEquals(
             """
-                `${MyClass2::class.java.name}`(
+                ${MyClass2::class.simpleName}(
                     str = "str",
                     int = 1,
-                    self = `${MyClass2::class.java.name}`(
+                    self = ${MyClass2::class.simpleName}(
                         str = "str",
                         int = 1,
                         self = null,

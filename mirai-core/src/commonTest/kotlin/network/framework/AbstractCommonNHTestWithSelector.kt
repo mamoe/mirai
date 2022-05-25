@@ -19,7 +19,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.TestSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.utils.cast
 
 /**
  * When network is closed, it will reconnect, so that you test for real environment,
@@ -45,7 +44,6 @@ internal abstract class AbstractCommonNHTestWithSelector :
     override val factory: NetworkHandlerFactory<TestSelectorNetworkHandler> =
         NetworkHandlerFactory { _, _ -> TestSelectorNetworkHandler(selector, bot) }
 
-    override val network: TestSelectorNetworkHandler get() = bot.network.cast()
 }
 
 internal class TestSelectorNetworkHandler(

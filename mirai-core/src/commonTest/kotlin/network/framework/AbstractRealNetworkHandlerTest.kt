@@ -14,6 +14,11 @@ package net.mamoe.mirai.internal.network.framework
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.internal.*
+import net.mamoe.mirai.internal.contact.uin
+import net.mamoe.mirai.internal.network.KeyWithCreationTime
+import net.mamoe.mirai.internal.network.KeyWithExpiry
+import net.mamoe.mirai.internal.network.WLoginSigInfo
+import net.mamoe.mirai.internal.network.WLoginSimpleInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
@@ -29,6 +34,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import network.framework.components.TestEventDispatcherImpl
+import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.assertEquals
 
@@ -39,10 +45,19 @@ import kotlin.test.assertEquals
  */
 internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : AbstractNetworkHandlerTest() {
     abstract val factory: NetworkHandlerFactory<H>
-    abstract val network: H
+
+    /**
+     * This is shared for all [createBot] by default. `network === bot.network`, unless you change it.
+     */
+    open val network: H by lateinitMutableProperty {
+        factory.create(createContext(), createAddress())
+    }
 
     private var botInit = false
-    var bot: QQAndroidBot by lateinitMutableProperty { botInit = true; createBot() }
+    var bot: QQAndroidBot by lateinitMutableProperty {
+        botInit = true
+        createBot()
+    }
 
     @AfterTest
     fun afterEach() {
@@ -52,10 +67,16 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
         return object : QQAndroidBot(account, MockConfiguration.copy()) {
             override fun createBotLevelComponents(): ConcurrentComponentStorage =
-                super.createBotLevelComponents().apply { setAll(overrideComponents) }
+                super.createBotLevelComponents().apply {
+                    setAll(overrideComponents)
+                    get(AccountSecretsManager).getSecretsOrCreate(
+                        account,
+                        DeviceInfo.random(Random(1))
+                    ).wLoginSigInfo = createWLoginSigInfo(uin)
+                }
 
             override fun createNetworkHandler(): NetworkHandler =
-                this@AbstractRealNetworkHandlerTest.createHandler()
+                this@AbstractRealNetworkHandlerTest.network
         }
     }
 
@@ -149,7 +170,6 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         return instance
     }
 
-    open fun createHandler(): NetworkHandler = factory.create(createContext(), createAddress())
     open fun createContext(): NetworkHandlerContextImpl =
         NetworkHandlerContextImpl(bot, networkLogger, bot.createNetworkLevelComponents())
 
@@ -184,4 +204,84 @@ internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend S
     overrideComponents[SsoProcessor] = object : SsoProcessor by overrideComponents[SsoProcessor] {
         override suspend fun login(handler: NetworkHandler) = action(handler)
     }
+}
+
+private fun createWLoginSigInfo(
+    uin: Long,
+    creationTime: Long = currentTimeSeconds(),
+    random: Random = Random(1)
+): WLoginSigInfo {
+    return WLoginSigInfo(
+        uin = uin,
+        encryptA1 = null,
+        noPicSig = null,
+        simpleInfo = WLoginSimpleInfo(
+            uin = uin,
+            imgType = EMPTY_BYTE_ARRAY,
+            imgFormat = EMPTY_BYTE_ARRAY,
+            imgUrl = EMPTY_BYTE_ARRAY,
+            mainDisplayName = EMPTY_BYTE_ARRAY
+        ), // defaults {}, from asyncContext._G
+        appPri = 4294967295L, // defaults {}, from asyncContext._G
+        a2ExpiryTime = creationTime + 2160000L, // or from asyncContext._t403.get_body_data()
+        loginBitmap = 0,
+        tgt = getRandomByteArray(16, random),
+        a2CreationTime = creationTime,
+        tgtKey = getRandomByteArray(16, random), // from asyncContext._login_bitmap
+        userStSig = KeyWithCreationTime(getRandomByteArray(16, random), creationTime),
+        userStKey = EMPTY_BYTE_ARRAY,
+        userStWebSig = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 6000
+        ),
+        userA5 = KeyWithCreationTime(getRandomByteArray(16, random), creationTime),
+        userA8 = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 72000L
+        ),
+        lsKey = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 1641600L
+        ),
+        sKey = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 86400L
+        ),
+        userSig64 = KeyWithCreationTime(EMPTY_BYTE_ARRAY, creationTime),
+        openId = EMPTY_BYTE_ARRAY,
+        openKey = KeyWithCreationTime(EMPTY_BYTE_ARRAY, creationTime),
+        vKey = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 1728000L
+        ),
+        accessToken = KeyWithCreationTime(EMPTY_BYTE_ARRAY, creationTime),
+        d2 = KeyWithExpiry(
+            getRandomByteArray(16, random),
+            creationTime,
+            creationTime + 1728000L
+        ),
+        d2Key = getRandomByteArray(16, random),
+        sid = KeyWithExpiry(
+            EMPTY_BYTE_ARRAY,
+            creationTime,
+            creationTime + 1728000L
+        ),
+        aqSig = KeyWithCreationTime(EMPTY_BYTE_ARRAY, creationTime),
+        psKeyMap = mutableMapOf(),
+        pt4TokenMap = mutableMapOf(),
+        superKey = EMPTY_BYTE_ARRAY,
+        payToken = EMPTY_BYTE_ARRAY,
+        pf = EMPTY_BYTE_ARRAY,
+        pfKey = EMPTY_BYTE_ARRAY,
+        da2 = EMPTY_BYTE_ARRAY,
+        wtSessionTicket = KeyWithCreationTime(EMPTY_BYTE_ARRAY, creationTime),
+        wtSessionTicketKey = EMPTY_BYTE_ARRAY,
+        deviceToken = EMPTY_BYTE_ARRAY,
+        encryptedDownloadSession = null
+    )
 }

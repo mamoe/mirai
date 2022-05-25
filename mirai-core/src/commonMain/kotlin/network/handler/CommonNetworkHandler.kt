@@ -145,6 +145,8 @@ internal abstract class CommonNetworkHandler<Conn>(
             this.setState { StateConnecting(ExceptionCollector()) }
                 ?.resumeConnection()
                 ?: this@CommonNetworkHandler.resumeConnection() // concurrently closed by other thread.
+
+            println("INITIALIZED RETURN")
         }
 
         override fun toString(): String = "StateInitialized"
@@ -212,6 +214,9 @@ internal abstract class CommonNetworkHandler<Conn>(
             connectResult.await() // propagates exceptions
             val connection = connection.await()
             this.setState { StateLoading(connection) }
+                .also {
+                    println(" this.setState { StateLoading(connection) }: " + it)
+                }
                 ?.resumeConnection()
                 ?: this@CommonNetworkHandler.resumeConnection() // concurrently closed by other thread.
         }

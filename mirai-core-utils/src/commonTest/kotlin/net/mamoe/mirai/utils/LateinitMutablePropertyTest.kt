@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -48,38 +47,6 @@ internal class LateinitMutablePropertyTest {
         assertSame(value, prop)
         assertSame(value, prop)
         assertEquals(1, counter)
-    }
-
-    @Test
-    fun initializerCalledOnceConcurrent() = runBlocking {
-        val value = Symbol("expected")
-        val counter = atomic(0)
-
-        val verySlowInitializer = CompletableDeferred<Unit>()
-
-
-        val prop by lateinitMutableProperty {
-            counter.incrementAndGet()
-            runBlocking { yield(); verySlowInitializer.await() }
-            value
-        }
-
-
-        val lock = CompletableDeferred<Unit>()
-        repeat(10) {
-            launch {
-                lock.join()
-                @Suppress("UNUSED_EXPRESSION")
-                prop
-            }
-        }
-        lock.complete(Unit) // resume callers
-
-
-        verySlowInitializer.complete(Unit)
-
-        assertSame(value, prop)
-        assertEquals(1, counter.value)
     }
 
     @Test

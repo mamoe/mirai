@@ -43,7 +43,7 @@ internal class OptimizeByteArrayAsHexStringTransformerTest : AbstractTest() {
     fun `can optimize as hex`() {
         assertEquals(
             """
-            "O".toByteArray() /* 4F 02 */
+            "4F 02".hexToBytes()
         """.trimIndent(), analyzeTransformAndRender(byteArrayOf(0x4f, 0x02))
         )
     }

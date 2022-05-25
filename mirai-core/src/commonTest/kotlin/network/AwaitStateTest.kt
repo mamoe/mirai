@@ -41,7 +41,6 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `test whileSelect onStateChanged on demand`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
@@ -81,7 +80,6 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
     }
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `test whileSelect onStateChanged drop if not listening`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
