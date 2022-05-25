@@ -35,7 +35,6 @@ object FT { // file template
 
     const val Gitignore = ".gitignore"
 
-    const val RunTerminal = "RunTerminal.kt"
     const val RunTerminalRun = "RunTerminal.run.xml"
     const val AccountProperties = "account.properties"
 }

@@ -30,7 +30,6 @@ class FileTemplateRegistrar : com.intellij.ide.fileTemplates.FileTemplateGroupDe
 
             addTemplate(FileTemplateDescriptor(FT.Gitignore))
 
-            addTemplate(FileTemplateDescriptor(FT.RunTerminal))
             addTemplate(FileTemplateDescriptor(FT.RunTerminalRun))
         }
     }

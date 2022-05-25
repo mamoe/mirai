@@ -1,11 +1,23 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="RunTerminal" type="JetRunConfigurationType" nameIsGenerated="false">
-        <option name="MAIN_CLASS_NAME" value="${PACKAGE_NAME}.RunTerminalKt"/>
-        <module name="${MODULE_NAME}.test"/>
-        <shortenClasspath name="NONE"/>
-        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/debug-sandbox"/>
-        <method v="2">
-            <option name="Make" enabled="true"/>
-        </method>
+    <configuration default="false" name="Run Mirai Console" type="GradleRunConfiguration" factoryName="Gradle" folderName="Mirai">
+        <ExternalSystemSettings>
+            <option name="executionName" />
+            <option name="externalProjectPath" value="$PROJECT_DIR$" />
+            <option name="externalSystemIdString" value="GRADLE" />
+            <option name="scriptParameters" value="" />
+            <option name="taskDescriptions">
+                <list />
+            </option>
+            <option name="taskNames">
+                <list>
+                    <option value=":runConsole" />
+                </list>
+            </option>
+            <option name="vmOptions" />
+        </ExternalSystemSettings>
+        <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+        <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+        <DebugAllEnabled>false</DebugAllEnabled>
+        <method v="2" />
     </configuration>
 </component>

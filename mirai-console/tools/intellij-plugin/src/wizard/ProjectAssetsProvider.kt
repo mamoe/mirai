@@ -43,7 +43,6 @@ sealed class GradleProjectCreator(
 
         collect(GeneratorTemplateFile(".gitignore", getTemplate(FT.Gitignore)))
         collect(GeneratorTemplateFile("gradle.properties", getTemplate(FT.GradleProperties)))
-        collect(GeneratorTemplateFile("src/test/kotlin/RunTerminal.kt", getTemplate(FT.RunTerminal)))
     }
 
 }
