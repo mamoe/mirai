@@ -10,7 +10,8 @@
 package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -24,7 +25,6 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.internal.utils.SingleEntrantLock
 import net.mamoe.mirai.internal.utils.fromMiraiLogger
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
@@ -247,8 +247,7 @@ internal abstract class NetworkHandlerSupport(
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
     protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? =
-        @OptIn(TestOnly::class)
-        setStateImpl(S::class as KClass<S>?, new)
+        _state.setState(new)
 
     /**
      * Attempts to change state if current state is [this].
@@ -259,16 +258,17 @@ internal abstract class NetworkHandlerSupport(
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
         noinline new: () -> S,
-    ): S? = synchronized(lockForSetStateWithOldInstance) {
+    ): S? = lock.withLock {
         if (_state === this) {
-            this@NetworkHandlerSupport.setState(new)
+            @OptIn(TestOnly::class)
+            this@NetworkHandlerSupport.setStateImpl(S::class, new)
         } else {
             null
         }
     }
 
-    private val lock = SingleEntrantLock()
-    private val lockForSetStateWithOldInstance = SynchronizedObject()
+    private val lock = reentrantLock()
+    internal val lockForSetStateWithOldInstance = SynchronizedObject()
 
     /**
      * This can only be called by [setState] or in tests.
@@ -278,7 +278,7 @@ internal abstract class NetworkHandlerSupport(
     //
     @TestOnly
     internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? =
-        lock.withLock(newType ?: lock) {
+        lock.withLock {
             val old = _state
             if (newType != null && old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
             if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
