@@ -91,3 +91,22 @@ public actual interface MutableQueue<E> : MutableCollection<E> {
 
 
 }
+
+/**
+ * Returns a [List] that cannot be cast to [MutableList] to modify it.
+ */
+public actual fun <T> List<T>.asImmutable(): List<T> = ImmutableList(this)
+public actual fun <T> Collection<T>.asImmutable(): Collection<T> = ImmutableCollection(this)
+public actual fun <T> Set<T>.asImmutable(): Set<T> = ImmutableSet(this)
+
+internal class ImmutableList<T>(
+    private val delegate: List<T>
+) : List<T> by delegate
+
+internal class ImmutableCollection<T>(
+    private val delegate: Collection<T>
+) : Collection<T> by delegate
+
+internal class ImmutableSet<T>(
+    private val delegate: Set<T>
+) : Set<T> by delegate

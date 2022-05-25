@@ -14,26 +14,17 @@ import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.reflect.KClass
 
 
-public fun <T> Collection<T>.asImmutable(): Collection<T> {
-    return when (this) {
-        is List<T> -> asImmutable()
-        is Set<T> -> asImmutable()
-        else -> Collections.unmodifiableCollection(this)
-    }
-}
-
-@Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Collection<T>.asImmutableStrict(): Collection<T> {
+public actual fun <T> Collection<T>.asImmutable(): Collection<T> {
     return Collections.unmodifiableCollection(this)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun <T> List<T>.asImmutable(): List<T> {
+public actual inline fun <T> List<T>.asImmutable(): List<T> {
     return Collections.unmodifiableList(this)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun <T> Set<T>.asImmutable(): Set<T> {
+public actual inline fun <T> Set<T>.asImmutable(): Set<T> {
     return Collections.unmodifiableSet(this)
 }
 

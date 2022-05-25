@@ -72,3 +72,15 @@ public fun <K, V : R, R> Map<K, V>.getOrDefault(key: K, default: R): R = getOrEl
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // JDK 1.8
 @Deprecated("", ReplaceWith("getOrPut(key) { value }"))
 public fun <K, V> MutableMap<K, V>.putIfAbsent(key: K, value: V): V = getOrPut(key) { value }
+
+/**
+ * Returns a [List] that cannot be cast to [MutableList] to modify it.
+ */
+public expect fun <T> List<T>.asImmutable(): List<T>
+
+/**
+ * Returns a [Collection] that cannot be cast to [MutableCollection] to modify it.
+ */
+public expect fun <T> Collection<T>.asImmutable(): Collection<T>
+
+public expect fun <T> Set<T>.asImmutable(): Set<T>
