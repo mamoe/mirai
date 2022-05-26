@@ -223,7 +223,7 @@ internal class PacketCodecImpl : PacketCodec {
                 1 -> {
                     input.discardExact(4)
                     input.useBytes { data, length ->
-                        data.unzip(0, length).let {
+                        data.inflate(0, length).let {
                             val size = it.toInt()
                             if (size == it.size || size == it.size + 4) {
                                 it.toReadPacket(offset = 4)

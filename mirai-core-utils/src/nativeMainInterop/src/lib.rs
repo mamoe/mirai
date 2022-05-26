@@ -7,8 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils
+extern crate flate2;
+extern crate libc;
+extern crate sha1;
 
-internal actual fun isSameClassPlatform(object1: Any, object2: Any): Boolean {
-    return object1::class == object2::class
-}
+/// cbindgen:ignore
+mod bindings;
+mod crypto;
+

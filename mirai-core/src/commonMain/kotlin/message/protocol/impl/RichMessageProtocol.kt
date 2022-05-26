@@ -23,10 +23,10 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Co
 import net.mamoe.mirai.internal.message.runWithBugReport
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.deflate
 import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.inflate
 import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.unzip
-import net.mamoe.mirai.utils.zip
 
 /**
  * Handles:
@@ -50,7 +50,7 @@ internal class RichMessageProtocol : MessageProtocol() {
     private class Encoder : MessageEncoder<RichMessage> {
         override suspend fun MessageEncoderContext.process(data: RichMessage) {
             markAsConsumed()
-            val content = data.content.toByteArray().zip()
+            val content = data.content.toByteArray().deflate()
             var longTextResId: String? = null
             when (data) {
                 is ForwardMessageInternal -> {
@@ -127,7 +127,7 @@ internal class RichMessageProtocol : MessageProtocol() {
                 { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {
                 when (lightApp.data[0].toInt()) {
                     0 -> lightApp.data.decodeToString(startIndex = 1)
-                    1 -> lightApp.data.unzip(1).decodeToString()
+                    1 -> lightApp.data.inflate(1).decodeToString()
                     else -> error("unknown compression flag=${lightApp.data[0]}")
                 }
             }
@@ -146,7 +146,7 @@ internal class RichMessageProtocol : MessageProtocol() {
             val content = runWithBugReport("解析 richMsg", { richMsg.template1.toUHexString() }) {
                 when (richMsg.template1[0].toInt()) {
                     0 -> richMsg.template1.decodeToString(startIndex = 1)
-                    1 -> richMsg.template1.unzip(1).decodeToString()
+                    1 -> richMsg.template1.inflate(1).decodeToString()
                     else -> error("unknown compression flag=${richMsg.template1[0]}")
                 }
             }
