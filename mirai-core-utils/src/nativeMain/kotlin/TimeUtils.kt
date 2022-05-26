@@ -7,28 +7,37 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("RedundantVisibilityModifier")
+
 package net.mamoe.mirai.utils
 
-import kotlinx.cinterop.cValue
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.pointed
-import platform.posix.CLOCK_REALTIME
-import platform.posix.clock_gettime
-import platform.posix.timespec
+import kotlinx.cinterop.*
+import platform.posix.*
 
 /**
  * 时间戳
  *
  * @see System.currentTimeMillis
  */
-actual fun currentTimeMillis(): Long {
+public actual fun currentTimeMillis(): Long {
     memScoped {
-        val s = cValue<timespec>()
-        clock_gettime(CLOCK_REALTIME, s.ptr)
-        return s.ptr.pointed.tv_nsec / 1000
+        val timeT = alloc<time_tVar>()
+        time(timeT.ptr)
+        return timeT.value
     }
 }
 
-actual fun currentTimeFormatted(format: String?): String {
-    TODO("Not yet implemented")
+public actual fun currentTimeFormatted(format: String?): String {
+    memScoped {
+        val timeT = alloc<time_tVar>()
+        time(timeT.ptr)
+        val tm = localtime(timeT.ptr)
+        try {
+            val bb = allocArray<ByteVar>(40)
+            strftime(bb, 40, "%Y-%M-%d %H:%M:%S", tm);
+            return bb.toKString()
+        } finally {
+            free(tm)
+        }
+    }
 }
