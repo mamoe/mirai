@@ -23,7 +23,7 @@ internal class TypeSafeMapTest {
 
     @Test
     fun `can set get`() {
-        val map = MutableTypeSafeMap()
+        val map = createMutableTypeSafeMap()
         map[myKey] = "str"
         map[myKey2] = "str2"
         assertEquals(2, map.size)
@@ -34,7 +34,7 @@ internal class TypeSafeMapTest {
 
     @Test
     fun `test nulls`() {
-        val map = MutableTypeSafeMap()
+        val map = createMutableTypeSafeMap()
         map[myNullableKey] = null
         map[myNullableKey2] = "str2"
         assertEquals(2, map.size)
@@ -44,7 +44,7 @@ internal class TypeSafeMapTest {
 
     @Test
     fun `key is inlined`() {
-        val map = MutableTypeSafeMap()
+        val map = createMutableTypeSafeMap()
         map[TypeKey<String>("test")] = "str"
         map[TypeKey<String>("test")] = "str2"
         assertEquals(1, map.size)
@@ -53,7 +53,7 @@ internal class TypeSafeMapTest {
 
     @Test
     fun `can toMap`() {
-        val map = MutableTypeSafeMap()
+        val map = createMutableTypeSafeMap()
         map[myKey] = "str"
         map[myKey2] = "str2"
         assertEquals(2, map.size)
@@ -67,7 +67,7 @@ internal class TypeSafeMapTest {
 
     @Test
     fun `test serialization`() {
-        val map = MutableTypeSafeMap()
+        val map = createMutableTypeSafeMap()
         map[myKey] = "str"
         map[myKey2] = "str2"
         assertEquals(2, map.size)
@@ -86,7 +86,7 @@ internal class TypeSafeMapTest {
         val string = yaml.encodeToString(map1)
         println(string) // { "test2": "str2" ,"test": "str" }
 
-        val result = MutableTypeSafeMap(Yaml.decodeMapFromString(string).cast())
+        val result = createMutableTypeSafeMap(Yaml.decodeMapFromString(string).cast())
         assertEquals(map, result)
     }
 }
