@@ -1,0 +1,14 @@
+[package]
+name = "mirai_core"
+version = "0.1.0"
+
+[dependencies]
+
+[lib]
+name = "mirai_core"
+crate-type = ["cdylib"]      # Creates dynamic lib
+# crate-type = ["staticlib"] # Creates static lib
+
+[build-dependencies]
+bindgen = "0.53.1"
+cbindgen = "0.20.0"

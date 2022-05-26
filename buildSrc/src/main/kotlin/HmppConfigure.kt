@@ -16,6 +16,9 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPI
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.io.File
 
 /*
  * Copyright 2019-2022 Mamoe Technologies and contributors.
@@ -60,16 +63,18 @@ fun Project.configureHMPPJvm() {
 
         val nativeMainSets = mutableListOf<KotlinSourceSet>()
         val nativeTestSets = mutableListOf<KotlinSourceSet>()
+        val nativeTargets = mutableListOf<KotlinNativeTarget>()
 
         if (ideaActive) {
-            when {
+            val target = when {
                 Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64("native")
                 Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
                 else -> linuxX64("native")
             }
+            nativeTargets.add(target)
         } else {
             // 1.6.0
-            val nativeTargets: List<String> = arrayOf(
+            val nativeTargetNames: List<String> = arrayOf(
                 // serialization doesn't support those commented targets
 //                "androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64",
                 "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
@@ -80,11 +85,12 @@ fun Project.configureHMPPJvm() {
                 "mingwX64",
 //                "wasm32" // linuxArm32Hfp, mingwX86
             ).flatMap { it.split(",") }.map { it.trim() }
-            presets.filter { it.name in nativeTargets }
+            presets.filter { it.name in nativeTargetNames }
                 .forEach { preset ->
-                    val target = targetFromPreset(preset, preset.name)
+                    val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
                     nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
                     nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
+                    nativeTargets.add(target)
                 }
 
             if (!ideaActive) {
@@ -98,31 +104,8 @@ fun Project.configureHMPPJvm() {
             }
         }
 
-//        nativeTarget.apply {
-//            val myrust by compilations.getByName("main").cinterops.creating {
-//                headers(project.projectDir.resolve("untitled/myrust.h"))
-//            }
-//
-//            binaries {
-//                sharedLib {
-//                    linkerOpts("-v")
-//                    linkerOpts("-L${project.projectDir.resolve("untitled/target/debug/").absolutePath}")
-////                    linkerOpts("-lmyrust")
-//                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
-//                    baseName = "mykotlin"
-//                }
-//
-//                executable {
-//
-//                    linkerOpts("-v")
-//                    linkerOpts("-L${project.projectDir.resolve("untitled/target/debug/").absolutePath}")
-////                    linkerOpts("-lmyrust")
-//                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
-//                    baseName = "KotlinExecutable"
-//                    entryPoint = "main.main"
-//                }
-//            }
-//        }
+        configureNativeInterop("main", projectDir.resolve("src/nativeMainInterop"), nativeTargets)
+        configureNativeInterop("test", projectDir.resolve("src/nativeTestInterop"), nativeTargets)
 
 
         val sourceSets = kotlinSourceSets.orEmpty()
@@ -151,4 +134,107 @@ fun Project.configureHMPPJvm() {
         nativeMain.dependsOn(commonMain)
         nativeTest.dependsOn(commonTest)
     }
+}
+
+private fun Project.configureNativeInterop(
+    compilationName: String,
+    nativeInteropDir: File,
+    nativeTargets: MutableList<KotlinNativeTarget>
+) {
+    if (nativeInteropDir.exists() && nativeInteropDir.isDirectory && nativeInteropDir.resolve("build.rs").exists()) {
+        val crateName = project.name.replace("-", "_")
+
+        val headerName = "$crateName.h"
+        val rustLibDir = nativeInteropDir.resolve("target/debug/")
+
+        configure(nativeTargets) {
+            compilations.getByName(compilationName).cinterops.create(compilationName) {
+                val headerFile = nativeInteropDir.resolve(headerName)
+                if (headerFile.exists()) headers(headerFile)
+                defFile(nativeInteropDir.resolve("interop.def"))
+            }
+
+            binaries {
+                sharedLib {
+                    linkerOpts("-v")
+                    linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
+//                    linkerOpts("-lmyrust")
+                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
+                    baseName = project.name
+                }
+            }
+        }
+
+        val cbindgen = tasks.register("cbindgen${compilationName.titlecase()}") {
+            group = "mirai"
+            inputs.files(nativeInteropDir.resolve("src"))
+            outputs.file(nativeInteropDir.resolve(headerName))
+            doLast {
+                exec {
+                    workingDir(nativeInteropDir)
+                    commandLine(
+                        "cbindgen",
+                        "--config", "cbindgen.toml",
+                        "--crate", crateName,
+                        "--output", headerName
+                    )
+                }
+            }
+        }
+
+        val bindgen = tasks.register("bindgen${compilationName.titlecase()}") {
+            group = "mirai"
+            val bindingsPath = nativeInteropDir.resolve("src/bindings.rs")
+            inputs.files(nativeInteropDir.resolve("src"))
+            outputs.file(bindingsPath)
+            doLast {
+                exec {
+                    workingDir(nativeInteropDir)
+                    // bindgen input.h -o bindings.rs
+                    commandLine(
+                        "bindgen",
+                        buildDir.resolve("bin/native/debugShared/lib${crateName}_api.h"),
+                        "-o", bindingsPath,
+                    )
+                }
+            }
+        }
+
+        var targetCompilation: KotlinNativeCompilation? = null
+        configure(nativeTargets) {
+            val compilations = compilations.filter { nativeInteropDir.name.contains(it.name, ignoreCase = true) }
+            check(compilations.isNotEmpty()) { "Should be at lease one corresponding native compilation, but found 0" }
+            targetCompilation = compilations.single()
+            targetCompilation!!.compileKotlinTask.dependsOn(cbindgen)
+//            tasks.getByName("cinteropNative$name").dependsOn(cbindgen)
+        }
+        targetCompilation!!
+
+        val compileRust = tasks.register("compileRust${compilationName.titlecase()}") {
+            group = "mirai"
+            inputs.files(nativeInteropDir.resolve("src"))
+            outputs.file(rustLibDir.resolve("lib$crateName.dynlib"))
+            dependsOn(targetCompilation!!.compileKotlinTask)
+            dependsOn(bindgen)
+            dependsOn(tasks.findByName("linkDebugSharedNative"))
+            doLast {
+                exec {
+                    workingDir(nativeInteropDir)
+                    commandLine(
+                        "cargo",
+                        "build",
+                        "--all"
+                    )
+                }
+            }
+        }
+
+        tasks.getByName("assemble").dependsOn(compileRust)
+    }
+}
+
+fun String.titlecase(): String {
+    if (this.isEmpty()) return this
+    val c = get(0)
+    return replaceFirst(c, Character.toTitleCase(c))
 }
