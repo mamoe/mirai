@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("RedundantVisibilityModifier")
+
 package net.mamoe.mirai.utils
 
 public actual inline fun measureTimeMillis(block: () -> Unit): Long {

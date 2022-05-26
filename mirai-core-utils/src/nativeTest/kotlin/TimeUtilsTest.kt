@@ -16,6 +16,13 @@ internal class TimeUtilsTest {
 
     @Test
     fun `can get currentTimeMillis`() {
-        assertTrue { currentTimeMillis() > 1000 }
+        val time = currentTimeMillis()
+        assertTrue(time.toString()) { time > 1642549113 }
+    }
+
+    @Test
+    fun `can get currentTimeFormatted`() {
+        // 2022-28-26 18:28:28
+        assertTrue { currentTimeFormatted().matches(Regex("""\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}""")) }
     }
 }
