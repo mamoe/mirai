@@ -14,7 +14,7 @@ actual suspend inline fun <R> runBIO(noinline block: () -> R): R {
 }
 
 actual suspend inline fun <T, R> T.runBIO(crossinline block: T.() -> R): R {
-    TODO("Not yet implemented")
+    return block()
 }
 
 /**
