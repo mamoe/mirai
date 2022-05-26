@@ -9,15 +9,13 @@
 
 package net.mamoe.mirai.utils
 
-/**
- * 时间戳
- *
- * @see System.currentTimeMillis
- */
-actual fun currentTimeMillis(): Long {
-    TODO("Not yet implemented")
-}
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
-actual fun currentTimeFormatted(format: String?): String {
-    TODO("Not yet implemented")
+internal class TimeUtilsTest {
+
+    @Test
+    fun `can get currentTimeMillis`() {
+        assertTrue { currentTimeMillis() > 1000 }
+    }
 }
