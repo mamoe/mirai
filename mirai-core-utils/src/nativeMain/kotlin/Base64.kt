@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.utils
 
-public actual fun String.decodeBase64(): ByteArray {
+actual fun String.decodeBase64(): ByteArray {
     TODO("Not yet implemented")
 }
 
-public actual fun ByteArray.encodeBase64(): String {
+actual fun ByteArray.encodeBase64(): String {
     TODO("Not yet implemented")
 }

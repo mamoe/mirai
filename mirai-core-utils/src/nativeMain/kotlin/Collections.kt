@@ -12,35 +12,35 @@ package net.mamoe.mirai.utils
 import kotlin.reflect.KClass
 
 @Suppress("FunctionName")
-public actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
+actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
     TODO("Not yet implemented")
 }
 
 @Suppress("FunctionName")
-public actual fun <E> ConcurrentLinkedDeque(): MutableDeque<E> {
+actual fun <E> ConcurrentLinkedDeque(): MutableDeque<E> {
     TODO("Not yet implemented")
 }
 
 @Suppress("FunctionName")
-public actual fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E> {
+actual fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E> {
     TODO("Not yet implemented")
 }
 
 @Suppress("FunctionName")
-public actual fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E> {
+actual fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E> {
     TODO("Not yet implemented")
 }
 
 @Suppress("FunctionName")
-public actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> = mutableMapOf()
+actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> = mutableMapOf()
 
 @Suppress("FunctionName")
-public actual fun <E> ConcurrentSet(): MutableSet<E> {
+actual fun <E> ConcurrentSet(): MutableSet<E> {
     TODO("Not yet implemented")
 }
 
-public actual class LinkedList<E> : MutableList<E>, AbstractMutableList<E>() {
-    public actual fun addLast(element: E) {
+actual class LinkedList<E> : MutableList<E>, AbstractMutableList<E>() {
+    actual fun addLast(element: E) {
         TODO("Not yet implemented")
     }
 
@@ -64,11 +64,11 @@ public actual class LinkedList<E> : MutableList<E>, AbstractMutableList<E>() {
     }
 }
 
-public actual interface MutableDeque<E> : MutableQueue<E> {
-    public actual fun addFirst(element: E)
+actual interface MutableDeque<E> : MutableQueue<E> {
+    actual fun addFirst(element: E)
 }
 
-public actual interface MutableQueue<E> : MutableCollection<E> {
+actual interface MutableQueue<E> : MutableCollection<E> {
     /**
      * Adds the specified element to the collection.
      *
@@ -76,18 +76,18 @@ public actual interface MutableQueue<E> : MutableCollection<E> {
      * and the element is already contained in the collection.
      * @throws IllegalStateException if the queue is full.
      */
-    public actual override fun add(element: E): Boolean
+    actual override fun add(element: E): Boolean
 
     /**
      * Removes and returns the head of the queue, `null` otherwise.
      */
-    public actual fun poll(): E?
+    actual fun poll(): E?
 
     /**
      * Adds an element into the queue.
      * @return `true` if the element has been added, `false` if queue is full.
      */
-    public actual fun offer(element: E): Boolean
+    actual fun offer(element: E): Boolean
 
 
 }
@@ -95,9 +95,9 @@ public actual interface MutableQueue<E> : MutableCollection<E> {
 /**
  * Returns a [List] that cannot be cast to [MutableList] to modify it.
  */
-public actual fun <T> List<T>.asImmutable(): List<T> = ImmutableList(this)
-public actual fun <T> Collection<T>.asImmutable(): Collection<T> = ImmutableCollection(this)
-public actual fun <T> Set<T>.asImmutable(): Set<T> = ImmutableSet(this)
+actual fun <T> List<T>.asImmutable(): List<T> = ImmutableList(this)
+actual fun <T> Collection<T>.asImmutable(): Collection<T> = ImmutableCollection(this)
+actual fun <T> Set<T>.asImmutable(): Set<T> = ImmutableSet(this)
 
 internal class ImmutableList<T>(
     private val delegate: List<T>

@@ -22,7 +22,7 @@ object Versions {
     val consoleIntellij = "221-$project-162-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
-    const val kotlinCompiler = "1.6.21"
+    const val kotlinCompiler = "1.7.0-RC"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.6.20"
 

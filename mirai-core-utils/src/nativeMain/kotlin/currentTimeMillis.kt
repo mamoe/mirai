@@ -14,10 +14,10 @@ package net.mamoe.mirai.utils
  *
  * @see System.currentTimeMillis
  */
-public actual fun currentTimeMillis(): Long {
+actual fun currentTimeMillis(): Long {
     TODO("Not yet implemented")
 }
 
-public actual fun currentTimeFormatted(format: String?): String {
+actual fun currentTimeFormatted(format: String?): String {
     TODO("Not yet implemented")
 }
