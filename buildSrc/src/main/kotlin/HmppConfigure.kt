@@ -167,7 +167,11 @@ private fun Project.configureNativeInterop(
 
         val cbindgen = tasks.register("cbindgen${compilationName.titlecase()}") {
             group = "mirai"
-            inputs.files(nativeInteropDir.resolve("src"))
+            description = "Generate C Headers from Rust"
+            inputs.files(
+                project.objects.fileTree().from(nativeInteropDir.resolve("src"))
+                    .filterNot { it.name == "bindings.rs" }
+            )
             outputs.file(nativeInteropDir.resolve(headerName))
             doLast {
                 exec {
@@ -182,22 +186,41 @@ private fun Project.configureNativeInterop(
             }
         }
 
+        val cinteropTask = tasks.getByName("cinterop${compilationName.titlecase()}Native")
+        cinteropTask.mustRunAfter(cbindgen)
+
+        val generateRustBindings = tasks.register("generateRustBindings${compilationName.titlecase()}") {
+            group = "mirai"
+            description = "Generates Rust bindings for Kotlin"
+            dependsOn(cbindgen)
+            dependsOn(cinteropTask)
+        }
+
         val bindgen = tasks.register("bindgen${compilationName.titlecase()}") {
             group = "mirai"
             val bindingsPath = nativeInteropDir.resolve("src/bindings.rs")
-            inputs.files(nativeInteropDir.resolve("src"))
+            val headerFile = buildDir.resolve("bin/native/debugShared/lib${crateName}_api.h")
+            inputs.files(headerFile)
             outputs.file(bindingsPath)
+            mustRunAfter(tasks.findByName("linkDebugSharedNative"))
             doLast {
                 exec {
                     workingDir(nativeInteropDir)
                     // bindgen input.h -o bindings.rs
                     commandLine(
                         "bindgen",
-                        buildDir.resolve("bin/native/debugShared/lib${crateName}_api.h"),
+                        headerFile,
                         "-o", bindingsPath,
                     )
                 }
             }
+        }
+
+        val generateKotlinBindings = tasks.register("generateKotlinBindings${compilationName.titlecase()}") {
+            group = "mirai"
+            description = "Generates Kotlin bindings for Rust"
+            dependsOn(bindgen)
+            dependsOn(tasks.findByName("linkDebugSharedNative"))
         }
 
         var targetCompilation: KotlinNativeCompilation? = null
@@ -205,7 +228,7 @@ private fun Project.configureNativeInterop(
             val compilations = compilations.filter { nativeInteropDir.name.contains(it.name, ignoreCase = true) }
             check(compilations.isNotEmpty()) { "Should be at lease one corresponding native compilation, but found 0" }
             targetCompilation = compilations.single()
-            targetCompilation!!.compileKotlinTask.dependsOn(cbindgen)
+//            targetCompilation!!.compileKotlinTask.dependsOn(cbindgen)
 //            tasks.getByName("cinteropNative$name").dependsOn(cbindgen)
         }
         targetCompilation!!
@@ -213,17 +236,19 @@ private fun Project.configureNativeInterop(
         val compileRust = tasks.register("compileRust${compilationName.titlecase()}") {
             group = "mirai"
             inputs.files(nativeInteropDir.resolve("src"))
-            outputs.file(rustLibDir.resolve("lib$crateName.dynlib"))
-            dependsOn(targetCompilation!!.compileKotlinTask)
+            outputs.file(rustLibDir.resolve("lib$crateName.dylib"))
+//            dependsOn(targetCompilation!!.compileKotlinTask)
             dependsOn(bindgen)
-            dependsOn(tasks.findByName("linkDebugSharedNative"))
+            dependsOn(tasks.findByName("linkDebugSharedNative")) // dylib to link
             doLast {
                 exec {
                     workingDir(nativeInteropDir)
                     commandLine(
                         "cargo",
                         "build",
-                        "--all"
+                        "--color", "always",
+                        "--all",
+                        "--", "--color", "always", "2>&1"
                     )
                 }
             }
