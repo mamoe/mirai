@@ -167,3 +167,11 @@ public inline fun <reified T> isSameType(thisObject: T, other: Any?): Boolean {
     if (other !is T) return false
     return isSameClass(thisObject, other)
 }
+
+public expect fun availableProcessors(): Int
+
+
+/**
+ * Localhost 解析
+ */
+public expect fun localIpAddress(): String

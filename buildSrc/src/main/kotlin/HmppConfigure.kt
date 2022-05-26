@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.io.File
 
 private val miraiPlatform = Attribute.of(
@@ -133,7 +134,8 @@ private fun Project.configureNativeInterop(
     nativeTargets: MutableList<KotlinNativeTarget>
 ) {
     if (nativeInteropDir.exists() && nativeInteropDir.isDirectory && nativeInteropDir.resolve("build.rs").exists()) {
-        val crateName = project.name.replace("-", "_")
+        val crateName = project.name.replace("-", "_") + "_i"
+        val kotlinDylibName = project.name.replace("-", "_")
 
         val headerName = "$crateName.h"
         val rustLibDir = nativeInteropDir.resolve("target/debug/")
@@ -149,9 +151,15 @@ private fun Project.configureNativeInterop(
                 sharedLib {
                     linkerOpts("-v")
                     linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
-//                    linkerOpts("-lmyrust")
-                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
+//                    linkerOpts("-lmirai_core_utils_i")
+                    linkerOpts("-undefined", "dynamic_lookup")
                     baseName = project.name
+                }
+                getTest(NativeBuildType.DEBUG).apply {
+                    linkerOpts("-v")
+                    linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
+                    linkerOpts("-lmirai_core_utils_i")
+//                    linkerOpts("-undefined", "dynamic_lookup")
                 }
             }
         }
@@ -190,7 +198,7 @@ private fun Project.configureNativeInterop(
         val bindgen = tasks.register("bindgen${compilationName.titlecase()}") {
             group = "mirai"
             val bindingsPath = nativeInteropDir.resolve("src/bindings.rs")
-            val headerFile = buildDir.resolve("bin/native/debugShared/lib${crateName}_api.h")
+            val headerFile = buildDir.resolve("bin/native/debugShared/lib${kotlinDylibName}_api.h")
             inputs.files(headerFile)
             outputs.file(bindingsPath)
             mustRunAfter(tasks.findByName("linkDebugSharedNative"))
@@ -239,7 +247,7 @@ private fun Project.configureNativeInterop(
                         "build",
                         "--color", "always",
                         "--all",
-                        "--", "--color", "always", "2>&1"
+//                        "--", "--color", "always", "2>&1"
                     )
                 }
             }

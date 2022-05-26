@@ -20,8 +20,8 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.inflate
 import net.mamoe.mirai.utils.isSameType
-import net.mamoe.mirai.utils.unzip
 import kotlin.jvm.JvmField
 
 @Serializable
@@ -558,7 +558,7 @@ internal class ImMsgBody : ProtoBuf {
 
             return when (byteArray[0].toInt()) {
                 0 -> byteArrayOf(0) + byteArray.decodeToString(startIndex = 1).toByteArray()
-                1 -> byteArrayOf(0) + byteArray.unzip(offset = 1).decodeToString().toByteArray()
+                1 -> byteArrayOf(0) + byteArray.inflate(offset = 1).decodeToString().toByteArray()
                 else -> error("unknown compression flag=${byteArray[0]}")
             }
         }

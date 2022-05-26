@@ -12,11 +12,9 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.core.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.Inet4Address
 import java.security.MessageDigest
 import java.util.zip.Deflater
 import java.util.zip.GZIPInputStream
@@ -25,7 +23,7 @@ import java.util.zip.Inflater
 
 public actual val DEFAULT_BUFFER_SIZE: Int get() = kotlin.io.DEFAULT_BUFFER_SIZE
 
-public actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.inflate(offset: Int, length: Int): ByteArray {
     checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)
 
@@ -43,10 +41,6 @@ public actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
         return output.toByteArray()
     }
 }
-
-public actual fun localIpAddress(): String = runCatching {
-    Inet4Address.getLocalHost().hostAddress
-}.getOrElse { "192.168.1.123" }
 
 public fun InputStream.md5(): ByteArray {
     return digest("md5")
@@ -104,7 +98,7 @@ public actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray {
 }
 
 @JvmOverloads
-public actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.deflate(offset: Int, length: Int): ByteArray {
     checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)
 
@@ -117,4 +111,3 @@ public actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
     }
 }
 
-public actual fun availableProcessors(): Int = Runtime.getRuntime().availableProcessors()
