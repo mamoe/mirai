@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.test
 
 import net.mamoe.mirai.IMirai
-import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.setSystemProp
 import kotlin.test.Test
 
@@ -33,11 +31,6 @@ internal actual abstract class AbstractTest actual constructor() : CommonAbstrac
     actual companion object {
         init {
             initPlatform()
-
-            @Suppress("DEPRECATION_ERROR")
-            MiraiLogger.setDefaultLoggerCreator {
-                SynchronizedStdoutLogger(it)
-            }
 
             setSystemProp("mirai.network.packet.logger", "true")
             setSystemProp("mirai.network.state.observer.logging", "true")
