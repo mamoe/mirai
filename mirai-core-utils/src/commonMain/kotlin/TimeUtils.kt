@@ -7,12 +7,10 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmMultifileClass
-@file:JvmName("MiraiUtils")
+@file:JvmName("TimeUtilsKt_common")
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.floor
