@@ -11,11 +11,11 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
 
-actual fun String.decodeBase64(): ByteArray {
+public actual fun String.decodeBase64(): ByteArray {
     return Base64Impl.decode(this)
 }
 
-actual fun ByteArray.encodeBase64(): String {
+public actual fun ByteArray.encodeBase64(): String {
     return Base64Impl.encode(this)
 }
 
@@ -111,5 +111,4 @@ private object Base64Impl {
             }
         }.readBytes()
     }
-
 }

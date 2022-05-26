@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.utils
 
-actual suspend inline fun <R> runBIO(noinline block: () -> R): R {
+public actual suspend inline fun <R> runBIO(noinline block: () -> R): R {
     return block()
 }
 
-actual suspend inline fun <T, R> T.runBIO(crossinline block: T.() -> R): R {
+public actual suspend inline fun <T, R> T.runBIO(crossinline block: T.() -> R): R {
     return block()
 }
 
@@ -62,7 +62,7 @@ actual suspend inline fun <T, R> T.runBIO(crossinline block: T.() -> R): R {
  * ```
  */
 @Suppress("unused")
-actual inline fun <reified E> Throwable.unwrap(): Throwable {
+public actual inline fun <reified E> Throwable.unwrap(): Throwable {
     if (this !is E) return this
     return this.findCause { it !is E }
         ?.also { it.addSuppressed(this) }
