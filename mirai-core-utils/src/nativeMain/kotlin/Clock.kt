@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.utils
 
-actual inline fun measureTimeMillis(block: () -> Unit): Long {
+public actual inline fun measureTimeMillis(block: () -> Unit): Long {
     val start = currentTimeMillis()
     block()
     return currentTimeMillis() - start

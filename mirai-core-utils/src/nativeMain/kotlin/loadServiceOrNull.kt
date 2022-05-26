@@ -11,20 +11,20 @@ package net.mamoe.mirai.utils
 
 import kotlin.reflect.KClass
 
-actual fun <T : Any> loadServiceOrNull(
+public actual fun <T : Any> loadServiceOrNull(
     clazz: KClass<out T>,
     fallbackImplementation: String?
 ): T? {
     TODO("Not yet implemented")
 }
 
-actual fun <T : Any> loadService(
+public actual fun <T : Any> loadService(
     clazz: KClass<out T>,
     fallbackImplementation: String?
 ): T {
     TODO("Not yet implemented")
 }
 
-actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
+public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     TODO("Not yet implemented")
 }

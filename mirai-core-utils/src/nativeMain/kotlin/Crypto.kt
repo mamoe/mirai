@@ -10,35 +10,35 @@
 package net.mamoe.mirai.utils
 
 
-actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual fun localIpAddress(): String = "192.168.1.123"
+public actual fun localIpAddress(): String = "192.168.1.123"
 
 
-actual fun ByteArray.md5(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.md5(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual val DEFAULT_BUFFER_SIZE: Int get() = 8192
+public actual val DEFAULT_BUFFER_SIZE: Int get() = 8192
 
-actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual fun ByteArray.ungzip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.ungzip(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
+public actual fun ByteArray.zip(offset: Int, length: Int): ByteArray {
     TODO("Not yet implemented")
 }
 
-actual fun availableProcessors(): Int {
+public actual fun availableProcessors(): Int {
     TODO("Not yet implemented")
 }
