@@ -58,7 +58,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), Gr
     }
 
     protected suspend inline fun use(
-        attributes: TypeSafeMap = TypeSafeMap(),
+        attributes: TypeSafeMap = createTypeSafeMap(),
         pipeline: NoticeProcessorPipeline = bot.components.noticeProcessorPipeline,
         block: UseTestContext.() -> ProtocolStruct
     ): Collection<Packet> {
@@ -73,7 +73,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), Gr
     }
 
     protected suspend inline fun use(
-        attributes: TypeSafeMap = TypeSafeMap(),
+        attributes: TypeSafeMap = createTypeSafeMap(),
         crossinline createContext: NoticeProcessorPipelineImpl.(attributes: TypeSafeMap) -> NoticeProcessorPipelineImpl.ContextImpl,
         block: UseTestContext.() -> ProtocolStruct
     ): Collection<Packet> =
