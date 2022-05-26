@@ -34,13 +34,13 @@ private val miraiPlatform = Attribute.of(
 
 fun Project.configureHMPPJvm() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
-        jvm("jvmBase") {
-            compilations.all {
-                this.compileKotlinTask.enabled = false // IDE complain
-            }
-            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // avoid resolving by others
-//            attributes.attribute(miraiPlatform, "jvmBase")
-        }
+//        jvm("jvmBase") {
+//            compilations.all {
+//                this.compileKotlinTask.enabled = false // IDE complain
+//            }
+//            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // avoid resolving by others
+////            attributes.attribute(miraiPlatform, "jvmBase")
+//        }
 
         if (isAndroidSDKAvailable) {
             jvm("android") {
@@ -98,12 +98,38 @@ fun Project.configureHMPPJvm() {
             }
         }
 
+//        nativeTarget.apply {
+//            val myrust by compilations.getByName("main").cinterops.creating {
+//                headers(project.projectDir.resolve("untitled/myrust.h"))
+//            }
+//
+//            binaries {
+//                sharedLib {
+//                    linkerOpts("-v")
+//                    linkerOpts("-L${project.projectDir.resolve("untitled/target/debug/").absolutePath}")
+////                    linkerOpts("-lmyrust")
+//                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
+//                    baseName = "mykotlin"
+//                }
+//
+//                executable {
+//
+//                    linkerOpts("-v")
+//                    linkerOpts("-L${project.projectDir.resolve("untitled/target/debug/").absolutePath}")
+////                    linkerOpts("-lmyrust")
+//                    linkerOpts("-Wl,-undefined,dynamic_lookup") // resolve symbols in runtime
+//                    baseName = "KotlinExecutable"
+//                    entryPoint = "main.main"
+//                }
+//            }
+//        }
+
 
         val sourceSets = kotlinSourceSets.orEmpty()
         val commonMain = sourceSets.single { it.name == "commonMain" }
         val commonTest = sourceSets.single { it.name == "commonTest" }
-        val jvmBaseMain = sourceSets.single { it.name == "jvmBaseMain" }
-        val jvmBaseTest = sourceSets.single { it.name == "jvmBaseTest" }
+        val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
+        val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
         val jvmMain = sourceSets.single { it.name == "jvmMain" }
         val jvmTest = sourceSets.single { it.name == "jvmTest" }
         val androidMain = sourceSets.single { it.name == "androidMain" }
