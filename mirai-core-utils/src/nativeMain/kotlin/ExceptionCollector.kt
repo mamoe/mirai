@@ -11,5 +11,9 @@ package net.mamoe.mirai.utils
 
 internal actual fun hash(e: Throwable): Long {
     // Stacktrace analysis not available
-    return e.hashCode().toLongUnsigned()
+    var hashCode = 1L
+    for (stackTraceAddress in e.getStackTraceAddresses()) {
+        hashCode = (hashCode xor stackTraceAddress).shl(1)
+    }
+    return hashCode
 }
