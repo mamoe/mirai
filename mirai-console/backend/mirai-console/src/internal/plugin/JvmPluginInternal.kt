@@ -20,8 +20,7 @@ import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.plugin.Plugin
-import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
@@ -115,16 +114,39 @@ internal abstract class JvmPluginInternal(
         parentPermission
         if (!firstRun) refreshCoroutineContext()
 
+        val except = javaClass.getDeclaredAnnotation(ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable::class.java)
         kotlin.runCatching {
+
+            val loadedPlugins = PluginManager.plugins
+            val failedDependencies = dependencies.asSequence().mapNotNull { dep ->
+                loadedPlugins.firstOrNull { it.id == dep.id }
+            }.filterNot { it.isEnabled }.toList()
+            if (failedDependencies.isNotEmpty()) {
+                throw IllegalStateException("Failed to enable '${this@JvmPluginInternal.name}' because dependencies failed to initialize: " + failedDependencies.joinToString { "'${it.name}'" })
+            }
+
             onEnable()
         }.fold(
             onSuccess = {
+                if (except?.excepted == ConsoleJvmPluginFuncCallbackStatus.FAILED) {
+                    val msg = "Test point '${javaClass.name}' assets failed but onEnable() invoked successfully"
+                    cancel(msg)
+                    logger.error(msg)
+                    throw AssertionError(msg)
+                }
                 isEnabled = true
                 return true
             },
             onFailure = {
                 cancel(CancellationException("Exception while enabling plugin", it))
                 logger.error(it)
+
+                when (except?.excepted) {
+                    ConsoleJvmPluginFuncCallbackStatus.SUCCESS -> throw it
+                    ConsoleJvmPluginFuncCallbackStatus.FAILED -> return false
+                    else -> {}
+                }
+
                 if (MiraiConsoleImplementation.getInstance().consoleLaunchOptions.crashWhenPluginLoadFailed) {
                     throw it
                 }
@@ -140,7 +162,9 @@ internal abstract class JvmPluginInternal(
         val classloader = javaClass.classLoader.safeCast<JvmPluginClassLoaderN>() ?: return
         val desc = try {
             Objects.requireNonNull(description)
-        } catch (ignored: NullPointerException) { return }
+        } catch (ignored: NullPointerException) {
+            return
+        }
         if (desc.dependencies.isEmpty()) {
             classloader.linkPluginLibraries(logger)
         }

@@ -11,13 +11,16 @@ package net.mamoe.console.integrationtest.testpoints.plugin
 
 import net.mamoe.console.integrationtest.AbstractTestPointAsPlugin
 import net.mamoe.mirai.console.extension.PluginComponentStorage
+import net.mamoe.mirai.console.internal.plugin.ConsoleJvmPluginFuncCallbackStatus
+import net.mamoe.mirai.console.internal.plugin.ConsoleJvmPluginFuncCallbackStatusExcept
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import org.junit.jupiter.api.Assertions.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.fail
 
+@ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable(ConsoleJvmPluginFuncCallbackStatus.FAILED)
 internal object PluginDependOnErrorPlugin : AbstractTestPointAsPlugin() {
 
     override fun newPluginDescription(): JvmPluginDescription {
@@ -40,7 +43,7 @@ internal object PluginDependOnErrorPlugin : AbstractTestPointAsPlugin() {
 
     override fun KotlinPlugin.onEnable0() {
         // unreachable
-        assertTrue("net.mamoe.testpoint.plugin-depend-on-error-plugin enabled") { false }
+        fail("net.mamoe.testpoint.plugin-depend-on-error-plugin enabled")
     }
 
     override fun onConsoleStartSuccessfully() {

@@ -11,12 +11,15 @@ package net.mamoe.console.integrationtest.testpoints.plugin
 
 import net.mamoe.console.integrationtest.AbstractTestPointAsPlugin
 import net.mamoe.mirai.console.extension.PluginComponentStorage
+import net.mamoe.mirai.console.internal.plugin.ConsoleJvmPluginFuncCallbackStatus
+import net.mamoe.mirai.console.internal.plugin.ConsoleJvmPluginFuncCallbackStatusExcept
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import org.junit.jupiter.api.Assertions.assertFalse
 
+@ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable(ConsoleJvmPluginFuncCallbackStatus.FAILED)
 internal object PluginWithExceptionTest : AbstractTestPointAsPlugin() {
 
     override fun newPluginDescription(): JvmPluginDescription {
