@@ -27,7 +27,7 @@ private val miraiPlatform = Attribute.of(
 )
 
 
-fun Project.configureHMPPJvm() {
+fun Project.configureHMPP() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
 //        jvm("jvmBase") {
 //            compilations.all {
@@ -128,38 +128,76 @@ fun Project.configureHMPPJvm() {
     }
 }
 
+private fun Project.linkerDirs(): List<String> {
+    return listOf(
+        ":mirai-core",
+        ":mirai-core-api",
+        ":mirai-core-utils",
+    ).map {
+        rootProject.project(it).projectDir.resolve("src/nativeMainInterop/target/debug/").absolutePath
+    }
+}
+
+private fun Project.includeDirs(): List<String> {
+    return listOf(
+        ":mirai-core",
+        ":mirai-core-api",
+        ":mirai-core-utils",
+    ).map {
+        rootProject.project(it).projectDir.resolve("src/nativeMainInterop/").absolutePath
+    }
+}
+
 private fun Project.configureNativeInterop(
     compilationName: String,
     nativeInteropDir: File,
     nativeTargets: MutableList<KotlinNativeTarget>
 ) {
+    val crateName = project.name.replace("-", "_") + "_i"
+
+    configure(nativeTargets) {
+        binaries {
+            for (buildType in NativeBuildType.values()) {
+                findTest(buildType)?.apply {
+                    linkerOpts("-v")
+                    linkerOpts(*linkerDirs().map { "-L$it" }.toTypedArray())
+                    linkerOpts("-undefined", "dynamic_lookup") // resolve symbol in runtime
+                }
+            }
+        }
+    }
     if (nativeInteropDir.exists() && nativeInteropDir.isDirectory && nativeInteropDir.resolve("build.rs").exists()) {
-        val crateName = project.name.replace("-", "_") + "_i"
         val kotlinDylibName = project.name.replace("-", "_")
 
         val headerName = "$crateName.h"
         val rustLibDir = nativeInteropDir.resolve("target/debug/")
 
+        var interopTaskName = ""
+
         configure(nativeTargets) {
-            compilations.getByName(compilationName).cinterops.create(compilationName) {
+            interopTaskName = compilations.getByName(compilationName).cinterops.create(compilationName) {
+                defFile(nativeInteropDir.resolve("interop.def"))
                 val headerFile = nativeInteropDir.resolve(headerName)
                 if (headerFile.exists()) headers(headerFile)
-                defFile(nativeInteropDir.resolve("interop.def"))
-            }
+            }.interopProcessingTaskName
 
             binaries {
                 sharedLib {
                     linkerOpts("-v")
-                    linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
-//                    linkerOpts("-lmirai_core_utils_i")
-                    linkerOpts("-undefined", "dynamic_lookup")
+                    linkerOpts(*linkerDirs().map { "-L$it" }.toTypedArray())
+//                    linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
+                    linkerOpts("-undefined", "dynamic_lookup") // resolve symbol in runtime
                     baseName = project.name
                 }
-                getTest(NativeBuildType.DEBUG).apply {
-                    linkerOpts("-v")
-                    linkerOpts("-L${rustLibDir.absolutePath.replace("\\", "/")}")
-                    linkerOpts("-lmirai_core_utils_i")
-//                    linkerOpts("-undefined", "dynamic_lookup")
+
+                configure(nativeTargets) {
+                    binaries {
+                        for (buildType in NativeBuildType.values()) {
+                            findTest(buildType)?.apply {
+                                linkerOpts("-l$crateName") // test strongly links
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -185,14 +223,16 @@ private fun Project.configureNativeInterop(
             }
         }
 
-        val cinteropTask = tasks.getByName("cinterop${compilationName.titlecase()}Native")
-        cinteropTask.mustRunAfter(cbindgen)
-
         val generateRustBindings = tasks.register("generateRustBindings${compilationName.titlecase()}") {
             group = "mirai"
             description = "Generates Rust bindings for Kotlin"
             dependsOn(cbindgen)
-            dependsOn(cinteropTask)
+        }
+
+        afterEvaluate {
+            val cinteropTask = tasks.getByName(interopTaskName)
+            cinteropTask.mustRunAfter(cbindgen)
+            generateRustBindings.get().dependsOn(cinteropTask)
         }
 
         val bindgen = tasks.register("bindgen${compilationName.titlecase()}") {

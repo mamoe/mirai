@@ -24,7 +24,7 @@ pub struct SizedByteArray {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_md5(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_hash_md5(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let result = md5::compute(data);
     let size = 16;
@@ -37,7 +37,7 @@ pub unsafe extern "C" fn mirai_crypto_md5(data: *const u8, len: u32, ret: &mut S
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_sha1(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_hash_sh1(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let mut hasher = Sha1::new();
     hasher.update(data);
@@ -53,7 +53,7 @@ pub unsafe extern "C" fn mirai_crypto_sha1(data: *const u8, len: u32, ret: &mut 
 
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_gzip(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_compression_gzip(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
 
@@ -71,7 +71,7 @@ pub unsafe extern "C" fn mirai_crypto_gzip(data: *const u8, len: u32, ret: &mut 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_ungzip(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_compression_ungzip(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let mut encoder = GzDecoder::new(Vec::new());
 
@@ -89,7 +89,7 @@ pub unsafe extern "C" fn mirai_crypto_ungzip(data: *const u8, len: u32, ret: &mu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_deflate(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_compression_deflate(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
 
@@ -107,7 +107,7 @@ pub unsafe extern "C" fn mirai_crypto_deflate(data: *const u8, len: u32, ret: &m
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mirai_crypto_inflate(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
+pub unsafe extern "C" fn mirai_compression_infalte(data: *const u8, len: u32, ret: &mut SizedByteArray) -> bool {
     let data = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let mut encoder = ZlibDecoder::new(Vec::new());
 

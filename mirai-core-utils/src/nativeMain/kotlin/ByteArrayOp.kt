@@ -19,18 +19,20 @@ import platform.posix.uint8_tVar
 
 public actual val DEFAULT_BUFFER_SIZE: Int get() = 8192
 
-public actual fun ByteArray.md5(offset: Int, length: Int): ByteArray = callImpl(::mirai_crypto_md5, offset, length)
-public actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray = callImpl(::mirai_crypto_sha1, offset, length)
+public actual fun ByteArray.md5(offset: Int, length: Int): ByteArray = callImpl(::mirai_hash_md5, offset, length)
+public actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray = callImpl(::mirai_hash_sh1, offset, length)
 
-public actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray = callImpl(::mirai_crypto_gzip, offset, length)
+public actual fun ByteArray.gzip(offset: Int, length: Int): ByteArray =
+    callImpl(::mirai_compression_gzip, offset, length)
+
 public actual fun ByteArray.ungzip(offset: Int, length: Int): ByteArray =
-    callImpl(::mirai_crypto_ungzip, offset, length)
+    callImpl(::mirai_compression_ungzip, offset, length)
 
 public actual fun ByteArray.deflate(offset: Int, length: Int): ByteArray =
-    callImpl(::mirai_crypto_deflate, offset, length)
+    callImpl(::mirai_compression_deflate, offset, length)
 
 public actual fun ByteArray.inflate(offset: Int, length: Int): ByteArray =
-    callImpl(::mirai_crypto_inflate, offset, length)
+    callImpl(::mirai_compression_infalte, offset, length)
 
 
 private fun ByteArray.callImpl(

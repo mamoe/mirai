@@ -25,7 +25,7 @@ description = "Mirai Protocol implementation for QQ Android"
 kotlin {
     explicitApi()
 
-    configureHMPPJvm()
+    configureHMPP()
 
     sourceSets.apply {
 

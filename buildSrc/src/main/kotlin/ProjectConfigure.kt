@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 
 fun Project.useIr() {
@@ -41,7 +42,6 @@ fun Project.preConfigureJvmTarget() {
     val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 

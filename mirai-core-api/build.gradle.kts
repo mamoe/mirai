@@ -26,7 +26,7 @@ description = "Mirai API module"
 
 kotlin {
     explicitApi()
-    configureHMPPJvm()
+    configureHMPP()
 
 
     sourceSets {
