@@ -38,16 +38,6 @@ public actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
     return java.util.concurrent.ConcurrentHashMap()
 }
 
-@Suppress("FunctionName")
-public actual fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E> {
-    return java.util.PriorityQueue()
-}
-
-@Suppress("FunctionName")
-public actual fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E> {
-    return java.util.PriorityQueue(comparator)
-}
-
 public actual typealias LinkedList<E> = java.util.LinkedList<E>
 
 

@@ -11,26 +11,187 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.locks.ReentrantLock
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlin.reflect.KClass
 
 @Suppress("FunctionName")
 public actual fun <K : Any, V> ConcurrentHashMap(): MutableMap<K, V> {
-    TODO("Not yet implemented")
+    return LockedConcurrentHashMap(reentrantLock())
+}
+
+private class LockedConcurrentHashSet<E>(
+    private val lock: ReentrantLock,
+    private val delegate: MutableSet<E> = mutableSetOf()
+) : MutableSet<E> {
+    override fun add(element: E): Boolean = lock.withLock {
+        return delegate.add(element)
+    }
+
+    override fun addAll(elements: Collection<E>): Boolean = lock.withLock {
+        return delegate.addAll(elements)
+    }
+
+    override val size: Int get() = lock.withLock { delegate.size }
+
+    override fun clear() = lock.withLock { delegate.clear() }
+
+    override fun isEmpty(): Boolean = lock.withLock { delegate.isEmpty() }
+    override fun containsAll(elements: Collection<E>): Boolean = lock.withLock { delegate.containsAll(elements) }
+    override fun contains(element: E): Boolean = lock.withLock { delegate.contains(element) }
+
+    override fun iterator(): MutableIterator<E> = delegate.iterator() // no effect for locking
+
+    @Suppress("ConvertArgumentToSet")
+    override fun retainAll(elements: Collection<E>): Boolean = lock.withLock { delegate.retainAll(elements) }
+
+    @Suppress("ConvertArgumentToSet")
+    override fun removeAll(elements: Collection<E>): Boolean = lock.withLock { delegate.removeAll(elements) }
+
+    override fun remove(element: E): Boolean = lock.withLock { delegate.remove(element) }
+
+
+    override fun equals(other: Any?): Boolean = delegate == other
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String = delegate.toString()
+}
+
+private class LockedConcurrentCollection<E>(
+    private val lock: ReentrantLock,
+    private val delegate: MutableCollection<E>
+) : MutableCollection<E> {
+    override fun add(element: E): Boolean = lock.withLock {
+        return delegate.add(element)
+    }
+
+    override fun addAll(elements: Collection<E>): Boolean = lock.withLock {
+        return delegate.addAll(elements)
+    }
+
+    override val size: Int get() = lock.withLock { delegate.size }
+
+    override fun clear() = lock.withLock { delegate.clear() }
+
+    override fun isEmpty(): Boolean = lock.withLock { delegate.isEmpty() }
+    override fun containsAll(elements: Collection<E>): Boolean = lock.withLock { delegate.containsAll(elements) }
+    override fun contains(element: E): Boolean = lock.withLock { delegate.contains(element) }
+
+    override fun iterator(): MutableIterator<E> = delegate.iterator() // no effect for locking
+
+    @Suppress("ConvertArgumentToSet")
+    override fun retainAll(elements: Collection<E>): Boolean = lock.withLock { delegate.retainAll(elements) }
+
+    @Suppress("ConvertArgumentToSet")
+    override fun removeAll(elements: Collection<E>): Boolean = lock.withLock { delegate.removeAll(elements) }
+
+    override fun remove(element: E): Boolean = lock.withLock { delegate.remove(element) }
+
+    override fun equals(other: Any?): Boolean = delegate == other
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String = delegate.toString()
+}
+
+private class LockedConcurrentHashMap<K : Any, V>(
+    private val lock: ReentrantLock,
+    private val delegate: MutableMap<K, V> = mutableMapOf()
+) : MutableMap<K, V> {
+    override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
+        get() = lock.withLock { LockedConcurrentHashSet(lock, delegate.entries) }
+
+    override val keys: MutableSet<K> get() = lock.withLock { LockedConcurrentHashSet(lock, delegate.keys) }
+    override val size: Int get() = lock.withLock { delegate.size }
+    override val values: MutableCollection<V>
+        get() = lock.withLock { LockedConcurrentCollection(lock, delegate.values) }
+
+    override fun clear() = lock.withLock { delegate.clear() }
+    override fun isEmpty(): Boolean = lock.withLock { delegate.isEmpty() }
+    override fun remove(key: K): V? = lock.withLock { delegate.remove(key) }
+    override fun putAll(from: Map<out K, V>) = lock.withLock { delegate.putAll(from) }
+    override fun put(key: K, value: V): V? = lock.withLock { delegate.put(key, value) }
+    override fun get(key: K): V? = lock.withLock { delegate.get(key) }
+    override fun containsValue(value: V): Boolean = lock.withLock { delegate.containsValue(value) }
+    override fun containsKey(key: K): Boolean = lock.withLock { delegate.containsKey(key) }
+
+    override fun equals(other: Any?): Boolean = delegate == other
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String = delegate.toString()
 }
 
 @Suppress("FunctionName")
 public actual fun <E> ConcurrentLinkedDeque(): MutableDeque<E> {
-    TODO("Not yet implemented")
+    return LockedConcurrentArrayDeque(reentrantLock())
 }
 
-@Suppress("FunctionName")
-public actual fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E> {
-    TODO("Not yet implemented")
+private class LockedConcurrentArrayDeque<E>(
+    private val lock: ReentrantLock,
+    private val delegate: ArrayDeque<E> = ArrayDeque()
+) : MutableDeque<E> {
+    override fun addFirst(element: E) = lock.withLock { delegate.addFirst(element) }
+
+    override fun add(element: E): Boolean {
+        lock.withLock { delegate.add(element) }
+        return true
+    }
+
+    override fun poll(): E? = lock.withLock { delegate.removeFirstOrNull() }
+
+    override fun offer(element: E): Boolean {
+        lock.withLock { delegate.addLast(element) }
+        return true
+    }
+
+    override val size: Int
+        get() = lock.withLock { delegate.size }
+
+    override fun clear() = lock.withLock { delegate.clear() }
+    override fun addAll(elements: Collection<E>): Boolean = lock.withLock { delegate.addAll(elements) }
+    override fun isEmpty(): Boolean = lock.withLock { delegate.isEmpty() }
+    override fun iterator(): MutableIterator<E> = delegate.iterator()
+    override fun retainAll(elements: Collection<E>): Boolean = lock.withLock { delegate.retainAll(elements) }
+    override fun removeAll(elements: Collection<E>): Boolean = lock.withLock { delegate.removeAll(elements) }
+    override fun remove(element: E): Boolean = lock.withLock { delegate.remove(element) }
+    override fun containsAll(elements: Collection<E>): Boolean = lock.withLock { delegate.containsAll(elements) }
+    override fun contains(element: E): Boolean = lock.withLock { delegate.contains(element) }
+
+    override fun equals(other: Any?): Boolean = delegate == other
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String = delegate.toString()
 }
 
-@Suppress("FunctionName")
-public actual fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E> {
-    TODO("Not yet implemented")
+internal class ArrayDequeAsMutableDeque<E>(
+    private val delegate: ArrayDeque<E> = ArrayDeque()
+) : MutableDeque<E> {
+    override fun addFirst(element: E) = delegate.addFirst(element)
+
+    override fun add(element: E): Boolean {
+        delegate.add(element)
+        return true
+    }
+
+    override fun poll(): E? = delegate.removeFirstOrNull()
+
+    override fun offer(element: E): Boolean {
+        delegate.addLast(element)
+        return true
+    }
+
+    override val size: Int
+        get() = delegate.size
+
+    override fun clear() = delegate.clear()
+    override fun addAll(elements: Collection<E>): Boolean = delegate.addAll(elements)
+    override fun isEmpty(): Boolean = delegate.isEmpty()
+    override fun iterator(): MutableIterator<E> = delegate.iterator()
+    override fun retainAll(elements: Collection<E>): Boolean = delegate.retainAll(elements)
+    override fun removeAll(elements: Collection<E>): Boolean = delegate.removeAll(elements)
+    override fun remove(element: E): Boolean = delegate.remove(element)
+    override fun containsAll(elements: Collection<E>): Boolean = delegate.containsAll(elements)
+    override fun contains(element: E): Boolean = delegate.contains(element)
+
+    override fun equals(other: Any?): Boolean = delegate == other
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String = delegate.toString()
 }
 
 @Suppress("FunctionName")
@@ -38,31 +199,16 @@ public actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> =
 
 @Suppress("FunctionName")
 public actual fun <E> ConcurrentSet(): MutableSet<E> {
-    TODO("Not yet implemented")
+    return LockedConcurrentHashSet(reentrantLock())
 }
 
-public actual class LinkedList<E> : MutableList<E>, AbstractMutableList<E>() {
+public actual class LinkedList<E>(
+    private val delegate: ArrayDeque<E>
+) : MutableList<E> by delegate {
+    public actual constructor() : this(ArrayDeque())
+
     public actual fun addLast(element: E) {
-        TODO("Not yet implemented")
-    }
-
-    override fun add(index: Int, element: E) {
-        TODO("Not yet implemented")
-    }
-
-    override val size: Int
-        get() = TODO("Not yet implemented")
-
-    override fun get(index: Int): E {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeAt(index: Int): E {
-        TODO("Not yet implemented")
-    }
-
-    override fun set(index: Int, element: E): E {
-        TODO("Not yet implemented")
+        return delegate.addLast(element)
     }
 }
 
