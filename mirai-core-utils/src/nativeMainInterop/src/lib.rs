@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+// extern crate chashmap;
+extern crate core;
 extern crate flate2;
 extern crate libc;
 extern crate sha1;
@@ -14,4 +16,5 @@ extern crate sha1;
 /// cbindgen:ignore
 mod bindings;
 mod crypto;
+mod chmap;
 

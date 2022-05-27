@@ -23,12 +23,6 @@ public expect fun <E> ConcurrentLinkedDeque(): MutableDeque<E>
 @Suppress("FunctionName")
 public fun <E> ConcurrentLinkedQueue(): MutableQueue<E> = ConcurrentLinkedDeque()
 
-@Suppress("FunctionName")
-public expect fun <E : Comparable<*>> PriorityQueue(): MutableQueue<E>
-
-@Suppress("FunctionName")
-public expect fun <E : Any> PriorityQueue(comparator: Comparator<E>): MutableCollection<E>
-
 public expect class LinkedList<E> constructor() : MutableList<E> {
     public fun addLast(element: E)
 }

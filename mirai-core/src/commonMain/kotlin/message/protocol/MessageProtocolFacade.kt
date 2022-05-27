@@ -170,7 +170,7 @@ internal class MessageProtocolFacadeImpl(
 
     override val loaded: List<MessageProtocol> = kotlin.run {
         val instances = protocols
-            .toCollection(PriorityQueue(MessageProtocol.PriorityComparator.reversed()))
+            .sortedWith(MessageProtocol.PriorityComparator.reversed())
         for (instance in instances) {
             instance.collectProcessors(object : ProcessorCollector() {
                 override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {

@@ -46,8 +46,10 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
         try {
             languageSettings.optIn("kotlin.RequiresOptIn")
         } catch (e: NoSuchMethodError) {
-            @Suppress("DEPRECATION")
-            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+            // User is using < 1.6
+            target.compilations.forEach { compilation ->
+                compilation.kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+            }
         }
         dependencies { configureDependencies(project, this@configureSourceSet, target) }
     }
