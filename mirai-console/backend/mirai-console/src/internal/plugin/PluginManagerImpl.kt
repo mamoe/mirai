@@ -17,13 +17,14 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
-import net.mamoe.mirai.console.plugin.*
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.cast
@@ -173,20 +174,7 @@ internal class PluginManagerImpl(
     }
 
     internal fun enableAllLoadedPlugins() {
-        resolvedPlugins.forEach { plugin ->
-            val dependsOn =
-                plugin.dependencies.firstOrNull { d -> !PluginManager.plugins.first { it.id == d.id }.isEnabled }
-            if (dependsOn != null) {
-                logger.error("Cannot enable plugin ${plugin.id}, because mirai failed to enable ${dependsOn.id}")
-            } else {
-                try {
-                    enablePlugin(plugin)
-                } catch (e: Exception) {
-                    logger.error(e)
-                    logger.error("Cannot enable plugin ${plugin.id}")
-                }
-            }
-        }
+        resolvedPlugins.forEach { enablePlugin(it) }
     }
 
     @kotlin.jvm.Throws(PluginLoadException::class)
