@@ -24,9 +24,9 @@ object Versions {
 
     const val kotlinCompiler = "1.7.0-RC"
     const val kotlinStdlib = kotlinCompiler
-    const val dokka = "1.6.20"
+    const val dokka = "1.6.21"
 
-    const val kotlinCompilerForIdeaPlugin = "1.6.20"
+    const val kotlinCompilerForIdeaPlugin = "1.7.0-RC"
 
     const val coroutines = "1.6.1"
     const val atomicFU = "0.17.2"
@@ -38,8 +38,8 @@ object Versions {
     const val io = "0.1.16"
     const val coroutinesIo = "0.1.16"
 
-    const val blockingBridge = "2.1.0-162.1"
-    const val dynamicDelegation = "0.3.0-162.4"
+    const val blockingBridge = "2.1.0-170.1"
+    const val dynamicDelegation = "0.3.0-170.1"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"

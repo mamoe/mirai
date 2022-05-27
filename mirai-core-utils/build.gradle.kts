@@ -23,7 +23,7 @@ description = "mirai-core utilities"
 kotlin {
     explicitApi()
 
-    configureHMPPJvm()
+    configureHMPP()
 
     sourceSets {
         val commonMain by getting {

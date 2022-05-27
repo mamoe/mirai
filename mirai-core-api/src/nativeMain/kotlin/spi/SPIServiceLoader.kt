@@ -10,6 +10,7 @@
 package net.mamoe.mirai.spi
 
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.loadService
 import kotlin.reflect.KClass
 
 internal actual class SPIServiceLoader<T : BaseService> actual constructor(
@@ -19,7 +20,7 @@ internal actual class SPIServiceLoader<T : BaseService> actual constructor(
     actual var service: T = defaultService
 
     actual fun reload() {
-        TODO("native")
+        service = loadService(serviceType) { service }
     }
 
     init {

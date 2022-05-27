@@ -1,11 +1,11 @@
 [package]
-name = "mirai_core"
+name = "mirai_core_i"
 version = "0.1.0"
 
 [dependencies]
 
 [lib]
-name = "mirai_core"
+name = "mirai_core_i"
 crate-type = ["cdylib"]      # Creates dynamic lib
 # crate-type = ["staticlib"] # Creates static lib
 

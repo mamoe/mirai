@@ -15,6 +15,6 @@ extern crate sha1;
 
 /// cbindgen:ignore
 mod bindings;
-mod crypto;
+mod cipher;
 mod chmap;
 
