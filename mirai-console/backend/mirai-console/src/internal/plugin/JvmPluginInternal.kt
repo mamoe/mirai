@@ -93,10 +93,14 @@ internal abstract class JvmPluginInternal(
             onSuccess = {
                 cancel(CancellationException("plugin disabled"))
             },
-            onFailure = {
-                cancel(CancellationException("Exception while disabling plugin", it))
+            onFailure = { err ->
+                cancel(CancellationException("Exception while disabling plugin", err))
+
+                // @TestOnly
+                if (err is ConsoleJvmPluginTestFailedError) throw err
+
                 if (MiraiConsoleImplementation.getInstance().consoleLaunchOptions.crashWhenPluginLoadFailed) {
-                    throw it
+                    throw err
                 }
             }
         )
@@ -137,18 +141,21 @@ internal abstract class JvmPluginInternal(
                 isEnabled = true
                 return true
             },
-            onFailure = {
-                cancel(CancellationException("Exception while enabling plugin", it))
-                logger.error(it)
+            onFailure = { err ->
+                cancel(CancellationException("Exception while enabling plugin", err))
+                logger.error(err)
+
+                // @TestOnly
+                if (err is ConsoleJvmPluginTestFailedError) throw err
 
                 when (except?.excepted) {
-                    ConsoleJvmPluginFuncCallbackStatus.SUCCESS -> throw it
+                    ConsoleJvmPluginFuncCallbackStatus.SUCCESS -> throw err
                     ConsoleJvmPluginFuncCallbackStatus.FAILED -> return false
                     else -> {}
                 }
 
                 if (MiraiConsoleImplementation.getInstance().consoleLaunchOptions.crashWhenPluginLoadFailed) {
-                    throw it
+                    throw err
                 }
                 return false
             }

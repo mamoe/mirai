@@ -17,7 +17,10 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.debug
 import org.junit.jupiter.api.Assertions.assertFalse
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 @ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable(ConsoleJvmPluginFuncCallbackStatus.FAILED)
 internal object PluginWithExceptionTest : AbstractTestPointAsPlugin() {
@@ -30,8 +33,11 @@ internal object PluginWithExceptionTest : AbstractTestPointAsPlugin() {
         )
     }
 
-    override fun beforeConsoleStartup() {
-        exceptedExceptionMessages = arrayOf("PluginWithExceptionTestExceptionTest")
+    override fun exceptionHandler(exception: Throwable, step: JvmPluginExecutionStep, instance: KotlinPlugin) {
+        instance.logger.debug { "PluginWithExceptionTestExceptionTest" }
+        assertIs<Exception>(exception)
+        assertEquals("PluginWithExceptionTestExceptionTest", exception.message)
+
     }
 
     override fun KotlinPlugin.onLoad0(storage: PluginComponentStorage) {

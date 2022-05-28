@@ -27,3 +27,11 @@ public annotation class ConsoleJvmPluginFuncCallbackStatusExcept {
 public enum class ConsoleJvmPluginFuncCallbackStatus {
     SUCCESS, FAILED
 }
+
+@MiraiInternalApi
+public class ConsoleJvmPluginTestFailedError : Error {
+    public constructor() : super()
+    public constructor(cause: Throwable?) : super(cause)
+    public constructor(msg: String?, cause: Throwable?) : super(msg, cause)
+    public constructor(msg: String?) : super(msg)
+}
