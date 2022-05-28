@@ -21,6 +21,7 @@ kotlin {
     explicitApi()
 
     configureHMPP()
+    configureNativeTargetsHierarchical(project)
 }
 
 configureMppPublishing()

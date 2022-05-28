@@ -11,11 +11,13 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getting
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
@@ -25,6 +27,49 @@ private val miraiPlatform = Attribute.of(
     "net.mamoe.mirai.platform",
     String::class.java
 )
+
+val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
+
+val NATIVE_ENABLED = System.getProperty("mirai.enable.native", "true").toBoolean()
+val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoolean()
+
+val OS_NAME = System.getProperty("os.name").toLowerCase()
+
+enum class HostKind {
+    LINUX,
+    WINDOWS,
+    MACOS,
+}
+
+val HOST_KIND = when {
+    OS_NAME.contains("linux", true) -> HostKind.LINUX
+    OS_NAME.contains("windows", true) -> HostKind.WINDOWS
+    OS_NAME.contains("mac", true) -> HostKind.MACOS
+    else -> error("Unsupported host kind `$OS_NAME`")
+}
+
+val MAC_TARGETS = setOf(
+    "macosX64",
+    "macosArm64",
+    "iosX64",
+    "iosArm64",
+    "iosArm32",
+    "iosSimulatorArm64",
+    "watchosX86",
+    "watchosX64",
+    "watchosArm32",
+    "watchosArm64",
+    "watchosSimulatorArm64",
+    "tvosX64",
+    "tvosArm64",
+    "tvosSimulatorArm64",
+)
+
+val WIN_TARGETS = setOf("mingwX64")
+
+val LINUX_TARGETS = setOf("linuxX64")
+
+val UNIX_LIKE_TARGETS = LINUX_TARGETS + MAC_TARGETS
 
 
 fun Project.configureHMPP() {
@@ -37,7 +82,7 @@ fun Project.configureHMPP() {
 ////            attributes.attribute(miraiPlatform, "jvmBase")
 //        }
 
-        if (isAndroidSDKAvailable) {
+        if (isAndroidSDKAvailable && ANDROID_ENABLED) {
             jvm("android") {
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
                 //   publishAllLibraryVariants()
@@ -49,83 +94,186 @@ fun Project.configureHMPP() {
         jvm("jvm") {
 
         }
+    }
+}
 
+/**
+ * [IDEA_ACTIVE] 时配置单一 'native' target, 基于 host 平台; 否则配置所有 native targets 依赖 'native' 作为中间平台.
+ */
+@Deprecated("")
+fun KotlinMultiplatformExtension.configureNativeTargets(
+    project: Project
+) {
+    val nativeMainSets = mutableListOf<KotlinSourceSet>()
+    val nativeTestSets = mutableListOf<KotlinSourceSet>()
+    val nativeTargets = mutableListOf<KotlinNativeTarget>()
 
-        val ideaActive = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
-
-        val nativeMainSets = mutableListOf<KotlinSourceSet>()
-        val nativeTestSets = mutableListOf<KotlinSourceSet>()
-        val nativeTargets = mutableListOf<KotlinNativeTarget>()
-
-        if (ideaActive) {
-            val target = when {
-                Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64("native")
-                Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
-                else -> linuxX64("native")
-            }
-            nativeTargets.add(target)
-        } else {
-            // 1.6.0
-            val nativeTargetNames: List<String> = arrayOf(
-                // serialization doesn't support those commented targets
+    if (IDEA_ACTIVE) {
+        val target = when {
+            Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64(
+                "native"
+            )
+            Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
+            else -> linuxX64("native")
+        }
+        nativeTargets.add(target)
+    } else {
+        // 1.6.0
+        val nativeTargetNames: List<String> = arrayOf(
+            // serialization doesn't support those commented targets
 //                "androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64",
-                "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
-                "watchosArm32, watchosArm64, watchosX86, watchosX64, watchosSimulatorArm64",
-                "tvosArm64, tvosX64, tvosSimulatorArm64",
-                "macosX64, macosArm64",
-                "linuxMips32, linuxMipsel32, linuxX64",
-                "mingwX64",
+            "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
+            "watchosArm32, watchosArm64, watchosX86, watchosX64, watchosSimulatorArm64",
+            "tvosArm64, tvosX64, tvosSimulatorArm64",
+            "macosX64, macosArm64",
+//            "linuxMips32, linuxMipsel32, linuxX64",
+            "linuxX64",
+            "mingwX64",
 //                "wasm32" // linuxArm32Hfp, mingwX86
-            ).flatMap { it.split(",") }.map { it.trim() }
-            presets.filter { it.name in nativeTargetNames }
-                .forEach { preset ->
-                    val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
-                    nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
-                    nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
-                    nativeTargets.add(target)
-                }
+        ).flatMap { it.split(",") }.map { it.trim() }
+        presets.filter { it.name in nativeTargetNames }
+            .forEach { preset ->
+                val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
+                nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
+                nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
+                nativeTargets.add(target)
+            }
 
-            if (!ideaActive) {
-                configure(nativeMainSets) {
-                    dependsOn(sourceSets.maybeCreate("nativeMain"))
-                }
+        if (!IDEA_ACTIVE) {
+            project.configure(nativeMainSets) {
+                dependsOn(sourceSets.maybeCreate("nativeMain"))
+            }
 
-                configure(nativeTestSets) {
-                    dependsOn(sourceSets.maybeCreate("nativeTest"))
-                }
+            project.configure(nativeTestSets) {
+                dependsOn(sourceSets.maybeCreate("nativeTest"))
+            }
+        }
+    }
+
+    project.configureNativeInterop("main", project.projectDir.resolve("src/nativeMainInterop"), nativeTargets)
+    project.configureNativeInterop("test", project.projectDir.resolve("src/nativeTestInterop"), nativeTargets)
+    project.configureNativeLinkOptions(nativeTargets)
+
+    val sourceSets = project.kotlinSourceSets.orEmpty()
+    val commonMain = sourceSets.single { it.name == "commonMain" }
+    val commonTest = sourceSets.single { it.name == "commonTest" }
+    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
+    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
+    val jvmMain = sourceSets.single { it.name == "jvmMain" }
+    val jvmTest = sourceSets.single { it.name == "jvmTest" }
+    val androidMain = sourceSets.single { it.name == "androidMain" }
+    val androidTest = sourceSets.single { it.name == "androidTest" }
+
+    val nativeMain = sourceSets.single { it.name == "nativeMain" }
+    val nativeTest = sourceSets.single { it.name == "nativeTest" }
+
+
+    jvmBaseMain.dependsOn(commonMain)
+    jvmBaseTest.dependsOn(commonTest)
+
+    jvmMain.dependsOn(jvmBaseMain)
+    androidMain.dependsOn(jvmBaseMain)
+
+    jvmTest.dependsOn(jvmBaseTest)
+    androidTest.dependsOn(jvmBaseTest)
+
+    nativeMain.dependsOn(commonMain)
+    nativeTest.dependsOn(commonTest)
+}
+
+/**
+ * ```
+ *                      common
+ *                        |
+ *        /---------------+---------------\
+ *     jvmBase                          native
+ *     /    \                          /     \
+ *   jvm   android                  unix     mingw
+ *                                   |         \
+ *                                   |        mingwX64
+ *                                   |
+ *                             <unix targets>
+ * ```
+ *
+ * `<unix targets>` include: macosX64, macosArm64, tvosX64, iosArm64, iosArm32, linuxX64...
+ */
+fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
+    project: Project
+) {
+    val nativeMainSets = mutableListOf<KotlinSourceSet>()
+    val nativeTestSets = mutableListOf<KotlinSourceSet>()
+    val nativeTargets = mutableListOf<KotlinNativeTarget>()
+
+
+    fun KotlinMultiplatformExtension.addNativeTarget(
+        preset: KotlinTargetPreset<*>,
+    ): KotlinNativeTarget {
+        val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
+        nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
+        nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
+        nativeTargets.add(target)
+        return target
+    }
+
+
+    // project.configureNativeInterop("main", project.projectDir.resolve("src/nativeMainInterop"), nativeTargets)
+    // project.configureNativeInterop("test", project.projectDir.resolve("src/nativeTestInterop"), nativeTargets)
+
+
+    val sourceSets = project.objects.domainObjectContainer(KotlinSourceSet::class.java)
+        .apply { addAll(project.kotlinSourceSets.orEmpty()) }
+
+    val commonMain by sourceSets.getting
+    val commonTest by sourceSets.getting
+    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
+    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
+    val jvmMain by sourceSets.getting
+    val jvmTest by sourceSets.getting
+    val androidMain by sourceSets.getting
+    val androidTest by sourceSets.getting
+
+    val nativeMain = this.sourceSets.maybeCreate("nativeMain")
+    val nativeTest = this.sourceSets.maybeCreate("nativeTest")
+
+    val mingwMain = this.sourceSets.maybeCreate("mingwMain")
+    val mingwTest = this.sourceSets.maybeCreate("mingwTest")
+
+    val unixMain = this.sourceSets.maybeCreate("unixMain")
+    val unixTest = this.sourceSets.maybeCreate("unixTest")
+
+    presets.filter { it.name in UNIX_LIKE_TARGETS }
+        .forEach { preset ->
+            addNativeTarget(preset).run {
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(unixMain)
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(unixTest)
             }
         }
 
-        configureNativeInterop("main", projectDir.resolve("src/nativeMainInterop"), nativeTargets)
-        configureNativeInterop("test", projectDir.resolve("src/nativeTestInterop"), nativeTargets)
+    presets.filter { it.name in WIN_TARGETS }
+        .forEach { preset ->
+            addNativeTarget(preset).run {
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(mingwMain)
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(mingwTest)
+            }
+        }
 
+    jvmBaseMain.dependsOn(commonMain)
+    jvmBaseTest.dependsOn(commonTest)
 
-        val sourceSets = kotlinSourceSets.orEmpty()
-        val commonMain = sourceSets.single { it.name == "commonMain" }
-        val commonTest = sourceSets.single { it.name == "commonTest" }
-        val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
-        val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
-        val jvmMain = sourceSets.single { it.name == "jvmMain" }
-        val jvmTest = sourceSets.single { it.name == "jvmTest" }
-        val androidMain = sourceSets.single { it.name == "androidMain" }
-        val androidTest = sourceSets.single { it.name == "androidTest" }
+    nativeMain.dependsOn(commonMain)
+    nativeTest.dependsOn(commonTest)
 
-        val nativeMain = sourceSets.single { it.name == "nativeMain" }
-        val nativeTest = sourceSets.single { it.name == "nativeTest" }
+    unixMain.dependsOn(nativeMain)
+    unixTest.dependsOn(nativeTest)
 
+    mingwMain.dependsOn(nativeMain)
+    mingwTest.dependsOn(nativeTest)
 
-        jvmBaseMain.dependsOn(commonMain)
-        jvmBaseTest.dependsOn(commonTest)
+    jvmMain.dependsOn(jvmBaseMain)
+    androidMain.dependsOn(jvmBaseMain)
 
-        jvmMain.dependsOn(jvmBaseMain)
-        androidMain.dependsOn(jvmBaseMain)
-
-        jvmTest.dependsOn(jvmBaseTest)
-        androidTest.dependsOn(jvmBaseTest)
-
-        nativeMain.dependsOn(commonMain)
-        nativeTest.dependsOn(commonTest)
-    }
+    jvmTest.dependsOn(jvmBaseTest)
+    androidTest.dependsOn(jvmBaseTest)
 }
 
 private fun Project.linkerDirs(): List<String> {
@@ -155,17 +303,6 @@ private fun Project.configureNativeInterop(
 ) {
     val crateName = project.name.replace("-", "_") + "_i"
 
-    configure(nativeTargets) {
-        binaries {
-            for (buildType in NativeBuildType.values()) {
-                findTest(buildType)?.apply {
-                    linkerOpts("-v")
-                    linkerOpts(*linkerDirs().map { "-L$it" }.toTypedArray())
-                    linkerOpts("-undefined", "dynamic_lookup") // resolve symbol in runtime
-                }
-            }
-        }
-    }
     if (nativeInteropDir.exists() && nativeInteropDir.isDirectory && nativeInteropDir.resolve("build.rs").exists()) {
         val kotlinDylibName = project.name.replace("-", "_")
 
@@ -270,30 +407,45 @@ private fun Project.configureNativeInterop(
 //            targetCompilation!!.compileKotlinTask.dependsOn(cbindgen)
 //            tasks.getByName("cinteropNative$name").dependsOn(cbindgen)
         }
-        targetCompilation!!
 
-        val compileRust = tasks.register("compileRust${compilationName.titlecase()}") {
-            group = "mirai"
-            inputs.files(nativeInteropDir.resolve("src"))
-            outputs.file(rustLibDir.resolve("lib$crateName.dylib"))
+        if (targetCompilation != null)  {
+            val compileRust = tasks.register("compileRust${compilationName.titlecase()}") {
+                group = "mirai"
+                inputs.files(nativeInteropDir.resolve("src"))
+                outputs.file(rustLibDir.resolve("lib$crateName.dylib"))
 //            dependsOn(targetCompilation!!.compileKotlinTask)
-            dependsOn(bindgen)
-            dependsOn(tasks.findByName("linkDebugSharedNative")) // dylib to link
-            doLast {
-                exec {
-                    workingDir(nativeInteropDir)
-                    commandLine(
-                        "cargo",
-                        "build",
-                        "--color", "always",
-                        "--all",
+                dependsOn(bindgen)
+                dependsOn(tasks.findByName("linkDebugSharedNative")) // dylib to link
+                doLast {
+                    exec {
+                        workingDir(nativeInteropDir)
+                        commandLine(
+                            "cargo",
+                            "build",
+                            "--color", "always",
+                            "--all",
 //                        "--", "--color", "always", "2>&1"
-                    )
+                        )
+                    }
+                }
+            }
+
+            tasks.getByName("assemble").dependsOn(compileRust)
+        }
+    }
+}
+
+private fun Project.configureNativeLinkOptions(nativeTargets: MutableList<KotlinNativeTarget>) {
+    configure(nativeTargets) {
+        binaries {
+            for (buildType in NativeBuildType.values()) {
+                findTest(buildType)?.apply {
+                    linkerOpts("-v")
+                    linkerOpts(*linkerDirs().map { "-L$it" }.toTypedArray())
+                    linkerOpts("-undefined", "dynamic_lookup") // resolve symbol in runtime
                 }
             }
         }
-
-        tasks.getByName("assemble").dependsOn(compileRust)
     }
 }
 

@@ -28,6 +28,8 @@ kotlin {
     explicitApi()
     configureHMPP()
 
+    configureNativeTargetsHierarchical(project)
+
 
     sourceSets {
         val commonMain by getting {
