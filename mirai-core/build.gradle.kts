@@ -26,6 +26,7 @@ kotlin {
     explicitApi()
 
     configureHMPP()
+    configureNativeTargetsHierarchical(project)
 
     sourceSets.apply {
 
