@@ -327,7 +327,10 @@ public actual open class BotConfiguration { // open for Java
      */
     @ConfigurationDsl
     public actual fun fileBasedDeviceInfo(filepath: String) {
-        deviceInfo = TODO("native")
+        deviceInfo = {
+            val file = MiraiFile.create(workingDir).resolve(filepath)
+            Json.decodeFromString(DeviceInfo.serializer(), file.readText())
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
