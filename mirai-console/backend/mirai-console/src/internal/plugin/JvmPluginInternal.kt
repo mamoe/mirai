@@ -126,7 +126,7 @@ internal abstract class JvmPluginInternal(
                 loadedPlugins.firstOrNull { it.id == dep.id }
             }.filterNot { it.isEnabled }.toList()
             if (failedDependencies.isNotEmpty()) {
-                throw IllegalStateException("Failed to enable '${this@JvmPluginInternal.name}' because dependencies failed to initialize: " + failedDependencies.joinToString { "'${it.name}'" })
+                throw IllegalStateException("Failed to enable '${this@JvmPluginInternal.name}' because dependencies not enabled: " + failedDependencies.joinToString { "'${it.name}'" })
             }
 
             onEnable()
