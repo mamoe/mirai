@@ -22,6 +22,7 @@ import kotlin.test.fail
 
 @ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable(ConsoleJvmPluginFuncCallbackStatus.FAILED)
 internal object PluginDependOnErrorPlugin : AbstractTestPointAsPlugin() {
+    private var isOnEnabledExecuted: Boolean = false
 
     override fun newPluginDescription(): JvmPluginDescription {
         return JvmPluginDescription(
@@ -34,7 +35,7 @@ internal object PluginDependOnErrorPlugin : AbstractTestPointAsPlugin() {
     }
 
     override fun beforeConsoleStartup() {
-
+        isOnEnabledExecuted = false
     }
 
     override fun KotlinPlugin.onLoad0(storage: PluginComponentStorage) {
@@ -43,10 +44,12 @@ internal object PluginDependOnErrorPlugin : AbstractTestPointAsPlugin() {
 
     override fun KotlinPlugin.onEnable0() {
         // unreachable
+        isOnEnabledExecuted = true
         fail("net.mamoe.testpoint.plugin-depend-on-error-plugin enabled")
     }
 
     override fun onConsoleStartSuccessfully() {
+        assertFalse { isOnEnabledExecuted }
         assertFalse {
             PluginManager
                 .plugins
