@@ -37,12 +37,15 @@ buildscript {
 plugins {
     kotlin("jvm") // version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
+    id("com.google.osdetector")
     id("org.jetbrains.dokka") version Versions.dokka
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("me.him188.kotlin-dynamic-delegation") version Versions.dynamicDelegation
     id("com.gradle.plugin-publish") version "1.0.0-rc-3" apply false
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version Versions.binaryValidator apply false
 }
+
+osDetector = osdetector
 
 GpgSigner.setup(project)
 
