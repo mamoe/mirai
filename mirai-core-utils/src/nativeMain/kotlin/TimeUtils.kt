@@ -13,20 +13,16 @@ package net.mamoe.mirai.utils
 
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.system.getTimeMillis
 
 /**
  * 时间戳
- *
- * @see System.currentTimeMillis
  */
 public actual fun currentTimeMillis(): Long {
-    memScoped {
-        val timeT = alloc<time_tVar>()
-        time(timeT.ptr)
-        return timeT.value
-    }
+    return getTimeMillis()
 }
 
+@OptIn(UnsafeNumber::class)
 public actual fun currentTimeFormatted(format: String?): String {
     memScoped {
         val timeT = alloc<time_tVar>()
