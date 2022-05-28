@@ -58,5 +58,7 @@ dependencies {
     api(asm("util"))
     api(asm("commons"))
 
+    api("gradle.plugin.com.google.gradle:osdetector-gradle-plugin:1.7.0")
+
     api(gradleApi())
 }
