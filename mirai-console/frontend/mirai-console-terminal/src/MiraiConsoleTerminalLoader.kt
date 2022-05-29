@@ -19,9 +19,7 @@
 
 package net.mamoe.mirai.console.terminal
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
@@ -31,9 +29,17 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.verbose
+import org.jline.utils.Signals
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream
+import java.lang.Runnable
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.exitProcess
 
 /**
@@ -169,6 +175,49 @@ internal object ConsoleDataHolder : AutoSavePluginDataHolder,
     @ConsoleExperimentalApi
     override val dataHolderName: String
         get() = "Terminal"
+}
+
+private val shutdownSignals = arrayOf(
+    "INT", "TERM", "QUIT"
+)
+
+internal val signalHandler: (String) -> Unit = initSignalHandler()
+private fun initSignalHandler(): (String) -> Unit {
+    val shutdownMonitorLock = AtomicBoolean(false)
+    return handler@{ signalName ->
+        // JLine may process other signals
+        MiraiConsole.mainLogger.verbose { "Received signal $signalName" }
+        if (signalName !in shutdownSignals) return@handler
+
+        MiraiConsole.mainLogger.debug { "Handled  signal $signalName" }
+        MiraiConsole.shutdown()
+
+        // Shutdown by signal requires process be killed
+        if (shutdownMonitorLock.compareAndSet(false, true)) {
+            val pool = Executors.newFixedThreadPool(2, object : ThreadFactory {
+                private val counter = AtomicInteger()
+                override fun newThread(r: Runnable): Thread {
+                    return Thread(r, "Mirai Console Signal-Shutdown Daemon #" + counter.getAndIncrement()).also {
+                        it.isDaemon = true
+                    }
+                }
+            })
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch(pool.asCoroutineDispatcher()) {
+                MiraiConsole.job.join()
+
+                delay(15000)
+                exitProcess(-5) // Force kill process if plugins started non-daemon threads
+            }
+        }
+    }
+}
+
+internal fun registerSignalHandler() {
+    fun reg(name: String) {
+        Signals.register(name) { signalHandler(name) }
+    }
+    shutdownSignals.forEach { reg(it) }
 }
 
 internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
