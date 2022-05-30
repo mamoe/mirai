@@ -164,7 +164,7 @@ public interface Message {
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
-     * @see contentEquals
+     * @see chainEquals
      * @see Message.content Kotlin 扩展
      */
     public fun contentToString(): String
@@ -175,8 +175,8 @@ public interface Message {
      * [strict] 为 `true` 时, 还会额外判断每个消息元素的类型, 顺序和属性. 如 [Image] 会判断 [Image.imageId]
      *
      * **有关 [strict]:** 每个 [Image] 的 [contentToString] 都是 `"[图片]"`,
-     * 在 [strict] 为 `false` 时 [contentEquals] 会得到 `true`,
-     * 而为 `true` 时由于 [Image.imageId] 会被比较, 两张不同的图片的 [contentEquals] 会是 `false`.
+     * 在 [strict] 为 `false` 时 [chainEquals] 会得到 `true`,
+     * 而为 `true` 时由于 [Image.imageId] 会被比较, 两张不同的图片的 [chainEquals] 会是 `false`.
      *
      * @param ignoreCase 为 `true` 时忽略大小写
      */
