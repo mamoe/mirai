@@ -9,10 +9,12 @@
 
 package net.mamoe.mirai.utils
 
+private val properties: MutableMap<String, String> = ConcurrentHashMap()
+
 internal actual fun getProperty(name: String, default: String): String? {
-    TODO("Not yet implemented")
+    return properties.getOrElse(name) { default }
 }
 
 internal actual fun setProperty(name: String, value: String) {
-    TODO("Not yet implemented")
+    properties[name] = value
 }

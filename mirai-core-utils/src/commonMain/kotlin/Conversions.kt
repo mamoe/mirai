@@ -23,7 +23,7 @@ import kotlin.jvm.JvmName
  */
 
 /**
- * 255 -> 00 FF
+ * Converts a Short to its hex representation in network order (big-endian).
  */
 public fun Short.toByteArray(): ByteArray = with(toInt()) {
     byteArrayOf(
@@ -33,7 +33,7 @@ public fun Short.toByteArray(): ByteArray = with(toInt()) {
 }
 
 /**
- * 255 -> 00 00 00 FF
+ * Converts an Int to its hex representation in network order (big-endian).
  */
 public fun Int.toByteArray(): ByteArray = byteArrayOf(
     ushr(24).toByte(),
@@ -43,7 +43,7 @@ public fun Int.toByteArray(): ByteArray = byteArrayOf(
 )
 
 /**
- * 255 -> 00 00 00 FF
+ * Converts a Long to its hex representation in network order (big-endian).
  */
 public fun Long.toByteArray(): ByteArray = byteArrayOf(
     (ushr(56) and 0xFF).toByte(),
@@ -56,10 +56,13 @@ public fun Long.toByteArray(): ByteArray = byteArrayOf(
     (ushr(0) and 0xFF).toByte()
 )
 
+/**
+ * Converts an Int to its hex representation in network order (big-endian).
+ */
 public fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
- * 255 -> 00 FF
+ * Converts an UShort to its hex representation in network order (big-endian).
  */
 public fun UShort.toByteArray(): ByteArray = with(toUInt()) {
     byteArrayOf(
@@ -68,22 +71,33 @@ public fun UShort.toByteArray(): ByteArray = with(toUInt()) {
     )
 }
 
+/**
+ * Converts a Short to its hex representation in network order (big-endian).
+ */
 public fun Short.toUHexString(separator: String = " "): String = this.toUShort().toUHexString(separator)
 
+/**
+ * Converts an UShort to its hex representation in network order (big-endian).
+ */
 public fun UShort.toUHexString(separator: String = " "): String =
     this.toInt().shr(8).toUShort().toUByte().toUHexString() + separator + this.toUByte().toUHexString()
 
+/**
+ * Converts an ULong to its hex representation in network order (big-endian).
+ */
 public fun ULong.toUHexString(separator: String = " "): String =
     this.toLong().toUHexString(separator)
 
+/**
+ * Converts a Long to its hex representation in network order (big-endian).
+ */
 public fun Long.toUHexString(separator: String = " "): String =
     this.ushr(32).toUInt().toUHexString(separator) + separator + this.toUInt().toUHexString(separator)
 
-/**
- * 255 -> 00 FF
- */
-public fun UByte.toByteArray(): ByteArray = byteArrayOf((this and 255u).toByte())
 
+/**
+ * Converts an UByte to its hex representation.
+ */
 public fun UByte.toUHexString(): String = this.toByte().toUHexString()
 
 /**
@@ -97,7 +111,7 @@ public fun UInt.toByteArray(): ByteArray = byteArrayOf(
 )
 
 /**
- * 转 [ByteArray] 后再转 hex
+ * Converts an UInt to its hex representation in network order (big-endian).
  */
 public fun UInt.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
@@ -119,22 +133,23 @@ public fun UByte.fixToUHex(): String =
     if (this.toInt() in 0..15) "0${this.toString(16).uppercase()}" else this.toString(16).uppercase()
 
 /**
- * 将 [this] 前 4 个 [Byte] 的 bits 合并为一个 [Int]
- *
- * 详细解释:
- * 一个 [Byte] 有 8 bits
- * 一个 [Int] 有 32 bits
- * 本函数将 4 个 [Byte] 的 bits 连接得到 [Int]
+ * Converts 4 bytes to an UInt in network order (big-endian).
  */
 public fun ByteArray.toUInt(): UInt =
-    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt()
-        .and(255u) shl 8) + (this[3].toUInt().and(
-        255u
-    ) shl 0)
+    (this[0].toUInt().and(255u) shl 24)
+        .plus(this[1].toUInt().and(255u) shl 16)
+        .plus(this[2].toUInt().and(255u) shl 8)
+        .plus(this[3].toUInt().and(255u) shl 0)
 
+/**
+ * Converts 2 bytes to an UShort in network order (big-endian).
+ */
 public fun ByteArray.toUShort(): UShort =
     ((this[0].toUInt().and(255u) shl 8) + (this[1].toUInt().and(255u) shl 0)).toUShort()
 
+/**
+ * Converts 4 bytes to an Int in network order (big-endian).
+ */
 public fun ByteArray.toInt(offset: Int = 0): Int =
     this[offset + 0].toInt().and(255).shl(24)
         .plus(this[offset + 1].toInt().and(255).shl(16))

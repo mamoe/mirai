@@ -76,7 +76,7 @@ public fun MiraiFile.writeText(text: String) {
 }
 
 public fun MiraiFile.readText(): String {
-    return input().use { it.readText() }
+    return input().use { it.readAllText() }
 }
 
 public fun MiraiFile.readBytes(): ByteArray {

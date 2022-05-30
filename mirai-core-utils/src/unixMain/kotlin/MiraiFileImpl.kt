@@ -157,7 +157,7 @@ internal actual class MiraiFileImpl actual constructor(
 
     @OptIn(ExperimentalIoApi::class)
     override fun input(): Input {
-        val handle = fopen(absolutePath, "r")
+        val handle = fopen(absolutePath, "rb")
             ?: throw IOException(
                 "Failed to open file '$absolutePath'",
                 PosixException.forErrno(posixFunctionName = "fopen()")
@@ -167,7 +167,7 @@ internal actual class MiraiFileImpl actual constructor(
 
     @OptIn(ExperimentalIoApi::class)
     override fun output(): Output {
-        val handle = fopen(absolutePath, "w")
+        val handle = fopen(absolutePath, "wb")
             ?: throw IOException(
                 "Failed to open file '$absolutePath'",
                 PosixException.forErrno(posixFunctionName = "fopen()")

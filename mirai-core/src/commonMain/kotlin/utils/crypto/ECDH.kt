@@ -15,9 +15,7 @@ import net.mamoe.mirai.utils.hexToBytes
 
 internal expect interface ECDHPrivateKey
 
-internal expect interface ECDHPublicKey {
-    fun getEncoded(): ByteArray
-}
+internal expect interface ECDHPublicKey
 
 internal expect class ECDHKeyPairImpl : ECDHKeyPair
 
@@ -48,9 +46,6 @@ internal interface ECDHKeyPair {
     }
 }
 
-/**
- * 椭圆曲线密码, ECDH 加密
- */
 internal expect class ECDH(keyPair: ECDHKeyPair) {
     val keyPair: ECDHKeyPair
 
@@ -62,8 +57,11 @@ internal expect class ECDH(keyPair: ECDHKeyPair) {
     companion object {
         val isECDHAvailable: Boolean
 
+
         /**
-         * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
+         * This API is platform dependent.
+         * On JVM you need to add `signHead`,
+         * but on Native you need to provide a key with initial byte value 0x04 and of 65 bytes' length.
          */
         fun constructPublicKey(key: ByteArray): ECDHPublicKey
 
@@ -78,7 +76,7 @@ internal expect class ECDH(keyPair: ECDHKeyPair) {
         fun generateKeyPair(initialPublicKey: ECDHPublicKey = defaultInitialPublicKey.key): ECDHKeyPair
 
         /**
-         * 由一对密匙计算 shareKey
+         * 由一对密匙计算服务器需要的 shareKey
          */
         fun calculateShareKey(privateKey: ECDHPrivateKey, publicKey: ECDHPublicKey): ByteArray
     }
@@ -119,19 +117,12 @@ internal data class ECDHWithPublicKey(private val initialPublicKey: ECDHInitialP
 @Serializable
 internal data class ECDHInitialPublicKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
     @Transient
-    internal val key: ECDHPublicKey = keyStr.adjustToPublicKey()
+    internal val key: ECDHPublicKey = keyStr.hexToBytes().adjustToPublicKey()
 }
-
-internal expect val publicKeyForVerify: ECDHPublicKey
 
 internal val defaultInitialPublicKey: ECDHInitialPublicKey by lazy { ECDHInitialPublicKey(keyStr = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E") }
-private val signHead = "3059301306072a8648ce3d020106082a8648ce3d030107034200".hexToBytes()
 
-internal fun String.adjustToPublicKey(): ECDHPublicKey {
-    return this.hexToBytes().adjustToPublicKey()
-}
 
-internal fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
+internal expect fun ByteArray.adjustToPublicKey(): ECDHPublicKey
 
-    return ECDH.constructPublicKey(signHead + this)
-}
+internal val ECDH.Companion.curveName get() = "prime256v1" // p-256

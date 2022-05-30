@@ -24,7 +24,7 @@ internal abstract class AbstractNativeMiraiFileImplTest {
     @AfterTest
     fun afterTest() {
         println("Cleaning up...")
-        baseTempDir.deleteRecursively()
+        println("deleteRecursively:" + baseTempDir.deleteRecursively())
     }
 
     @BeforeTest
@@ -35,8 +35,8 @@ internal abstract class AbstractNativeMiraiFileImplTest {
 
     @Test
     fun `canonical paths for canonical input`() {
-        assertEquals(tempPath, tempDir.path)
-        assertEquals(tempPath, tempDir.absolutePath)
+        assertPathEquals(tempPath, tempDir.path)
+        assertPathEquals(tempPath, tempDir.absolutePath)
     }
 
     @Test
@@ -46,31 +46,26 @@ internal abstract class AbstractNativeMiraiFileImplTest {
     }
 
     @Test
-    fun `canonical paths for non-canonical input`() {
+    open fun `canonical paths for non-canonical input`() {
         // extra /
         MiraiFile.create("$tempPath/").resolve("test").let {
-            assertEquals("${tempPath}/test", it.path)
-            assertEquals("${tempPath}/test", it.absolutePath)
+            assertPathEquals("${tempPath}/test", it.path)
+            assertPathEquals("${tempPath}/test", it.absolutePath)
         }
         // extra //
         MiraiFile.create("$tempPath//").resolve("test").let {
-            assertEquals("${tempPath}/test", it.path)
-            assertEquals("${tempPath}/test", it.absolutePath)
+            assertPathEquals("${tempPath}/test", it.path)
+            assertPathEquals("${tempPath}/test", it.absolutePath)
         }
         // extra /.
         MiraiFile.create("$tempPath/.").resolve("test").let {
-            assertEquals("${tempPath}/test", it.path)
-            assertEquals("${tempPath}/test", it.absolutePath)
+            assertPathEquals("${tempPath}/test", it.path)
+            assertPathEquals("${tempPath}/test", it.absolutePath)
         }
         // extra /./.
         MiraiFile.create("$tempPath/./.").resolve("test").let {
-            assertEquals("${tempPath}/test", it.path)
-            assertEquals("${tempPath}/test", it.absolutePath)
-        }
-        // extra /sss/..
-        MiraiFile.create("$tempPath/sss/..").resolve("test").let {
-            assertEquals("${tempPath}/sss/../test", it.path) // because file is not found
-            assertEquals("${tempPath}/sss/../test", it.absolutePath)
+            assertPathEquals("${tempPath}/test", it.path)
+            assertPathEquals("${tempPath}/test", it.absolutePath)
         }
     }
 
@@ -90,7 +85,7 @@ internal abstract class AbstractNativeMiraiFileImplTest {
         assertFalse { tempDir.resolve("not_existing_dir").exists() }
         assertEquals(0L, tempDir.resolve("not_existing_dir").length)
         assertTrue { tempDir.resolve("not_existing_dir").mkdir() }
-        assertNotEquals(0L, tempDir.resolve("not_existing_dir").length)
+//        assertNotEquals(0L, tempDir.resolve("not_existing_dir").length) // length is platform-dependent, on Windows it is 0 but on unix it is not
         assertTrue { tempDir.resolve("not_existing_dir").exists() }
     }
 
@@ -98,20 +93,27 @@ internal abstract class AbstractNativeMiraiFileImplTest {
     fun `isFile isDirectory`() {
         assertTrue { tempDir.exists() }
 
+        println("1")
         assertFalse { tempDir.resolve("not_existing_file.txt").exists() }
         assertEquals(false, tempDir.resolve("not_existing_file.txt").isFile)
+        println("1")
         assertEquals(false, tempDir.resolve("not_existing_file.txt").isDirectory)
+        println("1")
         assertTrue { tempDir.resolve("not_existing_file.txt").createNewFile() }
         assertEquals(true, tempDir.resolve("not_existing_file.txt").isFile)
         assertEquals(false, tempDir.resolve("not_existing_file.txt").isDirectory)
+        println("1")
         assertTrue { tempDir.resolve("not_existing_file.txt").exists() }
 
+        println("1")
         assertFalse { tempDir.resolve("not_existing_dir").exists() }
         assertEquals(false, tempDir.resolve("not_existing_dir").isFile)
         assertEquals(false, tempDir.resolve("not_existing_dir").isDirectory)
+        println("1")
         assertTrue { tempDir.resolve("not_existing_dir").mkdir() }
         assertEquals(false, tempDir.resolve("not_existing_dir").isFile)
         assertEquals(true, tempDir.resolve("not_existing_dir").isDirectory)
+        println("1")
         assertTrue { tempDir.resolve("not_existing_dir").exists() }
     }
 
@@ -134,7 +136,7 @@ internal abstract class AbstractNativeMiraiFileImplTest {
 
     @Test
     fun readText() {
-        tempDir.resolve("readText1.txt").let { file ->
+        tempDir.resolve("readText2.txt").let { file ->
             assertTrue { !file.exists() }
             assertFailsWith<IOException> { file.readText() }
 
@@ -142,5 +144,40 @@ internal abstract class AbstractNativeMiraiFileImplTest {
             file.writeText(text)
             assertEquals(text, file.readText())
         }
+    }
+
+    private val bigText = "some text".repeat(10000)
+
+    @Test
+    fun writeBigText() {
+        // new file
+        tempDir.resolve("writeText3.txt").let { file ->
+            file.writeText(bigText)
+            assertEquals(bigText.length, file.length.toInt())
+        }
+
+        // override
+        tempDir.resolve("writeText4.txt").let { file ->
+            file.writeText(bigText)
+            assertEquals(bigText.length, file.length.toInt())
+        }
+    }
+
+    @Test
+    fun readBigText() {
+        tempDir.resolve("readText4.txt").let { file ->
+            assertTrue { !file.exists() }
+            assertFailsWith<IOException> { file.readText() }
+
+            file.writeText(bigText)
+            println("reading text")
+            val read = file.readText()
+            assertEquals(bigText.length, read.length)
+            assertEquals(bigText, read)
+        }
+    }
+
+    protected fun assertPathEquals(expected: String, actual: String, message: String? = null) {
+        asserter.assertEquals(message, expected.replace("\\", "/"), actual.replace("\\", "/"))
     }
 }
