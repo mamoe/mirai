@@ -13,19 +13,15 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 internal class UnixMiraiFileImplTest : AbstractNativeMiraiFileImplTest() {
     private val rand = Random.nextInt().absoluteValue
-    override val baseTempDir: MiraiFile = MiraiFile.create("/Users/Shared/mirai_test")
-    override val tempPath = "/Users/Shared/mirai_test/temp$rand"
-    private val tempDir = MiraiFile.create(tempPath).apply {
-        assertTrue("Failed to make temp directory: ${this.absolutePath}") { mkdirs() }
-    }
+    override val baseTempDir: MiraiFile by lazy { MiraiFile.create(MiraiFile.getWorkingDir().absolutePath + "/mirai_unit_tests") }
+    override val tempPath by lazy { "${baseTempDir.absolutePath}/temp$rand" }
 
     @Test
     override fun parent() {
-        assertEquals("/Users/Shared/mirai_test", tempDir.parent!!.absolutePath)
+        assertEquals(baseTempDir.absolutePath, tempDir.parent!!.absolutePath)
         assertEquals(null, MiraiFile.create("/").parent)
         assertEquals("/", MiraiFile.create("/dev").parent?.path)
         assertEquals("/", MiraiFile.create("/dev").parent?.absolutePath)

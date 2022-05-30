@@ -11,10 +11,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
-import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.toKString
+import kotlinx.cinterop.*
 import platform.posix.*
 
 @OptIn(ExperimentalIoApi::class)
@@ -42,16 +39,31 @@ private fun readlink(path: String): String = memScoped {
 internal actual class MiraiFileImpl actual constructor(
     override val path: String,
 ) : MiraiFile {
-    companion object {
+    actual companion object {
         private const val SEPARATOR = '/'
+        private val ROOT by lazy { MiraiFileImpl("/") }
+
+        @Suppress("UnnecessaryOptInAnnotation")
+        @OptIn(UnsafeNumber::class)
+        actual fun getWorkingDir(): MiraiFile {
+            val path = memScoped {
+                ByteArray(PATH_MAX).usePinned {
+                    getcwd(it.addressOf(0), it.get().size.convert())
+                    it.get().toKString()
+                }
+            }
+            return MiraiFile.create(path)
+        }
     }
 
     override val absolutePath: String by lazy { kotlin.run { readlink(path) } }
 
     override val parent: MiraiFile? by lazy {
+        val absolutePath = absolutePath
         val p = absolutePath.substringBeforeLast(SEPARATOR, "")
         if (p.isEmpty()) {
-            return@lazy null
+            if (absolutePath.singleOrNull() == SEPARATOR) return@lazy null // root
+            else return@lazy ROOT
         }
         MiraiFileImpl(p)
     }
@@ -123,7 +135,7 @@ internal actual class MiraiFileImpl actual constructor(
     override fun mkdir(): Boolean {
         @Suppress("UnnecessaryOptInAnnotation") // bug
         @OptIn(UnsafeNumber::class)
-        return mkdir(absolutePath, "755".toUShort(8).convert()).convert<Int>() == 0
+        return (mkdir("$absolutePath/", "755".toUShort(8).convert()).convert<Int>() == 0)
     }
 
     @OptIn(UnsafeNumber::class)

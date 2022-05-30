@@ -15,7 +15,7 @@ import kotlin.test.*
 internal abstract class AbstractNativeMiraiFileImplTest {
     protected abstract val baseTempDir: MiraiFile // MiraiFile.create("/Users/Shared/mirai_test")
     protected abstract val tempPath: String
-    private val tempDir by lazy {
+    protected val tempDir by lazy {
         MiraiFile.create(tempPath).apply {
             assertTrue("Failed to make temp directory: ${this.absolutePath}") { mkdirs() }
         }

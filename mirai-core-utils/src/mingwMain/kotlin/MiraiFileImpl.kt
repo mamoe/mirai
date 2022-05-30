@@ -11,7 +11,9 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
 import kotlinx.cinterop.*
+import platform.posix.PATH_MAX
 import platform.posix.fopen
+import platform.posix.getcwd
 import platform.windows.*
 
 
@@ -21,9 +23,21 @@ internal actual class MiraiFileImpl actual constructor(
 ) : MiraiFile {
     override val path = path.replace("/", "\\")
 
-    companion object {
+    actual companion object {
         private val ROOT_REGEX = Regex("""^([a-zA-z]+:[/\\])""")
         private const val SEPARATOR = '\\'
+
+        @Suppress("UnnecessaryOptInAnnotation")
+        @OptIn(UnsafeNumber::class)
+        actual fun getWorkingDir(): MiraiFile {
+            val path = memScoped {
+                ByteArray(PATH_MAX).usePinned {
+                    getcwd(it.addressOf(0), it.get().size.convert())
+                    it.get().toKString()
+                }
+            }
+            return MiraiFile.create(path)
+        }
     }
 
     override val absolutePath: String = kotlin.run {
