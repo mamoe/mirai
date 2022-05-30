@@ -10,11 +10,13 @@
 package net.mamoe.mirai.internal.test
 
 import net.mamoe.mirai.IMirai
+import net.mamoe.mirai.internal.initMirai
 import net.mamoe.mirai.utils.setSystemProp
 import kotlin.test.Test
 
 
 internal actual fun initPlatform() {
+    initMirai()
 }
 
 internal actual class PlatformInitializationTest actual constructor() : AbstractTest() {
@@ -27,6 +29,9 @@ internal actual class PlatformInitializationTest actual constructor() : Abstract
  * All test classes should inherit from [AbstractTest]
  */
 internal actual abstract class AbstractTest actual constructor() : CommonAbstractTest() {
+    init {
+        Companion
+    }
 
     actual companion object {
         init {

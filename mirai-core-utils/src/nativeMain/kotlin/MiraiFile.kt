@@ -215,5 +215,5 @@ internal class PosixInputForFile(val file: CPointer<FILE>) : AbstractInput() {
 }
 
 @OptIn(ExperimentalIoApi::class)
-internal fun PosixException.wrapIO(): IOException =
+public fun PosixException.wrapIO(): IOException =
     IOException("I/O operation failed due to posix error code $errno", this)

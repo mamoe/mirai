@@ -9,41 +9,19 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-
 internal actual abstract class SocketAddress(
-    actual val host: String,
-    actual val port: Int,
+    val host: String,
+    val port: Int,
     @Suppress("UNUSED_PARAMETER") constructorMarker: Unit?, // avoid ambiguity with function SocketAddress
 )
 
+internal actual fun SocketAddress.getHost(): String = host
+internal actual fun SocketAddress.getPort(): Int = port
+
+
 internal class SocketAddressImpl(host: String, port: Int) : SocketAddress(host, port, null)
 
-internal actual fun SocketAddress(host: String, port: Int): SocketAddress {
+internal actual fun createSocketAddress(host: String, port: Int): SocketAddress {
     return SocketAddressImpl(host, port)
 }
 
-/**
- * Factory for a specific [NetworkHandler] implementation.
- */
-internal actual fun interface NetworkHandlerFactory<out H : NetworkHandler> {
-    actual fun create(
-        context: NetworkHandlerContext,
-        host: String,
-        port: Int
-    ): H = create(context, SocketAddressImpl(host, port))
-
-    /**
-     * Create an instance of [H]. The returning [H] has [NetworkHandler.state] of [State.INITIALIZED]
-     */
-    actual fun create(
-        context: NetworkHandlerContext,
-        address: SocketAddress
-    ): H
-
-    actual companion object {
-        actual fun getPlatformDefault(): NetworkHandlerFactory<*> {
-            TODO("Not yet implemented")
-        }
-    }
-}

@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.network.handler.CommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import java.net.SocketAddress
 import io.netty.channel.Channel as NettyChannel
@@ -34,7 +35,7 @@ import io.netty.channel.Channel as NettyChannel
 internal open class NettyNetworkHandler(
     context: NetworkHandlerContext,
     address: SocketAddress,
-) : CommonNetworkHandler<NettyChannel>(context, address) {
+) : CommonNetworkHandler<NettyChannel>(context, address.cast()) {
     override fun toString(): String {
         return "NettyNetworkHandler(context=$context, address=$address)"
     }

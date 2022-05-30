@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ServerList.Companion.DEFAULT_SERVER_LIST
 import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.internal.network.handler.createSocketAddress
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.info
@@ -33,7 +34,7 @@ internal data class ServerAddress(
         return "$host:$port"
     }
 
-    fun toSocketAddress(): SocketAddress = SocketAddress(host, port)
+    fun toSocketAddress(): SocketAddress = createSocketAddress(host, port)
 }
 
 /**

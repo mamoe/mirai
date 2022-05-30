@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("MiraiImplKt_common")
+
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
@@ -31,25 +33,14 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
 import net.mamoe.mirai.internal.event.InternalEventMechanism
-import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.EmptyRefineContext
+import net.mamoe.mirai.internal.message.RefineContext
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.data.*
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
-import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
-import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
-import net.mamoe.mirai.internal.message.data.UnsupportedMessageImpl
 import net.mamoe.mirai.internal.message.image.*
-import net.mamoe.mirai.internal.message.image.OfflineGroupImage
-import net.mamoe.mirai.internal.message.image.OnlineFriendImageImpl
-import net.mamoe.mirai.internal.message.image.OnlineGroupImageImpl
 import net.mamoe.mirai.internal.message.source.*
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromStrangerImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromTempImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -77,14 +68,19 @@ import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmName
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
+
+@Suppress("FunctionName")
+internal expect fun _MiraiImpl_static_init()
 
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object {
         init {
+            _MiraiImpl_static_init()
             MessageSerializers.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             MessageSerializers.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
             MessageSerializers.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
@@ -870,17 +866,21 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return main.toForwardMessageNodes(bot, context)
     }
 
-    protected open suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {
+    private suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {
         val msg = this
+
+        @Suppress("USELESS_CAST") // compiler bug, do not remove
+        val senderName = (msg.msgHead.groupInfo?.groupCard
+            ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
+            ?: msg.msgHead.fromUin.toString()) as String
+        val chain = listOf(msg)
+            .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
+            .refineDeep(bot, refineContext)
         return ForwardMessage.Node(
             senderId = msg.msgHead.fromUin,
             time = msg.msgHead.msgTime,
-            senderName = msg.msgHead.groupInfo?.groupCard
-                ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
-                ?: msg.msgHead.fromUin.toString(),
-            messageChain = listOf(msg)
-                .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
-                .refineDeep(bot, refineContext)
+            senderName = senderName,
+            messageChain = chain
         )
     }
 

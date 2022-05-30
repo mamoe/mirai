@@ -12,8 +12,14 @@ package net.mamoe.mirai.internal.network.handler
 import java.net.InetSocketAddress
 
 @Suppress("ACTUAL_WITHOUT_EXPECT") // visibility
-internal actual typealias SocketAddress = java.net.SocketAddress
+internal actual typealias SocketAddress = java.net.InetSocketAddress
 
-internal actual fun SocketAddress(host: String, port: Int): SocketAddress {
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal actual fun SocketAddress.getHost(): String = hostString ?: error("Failed to get host from address '$this'.")
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal actual fun SocketAddress.getPort(): Int = this.port
+
+internal actual fun createSocketAddress(host: String, port: Int): SocketAddress {
     return InetSocketAddress.createUnresolved(host, port)
 }

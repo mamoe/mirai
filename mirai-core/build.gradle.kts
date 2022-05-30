@@ -102,6 +102,29 @@ kotlin {
             dependencies {
             }
         }
+
+        val mingwMain by getting {
+            dependencies {
+            }
+        }
+
+        configure((LINUX_TARGETS + WIN_TARGETS).map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+
+        configure(MAC_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-ios`)
+            }
+        }
+
+//        val unixMain by getting {
+//            dependencies {
+//                implementation(`ktor-client-cio`)
+//            }
+//        }
     }
 }
 
