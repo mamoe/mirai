@@ -9,58 +9,7 @@
 
 package net.mamoe.mirai.internal.utils
 
-import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
-import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
-
-/**
- * TCP Socket.
- */
-internal actual class PlatformSocket : Closeable, HighwayProtocolChannel {
-    actual val isOpen: Boolean
-        get() = TODO("Not yet implemented")
-
-    actual override fun close() {
-    }
-
-    actual suspend fun send(packet: ByteArray, offset: Int, length: Int) {
-    }
-
-    /**
-     * @throws SendPacketInternalException
-     */
-    actual override suspend fun send(packet: ByteReadPacket) {
-    }
-
-    /**
-     * @throws ReadPacketInternalException
-     */
-    actual override suspend fun read(): ByteReadPacket {
-        TODO("Not yet implemented")
-    }
-
-    actual suspend fun connect(serverHost: String, serverPort: Int) {
-    }
-
-    actual companion object {
-        actual suspend fun connect(
-            serverIp: String,
-            serverPort: Int
-        ): PlatformSocket {
-            TODO("Not yet implemented")
-        }
-
-        actual suspend inline fun <R> withConnection(
-            serverIp: String,
-            serverPort: Int,
-            block: PlatformSocket.() -> R
-        ): R {
-            TODO("Not yet implemented")
-        }
-
-    }
-
-}
 
 internal actual class SocketException : IOException {
     actual constructor() : super("", null)

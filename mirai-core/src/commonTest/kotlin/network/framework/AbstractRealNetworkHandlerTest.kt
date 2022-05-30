@@ -24,11 +24,8 @@ import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.handler.SocketAddress
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.subLogger
@@ -175,7 +172,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     //Use overrideComponents to avoid StackOverflowError when applying components
     open fun createAddress(): SocketAddress =
-        overrideComponents[ServerList].pollAny().let { SocketAddress(it.host, it.port) }
+        overrideComponents[ServerList].pollAny().let { createSocketAddress(it.host, it.port) }
 
     ///////////////////////////////////////////////////////////////////////////
     // Assertions

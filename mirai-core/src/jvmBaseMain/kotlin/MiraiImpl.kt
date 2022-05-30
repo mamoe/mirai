@@ -7,14 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils
+@file:JvmName("MiraiImplKt")
 
-private val properties: MutableMap<String, String> = ConcurrentHashMap()
+package net.mamoe.mirai.internal
 
-internal actual fun getProperty(name: String, default: String): String? {
-    return properties.getOrElse(name) { default }
-}
-
-internal actual fun setProperty(name: String, value: String) {
-    properties[name] = value
+@Suppress("FunctionName")
+internal actual fun _MiraiImpl_static_init() {
+    // nop
 }

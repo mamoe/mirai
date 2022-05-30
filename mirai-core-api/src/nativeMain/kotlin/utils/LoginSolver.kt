@@ -75,7 +75,7 @@ public actual abstract class LoginSolver actual constructor() {
          * @return `SwingSolver` 或 `StandardCharImageLoginSolver` 或 `null`
          */
         public actual val Default: LoginSolver?
-            get() = TODO("Not yet implemented")
+            get() = null
 
         @Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
         @Suppress("unused")

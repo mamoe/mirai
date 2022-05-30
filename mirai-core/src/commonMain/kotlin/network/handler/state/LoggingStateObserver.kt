@@ -16,6 +16,7 @@ import net.mamoe.mirai.utils.coroutineName
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.systemProp
 import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.ThreadLocal
 
 internal class LoggingStateObserver(
     val logger: MiraiLogger,
@@ -72,6 +73,7 @@ internal class LoggingStateObserver(
         )
     }
 
+    @ThreadLocal
     companion object {
         /**
          * - `on`/`true` for simple logging

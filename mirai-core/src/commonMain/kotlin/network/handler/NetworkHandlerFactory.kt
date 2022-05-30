@@ -27,9 +27,12 @@ internal expect fun interface NetworkHandlerFactory<out H : NetworkHandler> {
     }
 }
 
-internal expect abstract class SocketAddress {
-    val host: String
-    val port: Int
-}
+internal expect abstract class SocketAddress
 
-internal expect fun SocketAddress(host: String, port: Int): SocketAddress
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal expect fun SocketAddress.getHost(): String
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal expect fun SocketAddress.getPort(): Int
+
+internal expect fun createSocketAddress(host: String, port: Int): SocketAddress

@@ -86,7 +86,7 @@ internal actual class PlatformSocket : Closeable, HighwayProtocolChannel {
         }
     }
 
-    actual suspend fun connect(serverHost: String, serverPort: Int) {
+    suspend fun connect(serverHost: String, serverPort: Int) {
         runInterruptible(Dispatchers.IO) {
             socket = Socket(serverHost, serverPort)
             readChannel = socket.getInputStream().buffered()

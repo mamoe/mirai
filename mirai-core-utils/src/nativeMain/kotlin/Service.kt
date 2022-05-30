@@ -44,6 +44,12 @@ public object Services {
         }
 
     }
+
+    public fun print(): String {
+        lock.withLock {
+            return registered.entries.joinToString { "${it.key}:${it.value}" }
+        }
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -57,7 +63,7 @@ public actual fun <T : Any> loadService(
     clazz: KClass<out T>,
     fallbackImplementation: String?
 ): T = loadServiceOrNull(clazz, fallbackImplementation)
-    ?: error("Could not load service '${clazz.qualifiedName ?: clazz}'")
+    ?: error("Could not load service '${clazz.qualifiedName ?: clazz}'. Current services: ${Services.print()}")
 
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> =
     Services.implementations(qualifiedNameOrFail(clazz))?.asSequence().orEmpty().castUp()
