@@ -244,16 +244,16 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     presets.filter { it.name in UNIX_LIKE_TARGETS }
         .forEach { preset ->
             addNativeTarget(preset).run {
-                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(unixMain)
-                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(unixTest)
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixMain) }
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixTest) }
             }
         }
 
     presets.filter { it.name in WIN_TARGETS }
         .forEach { preset ->
             addNativeTarget(preset).run {
-                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(mingwMain)
-                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first().dependsOn(mingwTest)
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(mingwMain) }
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(mingwTest) }
             }
         }
 
@@ -270,9 +270,9 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     mingwTest.dependsOn(nativeTest)
 
     jvmMain.dependsOn(jvmBaseMain)
-    androidMain.dependsOn(jvmBaseMain)
-
     jvmTest.dependsOn(jvmBaseTest)
+
+    androidMain.dependsOn(jvmBaseMain)
     androidTest.dependsOn(jvmBaseTest)
 }
 
