@@ -131,9 +131,11 @@ public actual interface AbsoluteFolder : AbsoluteFileFolder {
     /**
      * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`. 当 [deep] 为 `true` 时还会深入子目录查找.
      */
+    @Suppress("OVERLOADS_INTERFACE", "ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // Keep JVM ABI
+    @JvmOverloads
     public actual suspend fun resolveFileById(
         id: String,
-        deep: Boolean
+        deep: Boolean = false
     ): AbsoluteFile?
 
     /**
@@ -187,10 +189,12 @@ public actual interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
+    @Suppress("OVERLOADS_INTERFACE", "ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // Keep JVM ABI
+    @JvmOverloads
     public actual suspend fun uploadNewFile(
         filepath: String,
         content: ExternalResource,
-        callback: ProgressionCallback<AbsoluteFile, Long>?,
+        callback: ProgressionCallback<AbsoluteFile, Long>? = null,
     ): AbsoluteFile
 
     public actual companion object {

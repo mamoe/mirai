@@ -14,6 +14,19 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal abstract class AbstractMutableComponentStorageTest : AbstractTest() {
+
+    internal data class TestComponent2(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent2>
+    }
+
+    internal data class TestComponent3(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent3>
+    }
+
     protected abstract fun createStorage(): MutableComponentStorage
 
     @Test

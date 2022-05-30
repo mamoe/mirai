@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.pipeline
 
-import io.ktor.util.collections.*
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext

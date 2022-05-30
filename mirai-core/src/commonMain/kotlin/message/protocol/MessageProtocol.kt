@@ -30,6 +30,7 @@ internal abstract class MessageProtocol(
     }
 
     fun collectProcessors(processorCollector: ProcessorCollector) {
+        println("collectProcessors, this=$this, class=${this::class}")
         processorCollector.collectProcessorsImpl()
     }
 

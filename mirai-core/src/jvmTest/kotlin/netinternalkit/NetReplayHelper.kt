@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.SocketAddress
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler
@@ -31,7 +32,6 @@ import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.lang.invoke.MethodHandles
-import java.net.SocketAddress
 import javax.swing.*
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMembers
@@ -76,7 +76,7 @@ private fun NetReplayHelperClass(): Class<*> {
 
 
 private fun attachNetReplayHelper(channel: Channel) {
-    channel.pipeline()
+    channel.pipeline() // TODO: 2022/6/2 will not work since "raw-packet-collector" has been removed
         .addBefore("raw-packet-collector", "raw-packet-dumper", newRawPacketDumper())
 
     attachNetReplayWView(channel)
@@ -280,5 +280,6 @@ fun Bot.attachNetReplayHelper() {
 
 fun main() {
     val bot = BotFactory.newBot(0, "")
-    bot.attachNetReplayHelper()
+    bot.attachNetReplayHelper() //
+    // TODO: 2022/6/2 will not work since "raw-packet-collector" has been removed, see net.mamoe.mirai.internal.netinternalkit.NetReplayHelper.attachNetReplayHelper(io.netty.channel.Channel)
 }

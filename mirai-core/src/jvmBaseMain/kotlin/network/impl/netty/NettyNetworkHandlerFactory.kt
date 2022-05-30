@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.impl.netty
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import java.net.SocketAddress
+import net.mamoe.mirai.internal.network.handler.SocketAddress
 
 internal object NettyNetworkHandlerFactory : NetworkHandlerFactory<NettyNetworkHandler> {
     override fun create(context: NetworkHandlerContext, address: SocketAddress): NettyNetworkHandler {

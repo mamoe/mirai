@@ -46,6 +46,7 @@ internal object PluginDataRenameToIdTest : AbstractTestPointAsPlugin() {
             test: a
             """.trimIndent()
         )
+        File("data/PluginDataRenameToIdTest").mkdirs()
         File("data/PluginDataRenameToIdTest/test.txt").createNewFile()
         File("data/PluginDataRenameToIdTest/testdata.yml").writeText(
             """

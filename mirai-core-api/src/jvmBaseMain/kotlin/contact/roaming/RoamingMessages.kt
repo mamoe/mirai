@@ -7,9 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmBlockingBridge
+
 package net.mamoe.mirai.contact.roaming
 
 import kotlinx.coroutines.flow.Flow
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -46,10 +49,11 @@ public actual interface RoamingMessages {
      * @param timeEnd 结束时间, UTC+8 时间戳, 单位为秒. 可以为 [Long.MAX_VALUE], 即表示到可以获取的最晚的消息为止. 低于 [timeStart] 的值将会被看作是 [timeStart] 的值.
      * @param filter 过滤器.
      */
+    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // Keep JVM ABI
     public actual suspend fun getMessagesIn(
         timeStart: Long,
         timeEnd: Long,
-        filter: RoamingMessageFilter?
+        filter: RoamingMessageFilter? = null
     ): Flow<MessageChain>
 
     /**
@@ -68,8 +72,9 @@ public actual interface RoamingMessages {
      *
      * @param filter 过滤器.
      */
+    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // Keep JVM ABI
     public actual suspend fun getAllMessages(
-        filter: RoamingMessageFilter?
+        filter: RoamingMessageFilter? = null
     ): Flow<MessageChain> = getMessagesIn(0, Long.MAX_VALUE, filter)
 
     /**

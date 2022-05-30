@@ -1913,41 +1913,23 @@ public abstract class net/mamoe/mirai/event/MessageSelectBuilder : net/mamoe/mir
 	public synthetic fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 }
 
-public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe/mirai/event/MessageSubscribersBuilder {
+public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe/mirai/event/CommonMessageSelectBuilderUnit {
 	public fun <init> (Lnet/mamoe/mirai/event/events/MessageEvent;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun always (Lkotlin/jvm/functions/Function3;)Ljava/lang/Object;
-	public synthetic fun always (Lkotlin/jvm/functions/Function3;)Ljava/lang/Void;
-	public abstract fun default (Lkotlin/jvm/functions/Function3;)V
-	public final fun defaultQuoteReply (Lkotlin/jvm/functions/Function1;)V
-	public final fun defaultReply (Lkotlin/jvm/functions/Function1;)V
-	public final fun invoke-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	protected abstract fun obtainCurrentCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
-	protected abstract fun obtainCurrentDeferred ()Lkotlinx/coroutines/CompletableDeferred;
-	public fun quoteReply-8NSq9Eo (JLjava/lang/String;)V
-	public fun quoteReply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
-	public fun quoteReply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)V
-	public fun reply-8NSq9Eo (JLjava/lang/String;)V
-	public fun reply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
-	public fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
 	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
 	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)V
-	public final fun timeout (JLkotlin/jvm/functions/Function1;)V
-	public final fun timeout-1WcQj8o (J)J
 	public final synthetic fun timeout-ncvN2qU (J)J
-	public final fun timeoutException (JLkotlin/jvm/functions/Function0;)V
-	public static synthetic fun timeoutException$default (Lnet/mamoe/mirai/event/MessageSelectBuilderUnit;JLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
 
 public final class net/mamoe/mirai/event/MessageSelectionTimeoutChecker {
@@ -3609,48 +3591,24 @@ public final class net/mamoe/mirai/message/data/Dice$Key : net/mamoe/mirai/messa
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/MessageChain, net/mamoe/mirai/message/data/MessageChainImpl {
+public final class net/mamoe/mirai/message/data/EmptyMessageChain : java/util/List, kotlin/jvm/internal/markers/KMappedMarker, net/mamoe/mirai/message/data/DirectSizeAccess, net/mamoe/mirai/message/data/DirectToStringAccess, net/mamoe/mirai/message/data/MessageChain {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/EmptyMessageChain;
-	public synthetic fun add (ILjava/lang/Object;)V
-	public fun add (ILnet/mamoe/mirai/message/data/SingleMessage;)V
-	public synthetic fun add (Ljava/lang/Object;)Z
-	public fun add (Lnet/mamoe/mirai/message/data/SingleMessage;)Z
-	public fun addAll (ILjava/util/Collection;)Z
-	public fun addAll (Ljava/util/Collection;)Z
-	public fun clear ()V
-	public final fun contains (Ljava/lang/Object;)Z
 	public fun contains (Lnet/mamoe/mirai/message/data/SingleMessage;)Z
 	public fun containsAll (Ljava/util/Collection;)Z
 	public fun contentToString ()Ljava/lang/String;
-	public fun equals (Ljava/lang/Object;)Z
 	public synthetic fun get (I)Ljava/lang/Object;
 	public fun get (I)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public fun getHasConstrainSingle ()Z
 	public fun getSize ()I
-	public fun hashCode ()I
-	public final fun indexOf (Ljava/lang/Object;)I
 	public fun indexOf (Lnet/mamoe/mirai/message/data/SingleMessage;)I
 	public fun isEmpty ()Z
 	public fun iterator ()Ljava/util/Iterator;
-	public final fun lastIndexOf (Ljava/lang/Object;)I
 	public fun lastIndexOf (Lnet/mamoe/mirai/message/data/SingleMessage;)I
 	public fun listIterator ()Ljava/util/ListIterator;
 	public fun listIterator (I)Ljava/util/ListIterator;
-	public synthetic fun remove (I)Ljava/lang/Object;
-	public fun remove (I)Lnet/mamoe/mirai/message/data/SingleMessage;
-	public fun remove (Ljava/lang/Object;)Z
-	public fun removeAll (Ljava/util/Collection;)Z
-	public fun replaceAll (Ljava/util/function/UnaryOperator;)V
-	public fun retainAll (Ljava/util/Collection;)Z
 	public fun serializeToMiraiCode ()Ljava/lang/String;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
-	public fun set (ILnet/mamoe/mirai/message/data/SingleMessage;)Lnet/mamoe/mirai/message/data/SingleMessage;
-	public final fun size ()I
-	public fun sort (Ljava/util/Comparator;)V
 	public fun subList (II)Ljava/util/List;
-	public fun toArray ()[Ljava/lang/Object;
-	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -5678,6 +5636,8 @@ public final class net/mamoe/mirai/network/NoStandardInputForCaptchaException : 
 }
 
 public final class net/mamoe/mirai/network/RetryLaterException : net/mamoe/mirai/network/LoginFailedException {
+	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCause ()Ljava/lang/Throwable;
 }
 
 public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : net/mamoe/mirai/network/LoginFailedException {
@@ -6188,14 +6148,11 @@ public abstract class net/mamoe/mirai/utils/MiraiLoggerPlatformBase : net/mamoe/
 	public final fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
 	protected fun error0 (Ljava/lang/String;)V
 	protected abstract fun error0 (Ljava/lang/String;Ljava/lang/Throwable;)V
-	public final synthetic fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final fun info (Ljava/lang/String;)V
 	public final fun info (Ljava/lang/String;Ljava/lang/Throwable;)V
 	protected fun info0 (Ljava/lang/String;)V
 	protected abstract fun info0 (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun isEnabled ()Z
-	public synthetic fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
-	public final synthetic fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public final fun verbose (Ljava/lang/String;)V
 	public final fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
 	protected fun verbose0 (Ljava/lang/String;)V
@@ -6466,7 +6423,7 @@ public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/util
 	public fun error (Ljava/lang/String;)V
 	public fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun error (Ljava/lang/Throwable;)V
-	public synthetic fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun getFollower ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public fun getIdentity ()Ljava/lang/String;
 	public fun info (Ljava/lang/String;)V
 	public fun info (Ljava/lang/String;Ljava/lang/Throwable;)V
@@ -6478,7 +6435,7 @@ public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/util
 	public fun isVerboseEnabled ()Z
 	public fun isWarningEnabled ()Z
 	public synthetic fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
-	public synthetic fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
+	public fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public fun verbose (Ljava/lang/String;)V
 	public fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun verbose (Ljava/lang/Throwable;)V

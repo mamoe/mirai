@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.locks.ReentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -20,23 +22,28 @@ import platform.posix.*
 public actual fun currentTimeMillis(): Long {
     // Do not use getTimeMillis from stdlib, it doesn't support iosSimulatorArm64
     memScoped {
-        val timeT = alloc<time_tVar>()
-        time(timeT.ptr)
-        return timeT.value.toLongUnsigned()
+        val spec = alloc<timespec>()
+        clock_gettime(CLOCK_REALTIME.convert(), spec.ptr)
+        return (spec.tv_sec * 1000 + spec.tv_nsec / 1e6).toLong()
     }
 }
 
-public actual fun currentTimeFormatted(format: String?): String {
+
+private val timeLock = ReentrantLock()
+
+@OptIn(UnsafeNumber::class)
+public actual fun currentTimeFormatted(format: String?): String = timeLock.withLock {
     memScoped {
         val timeT = alloc<time_tVar>()
         time(timeT.ptr)
-        val tm = localtime(timeT.ptr)
-        try {
-            val bb = allocArray<ByteVar>(40)
-            strftime(bb, 40, "%Y-%M-%d %H:%M:%S", tm);
-            return bb.toKString()
-        } finally {
-            free(tm)
-        }
+
+        // http://www.cplusplus.com/reference/clibrary/ctime/localtime/
+        // tm returns a static pointer which doesn't need to free
+        val tm = localtime(timeT.ptr) // localtime is not thread-safe
+
+        val bb = allocArray<ByteVar>(40)
+        strftime(bb, 40, "%Y-%m-%d %H:%M:%S", tm);
+
+        bb.toKString()
     }
 }

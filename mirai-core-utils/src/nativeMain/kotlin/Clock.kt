@@ -12,5 +12,7 @@
 package net.mamoe.mirai.utils
 
 public actual inline fun measureTimeMillis(block: () -> Unit): Long {
-    return kotlin.system.measureTimeMillis(block)
+    val start = currentTimeMillis() // getTimeMillis in stdlib doesn't work on some native targets.
+    block()
+    return currentTimeMillis() - start
 }

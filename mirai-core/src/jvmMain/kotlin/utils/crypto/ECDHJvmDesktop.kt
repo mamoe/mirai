@@ -12,14 +12,16 @@ package net.mamoe.mirai.internal.utils.crypto
 import net.mamoe.mirai.utils.decodeBase64
 import net.mamoe.mirai.utils.md5
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import java.security.*
+import java.security.KeyFactory
+import java.security.KeyPairGenerator
+import java.security.Security
+import java.security.Signature
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        private const val curveName = "prime256v1" // p-256
 
         actual val isECDHAvailable: Boolean
 
