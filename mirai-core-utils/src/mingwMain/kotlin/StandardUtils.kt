@@ -9,9 +9,6 @@
 
 package net.mamoe.mirai.utils
 
+import platform.windows.GetCurrentProcessorNumber
 
-public actual fun localIpAddress(): String = "192.168.1.123"
-
-internal actual fun isSameClassPlatform(object1: Any, object2: Any): Boolean {
-    return object1::class == object2::class
-}
+public actual fun availableProcessors(): Int = GetCurrentProcessorNumber().toInt()

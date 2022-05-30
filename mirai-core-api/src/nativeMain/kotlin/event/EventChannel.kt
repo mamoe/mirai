@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
+import net.mamoe.mirai.event.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
@@ -107,7 +108,8 @@ public actual abstract class EventChannel<out BaseEvent : Event> @MiraiInternalA
         coroutineContext: CoroutineContext,
         priority: EventPriority,
     ): Listener<@UnsafeVariance BaseEvent> {
-        return subscribe(baseEventClass, coroutineContext, priority = priority) {
+        // keep this LOCKED, otherwise compiler will choose the 'inline subscribe' which takes no KClass arg.
+        return subscribe(baseEventClass, coroutineContext, LOCKED, priority) {
             try {
                 channel.send(it)
                 ListeningStatus.LISTENING

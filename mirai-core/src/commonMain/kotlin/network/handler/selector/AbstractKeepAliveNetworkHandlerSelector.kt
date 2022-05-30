@@ -24,6 +24,7 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmField
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -206,6 +207,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
         }
     }
 
+
+    @ThreadLocal
     companion object {
         @JvmField
         var DEFAULT_MAX_ATTEMPTS =

@@ -15,26 +15,40 @@ import io.ktor.utils.io.bits.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
 import io.ktor.utils.io.streams.*
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import platform.posix.FILE
-import platform.posix.fclose
-import platform.posix.feof
-import platform.posix.stat
+import kotlinx.cinterop.*
+import platform.posix.*
 
 /**
  * Multiplatform implementation of file operations.
  */
 public actual interface MiraiFile {
+    /**
+     * Name of this file or directory. Can be '.' and '..' if created by
+     */
     public actual val name: String
+
+    /**
+     * Parent of this file or directory.
+     */
     public actual val parent: MiraiFile?
+
+    /**
+     * Input path from [create].
+     */
+    public actual val path: String
+
+    /**
+     * Normalized absolute [path].
+     */
     public actual val absolutePath: String
     public actual val length: Long
     public actual val isFile: Boolean
     public actual val isDirectory: Boolean
     public actual fun exists(): Boolean
+
+    /**
+     * Resolves a [MiraiFile] representing the [path] based on this [MiraiFile]. Result path is not guaranteed to be normalized.
+     */
     public actual fun resolve(path: String): MiraiFile
     public actual fun resolve(file: MiraiFile): MiraiFile
     public actual fun createNewFile(): Boolean
@@ -45,14 +59,26 @@ public actual interface MiraiFile {
     public actual fun output(): Output
 
     public actual companion object {
-        public actual fun create(absolutePath: String): MiraiFile = MiraiFileImpl(absolutePath)
+        public actual fun create(path: String): MiraiFile = MiraiFileImpl(path)
     }
 }
 
 
-internal expect class MiraiFileImpl(
-    absolutePath: String,
-) : MiraiFile
+private val deleteFile =
+    staticCFunction<CPointer<ByteVarOf<Byte>>?, CPointer<stat>?, Int, CPointer<FTW>?, Int> { pathPtr, _, _, _ ->
+        val path = pathPtr!!.toKString()
+        if (remove(path) < 0) {
+            -1
+        } else {
+            0
+        }
+    }
+
+public actual fun MiraiFile.deleteRecursively(): Boolean {
+    return nftw(absolutePath, deleteFile, 10, FTW_DEPTH or FTW_MOUNT or FTW_PHYS) >= 0
+}
+
+internal expect class MiraiFileImpl(path: String) : MiraiFile
 
 
 /*
@@ -130,6 +156,7 @@ internal class FileNotFoundException(message: String, cause: Throwable? = null) 
     IOException(message, cause)
 
 
+@Suppress("DEPRECATION")
 @OptIn(ExperimentalIoApi::class)
 internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : AbstractOutput() {
     private var closed = false
@@ -157,6 +184,7 @@ internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : AbstractOutpu
     }
 }
 
+@Suppress("DEPRECATION")
 @OptIn(ExperimentalIoApi::class)
 internal class PosixInputForFile(val file: CPointer<FILE>) : AbstractInput() {
     private var closed = false

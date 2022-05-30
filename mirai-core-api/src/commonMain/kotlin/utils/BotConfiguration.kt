@@ -139,7 +139,7 @@ public expect open class BotConfiguration() { // open for Java
      * 心跳策略.
      * @since 2.6.3
      */
-    public enum class HeartbeatStrategy {
+    public enum class HeartbeatStrategy { // IN ACTUAL DECLARATION DO NOT ADD EXTRA ELEMENTS.
         /**
          * 使用 2.6.0 增加的*状态心跳* (Stat Heartbeat). 通常推荐这个模式.
          *
