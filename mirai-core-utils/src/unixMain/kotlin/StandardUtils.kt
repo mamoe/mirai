@@ -9,9 +9,10 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.convert
+import platform.posix._SC_NPROCESSORS_ONLN
+import platform.posix.sysconf
 
-public actual fun localIpAddress(): String = "192.168.1.123"
-
-internal actual fun isSameClassPlatform(object1: Any, object2: Any): Boolean {
-    return object1::class == object2::class
-}
+@OptIn(UnsafeNumber::class)
+public actual fun availableProcessors(): Int = sysconf(_SC_NPROCESSORS_ONLN).convert()

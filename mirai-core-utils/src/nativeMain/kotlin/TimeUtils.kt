@@ -13,13 +13,18 @@ package net.mamoe.mirai.utils
 
 import kotlinx.cinterop.*
 import platform.posix.*
-import kotlin.system.getTimeMillis
 
 /**
  * 时间戳
  */
+@OptIn(UnsafeNumber::class)
 public actual fun currentTimeMillis(): Long {
-    return getTimeMillis()
+    // Do not use getTimeMillis from stdlib, it doesn't support iosSimulatorArm64
+    memScoped {
+        val timeT = alloc<time_tVar>()
+        time(timeT.ptr)
+        return timeT.value.toLongUnsigned()
+    }
 }
 
 @OptIn(UnsafeNumber::class)

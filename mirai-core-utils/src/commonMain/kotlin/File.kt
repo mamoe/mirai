@@ -15,9 +15,24 @@ import io.ktor.utils.io.core.*
  * Multiplatform implementation of file operations.
  */
 public expect interface MiraiFile {
+    /**
+     * Name of this file or directory. Can be '.' and '..' if created by
+     */
     public val name: String
+
+    /**
+     * Parent of this file or directory.
+     */
     public val parent: MiraiFile?
 
+    /**
+     * Input path from [create].
+     */
+    public val path: String
+
+    /**
+     * Normalized absolute [path].
+     */
     public val absolutePath: String
 
     public val length: Long
@@ -27,6 +42,9 @@ public expect interface MiraiFile {
 
     public fun exists(): Boolean
 
+    /**
+     * Resolves a [MiraiFile] representing the [path] based on this [MiraiFile]. Result path is not guaranteed to be normalized.
+     */
     public fun resolve(path: String): MiraiFile
     public fun resolve(file: MiraiFile): MiraiFile
 
@@ -40,10 +58,12 @@ public expect interface MiraiFile {
     public fun output(): Output
 
     public companion object {
-        public fun create(absolutePath: String): MiraiFile
+        public fun create(path: String): MiraiFile
     }
 
 }
+
+public expect fun MiraiFile.deleteRecursively(): Boolean
 
 public fun MiraiFile.writeBytes(data: ByteArray) {
     return output().use { it.writeFully(data) }

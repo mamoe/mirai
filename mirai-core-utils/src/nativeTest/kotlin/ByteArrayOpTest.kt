@@ -16,7 +16,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class CryptoTest {
+class ByteArrayOpTest {
 
     @Test
     fun testAvailableProcessors() {
@@ -54,7 +54,7 @@ class CryptoTest {
         println(str)
         val hash = str.sha1()
         assertContentEquals(
-            "54 98 CD 62 6C DE E3 9B 96 D4 34 5E 13 51 48 BB".hexToBytes(),
+            "54 98 CD 62 6C DE E3 9B 96 D4 34 5E 13 51 48 BB FC 32 1C 48".hexToBytes(),
             hash,
             message = hash.toUHexString()
         )
@@ -90,7 +90,7 @@ class CryptoTest {
         println(str)
         val hash = str.toByteArray().gzip()
         assertContentEquals(
-            "1F 8B 08 00 00 00 00 00 00 FF 2B 74 CF F3 32 0C 2A 72 73 B6 04 00 A8 35 6D D9 0A 00 00 00".hexToBytes(),
+            "1F 8B 08 00 00 00 00 00 00 13 2B 74 CF F3 32 0C 2A 72 73 B6 04 00 A8 35 6D D9 0A 00 00 00".hexToBytes(),
             hash,
             message = hash.toUHexString()
         )

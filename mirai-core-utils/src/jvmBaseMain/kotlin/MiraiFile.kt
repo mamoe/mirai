@@ -14,9 +14,24 @@ import io.ktor.utils.io.streams.*
 import java.io.File
 
 public actual interface MiraiFile {
+    /**
+     * Name of this file or directory. Can be '.' and '..' if created by
+     */
     public actual val name: String
+
+    /**
+     * Parent of this file or directory.
+     */
     public actual val parent: MiraiFile?
 
+    /**
+     * Input path from [create].
+     */
+    public actual val path: String
+
+    /**
+     * Normalized absolute [path].
+     */
     public actual val absolutePath: String
 
     public actual val length: Long
@@ -26,6 +41,9 @@ public actual interface MiraiFile {
 
     public actual fun exists(): Boolean
 
+    /**
+     * Resolves a [MiraiFile] representing the [path] based on this [MiraiFile]. Result path is not guaranteed to be normalized.
+     */
     public actual fun resolve(path: String): MiraiFile
     public actual fun resolve(file: MiraiFile): MiraiFile
 
@@ -39,10 +57,14 @@ public actual interface MiraiFile {
     public actual fun output(): Output
 
     public actual companion object {
-        public actual fun create(absolutePath: String): MiraiFile {
-            return File(absolutePath).asMiraiFile()
+        public actual fun create(path: String): MiraiFile {
+            return File(path).asMiraiFile()
         }
     }
+}
+
+public actual fun MiraiFile.deleteRecursively(): Boolean {
+    return this.toJvmFile().deleteRecursively()
 }
 
 public fun File.asMiraiFile(): MiraiFile {
@@ -61,6 +83,7 @@ internal class JvmFileAsMiraiFile(
 ) : MiraiFile {
     override val name: String get() = jvmFile.name
     override val parent: MiraiFile? get() = jvmFile.parentFile?.asMiraiFile()
+    override val path: String get() = jvmFile.path
     override val absolutePath: String get() = jvmFile.absolutePath
     override val length: Long get() = jvmFile.length()
     override val isFile: Boolean get() = jvmFile.isFile

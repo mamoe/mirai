@@ -72,6 +72,17 @@ kotlin {
 
         val nativeMain by getting {
             dependencies {
+//                implementation("com.soywiz.korlibs.krypto:krypto:2.4.12") // ':mirai-core-utils:compileNativeMainKotlinMetadata' fails because compiler cannot find reference
+            }
+        }
+
+        val mingwMain by getting {
+            dependencies {
+            }
+        }
+
+        val unixMain by getting {
+            dependencies {
             }
         }
     }

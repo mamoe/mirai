@@ -17,32 +17,34 @@ import platform.windows.*
 
 internal actual class MiraiFileImpl actual constructor(
     // canonical
-    absolutePath: String
+    path: String
 ) : MiraiFile {
+    override val path = path.replace("/", "\\")
+
     companion object {
         private val ROOT_REGEX = Regex("""^([a-zA-z]+:[/\\])""")
-        private const val SEPARATOR = "\\"
+        private const val SEPARATOR = '\\'
     }
 
     override val absolutePath: String = kotlin.run {
-        val result = ROOT_REGEX.matchEntire(absolutePath) ?: return@run absolutePath.dropLastWhile { it.isSeparator() }
+        val result = ROOT_REGEX.matchEntire(path) ?: return@run path.dropLastWhile { it.isSeparator() }
         return@run result.groups.first()!!.value
     }
 
     private fun Char.isSeparator() = this == '/' || this == '\\'
 
-    // TODO: 2022/5/28 normalize paths
     override val parent: MiraiFile? by lazy {
-        val p = absolutePath.substringBeforeLast('/')
+        val absolute = absolutePath
+        val p = absolute.substringBeforeLast(SEPARATOR, "")
         if (p.isEmpty()) {
             return@lazy null
         }
         if (p.lastOrNull() == ':') {
-            if (p.lastIndexOf('/') == p.lastIndex) {
-                // C:/
+            if (absolute.lastIndexOf(SEPARATOR) == p.lastIndex) {
+                // file is C:/
                 return@lazy null
             } else {
-                return@lazy MiraiFileImpl("$p/") // C:/
+                return@lazy MiraiFileImpl("$p/") // file is C:/xxx
             }
         }
         MiraiFileImpl(p)
@@ -86,19 +88,17 @@ internal actual class MiraiFileImpl actual constructor(
 
     private fun getFileAttributes(): DWORD = memScoped { GetFileAttributesA(absolutePath) }
 
-    // TODO: 2022/5/28 normalize paths
     override fun resolve(path: String): MiraiFile {
         when (path) {
             "." -> return this
             ".." -> return parent ?: this // root
         }
 
-        if (path.matches(ROOT_REGEX)) {
+        if (ROOT_REGEX.find(path) != null) { // absolute
             return MiraiFileImpl(path)
         }
 
-        val new = MiraiFileImpl(path)
-        return MiraiFileImpl("$absolutePath${SEPARATOR}${new.parent}/${new.name}")
+        return MiraiFileImpl(this.absolutePath + SEPARATOR + path) // assuming path is 'appendable'
     }
 
     override fun resolve(file: MiraiFile): MiraiFile {
