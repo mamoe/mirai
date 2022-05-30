@@ -7,11 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("PlatformSocketKt_common")
+
 package net.mamoe.mirai.internal.utils
 
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
+import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.internal.network.handler.getHost
+import net.mamoe.mirai.internal.network.handler.getPort
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
+import kotlin.jvm.JvmName
 
 /**
  * TCP Socket.
@@ -32,7 +38,6 @@ internal expect class PlatformSocket : Closeable, HighwayProtocolChannel {
      * @throws ReadPacketInternalException
      */
     override suspend fun read(): ByteReadPacket
-    suspend fun connect(serverHost: String, serverPort: Int)
 
     companion object {
         suspend fun connect(
@@ -46,6 +51,10 @@ internal expect class PlatformSocket : Closeable, HighwayProtocolChannel {
             block: PlatformSocket.() -> R,
         ): R
     }
+}
+
+internal suspend inline fun PlatformSocket.Companion.connect(address: SocketAddress): PlatformSocket {
+    return connect(address.getHost(), address.getPort())
 }
 
 

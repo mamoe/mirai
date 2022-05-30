@@ -19,10 +19,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupTempMessageEvent
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
 import net.mamoe.mirai.internal.test.runBlockingUnit
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -124,7 +121,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(2230203, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)
@@ -205,7 +202,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("123", get(1).content)
@@ -298,7 +295,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)
@@ -392,7 +389,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)

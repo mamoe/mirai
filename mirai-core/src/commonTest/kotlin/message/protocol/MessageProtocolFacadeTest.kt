@@ -21,21 +21,22 @@ internal class MessageProtocolFacadeTest : AbstractTest() {
         assertEquals(
             """
                 QuoteReplyProtocol
+                AudioProtocol
                 CustomMessageProtocol
+                FaceProtocol
                 FileMessageProtocol
                 FlashImageProtocol
-                FaceProtocol
                 ImageProtocol
                 MarketFaceProtocol
                 MusicShareProtocol
                 PokeMessageProtocol
-                IgnoredMessagesProtocol
                 PttMessageProtocol
                 RichMessageProtocol
                 TextProtocol
                 VipFaceProtocol
                 ForwardMessageProtocol
                 LongMessageProtocol
+                IgnoredMessagesProtocol
                 UnsupportedMessageProtocol
                 GeneralMessageSenderProtocol
             """.trimIndent(),

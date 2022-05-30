@@ -57,11 +57,11 @@ public actual interface MiraiLogger {
         public actual companion object INSTANCE : Factory by loadService(Factory::class, fallbackImplementation = {
             object : Factory {
                 override fun create(requester: KClass<*>): MiraiLogger {
-                    return PlatformLogger(requester.qualifiedName ?: requester.simpleName)
+                    return PlatformLogger(requester.simpleName ?: requester.qualifiedName)
                 }
 
                 override fun create(requester: KClass<*>, identity: String?): MiraiLogger {
-                    return PlatformLogger(identity)
+                    return PlatformLogger(identity ?: requester.simpleName ?: requester.qualifiedName)
                 }
             }
         })

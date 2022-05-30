@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
+import io.ktor.utils.io.core.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.channel.*
@@ -20,13 +21,11 @@ import io.netty.handler.codec.MessageToByteEncoder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.job
-import net.mamoe.mirai.internal.network.components.PacketCodec
-import net.mamoe.mirai.internal.network.components.RawIncomingPacket
-import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.CommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import java.net.SocketAddress
 import io.netty.channel.Channel as NettyChannel
@@ -34,7 +33,7 @@ import io.netty.channel.Channel as NettyChannel
 internal open class NettyNetworkHandler(
     context: NetworkHandlerContext,
     address: SocketAddress,
-) : CommonNetworkHandler<NettyChannel>(context, address) {
+) : CommonNetworkHandler<NettyChannel>(context, address.cast()) {
     override fun toString(): String {
         return "NettyNetworkHandler(context=$context, address=$address)"
     }
@@ -52,26 +51,11 @@ internal open class NettyNetworkHandler(
     // netty conn.
     ///////////////////////////////////////////////////////////////////////////
 
-    private inner class ByteBufToIncomingPacketDecoder : SimpleChannelInboundHandler<ByteBuf>(ByteBuf::class.java) {
-        private val packetCodec: PacketCodec by lazy { context[PacketCodec] }
-        private val ssoProcessor: SsoProcessor by lazy { context[SsoProcessor] }
-
-        override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
-            kotlin.runCatching {
-                ctx.fireChannelRead(msg.toReadPacket().use { packet ->
-                    packetCodec.decodeRaw(ssoProcessor.ssoSession, packet)
-                })
-            }.onFailure { error ->
-                handleExceptionInDecoding(error)
-            }
-        }
-    }
-
-    private inner class RawIncomingPacketCollector(
+    private inner class IncomingPacketDecoder(
         private val decodePipeline: PacketDecodePipeline,
-    ) : SimpleChannelInboundHandler<RawIncomingPacket>(RawIncomingPacket::class.java) {
-        override fun channelRead0(ctx: ChannelHandlerContext, msg: RawIncomingPacket) {
-            decodePipeline.send(msg)
+    ) : SimpleChannelInboundHandler<ByteBuf>(ByteBuf::class.java) {
+        override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
+            decodePipeline.send(msg.toReadPacket())
         }
     }
 
@@ -91,8 +75,7 @@ internal open class NettyNetworkHandler(
             })
             .addLast("outgoing-packet-encoder", OutgoingPacketEncoder())
             .addLast(LengthFieldBasedFrameDecoder(Int.MAX_VALUE, 0, 4, -4, 4))
-            .addLast(ByteBufToIncomingPacketDecoder())
-            .addLast("raw-packet-collector", RawIncomingPacketCollector(decodePipeline))
+            .addLast(IncomingPacketDecoder(decodePipeline))
     }
 
     protected open fun createDummyDecodePipeline() = PacketDecodePipeline(this@NettyNetworkHandler.coroutineContext)

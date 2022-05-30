@@ -266,16 +266,6 @@ public expect abstract class EventChannel<out BaseEvent : Event> @MiraiInternalA
      */
     public fun exceptionHandler(coroutineExceptionHandler: (exception: Throwable) -> Unit): EventChannel<BaseEvent>
 
-    /**
-     * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [`this.coroutineContext`][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
-     * @see context
-     * @since 2.12
-     */
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    public fun exceptionHandler(coroutineExceptionHandler: Consumer<Throwable>): EventChannel<BaseEvent> {
-        return exceptionHandler { coroutineExceptionHandler.accept(it) }
-    }
 
     /**
      * 将 [coroutineScope] 作为这个 [EventChannel] 的父作用域.

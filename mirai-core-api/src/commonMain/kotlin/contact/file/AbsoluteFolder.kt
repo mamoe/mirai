@@ -7,18 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmBlockingBridge
-@file:Suppress("OVERLOADS_INTERFACE")
-
 package net.mamoe.mirai.contact.file
 
 import kotlinx.coroutines.flow.Flow
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.ProgressionCallback
-import kotlin.jvm.JvmOverloads
 
 /**
  * 绝对目录标识. 精确表示一个远程目录. 不会受同名文件或目录的影响.
@@ -106,7 +101,6 @@ public expect interface AbsoluteFolder : AbsoluteFileFolder {
     /**
      * 精确获取 [AbsoluteFile.id] 为 [id] 的文件. 在目标文件不存在时返回 `null`. 当 [deep] 为 `true` 时还会深入子目录查找.
      */
-    @JvmOverloads
     public suspend fun resolveFileById(
         id: String,
         deep: Boolean = false
@@ -143,7 +137,6 @@ public expect interface AbsoluteFolder : AbsoluteFileFolder {
      *
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)
      */
-    @JvmOverloads
     public suspend fun uploadNewFile(
         filepath: String,
         content: ExternalResource,

@@ -10,6 +10,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
@@ -57,6 +58,8 @@ kotlin {
                 implementation(bouncycastle)
                 implementation(`log4j-api`)
                 implementation(`netty-all`)
+                implementation(`ktor-client-okhttp`)
+                api(`kotlinx-coroutines-core`)
             }
         }
 
@@ -102,6 +105,55 @@ kotlin {
             dependencies {
             }
         }
+
+        NATIVE_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("OpenSSL")
+                .apply {
+                    defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
+                    packageName("openssl")
+                }
+        }
+
+        UNIX_LIKE_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("Socket")
+                .apply {
+                    defFile = projectDir.resolve("src/unixMain/cinterop/Socket.def")
+                    packageName("sockets")
+                }
+        }
+
+        WIN_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("Socket")
+                .apply {
+                    defFile = projectDir.resolve("src/mingwX64Main/cinterop/Socket.def")
+                    packageName("sockets")
+                }
+        }
+
+        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+
+        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+
+        val darwinMain by getting {
+            dependencies {
+                implementation(`ktor-client-ios`)
+            }
+        }
+
+        disableCrossCompile()
+//        val unixMain by getting {
+//            dependencies {
+//                implementation(`ktor-client-cio`)
+//            }
+//        }
     }
 }
 

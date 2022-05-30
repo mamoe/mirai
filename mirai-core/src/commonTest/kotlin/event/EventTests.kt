@@ -60,10 +60,11 @@ internal class EventTests : AbstractEventTest() {
         resetEventListeners()
         var listeners = 0
         val counter = atomic(0)
+        val channel = scope.globalEventChannel()
         for (p in EventPriority.values()) {
             repeat(2333) {
                 listeners++
-                scope.globalEventChannel().subscribeAlways<ParentEvent> {
+                channel.subscribeAlways<ParentEvent> {
                     counter.getAndIncrement()
                 }
             }

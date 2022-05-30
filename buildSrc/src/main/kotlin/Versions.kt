@@ -31,7 +31,7 @@ object Versions {
     const val coroutines = "1.6.2"
     const val atomicFU = "0.17.2"
     const val serialization = "1.3.2"
-    const val ktor = "1.6.7"
+    const val ktor = "1.6.8"
 
     const val binaryValidator = "0.4.0"
 

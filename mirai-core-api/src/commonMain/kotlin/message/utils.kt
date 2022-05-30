@@ -21,7 +21,6 @@ import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.syncFromEvent
-import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -74,7 +73,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  * @return 消息链. 超时时返回 `null`
  *
- * @see syncFromEventOrNull 实现原理
+ * @see syncFromEvent
  */
 @JvmSynthetic
 public suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(

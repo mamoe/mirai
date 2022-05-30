@@ -60,26 +60,6 @@ public actual open class BotConfiguration { // open for Java
      */
     public var workingDir: File = File(".")
 
-    /**
-     * Json 序列化器, 使用 'kotlinx.serialization'
-     */
-    @MiraiExperimentalApi
-    @Deprecated(
-        "Changing serial format is going to be forbidden. Deprecated for removal. ",
-        level = DeprecationLevel.ERROR
-    )
-    @DeprecatedSinceMirai(errorSince = "2.11") // was experimental
-    public var json: Json = kotlin.runCatching {
-        Json {
-            isLenient = true
-            ignoreUnknownKeys = true
-            prettyPrint = true
-        }
-    }.getOrElse {
-        @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatible for older versions
-        Json {}
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Coroutines
     ///////////////////////////////////////////////////////////////////////////
@@ -341,7 +321,7 @@ public actual open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public actual fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
-            this.json.decodeFromString(DeviceInfo.serializer(), json)
+            DeviceInfoManager.deserialize(json, Companion.json)
         }
     }
 
@@ -603,7 +583,6 @@ public actual open class BotConfiguration { // open for Java
             // To structural order
             new.workingDir = workingDir
             @Suppress("DEPRECATION_ERROR")
-            new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
@@ -645,6 +624,20 @@ public actual open class BotConfiguration { // open for Java
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
         public actual val Default: BotConfiguration = BotConfiguration()
+
+        /**
+         * Json 序列化器, 使用 'kotlinx.serialization'
+         */
+        internal val json: Json = kotlin.runCatching {
+            Json {
+                isLenient = true
+                ignoreUnknownKeys = true
+                prettyPrint = true
+            }
+        }.getOrElse {
+            @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatible for older versions
+            Json {}
+        }
 
         internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
             return {

@@ -14,11 +14,11 @@ import io.ktor.utils.io.pool.*
 /**
  * 缓存 [ByteArray] 实例的 [ObjectPool]
  */
-public object ByteArrayPool : DefaultPool<ByteArray>(256) {
+public object ByteArrayPool : DefaultPool<ByteArray>(128) {
     /**
      * 每一个 [ByteArray] 的大小
      */
-    public const val BUFFER_SIZE: Int = 8192 * 8
+    public const val BUFFER_SIZE: Int = 4096
 
     override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
 

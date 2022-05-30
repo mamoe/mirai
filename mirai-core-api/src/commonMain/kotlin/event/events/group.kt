@@ -29,7 +29,10 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import kotlin.jvm.*
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
@@ -354,7 +357,6 @@ public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
      */
     public val invitor: Friend? get() = this.bot.getFriend(invitorId)
 
-    @JvmField
     internal val responded: AtomicBoolean = atomic(false)
 
     @JvmBlockingBridge
@@ -403,8 +405,6 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      */
     public val invitor: NormalMember? by lazy { invitorId?.let { group?.get(it) } }
 
-    @JvmField
-    @PublishedApi
     internal val responded: AtomicBoolean = atomic(false)
 
     /**
