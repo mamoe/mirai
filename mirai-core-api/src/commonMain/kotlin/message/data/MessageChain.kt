@@ -363,7 +363,10 @@ public fun emptyMessageChain(): MessageChain = EmptyMessageChain
     replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
 )
 @DeprecatedSinceMirai(warningSince = "2.12")
-public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(), MessageChainImpl {
+@Suppress("EXPOSED_SUPER_CLASS")
+public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(),
+    AbstractMessageChain(), DirectSizeAccess, DirectToStringAccess {
+
     override val size: Int get() = 0
 
     override fun toString(): String = ""
@@ -377,9 +380,6 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
     }
-
-    override fun equals(other: Any?): Boolean = other === this
-    override fun hashCode(): Int = 1
 
     override fun iterator(): Iterator<SingleMessage> = EmptyMessageChainIterator
 
