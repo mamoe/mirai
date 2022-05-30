@@ -59,6 +59,8 @@ public expect interface MiraiFile {
 
     public companion object {
         public fun create(path: String): MiraiFile
+
+        public fun getWorkingDir(): MiraiFile
     }
 
 }

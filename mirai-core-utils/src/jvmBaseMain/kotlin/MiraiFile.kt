@@ -60,6 +60,10 @@ public actual interface MiraiFile {
         public actual fun create(path: String): MiraiFile {
             return File(path).asMiraiFile()
         }
+
+        public actual fun getWorkingDir(): MiraiFile {
+            return create(System.getProperty("user.dir"))
+        }
     }
 }
 

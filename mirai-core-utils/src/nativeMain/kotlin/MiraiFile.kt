@@ -60,6 +60,7 @@ public actual interface MiraiFile {
 
     public actual companion object {
         public actual fun create(path: String): MiraiFile = MiraiFileImpl(path)
+        public actual fun getWorkingDir(): MiraiFile = MiraiFileImpl.getWorkingDir()
     }
 }
 
@@ -78,7 +79,11 @@ public actual fun MiraiFile.deleteRecursively(): Boolean {
     return nftw(absolutePath, deleteFile, 10, FTW_DEPTH or FTW_MOUNT or FTW_PHYS) >= 0
 }
 
-internal expect class MiraiFileImpl(path: String) : MiraiFile
+internal expect class MiraiFileImpl(path: String) : MiraiFile {
+    companion object {
+        public fun getWorkingDir(): MiraiFile
+    }
+}
 
 
 /*
