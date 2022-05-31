@@ -344,7 +344,6 @@ public sealed interface SystemCommandSender : CommandSender {
  * 默认情况下 [PluginCustomCommandSender] 以 [ConsoleCommandSender] 的身份执行命令
  *
  * @see PermitteeId
- * @see AnsiRelatedCommandSender
  */
 public interface PluginCustomCommandSender : CommandSender, SystemCommandSender {
     override val isAnsiSupported: Boolean get() = false
@@ -821,7 +820,7 @@ public abstract class AbstractPluginCustomCommandSender(
         // Fallback
         return@lazy MiraiConsole.childScopeContext("PluginCustomCommandSender-$name")
     }
-    override val name: String by lazy { owner.name }
+    override val name: String get() = owner.name
     override fun toString(): String = name
 
     override val isAnsiSupported: Boolean get() = false
