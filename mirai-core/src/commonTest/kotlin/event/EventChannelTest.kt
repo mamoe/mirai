@@ -21,7 +21,6 @@ import net.mamoe.mirai.event.events.MessageEvent
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlin.test.*
 
 internal class EventChannelTest : AbstractEventTest() {
@@ -37,7 +36,7 @@ internal class EventChannelTest : AbstractEventTest() {
     @Test
     fun singleFilter() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
+            val received = suspendCancellableCoroutine { cont ->
                 globalEventChannel()
                     .filterIsInstance<TE>()
                     .filter {
@@ -69,7 +68,7 @@ internal class EventChannelTest : AbstractEventTest() {
     @Test
     fun multipleFilters() {
         runBlocking {
-            val received = suspendCoroutine<Int> { cont ->
+            val received = suspendCancellableCoroutine { cont ->
                 globalEventChannel()
                     .filterIsInstance<TE>()
                     .filter {
@@ -109,7 +108,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun multipleContexts1() {
         runBlocking {
             withContext(CoroutineName("1")) {
-                val received = suspendCoroutine<Int> { cont ->
+                val received = suspendCancellableCoroutine { cont ->
                     globalEventChannel()
                         .context(CoroutineName("2"))
                         .context(CoroutineName("3"))
@@ -132,7 +131,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun multipleContexts2() {
         runBlocking {
             withContext(CoroutineName("1")) {
-                val received = suspendCoroutine<Int> { cont ->
+                val received = suspendCancellableCoroutine { cont ->
                     globalEventChannel()
                         .context(CoroutineName("2"))
                         .context(CoroutineName("3"))
@@ -156,7 +155,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun multipleContexts3() {
         runBlocking {
             withContext(CoroutineName("1")) {
-                val received = suspendCoroutine<Int> { cont ->
+                val received = suspendCancellableCoroutine { cont ->
                     globalEventChannel()
                         .context(CoroutineName("2"))
                         .subscribeOnce<TE> {
@@ -178,7 +177,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun multipleContexts4() {
         runBlocking {
             withContext(CoroutineName("1")) {
-                val received = suspendCoroutine<Int> { cont ->
+                val received = suspendCancellableCoroutine { cont ->
                     globalEventChannel()
                         .subscribeOnce<TE> {
                             assertEquals("1", currentCoroutineContext()[CoroutineName]!!.name)
@@ -250,7 +249,8 @@ internal class EventChannelTest : AbstractEventTest() {
     fun testExceptionInFilter() {
         assertFailsWith<ExceptionInEventChannelFilterException> {
             runBlocking {
-                suspendCoroutine<Int> { cont ->
+                @Suppress("RemoveExplicitTypeArguments")
+                suspendCancellableCoroutine<Int> { cont ->
                     globalEventChannel()
                         .exceptionHandler {
                             cont.resumeWithException(it)
@@ -278,7 +278,7 @@ internal class EventChannelTest : AbstractEventTest() {
     fun testExceptionInSubscribe() {
         runBlocking {
             assertFailsWith<IllegalStateException> {
-                suspendCoroutine<Int> { cont ->
+                suspendCancellableCoroutine<Int> { cont ->
                     val handler = CoroutineExceptionHandler { _, throwable ->
                         cont.resumeWithException(throwable)
                     }

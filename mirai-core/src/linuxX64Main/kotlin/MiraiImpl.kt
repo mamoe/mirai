@@ -7,27 +7,18 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmName("MiraiImplKt")
-
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
+import io.ktor.client.engine.curl.*
 import io.ktor.client.features.*
 
-@Suppress("FunctionName")
-internal actual fun _MiraiImpl_static_init() {
-    // nop
-}
-
 internal actual fun createDefaultHttpClient(): HttpClient {
-    return HttpClient(OkHttp) {
+    return HttpClient(Curl) {
         install(HttpTimeout) {
             this.requestTimeoutMillis = 30_0000
             this.connectTimeoutMillis = 30_0000
             this.socketTimeoutMillis = 30_0000
         }
     }
-
 }
-

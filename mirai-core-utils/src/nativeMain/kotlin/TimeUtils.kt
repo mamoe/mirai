@@ -11,8 +11,13 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.locks.ReentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.cinterop.*
-import platform.posix.*
+import platform.posix.localtime
+import platform.posix.strftime
+import platform.posix.time
+import platform.posix.time_tVar
 
 /**
  * 时间戳
@@ -27,18 +32,22 @@ public actual fun currentTimeMillis(): Long {
     }
 }
 
+
+private val timeLock = ReentrantLock()
+
 @OptIn(UnsafeNumber::class)
-public actual fun currentTimeFormatted(format: String?): String {
+public actual fun currentTimeFormatted(format: String?): String = timeLock.withLock {
     memScoped {
         val timeT = alloc<time_tVar>()
         time(timeT.ptr)
-        val tm = localtime(timeT.ptr)
-        try {
-            val bb = allocArray<ByteVar>(40)
-            strftime(bb, 40, "%Y-%M-%d %H:%M:%S", tm);
-            return bb.toKString()
-        } finally {
-            free(tm)
-        }
+
+        // http://www.cplusplus.com/reference/clibrary/ctime/localtime/
+        // tm returns a static pointer which doesn't need to free
+        val tm = localtime(timeT.ptr) // localtime is not thread-safe
+
+        val bb = allocArray<ByteVar>(40)
+        strftime(bb, 40, "%Y-%M-%d %H:%M:%S", tm);
+
+        bb.toKString()
     }
 }

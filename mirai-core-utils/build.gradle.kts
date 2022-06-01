@@ -76,7 +76,7 @@ kotlin {
             }
         }
 
-        val mingwMain by getting {
+        val mingwX64Main by getting {
             dependencies {
             }
         }
