@@ -38,7 +38,7 @@ public object Services {
         }
     }
 
-    public fun implementations(baseClass: String): List<Any>? {
+    public fun implementations(baseClass: String): List<Lazy<Any>>? {
         lock.withLock {
             return registered[baseClass]?.map { it.instance }
         }
@@ -66,7 +66,7 @@ public actual fun <T : Any> loadService(
     ?: error("Could not load service '${clazz.qualifiedName ?: clazz}'. Current services: ${Services.print()}")
 
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> =
-    Services.implementations(qualifiedNameOrFail(clazz))?.asSequence().orEmpty().castUp()
+    Services.implementations(qualifiedNameOrFail(clazz))?.asSequence()?.map { it.value }.orEmpty().castUp()
 
 private fun <T : Any> qualifiedNameOrFail(clazz: KClass<out T>) =
     clazz.qualifiedName ?: error("Could not find qualifiedName for $clazz")

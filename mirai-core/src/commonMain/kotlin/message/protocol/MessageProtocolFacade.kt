@@ -172,8 +172,10 @@ internal class MessageProtocolFacadeImpl(
         val instances = protocols
             .sortedWith(MessageProtocol.PriorityComparator.reversed())
         for (instance in instances) {
+            println("instance: $instance, class=${instance::class}")
             instance.collectProcessors(object : ProcessorCollector() {
                 override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {
+                    println("add: $encoder, $elementType")
                     this@MessageProtocolFacadeImpl.encoderPipeline.registerProcessor(
                         MessageEncoderProcessor(
                             encoder,
@@ -183,22 +185,27 @@ internal class MessageProtocolFacadeImpl(
                 }
 
                 override fun add(decoder: MessageDecoder) {
+                    println("add: $decoder")
                     this@MessageProtocolFacadeImpl.decoderPipeline.registerProcessor(MessageDecoderProcessor(decoder))
                 }
 
                 override fun add(preprocessor: OutgoingMessagePreprocessor) {
+                    println("add: $preprocessor")
                     preprocessorPipeline.registerProcessor(OutgoingMessageProcessorAdapter(preprocessor))
                 }
 
                 override fun add(transformer: OutgoingMessageTransformer) {
+                    println("add: $transformer")
                     outgoingPipeline.registerProcessor(OutgoingMessageProcessorAdapter(transformer))
                 }
 
                 override fun add(sender: OutgoingMessageSender) {
+                    println("add: $sender")
                     outgoingPipeline.registerProcessor(OutgoingMessageProcessorAdapter(sender))
                 }
 
                 override fun add(postprocessor: OutgoingMessagePostprocessor) {
+                    println("add: $postprocessor")
                     outgoingPipeline.registerProcessor(OutgoingMessageProcessorAdapter(postprocessor))
                 }
             })
