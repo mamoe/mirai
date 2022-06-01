@@ -10,6 +10,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
@@ -103,6 +104,14 @@ kotlin {
         val nativeMain by getting {
             dependencies {
             }
+        }
+
+        NATIVE_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("OpenSSL")
+                .apply {
+                    defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
+                    packageName("openssl")
+                }
         }
 
         configure(WIN_TARGETS.map { getByName(it + "Main") }) {

@@ -1,0 +1,43 @@
+headers = openssl/ec.h openssl/ecdh.h openssl/evp.h
+
+linkerOpts.osx =             -lcrypto \
+                             -lssl \
+                             -L/opt/openssl/lib \
+                             -L/opt/homebrew/Cellar/openssl@3/3.0.3/lib \
+                             -L/opt/homebrew/opt/openssl@3/lib \
+
+compilerOpts.osx =           -I/opt/openssl/include \
+                             -I/usr/local/include/openssl@3 \
+                             -I/opt/homebrew/Cellar/openssl@3/3.0.3/include \
+                             -I/usr/include/openssl@3 \
+                             -I/opt/homebrew/opt/openssl@3/include
+
+linkerOpts.linux =           -lcrypto \
+                             -lssl \
+                             -L/usr/lib64 \
+                             -L/usr/lib/x86_64-linux-gnu \
+                             -L/opt/local/lib \
+                             -L/usr/local/opt/openssl@3/lib \
+                             -L/opt/homebrew/opt/openssl@3/lib
+
+compilerOpts.linux =         -I/opt/local/include/openssl@3 \
+                             -I/usr/bin/openssl@3 \
+                             -I/usr/local/include/openssl@3 \
+                             -I/usr/include/openssl@3 \
+                             -I/opt/homebrew/opt/openssl@3/include
+
+linkerOpts.mingw_x64 =       -lcrypto \
+                             -lssl \
+                             -L/usr/lib64 \
+                             -L/usr/lib/x86_64-linux-gnu \
+                             -L/opt/local/lib \
+                             -L/usr/local/opt/openssl@3/lib \
+                             -L/opt/homebrew/opt/openssl@3/lib \
+                             -LC:/Tools/msys64/mingw64/lib \
+                             -LC:/Tools/msys2/mingw64/lib
+
+compilerOpts.mingw_x64 =     -I/opt/local/include/openssl@3 \
+                             -I/usr/bin/openssl@3 \
+                             -I/usr/local/include/openssl@3 \
+                             -I/usr/include/openssl@3 \
+                             -I/opt/homebrew/opt/openssl@3/include
