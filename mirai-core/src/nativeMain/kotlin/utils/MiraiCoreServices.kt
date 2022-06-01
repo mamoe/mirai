@@ -38,6 +38,10 @@ internal object MiraiCoreServices {
         ) { net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol() }
         Services.register(
             msgProtocol,
+            "net.mamoe.mirai.internal.message.protocol.impl.AudioProtocol"
+        ) { net.mamoe.mirai.internal.message.protocol.impl.AudioProtocol() }
+        Services.register(
+            msgProtocol,
             "net.mamoe.mirai.internal.message.protocol.impl.FaceProtocol"
         ) { net.mamoe.mirai.internal.message.protocol.impl.FaceProtocol() }
         Services.register(

@@ -7,6 +7,7 @@
 # https://github.com/mamoe/mirai/blob/dev/LICENSE
 #
 
+net.mamoe.mirai.internal.message.protocol.impl.AudioProtocol
 net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.FaceProtocol
 net.mamoe.mirai.internal.message.protocol.impl.FileMessageProtocol

@@ -14,10 +14,15 @@ package net.mamoe.mirai.internal
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
+import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+
+private val initialized = atomic(false)
 
 @Suppress("FunctionName")
 internal actual fun _MiraiImpl_static_init() {
-    // nop
+    if (!initialized.compareAndSet(expect = false, update = true)) return
+    MessageProtocolFacade.INSTANCE // register serializers
 }
 
 internal actual fun createDefaultHttpClient(): HttpClient {

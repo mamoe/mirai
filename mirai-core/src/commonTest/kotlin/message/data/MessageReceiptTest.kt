@@ -28,11 +28,7 @@ import net.mamoe.mirai.message.data.buildForwardMessage
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.Clock
 import net.mamoe.mirai.utils.currentTimeSeconds
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class MessageReceiptTest : AbstractTest(), GroupExtensions {
     private val bot = MockBot()

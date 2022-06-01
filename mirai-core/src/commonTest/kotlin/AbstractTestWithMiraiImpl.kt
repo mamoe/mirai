@@ -11,7 +11,7 @@
 package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.Mirai
-import org.junit.jupiter.api.AfterEach
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 internal abstract class AbstractTestWithMiraiImpl : MiraiImpl() {
@@ -23,7 +23,7 @@ internal abstract class AbstractTestWithMiraiImpl : MiraiImpl() {
         net.mamoe.mirai._MiraiInstance.set(this)
     }
 
-    @AfterEach
+    @AfterTest
     fun restoreMiraiImpl() {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         net.mamoe.mirai._MiraiInstance.set(originalImpl)
