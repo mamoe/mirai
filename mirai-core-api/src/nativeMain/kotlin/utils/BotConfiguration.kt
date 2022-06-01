@@ -314,7 +314,7 @@ public actual open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public actual fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
-            Companion.json.decodeFromString(DeviceInfo.serializer(), json)
+            DeviceInfoManager.deserialize(json, Companion.json)
         }
     }
 
@@ -329,7 +329,7 @@ public actual open class BotConfiguration { // open for Java
     public actual fun fileBasedDeviceInfo(filepath: String) {
         deviceInfo = {
             val file = MiraiFile.create(workingDir).resolve(filepath)
-            Json.decodeFromString(DeviceInfo.serializer(), file.readText())
+            DeviceInfoManager.deserialize(file.readText(), json)
         }
     }
 
