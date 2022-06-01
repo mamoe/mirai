@@ -26,10 +26,12 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.message.data.AtAll
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
@@ -40,6 +42,8 @@ import net.mamoe.mirai.utils.truncated
 internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_SENDER) {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(GeneralMessageSender(logger))
+
+        add(MessageSerializer(MessageChain::class, MessageChain.serializer(), emptyArray()))
     }
 
 

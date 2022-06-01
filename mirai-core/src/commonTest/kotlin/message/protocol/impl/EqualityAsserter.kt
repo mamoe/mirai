@@ -9,8 +9,14 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import net.mamoe.mirai.internal.utils.structureToString
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
+import net.mamoe.mirai.message.MessageSerializers
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.messageChainOf
 import kotlin.test.assertNotNull
 import kotlin.test.asserter
 
@@ -74,10 +80,29 @@ internal interface EqualityAsserter {
             }
         }
 
-        private fun <T> structureToStringOrOrdinaryString(it: T): String =
-            it.structureToString().ifBlank {
-                it.structureToStringIfAvailable() ?: error("structureToString is not available")
-            }
+        private val json = Json {
+            isLenient = true
+            prettyPrint = true
+            serializersModule = MessageSerializers.serializersModule
+        }
+
+        private fun <T> structureToStringOrOrdinaryString(value: T): String {
+            if (value == null) return "null"
+            val valueNotNull: T & Any = value
+            @Suppress("UNCHECKED_CAST")
+            return valueNotNull.structureToStringIfAvailable()
+            // fallback for native
+                ?: kotlin.run {
+                    if (valueNotNull is SingleMessage) {
+                        messageChainOf(valueNotNull).serializeToJsonString(json) // use the stable serialization approach
+                    } else json.encodeToString(
+                        when (valueNotNull) {
+                            is ImMsgBody.Elem -> ImMsgBody.Elem.serializer()
+                            else -> error("Unsupported type: $valueNotNull")
+                        } as KSerializer<Any>, valueNotNull
+                    )
+                }
+        }
     }
 
     object OrdinaryThenStructural : EqualityAsserter {

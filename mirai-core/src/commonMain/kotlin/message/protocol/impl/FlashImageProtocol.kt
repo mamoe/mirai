@@ -22,18 +22,25 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.FlashImage
+import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.hexToBytes
 
 internal class FlashImageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Decoder())
         add(Encoder())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(FlashImage::class, FlashImage.serializer()))
+        }
     }
 
     private class Decoder : MessageDecoder {

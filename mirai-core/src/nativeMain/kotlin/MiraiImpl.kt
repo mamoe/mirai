@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.utils.MiraiCoreServices
 
 
@@ -24,4 +25,5 @@ private val initialized = atomic(false)
 internal actual fun _MiraiImpl_static_init() {
     if (!initialized.compareAndSet(expect = false, update = true)) return
     MiraiCoreServices.registerAll()
+    MessageProtocolFacade.INSTANCE // register serializers
 }

@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.runWithBugReport
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
@@ -45,6 +46,21 @@ internal class RichMessageProtocol : MessageProtocol() {
         add(LightAppDecoder())
 
         add(Encoder())
+
+        MessageSerializer.superclassesScope(
+            ServiceMessage::class,
+            RichMessage::class,
+            MessageContent::class,
+            SingleMessage::class
+        ) {
+            add(MessageSerializer(SimpleServiceMessage::class, SimpleServiceMessage.serializer()))
+        }
+
+        MessageSerializer.superclassesScope(RichMessage::class, MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(LightApp::class, LightApp.serializer()))
+        }
+
+        add(MessageSerializer(MessageOriginKind::class, MessageOriginKind.serializer(), emptyArray()))
     }
 
     private class Encoder : MessageEncoder<RichMessage> {

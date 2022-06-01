@@ -16,16 +16,16 @@ import kotlinx.serialization.json.*
 import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
-import org.junit.jupiter.api.BeforeAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-internal class MessageSerializationTest {
+internal class MessageSerializationTest : AbstractTest() {
     @Suppress("DEPRECATION_ERROR")
     private val module
         get() = MessageSerializers.serializersModule
@@ -51,7 +51,7 @@ internal class MessageSerializationTest {
             println("Result: ${serializer.descriptor.serialName}  $serialized")
             serialized.deserialize(serializer)
         }.getOrElse {
-            throw AssertionError("Failed to serialize $t", it)
+            throw IllegalStateException("Failed to serialize $t", it)
         }
         assertEquals(
             t,
@@ -113,14 +113,6 @@ internal class MessageSerializationTest {
         FileMessageImpl("id", 2, "name", 1)
     )
 
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun init() {
-            Mirai
-        }
-    }
-
     @Serializable
     data class W(
         val m: FileMessage
@@ -170,10 +162,18 @@ internal class MessageSerializationTest {
     @Test
     fun `test contextual serialization`() {
         for (message in testMessageContentInstances) {
-            testSerialization(message, module.serializer(message.javaClass))
+            testSerialization(
+                message,
+                module.getContextual(message::class)?.cast()
+                    ?: error("No contextual serializer found for ${message::class}")
+            )
         }
         for (message in testConstrainSingleMessageInstances) {
-            testSerialization(message, module.serializer(message.javaClass))
+            testSerialization(
+                message,
+                module.getContextual(message::class)?.cast()
+                    ?: error("No contextual serializer found for ${message::class}")
+            )
         }
     }
 
@@ -186,7 +186,7 @@ internal class MessageSerializationTest {
     }
 
     @Test
-    fun `test MessageSource serializable from #1273`() {
+    fun `test MessageSource serializable from issue 1273`() {
         // #1273
 
         val a = """

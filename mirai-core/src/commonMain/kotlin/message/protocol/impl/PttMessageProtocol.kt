@@ -14,14 +14,21 @@ import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.PttMessage
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.hexToBytes
 
 internal class PttMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
 
         add(Encoder())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(At::class, At.serializer()))
+            add(MessageSerializer(AtAll::class, AtAll.serializer()))
+            add(MessageSerializer(PlainText::class, PlainText.serializer()))
+        }
     }
 
     private class Encoder : MessageEncoder<PttMessage> {

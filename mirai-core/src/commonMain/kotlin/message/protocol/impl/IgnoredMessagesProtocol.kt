@@ -45,7 +45,7 @@ internal class IgnoredMessagesProtocol : MessageProtocol(PRIORITY_IGNORE) {
     private class Encoder : MessageEncoder<SingleMessage> {
         override suspend fun MessageEncoderContext.process(data: SingleMessage) {
             when (data) {
-                is ForwardMessage, // TODO: 2022/4/27 check this
+                is ForwardMessage,
                 is MessageSource, // mirai metadata only
                 -> {
                     markAsConsumed()

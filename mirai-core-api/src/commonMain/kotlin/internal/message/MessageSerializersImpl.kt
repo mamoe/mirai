@@ -13,10 +13,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
-import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
@@ -55,142 +53,11 @@ public open class MessageSourceSerializerImpl(serialName: String) :
 }
 
 
-private val builtInSerializersModule by lazy {
-    SerializersModule {
-        // NOTE: contextual serializers disabled because of https://github.com/mamoe/mirai/issues/951
-
-//        // non-Message classes
-//        contextual(RawForwardMessage::class, RawForwardMessage.serializer())
-//        contextual(ForwardMessage.Node::class, ForwardMessage.Node.serializer())
-//        contextual(VipFace.Kind::class, VipFace.Kind.serializer())
-//
-//
-//        // In case Proguard or something else obfuscated the Kotlin metadata, providing the serializers explicitly will help.
-//        contextual(At::class, At.serializer())
-//        contextual(AtAll::class, AtAll.serializer())
-//        contextual(CustomMessage::class, CustomMessage.serializer())
-//        contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
-//        contextual(Face::class, Face.serializer())
-//        contextual(Image::class, Image.Serializer)
-//        contextual(PlainText::class, PlainText.serializer())
-//        contextual(QuoteReply::class, QuoteReply.serializer())
-//
-//        contextual(ForwardMessage::class, ForwardMessage.serializer())
-//
-//
-//        contextual(LightApp::class, LightApp.serializer())
-//        contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-//        contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
-//
-//        contextual(PttMessage::class, PttMessage.serializer())
-//        contextual(Voice::class, Voice.serializer())
-//        contextual(PokeMessage::class, PokeMessage.serializer())
-//        contextual(VipFace::class, VipFace.serializer())
-//        contextual(FlashImage::class, FlashImage.serializer())
-//
-//        contextual(MusicShare::class, MusicShare.serializer())
-//
-//        contextual(MessageSource::class, MessageSource.serializer())
-
-//        contextual(SingleMessage::class, SingleMessage.Serializer)
-        contextual(MessageChain::class, MessageChain.Serializer)
-        contextual(LinearMessageChainImpl::class, LinearMessageChainImpl.serializer())
-
-        contextual(ShowImageFlag::class, ShowImageFlag.Serializer)
-
-        contextual(MessageOriginKind::class, MessageOriginKind.serializer())
-
-        fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
-            subclass(MessageSource::class, MessageSource.serializer())
-            subclass(QuoteReply::class, QuoteReply.serializer())
-            subclass(ShowImageFlag::class, ShowImageFlag.Serializer)
-            subclass(MessageOrigin::class, MessageOrigin.serializer())
-        }
-
-        fun PolymorphicModuleBuilder<MessageContent>.messageContentSubclasses() {
-            subclass(At::class, At.serializer())
-            subclass(AtAll::class, AtAll.serializer())
-            subclass(Face::class, Face.serializer())
-            subclass(Image::class, Image.Serializer)
-            subclass(PlainText::class, PlainText.serializer())
-
-            subclass(ForwardMessage::class, ForwardMessage.serializer())
-
-
-            subclass(LightApp::class, LightApp.serializer())
-            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-
-            //  subclass(PttMessage::class, PttMessage.serializer())
-            @Suppress("DEPRECATION_ERROR")
-            subclass(net.mamoe.mirai.message.data.Voice::class, net.mamoe.mirai.message.data.Voice.serializer())
-
-            // subclass(HummerMessage::class, HummerMessage.serializer())
-            subclass(PokeMessage::class, PokeMessage.serializer())
-            subclass(VipFace::class, VipFace.serializer())
-            subclass(FlashImage::class, FlashImage.serializer())
-
-            subclass(MusicShare::class, MusicShare.serializer())
-
-            subclass(Dice::class, Dice.serializer())
-        }
-
-
-        //  polymorphic(SingleMessage::class) {
-        //      subclass(MessageSource::class, MessageSource.serializer())
-        //      default {
-        //          Message.Serializer.serializersModule.getPolymorphic(Message::class, it)
-        //      }
-        //  }
-
-        // polymorphic(Message::class) {
-        //     subclass(PlainText::class, PlainText.serializer())
-        // }
-        polymorphic(SingleMessage::class) {
-            messageContentSubclasses()
-            messageMetadataSubclasses()
-        }
-
-        polymorphic(MessageContent::class) {
-            messageContentSubclasses()
-        }
-
-        polymorphic(MessageMetadata::class) {
-            messageMetadataSubclasses()
-        }
-
-        polymorphic(RichMessage::class) {
-            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-            subclass(LightApp::class, LightApp.serializer())
-        }
-
-        polymorphic(ServiceMessage::class) {
-            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-        }
-
-        //contextual(SingleMessage::class, SingleMessage.Serializer)
-        // polymorphic(SingleMessage::class, SingleMessage.Serializer) {
-        //     messageContentSubclasses()
-        //     messageMetadataSubclasses()
-        //     singleMessageSubclasses()
-        // }
-
-        // contextual(MessageContent::class, MessageContent.Serializer)
-        // polymorphic(MessageContent::class, MessageContent.Serializer) {
-        //     messageContentSubclasses()
-        // }
-
-        // contextual(MessageMetadata::class, MessageMetadata.Serializer)
-        // polymorphic(MessageMetadata::class, MessageMetadata.Serializer) {
-        //     messageMetadataSubclasses()
-        //
-    }
-}
-
 // Tests:
 // net.mamoe.mirai.internal.message.data.MessageSerializationTest
 internal object MessageSerializersImpl : MessageSerializers {
     private var serializersModuleField: SerializersModule by lateinitMutableProperty {
-        builtInSerializersModule
+        SerializersModule { }
     }
 
     override val serializersModule: SerializersModule
@@ -206,7 +73,7 @@ internal object MessageSerializersImpl : MessageSerializers {
 
     @Synchronized
     override fun registerSerializers(serializersModule: SerializersModule) {
-        serializersModuleField = serializersModule.overwriteWith(serializersModule)
+        serializersModuleField = this.serializersModule.overwriteWith(serializersModule)
     }
 }
 

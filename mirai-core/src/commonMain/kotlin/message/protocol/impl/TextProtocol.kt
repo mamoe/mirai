@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.CONTACT
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.isForward
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.originalMessage
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.read
@@ -39,6 +40,13 @@ internal class TextProtocol : MessageProtocol() {
         add(AtAllEncoder())
 
         add(Decoder())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(PlainText::class, PlainText.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(At::class, At.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(AtAll::class, AtAll.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(Face::class, Face.serializer(), registerAlsoContextual = true))
+        }
     }
 
     private class Decoder : MessageDecoder {

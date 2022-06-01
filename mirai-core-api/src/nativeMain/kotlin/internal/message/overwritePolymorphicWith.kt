@@ -17,5 +17,5 @@ internal actual fun <M : Any> SerializersModule.overwritePolymorphicWith(
     type: KClass<M>,
     serializer: KSerializer<M>
 ): SerializersModule {
-    TODO("Not yet implemented")
+    throw UnsupportedOperationException("overwritePolymorphicWith is not supported on native.")
 }

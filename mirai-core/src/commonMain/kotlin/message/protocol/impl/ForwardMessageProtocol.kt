@@ -19,14 +19,17 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.components.ClockHolder
-import net.mamoe.mirai.message.data.ForwardMessage
-import net.mamoe.mirai.message.data.RichMessage
-import net.mamoe.mirai.message.data.toMessageChain
+import net.mamoe.mirai.message.data.*
 
 internal class ForwardMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(ForwardMessageUploader())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(ForwardMessage::class, ForwardMessage.serializer()))
+        }
     }
 
     class ForwardMessageUploader : OutgoingMessagePreprocessor {

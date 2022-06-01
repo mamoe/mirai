@@ -12,8 +12,6 @@
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
-import io.ktor.client.engine.*
-import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.core.*
@@ -65,7 +63,6 @@ import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -81,71 +78,13 @@ internal expect fun _MiraiImpl_static_init()
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
+    init {
+        _MiraiImpl_static_init() // companion object is lazily initialized on native
+    }
+
     companion object {
         init {
             _MiraiImpl_static_init()
-            MessageSerializers.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
-            MessageSerializers.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
-            MessageSerializers.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
-            MessageSerializers.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
-
-            MessageSerializers.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
-            MessageSerializers.registerSerializer(FileMessageImpl::class, FileMessageImpl.serializer())
-
-            // MessageSource
-
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromGroupImpl::class,
-                OnlineMessageSourceFromGroupImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromFriendImpl::class,
-                OnlineMessageSourceFromFriendImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromTempImpl::class,
-                OnlineMessageSourceFromTempImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromStrangerImpl::class,
-                OnlineMessageSourceFromStrangerImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToGroupImpl::class,
-                OnlineMessageSourceToGroupImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToFriendImpl::class,
-                OnlineMessageSourceToFriendImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToTempImpl::class,
-                OnlineMessageSourceToTempImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToStrangerImpl::class,
-                OnlineMessageSourceToStrangerImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineMessageSourceImplData::class,
-                OfflineMessageSourceImplData.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineMessageSourceImplData::class,
-                OfflineMessageSourceImplData.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                UnsupportedMessageImpl::class,
-                UnsupportedMessageImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineAudioImpl::class,
-                OnlineAudioImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineAudioImpl::class,
-                OfflineAudioImpl.serializer()
-            )
         }
     }
 

@@ -17,9 +17,9 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.Dice
-import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.hexToBytes
 
 
@@ -29,6 +29,19 @@ internal class MarketFaceProtocol : MessageProtocol() {
         add(MarketFaceImplEncoder())
 
         add(MarketFaceDecoder())
+
+        MessageSerializer.superclassesScope(MarketFace::class, MessageContent::class, SingleMessage::class) {
+            add(
+                MessageSerializer(
+                    MarketFaceImpl::class,
+                    MarketFaceImpl.serializer()
+                )
+            )
+        }
+
+        MessageSerializer.superclassesScope(MarketFace::class, MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(Dice::class, Dice.serializer()))
+        }
     }
 
     private class MarketFaceImplEncoder : MessageEncoder<MarketFaceImpl> {
