@@ -116,19 +116,13 @@ internal actual class PlatformSocket(
         }
 
         private fun resolveIpFromHost(serverIp: String): UInt {
-            val host = gethostbyname(serverIp)
+            val host = gethostbyname(serverIp) // points to static data, don't free
                 ?: throw IllegalStateException("Failed to resolve IP from host. host=$serverIp")
 
-            val str = try {
-                val hAddrList = host.pointed.h_addr_list
-                    ?: throw IllegalStateException("Empty IP list resolved from host. host=$serverIp")
+            val hAddrList = host.pointed.h_addr_list
+                ?: throw IllegalStateException("Empty IP list resolved from host. host=$serverIp")
 
-                hAddrList[0]!!.toKString()
-            } finally {
-                free(host)
-            }
-
-            // TODO: 2022/5/30 check memory
+            val str = hAddrList[0]!!.toKString()
 
             return str.toIpV4Long().toUInt()
         }
