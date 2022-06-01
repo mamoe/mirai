@@ -201,10 +201,8 @@ protected constructor(
     override val processors: MutableDeque<ProcessorBox<P>> = ConcurrentLinkedDeque()
 
     override fun registerProcessor(processor: P): ProcessorPipeline.DisposableRegistry {
-        println("registerProcessor: $processor")
         val box = ProcessorBox(processor)
         processors.add(box)
-        println("processors.add fin")
         return ProcessorPipeline.DisposableRegistry {
             processors.remove(box)
         }

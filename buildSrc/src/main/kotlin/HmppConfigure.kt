@@ -81,6 +81,8 @@ val LINUX_TARGETS = setOf("linuxX64")
 
 val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
+val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
+
 
 fun Project.configureHMPP() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
