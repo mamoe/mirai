@@ -29,8 +29,8 @@ import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
-import net.mamoe.mirai.utils.PlatformLogger
 import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.isSameType
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,7 +41,7 @@ open class TM(private val name: String = Random.nextInt().toString()) : SingleMe
     override fun contentToString(): String = name
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (!isSameType(this, other)) return false
 
         other as TM
 
@@ -338,7 +338,7 @@ private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: Me
 }
 
 private fun assertNodesEquals(excepted: List<ForwardMessage.Node>, actual: List<ForwardMessage.Node>) {
-    assert(excepted.size == actual.size) { "Length not match" }
+    assertEquals(excepted.size, actual.size, "Length not match")
     for (i in excepted.indices) {
         val en = excepted[i]
         val an = actual[i]
@@ -349,11 +349,30 @@ private fun assertNodesEquals(excepted: List<ForwardMessage.Node>, actual: List<
     }
 }
 
+@Suppress("unused")
+private object Color {
+    const val RESET = "\u001b[0m"
+    const val WHITE = "\u001b[97m"
+    const val RED = "\u001b[31m"
+    const val EMERALD_GREEN = "\u001b[32m"
+    const val GOLD = "\u001b[33m"
+    const val BLUE = "\u001b[34m"
+    const val PURPLE = "\u001b[35m"
+    const val GREEN = "\u001b[36m"
+    const val GRAY = "\u001b[90m"
+    const val LIGHT_RED = "\u001b[91m"
+    const val LIGHT_GREEN = "\u001b[92m"
+    const val LIGHT_YELLOW = "\u001b[93m"
+    const val LIGHT_BLUE = "\u001b[94m"
+    const val LIGHT_PURPLE = "\u001b[95m"
+    const val LIGHT_CYAN = "\u001b[96m"
+}
+
 private fun assertMessageChainEquals(expected: MessageChain, actual: MessageChain) {
-    val color = object : PlatformLogger("") {
-        val yellow get() = Color.LIGHT_YELLOW.toString()
-        val green get() = Color.LIGHT_GREEN.toString()
-        val reset get() = Color.RESET.toString()
+    val color = object {
+        val yellow get() = Color.LIGHT_YELLOW
+        val green get() = Color.LIGHT_GREEN
+        val reset get() = Color.RESET
     }
 
     fun compare(expected: MessageChain, actual: MessageChain): Boolean {
