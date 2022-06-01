@@ -341,7 +341,7 @@ public actual open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public actual fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
-            this.json.decodeFromString(DeviceInfo.serializer(), json)
+            DeviceInfoManager.deserialize(json, this.json)
         }
     }
 
