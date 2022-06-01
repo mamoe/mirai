@@ -57,6 +57,8 @@ kotlin {
                 implementation(bouncycastle)
                 implementation(`log4j-api`)
                 implementation(`netty-all`)
+                implementation(`ktor-client-okhttp`)
+                api(`kotlinx-coroutines-core`)
             }
         }
 
@@ -103,23 +105,25 @@ kotlin {
             }
         }
 
-        val mingwMain by getting {
-            dependencies {
-            }
-        }
-
-        configure((LINUX_TARGETS + WIN_TARGETS).map { getByName(it + "Main") }) {
+        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
             dependencies {
                 implementation(`ktor-client-curl`)
             }
         }
 
-        configure(MAC_TARGETS.map { getByName(it + "Main") }) {
+        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+
+        val darwinMain by getting {
             dependencies {
                 implementation(`ktor-client-ios`)
             }
         }
 
+        disableCrossCompile()
 //        val unixMain by getting {
 //            dependencies {
 //                implementation(`ktor-client-cio`)

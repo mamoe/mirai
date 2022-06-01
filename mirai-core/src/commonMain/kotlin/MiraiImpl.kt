@@ -12,6 +12,7 @@
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
+import io.ktor.client.engine.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -71,6 +72,8 @@ import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
+
+internal expect fun createDefaultHttpClient(): HttpClient
 
 @Suppress("FunctionName")
 internal expect fun _MiraiImpl_static_init()
@@ -152,13 +155,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
     @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
-    override var Http: HttpClient = HttpClient() {
-        install(HttpTimeout) {
-            this.requestTimeoutMillis = 30_0000
-            this.connectTimeoutMillis = 30_0000
-            this.socketTimeoutMillis = 30_0000
-        }
-    }
+    override var Http: HttpClient = createDefaultHttpClient()
 
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
