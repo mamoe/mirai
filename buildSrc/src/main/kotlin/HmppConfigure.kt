@@ -83,6 +83,14 @@ val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
 val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
+val HOST_NATIVE_TARGET by lazy {
+    when (HOST_KIND) {
+        HostKind.LINUX -> "linuxX64"
+        HostKind.MACOS -> if (osDetector.arch.contains("aarch")) "macosArm64" else "macosX64"
+        HostKind.WINDOWS -> "mingwX64"
+    }
+}
+
 
 fun Project.configureHMPP() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
