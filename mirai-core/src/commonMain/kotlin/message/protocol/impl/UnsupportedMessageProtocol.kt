@@ -16,12 +16,25 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.UnsupportedMessage
 
 internal class UnsupportedMessageProtocol : MessageProtocol(priority = PRIORITY_UNSUPPORTED) {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Decoder())
         add(Encoder())
+
+        MessageSerializer.superclassesScope(UnsupportedMessage::class, MessageContent::class, SingleMessage::class) {
+            add(
+                MessageSerializer(
+                    UnsupportedMessageImpl::class,
+                    UnsupportedMessageImpl.serializer()
+                )
+            )
+        }
     }
 
     private class Decoder : MessageDecoder {

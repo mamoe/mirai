@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePostpro
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
@@ -30,7 +31,6 @@ internal abstract class MessageProtocol(
     }
 
     fun collectProcessors(processorCollector: ProcessorCollector) {
-        println("collectProcessors, this=$this, class=${this::class}")
         processorCollector.collectProcessorsImpl()
     }
 
@@ -74,6 +74,8 @@ internal abstract class ProcessorCollector {
     abstract fun add(transformer: OutgoingMessageTransformer)
     abstract fun add(sender: OutgoingMessageSender)
     abstract fun add(postprocessor: OutgoingMessagePostprocessor)
+
+    abstract fun <T : Any> add(serializer: MessageSerializer<T>)
 }
 
 
