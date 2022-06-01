@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import com.google.gradle.osdetector.OsDetector
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
@@ -24,8 +25,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.io.File
 
 private val miraiPlatform = Attribute.of(
-    "net.mamoe.mirai.platform",
-    String::class.java
+    "net.mamoe.mirai.platform", String::class.java
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
@@ -36,40 +36,50 @@ val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoole
 val OS_NAME = System.getProperty("os.name").toLowerCase()
 
 enum class HostKind {
-    LINUX,
-    WINDOWS,
-    MACOS,
+    LINUX, WINDOWS, MACOS,
 }
 
 val HOST_KIND = when {
-    OS_NAME.contains("linux", true) -> HostKind.LINUX
     OS_NAME.contains("windows", true) -> HostKind.WINDOWS
     OS_NAME.contains("mac", true) -> HostKind.MACOS
-    else -> error("Unsupported host kind `$OS_NAME`")
+    else -> HostKind.LINUX
 }
 
-val MAC_TARGETS = setOf(
-    "macosX64",
-    "macosArm64",
-    "iosX64",
-    "iosArm64",
-    "iosArm32",
-    "iosSimulatorArm64",
-    "watchosX86",
-    "watchosX64",
-    "watchosArm32",
-    "watchosArm64",
-    "watchosSimulatorArm64",
-    "tvosX64",
-    "tvosArm64",
-    "tvosSimulatorArm64",
-)
+enum class HostArch {
+    X86, X64, ARM32, ARM64
+}
+
+lateinit var osDetector: OsDetector
+
+val MAC_TARGETS: Set<String> by lazy {
+    if (!IDEA_ACTIVE) setOf(
+        "watchosX86", // enable a x86 target to force handling number of unstable sizes.
+        // enable only on CI
+        "macosX64",
+        "macosArm64",
+
+        "iosX64",
+        "iosArm64",
+        "iosArm32",
+        "iosSimulatorArm64",
+        "watchosX64",
+        "watchosArm32",
+        "watchosArm64",
+        "watchosSimulatorArm64",
+        "tvosX64",
+        "tvosArm64",
+        "tvosSimulatorArm64",
+    ) else setOf(
+        // IDEA active
+        if (osDetector.arch.contains("aarch")) "macosArm64" else "macosX64"
+    )
+}
 
 val WIN_TARGETS = setOf("mingwX64")
 
 val LINUX_TARGETS = setOf("linuxX64")
 
-val UNIX_LIKE_TARGETS = LINUX_TARGETS + MAC_TARGETS
+val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
 
 fun Project.configureHMPP() {
@@ -131,13 +141,12 @@ fun KotlinMultiplatformExtension.configureNativeTargets(
             "mingwX64",
 //                "wasm32" // linuxArm32Hfp, mingwX86
         ).flatMap { it.split(",") }.map { it.trim() }
-        presets.filter { it.name in nativeTargetNames }
-            .forEach { preset ->
-                val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
-                nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
-                nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
-                nativeTargets.add(target)
-            }
+        presets.filter { it.name in nativeTargetNames }.forEach { preset ->
+            val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
+            nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
+            nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
+            nativeTargets.add(target)
+        }
 
         if (!IDEA_ACTIVE) {
             project.configure(nativeMainSets) {
@@ -188,14 +197,16 @@ fun KotlinMultiplatformExtension.configureNativeTargets(
  *        /---------------+---------------\
  *     jvmBase                          native
  *     /    \                          /     \
- *   jvm   android                  unix     mingw
- *                                   |         \
- *                                   |        mingwX64
- *                                   |
- *                             <unix targets>
+ *   jvm   android                  unix      \
+ *                                 /    \     mingwX64
+ *                                /      \
+ *                            darwin     linuxX64
+ *                               |
+ *                               *
+ *                        <darwin targets>
  * ```
  *
- * `<unix targets>` include: macosX64, macosArm64, tvosX64, iosArm64, iosArm32, linuxX64...
+ * `<darwin targets>`: macosX64, macosArm64, tvosX64, iosArm64, iosArm32...
  */
 fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     project: Project
@@ -235,27 +246,32 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     val nativeMain = this.sourceSets.maybeCreate("nativeMain")
     val nativeTest = this.sourceSets.maybeCreate("nativeTest")
 
-    val mingwMain = this.sourceSets.maybeCreate("mingwMain")
-    val mingwTest = this.sourceSets.maybeCreate("mingwTest")
-
     val unixMain = this.sourceSets.maybeCreate("unixMain")
     val unixTest = this.sourceSets.maybeCreate("unixTest")
 
-    presets.filter { it.name in UNIX_LIKE_TARGETS }
-        .forEach { preset ->
-            addNativeTarget(preset).run {
-                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixMain) }
-                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixTest) }
-            }
-        }
+    val darwinMain = this.sourceSets.maybeCreate("darwinMain")
+    val darwinTest = this.sourceSets.maybeCreate("darwinTest")
 
-    presets.filter { it.name in WIN_TARGETS }
-        .forEach { preset ->
-            addNativeTarget(preset).run {
-                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(mingwMain) }
-                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(mingwTest) }
-            }
+    presets.filter { it.name in MAC_TARGETS }.forEach { preset ->
+        addNativeTarget(preset).run {
+            compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinMain) }
+            compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinTest) }
         }
+    }
+
+    presets.filter { it.name in LINUX_TARGETS }.forEach { preset ->
+        addNativeTarget(preset).run {
+            compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixMain) }
+            compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixTest) }
+        }
+    }
+
+    presets.filter { it.name in WIN_TARGETS }.forEach { preset ->
+        addNativeTarget(preset).run {
+            compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(nativeMain) }
+            compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(nativeTest) }
+        }
+    }
 
     jvmBaseMain.dependsOn(commonMain)
     jvmBaseTest.dependsOn(commonTest)
@@ -266,14 +282,35 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     unixMain.dependsOn(nativeMain)
     unixTest.dependsOn(nativeTest)
 
-    mingwMain.dependsOn(nativeMain)
-    mingwTest.dependsOn(nativeTest)
+    darwinMain.dependsOn(unixMain)
+    darwinTest.dependsOn(unixTest)
 
     jvmMain.dependsOn(jvmBaseMain)
     jvmTest.dependsOn(jvmBaseTest)
 
     androidMain.dependsOn(jvmBaseMain)
     androidTest.dependsOn(jvmBaseTest)
+}
+
+
+// e.g. Linker will try to link curl for mingwX64 but this can't be done on macOS.
+fun Project.disableCrossCompile() {
+    project.afterEvaluate {
+        if (HOST_KIND != HostKind.MACOS) {
+            MAC_TARGETS.forEach { target -> disableTargetLink(this, target) }
+        }
+        if (HOST_KIND != HostKind.WINDOWS) {
+            WIN_TARGETS.forEach { target -> disableTargetLink(this, target) }
+        }
+        if (HOST_KIND != HostKind.LINUX) {
+            LINUX_TARGETS.forEach { target -> disableTargetLink(this, target) }
+        }
+    }
+}
+
+private fun disableTargetLink(project: Project, target: String) {
+    project.tasks.getByName("linkDebugTest${target.titlecase()}").enabled = false
+    project.tasks.getByName("${target}Test").enabled = false
 }
 
 private fun Project.linkerDirs(): List<String> {
@@ -297,9 +334,7 @@ private fun Project.includeDirs(): List<String> {
 }
 
 private fun Project.configureNativeInterop(
-    compilationName: String,
-    nativeInteropDir: File,
-    nativeTargets: MutableList<KotlinNativeTarget>
+    compilationName: String, nativeInteropDir: File, nativeTargets: MutableList<KotlinNativeTarget>
 ) {
     val crateName = project.name.replace("-", "_") + "_i"
 
@@ -342,19 +377,14 @@ private fun Project.configureNativeInterop(
         val cbindgen = tasks.register("cbindgen${compilationName.titlecase()}") {
             group = "mirai"
             description = "Generate C Headers from Rust"
-            inputs.files(
-                project.objects.fileTree().from(nativeInteropDir.resolve("src"))
-                    .filterNot { it.name == "bindings.rs" }
-            )
+            inputs.files(project.objects.fileTree().from(nativeInteropDir.resolve("src"))
+                .filterNot { it.name == "bindings.rs" })
             outputs.file(nativeInteropDir.resolve(headerName))
             doLast {
                 exec {
                     workingDir(nativeInteropDir)
                     commandLine(
-                        "cbindgen",
-                        "--config", "cbindgen.toml",
-                        "--crate", crateName,
-                        "--output", headerName
+                        "cbindgen", "--config", "cbindgen.toml", "--crate", crateName, "--output", headerName
                     )
                 }
             }
@@ -408,7 +438,7 @@ private fun Project.configureNativeInterop(
 //            tasks.getByName("cinteropNative$name").dependsOn(cbindgen)
         }
 
-        if (targetCompilation != null)  {
+        if (targetCompilation != null) {
             val compileRust = tasks.register("compileRust${compilationName.titlecase()}") {
                 group = "mirai"
                 inputs.files(nativeInteropDir.resolve("src"))
