@@ -94,7 +94,7 @@ internal class OpenSslPublicKey(override val hex: String) : ECDHPublicKey {
 internal actual class ECDHKeyPairImpl(
     override val privateKey: OpenSslPrivateKey,
     override val publicKey: OpenSslPublicKey,
-    private val initialPublicKey: ECDHPublicKey
+    initialPublicKey: ECDHPublicKey
 ) : ECDHKeyPair {
 
     override val maskedPublicKey: ByteArray by lazy { publicKey.encoded }
@@ -136,19 +136,12 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
          * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
          */
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {
-            memScoped {
-                key.usePinned { pin ->
-                    val group = EC_GROUP_new_by_curve_name(curveId)
-                        ?: error("Failed to create EC_GROUP")
+            val p = EC_POINT_new(group) ?: error("Failed to create EC_POINT")
 
-                    val p = EC_POINT_new(group) ?: error("Failed to create EC_POINT")
+            // TODO: 2022/6/1 native: check memory
+            EC_POINT_hex2point(group, key.toUHexString("").lowercase(), p, bnCtx)
 
-                    EC_POINT_hex2point(group, pin.get().toUHexString("").lowercase(), p, bnCtx)
-
-                    return OpenSslPublicKey.fromPoint(p)
-                }
-            }
-
+            return OpenSslPublicKey.fromPoint(p)
         }
 
         /**
@@ -186,7 +179,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             try {
                 val privateBignum = privateKey.toBignum()
                 try {
-                    EC_KEY_set_private_key(k, privateKey.toBignum()).let { r ->
+                    EC_KEY_set_private_key(k, privateBignum).let { r ->
                         if (r != 1) error("Failed EC_KEY_set_private_key: $r")
                     }
 
@@ -228,5 +221,6 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
 }
 
 internal actual fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
+    println("adjustToPublicKey: ${this.toUHexString()}")
     return ECDH.constructPublicKey(this)
 }
