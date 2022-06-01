@@ -19,7 +19,11 @@ internal actual fun SocketAddress.getHost(): String = host
 internal actual fun SocketAddress.getPort(): Int = port
 
 
-internal class SocketAddressImpl(host: String, port: Int) : SocketAddress(host, port, null)
+internal class SocketAddressImpl(host: String, port: Int) : SocketAddress(host, port, null) {
+    override fun toString(): String {
+        return "$host:$port"
+    }
+}
 
 internal actual fun createSocketAddress(host: String, port: Int): SocketAddress {
     return SocketAddressImpl(host, port)

@@ -22,9 +22,7 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.connect
-import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.readPacketExact
-import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.*
 
 internal class NativeNetworkHandler(
     context: NetworkHandlerContext,
@@ -58,7 +56,12 @@ internal class NativeNetworkHandler(
             private val bufferedPackets: MutableList<ByteReadPacket> = ArrayList(10)
 
             fun offer(packet: ByteReadPacket) {
+                if (missingLength == 0L) {
+                    // initial
+                    missingLength = packet.readInt().toLongUnsigned() - 4
+                }
                 missingLength -= packet.remaining
+                bufferedPackets.add(packet)
                 if (missingLength <= 0) {
                     emit()
                 }
@@ -70,17 +73,13 @@ internal class NativeNetworkHandler(
                     1 -> {
                         val packet = bufferedPackets.first()
                         if (missingLength == 0L) {
-                            packetCodec.decodeRaw(ssoProcessor.ssoSession, packet)
+                            sendDecode(packet)
+                            bufferedPackets.clear()
                         } else {
                             check(missingLength < 0L) { "Failed check: remainingLength < 0L" }
 
                             val previousPacketLength = missingLength + packet.remaining
-                            decodePipeline.send(
-                                packetCodec.decodeRaw(
-                                    ssoProcessor.ssoSession,
-                                    packet.readPacketExact(previousPacketLength.toInt())
-                                )
-                            )
+                            sendDecode(packet.readPacketExact(previousPacketLength.toInt()))
 
                             // now packet contain new packet.
                             missingLength = packet.readInt().toLongUnsigned() - 4
@@ -115,14 +114,21 @@ internal class NativeNetworkHandler(
                             bufferedPackets.add(lastPacket)
                         }
 
-                        decodePipeline.send(
-                            packetCodec.decodeRaw(
-                                ssoProcessor.ssoSession,
-                                combined
-                            )
-                        )
+                        sendDecode(combined)
                     }
                 }
+            }
+
+            private fun sendDecode(combined: ByteReadPacket) {
+                packetLogger.verbose { "Decoding: len=${combined.remaining}" }
+                val raw = packetCodec.decodeRaw(
+                    ssoProcessor.ssoSession,
+                    combined
+                )
+                packetLogger.verbose { "Decoded: ${raw.commandName}" }
+                decodePipeline.send(
+                    raw
+                )
             }
 
             override fun close() {
@@ -133,6 +139,7 @@ internal class NativeNetworkHandler(
         private val sender = launch {
             while (isActive) {
                 val result = sendQueue.receiveCatching()
+                logger.info { "Native sender: $result" }
                 result.onFailure { if (it is CancellationException) return@launch }
 
                 result.getOrNull()?.let { packet ->
@@ -150,6 +157,7 @@ internal class NativeNetworkHandler(
             while (isActive) {
                 try {
                     val packet = socket.read()
+
                     lengthDelimitedPacketReader.offer(packet)
                 } catch (e: Throwable) {
                     if (e is CancellationException) return@launch
@@ -171,7 +179,10 @@ internal class NativeNetworkHandler(
     }
 
     override suspend fun createConnection(): NativeConn {
-        return NativeConn(PlatformSocket.connect(address))
+        logger.info { "Connecting to $address" }
+        return NativeConn(PlatformSocket.connect(address)).also {
+            logger.info { "Connected to server $address" }
+        }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")

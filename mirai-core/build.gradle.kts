@@ -114,6 +114,14 @@ kotlin {
                 }
         }
 
+        UNIX_LIKE_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("Socket")
+                .apply {
+                    defFile = projectDir.resolve("src/unixMain/cinterop/Socket.def")
+                    packageName("sockets")
+                }
+        }
+
         configure(WIN_TARGETS.map { getByName(it + "Main") }) {
             dependencies {
                 implementation(`ktor-client-curl`)

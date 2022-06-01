@@ -422,5 +422,5 @@ internal fun String.toIpV4Long(): Long {
     if (isEmpty()) return 0
     val split = split('.')
     if (split.size != 4) return 0
-    return split.mapToByteArray { it.toByte() }.toInt().toLongUnsigned()
+    return split.mapToByteArray { it.toUByte().toByte() }.toInt().toLongUnsigned()
 }

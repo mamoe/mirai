@@ -46,7 +46,7 @@ public actual fun currentTimeFormatted(format: String?): String = timeLock.withL
         val tm = localtime(timeT.ptr) // localtime is not thread-safe
 
         val bb = allocArray<ByteVar>(40)
-        strftime(bb, 40, "%Y-%M-%d %H:%M:%S", tm);
+        strftime(bb, 40, "%Y-%m-%d %H:%M:%S", tm);
 
         bb.toKString()
     }

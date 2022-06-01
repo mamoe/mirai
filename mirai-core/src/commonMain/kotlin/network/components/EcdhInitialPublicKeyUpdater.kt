@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.components
 
 import io.ktor.client.request.*
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -22,6 +23,7 @@ import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
 import net.mamoe.mirai.internal.utils.crypto.defaultInitialPublicKey
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.currentTimeSeconds
+import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -88,16 +90,19 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
                 logger.info("ECDH key is invalid, start to fetch ecdh public key from server.")
                 val respStr =
                     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                    Mirai.Http.get<String>("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=${bot.client.uin}")
+                    withTimeout(10.seconds) { Mirai.Http.get<String>("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=${bot.client.uin}") }
                 val resp = json.decodeFromString(ServerRespPOJO.serializer(), respStr)
+                println("check2")
                 resp.pubKeyMeta.let { meta ->
                     val isValid = ECDH.verifyPublicKey(
                         version = meta.keyVer,
                         publicKey = meta.pubKey,
                         publicKeySign = meta.pubKeySign
                     )
+                    println("check1")
                     check(isValid) { "Ecdh public key which from server is invalid" }
                     logger.info("Successfully fetched ecdh public key from server.")
+                    println("check3")
                     ECDHInitialPublicKey(meta.keyVer, meta.pubKey, currentTimeSeconds() + resp.querySpan)
                 }
             }

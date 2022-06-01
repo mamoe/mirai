@@ -10,20 +10,18 @@
 package net.mamoe.mirai.internal.utils
 
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.EOFException
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.*
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
-import net.mamoe.mirai.internal.network.protocol.packet.login.toIpV4Long
-import net.mamoe.mirai.utils.DEFAULT_BUFFER_SIZE
-import net.mamoe.mirai.utils.toReadPacket
-import net.mamoe.mirai.utils.wrapIO
-import platform.posix.*
+import net.mamoe.mirai.utils.*
+import platform.posix.close
+import platform.posix.errno
+import platform.posix.recv
+import platform.posix.write
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -34,8 +32,14 @@ import kotlin.contracts.contract
 internal actual class PlatformSocket(
     private val socket: Int
 ) : Closeable, HighwayProtocolChannel {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher: CoroutineDispatcher = newSingleThreadContext("PlatformSocket#$socket.dispatcher")
+    @Suppress("UnnecessaryOptInAnnotation")
+    @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+    private val readDispatcher: CoroutineDispatcher = newSingleThreadContext("PlatformSocket#$socket.dispatcher")
+
+    // Native send and read are blocking. Using a dedicated thread(dispatcher) to do the job.
+    @Suppress("UnnecessaryOptInAnnotation")
+    @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+    private val sendDispatcher: CoroutineDispatcher = newSingleThreadContext("PlatformSocket#$socket.dispatcher")
 
     private val readLock = Mutex()
     private val readBuffer = ByteArray(DEFAULT_BUFFER_SIZE).pin()
@@ -45,22 +49,21 @@ internal actual class PlatformSocket(
     actual val isOpen: Boolean
         get() = write(socket, null, 0).convert<Long>() != 0L
 
-    @OptIn(ExperimentalIoApi::class)
     actual override fun close() {
-        if (close(socket) != 0) {
-            throw PosixException.forErrno(posixFunctionName = "close()").wrapIO()
-        }
+        close(socket)
+        (readDispatcher as CloseableCoroutineDispatcher).close()
+        (sendDispatcher as CloseableCoroutineDispatcher).close()
     }
 
     @OptIn(ExperimentalIoApi::class)
-    actual suspend fun send(packet: ByteArray, offset: Int, length: Int): Unit = readLock.withLock {
-        withContext(dispatcher) {
+    actual suspend fun send(packet: ByteArray, offset: Int, length: Int): Unit = writeLock.withLock {
+        withContext(sendDispatcher) {
             require(offset >= 0) { "offset must >= 0" }
             require(length >= 0) { "length must >= 0" }
             require(offset + length <= packet.size) { "It must follows offset + length <= packet.size" }
             packet.usePinned { pin ->
-                if (write(socket, pin.addressOf(offset), length.convert()).convert<Long>() != 0L) {
-                    throw PosixException.forErrno(posixFunctionName = "close()").wrapIO()
+                if (write(socket, pin.addressOf(offset), length.convert()).convert<Long>() < 0L) {
+                    throw PosixException.forErrno(posixFunctionName = "write()").wrapIO()
                 }
             }
         }
@@ -70,12 +73,16 @@ internal actual class PlatformSocket(
      * @throws SendPacketInternalException
      */
     @OptIn(ExperimentalIoApi::class)
-    actual override suspend fun send(packet: ByteReadPacket): Unit = readLock.withLock {
-        withContext(dispatcher) {
+    actual override suspend fun send(packet: ByteReadPacket): Unit = writeLock.withLock {
+        withContext(sendDispatcher) {
+            logger.info { "Native socket sending: len=${packet.remaining}" }
             val writeBuffer = writeBuffer
-            val length = packet.readAvailable(writeBuffer.get())
-            if (write(socket, writeBuffer.addressOf(0), length.convert()).convert<Long>() != 0L) {
-                throw PosixException.forErrno(posixFunctionName = "close()").wrapIO()
+            while (packet.remaining != 0L) {
+                val length = packet.readAvailable(writeBuffer.get())
+                if (write(socket, writeBuffer.addressOf(0), length.convert()).convert<Long>() < 0L) {
+                    throw PosixException.forErrno(posixFunctionName = "write()").wrapIO()
+                }
+                logger.info { "Native socket sent $length bytes." }
             }
         }
     }
@@ -83,49 +90,67 @@ internal actual class PlatformSocket(
     /**
      * @throws ReadPacketInternalException
      */
-    actual override suspend fun read(): ByteReadPacket = writeLock.withLock {
-        withContext(dispatcher) {
+    actual override suspend fun read(): ByteReadPacket = readLock.withLock {
+        withContext(readDispatcher) {
+            logger.info { "Native socket reading." }
             val readBuffer = readBuffer
-            val length = read(socket, readBuffer.addressOf(0), readBuffer.get().size.convert()).convert<Long>()
+            val length = recv(socket, readBuffer.addressOf(0), readBuffer.get().size.convert(), 0).convert<Long>()
+            if (length < 0L) {
+                throw EOFException("recv: $length, errno=$errno")
+            }
+            logger.info {
+                "Native socket read $length bytes: ${
+                    readBuffer.get().copyOf(length.toInt()).toUHexString()
+                }"
+            }
             readBuffer.get().toReadPacket(length = length.toInt())
         }
     }
 
     actual companion object {
+        private val logger: MiraiLogger = MiraiLogger.Factory.create(PlatformSocket::class)
 
-        @OptIn(UnsafeNumber::class, ExperimentalIoApi::class)
         actual suspend fun connect(
             serverIp: String,
             serverPort: Int
         ): PlatformSocket {
-            val addr = memScoped {
-                alloc<sockaddr_in>() {
-                    sin_family = AF_INET.convert()
-                    resolveIpFromHost(serverIp)
-                    sin_addr.s_addr = resolveIpFromHost(serverIp)
-                }
-            }.reinterpret<sockaddr>()
-
-            val id = socket(AF_INET, 1 /* SOCKET_STREAM */, IPPROTO_TCP)
-            if (id != 0) throw PosixException.forErrno(posixFunctionName = "socket()")
-
-            val conn = connect(id, addr.ptr, sizeOf<sockaddr_in>().convert())
-            if (conn != 0) throw PosixException.forErrno(posixFunctionName = "connect()")
-
-            return PlatformSocket(conn)
+            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toUShort())
+            if (r < 0) error("Failed socket_create_connect: $r")
+            return PlatformSocket(r)
+//            val addr = nativeHeap.alloc<sockaddr_in>() {
+//                sin_family = AF_INET.toUByte()
+//                sin_addr.s_addr = resolveIpFromHost(serverIp).pointed.s_addr
+//                sin_port = serverPort.toUInt().toUShort()
+//            }
+//
+//            val id = socket(AF_INET, SOCK_STREAM, 0)
+//            if (id == -1) throw PosixException.forErrno(posixFunctionName = "socket()")
+//
+//            println("connect")
+//            val conn = connect(id, addr.ptr.reinterpret(), sizeOf<sockaddr_in>().toUInt())
+//            println("connect: $conn, $errno")
+//            if (conn < 0) throw PosixException.forErrno(posixFunctionName = "connect()")
+//
+//            return PlatformSocket(conn)
         }
 
-        private fun resolveIpFromHost(serverIp: String): UInt {
-            val host = gethostbyname(serverIp) // points to static data, don't free
-                ?: throw IllegalStateException("Failed to resolve IP from host. host=$serverIp")
-
-            val hAddrList = host.pointed.h_addr_list
-                ?: throw IllegalStateException("Empty IP list resolved from host. host=$serverIp")
-
-            val str = hAddrList[0]!!.toKString()
-
-            return str.toIpV4Long().toUInt()
-        }
+//        private fun resolveIpFromHost(serverIp: String): CPointer<in_addr> {
+//            val host = gethostbyname(serverIp) // points to static data, don't free
+//                ?: throw IllegalStateException("Failed to resolve IP from host. host=$serverIp")
+//            println(host.pointed.h_addr_list?.get(1)?.reinterpret<in_addr>()?.pointed?.s_addr)
+//            return host.pointed.h_addr_list?.get(1)?.reinterpret<in_addr>() ?: error("Failed to get ip")
+////            val hAddrList = host.pointed.h_addr_list
+////                ?: throw IllegalStateException("Empty IP list resolved from host. host=$serverIp")
+////
+////
+////            val str = hAddrList[0]!!.reinterpret<UIntVar>()
+////
+////            try {
+////                return str.pointed.value
+////            } finally {
+//////                free()
+////            }
+//        }
 
         actual suspend inline fun <R> withConnection(
             serverIp: String,
