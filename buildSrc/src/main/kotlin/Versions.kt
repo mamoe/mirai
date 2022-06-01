@@ -28,7 +28,7 @@ object Versions {
 
     const val kotlinCompilerForIdeaPlugin = "1.7.0-RC"
 
-    const val coroutines = "1.6.1-native-mt"
+    const val coroutines = "1.6.2"
     const val atomicFU = "0.17.2"
     const val serialization = "1.3.2"
     const val ktor = "1.6.8"
@@ -108,6 +108,7 @@ val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
 val `ktor-client-core` = ktor("client-core", Versions.ktor)
 val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
+val `ktor-client-mock` = ktor("client-mock", Versions.ktor)
 val `ktor-client-curl` = ktor("client-curl", Versions.ktor)
 val `ktor-client-ios` = ktor("client-ios", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
