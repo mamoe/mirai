@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.pipeline
 
-import io.ktor.util.collections.*
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
@@ -202,8 +201,10 @@ protected constructor(
     override val processors: MutableDeque<ProcessorBox<P>> = ConcurrentLinkedDeque()
 
     override fun registerProcessor(processor: P): ProcessorPipeline.DisposableRegistry {
+        println("registerProcessor: $processor")
         val box = ProcessorBox(processor)
         processors.add(box)
+        println("processors.add fin")
         return ProcessorPipeline.DisposableRegistry {
             processors.remove(box)
         }
