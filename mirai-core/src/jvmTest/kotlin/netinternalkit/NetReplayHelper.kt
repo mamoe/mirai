@@ -76,7 +76,7 @@ private fun NetReplayHelperClass(): Class<*> {
 
 
 private fun attachNetReplayHelper(channel: Channel) {
-    channel.pipeline()
+    channel.pipeline() // TODO: 2022/6/2 will not work since "raw-packet-collector" has been removed
         .addBefore("raw-packet-collector", "raw-packet-dumper", newRawPacketDumper())
 
     attachNetReplayWView(channel)
@@ -280,5 +280,6 @@ fun Bot.attachNetReplayHelper() {
 
 fun main() {
     val bot = BotFactory.newBot(0, "")
-    bot.attachNetReplayHelper()
+    bot.attachNetReplayHelper() //
+    // TODO: 2022/6/2 will not work since "raw-packet-collector" has been removed, see net.mamoe.mirai.internal.netinternalkit.NetReplayHelper.attachNetReplayHelper(io.netty.channel.Channel)
 }
