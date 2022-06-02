@@ -121,8 +121,12 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
     }
 }
 
-public inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset): ByteReadPacket =
-    ByteReadPacket(this, offset = offset, length = length)
+public inline fun ByteArray.toReadPacket(
+    offset: Int = 0,
+    length: Int = this.size - offset,
+    noinline release: (ByteArray) -> Unit = {}
+): ByteReadPacket =
+    ByteReadPacket(this, offset = offset, length = length, block = release)
 
 public inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
