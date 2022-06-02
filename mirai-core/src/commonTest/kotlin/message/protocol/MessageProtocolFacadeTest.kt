@@ -21,6 +21,7 @@ internal class MessageProtocolFacadeTest : AbstractTest() {
         assertEquals(
             """
                 QuoteReplyProtocol
+                AudioProtocol
                 CustomMessageProtocol
                 FaceProtocol
                 FileMessageProtocol
