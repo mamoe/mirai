@@ -42,7 +42,6 @@ internal actual class PlatformSocket(
     private val sendDispatcher: CoroutineDispatcher = newSingleThreadContext("PlatformSocket#$socket.dispatcher")
 
     private val readLock = Mutex()
-    private val readBuffer = ByteArray(bufferSize).pin()
     private val writeLock = Mutex()
     private val writeBuffer = ByteArray(bufferSize).pin()
 
@@ -53,6 +52,7 @@ internal actual class PlatformSocket(
         close(socket)
         (readDispatcher as CloseableCoroutineDispatcher).close()
         (sendDispatcher as CloseableCoroutineDispatcher).close()
+        writeBuffer.unpin()
     }
 
     @OptIn(ExperimentalIoApi::class)
@@ -93,17 +93,25 @@ internal actual class PlatformSocket(
     actual override suspend fun read(): ByteReadPacket = readLock.withLock {
         withContext(readDispatcher) {
             logger.info { "Native socket reading." }
-            val readBuffer = readBuffer
-            val length = recv(socket, readBuffer.addressOf(0), readBuffer.get().size.convert(), 0).convert<Long>()
-            if (length <= 0L) {
-                throw EOFException("recv: $length, errno=$errno")
+
+            val readBuffer = ByteArrayPool.borrow()
+
+            try {
+                val length = readBuffer.usePinned { pinned ->
+                    recv(socket, pinned.addressOf(0), pinned.get().size.convert(), 0).convert<Long>()
+                }
+
+                if (length <= 0L) throw EOFException("recv: $length, errno=$errno")
+                logger.info {
+                    "Native socket read $length bytes: ${
+                        readBuffer.copyOf(length.toInt()).toUHexString()
+                    }"
+                }
+                readBuffer.toReadPacket(length = length.toInt()) { ByteArrayPool.recycle(it) }
+            } catch (e: Throwable) {
+                ByteArrayPool.recycle(readBuffer)
+                throw e
             }
-            logger.info {
-                "Native socket read $length bytes: ${
-                    readBuffer.get().copyOf(length.toInt()).toUHexString()
-                }"
-            }
-            readBuffer.get().toReadPacket(length = length.toInt())
         }
     }
 
