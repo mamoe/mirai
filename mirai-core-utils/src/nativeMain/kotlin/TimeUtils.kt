@@ -14,10 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.cinterop.*
-import platform.posix.localtime
-import platform.posix.strftime
-import platform.posix.time
-import platform.posix.time_tVar
+import platform.posix.*
 
 /**
  * 时间戳
@@ -26,9 +23,9 @@ import platform.posix.time_tVar
 public actual fun currentTimeMillis(): Long {
     // Do not use getTimeMillis from stdlib, it doesn't support iosSimulatorArm64
     memScoped {
-        val timeT = alloc<time_tVar>()
-        time(timeT.ptr)
-        return timeT.value.toLongUnsigned()
+        val spec = alloc<timespec>()
+        clock_gettime(CLOCK_REALTIME.convert(), spec.ptr)
+        return (spec.tv_sec * 1000 + spec.tv_nsec / 1e6).toLong()
     }
 }
 

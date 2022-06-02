@@ -17,7 +17,7 @@ internal class TimeUtilsTest {
     @Test
     fun `can get currentTimeMillis`() {
         val time = currentTimeMillis()
-        assertTrue(time.toString()) { time > 1642549113 }
+        assertTrue(time.toString()) { time > 1654209523269 }
     }
 
     @Test
