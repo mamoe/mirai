@@ -11,6 +11,8 @@ package net.mamoe.mirai.internal.network.handler
 
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onFailure
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
@@ -89,14 +91,67 @@ internal abstract class CommonNetworkHandler<Conn>(
     internal inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
         private val packetCodec: PacketCodec by lazy { context[PacketCodec] }
+        private val ssoProcessor: SsoProcessor by lazy { context[SsoProcessor] }
 
-        fun send(raw: RawIncomingPacket) {
+
+        private val queue: Channel<ByteReadPacket> = Channel<ByteReadPacket>(Channel.BUFFERED) { undelivered ->
+            launch { sendQueue(undelivered) }
+        }.also { channel -> coroutineContext[Job]!!.invokeOnCompletion { channel.close(it) } }
+
+        private suspend inline fun sendQueue(packet: ByteReadPacket) {
+            queue.send(packet)
+        }
+
+        init {
             launch {
-                packetLogger.debug { "Packet Handling Processor: receive packet ${raw.commandName}" }
-                val result = packetCodec.processBody(context.bot, raw)
-                if (result == null) {
-                    collectUnknownPacket(raw)
-                } else collectReceived(result)
+                while (isActive) {
+                    val result = queue.receiveCatching()
+                    packetLogger.verbose { "Decoding packet: $result" }
+                    result.onFailure { if (it is CancellationException) return@launch }
+
+                    result.getOrNull()?.let { packet ->
+                        try {
+                            val decoded = decodePacket(packet)
+                            processBody(decoded)
+                        } catch (e: Throwable) {
+                            if (e is CancellationException) return@launch
+                            handleExceptionInDecoding(e)
+                            logger.error("Error while decoding packet '${packet}'", e)
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun decodePacket(packet: ByteReadPacket): RawIncomingPacket {
+            return if (packetLogger.isDebugEnabled) {
+                val bytes = packet.readBytes()
+                logger.verbose { "Decoding: len=${bytes.size}, value=${bytes.toUHexString()}" }
+                val raw = packetCodec.decodeRaw(
+                    ssoProcessor.ssoSession,
+                    bytes.toReadPacket()
+                )
+                logger.verbose { "Decoded: ${raw.commandName}" }
+                raw
+            } else {
+                packetCodec.decodeRaw(
+                    ssoProcessor.ssoSession,
+                    packet
+                )
+            }
+        }
+
+        private suspend fun processBody(raw: RawIncomingPacket) {
+            packetLogger.debug { "Packet Handling Processor: receive packet ${raw.commandName}" }
+            val result = packetCodec.processBody(context.bot, raw)
+            if (result == null) {
+                collectUnknownPacket(raw)
+            } else collectReceived(result)
+        }
+
+        fun send(packet: ByteReadPacket) {
+            queue.trySend(packet).onFailure {
+                throw it ?: throw IllegalStateException("Internal error: Failed to decode '$packet' without reason.")
             }
         }
     }

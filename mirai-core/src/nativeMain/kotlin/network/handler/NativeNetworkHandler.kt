@@ -24,7 +24,6 @@ import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.connect
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.verbose
 
 internal class NativeNetworkHandler(
     context: NetworkHandlerContext,
@@ -48,42 +47,37 @@ internal class NativeNetworkHandler(
             launch { write(undelivered) }
         }
 
-        private val lengthDelimitedPacketReader = LengthDelimitedPacketReader(fun(combined: ByteReadPacket) {
-            logger.verbose { "Decoding: len=${combined.remaining}" }
-            val raw = packetCodec.decodeRaw(
-                ssoProcessor.ssoSession,
-                combined
-            )
-            logger.verbose { "Decoded: ${raw.commandName}" }
-            decodePipeline.send(raw)
-        })
+        private val lengthDelimitedPacketReader = LengthDelimitedPacketReader(decodePipeline::send)
 
-        private val sender = launch {
-            while (isActive) {
-                val result = sendQueue.receiveCatching()
-                logger.info { "Native sender: $result" }
-                result.onFailure { if (it is CancellationException) return@launch }
+        init {
+            launch {
+                while (isActive) {
+                    val result = sendQueue.receiveCatching()
+                    logger.info { "Native sender: $result" }
+                    result.onFailure { if (it is CancellationException) return@launch }
 
-                result.getOrNull()?.let { packet ->
-                    try {
-                        socket.send(packet.delegate, 0, packet.delegate.size)
-                    } catch (e: Throwable) {
-                        if (e is CancellationException) return@launch
-                        logger.error("Error while sending packet '${packet.commandName}'", e)
+                    result.getOrNull()?.let { packet ->
+                        try {
+                            socket.send(packet.delegate, 0, packet.delegate.size)
+                        } catch (e: Throwable) {
+                            if (e is CancellationException) return@launch
+                            logger.error("Error while sending packet '${packet.commandName}'", e)
+                        }
                     }
                 }
             }
-        }
 
-        private val receiver = launch {
-            while (isActive) {
-                try {
-                    val packet = socket.read()
+            launch {
+                while (isActive) {
+                    try {
+                        val packet = socket.read()
 
-                    lengthDelimitedPacketReader.offer(packet)
-                } catch (e: Throwable) {
-                    if (e is CancellationException) return@launch
-                    logger.error("Error while reading packet.", e)
+                        lengthDelimitedPacketReader.offer(packet)
+                    } catch (e: Throwable) {
+                        if (e is CancellationException) return@launch
+                        logger.error("Error while reading packet.", e)
+                        setState { StateClosed(e) }
+                    }
                 }
             }
         }
@@ -91,12 +85,13 @@ internal class NativeNetworkHandler(
         fun write(packet: OutgoingPacket) {
             sendQueue.trySend(packet).onFailure {
                 throw it
-                    ?: throw IllegalStateException("Failed to send packet '${packet.commandName}' without reason.")
+                    ?: throw IllegalStateException("Internal error: Failed to send packet '${packet.commandName}' without reason.")
             }
         }
 
         override fun close() {
             cancel()
+            sendQueue.close()
         }
     }
 
