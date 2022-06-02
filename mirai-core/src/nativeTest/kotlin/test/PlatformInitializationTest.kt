@@ -27,6 +27,9 @@ internal actual class PlatformInitializationTest actual constructor() : Abstract
 
 /**
  * All test classes should inherit from [AbstractTest]
+ *
+ * Note: To run a test in native sourceSets, use IDEA key shortcut 'control + shift + R' on macOS and 'Ctrl + Shift + R' on Windows.
+ * Or you can right-click the function name of the test case and invoke 'Run ...'. You should not expect to see a button icon around the line numbers.
  */
 internal actual abstract class AbstractTest actual constructor() : CommonAbstractTest() {
     init {

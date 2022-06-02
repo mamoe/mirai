@@ -28,9 +28,9 @@ import kotlin.contracts.contract
 /**
  * TCP Socket.
  */
-@OptIn(UnsafeNumber::class)
 internal actual class PlatformSocket(
-    private val socket: Int
+    private val socket: Int,
+    bufferSize: Int = DEFAULT_BUFFER_SIZE * 2 // improve performance for some big packets
 ) : Closeable, HighwayProtocolChannel {
     @Suppress("UnnecessaryOptInAnnotation")
     @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
@@ -42,9 +42,9 @@ internal actual class PlatformSocket(
     private val sendDispatcher: CoroutineDispatcher = newSingleThreadContext("PlatformSocket#$socket.dispatcher")
 
     private val readLock = Mutex()
-    private val readBuffer = ByteArray(DEFAULT_BUFFER_SIZE).pin()
+    private val readBuffer = ByteArray(bufferSize).pin()
     private val writeLock = Mutex()
-    private val writeBuffer = ByteArray(DEFAULT_BUFFER_SIZE).pin()
+    private val writeBuffer = ByteArray(bufferSize).pin()
 
     actual val isOpen: Boolean
         get() = write(socket, null, 0).convert<Long>() != 0L
@@ -95,7 +95,7 @@ internal actual class PlatformSocket(
             logger.info { "Native socket reading." }
             val readBuffer = readBuffer
             val length = recv(socket, readBuffer.addressOf(0), readBuffer.get().size.convert(), 0).convert<Long>()
-            if (length < 0L) {
+            if (length <= 0L) {
                 throw EOFException("recv: $length, errno=$errno")
             }
             logger.info {

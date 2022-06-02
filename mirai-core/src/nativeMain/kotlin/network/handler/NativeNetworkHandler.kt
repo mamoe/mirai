@@ -22,7 +22,9 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.connect
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.verbose
 
 internal class NativeNetworkHandler(
     context: NetworkHandlerContext,
@@ -46,95 +48,15 @@ internal class NativeNetworkHandler(
             launch { write(undelivered) }
         }
 
-        private val lengthDelimitedPacketReader = LengthDelimitedPacketReader()
-
-        /**
-         * Not thread-safe
-         */
-        private inner class LengthDelimitedPacketReader : Closeable {
-            private var missingLength: Long = 0
-            private val bufferedPackets: MutableList<ByteReadPacket> = ArrayList(10)
-
-            fun offer(packet: ByteReadPacket) {
-                if (missingLength == 0L) {
-                    // initial
-                    missingLength = packet.readInt().toLongUnsigned() - 4
-                }
-                missingLength -= packet.remaining
-                bufferedPackets.add(packet)
-                if (missingLength <= 0) {
-                    emit()
-                }
-            }
-
-            fun emit() {
-                when (bufferedPackets.size) {
-                    0 -> {}
-                    1 -> {
-                        val packet = bufferedPackets.first()
-                        if (missingLength == 0L) {
-                            sendDecode(packet)
-                            bufferedPackets.clear()
-                        } else {
-                            check(missingLength < 0L) { "Failed check: remainingLength < 0L" }
-
-                            val previousPacketLength = missingLength + packet.remaining
-                            sendDecode(packet.readPacketExact(previousPacketLength.toInt()))
-
-                            // now packet contain new packet.
-                            missingLength = packet.readInt().toLongUnsigned() - 4
-                            bufferedPackets[0] = packet
-                        }
-                    }
-                    else -> {
-                        val combined: ByteReadPacket
-                        if (missingLength == 0L) {
-                            combined = buildPacket(bufferedPackets.sumOf { it.remaining }.toInt()) {
-                                bufferedPackets.forEach { writePacket(it) }
-                            }
-
-                            bufferedPackets.clear()
-                        } else {
-                            val lastPacket = bufferedPackets.last()
-                            val previousPacketPartLength = missingLength + lastPacket.remaining
-                            val combinedLength =
-                                (bufferedPackets.sumOf { it.remaining } - lastPacket.remaining + previousPacketPartLength).toInt()
-
-                            combined = buildPacket(combinedLength) {
-                                repeat(bufferedPackets.size - 1) { i ->
-                                    writePacket(bufferedPackets[i])
-                                }
-                                writePacket(lastPacket, previousPacketPartLength)
-                            }
-
-                            bufferedPackets.clear()
-
-                            // now packet contain new packet.
-                            missingLength = lastPacket.readInt().toLongUnsigned() - 4
-                            bufferedPackets.add(lastPacket)
-                        }
-
-                        sendDecode(combined)
-                    }
-                }
-            }
-
-            private fun sendDecode(combined: ByteReadPacket) {
-                packetLogger.verbose { "Decoding: len=${combined.remaining}" }
-                val raw = packetCodec.decodeRaw(
-                    ssoProcessor.ssoSession,
-                    combined
-                )
-                packetLogger.verbose { "Decoded: ${raw.commandName}" }
-                decodePipeline.send(
-                    raw
-                )
-            }
-
-            override fun close() {
-                bufferedPackets.forEach { it.close() }
-            }
-        }
+        private val lengthDelimitedPacketReader = LengthDelimitedPacketReader(fun(combined: ByteReadPacket) {
+            logger.verbose { "Decoding: len=${combined.remaining}" }
+            val raw = packetCodec.decodeRaw(
+                ssoProcessor.ssoSession,
+                combined
+            )
+            logger.verbose { "Decoded: ${raw.commandName}" }
+            decodePipeline.send(raw)
+        })
 
         private val sender = launch {
             while (isActive) {
