@@ -13,6 +13,7 @@ import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
@@ -281,6 +282,16 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
             compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(nativeMain) }
             compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(nativeTest) }
         }
+    }
+
+    // Workaround from https://youtrack.jetbrains.com/issue/KT-52433/KotlinNative-Unable-to-generate-framework-with-Kotlin-1621-and-Xcode-134#focus=Comments-27-6140143.0-0
+    project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().configureEach {
+        val properties = listOf(
+            "ios_arm32", "watchos_arm32", "watchos_x86"
+        ).joinToString(separator = ";") { "clangDebugFlags.$it=-Os" }
+        kotlinOptions.freeCompilerArgs += listOf(
+            "-Xoverride-konan-properties=$properties"
+        )
     }
 
     jvmBaseMain.dependsOn(commonMain)
