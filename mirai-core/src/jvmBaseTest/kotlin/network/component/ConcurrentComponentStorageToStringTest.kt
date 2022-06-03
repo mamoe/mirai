@@ -12,19 +12,20 @@ package net.mamoe.mirai.internal.network.component
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal data class TestComponent2(
-    val value: Int
-) {
-    companion object : ComponentKey<TestComponent2>
-}
-
-internal data class TestComponent3(
-    val value: Int
-) {
-    companion object : ComponentKey<TestComponent3>
-}
 
 internal class ConcurrentComponentStorageTest : AbstractMutableComponentStorageTest() {
+    internal data class TestComponent2(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent2>
+    }
+
+    internal data class TestComponent3(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent3>
+    }
+
     override fun createStorage(): MutableComponentStorage = ConcurrentComponentStorage(showAllComponents = true)
 
     @Test
