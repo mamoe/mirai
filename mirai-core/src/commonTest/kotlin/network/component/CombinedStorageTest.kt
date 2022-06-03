@@ -7,14 +7,29 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.network.component
 
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.utils.TestOnly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 internal class CombinedStorageTest : AbstractTest() {
+
+    internal data class TestComponent2(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent2>
+    }
+
+    internal data class TestComponent3(
+        val value: Int
+    ) {
+        companion object : ComponentKey<TestComponent3>
+    }
 
     @Test
     fun `can get from main`() {
