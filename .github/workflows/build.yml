@@ -1,46 +1,696 @@
-name: Build
+name: Build mirai
 
 on: [ push, pull_request ]
 
 jobs:
-  build-mirai:
+  build-mirai-jvm:
+    name: "JVM modules (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: # mirai build requires a minimum system memory of 8 GB, while Windows and Ubuntu VMs provides only 7 GB. See https://github.com/mamoe/mirai/actions/runs/1608172113 for details.
-#          - windows-latest
-          - macos-11
-#          - ubuntu-latest
+        os:
+          - windows-2022
+          - macos-12
+    env:
+      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" --no-daemon
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
+      - run: git submodule update --init --recursive
 
-      - name: Setup JDK 11
-        uses: actions/setup-java@v2
+      - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
           java-version: '11'
 
-      - name: chmod -R 777 *
+      - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-      - name: Init gradle project
-        run: ./gradlew clean --scan
 
-      - name: Build all
-        run: ./gradlew assemble --scan
+      # Disable Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
 
-      - name: All Tests
-        run: >
-          ./gradlew check --scan
-          "-Dmirai.network.show.all.components=true"
-          "-Dkotlinx.coroutines.debug=on"
-          "-Dmirai.network.show.packet.details=true"
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Ensure KDoc valid
+      # Build modules separately to save memory
+
+      - name: "Compile mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:compileKotlinJvm :mirai-core-utils:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:jvmTest :mirai-core-utils:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-utils Android API Level"
+        run: ./gradlew :mirai-core-utils:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-core-api"
+        run: ./gradlew :mirai-core-api:compileKotlinJvm :mirai-core-api:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-api"
+        run: ./gradlew :mirai-core-api:jvmTest :mirai-core-api:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-api JVM ABI"
+        run: ./gradlew :mirai-core-api:apiCheckAll ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-api Android API Level"
+        run: ./gradlew :mirai-core-api:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-core"
+        run: ./gradlew :mirai-core:compileKotlinJvm :mirai-core:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core"
+        run: ./gradlew :mirai-core:jvmTest :mirai-core:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core Android API Level"
+        run: ./gradlew :mirai-core:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: Upload mirai-core-utils
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-utils
+          path: mirai-core-utils/build/libs
+
+      - name: Upload mirai-core-api
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-api
+          path: mirai-core-api/build/libs
+
+      - name: Upload mirai-core
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core
+          path: mirai-core/build/libs
+
+      - name: "Build mirai-core-all"
+        run: ./gradlew :mirai-core-all:shadowJar ${{ env.gradleArgs }}
+
+      - name: Upload mirai-core-all
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-all
+          path: mirai-core-all/build/libs
+
+
+      # Console and tools
+
+
+      - name: "Compile mirai-console"
+        run: ./gradlew :mirai-console:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console"
+        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
+
+      - name: "Check JVM ABI"
+        run: ./gradlew :mirai-console:apiCheckAll ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console integration-test"
+        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console integration-test"
+        run: ./gradlew :mirai-console.integration-test:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-terminal"
+        run: ./gradlew :mirai-console-terminal:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-terminal"
+        run: ./gradlew :mirai-console-terminal:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-gradle"
+        run: ./gradlew :mirai-console-gradle:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-gradle"
+        run: ./gradlew :mirai-console-gradle:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-intellij"
+        run: ./gradlew :mirai-console-intellij:assemble ${{ env.gradleArgs }}
+
+      - name: "Build mirai-console-intellij plugin"
+        run: ./gradlew :mirai-console-intellij:buildPlugin ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-intellij"
+        run: ./gradlew :mirai-console-intellij:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-logging"
+        run:
+          ./gradlew
+          :mirai-logging-log4j2:assemble
+          :mirai-logging-slf4j:assemble
+          :mirai-logging-slf4j-logback:assemble
+          :mirai-logging-slf4j-simple:assemble
+          ${{ env.gradleArgs }}
+
+      - name: "Test mirai-logging"
+        run:
+          ./gradlew
+          :mirai-logging-log4j2:check
+          :mirai-logging-slf4j:check
+          :mirai-logging-slf4j-logback:check
+          :mirai-logging-slf4j-simple:check
+          ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule
 
-      - name: Upload build artifacts
-        uses: ./.github/actions/upload-build-artifacts
+      - name: Upload mirai-console
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console
+          path: mirai-console/backend/mirai-console/build/libs
+
+      - name: Upload mirai-console-terminal
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-terminal
+          path: mirai-console/frontend/mirai-console-terminal/build/libs
+
+      - name: Upload mirai-console-compiler-annotations
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-compiler-annotations
+          path: mirai-console/tools/mirai-console-compiler-annotations/build/libs
+
+      - name: Upload mirai-console-compiler-common
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-compiler-common
+          path: mirai-console/tools/mirai-console-compiler-common/build/libs
+
+      - name: Upload mirai-console-intellij
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-intellij
+          path: mirai-console/tools/intelli-plugin/build/distribution
+
+      - name: Upload mirai-logging-log4j2
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-log4j2
+          path: logging/mirai-logging-log4j2/build/libs
+
+      - name: Upload mirai-logging-slf4j
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j
+          path: logging/mirai-logging-slf4j/build/libs
+
+      - name: Upload mirai-logging-slf4j-logback
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j-logback
+          path: logging/mirai-logging-slf4j-logback/build/libs
+
+      - name: Upload mirai-logging-slf4j-simple
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j-simple
+          path: logging/mirai-logging-slf4j-simple/build/libs
+
+
+
+
+
+  build-mirai-core-native:
+    name: "core-native (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+          #          - windows-2019 # Our config works only for Windows 2022 servers (Using some absolute paths)
+          - macos-12
+          - macos-11
+    env:
+      # Disabling Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
+      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" # --no-daemon
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --recursive
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      # Prepare environment for linking for macOS
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install OpenSSL
+        run: >
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
+          make &&
+          sudo make install
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install gcc-multilib
+        run: sudo apt install gcc-multilib -y
+        continue-on-error: true
+
+      # Prepare environment for linking for Ubuntu
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Install OpenSSL
+        run: sudo apt install libssl-dev -y
+
+      # Prepare environment for linking for Windows
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Add MSVC to PATH
+        run: 'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.32.31326\bin\Hostx64\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Add LLVM to PATH
+        run: 'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\Llvm\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
+
+      # Why using no-asm: https://stackoverflow.com/questions/40007633/how-to-compile-openssl-on-windows
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Install OpenSSL
+        run: >
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          perl Configure VC-WIN64A --prefix=C:/openssl --openssldir=C:/openssl/ssl no-asm &&
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 && 
+          nmake && 
+          nmake install
+        shell: cmd
+
+      #      - if: ${{ env.isWindows == 'true' }}
+      #        name: Install OpenSSL install_sw
+      #        run: >
+      #          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 &&
+      #          nmake install_sw
+      #        shell: cmd
+      #        working-directory: openssl
+      #        continue-on-error: true
+
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      # Linker can use up to 5G memory. We have to do them separately.
+      # Crosslink is not enabled (no libraries on CI)
+
+
+      #######################################################################
+      ############# GENERATED FROM generate-build-native.ws.kts #############
+      #######################################################################
+
+      - name: "Commonize mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:commonize ${{ env.gradleArgs }}
+
+      - name: "Commonize mirai-core-api"
+        run: ./gradlew :mirai-core-api:commonize ${{ env.gradleArgs }}
+
+      - name: "Commonize mirai-core"
+        run: ./gradlew :mirai-core:commonize ${{ env.gradleArgs }}
+
+      # mirai-core-utils
+
+      - name: "Compile mirai-core-utils for common"
+        run: ./gradlew :mirai-core-utils:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-utils for native"
+        run: ./gradlew :mirai-core-utils:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-utils for unix-like"
+        run: ./gradlew :mirai-core-utils:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core-utils for macosX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinMacosX64 :mirai-core-utils:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core-utils for macosX64"
+        run: ./gradlew mirai-core-utils:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core-utils for macosX64"
+        run: ./gradlew :mirai-core-utils:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core-utils for mingwX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinMingwX64 :mirai-core-utils:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core-utils for mingwX64"
+        run: ./gradlew mirai-core-utils:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core-utils for mingwX64"
+        run: ./gradlew :mirai-core-utils:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core-utils for linuxX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinLinuxX64 :mirai-core-utils:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core-utils for linuxX64"
+        run: ./gradlew mirai-core-utils:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core-utils for linuxX64"
+        run: ./gradlew :mirai-core-utils:linuxX64Test ${{ env.gradleArgs }}
+
+
+
+      # mirai-core-api
+
+      - name: "Compile mirai-core-api for common"
+        run: ./gradlew :mirai-core-api:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-api for native"
+        run: ./gradlew :mirai-core-api:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-api for unix-like"
+        run: ./gradlew :mirai-core-api:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core-api for macosX64"
+        run: ./gradlew :mirai-core-api:compileKotlinMacosX64 :mirai-core-api:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core-api for macosX64"
+        run: ./gradlew mirai-core-api:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core-api for macosX64"
+        run: ./gradlew :mirai-core-api:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core-api for mingwX64"
+        run: ./gradlew :mirai-core-api:compileKotlinMingwX64 :mirai-core-api:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core-api for mingwX64"
+        run: ./gradlew mirai-core-api:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core-api for mingwX64"
+        run: ./gradlew :mirai-core-api:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core-api for linuxX64"
+        run: ./gradlew :mirai-core-api:compileKotlinLinuxX64 :mirai-core-api:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core-api for linuxX64"
+        run: ./gradlew mirai-core-api:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core-api for linuxX64"
+        run: ./gradlew :mirai-core-api:linuxX64Test ${{ env.gradleArgs }}
+
+
+
+      # mirai-core
+
+      - name: "Compile mirai-core for common"
+        run: ./gradlew :mirai-core:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core for native"
+        run: ./gradlew :mirai-core:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core for unix-like"
+        run: ./gradlew :mirai-core:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core for macosX64"
+        run: ./gradlew :mirai-core:compileKotlinMacosX64 :mirai-core:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core for macosX64"
+        run: ./gradlew mirai-core:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core for macosX64"
+        run: ./gradlew :mirai-core:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core for mingwX64"
+        run: ./gradlew :mirai-core:compileKotlinMingwX64 :mirai-core:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core for mingwX64"
+        run: ./gradlew mirai-core:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core for mingwX64"
+        run: ./gradlew :mirai-core:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core for linuxX64"
+        run: ./gradlew :mirai-core:compileKotlinLinuxX64 :mirai-core:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core for linuxX64"
+        run: ./gradlew mirai-core:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core for linuxX64"
+        run: ./gradlew :mirai-core:linuxX64Test ${{ env.gradleArgs }}
+
+      #######################################################################
+
+
+
+  build-mirai-core-ubuntu:
+    name: "core-native (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-18.04
+    env:
+      # Disable Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
+      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" "-Dmirai.windows.target=false" # Disable windows targets
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --recursive
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Install OpenSSL
+        run: sudo apt install libssl-dev -y
+
+      - if: ${{ env.isUnix == 'true' }}
+        name: Install gcc-multilib
+        run: sudo apt install gcc-multilib -y
+        continue-on-error: true
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      # Linker can use up to 5G memory. We have to do them separately.
+      # Crosslink is not enabled (no libraries on CI)
+
+      #######################################################################
+      ############# GENERATED FROM generate-build-native.ws.kts #############
+      #######################################################################
+
+      - name: "Commonize mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:commonize ${{ env.gradleArgs }}
+
+      - name: "Commonize mirai-core-api"
+        run: ./gradlew :mirai-core-api:commonize ${{ env.gradleArgs }}
+
+      - name: "Commonize mirai-core"
+        run: ./gradlew :mirai-core:commonize ${{ env.gradleArgs }}
+
+      # mirai-core-utils
+
+      - name: "Compile mirai-core-utils for common"
+        run: ./gradlew :mirai-core-utils:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-utils for native"
+        run: ./gradlew :mirai-core-utils:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-utils for unix-like"
+        run: ./gradlew :mirai-core-utils:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core-utils for macosX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinMacosX64 :mirai-core-utils:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core-utils for macosX64"
+        run: ./gradlew mirai-core-utils:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core-utils for macosX64"
+        run: ./gradlew :mirai-core-utils:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core-utils for mingwX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinMingwX64 :mirai-core-utils:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core-utils for mingwX64"
+        run: ./gradlew mirai-core-utils:linkDebugTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core-utils for mingwX64"
+        run: ./gradlew :mirai-core-utils:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core-utils for linuxX64"
+        run: ./gradlew :mirai-core-utils:compileKotlinLinuxX64 :mirai-core-utils:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core-utils for linuxX64"
+        run: ./gradlew mirai-core-utils:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core-utils for linuxX64"
+        run: ./gradlew :mirai-core-utils:linuxX64Test ${{ env.gradleArgs }}
+
+
+
+      # mirai-core-api
+
+      - name: "Compile mirai-core-api for common"
+        run: ./gradlew :mirai-core-api:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-api for native"
+        run: ./gradlew :mirai-core-api:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core-api for unix-like"
+        run: ./gradlew :mirai-core-api:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core-api for macosX64"
+        run: ./gradlew :mirai-core-api:compileKotlinMacosX64 :mirai-core-api:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core-api for macosX64"
+        run: ./gradlew mirai-core-api:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core-api for macosX64"
+        run: ./gradlew :mirai-core-api:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core-api for mingwX64"
+        run: ./gradlew :mirai-core-api:compileKotlinMingwX64 :mirai-core-api:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core-api for mingwX64"
+        run: ./gradlew mirai-core-api:linkDebugTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core-api for mingwX64"
+        run: ./gradlew :mirai-core-api:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core-api for linuxX64"
+        run: ./gradlew :mirai-core-api:compileKotlinLinuxX64 :mirai-core-api:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core-api for linuxX64"
+        run: ./gradlew mirai-core-api:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core-api for linuxX64"
+        run: ./gradlew :mirai-core-api:linuxX64Test ${{ env.gradleArgs }}
+
+
+
+      # mirai-core
+
+      - name: "Compile mirai-core for common"
+        run: ./gradlew :mirai-core:compileCommonMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core for native"
+        run: ./gradlew :mirai-core:compileNativeMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - name: "Compile mirai-core for unix-like"
+        run: ./gradlew :mirai-core:compileUnixMainKotlinMetadata ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Compile mirai-core for macosX64"
+        run: ./gradlew :mirai-core:compileKotlinMacosX64 :mirai-core:compileTestKotlinMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Link mirai-core for macosX64"
+        run: ./gradlew mirai-core:linkDebugTestMacosX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: "Test mirai-core for macosX64"
+        run: ./gradlew :mirai-core:macosX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Compile mirai-core for mingwX64"
+        run: ./gradlew :mirai-core:compileKotlinMingwX64 :mirai-core:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Link mirai-core for mingwX64"
+        run: ./gradlew mirai-core:linkDebugTestMingwX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: "Test mirai-core for mingwX64"
+        run: ./gradlew :mirai-core:mingwX64Test ${{ env.gradleArgs }}
+
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Compile mirai-core for linuxX64"
+        run: ./gradlew :mirai-core:compileKotlinLinuxX64 :mirai-core:compileTestKotlinLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Link mirai-core for linuxX64"
+        run: ./gradlew mirai-core:linkDebugTestLinuxX64 ${{ env.gradleArgs }}
+
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: "Test mirai-core for linuxX64"
+        run: ./gradlew :mirai-core:linuxX64Test ${{ env.gradleArgs }}
+
+      #######################################################################
+
