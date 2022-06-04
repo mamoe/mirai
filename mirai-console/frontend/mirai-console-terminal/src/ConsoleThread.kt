@@ -69,7 +69,7 @@ internal fun startupConsoleThread() {
             } catch (e: CancellationException) {
                 return@launch
             } catch (e: UserInterruptException) {
-                BuiltInCommands.StopCommand.run { ConsoleCommandSender.handle() }
+                signalHandler("INT")
                 return@launch
             } catch (eof: EndOfFileException) {
                 consoleLogger.warning("Closing input service...")
