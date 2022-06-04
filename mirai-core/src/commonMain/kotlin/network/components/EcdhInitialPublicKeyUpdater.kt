@@ -92,17 +92,14 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
                     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
                     withTimeout(10.seconds) { Mirai.Http.get<String>("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=${bot.client.uin}") }
                 val resp = json.decodeFromString(ServerRespPOJO.serializer(), respStr)
-                println("check2")
                 resp.pubKeyMeta.let { meta ->
                     val isValid = ECDH.verifyPublicKey(
                         version = meta.keyVer,
                         publicKey = meta.pubKey,
                         publicKeySign = meta.pubKeySign
                     )
-                    println("check1")
                     check(isValid) { "Ecdh public key which from server is invalid" }
                     logger.info("Successfully fetched ecdh public key from server.")
-                    println("check3")
                     ECDHInitialPublicKey(meta.keyVer, meta.pubKey, currentTimeSeconds() + resp.querySpan)
                 }
             }
