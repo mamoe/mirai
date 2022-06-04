@@ -30,12 +30,12 @@ internal object MiraiCoreServices {
 
         Services.register(
             msgProtocol,
-            "net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol"
-        ) { net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol() }
-        Services.register(
-            msgProtocol,
             "net.mamoe.mirai.internal.message.protocol.impl.AudioProtocol"
         ) { net.mamoe.mirai.internal.message.protocol.impl.AudioProtocol() }
+        Services.register(
+            msgProtocol,
+            "net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol"
+        ) { net.mamoe.mirai.internal.message.protocol.impl.CustomMessageProtocol() }
         Services.register(
             msgProtocol,
             "net.mamoe.mirai.internal.message.protocol.impl.FaceProtocol"

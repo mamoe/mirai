@@ -18,6 +18,7 @@ import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.Test
 
@@ -86,6 +87,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
+                        srcMsg = EMPTY_BYTE_ARRAY
                         // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
                     ),
                 ),
@@ -319,6 +321,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
+                        srcMsg = EMPTY_BYTE_ARRAY
                         // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
                     ),
                 ),
