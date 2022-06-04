@@ -11,6 +11,8 @@
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
     kotlin("multiplatform")
@@ -106,12 +108,25 @@ kotlin {
             }
         }
 
-        NATIVE_TARGETS.forEach { target ->
-            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("OpenSSL")
+        NATIVE_TARGETS.forEach { targetName ->
+            val defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
+            val target = targets.getByName(targetName) as KotlinNativeTarget
+            target.compilations.getByName("main").cinterops.create("OpenSSL")
                 .apply {
-                    defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
+                    this.defFile = defFile
                     packageName("openssl")
                 }
+
+            if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
+                target.binaries.test(listOf(NativeBuildType.RELEASE)) {
+                    // add release test to run on CI
+                    afterEvaluate {
+                        // use linkReleaseTestMingwX64 for mingwX64Test to save memory
+                        tasks.getByName("mingwX64Test", KotlinNativeTest::class)
+                            .executable(linkTask) { linkTask.binary.outputFile }
+                    }
+                }
+            }
         }
 
         UNIX_LIKE_TARGETS.forEach { target ->
@@ -154,6 +169,28 @@ kotlin {
 //                implementation(`ktor-client-cio`)
 //            }
 //        }
+    }
+}
+
+afterEvaluate {
+    val main = projectDir.resolve("src/nativeTest/kotlin/local/TestMain.kt")
+    if (!main.exists()) {
+        main.writeText(
+            """
+            /*
+             * Copyright 2019-2022 Mamoe Technologies and contributors.
+             *
+             * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+             * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+             *
+             * https://github.com/mamoe/mirai/blob/dev/LICENSE
+             */
+
+            package net.mamoe.mirai.internal.local
+
+            fun main() {}
+        """.trimIndent()
+        )
     }
 }
 

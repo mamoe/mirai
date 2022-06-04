@@ -22,7 +22,8 @@ suspend fun main() {
     val bot = BotFactory.newBot(12346, "") {
         enableContactCache()
         protocol = BotConfiguration.MiraiProtocol.ANDROID_PAD
-        workingDir = "test/run"
+        workingDir = "test-sandbox/native-run" // Will be based on $rootProject/mirai-core
+        fileBasedDeviceInfo("local.device.json")
     }
 
     bot.login()
