@@ -222,14 +222,12 @@ internal class PacketCodecImpl : PacketCodec {
                 }
                 1 -> {
                     input.discardExact(4)
-                    input.useBytes { data, length ->
-                        data.inflate(0, length).let {
-                            val size = it.toInt()
-                            if (size == it.size || size == it.size + 4) {
-                                it.toReadPacket(offset = 4)
-                            } else {
-                                it.toReadPacket()
-                            }
+                    input.inflateAllAvailable().let { bytes ->
+                        val size = bytes.toInt()
+                        if (size == bytes.size || size == bytes.size + 4) {
+                            bytes.toReadPacket(offset = 4)
+                        } else {
+                            bytes.toReadPacket()
                         }
                     }
                 }
