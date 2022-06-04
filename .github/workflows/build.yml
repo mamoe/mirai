@@ -3,44 +3,400 @@ name: Build
 on: [ push, pull_request ]
 
 jobs:
-  build-mirai:
+  build-mirai-jvm:
+    name: "JVM (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: # mirai build requires a minimum system memory of 8 GB, while Windows and Ubuntu VMs provides only 7 GB. See https://github.com/mamoe/mirai/actions/runs/1608172113 for details.
-#          - windows-latest
-          - macos-11
-#          - ubuntu-latest
+        os:
+          - windows-2022
+          - macos-12
+    env:
+      gradleArgs: --scan "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
-
-      - name: Setup JDK 11
-        uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
-          java-version: '11'
+          submodules: 'recursive'
 
-      - name: chmod -R 777 *
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-      - name: Init gradle project
-        run: ./gradlew clean --scan
 
-      - name: Build all
-        run: ./gradlew assemble --scan
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: All Tests
+      # Build modules separately to save memory
+
+      - name: "Compile mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:compileKotlinJvm :mirai-core-utils:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-utils"
+        run: ./gradlew :mirai-core-utils:jvmTest :mirai-core-utils:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-utils Android API Level"
+        run: ./gradlew :mirai-core-utils:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-core-api"
+        run: ./gradlew :mirai-core-api:compileKotlinJvm :mirai-core-api:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-api"
+        run: ./gradlew :mirai-core-api:jvmTest :mirai-core-api:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-api JVM ABI"
+        run: ./gradlew :mirai-core-api:apiCheckAll ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core-api Android API Level"
+        run: ./gradlew :mirai-core-api:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-core"
+        run: ./gradlew :mirai-core:compileKotlinJvm :mirai-core:compileKotlinAndroid ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core"
+        run: ./gradlew :mirai-core:jvmTest :mirai-core:androidTest ${{ env.gradleArgs }}
+
+      - name: "Check mirai-core Android API Level"
+        run: ./gradlew :mirai-core:checkAndroidApiLevel ${{ env.gradleArgs }}
+
+
+      - name: Upload mirai-core-utils
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-utils
+          path: mirai-core-utils/build/libs
+
+      - name: Upload mirai-core-api
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-api
+          path: mirai-core-api/build/libs
+
+      - name: Upload mirai-core
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core
+          path: mirai-core/build/libs
+
+      - name: "Build mirai-core-all"
+        run: ./gradlew :mirai-core-all:shadowJar ${{ env.gradleArgs }}
+
+      - name: Upload mirai-core-all
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-core-all
+          path: mirai-core-all/build/libs
+
+
+      # Console and tools
+
+
+      - name: "Compile mirai-console"
+        run: ./gradlew :mirai-console:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console"
+        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
+
+      - name: "Check JVM ABI"
+        run: ./gradlew :mirai-console:apiCheckAll ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console integration-test"
+        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console integration-test"
+        run: ./gradlew :mirai-console.integration-test:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-terminal"
+        run: ./gradlew :mirai-console-terminal:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-terminal"
+        run: ./gradlew :mirai-console-terminal:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-gradle"
+        run: ./gradlew :mirai-console-gradle:assemble ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-gradle"
+        run: ./gradlew :mirai-console-gradle:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-console-intellij"
+        run: ./gradlew :mirai-console-intellij:assemble ${{ env.gradleArgs }}
+
+      - name: "Build mirai-console-intellij plugin"
+        run: ./gradlew :mirai-console-intellij:buildPlugin ${{ env.gradleArgs }}
+
+      - name: "Test mirai-console-intellij"
+        run: ./gradlew :mirai-console-intellij:check ${{ env.gradleArgs }}
+
+
+      - name: "Compile mirai-logging"
+        run:
+          ./gradlew
+          :mirai-logging-log4j2:assemble
+          :mirai-logging-slf4j:assemble
+          :mirai-logging-slf4j-logback:assemble
+          :mirai-logging-slf4j-simple:assemble
+          ${{ env.gradleArgs }}
+
+      - name: "Test mirai-logging"
+        run:
+          ./gradlew
+          :mirai-logging-log4j2:check
+          :mirai-logging-slf4j:check
+          :mirai-logging-slf4j-logback:check
+          :mirai-logging-slf4j-simple:check
+          ${{ env.gradleArgs }}
+
+      - name: Upload mirai-console
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console
+          path: mirai-console/backend/mirai-console/build/libs
+
+      - name: Upload mirai-console-terminal
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-terminal
+          path: mirai-console/frontend/mirai-console-terminal/build/libs
+
+      - name: Upload mirai-console-compiler-annotations
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-compiler-annotations
+          path: mirai-console/tools/mirai-console-compiler-annotations/build/libs
+
+      - name: Upload mirai-console-compiler-common
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-compiler-common
+          path: mirai-console/tools/mirai-console-compiler-common/build/libs
+
+      - name: Upload mirai-console-intellij
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-console-intellij
+          path: mirai-console/tools/intelli-plugin/build/distribution
+
+      - name: Upload mirai-logging-log4j2
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-log4j2
+          path: logging/mirai-logging-log4j2/build/libs
+
+      - name: Upload mirai-logging-slf4j
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j
+          path: logging/mirai-logging-slf4j/build/libs
+
+      - name: Upload mirai-logging-slf4j-logback
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j-logback
+          path: logging/mirai-logging-slf4j-logback/build/libs
+
+      - name: Upload mirai-logging-slf4j-simple
+        uses: actions/upload-artifact@v3
+        with:
+          name: mirai-logging-slf4j-simple
+          path: logging/mirai-logging-slf4j-simple/build/libs
+
+  build-mirai-all:
+    name: "Everything (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-12
+    env:
+      gradleArgs: --scan
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Cache konan
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      # Prepare environment for linking for macOS
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install OpenSSL
         run: >
-          ./gradlew check --scan
-          "-Dmirai.network.show.all.components=true"
-          "-Dkotlinx.coroutines.debug=on"
-          "-Dmirai.network.show.packet.details=true"
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
+          make &&
+          sudo make install
 
-      - name: Ensure KDoc valid
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: "Assemble"
+        run: ./gradlew assemble ${{ env.gradleArgs }}
+
+      - name: "Check"
+        run: ./gradlew check ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule
 
-      - name: Upload build artifacts
-        uses: ./.github/actions/upload-build-artifacts
+
+  build-mirai-core-native:
+    name: "Native (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+          - ubuntu-20.04
+          - ubuntu-18.04
+          - macos-12
+          - macos-11
+        include:
+        - os: windows-2022
+          testTaskName: mingwX64Test
+        - os: ubuntu-20.04
+          testTaskName: linuxX64Test
+        - os: ubuntu-18.04
+          testTaskName: linuxX64Test
+        - os: macos-12
+          testTaskName: macosX64Test
+        - os: macos-11
+          testTaskName: macosX64Test
+    env:
+      gradleArgs: --scan "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\\vcpkg\\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt-openj9'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Cache konan
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Prepare to cache vcpkg
+        if: ${{ env.isWindows == 'true' }}
+        run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+
+      - name: Cache vcpkg
+        if: ${{ env.isWindows == 'true' }}
+        uses: pat-s/always-upload-cache@v3
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ runner.os }}-vcpkg-binary-cache-${{ github.job	}}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-binary-cache-
+
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      # Prepare environment for linking on macOS
+      - if: ${{ env.isMac == 'true' }}
+        name: Install OpenSSL on Mac OS
+        run: >
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
+          make &&
+          sudo make install
+
+      # Prepare environment for linking on Ubuntu
+      - if: ${{ env.isUbuntu == 'true' }}
+        name: Install OpenSSL on Ubuntu
+        run: sudo apt install libssl-dev -y
+
+      # Prepare environment for linking on Windows
+      - if: ${{ env.isWindows == 'true' }}
+        name: Setup Memory Environment on Windows
+        run: >
+          wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=1024,MaximumSize=9216 &
+          net stop mongodb
+        shell: cmd
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Setup C++ Toolchain Environment on Windows
+        run: |
+          'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.32.31326\bin\Hostx64\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
+          'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\Llvm\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Install OpenSSL & cURL on Windows
+        run: |
+          echo "set(VCPKG_BUILD_TYPE release)" | Out-File -FilePath "$env:VCPKG_INSTALLATION_ROOT\triplets\x64-windows.cmake" -Encoding utf8 -Append
+          vcpkg install openssl:x64-windows curl[core,openssl]:x64-windows
+          New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\crypto.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libcrypto.lib
+          New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\ssl.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libssl.lib
+          New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\curl.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libcurl.lib
+          echo "$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-utils for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core-utils:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core-api for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core-api:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
+
+      - name: "Test mirai-core for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
