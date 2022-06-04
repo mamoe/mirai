@@ -43,17 +43,51 @@ public inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: 
     return use { output.use { block(this, output) } }
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+/**
+ * It's caller's responsibility to close the input
+ */
 public inline fun <R> ByteReadPacket.useBytes(
-    n: Int = remaining.toInt(),//not that safe but adequate
+    n: Int = remaining.toIntOrFail(),
     block: (data: ByteArray, length: Int) -> R
 ): R = ByteArrayPool.useInstance(n) {
     this.readFully(it, 0, n)
     block(it, n)
 }
 
+
+/**
+ * It's caller's responsibility to close the input
+ */
+public inline fun <R> Input.useBytes(
+    n: Int? = null,
+    block: (data: ByteArray, length: Int) -> R
+): R {
+    return when {
+        n != null -> {
+            this.readBytes(n).let { block(it, it.size) }
+        }
+        this is ByteReadPacket -> {
+            val count = this.remaining.toIntOrFail()
+            ByteArrayPool.useInstance(count) {
+                this.readFully(it, 0, count)
+                block(it, count)
+            }
+        }
+        else -> {
+            this.readBytes().let { block(it, it.size) }
+        }
+    }
+}
+
+public fun Long.toIntOrFail(): Int {
+    if (this >= Int.MAX_VALUE || this <= Int.MIN_VALUE) {
+        throw IllegalArgumentException("$this does not fit in Int range")
+    }
+    return this.toInt()
+}
+
 public inline fun ByteReadPacket.readPacketExact(
-    n: Int = remaining.toInt()//not that safe but adequate
+    n: Int = remaining.toIntOrFail()
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
 
