@@ -30,6 +30,7 @@ private val miraiPlatform = Attribute.of(
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
+val WINDOWS_TARGET_ENABLED = System.getProperty("mirai.windows.target") != "false"
 
 val NATIVE_ENABLED = System.getProperty("mirai.enable.native", "true").toBoolean()
 val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoolean()
@@ -80,7 +81,7 @@ val MAC_TARGETS: Set<String> by lazy {
     )
 }
 
-val WIN_TARGETS = setOf("mingwX64")
+val WIN_TARGETS = if (WINDOWS_TARGET_ENABLED) setOf("mingwX64") else emptySet()
 
 val LINUX_TARGETS = setOf("linuxX64")
 

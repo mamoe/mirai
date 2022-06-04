@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish-mirai:
-    runs-on: ubuntu-latest
+    runs-on: macos-12 # 14G memory
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
