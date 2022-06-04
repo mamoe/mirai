@@ -329,6 +329,9 @@ public actual open class BotConfiguration { // open for Java
     public actual fun fileBasedDeviceInfo(filepath: String) {
         deviceInfo = {
             val file = MiraiFile.create(workingDir).resolve(filepath)
+            if (!file.exists()) {
+                file.writeText(DeviceInfoManager.serialize(DeviceInfo.random(), json))
+            }
             DeviceInfoManager.deserialize(file.readText(), json)
         }
     }
