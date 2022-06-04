@@ -14,7 +14,7 @@ import kotlin.annotation.AnnotationTarget.*
 
 
 @RequiresOptIn("This can only be used in tests.", level = ERROR)
-@Target(CLASS, FUNCTION, PROPERTY, CLASS, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER)
+@Target(CLASS, FUNCTION, PROPERTY, CLASS, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 public annotation class TestOnly
 
 /**
