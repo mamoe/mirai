@@ -228,7 +228,8 @@ public actual interface RemoteFile {
      * 获取该目录下的 ID 为 [id] 的文件, 当 [deep] 为 `true` 时还会进入子目录继续寻找这样的文件. 在不存在时返回 `null`.
      * @see resolve
      */
-    public actual suspend fun resolveById(id: String, deep: Boolean): RemoteFile?
+    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // JVM ABI
+    public actual suspend fun resolveById(id: String, deep: Boolean = true): RemoteFile?
 
     /**
      * 获取该目录或子目录下的 ID 为 [id] 的文件, 在不存在时返回 `null`
@@ -462,9 +463,10 @@ public actual interface RemoteFile {
         "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
+    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
     public actual suspend fun upload(
         resource: ExternalResource,
-        callback: ProgressionCallback?,
+        callback: ProgressionCallback? = null,
     ): FileMessage
 
     /**
@@ -590,10 +592,11 @@ public actual interface RemoteFile {
             level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
         @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
+        @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
         public actual suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
-            callback: ProgressionCallback?,
+            callback: ProgressionCallback? = null,
         ): FileMessage =
             @Suppress("DEPRECATION", "DEPRECATION_ERROR") this.filesRoot.resolve(path).upload(resource, callback)
 
@@ -636,10 +639,11 @@ public actual interface RemoteFile {
             level = DeprecationLevel.WARNING
         ) // deprecated since 2.8.0-RC
         @DeprecatedSinceMirai(warningSince = "2.8")
+        @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
         public actual suspend fun <C : FileSupported> C.sendFile(
             path: String,
             resource: ExternalResource,
-            callback: ProgressionCallback?,
+            callback: ProgressionCallback? = null,
         ): MessageReceipt<C> =
             @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
