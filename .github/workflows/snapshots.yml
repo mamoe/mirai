@@ -11,7 +11,7 @@ on:
 
 jobs:
   publish-mirai:
-    runs-on: ubuntu-latest
+    runs-on: macos-12 # 14G memory
     steps:
       - uses: actions/checkout@v2
       - run: git submodule update --init --recursive
@@ -46,7 +46,7 @@ jobs:
           -Dmirai.network.handle.selector.logging=true
 
       - run: >
-          ./gradlew publish --info --scan
+          ./gradlew publish --no-parallel --info --scan
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
