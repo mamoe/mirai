@@ -54,24 +54,28 @@ lateinit var osDetector: OsDetector
 
 val MAC_TARGETS: Set<String> by lazy {
     if (!IDEA_ACTIVE) setOf(
-        "watchosX86", // enable a x86 target to force handling number of unstable sizes.
-        // enable only on CI
+//        "watchosX86",
         "macosX64",
         "macosArm64",
 
-        "iosX64",
-        "iosArm64",
-        "iosArm32",
-        "iosSimulatorArm64",
-        "watchosX64",
-        "watchosArm32",
-        "watchosArm64",
-        "watchosSimulatorArm64",
-        "tvosX64",
-        "tvosArm64",
-        "tvosSimulatorArm64",
+        // Failed to generate cinterop for :mirai-core:cinteropOpenSSLIosX64: Process 'command '/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java'' finished with non-zero exit value 1
+        // Exception in thread "main" java.lang.Error: /var/folders/kw/ndw272ns06s7cys2mcwwlb5c0000gn/T/1181140105365175708.c:1:10: fatal error: 'openssl/ec.h' file not found
+        //
+        // Note: the openssl/ec.h is actually there, seems Kotlin doesn't support that
+
+//        "iosX64",
+//        "iosArm64",
+//        "iosArm32",
+//        "iosSimulatorArm64",
+//        "watchosX64",
+//        "watchosArm32",
+//        "watchosArm64",
+//        "watchosSimulatorArm64",
+//        "tvosX64",
+//        "tvosArm64",
+//        "tvosSimulatorArm64",
     ) else setOf(
-        // IDEA active
+        // IDEA active, reduce load
         if (osDetector.arch.contains("aarch")) "macosArm64" else "macosX64"
     )
 }
@@ -118,88 +122,88 @@ fun Project.configureHMPP() {
     }
 }
 
-/**
- * [IDEA_ACTIVE] 时配置单一 'native' target, 基于 host 平台; 否则配置所有 native targets 依赖 'native' 作为中间平台.
- */
-@Deprecated("")
-fun KotlinMultiplatformExtension.configureNativeTargets(
-    project: Project
-) {
-    val nativeMainSets = mutableListOf<KotlinSourceSet>()
-    val nativeTestSets = mutableListOf<KotlinSourceSet>()
-    val nativeTargets = mutableListOf<KotlinNativeTarget>()
-
-    if (IDEA_ACTIVE) {
-        val target = when {
-            Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64(
-                "native"
-            )
-            Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
-            else -> linuxX64("native")
-        }
-        nativeTargets.add(target)
-    } else {
-        // 1.6.0
-        val nativeTargetNames: List<String> = arrayOf(
-            // serialization doesn't support those commented targets
-//                "androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64",
-            "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
-            "watchosArm32, watchosArm64, watchosX86, watchosX64, watchosSimulatorArm64",
-            "tvosArm64, tvosX64, tvosSimulatorArm64",
-            "macosX64, macosArm64",
-//            "linuxMips32, linuxMipsel32, linuxX64",
-            "linuxX64",
-            "mingwX64",
-//                "wasm32" // linuxArm32Hfp, mingwX86
-        ).flatMap { it.split(",") }.map { it.trim() }
-        presets.filter { it.name in nativeTargetNames }.forEach { preset ->
-            val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
-            nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
-            nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
-            nativeTargets.add(target)
-        }
-
-        if (!IDEA_ACTIVE) {
-            project.configure(nativeMainSets) {
-                dependsOn(sourceSets.maybeCreate("nativeMain"))
-            }
-
-            project.configure(nativeTestSets) {
-                dependsOn(sourceSets.maybeCreate("nativeTest"))
-            }
-        }
-    }
-
-    project.configureNativeInterop("main", project.projectDir.resolve("src/nativeMainInterop"), nativeTargets)
-    project.configureNativeInterop("test", project.projectDir.resolve("src/nativeTestInterop"), nativeTargets)
-    project.configureNativeLinkOptions(nativeTargets)
-
-    val sourceSets = project.kotlinSourceSets.orEmpty()
-    val commonMain = sourceSets.single { it.name == "commonMain" }
-    val commonTest = sourceSets.single { it.name == "commonTest" }
-    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
-    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
-    val jvmMain = sourceSets.single { it.name == "jvmMain" }
-    val jvmTest = sourceSets.single { it.name == "jvmTest" }
-    val androidMain = sourceSets.single { it.name == "androidMain" }
-    val androidTest = sourceSets.single { it.name == "androidTest" }
-
-    val nativeMain = sourceSets.single { it.name == "nativeMain" }
-    val nativeTest = sourceSets.single { it.name == "nativeTest" }
-
-
-    jvmBaseMain.dependsOn(commonMain)
-    jvmBaseTest.dependsOn(commonTest)
-
-    jvmMain.dependsOn(jvmBaseMain)
-    androidMain.dependsOn(jvmBaseMain)
-
-    jvmTest.dependsOn(jvmBaseTest)
-    androidTest.dependsOn(jvmBaseTest)
-
-    nativeMain.dependsOn(commonMain)
-    nativeTest.dependsOn(commonTest)
-}
+///**
+// * [IDEA_ACTIVE] 时配置单一 'native' target, 基于 host 平台; 否则配置所有 native targets 依赖 'native' 作为中间平台.
+// */
+//@Deprecated("")
+//fun KotlinMultiplatformExtension.configureNativeTargets(
+//    project: Project
+//) {
+//    val nativeMainSets = mutableListOf<KotlinSourceSet>()
+//    val nativeTestSets = mutableListOf<KotlinSourceSet>()
+//    val nativeTargets = mutableListOf<KotlinNativeTarget>()
+//
+//    if (IDEA_ACTIVE) {
+//        val target = when {
+//            Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64(
+//                "native"
+//            )
+//            Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
+//            else -> linuxX64("native")
+//        }
+//        nativeTargets.add(target)
+//    } else {
+//        // 1.6.0
+//        val nativeTargetNames: List<String> = arrayOf(
+//            // serialization doesn't support those commented targets
+////                "androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64",
+//            "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
+//            "watchosArm32, watchosArm64, watchosX86, watchosX64, watchosSimulatorArm64",
+//            "tvosArm64, tvosX64, tvosSimulatorArm64",
+//            "macosX64, macosArm64",
+////            "linuxMips32, linuxMipsel32, linuxX64",
+//            "linuxX64",
+//            "mingwX64",
+////                "wasm32" // linuxArm32Hfp, mingwX86
+//        ).flatMap { it.split(",") }.map { it.trim() }
+//        presets.filter { it.name in nativeTargetNames }.forEach { preset ->
+//            val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
+//            nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
+//            nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
+//            nativeTargets.add(target)
+//        }
+//
+//        if (!IDEA_ACTIVE) {
+//            project.configure(nativeMainSets) {
+//                dependsOn(sourceSets.maybeCreate("nativeMain"))
+//            }
+//
+//            project.configure(nativeTestSets) {
+//                dependsOn(sourceSets.maybeCreate("nativeTest"))
+//            }
+//        }
+//    }
+//
+//    project.configureNativeInterop("main", project.projectDir.resolve("src/nativeMainInterop"), nativeTargets)
+//    project.configureNativeInterop("test", project.projectDir.resolve("src/nativeTestInterop"), nativeTargets)
+//    project.configureNativeLinkOptions(nativeTargets)
+//
+//    val sourceSets = project.kotlinSourceSets.orEmpty()
+//    val commonMain = sourceSets.single { it.name == "commonMain" }
+//    val commonTest = sourceSets.single { it.name == "commonTest" }
+//    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
+//    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
+//    val jvmMain = sourceSets.single { it.name == "jvmMain" }
+//    val jvmTest = sourceSets.single { it.name == "jvmTest" }
+//    val androidMain = sourceSets.single { it.name == "androidMain" }
+//    val androidTest = sourceSets.single { it.name == "androidTest" }
+//
+//    val nativeMain = sourceSets.single { it.name == "nativeMain" }
+//    val nativeTest = sourceSets.single { it.name == "nativeTest" }
+//
+//
+//    jvmBaseMain.dependsOn(commonMain)
+//    jvmBaseTest.dependsOn(commonTest)
+//
+//    jvmMain.dependsOn(jvmBaseMain)
+//    androidMain.dependsOn(jvmBaseMain)
+//
+//    jvmTest.dependsOn(jvmBaseTest)
+//    androidTest.dependsOn(jvmBaseTest)
+//
+//    nativeMain.dependsOn(commonMain)
+//    nativeTest.dependsOn(commonTest)
+//}
 
 /**
  * ```
