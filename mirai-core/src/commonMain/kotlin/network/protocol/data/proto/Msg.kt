@@ -558,7 +558,7 @@ internal class ImMsgBody : ProtoBuf {
 
             return when (byteArray[0].toInt()) {
                 0 -> byteArrayOf(0) + byteArray.decodeToString(startIndex = 1).toByteArray()
-                1 -> byteArrayOf(0) + byteArray.inflate(offset = 1).decodeToString().toByteArray()
+                1 -> byteArrayOf(0) + byteArray.inflate(offset = 1)
                 else -> error("unknown compression flag=${byteArray[0]}")
             }
         }

@@ -24,8 +24,92 @@ public fun String.sha1(): ByteArray = toByteArray().sha1()
 
 public expect fun ByteArray.sha1(offset: Int = 0, length: Int = size - offset): ByteArray
 
+
+///////////////////////////////////////////////////////////////////////////
+// How to choose 'inflate', 'inflateAllAvailable', 'InflateInput'?
+//
+// On JVM, performance 'inflateAllAvailable' > 'InflateInput' > 'inflate'
+// On Native, performance 'inflateAllAvailable' = 'InflateInput' > 'inflate'
+//
+// So you should use `inflateAllAvailable` if you need have an Input and you need a ByteArray.
+// If you have a ByteArray and you need an InputStream, use 'InflateInput'.
+// Use 'inflate' only if the input and desired output type are both ByteArray.
+//
+// Specially if you are using `.decodeToString()` after reading a ByteArray, then you'd prefer 'InflateInput' with 'readText()'.
+///////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
+// Processing ByteArray
+///////////////////////////////////////////////////////////////////////////
+
 public expect fun ByteArray.gzip(offset: Int = 0, length: Int = size - offset): ByteArray
 public expect fun ByteArray.ungzip(offset: Int = 0, length: Int = size - offset): ByteArray
 
 public expect fun ByteArray.inflate(offset: Int = 0, length: Int = size - offset): ByteArray
 public expect fun ByteArray.deflate(offset: Int = 0, length: Int = size - offset): ByteArray
+
+
+///////////////////////////////////////////////////////////////////////////
+// Consuming input
+///////////////////////////////////////////////////////////////////////////
+
+/**
+ * Input will be closed.
+ */
+public expect fun Input.gzipAllAvailable(): ByteArray
+
+/**
+ * Input will be closed.
+ */
+public expect fun Input.ungzipAllAvailable(): ByteArray
+
+/**
+ * Input will be closed.
+ */
+public expect fun Input.inflateAllAvailable(): ByteArray
+
+/**
+ * Input will be closed.
+ */
+public expect fun Input.deflateAllAvailable(): ByteArray
+
+///////////////////////////////////////////////////////////////////////////
+// Input adapters.
+///////////////////////////////////////////////////////////////////////////
+
+//@Suppress("FunctionName")
+//public expect fun GzipCompressionInput(source: Input): Input // No GzipInputStream for decompression on JVM
+
+/**
+ * [source] will be closed on returned [Input.close]
+ */
+@Suppress("FunctionName")
+public expect fun GzipDecompressionInput(source: Input): Input
+
+/**
+ * @see GzipDecompressionInput
+ */
+public inline fun Input.gzipDecompressionInput(): Input = GzipDecompressionInput(this)
+
+/**
+ * [source] will be closed on returned [Input.close]
+ */
+@Suppress("FunctionName")
+public expect fun InflateInput(source: Input): Input
+
+/**
+ * @see InflateInput
+ */
+public inline fun Input.inflateInput(): Input = InflateInput(this)
+
+/**
+ * [source] will be closed on returned [Input.close]
+ */
+@Suppress("FunctionName")
+public expect fun DeflateInput(source: Input): Input
+
+/**
+ * @see DeflateInput
+ */
+public inline fun Input.deflateInput(): Input = DeflateInput(this)
