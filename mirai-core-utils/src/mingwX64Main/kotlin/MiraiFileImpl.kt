@@ -9,13 +9,46 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.bits.*
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.*
-import platform.posix.PATH_MAX
-import platform.posix.fopen
-import platform.posix.getcwd
+import platform.posix.*
 import platform.windows.*
 
+private fun getFullPathName(path: String): String = memScoped {
+    try {
+        println("getFullPathName")
+        ShortArray(MAX_PATH).usePinned { pin ->
+            val len = GetFullPathNameW(path, MAX_PATH, pin.addressOf(0).reinterpret(), null).toInt()
+            if (len != 0) {
+                return pin.get().toKStringFromUtf16(len)
+            } else {
+                when (val errno = errno) {
+                    ENOTDIR -> return@memScoped path
+                    EACCES -> return@memScoped path // permission denied
+                    ENOENT -> return@memScoped path // no such file
+                    else -> throw IllegalArgumentException(
+                        "Invalid path($errno): $path",
+                        cause = PosixException.forErrno(posixFunctionName = "GetFullPathNameW()")
+                    )
+                }
+            }
+        }
+    } finally {
+        println("getFullPathName finished")
+    }
+}
+
+private fun ShortArray.toKStringFromUtf16(len: Int): String {
+    val chars = CharArray(len)
+    var index = 0
+    while (index < len) {
+        chars[index] = this[index].toInt().toChar()
+        ++index
+    }
+    return chars.concatToString()
+}
 
 internal actual class MiraiFileImpl actual constructor(
     // canonical
@@ -40,14 +73,16 @@ internal actual class MiraiFileImpl actual constructor(
         }
     }
 
-    override val absolutePath: String = kotlin.run {
-        val result = ROOT_REGEX.matchEntire(path) ?: return@run path.dropLastWhile { it.isSeparator() }
-        return@run result.groups.first()!!.value
+    override val absolutePath: String by lazy {
+        val result = ROOT_REGEX.matchEntire(this.path)
+            ?: return@lazy getFullPathName(this.path).removeSuffix(SEPARATOR.toString())
+        return@lazy result.groups.first()!!.value
     }
 
     private fun Char.isSeparator() = this == '/' || this == '\\'
 
     override val parent: MiraiFile? by lazy {
+        if (ROOT_REGEX.matchEntire(this.path) != null) return@lazy null
         val absolute = absolutePath
         val p = absolute.substringBeforeLast(SEPARATOR, "")
         if (p.isEmpty()) {
@@ -66,41 +101,63 @@ internal actual class MiraiFileImpl actual constructor(
 
     override val name: String
         get() = if (absolutePath.matches(ROOT_REGEX)) absolutePath
-        else absolutePath.substringAfterLast('/')
+        else absolutePath.substringAfterLast(SEPARATOR)
 
     init {
-        checkName(absolutePath.substringAfterLast('/')) // do not check drive letter
+        checkName(absolutePath.substringAfterLast(SEPARATOR)) // do not check drive letter
     }
 
     private fun checkName(name: String) {
-        name.substringAfterLast('/').forEach { c ->
+        name.substringAfterLast(SEPARATOR).forEach { c ->
             if (c in """\/:?*"><|""") {
                 throw IllegalArgumentException("'${name}' contains illegal character '$c'.")
             }
         }
 
-        memScoped {
-            val b = alloc<WINBOOLVar>()
-            CheckNameLegalDOS8Dot3A(absolutePath, nullPtr(), 0, nullPtr(), b.ptr)
-            if (b.value != 1) {
-                throw IllegalArgumentException("'${name}' contains illegal character.")
-            }
-        }
+//        memScoped {
+//            val b = alloc<WINBOOLVar>()
+//            CheckNameLegalDOS8Dot3A(absolutePath, nullPtr(), 0, nullPtr(), b.ptr)
+//            if (b.value != 1) {
+//                throw IllegalArgumentException("'${name}' contains illegal character.")
+//            }
+//        }
     }
 
     override val length: Long
         get() = useStat { it.st_size.convert() } ?: 0
+//            memScoped {
+//                val handle = CreateFileW(
+//                    absolutePath,
+//                    GENERIC_READ,
+//                    FILE_SHARE_READ,
+//                    null,
+//                    OPEN_EXISTING,
+//                    FILE_ATTRIBUTE_NORMAL,
+//                    null
+//                ) ?: return@memScoped 0
+//                val length = alloc<DWORDVar>()
+//                if (GetFileSize(handle, length.ptr) == INVALID_FILE_SIZE) {
+//                    if (GetLastError() == NO_ERROR.toUInt()) {
+//                        return INVALID_FILE_SIZE.convert()
+//                    }
+//                    throw PosixException.forErrno(posixFunctionName = "GetFileSize()").wrapIO()
+//                }
+//                if (CloseHandle(handle) == FALSE) {
+//                    throw PosixException.forErrno(posixFunctionName = "CloseHandle()").wrapIO()
+//                }
+//                length.value.convert()
+//            }
 
 
     override val isFile: Boolean
-        get() = getFileAttributes() flag FILE_ATTRIBUTE_NORMAL
+        get() = useStat { it.st_mode.convert<UInt>() flag S_IFREG } ?: false
 
     override val isDirectory: Boolean
-        get() = getFileAttributes() flag FILE_ATTRIBUTE_DIRECTORY
+        get() = useStat { it.st_mode.convert<UInt>() flag S_IFDIR } ?: false
 
     override fun exists(): Boolean = getFileAttributes() != INVALID_FILE_ATTRIBUTES
 
-    private fun getFileAttributes(): DWORD = memScoped { GetFileAttributesA(absolutePath) }
+    private fun getFileAttributes(): DWORD = memScoped { GetFileAttributesW(absolutePath) }
 
     override fun resolve(path: String): MiraiFile {
         when (path) {
@@ -121,54 +178,177 @@ internal actual class MiraiFileImpl actual constructor(
     }
 
     override fun createNewFile(): Boolean {
-        memScoped {
-            // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
-            val handle = CreateFileA(
-                absolutePath,
-                GENERIC_READ,
-                FILE_SHARE_WRITE,
-                nullPtr(),
-                CREATE_NEW,
-                FILE_ATTRIBUTE_NORMAL,
-                nullPtr()
-            )
-            if (handle == NULL) return false
-            CloseHandle(handle)
-            return true
+        // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+        val handle = CreateFileW(
+            absolutePath,
+            GENERIC_READ,
+            FILE_SHARE_DELETE,
+            null,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            null
+        )
+        if (handle == null || handle == INVALID_HANDLE_VALUE) {
+            return false
         }
+        if (CloseHandle(handle) == FALSE) {
+            throw PosixException.forErrno(posixFunctionName = "CloseHandle()").wrapIO()
+        }
+        return true
     }
 
     override fun delete(): Boolean {
         return if (isFile) {
-            DeleteFileA(absolutePath) == 0
+            DeleteFileW(absolutePath) != 0
         } else {
-            RemoveDirectoryA(absolutePath) == 0
+            RemoveDirectoryW(absolutePath) != 0
         }
     }
 
     override fun mkdir(): Boolean {
         memScoped {
             val v = alloc<_SECURITY_ATTRIBUTES>()
-            return CreateDirectoryA(absolutePath, v.ptr) == 0
+            return CreateDirectoryW(absolutePath, v.ptr) != 0
         }
     }
 
     override fun mkdirs(): Boolean {
-        if (this.parent?.mkdirs() == false) {
-            return false
-        }
+        this.parent?.mkdirs()
         return mkdir()
     }
 
     override fun input(): Input {
-        val handle = fopen(absolutePath, "r")
-        if (handle == NULL) throw IllegalStateException("Failed to open file '$absolutePath'")
-        return PosixInputForFile(handle!!)
+//        println(absolutePath)
+//        val handle2 = fopen(absolutePath, "rb") ?:throw IOException(
+//            "Failed to open file '$absolutePath'",
+//            PosixException.forErrno(posixFunctionName = "fopen()")
+//        )
+//        return PosixInputForFile(handle2)
+        // Will get I/O operation failed due to posix error code 2
+
+        val handle = CreateFileW(
+            absolutePath,
+            GENERIC_READ,
+            FILE_SHARE_DELETE,
+            null,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            null
+        )
+        if (handle == null || handle == INVALID_HANDLE_VALUE) throw IOException(
+            "Failed to open file '$absolutePath'",
+            PosixException.forErrno(posixFunctionName = "CreateFileW()")
+        )
+        return WindowsFileInput(handle)
     }
 
     override fun output(): Output {
-        val handle = fopen(absolutePath, "w")
-        if (handle == NULL) throw IllegalStateException("Failed to open file '$absolutePath'")
-        return PosixFileInstanceOutput(handle!!)
+//        val handle2 = fopen(absolutePath, "wb")
+//            ?: throw IOException(
+//                "Failed to open file '$absolutePath'",
+//                PosixException.forErrno(posixFunctionName = "fopen()")
+//            )
+//        return PosixFileInstanceOutput(handle)
+//
+        println(absolutePath)
+        val handle = CreateFileW(
+            absolutePath,
+            GENERIC_WRITE,
+            FILE_SHARE_DELETE,
+            null,
+            (if (exists()) TRUNCATE_EXISTING else CREATE_NEW).toUInt(),
+            FILE_ATTRIBUTE_NORMAL,
+            null
+        )
+        if (handle == null || handle == INVALID_HANDLE_VALUE) throw IOException(
+            "Failed to open file '$absolutePath'",
+            PosixException.forErrno(posixFunctionName = "CreateFileW()")
+        )
+        return WindowsFileOutput(handle)
+    }
+
+    override fun hashCode(): Int {
+        return this.path.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (!isSameType(this, other)) return false
+        return this.path == other.path
+    }
+
+    override fun toString(): String {
+        return "MiraiFileImpl($path)"
+    }
+}
+
+
+internal class WindowsFileInput(private val file: HANDLE) : Input() {
+    private var closed = false
+
+    override fun fill(destination: Memory, offset: Int, length: Int): Int {
+        if (file == INVALID_HANDLE_VALUE) return 0
+
+        println("fill: ${destination.pointer}, $offset, $length")
+        memScoped {
+            val n = alloc<DWORDVar>()
+            if (ReadFile(file, destination.pointer + offset, length.convert(), n.ptr, null) == FALSE) {
+                println("ERR! LastErr= ${GetLastError()}")
+                throw PosixException.forErrno(posixFunctionName = "ReadFile()").wrapIO()
+            }
+
+            println("LastErr= ${GetLastError()}")
+            println("${n.value}, ${n.value.convert<UInt>().toInt()}")
+            return n.value.convert<UInt>().toInt()
+        }
+    }
+
+    override fun closeSource() {
+        println("closing")
+        if (closed) return
+        closed = true
+
+        if (file != INVALID_HANDLE_VALUE) {
+            if (CloseHandle(file) == FALSE) {
+                throw PosixException.forErrno(posixFunctionName = "CloseHandle()").wrapIO()
+            }
+        }
+    }
+}
+
+@Suppress("DEPRECATION")
+internal class WindowsFileOutput(private val file: HANDLE) : Output() {
+    private var closed = false
+
+    override fun flush(source: Memory, offset: Int, length: Int) {
+        val end = offset + length
+        var currentOffset = offset
+
+        memScoped {
+            val written = alloc<UIntVar>()
+            while (currentOffset < end) {
+                val result = WriteFile(
+                    file,
+                    source.pointer + currentOffset.convert(),
+                    (end - currentOffset).convert(),
+                    written.ptr,
+                    null
+                ).convert<Int>()
+                if (result == FALSE) {
+                    throw PosixException.forErrno(posixFunctionName = "WriteFile()").wrapIO()
+                }
+                currentOffset += written.value.toInt()
+            }
+
+        }
+    }
+
+    override fun closeDestination() {
+        if (closed) return
+        closed = true
+
+        if (CloseHandle(file) == FALSE) {
+            throw PosixException.forErrno(posixFunctionName = "CloseHandle()").wrapIO()
+        }
     }
 }

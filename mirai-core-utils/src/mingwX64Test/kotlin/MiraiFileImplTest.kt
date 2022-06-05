@@ -16,20 +16,30 @@ import kotlin.test.assertEquals
 
 internal class WindowsMiraiFileImplTest : AbstractNativeMiraiFileImplTest() {
     private val rand = Random.nextInt().absoluteValue
-    override val baseTempDir: MiraiFile = MiraiFile.create("mirai_unit_tests")
-    override val tempPath = "mirai_unit_tests/temp$rand"
+    override val baseTempDir: MiraiFile = MiraiFile.create("C:\\mirai_unit_tests")
+    override val tempPath = "C:\\mirai_unit_tests\\temp$rand"
 
     @Test
     override fun parent() {
-        assertEquals("C:/Users/Shared/mirai_test", tempDir.parent!!.absolutePath)
+        assertEquals("C:\\mirai_unit_tests", tempDir.parent!!.absolutePath)
         super.parent()
+    }
+
+    override fun `canonical paths for non-canonical input`() {
+        super.`canonical paths for non-canonical input`()
+
+        // extra /sss/..
+        MiraiFile.create("$tempPath/sss/..").resolve("test").let {
+            assertPathEquals("${tempPath}/test", it.path) // Windows resolves always
+            assertPathEquals("${tempPath}/test", it.absolutePath)
+        }
     }
 
     @Test
     override fun `resolve absolute`() {
-        MiraiFile.create("$tempPath/").resolve("C:/Users").let {
-            assertEquals("C:/Users", it.path)
-            assertEquals("C:/Users", it.absolutePath)
+        MiraiFile.create("$tempPath/").resolve("C:\\mirai_unit_tests").let {
+            assertEquals("C:\\mirai_unit_tests", it.path)
+            assertEquals("C:\\mirai_unit_tests", it.absolutePath)
         }
     }
 }

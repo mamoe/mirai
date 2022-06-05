@@ -167,6 +167,8 @@ public fun Input._readTLVMap(
     return map
 }
 
+public fun Input.readAllText(): String = Charsets.UTF_8.newDecoder().decode(this)
+
 public inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length), charset = charset) // stdlib
 
