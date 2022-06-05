@@ -162,6 +162,12 @@ internal abstract class NetworkHandlerSupport(
      *
      * State can only be changed inside [setState].
      *
+     * **IMPORTANT implementation notes:**
+     *
+     * You must create subclasses of [BaseStateImpl] for EVERY SINGLE [NetworkHandler.State].
+     * **DO NOT** use same type for more than one [NetworkHandler.State],
+     * otherwise [setState] will refuse updating state in some concurrent situations and will be very difficult to debug.
+     *
      * **IMPORTANT notes to lifecycle:**
      *
      * Normally if the state is set to [NetworkHandler.State.CLOSED] by [setState], [selector][NetworkHandlerSelector] may reinitialize an instance.
@@ -177,7 +183,10 @@ internal abstract class NetworkHandlerSupport(
         final override val coroutineContext: CoroutineContext =
             this@NetworkHandlerSupport.coroutineContext + Job(this@NetworkHandlerSupport.coroutineContext.job)
 
+        // Important: read the above doc before implementing BaseStateImpl.
+
         // Do not use init blocks to launch anything. Do use [startState]
+
 
         /**
          * Starts things that should be done in this state.
@@ -271,16 +280,14 @@ internal abstract class NetworkHandlerSupport(
     internal val lockForSetStateWithOldInstance = SynchronizedObject()
 
     /**
-     * This can only be called by [setState] or in tests.
-     *
-     * [newType] can be `null` **iff in tests**, to ignore checks.
+     * This can only be called by [setState] or in tests. Note:
      */
     //
     @TestOnly
-    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? =
+    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>, new: () -> S): S? =
         lock.withLock {
             val old = _state
-            if (newType != null && old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
+            if (old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
             if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
 
             val stateObserver = context.getOrNull(StateObserver)
