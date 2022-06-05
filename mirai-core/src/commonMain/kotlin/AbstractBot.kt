@@ -57,7 +57,10 @@ internal abstract class AbstractBot constructor(
                     logger.info { "Bot cancelled" + throwable?.message?.let { ": $it" }.orEmpty() }
 
                     kotlin.runCatching {
-                        network.close(throwable)
+                        val bot = bot
+                        if (bot is AbstractBot && bot.networkInitialized) {
+                            bot.network.close(throwable)
+                        }
                     }.onFailure {
                         if (it !is CancellationException) logger.error(it)
                     }
@@ -121,7 +124,7 @@ internal abstract class AbstractBot constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     @Volatile
-    private var networkInitialized = false
+    var networkInitialized = false
     val network: NetworkHandler by lazy {
         networkInitialized = true
         createNetworkHandler()
