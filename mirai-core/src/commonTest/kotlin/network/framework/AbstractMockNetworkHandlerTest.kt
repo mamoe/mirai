@@ -30,6 +30,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import network.framework.components.TestEventDispatcherImpl
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import kotlin.test.AfterTest
 import kotlin.test.assertEquals
 
 
@@ -46,6 +47,14 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
         }
     }
     protected val logger = MiraiLogger.Factory.create(Bot::class, "test")
+
+    private val eventDispatcherJob = SupervisorJob()
+
+    @AfterTest
+    private fun cancelJob() {
+        eventDispatcherJob.cancel()
+    }
+
     protected val components = ConcurrentComponentStorage().apply {
         set(SsoProcessor, TestSsoProcessor(bot))
         set(
@@ -53,7 +62,7 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
             // Note that in real we use 'bot.coroutineContext', but here we override with a new, independent job
             // to allow BotOfflineEvent.Active to be broadcast and joinBroadcast works even if bot coroutineScope is closed.
             TestEventDispatcherImpl(
-                bot.coroutineContext + SupervisorJob(),
+                bot.coroutineContext + eventDispatcherJob,
                 bot.logger.subLogger("TestEventDispatcherImpl")
             )
         )
