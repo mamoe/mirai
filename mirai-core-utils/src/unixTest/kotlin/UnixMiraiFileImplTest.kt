@@ -28,6 +28,16 @@ internal class UnixMiraiFileImplTest : AbstractNativeMiraiFileImplTest() {
         super.parent()
     }
 
+    override fun `canonical paths for non-canonical input`() {
+        super.`canonical paths for non-canonical input`()
+
+        // extra /sss/..
+        MiraiFile.create("$tempPath/sss/..").resolve("test").let {
+            assertPathEquals("${tempPath}/sss/../test", it.path) // because file is not found
+            assertPathEquals("${tempPath}/sss/../test", it.absolutePath)
+        }
+    }
+
     @Test
     override fun `resolve absolute`() {
         MiraiFile.create("$tempPath/").resolve("/Users").let {
