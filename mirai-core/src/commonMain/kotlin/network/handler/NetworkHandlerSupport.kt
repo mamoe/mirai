@@ -31,6 +31,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.Volatile
 import kotlin.reflect.KClass
 
 /**
@@ -279,6 +280,9 @@ internal abstract class NetworkHandlerSupport(
     private val lock = reentrantLock()
     internal val lockForSetStateWithOldInstance = SynchronizedObject()
 
+    @Volatile
+    private var changingState: KClass<out BaseStateImpl>? = null
+
     /**
      * This can only be called by [setState] or in tests. Note:
      */
@@ -290,30 +294,56 @@ internal abstract class NetworkHandlerSupport(
             if (old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
             if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
 
-            val stateObserver = context.getOrNull(StateObserver)
-
-            val impl = try {
-                new()
-            } catch (e: Throwable) {
-                stateObserver?.exceptionOnCreatingNewState(this, old, e)
-                throw e
+            val changingState = changingState
+            if (changingState != null) {
+                if (changingState == newType) {
+                    // no duplicates
+                    return null
+                } else {
+                    error("New state ${newType.simpleName} clashes with current switching process, changingState = ${changingState.simpleName}.")
+                }
             }
 
-            check(old !== impl) { "Old and new states cannot be the same." }
+            this.changingState = newType
 
-            stateObserver?.beforeStateChanged(this, old, impl)
+            try {
 
-            // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
-            // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
-            impl.startState() // launch jobs
-            _state = impl // update current state
-            old.cancel(StateSwitchingException(old, impl)) // close old
-            impl.afterUpdated() // now do post-update things.
+                val stateObserver = context.getOrNull(StateObserver)
 
-            stateObserver?.stateChanged(this, old, impl) // notify observer
-            _stateChannel.trySend(impl.correspondingState) // notify selector
+                val impl = try {
+                    new()
+                } catch (e: Throwable) {
+                    stateObserver?.exceptionOnCreatingNewState(this, old, e)
+                    throw e
+                }
 
-            return@withLock impl
+                try {
+                    check(old !== impl) { "Old and new states cannot be the same." }
+
+                    stateObserver?.beforeStateChanged(this, old, impl)
+
+                    // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
+                    // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
+                    impl.startState() // launch jobs
+                } catch (e: Throwable) {
+                    throw e
+                }
+
+                // No further change
+
+                _state = impl // update current state
+                // After _state is updated, we are safe.
+
+                old.cancel(StateSwitchingException(old, impl)) // close old
+                impl.afterUpdated() // now do post-update things.
+
+                stateObserver?.stateChanged(this, old, impl) // notify observer
+                _stateChannel.trySend(impl.correspondingState) // notify selector
+
+                return@withLock impl
+            } finally {
+                this.changingState = null
+            }
         }
 
     final override suspend fun resumeConnection() {

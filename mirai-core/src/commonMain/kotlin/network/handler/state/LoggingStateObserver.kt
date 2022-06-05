@@ -51,7 +51,7 @@ internal class LoggingStateObserver(
         previousState: NetworkHandlerSupport.BaseStateImpl,
         exception: Throwable,
     ) {
-        logger.debug { "State changed: ${previousState.correspondingState} -> $exception" }
+        logger.debug { "State exception: ${previousState.correspondingState} -> $exception" }
     }
 
     override suspend fun beforeStateResume(networkHandler: NetworkHandler, state: NetworkHandlerSupport.BaseStateImpl) {
