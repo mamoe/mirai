@@ -31,6 +31,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.Volatile
 import kotlin.reflect.KClass
 
 /**
@@ -280,6 +281,12 @@ internal abstract class NetworkHandlerSupport(
     internal val lockForSetStateWithOldInstance = SynchronizedObject()
 
     /**
+     * Temp instance to check for overriding. See usage.
+     */
+    @Volatile
+    private lateinit var newState: BaseStateImpl
+
+    /**
      * This can only be called by [setState] or in tests. Note:
      */
     //
@@ -299,19 +306,37 @@ internal abstract class NetworkHandlerSupport(
                 throw e
             }
 
-            check(old !== impl) { "Old and new states cannot be the same." }
+            // `impl.startState()` may set another state, then this `newState` will be updated.
+            newState = impl
 
-            stateObserver?.beforeStateChanged(this, old, impl)
+            try {
+                check(old !== impl) { "Old and new states cannot be the same." }
 
-            // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
-            // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
-            impl.startState() // launch jobs
-            _state = impl // update current state
-            old.cancel(StateSwitchingException(old, impl)) // close old
-            impl.afterUpdated() // now do post-update things.
+                stateObserver?.beforeStateChanged(this, old, impl)
 
-            stateObserver?.stateChanged(this, old, impl) // notify observer
-            _stateChannel.trySend(impl.correspondingState) // notify selector
+                // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
+                // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
+                impl.startState() // launch jobs
+            } catch (e: Throwable) {
+                throw e
+            }
+
+            val newState = newState
+            if (newState === impl) {
+                // No further change
+
+                _state = impl // update current state
+                // After _state is updated, we are safe.
+
+                old.cancel(StateSwitchingException(old, impl)) // close old
+                impl.afterUpdated() // now do post-update things.
+
+                stateObserver?.stateChanged(this, old, impl) // notify observer
+                _stateChannel.trySend(impl.correspondingState) // notify selector
+            } else {
+                // The newer change prevails, so cancel this.
+                impl.cancel(StateSwitchingException(impl, newState))
+            }
 
             return@withLock impl
         }
