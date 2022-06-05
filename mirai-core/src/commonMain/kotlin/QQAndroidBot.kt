@@ -31,8 +31,11 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateI
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.handler.state.*
 import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.ForceOfflineException
 import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
@@ -136,20 +139,6 @@ internal open class QQAndroidBot constructor(
                     }
                     cause is BotClosedByEvent -> {
                     }
-                    else -> {
-                        // handled by BotOfflineEventBroadcasterBefore
-                    }
-                }
-            },
-            BeforeStateChangedObserver("BotOfflineEventBroadcasterBefore", State.OK, State.CLOSED) { new ->
-                // logging performed by BotOfflineEventMonitor
-                val cause = new.getCause()
-                when {
-                    // handled by BotOfflineEventBroadcasterAfter
-                    cause is ForceOfflineException -> {}
-                    cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {}
-                    cause is NetworkException && cause.recoverable -> {}
-                    cause is BotClosedByEvent -> {}
                     else -> {
                         // any other unexpected exceptions considered as an error
 
