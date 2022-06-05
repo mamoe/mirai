@@ -100,8 +100,6 @@ internal expect abstract class AbstractCommonNHTest() :
 
     val conn: PlatformConn
 
-    override val network: TestCommonNetworkHandler
-
     override val factory: NetworkHandlerFactory<TestCommonNetworkHandler>
 
     protected fun removeOutgoingPacketEncoder()
