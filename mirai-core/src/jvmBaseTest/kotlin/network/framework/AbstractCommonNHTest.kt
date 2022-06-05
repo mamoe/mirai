@@ -20,9 +20,6 @@ import kotlin.test.AfterTest
  */
 internal actual abstract class AbstractCommonNHTest actual constructor() :
     AbstractRealNetworkHandlerTest<TestCommonNetworkHandler>() {
-    actual override val network: TestCommonNetworkHandler by lazy {
-        factory.create(createContext(), createAddress())
-    }
 
     private val startedDispatchers = mutableListOf<ExecutorCoroutineDispatcher>()
 

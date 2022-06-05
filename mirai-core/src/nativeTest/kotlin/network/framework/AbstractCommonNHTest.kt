@@ -19,10 +19,6 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 internal actual abstract class AbstractCommonNHTest actual constructor() :
     AbstractRealNetworkHandlerTest<TestCommonNetworkHandler>() {
 
-    actual override val network: TestCommonNetworkHandler by lazy {
-        factory.create(createContext(), createAddress())
-    }
-
     actual override val factory: NetworkHandlerFactory<TestCommonNetworkHandler> =
         NetworkHandlerFactory<TestCommonNetworkHandler> { context, address ->
             object : TestCommonNetworkHandler(bot, context, address) {

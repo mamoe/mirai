@@ -162,9 +162,9 @@ internal abstract class CommonNetworkHandler<Conn>(
     ///////////////////////////////////////////////////////////////////////////
 
     override fun close(cause: Throwable?) {
+        super.close(cause) // cancel coroutine scope
         if (state == NetworkHandler.State.CLOSED) return // quick check if already closed
         if (setState { StateClosed(cause) } == null) return // atomic check
-        super.close(cause) // cancel coroutine scope
     }
 
     init {
