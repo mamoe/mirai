@@ -89,6 +89,13 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     val nhEvents = ConcurrentLinkedQueue<NHEvent>()
 
+    private val eventDispatcherJob = SupervisorJob()
+
+    @AfterTest
+    private fun cancelJob() {
+        eventDispatcherJob.cancel()
+    }
+
     /**
      * This overrides [QQAndroidBot.components]
      */
@@ -149,7 +156,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             // Note that in real we use 'bot.coroutineContext', but here we override with a new, independent job
             // to allow BotOfflineEvent.Active to be broadcast and joinBroadcast works even if bot coroutineScope is closed.
             TestEventDispatcherImpl(
-                bot.coroutineContext + SupervisorJob(),
+                bot.coroutineContext + eventDispatcherJob,
                 bot.logger.subLogger("TestEventDispatcherImpl")
             )
         )
