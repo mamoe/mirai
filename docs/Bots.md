@@ -87,7 +87,7 @@ setHeartbeatStrategy(BotConfiguration.HeartbeatStrategy.REGISTER)
 ```
 
 #### 切换登录协议
-Mirai 支持多种登录协议：`ANDROID_PHONE`，`ANDROID_PAD`，`ANDROID_WATCH`，默认使用 `ANDROID_PHONE`。
+Mirai 支持多种登录协议：`ANDROID_PHONE`，`ANDROID_PAD`，`ANDROID_WATCH`，`IPAD`，`MACOS` 默认使用 `ANDROID_PHONE`。
 
 若登录失败，可尝试切换协议。**但注意部分功能在部分协议上不受支持**，详见源码内注释。
 
