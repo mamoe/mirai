@@ -344,6 +344,7 @@ public sealed interface SystemCommandSender : CommandSender {
  * 默认情况下 [PluginCustomCommandSender] 以 [ConsoleCommandSender] 的身份执行命令
  *
  * @see PermitteeId
+ * @see AbstractPluginCustomCommandSender
  */
 public interface PluginCustomCommandSender : CommandSender, SystemCommandSender {
     override val isAnsiSupported: Boolean get() = false
