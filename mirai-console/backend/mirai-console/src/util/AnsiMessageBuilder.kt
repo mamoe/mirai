@@ -10,9 +10,8 @@
 
 package net.mamoe.mirai.console.util
 
-import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.SystemCommandSender
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.asAnsiMessageBuilder
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.dropAnsi
 import net.mamoe.mirai.contact.Contact
@@ -101,8 +100,8 @@ public open class AnsiMessageBuilder public constructor(
         @ConsoleExperimentalApi
         @JvmStatic
         public fun isAnsiSupported(sender: CommandSender): Boolean =
-            if (sender is ConsoleCommandSender) {
-                MiraiConsoleImplementation.getInstance().isAnsiSupported
+            if (sender is SystemCommandSender) {
+                sender.isAnsiSupported
             } else false
 
         /**

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.fold
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.SystemCommandSender
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.Message
@@ -576,7 +577,11 @@ private class CommandSenderAsMessageScope(
     private val sender: CommandSender,
 ) : MessageScope {
     override val realTarget: Any
-        get() = sender.user ?: sender // ConsoleCommandSender
+        get() {
+            val sender = this.sender
+            if (sender is SystemCommandSender) return sender
+            return sender.user ?: sender
+        }
 
     override suspend fun sendMessage(message: Message) {
         sender.sendMessage(message)
