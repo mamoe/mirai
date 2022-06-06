@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
@@ -89,7 +90,13 @@ internal abstract class JvmPluginInternal(
     internal fun internalOnDisable() {
         firstRun = false
         kotlin.runCatching {
-            onDisable()
+            val crtThread = Thread.currentThread()
+            ShutdownDaemon.pluginDisablingThreads.add(crtThread)
+            try {
+                onDisable()
+            } finally {
+                ShutdownDaemon.pluginDisablingThreads.remove(crtThread)
+            }
         }.fold(
             onSuccess = {
                 cancel(CancellationException("plugin disabled"))

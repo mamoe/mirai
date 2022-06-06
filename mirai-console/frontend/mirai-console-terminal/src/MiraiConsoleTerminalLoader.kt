@@ -19,9 +19,7 @@
 
 package net.mamoe.mirai.console.terminal
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
@@ -31,9 +29,17 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.verbose
+import org.jline.utils.Signals
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream
+import java.lang.Runnable
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.exitProcess
 
 /**
@@ -46,15 +52,18 @@ object MiraiConsoleTerminalLoader {
         startAsDaemon()
         try {
             runBlocking {
-                MiraiConsole.job.invokeOnCompletion {
-                    Thread.sleep(1000) // 保证错误信息打印完全
-                    exitProcess(0)
+                MiraiConsole.job.invokeOnCompletion { err ->
+                    if (err != null) {
+                        Thread.sleep(1000) // 保证错误信息打印完全
+                    }
                 }
                 MiraiConsole.job.join()
             }
         } catch (e: CancellationException) {
             // ignored
         }
+        // Avoid plugin started some non-daemon threads
+        exitProcessAndForceHalt(0)
     }
 
     @ConsoleTerminalExperimentalApi
@@ -169,6 +178,82 @@ internal object ConsoleDataHolder : AutoSavePluginDataHolder,
     @ConsoleExperimentalApi
     override val dataHolderName: String
         get() = "Terminal"
+}
+
+private val shutdownSignals = arrayOf(
+    "INT", "TERM", "QUIT"
+)
+
+internal val signalHandler: (String) -> Unit = initSignalHandler()
+private fun initSignalHandler(): (String) -> Unit {
+    val shutdownMonitorLock = AtomicBoolean(false)
+    return handler@{ signalName ->
+        // JLine may process other signals
+        MiraiConsole.mainLogger.verbose { "Received signal $signalName" }
+        if (signalName !in shutdownSignals) return@handler
+
+        MiraiConsole.mainLogger.debug { "Handled  signal $signalName" }
+        MiraiConsole.shutdown()
+
+        // Shutdown by signal requires process be killed
+        if (shutdownMonitorLock.compareAndSet(false, true)) {
+            val pool = Executors.newFixedThreadPool(2, object : ThreadFactory {
+                private val counter = AtomicInteger()
+                override fun newThread(r: Runnable): Thread {
+                    return Thread(r, "Mirai Console Signal-Shutdown Daemon #" + counter.getAndIncrement()).also {
+                        it.isDaemon = true
+                    }
+                }
+            })
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch(pool.asCoroutineDispatcher()) {
+                MiraiConsole.job.join()
+
+                delay(15000)
+                // Force kill process if plugins started non-daemon threads
+                exitProcessAndForceHalt(-5)
+            }
+        }
+    }
+}
+
+internal fun registerSignalHandler() {
+    fun reg(name: String) {
+        Signals.register(name) { signalHandler(name) }
+    }
+    shutdownSignals.forEach { reg(it) }
+}
+
+internal fun exitProcessAndForceHalt(code: Int): Nothing {
+    MiraiConsole.mainLogger.debug { "[exitProcessAndForceHalt] called with code $code" }
+
+    val exitFuncName = arrayOf("exit", "halt")
+    val shutdownClasses = arrayOf("java.lang.System", "java.lang.Runtime", "java.lang.Shutdown")
+    val isShutdowning = Thread.getAllStackTraces().asSequence().flatMap {
+        it.value.asSequence()
+    }.any { stackTrace ->
+        stackTrace.className in shutdownClasses && stackTrace.methodName in exitFuncName
+    }
+    MiraiConsole.mainLogger.debug { "[exitProcessAndForceHalt] isShutdowning = $isShutdowning" }
+
+    val task = Runnable {
+        Thread.sleep(15000L)
+        runCatching { net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon.dumpCrashReport(true) }
+        val fc = when (code) {
+            0 -> 5784171
+            else -> code
+        }
+
+        MiraiConsole.mainLogger.debug { "[exitProcessAndForceHalt] timed out, force halt with code $fc" }
+        Runtime.getRuntime().halt(fc)
+    }
+    if (isShutdowning) {
+        task.run()
+        error("Runtime.halt returned normally, while it was supposed to halt JVM.")
+    } else {
+        Thread(task, "Mirai Console Force Halt Daemon").start()
+        exitProcess(code)
+    }
 }
 
 internal fun overrideSTD(terminal: MiraiConsoleImplementation) {

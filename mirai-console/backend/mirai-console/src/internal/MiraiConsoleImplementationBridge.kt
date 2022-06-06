@@ -43,6 +43,7 @@ import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
@@ -58,6 +59,7 @@ import net.mamoe.mirai.utils.*
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.reflect.KProperty
@@ -85,6 +87,7 @@ internal class MiraiConsoleImplementationBridge(
 
     // used internally
     val globalComponentStorage: GlobalComponentStorageImpl by lazy { GlobalComponentStorageImpl() }
+    val shutdownDaemon = ShutdownDaemon.DaemonStarter(this)
 
     // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
     @Volatile
@@ -147,6 +150,7 @@ internal class MiraiConsoleImplementationBridge(
             }
 
             MiraiConsole.job.invokeOnCompletion {
+                shutdownDaemon.tryStart()
                 Bot.instances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
             }
         }

@@ -120,6 +120,7 @@ open class MiraiConsoleImplementationTerminal
         get() = ConsoleTerminalSettings.launchOptions
 
     override fun preStart() {
+        registerSignalHandler()
         overrideSTD(this)
     }
 }
@@ -143,6 +144,7 @@ val terminal: Terminal = run {
         .jansi(true)
         .dumb(true)
         .paused(true)
+        .signalHandler { signalHandler(it.name) }
         .build()
         .let { terminal ->
             if (terminal is AbstractWindowsTerminal) {

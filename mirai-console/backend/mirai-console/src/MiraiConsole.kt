@@ -12,8 +12,7 @@
 
 package net.mamoe.mirai.console
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
@@ -239,6 +238,22 @@ public interface MiraiConsole : CoroutineScope {
         @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
         public val isActive: Boolean
             get() = job.isActive
+
+        /**
+         * 停止 Console 运行
+         *
+         * Console 会在一个合适的时间进行关闭, 并不是调用马上关闭 Console
+         */
+        @ConsoleExperimentalApi
+        @JvmStatic
+        public fun shutdown() {
+            val consoleJob = job
+            if (!consoleJob.isActive) return
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                MiraiConsoleImplementation.shutdown()
+            }
+        }
     }
 
 
