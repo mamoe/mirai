@@ -584,7 +584,34 @@ Central
 。  
 要了解什么情况下需要强制打包，请参阅 [插件依赖打包机制](#插件依赖打包机制)。
 
-### 发布插件到 mirai-console-loader
+## 调试
+
+[mirai-console-gradle](../../tools/gradle-plugin/README.md)
+提供了在 IDEA 等 IDE 中调试插件的功能, 运行 Gradle 任务 `runConsole` 即可启动完整的 mirai-console。
+
+> mirai-console 测试时默认在 `/debug-sandbox` 运行。
+>
+> 可在 `.gitignore` 中添加 `/debug-sandbox` 规则以避免测试环境被提交至 Git。
+
+使用 IDEA 创建的项目可在 `Run Configurations` 找到 `Run Mirai Console`。
+
+![PluginDebugRunConfiguration.png](images/PluginDebugRunConfiguration.png)
+
+可在 IDEA 右侧 `Gradle` 中找到 Gradle 任务 `runConsole`。
+
+![PluginDebugGradleTask.png](images/PluginDebugGradleTask.png)
+
+运行后即可看见如下图所示的 mirai-console:
+
+![PluginDebugWindowPreview](images/PluginDebugWindowPreview.webp)
+
+> 如需进行调试, 请使用运行 (绿色三角形) 旁边的 `Debug` 按钮.
+> 也可以在 Gradle 工具栏找到 `runConsole` 并右键选择 `Debug`。
+>
+> 如果没法输入命令, 请确认 Gradle 任务视图没有被聚焦至 `:runConsole`,
+> 必须选择整个 Gradle 任务视图才可执行命令。
+
+## 发布插件到 mirai-console-loader
 
 插件中心仍在开发中。
 
