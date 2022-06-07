@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message
 
+import io.ktor.utils.io.core.EOFException
 import io.ktor.utils.io.errors.*
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.test.AbstractTest
@@ -78,7 +79,7 @@ internal class ImageReadingTest : AbstractTest() {
                 ImageType.JPG
             )
         }
-        assertFailsWith(IllegalStateException::class) {
+        assertFailsWith(EOFException::class) {
             "FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 78 00 78 00 00 FF E1 00 5A".testMatch(
                 ImageType.JPG
             )

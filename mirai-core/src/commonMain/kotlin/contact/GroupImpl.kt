@@ -15,7 +15,6 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
@@ -36,6 +35,7 @@ import net.mamoe.mirai.internal.message.image.getImageTypeById
 import net.mamoe.mirai.internal.message.protocol.outgoing.GroupMessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.components.BdhSession
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -317,8 +317,8 @@ internal class GroupImpl constructor(
                         GROUP_AUDIO,
                         ChannelKind.HTTP
                     ) { ip, port ->
-                        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                        Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
+                        bot.components[HttpClientProvider].getHttpClient()
+                            .postPtt(ip, port, resource, resp.uKey, resp.fileKey)
                     }
                 }
             }

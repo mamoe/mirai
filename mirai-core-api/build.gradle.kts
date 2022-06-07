@@ -56,7 +56,6 @@ kotlin {
 
         val jvmBaseMain by getting {
             dependencies {
-                api(`ktor-client-okhttp`)
                 api(`kotlinx-coroutines-jdk8`)
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)

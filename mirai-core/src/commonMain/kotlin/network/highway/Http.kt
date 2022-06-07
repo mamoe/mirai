@@ -49,7 +49,7 @@ internal suspend fun HttpClient.postImage(
     groupcode: Long?,
     imageInput: ExternalResource,
     uKeyHex: String,
-): Boolean = post<HttpStatusCode> {
+): Boolean = post {
     url {
         protocol = URLProtocol.HTTP
         host = serverIp // "htdata2.qq.com"
@@ -71,7 +71,7 @@ internal suspend fun HttpClient.postImage(
     }
 
     body = imageInput.consumeAsWriteChannelContent(ContentType.Image.Any)
-} == HttpStatusCode.OK
+}.status == HttpStatusCode.OK
 
 internal suspend fun HttpClient.postPtt(
     serverIp: String,
@@ -80,7 +80,7 @@ internal suspend fun HttpClient.postPtt(
     uKey: ByteArray,
     fileKey: ByteArray,
 ) {
-    post<String> {
+    post {
         url("http://$serverIp:$serverPort")
         parameter("ver", 4679)
         parameter("ukey", uKey.toUHexString(""))
@@ -89,6 +89,6 @@ internal suspend fun HttpClient.postPtt(
         parameter("bmd5", resource.md5.toUHexString(""))
         parameter("mType", "pttDu")
         parameter("voice_encodec", resource.voiceCodec)
-        body = resource.consumeAsWriteChannelContent(null)
+        setBody(resource.consumeAsWriteChannelContent(null))
     }
 }

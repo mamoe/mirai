@@ -145,13 +145,13 @@ kotlin {
 
         configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
             dependencies {
-                implementation(`ktor-client-curl`)
+                implementation(`ktor-client-cio`)
             }
         }
 
         val darwinMain by getting {
             dependencies {
-                implementation(`ktor-client-ios`)
+                implementation(`ktor-client-darwin`)
             }
         }
 

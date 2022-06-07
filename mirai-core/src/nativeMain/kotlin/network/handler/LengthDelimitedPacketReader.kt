@@ -79,7 +79,7 @@ internal class LengthDelimitedPacketReader(
             else -> {
                 if (missingLength == 0L) {
                     debugLogger.info { "Multiple packets length perfectly matched." }
-                    sendDecode(buildPacket(bufferedParts.sumOf { it.remaining }.toInt()) {
+                    sendDecode(buildPacket {
                         bufferedParts.forEach { writePacket(it) }
                     })
 
@@ -95,7 +95,7 @@ internal class LengthDelimitedPacketReader(
 
                     if (combinedLength < 0) return // not enough, still more parts missing.
 
-                    sendDecode(buildPacket(combinedLength) {
+                    sendDecode(buildPacket {
                         repeat(bufferedParts.size - 1) { i ->
                             writePacket(bufferedParts[i])
                         }

@@ -44,14 +44,12 @@ internal actual class PlatformSocket(
     actual val isOpen: Boolean
         get() = write(socket, null, 0) != 0
 
-    @OptIn(ExperimentalIoApi::class)
     actual override fun close() {
         if (close(socket) != 0) {
             throw PosixException.forErrno(posixFunctionName = "close()").wrapIO()
         }
     }
 
-    @OptIn(ExperimentalIoApi::class)
     actual suspend fun send(packet: ByteArray, offset: Int, length: Int): Unit = readLock.withLock {
         withContext(dispatcher) {
             require(offset >= 0) { "offset must >= 0" }
@@ -65,10 +63,7 @@ internal actual class PlatformSocket(
         }
     }
 
-    /**
-     * @throws SendPacketInternalException
-     */
-    @OptIn(ExperimentalIoApi::class)
+
     actual override suspend fun send(packet: ByteReadPacket): Unit = readLock.withLock {
         withContext(dispatcher) {
             val writeBuffer = writeBuffer
@@ -92,7 +87,6 @@ internal actual class PlatformSocket(
 
     actual companion object {
 
-        @OptIn(UnsafeNumber::class, ExperimentalIoApi::class)
         actual suspend fun connect(
             serverIp: String,
             serverPort: Int

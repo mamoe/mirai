@@ -14,7 +14,6 @@ import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
-@OptIn(ExperimentalIoApi::class)
 private fun readlink(path: String): String = memScoped {
     val len = realpath(path, null)
     if (len != null) {
@@ -114,7 +113,6 @@ internal actual class MiraiFileImpl actual constructor(
         return resolve(parent).resolve(file.name)
     }
 
-    @OptIn(UnsafeNumber::class)
     override fun createNewFile(): Boolean {
         memScoped {
             val fp = fopen(absolutePath, "w")
@@ -155,7 +153,6 @@ internal actual class MiraiFileImpl actual constructor(
         }
     }
 
-    @OptIn(ExperimentalIoApi::class)
     override fun input(): Input {
         val handle = fopen(absolutePath, "r")
             ?: throw IOException(
@@ -165,7 +162,6 @@ internal actual class MiraiFileImpl actual constructor(
         return PosixInputForFile(handle)
     }
 
-    @OptIn(ExperimentalIoApi::class)
     override fun output(): Output {
         val handle = fopen(absolutePath, "w")
             ?: throw IOException(
