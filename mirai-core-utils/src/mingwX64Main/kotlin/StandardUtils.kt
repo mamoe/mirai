@@ -11,4 +11,6 @@ package net.mamoe.mirai.utils
 
 import platform.windows.GetCurrentProcessorNumber
 
-public actual fun availableProcessors(): Int = GetCurrentProcessorNumber().toInt()
+
+public actual fun availableProcessors(): Int =
+    GetCurrentProcessorNumber().toInt().coerceAtLeast(4) // somehow it worked on my machine but not on CI
