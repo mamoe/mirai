@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal
 
 import io.ktor.client.*
 import io.ktor.client.engine.curl.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 
 internal actual fun createDefaultHttpClient(): HttpClient {
     return HttpClient(Curl) {

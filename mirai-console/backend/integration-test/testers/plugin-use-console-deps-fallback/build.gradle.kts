@@ -11,28 +11,17 @@
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     id("java")
-    `maven-publish`
 }
 
-version = Versions.core
-description = "Mirai Log4J Adapter"
+version = "0.0.0"
 
 kotlin {
-    explicitApi()
+    explicitApiWarning()
 }
 
 dependencies {
-    api(project(":mirai-core-api"))
-    api(`log4j-api`)
-    api(`log4j-core`)
-    api(`log4j-slf4j-impl`)
-
-
-    testImplementation(`slf4j-api`)
-    testImplementation(project(":mirai-core"))
-    testImplementation(project(":mirai-core-utils"))
-    testImplementation(`ktor-client-okhttp`)
+    api(project(":mirai-console.integration-test"))
+    compileOnly(`ktor-client-okhttp`)
 }
-
-configurePublishing("mirai-logging-log4j2")

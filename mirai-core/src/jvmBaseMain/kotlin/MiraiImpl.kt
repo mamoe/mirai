@@ -13,7 +13,7 @@ package net.mamoe.mirai.internal
 
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 

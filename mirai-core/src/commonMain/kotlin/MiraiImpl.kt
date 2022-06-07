@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -93,8 +94,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
-    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
-    override var Http: HttpClient = createDefaultHttpClient()
+    @Suppress("PrivatePropertyName")
+    private val httpClient: HttpClient = createDefaultHttpClient()
 
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -530,8 +531,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
         bot.asQQAndroidBot().run {
             val rep = network.run {
-                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                Mirai.Http.get<String> {
+                httpClient.get() {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                     parameter("bkn", client.wLoginSigInfo.bkn)
                     parameter("gc", groupId)
@@ -547,7 +547,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     }
                 }
             }
-            return json.decodeFromString(GroupActiveData.serializer(), rep)
+            return json.decodeFromString(GroupActiveData.serializer(), rep.bodyAsText())
         }
 
     @LowLevelApi
@@ -558,8 +558,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         type: GroupHonorType
     ): GroupHonorListData? = bot.asQQAndroidBot().run {
         val rep = network.run {
-            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-            Mirai.Http.get<String> {
+            httpClient.get {
                 url("https://qun.qq.com/interactive/honorlist")
                 parameter("gc", groupId)
                 parameter("type", type.value)
@@ -575,7 +574,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 }
             }
         }
-        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep)?.groupValues?.get(1)
+        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep.bodyAsText())?.groupValues?.get(1)
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
@@ -670,16 +669,17 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         seconds: Int
     ) {
         bot as QQAndroidBot
-        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-        val response = Mirai.Http.post<String> {
+        val response = httpClient.post {
             url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
-            body = MultiPartFormDataContent(formData {
-                append("anony_id", anonymousId)
-                append("group_code", groupId)
-                append("seconds", seconds)
-                append("anony_nick", anonymousNick)
-                append("bkn", bot.client.wLoginSigInfo.bkn)
-            })
+            setBody(
+                MultiPartFormDataContent(formData {
+                    append("anony_id", anonymousId)
+                    append("group_code", groupId)
+                    append("seconds", seconds)
+                    append("anony_nick", anonymousNick)
+                    append("bkn", bot.client.wLoginSigInfo.bkn)
+                })
+            )
             headers {
                 // ktor bug
                 append(
@@ -687,7 +687,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     "uin=o${bot.id}; skey=${bot.sKey};"
                 )
             }
-        }
+        }.bodyAsText()
         val jsonObj = Json.decodeFromString(JsonObject.serializer(), response)
         if ((jsonObj["retcode"] ?: jsonObj["cgicode"] ?: error("missing response code")).jsonPrimitive.long != 0L) {
             throw IllegalStateException(response)
@@ -828,8 +828,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         bot.asQQAndroidBot()
         when (val resp = bot.network.sendAndExpect(MultiMsg.ApplyDown(bot.client, 2, resourceId, 1))) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
-                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                val http = Mirai.Http
                 val origin = resp.origin
 
                 val data: ByteArray = if (origin.msgExternInfo?.channelType == 2) {
@@ -841,16 +839,16 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         resourceKind = resourceKind,
                         channelKind = ChannelKind.HTTP
                     ) { host, _ ->
-                        http.get("$host${origin.thumbDownPara}")
-                    }
+                        httpClient.get("$host${origin.thumbDownPara}")
+                    }.readBytes()
                 } else tryServersDownload(
                     bot = bot,
                     servers = origin.uint32DownIp.zip(origin.uint32DownPort),
                     resourceKind = resourceKind,
                     channelKind = ChannelKind.HTTP
                 ) { ip, port ->
-                    http.get("http://$ip:$port${origin.thumbDownPara}")
-                }
+                    httpClient.get("http://$ip:$port${origin.thumbDownPara}")
+                }.readBytes()
 
                 val body = data.read {
                     check(readByte() == 40.toByte()) {

@@ -14,7 +14,6 @@ package net.mamoe.mirai.utils
 import io.ktor.utils.io.bits.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
-import io.ktor.utils.io.streams.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -162,8 +161,7 @@ internal class FileNotFoundException(message: String, cause: Throwable? = null) 
 
 
 @Suppress("DEPRECATION")
-@OptIn(ExperimentalIoApi::class)
-internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : AbstractOutput() {
+internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : Output() {
     private var closed = false
 
     override fun flush(source: Memory, offset: Int, length: Int) {
@@ -171,7 +169,12 @@ internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : AbstractOutpu
         var currentOffset = offset
 
         while (currentOffset < end) {
-            val result = fwrite(source, currentOffset, end - currentOffset, file.cast())
+            val result = fwrite(
+                source.pointer + currentOffset.convert(),
+                sizeOf<ByteVar>().convert(),
+                (end - currentOffset).convert(),
+                file.cast()
+            ).convert<Int>()
             if (result == 0) {
                 throw PosixException.forErrno(posixFunctionName = "fwrite()").wrapIO()
             }
@@ -190,12 +193,16 @@ internal class PosixFileInstanceOutput(val file: CPointer<FILE>) : AbstractOutpu
 }
 
 @Suppress("DEPRECATION")
-@OptIn(ExperimentalIoApi::class)
-internal class PosixInputForFile(val file: CPointer<FILE>) : AbstractInput() {
+internal class PosixInputForFile(val file: CPointer<FILE>) : Input() {
     private var closed = false
 
     override fun fill(destination: Memory, offset: Int, length: Int): Int {
-        val size = fread(destination, offset, length, file.cast())
+        val size = fread(
+            destination.pointer + offset.convert(),
+            sizeOf<ByteVar>().convert(),
+            length.convert(),
+            file.cast()
+        ).toInt()
         if (size == 0) {
             if (feof(file) != 0) return 0
             throw PosixException.forErrno(posixFunctionName = "read()").wrapIO()
@@ -214,6 +221,5 @@ internal class PosixInputForFile(val file: CPointer<FILE>) : AbstractInput() {
     }
 }
 
-@OptIn(ExperimentalIoApi::class)
 public fun PosixException.wrapIO(): IOException =
     IOException("I/O operation failed due to posix error code $errno", this)

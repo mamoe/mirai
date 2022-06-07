@@ -95,7 +95,7 @@ private fun <T : JceStruct> ByteArray.doLoadAs(
             } catch (secondFailure: Exception) {
                 throw contextualBugReportException(
                     "解析 " + deserializer.descriptor.serialName,
-                    build.readText(),
+                    build.readAllText(),
                     ExceptionCollector.compressExceptions(originalException, secondFailure)
                 )
             }

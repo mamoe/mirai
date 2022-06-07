@@ -92,15 +92,15 @@ public interface IMirai : LowLevelApiAccessor {
      */
     public var FileCacheStrategy: FileCacheStrategy
 
-    /**
-     * Mirai 上传好友图片等使用的 Ktor [HttpClient].
-     * 默认使用 [OkHttp] 引擎, 连接超时为 30s.
-     *
-     * 覆盖后将会立即应用到全局.
-     */
-    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
-    @DeprecatedSinceMirai(warningSince = "2.11.0")
-    public var Http: HttpClient
+//    /**
+//     * Mirai 上传好友图片等使用的 Ktor [HttpClient].
+//     * 默认使用 [OkHttp] 引擎, 连接超时为 30s.
+//     *
+//     * 覆盖后将会立即应用到全局.
+//     */
+//    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
+//    @DeprecatedSinceMirai(warningSince = "2.11.0")
+//    public var Http: HttpClient
 
     /**
      * 获取 uin.

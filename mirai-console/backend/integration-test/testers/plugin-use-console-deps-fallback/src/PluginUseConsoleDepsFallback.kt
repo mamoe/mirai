@@ -22,7 +22,7 @@ public class PluginUseConsoleDepsFallback :
     override fun onEnable() {
         logger.info { "Plugin loaded" }
         logger.info {
-            HttpClient(OkHttp).toString()
+            HttpClient(OkHttp).toString() // dependency is compileOnly
         }
     }
 }
