@@ -387,6 +387,58 @@ class TestBuildPlugin : AbstractTest() {
         }
     }
 
+    @Test
+    @DisplayName("Ktor 2.x available")
+    fun `ktor 2_x`() {
+        tempDir.resolve("build.gradle").appendText(
+            """
+            dependencies {
+                implementation "io.ktor:ktor-client-core:2.0.0"
+            }
+        """.trimIndent()
+        )
+        gradleRunner()
+            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
+            .build()
+
+        ZipFile(findJar()).use { zipFile ->
+
+            val dpPrivate = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-private.txt")
+            ).use { it.readBytes().decodeToString() }
+
+            assertTrue { dpPrivate.contains("io.ktor:ktor-client-core:2.0.0") }
+            assertTrue { dpPrivate.contains("io.ktor:ktor-client-core-jvm:2.0.0") }
+        }
+    }
+
+    @Test
+    @DisplayName("can shadow special libraries that another used")
+    fun issue2070() {
+        tempDir.resolve("build.gradle").appendText(
+            """
+            dependencies {
+                 implementation("cn.hutool:hutool-extra:5.8.2")
+                 shadowLink("cn.hutool:hutool-core")
+            }
+        """.trimIndent()
+        )
+        gradleRunner()
+            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
+            .build()
+        ZipFile(findJar()).use { zipFile ->
+            assertNotNull(zipFile.getEntry("cn/hutool/core/annotation/Alias.class"))
+
+
+            val dpPrivate = zipFile.getInputStream(
+                zipFile.getEntry("META-INF/mirai-console-plugin/dependencies-private.txt")
+            ).use { it.readBytes().decodeToString() }
+
+            assertFalse { dpPrivate.contains("hutool-core") }
+        }
+
+    }
+
     private fun findJar(): File = tempDir.resolve("build/mirai").listFiles()!!.first { it.name.endsWith(".mirai2.jar") }
 
     private fun checkOutput() {
@@ -409,6 +461,7 @@ class TestBuildPlugin : AbstractTest() {
             assertTrue { dpPrivate.contains("com.zaxxer:SparseBitSet:1.2") }
             assertTrue { dpPrivate.contains("com.google.code.gson:gson:2.8.9") }
             assertFalse { dpPrivate.contains("org.slf4j:slf4j-simple") }
+            assertFalse { dpPrivate.contains("io.ktor") }
         }
 
     }

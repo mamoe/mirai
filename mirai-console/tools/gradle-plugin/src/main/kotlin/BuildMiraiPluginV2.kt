@@ -87,8 +87,12 @@ public open class BuildMiraiPluginV2 : Jar() {
                     if (dep is ProjectDependency) {
                         linkedDependencies.add("${dep.group}:${dep.name}")
                         subprojects_linked_fullpath.add(dep.dependencyProject.path)
-                        dep.dependencyProject.configurations.findByName("apiElements")?.allDependencies?.forEach { resolve0(it) }
-                        dep.dependencyProject.configurations.findByName("implementation")?.allDependencies?.forEach { resolve0(it) }
+                        dep.dependencyProject.configurations.findByName("apiElements")?.allDependencies?.forEach {
+                            resolve0(it)
+                        }
+                        dep.dependencyProject.configurations.findByName("implementation")?.allDependencies?.forEach {
+                            resolve0(it)
+                        }
                     }
                 }
                 resolve0(dep1)
@@ -143,14 +147,18 @@ public open class BuildMiraiPluginV2 : Jar() {
             val runtimeClasspath = project.configurations["runtimeClasspath"].resolvedConfiguration
             fun markAsResolved(resolvedDependency: ResolvedDependency) {
                 val depId = resolvedDependency.depId()
-                linkedDependencies.add(depId)
+                if (depId !in shadowedDependencies) {
+                    linkedDependencies.add(depId)
+                }
                 resolvedDependency.children.forEach { markAsResolved(it) }
             }
 
             fun linkDependencyTo(resolvedDependency: ResolvedDependency, dependencies: MutableCollection<String>) {
 
                 // bom files
-                if (resolvedDependency.allModuleArtifacts.any { it.extension == "jar" }) {
+                if (resolvedDependency.allModuleArtifacts.any { it.extension == "jar" }) kotlin.run link@{
+                    if (resolvedDependency.depId() in shadowedDependencies) return@link
+
                     dependencies.add(resolvedDependency.module.toString())
                 }
 
