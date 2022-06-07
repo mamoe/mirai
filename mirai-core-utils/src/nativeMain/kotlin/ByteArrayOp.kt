@@ -153,7 +153,7 @@ internal class ZlibInput(
     private val zlibHasPending: ((z_streamp) -> Boolean)?, // null lambda means operation not defined
     private val zlibFlushMode: (shouldFlushAll: Boolean) -> Int,
     private val zlibEnd: (z_streamp) -> Int,
-) : Input {
+) : Input() {
     private val z: z_stream = nativeHeap.alloc()
     // Zlib manual: https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-inflate-1.html
 
@@ -165,123 +165,73 @@ internal class ZlibInput(
         }
     }
 
-    @Deprecated(
-        "Not supported anymore. All operations are big endian by default. Use readXXXLittleEndian or readXXX then X.reverseByteOrder() instead.",
-        level = DeprecationLevel.ERROR
-    )
-    override var byteOrder: ByteOrder
-        get() = throw UnsupportedOperationException()
-        set(_) {
-            throw UnsupportedOperationException()
-        }
-
-    private var bufferReadableSize = 0
+    private var bufferReadableSize = 0L
     private val inputBuffer = nativeHeap.allocArray<ByteVar>(ZLIB_BUFFER_SIZE)
-    private val buffer = nativeHeap.allocArray<ByteVar>(ZLIB_BUFFER_SIZE)
-    private var bufferIndex = 0L
 
-    private var closed: Boolean = false
-
-    override val endOfInput: Boolean
-        get() = closed || !prepare()
+    private var closed = false
 
     override fun close() {
-        debug { "closing" }
         if (closed) return
-        this.closed = true
-
-        source.close()
-        zlibEnd(z.ptr)
-        nativeHeap.free(z)
-        nativeHeap.free(buffer)
+        closed = true
+        debug { "close" }
+        super.close()
+        debug { "freeing inputBuffer" }
         nativeHeap.free(inputBuffer)
+        debug { "freed" }
     }
 
-    override fun discard(n: Long): Long {
-        if (closed) {
-            return 0
-        }
-        val old = bufferIndex
-        if (old >= bufferReadableSize) {
-            if (prepare()) return discard(n)
-            return 0
-        }
-        bufferIndex = (bufferIndex + n).coerceAtMost(ZLIB_BUFFER_SIZE)
-        return bufferIndex - old
+    override fun closeSource() {
+        debug { "closeSource" }
+        source.close()
+        debug { "zlibEnd" }
+        zlibEnd(z.ptr)
+        debug { "zlibEnd done" }
     }
 
-    override fun peekTo(destination: Memory, destinationOffset: Long, offset: Long, min: Long, max: Long): Long {
-        debug()
-        debug { "peekTo" }
-        require(min <= max) { "min > max" }
-        if (!prepare()) return 0
-        val readableLength = (bufferReadableSize - bufferIndex - offset).coerceAtLeast(0)
-        if (offset > readableLength) {
-            if (min == 0L) {
-                throw EOFException("offset($offset) > readableLength($readableLength)")
-            }
-        }
-        if (min > readableLength) return 0
-        val len = readableLength.coerceAtMost(max).coerceAtMost(destination.size)
-        debug { "peekTo: read $len" }
-        buffer.copyTo(destination, bufferIndex + offset, len, destinationOffset)
+    override fun fill(destination: Memory, offset: Int, length: Int): Int {
+        require(offset in 0..destination.size32) { "invalid offset: $offset" }
+        require(length in 0..destination.size32) { "invalid length: $length" }
+        require(offset + length in 0..destination.size32) { "invalid offset and length: $offset, $length" }
 
-        return len
-    }
-
-    override fun readByte(): Byte {
-        if (!prepare()) {
-            throw EOFException("One more byte required")
-        }
-        return buffer[bufferIndex++]
-    }
-
-    override fun tryPeek(): Int {
-        if (!prepare()) {
-            return -1
-        }
-        return buffer[bufferIndex].toIntUnsigned()
-    }
-
-    private fun prepare(): Boolean {
-        if (closed) {
-            return false
-        }
-        debug { "prepare: bufferIndex = $bufferIndex, bufferReadableSize = $bufferReadableSize" }
-        if (bufferIndex < bufferReadableSize) {
-            debug { "prepare returned, because " }
-            return true // has buf unused
-        }
-
-        bufferIndex = 0
+        debug { "prepare:  bufferReadableSize = $bufferReadableSize" }
         debug { "prepare: previous value: z.avail_in=${z.avail_in}, z.avail_out=${z.avail_out}" }
 
-        if (z.avail_in == 0u) {
+        val filled = try {
+            if (z.avail_in == 0u) {
 
-            // These two cases are similar.
+                // These two cases are similar.
 //            if (z.avail_out == 0u) {
 //                // Last time we used all the output, there is either something cached in Zlib, or no further source.
 //            } else {
 //                // We did not use all the inputs, meaning least time we used all avail_in.
 //            }
 
-            // bot input and output are used
-            val flush = updateAvailIn() ?: return false
-            copyOutputsFromZlib(flush)
-        } else {
-            // Inputs not used up.
-            copyOutputsFromZlib(Z_NO_FLUSH)
-        }
+                // bot input and output are used
+                val flush = updateAvailIn() ?: return 0
+                copyOutputsFromZlib(destination, offset, length, flush)
+            } else {
+                // Inputs not used up.
+                copyOutputsFromZlib(destination, offset, length, Z_NO_FLUSH)
+            }
 
-        return true
+        } catch (e: Throwable) {
+            // If you throw this error up, ktor will somehow kill the process. (Ktor 2.0.2)
+            debug { e.printStackTrace(); "" }
+            return 0
+        }
+        check(filled in 0..length) { "Filled more than $length bytes: $filled" }
+        check(filled in 0..destination.size) { "Filled more than ${destination.size} bytes: $filled" }
+        return filled
     }
 
-    private fun copyOutputsFromZlib(flush: Int): Boolean {
-        z.avail_out = ZLIB_BUFFER_SIZE.toUInt()
-        z.next_out = buffer.reinterpret()
+    private fun copyOutputsFromZlib(memory: Memory, offset: Int, length: Int, flush: Int): Int {
+        debug { "copyOutputsFromZlib, memory.offset = $offset, memory.length=$length, memory.size=${memory.size}" }
+
+        z.avail_out = length.convert()
+        z.next_out = (memory.pointer + offset)!!.reinterpret()
 
         // We still have input, no need to update.
-        debug { "Set z.avail_out=${z.avail_out}, z.next_out=buffer.reinterpret()" }
+        debug { "Set z.avail_out=${z.avail_out}, z.next_out=(memory.pointer + offset)!!.reinterpret()" }
         debug { "Calling zlib, flush = $flush" }
 
         val p = zlibProcess(z.ptr, flush)
@@ -293,23 +243,23 @@ internal class ZlibInput(
             Z_NEED_DICT -> error("Zlib failed to process data. (Z_NEED_DICT)")
             else -> debug { "zlib: $p" }
         }
-        bufferReadableSize = (ZLIB_BUFFER_SIZE.toUInt() - z.avail_out).toInt()
+        val readSize = (length.toUInt() - z.avail_out).toInt()
 
-        debug { "Zlib produced bufferReadableSize=$bufferReadableSize  bytes" }
-        debug { "Partial output: ${buffer.readBytes(bufferReadableSize).toUHexString()}" }
+        debug { "Zlib produced readSize=$readSize  bytes" }
+//        debug { "Partial output: ${memory.readBytes(bufferReadableSize).toUHexString()}" }
         debug { "Now z.avail_in=${z.avail_in}, z.avail_out=${z.avail_out}" }
 
         if (p == Z_FINISH) {
             debug { "Zlib returned Z_FINISH. Ignoring result check." }
-            return true
+            return readSize
         }
 
         if (p == Z_STREAM_END) {
             debug { "Zlib returned Z_STREAM_END. Ignoring result check." }
-            return true
+            return readSize
         }
 
-        if (bufferReadableSize == 0 && (z.avail_in == 0u && source.endOfInput)) {
+        if (bufferReadableSize == 0L && (z.avail_in == 0u && source.endOfInput)) {
             if (zlibHasPending?.invoke(z.ptr) == true) {
                 // has pending. So the data must be incomplete.
                 error("Failed to process data, possibly bad data inputted.")
@@ -324,7 +274,7 @@ internal class ZlibInput(
             }
             // can't read
         }
-        return true
+        return readSize
     }
 
     private fun updateAvailIn(): Int? {
@@ -334,6 +284,7 @@ internal class ZlibInput(
             close() // automatically close
             return null // no more source available
         }
+        bufferReadableSize = read
         z.avail_in = read.toUInt()
         val flush = zlibFlushMode(read < ZLIB_BUFFER_SIZE || source.endOfInput)
         debug { "inputBuffer content: " + inputBuffer.readBytes(read.toInt()).toUHexString() }

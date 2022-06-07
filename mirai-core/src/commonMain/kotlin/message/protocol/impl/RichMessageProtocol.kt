@@ -140,7 +140,7 @@ internal class RichMessageProtocol : MessageProtocol() {
                 { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {
                 when (lightApp.data[0].toInt()) {
                     0 -> lightApp.data.decodeToString(startIndex = 1)
-                    1 -> lightApp.data.toReadPacket(offset = 1).inflateInput().readText()
+                    1 -> lightApp.data.toReadPacket(offset = 1).inflateInput().readAllText()
                     else -> error("unknown compression flag=${lightApp.data[0]}")
                 }
             }
@@ -159,7 +159,7 @@ internal class RichMessageProtocol : MessageProtocol() {
             val content = runWithBugReport("解析 richMsg", { richMsg.template1.toUHexString() }) {
                 when (richMsg.template1[0].toInt()) {
                     0 -> richMsg.template1.decodeToString(startIndex = 1)
-                    1 -> richMsg.template1.toReadPacket(offset = 1).inflateInput().readText()
+                    1 -> richMsg.template1.toReadPacket(offset = 1).inflateInput().readAllText()
                     else -> error("unknown compression flag=${richMsg.template1[0]}")
                 }
             }

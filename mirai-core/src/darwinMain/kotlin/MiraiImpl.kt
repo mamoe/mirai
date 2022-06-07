@@ -10,11 +10,11 @@
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
-import io.ktor.client.engine.ios.*
-import io.ktor.client.features.*
+import io.ktor.client.engine.darwin.*
+import io.ktor.client.plugins.*
 
 internal actual fun createDefaultHttpClient(): HttpClient {
-    return HttpClient(Ios) {
+    return HttpClient(Darwin) {
         install(HttpTimeout) {
             this.requestTimeoutMillis = 30_0000
             this.connectTimeoutMillis = 30_0000

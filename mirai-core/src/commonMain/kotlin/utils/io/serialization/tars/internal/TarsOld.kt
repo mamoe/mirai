@@ -97,7 +97,6 @@ internal class TarsOld internal constructor(
      * From: com.qq.taf.Tars.TarsOutputStream
      */
     @Suppress("unused", "MemberVisibilityCanBePrivate")
-    @OptIn(ExperimentalIoApi::class)
     private open inner class TarsEncoder(
         val output: BytePacketBuilder,
     ) : TaggedEncoder<Int>() {

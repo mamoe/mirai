@@ -16,7 +16,6 @@ package net.mamoe.mirai.internal.contact
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
@@ -27,6 +26,7 @@ import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.protocol.outgoing.FriendMessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.highway.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -93,6 +93,7 @@ internal class FriendImpl(
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.convert(
         resource
     ).useAutoClose { res ->
+
         var audio: OfflineAudioImpl? = null
         kotlin.runCatching {
             val resp = Highway.uploadResourceBdh(
@@ -133,8 +134,8 @@ internal class FriendImpl(
                         ResourceKind.GROUP_AUDIO,
                         ChannelKind.HTTP
                     ) { ip, port ->
-                        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                        Mirai.Http.postPtt(ip, port, res, resp.uKey, resp.fileKey)
+                        bot.components[HttpClientProvider].getHttpClient()
+                            .postPtt(ip, port, res, resp.uKey, resp.fileKey)
                     }
                     audio = OfflineAudioImpl(
                         filename = "${res.md5.toUHexString("")}.amr",

@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
@@ -27,6 +26,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrateg
 import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.components.ClockHolder
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
@@ -202,7 +202,7 @@ internal sealed class AbstractUser(
                         resourceKind = PRIVATE_IMAGE,
                         channelKind = ChannelKind.HTTP
                     ) { ip, port ->
-                        @Suppress("DEPRECATION", "DEPRECATION_ERROR") Mirai.Http.postImage(
+                        bot.components[HttpClientProvider].getHttpClient().postImage(
                             serverIp = ip,
                             serverPort = port,
                             htcmd = "0x6ff0070",
@@ -214,7 +214,7 @@ internal sealed class AbstractUser(
                     }
                 }.recoverCatchingSuppressed {
                     // try upload by http on fallback server
-                    @Suppress("DEPRECATION", "DEPRECATION_ERROR") Mirai.Http.postImage(
+                    bot.components[HttpClientProvider].getHttpClient().postImage(
                         serverIp = "htdata2.qq.com",
                         htcmd = "0x6ff0070",
                         uin = bot.id,
