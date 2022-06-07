@@ -39,7 +39,7 @@ jobs:
 
       - name: Check
         run: >
-          ./gradlew check --scan
+          ./gradlew check --scan --no-parallel
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
