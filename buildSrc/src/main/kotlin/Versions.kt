@@ -31,7 +31,7 @@ object Versions {
     const val coroutines = "1.6.2"
     const val atomicFU = "0.17.2"
     const val serialization = "1.3.2"
-    const val ktor = "1.6.8"
+    const val ktor = "2.0.2"
 
     const val binaryValidator = "0.4.0"
 
@@ -110,7 +110,7 @@ val `ktor-client-core` = ktor("client-core", Versions.ktor)
 val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
 val `ktor-client-mock` = ktor("client-mock", Versions.ktor)
 val `ktor-client-curl` = ktor("client-curl", Versions.ktor)
-val `ktor-client-ios` = ktor("client-ios", Versions.ktor)
+val `ktor-client-darwin` = ktor("client-darwin", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-client-logging` = ktor("client-logging", Versions.ktor)

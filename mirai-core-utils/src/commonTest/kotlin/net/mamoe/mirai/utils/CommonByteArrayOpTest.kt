@@ -220,7 +220,7 @@ internal open class CommonByteArrayOpTest {
         val result =
             "1F 8B 08 00 00 00 00 00 00 FF 2B 74 CF F3 32 0C 2A 72 73 B6 04 00 A8 35 6D D9 0A 00 00 00".hexToBytes()
                 .toReadPacket(release = { released = true }).let { input ->
-                    GzipDecompressionInput(input).readText().also {
+                    GzipDecompressionInput(input).readAllText().also {
                         assertEquals(true, input.endOfInput)
                         assertEquals(true, released)
                     }
@@ -278,7 +278,7 @@ internal open class CommonByteArrayOpTest {
         val result =
             "78 9C 2B 74 CF F3 32 0C 2A 72 73 B6 04 00 12 82 03 28".hexToBytes()
                 .toReadPacket(release = { released = true }).let { input ->
-                    InflateInput(input).readText().also {
+                    InflateInput(input).readAllText().also {
                         assertEquals(true, input.endOfInput)
                         assertEquals(true, released)
                     }

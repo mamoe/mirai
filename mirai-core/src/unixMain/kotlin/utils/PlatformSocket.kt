@@ -55,7 +55,6 @@ internal actual class PlatformSocket(
         writeBuffer.unpin()
     }
 
-    @OptIn(ExperimentalIoApi::class)
     actual suspend fun send(packet: ByteArray, offset: Int, length: Int): Unit = writeLock.withLock {
         withContext(sendDispatcher) {
             require(offset >= 0) { "offset must >= 0" }
@@ -72,7 +71,6 @@ internal actual class PlatformSocket(
     /**
      * @throws SendPacketInternalException
      */
-    @OptIn(ExperimentalIoApi::class)
     actual override suspend fun send(packet: ByteReadPacket): Unit = writeLock.withLock {
         withContext(sendDispatcher) {
             logger.info { "Native socket sending: len=${packet.remaining}" }
