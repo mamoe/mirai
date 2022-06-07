@@ -96,7 +96,6 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun downloadLongMessage (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getBotFactory ()Lnet/mamoe/mirai/BotFactory;
 	public abstract fun getFileCacheStrategy ()Lnet/mamoe/mirai/utils/FileCacheStrategy;
-	public abstract fun getHttp ()Lio/ktor/client/HttpClient;
 	public fun getOnlineOtherClientsList (Lnet/mamoe/mirai/Bot;Z)Ljava/util/List;
 	public abstract fun getOnlineOtherClientsList (Lnet/mamoe/mirai/Bot;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getOnlineOtherClientsList$default (Lnet/mamoe/mirai/IMirai;Lnet/mamoe/mirai/Bot;ZILjava/lang/Object;)Ljava/util/List;
@@ -125,7 +124,6 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public fun sendNudge (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/action/Nudge;Lnet/mamoe/mirai/contact/Contact;)Z
 	public abstract fun sendNudge (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/message/action/Nudge;Lnet/mamoe/mirai/contact/Contact;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setFileCacheStrategy (Lnet/mamoe/mirai/utils/FileCacheStrategy;)V
-	public abstract fun setHttp (Lio/ktor/client/HttpClient;)V
 }
 
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {

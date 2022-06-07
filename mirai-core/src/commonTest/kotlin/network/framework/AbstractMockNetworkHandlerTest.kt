@@ -76,6 +76,7 @@ internal abstract class AbstractMockNetworkHandlerTest : AbstractNetworkHandlerT
         set(ImagePatcher, TestImagePatcher())
         set(PacketLoggingStrategy, PacketLoggingStrategyImpl(bot))
         set(AccountSecretsManager, MemoryAccountSecretsManager())
+        set(HttpClientProvider, HttpClientProviderImpl())
     }
 
     fun NetworkHandler.assertState(state: NetworkHandler.State) {

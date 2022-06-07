@@ -11,27 +11,15 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.*
-import net.mamoe.mirai.Mirai
 
 internal abstract class TxCaptchaHelper {
-    private val newClient: Boolean
-    val client: HttpClient
+    private val newClient: Boolean = true
+    val client: HttpClient = HttpClient()
     private lateinit var queue: Job
 
-    init {
-        var newClient = false
-        client = try {
-            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-            Mirai.Http
-        } catch (ignore: Throwable) {
-            newClient = true
-            HttpClient()
-        }
-        this.newClient = newClient
-    }
-
-    internal var latestDisplay = "Sending request..."
+    private var latestDisplay = "Sending request..."
 
     abstract fun onComplete(ticket: String)
     abstract fun updateDisplay(msg: String)
@@ -42,7 +30,7 @@ internal abstract class TxCaptchaHelper {
             updateDisplay(latestDisplay)
             while (isActive) {
                 try {
-                    val response: String = client.get(url0)
+                    val response: String = client.get(url0).bodyAsText()
                     if (response.startsWith("请在")) {
                         if (response != latestDisplay) {
                             latestDisplay = response
