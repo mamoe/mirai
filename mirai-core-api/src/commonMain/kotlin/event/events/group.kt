@@ -187,7 +187,7 @@ public data class GroupNameChangeEvent @MiraiInternalApi constructor(
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
  */
-@DeprecatedSinceMirai(warningSince = "2.11")
+@DeprecatedSinceMirai(warningSince = "2.12")
 @Deprecated("This event is not being triggered anymore.", level = DeprecationLevel.WARNING)
 public data class GroupEntranceAnnouncementChangeEvent @MiraiInternalApi constructor(
     public override val origin: String,
