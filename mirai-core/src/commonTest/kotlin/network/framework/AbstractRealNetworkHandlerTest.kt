@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.network.handler.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import network.framework.components.TestEventDispatcherImpl
@@ -58,7 +59,9 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     @AfterTest
     fun afterEach() {
+        println("Test finished, closing Bot")
         if (botInit) bot.close()
+        runBlockingUnit { bot.join() }
     }
 
     protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
@@ -94,6 +97,8 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     @AfterTest
     private fun cancelJob() {
         eventDispatcherJob.cancel()
+        println("Test finished, joining eventDispatcherJob")
+        runBlockingUnit { eventDispatcherJob.join() }
     }
 
     /**
