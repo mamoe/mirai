@@ -280,11 +280,8 @@ internal abstract class NetworkHandlerSupport(
     private val lock = reentrantLock()
     internal val lockForSetStateWithOldInstance = SynchronizedObject()
 
-    /**
-     * Temp instance to check for overriding. See usage.
-     */
     @Volatile
-    private lateinit var newState: BaseStateImpl
+    private var changingState: KClass<out BaseStateImpl>? = null
 
     /**
      * This can only be called by [setState] or in tests. Note:
@@ -297,32 +294,41 @@ internal abstract class NetworkHandlerSupport(
             if (old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
             if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
 
-            val stateObserver = context.getOrNull(StateObserver)
-
-            val impl = try {
-                new()
-            } catch (e: Throwable) {
-                stateObserver?.exceptionOnCreatingNewState(this, old, e)
-                throw e
+            val changingState = changingState
+            if (changingState != null) {
+                if (changingState == newType) {
+                    // no duplicates
+                    return null
+                } else {
+                    error("New state ${newType.simpleName} clashes with current switching process, changingState = ${changingState.simpleName}.")
+                }
             }
 
-            // `impl.startState()` may set another state, then this `newState` will be updated.
-            newState = impl
+            this.changingState = newType
 
             try {
-                check(old !== impl) { "Old and new states cannot be the same." }
 
-                stateObserver?.beforeStateChanged(this, old, impl)
+                val stateObserver = context.getOrNull(StateObserver)
 
-                // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
-                // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
-                impl.startState() // launch jobs
-            } catch (e: Throwable) {
-                throw e
-            }
+                val impl = try {
+                    new()
+                } catch (e: Throwable) {
+                    stateObserver?.exceptionOnCreatingNewState(this, old, e)
+                    throw e
+                }
 
-            val newState = newState
-            if (newState === impl) {
+                try {
+                    check(old !== impl) { "Old and new states cannot be the same." }
+
+                    stateObserver?.beforeStateChanged(this, old, impl)
+
+                    // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
+                    // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
+                    impl.startState() // launch jobs
+                } catch (e: Throwable) {
+                    throw e
+                }
+
                 // No further change
 
                 _state = impl // update current state
@@ -333,12 +339,11 @@ internal abstract class NetworkHandlerSupport(
 
                 stateObserver?.stateChanged(this, old, impl) // notify observer
                 _stateChannel.trySend(impl.correspondingState) // notify selector
-            } else {
-                // The newer change prevails, so cancel this.
-                impl.cancel(StateSwitchingException(impl, newState))
-            }
 
-            return@withLock impl
+                return@withLock impl
+            } finally {
+                this.changingState = null
+            }
         }
 
     final override suspend fun resumeConnection() {
