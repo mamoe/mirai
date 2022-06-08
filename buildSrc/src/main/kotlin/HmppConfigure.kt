@@ -12,6 +12,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import java.io.File
 
 private val miraiPlatform = Attribute.of(
@@ -297,6 +299,20 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         kotlinOptions.freeCompilerArgs += listOf(
             "-Xoverride-konan-properties=$properties"
         )
+    }
+
+    NATIVE_TARGETS.forEach { targetName ->
+        val target = targets.getByName(targetName) as KotlinNativeTarget
+        if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
+            target.binaries.test(listOf(NativeBuildType.RELEASE)) {
+                // add release test to run on CI
+                project.afterEvaluate {
+                    // use linkReleaseTestMingwX64 for mingwX64Test to save memory
+                    tasks.getByName("mingwX64Test", KotlinNativeTest::class)
+                        .executable(linkTask) { linkTask.binary.outputFile }
+                }
+            }
+        }
     }
 
     jvmBaseMain.dependsOn(commonMain)

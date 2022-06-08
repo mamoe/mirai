@@ -11,8 +11,6 @@
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
     kotlin("multiplatform")
@@ -116,17 +114,6 @@ kotlin {
                     this.defFile = defFile
                     packageName("openssl")
                 }
-
-            if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
-                target.binaries.test(listOf(NativeBuildType.RELEASE)) {
-                    // add release test to run on CI
-                    afterEvaluate {
-                        // use linkReleaseTestMingwX64 for mingwX64Test to save memory
-                        tasks.getByName("mingwX64Test", KotlinNativeTest::class)
-                            .executable(linkTask) { linkTask.binary.outputFile }
-                    }
-                }
-            }
         }
 
         UNIX_LIKE_TARGETS.forEach { target ->
