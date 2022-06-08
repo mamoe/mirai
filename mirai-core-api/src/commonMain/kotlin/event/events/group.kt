@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -24,6 +24,7 @@ import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.atomic.AtomicBoolean
@@ -186,6 +187,8 @@ public data class GroupNameChangeEvent @MiraiInternalApi constructor(
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
  */
+@DeprecatedSinceMirai(warningSince = "2.11")
+@Deprecated("This event is not being triggered anymore.", level = DeprecationLevel.WARNING)
 public data class GroupEntranceAnnouncementChangeEvent @MiraiInternalApi constructor(
     public override val origin: String,
     public override val new: String,
