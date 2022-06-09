@@ -10,6 +10,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
+import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractNativeLibrary
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -114,6 +115,11 @@ kotlin {
                     this.defFile = defFile
                     packageName("openssl")
                 }
+
+            configure(target.binaries.filterIsInstance<AbstractNativeLibrary>()) {
+                export(project(":mirai-core-api"))
+                export(project(":mirai-core-utils"))
+            }
         }
 
         UNIX_LIKE_TARGETS.forEach { target ->
