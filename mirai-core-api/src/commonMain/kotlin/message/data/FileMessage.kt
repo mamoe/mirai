@@ -31,6 +31,7 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 /**
  * 文件消息.
@@ -132,5 +133,6 @@ internal open class FallbackFileMessageSerializer constructor(serialName: String
  * @since 2.5
  */
 @JvmSynthetic
+@CName("", "FileMessage_new")
 public inline fun FileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage =
     FileMessage.create(id, internalId, name, size)

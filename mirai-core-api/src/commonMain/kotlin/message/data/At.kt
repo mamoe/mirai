@@ -27,6 +27,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 
 /**
@@ -87,6 +88,7 @@ public data class At(
  * @see Member.at
  */
 @JvmSynthetic
+@CName("", "At_new")
 public inline fun At(user: UserOrBot): At = At(user.id)
 
 /**
