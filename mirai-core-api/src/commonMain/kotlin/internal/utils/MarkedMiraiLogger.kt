@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.jvm.JvmName
+import kotlin.native.CName
 
 /**
  * 内部添加 [Marker] 支持, 并兼容旧 [MiraiLogger] API.
@@ -44,7 +45,8 @@ internal val MiraiLogger.markerOrNull get() = (this as? MarkedMiraiLogger)?.mark
  * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
  */
 @JvmName("subLoggerImpl2")
-internal fun MiraiLogger.subLoggerImpl(name: String): MiraiLogger {
+@CName("", "subLogger2")
+internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
     return subLoggerImpl(this, name)
 }
 

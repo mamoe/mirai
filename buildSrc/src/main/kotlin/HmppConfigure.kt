@@ -324,7 +324,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
                 baseName = project.name.toLowerCase().replace("-", "")
             }
         }
-        if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
+        if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS && targetName == "mingwX64") {
             target.binaries.test(listOf(NativeBuildType.RELEASE)) {
                 // add release test to run on CI
                 project.afterEvaluate {
