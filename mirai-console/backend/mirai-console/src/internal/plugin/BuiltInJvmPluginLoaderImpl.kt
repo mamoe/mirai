@@ -280,7 +280,7 @@ internal class BuiltInJvmPluginLoaderImpl(
             // Extra space for logging align
             logger.verbose { "Enabled  plugin ${plugin.description.smartToString()}" }
         }.getOrElse {
-            throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
+            throw PluginLoadException("Exception while enabling ${plugin.description.name}", it)
         }
     }
 
