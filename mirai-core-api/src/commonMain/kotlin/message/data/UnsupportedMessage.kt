@@ -25,6 +25,7 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 /**
  * mirai 尚未支持的消息类型.
@@ -80,4 +81,5 @@ public interface UnsupportedMessage : MessageContent {
  * @see UnsupportedMessage.create
  */
 @JvmSynthetic
+@CName("", "UnsupportedMessage_new")
 public inline fun UnsupportedMessage(struct: ByteArray): UnsupportedMessage = UnsupportedMessage.create(struct)

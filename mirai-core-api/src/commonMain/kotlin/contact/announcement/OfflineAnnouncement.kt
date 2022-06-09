@@ -24,6 +24,7 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 /**
  * 表示在本地构建的 [Announcement].
@@ -94,6 +95,7 @@ public sealed interface OfflineAnnouncement : Announcement {
  * 依据 [from] 创建 [OfflineAnnouncement]. 若 [from] 类型为 [OfflineAnnouncement] 则直接返回 [from].
  * @since 2.7
  */
+@CName("", "OfflineAnnouncement_new")
 public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
     OfflineAnnouncement.from(from)
 
@@ -103,6 +105,7 @@ public inline fun OfflineAnnouncement(from: Announcement): OfflineAnnouncement =
  * @param parameters 可选的附加参数
  * @since 2.7
  */
+@CName("", "OfflineAnnouncement_new2")
 public inline fun OfflineAnnouncement(
     content: String,
     parameters: AnnouncementParameters = AnnouncementParameters.DEFAULT
@@ -115,6 +118,7 @@ public inline fun OfflineAnnouncement(
  * @see AnnouncementParametersBuilder
  * @since 2.7
  */
+@CName("", "OfflineAnnouncement_new3")
 public inline fun OfflineAnnouncement(
     content: String,
     parameters: AnnouncementParametersBuilder.() -> Unit

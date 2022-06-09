@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.*
+import kotlin.native.CName
 import kotlin.time.Duration
 
 /**
@@ -483,6 +484,7 @@ public expect open class BotConfiguration() { // open for Java
  * @since 2.3
  */
 @JvmSynthetic
+@CName("", "BotConfiguration_new2")
 public inline fun BotConfiguration(block: BotConfiguration.() -> Unit): BotConfiguration {
     return BotConfiguration().apply(block)
 }

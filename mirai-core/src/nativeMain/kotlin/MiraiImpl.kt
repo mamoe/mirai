@@ -17,7 +17,9 @@ import net.mamoe.mirai.internal.utils.MiraiCoreServices
 /**
  * 初始化 Mirai Native 平台. 必须先调用此 API, 其他 API 才能正常工作.
  */
+@CName("mirai_init")
 public fun initMirai() {
+    initRuntimeIfNeeded()
     _MiraiImpl_static_init()
 }
 
