@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.dependencies
 import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
@@ -263,6 +264,15 @@ internal class BuiltInJvmPluginLoaderImpl(
         ensureActive()
         runCatching {
             logger.verbose { "Enabling plugin ${plugin.description.smartToString()}" }
+
+            val loadedPlugins = PluginManager.plugins
+            val failedDependencies = plugin.dependencies.asSequence().mapNotNull { dep ->
+                loadedPlugins.firstOrNull { it.id == dep.id }
+            }.filterNot { it.isEnabled }.toList()
+            if (failedDependencies.isNotEmpty()) {
+                throw IllegalStateException("Failed to enable '${plugin.name}' because dependencies not enabled: " + failedDependencies.joinToString { "'${it.name}'" })
+            }
+
             if (plugin is JvmPluginInternal) {
                 plugin.internalOnEnable()
             } else plugin.onEnable()

@@ -20,7 +20,8 @@ import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.plugin.*
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
@@ -32,7 +33,7 @@ import net.mamoe.mirai.utils.safeCast
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 
@@ -120,15 +121,6 @@ internal abstract class JvmPluginInternal(
 
         val except = javaClass.getDeclaredAnnotation(ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable::class.java)
         kotlin.runCatching {
-
-            val loadedPlugins = PluginManager.plugins
-            val failedDependencies = dependencies.asSequence().mapNotNull { dep ->
-                loadedPlugins.firstOrNull { it.id == dep.id }
-            }.filterNot { it.isEnabled }.toList()
-            if (failedDependencies.isNotEmpty()) {
-                throw IllegalStateException("Failed to enable '${this@JvmPluginInternal.name}' because dependencies not enabled: " + failedDependencies.joinToString { "'${it.name}'" })
-            }
-
             onEnable()
         }.fold(
             onSuccess = {
