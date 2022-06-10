@@ -15,24 +15,8 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
 internal class TimeTest {
-    @Suppress("DEPRECATION_ERROR")
-    @ExperimentalTime
-    @Test
-    fun testTimeHumanReadable() {
-        val time0 = 1.toDuration(DurationUnit.DAYS) +
-                20.toDuration(DurationUnit.HOURS) +
-                15.toDuration(DurationUnit.MINUTES) +
-                2057.toDuration(DurationUnit.MILLISECONDS)
-        println(time0.toHumanReadableString())
-        assertTrue { time0.toHumanReadableString() == "1d 20h 15min 2.057s" }
-        val time1 = 1.toDuration(DurationUnit.DAYS) + 59.toDuration(DurationUnit.MINUTES)
-        println(time1.toHumanReadableString())
-        assertTrue { time1.toHumanReadableString() == "1d 59min 0.0s" }
-    }
-
     // since 2.7
     @OptIn(ExperimentalTime::class)
-    @Suppress("DEPRECATION_ERROR")
     @Test
     fun testTimeHumanReadable2() {
         val time0 = (1.toDuration(DurationUnit.DAYS) +

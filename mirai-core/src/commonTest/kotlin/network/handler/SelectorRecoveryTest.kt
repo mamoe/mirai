@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.handler
@@ -18,11 +18,26 @@ import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTestWithSelecto
 import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.impl.netty.NettyChannelException
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.IOException
+import org.junit.jupiter.api.TestInfo
 import kotlin.test.assertFails
 
+/**
+ * Test whether the selector can recover the connection after first successful login.
+ */
 internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
+    @BeforeEach
+    fun beforeTest(info: TestInfo) {
+        println("=".repeat(30) + "BEGIN: ${info.displayName}" + "=".repeat(30))
+    }
+
+    @AfterEach
+    fun afterTest(info: TestInfo) {
+        println("=".repeat(31) + "END: ${info.displayName}" + "=".repeat(31))
+    }
+
     @Test
     fun `stop on manual close`() = runBlockingUnit {
         network.resumeConnection()
@@ -35,22 +50,11 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
      * @see HeartbeatFailedException
      */
     @Test
-    fun `can recover on heartbeat failure with IOException`() = runBlockingUnit {
-        // We allow IOException to cause a reconnect.
-        testRecoverWhenHeartbeatFailWith { IOException("test IO ex") }
-
-        // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
-        assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.LOADING, NetworkHandler.State.OK)
-    }
-
-    /**
-     * Emulates system hibernation and network failure.
-     * @see HeartbeatFailedException
-     */
-    @Test
     fun `can recover on heartbeat failure with NettyChannelException`() = runBlockingUnit {
-        // We allow IOException to cause a reconnect.
+        // We allow NetworkException to cause a reconnect.
         testRecoverWhenHeartbeatFailWith { NettyChannelException("test IO ex") }
+
+        bot.components[EventDispatcher].joinBroadcast() // Wait our async connector to complete.
 
         // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
         assertState(NetworkHandler.State.CONNECTING, NetworkHandler.State.LOADING, NetworkHandler.State.OK)
@@ -79,9 +83,12 @@ internal class SelectorRecoveryTest : AbstractNettyNHTestWithSelector() {
         overrideComponents[HeartbeatScheduler] = heartbeatScheduler
 
         bot.login()
+        // Now first login succeed.
         bot.network.context[EventDispatcher].joinBroadcast()
         assertState(NetworkHandler.State.OK)
 
+        println("1")
         heartbeatScheduler.onHeartFailure("Test", exception())
+        println("2")
     }
 }

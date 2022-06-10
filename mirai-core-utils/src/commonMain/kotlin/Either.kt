@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "unused")
@@ -137,6 +137,18 @@ public value class Either<out L : Any, out R : Any?> private constructor(
             onLeft = { Result.failure(it) },
             onRight = { Result.success(it) }
         )
+
+        /**
+         * Invoke and return [block] if the backing value of this [Either] is null. Returns `this` otherwise.
+         */
+        public inline fun <reified L : SuperL, reified R : SuperR, SuperL : Any, SuperR> Either<L, R?>.flatMapNull(
+            block: () -> Either<SuperL, SuperR?>
+        ): Either<SuperL, SuperR?> {
+            if (this.leftOrNull == null && this.rightOrNull == null) {
+                return block()
+            }
+            return this
+        }
 
         @PublishedApi
         internal fun getTypeHint(value: Any?): String {

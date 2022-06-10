@@ -15,8 +15,11 @@ package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.event.EventPriority
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.message.data.MessageChain
@@ -48,9 +51,15 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
     priority: EventPriority = EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
-    return syncFromEvent<P, P>(timeoutMillis, priority) {
-        takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
-    }.message
+    val mapper: suspend (P) -> P? = createMapper(filter)
+
+    return (if (timeoutMillis == -1L) {
+        GlobalEventChannel.syncFromEvent(priority, mapper)
+    } else {
+        withTimeout(timeoutMillis) {
+            GlobalEventChannel.syncFromEvent(priority, mapper)
+        }
+    }).message
 }
 
 /**
@@ -71,10 +80,28 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
-    return syncFromEventOrNull<P, P>(timeoutMillis, priority) {
-        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
-    }?.message
+
+    val mapper: suspend (P) -> P? = createMapper(filter)
+
+    return (if (timeoutMillis == -1L) {
+        GlobalEventChannel.syncFromEvent(priority, mapper)
+    } else {
+        withTimeoutOrNull(timeoutMillis) {
+            GlobalEventChannel.syncFromEvent(priority, mapper)
+        }
+    })?.message
 }
+
+/**
+ * @since 2.10
+ */
+@PublishedApi // inline, safe to remove in the future
+internal inline fun <reified P : MessageEvent> P.createMapper(crossinline filter: suspend P.(P) -> Boolean): suspend (P) -> P? =
+    mapper@{ event ->
+        if (!event.isContextIdenticalWith(this)) return@mapper null
+        if (!filter(event, event)) return@mapper null
+        event
+    }
 
 /**
  * @see nextMessage

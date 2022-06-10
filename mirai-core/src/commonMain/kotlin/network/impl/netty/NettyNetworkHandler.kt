@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.impl.netty
@@ -22,6 +22,8 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.*
@@ -52,14 +54,27 @@ internal open class NettyNetworkHandler(
     // exception handling
     ///////////////////////////////////////////////////////////////////////////
     protected open fun handleExceptionInDecoding(error: Throwable) {
-        if (error is OicqDecodingException) {
-            if (error.targetException is EOFException) return
+        fun passToExceptionHandler() {
+            // Typically, just log the exception
+            coroutineContext[CoroutineExceptionHandler]!!.handleException(
+                coroutineContext,
+                ExceptionInPacketCodecException(error.unwrap<PacketCodecException>())
+            )
         }
 
-        coroutineContext[CoroutineExceptionHandler]!!.handleException(
-            coroutineContext,
-            ExceptionInPacketCodecException(error.unwrap<OicqDecodingException>())
-        )
+        if (error is PacketCodecException) {
+            if (error.targetException is EOFException) return
+            when (error.kind) {
+                PacketCodecException.Kind.SESSION_EXPIRED -> {
+                    setState { StateClosed(error) }
+                    return
+                }
+                PacketCodecException.Kind.PROTOCOL_UPDATED -> passToExceptionHandler()
+                PacketCodecException.Kind.OTHER -> passToExceptionHandler()
+            }
+        }
+
+        passToExceptionHandler()
     }
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
@@ -244,14 +259,16 @@ internal open class NettyNetworkHandler(
          */
         private val collectiveExceptions: ExceptionCollector,
     ) : NettyState(State.CONNECTING) {
-        private val connection = async {
-            createConnection()
-        }
+        private lateinit var connection: Deferred<io.netty.channel.Channel>
 
         @Suppress("JoinDeclarationAndAssignment")
-        private val connectResult: Deferred<Unit>
+        private lateinit var connectResult: Deferred<Unit>
 
-        init {
+        override fun startState() {
+            connection = async {
+                createConnection()
+            }
+
             connectResult = async {
                 connection.join()
                 context[SsoProcessor].login(this@NettyNetworkHandler)
@@ -260,6 +277,9 @@ internal open class NettyNetworkHandler(
                 if (error == null) {
                     this@NettyNetworkHandler.launch { resumeConnection() }
                 } else {
+                    // failed in SSO stage
+                    context[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
+
                     if (error is StateSwitchingException && error.new is StateConnecting) {
                         return@invokeOnCompletion // state already switched, so do not do it again.
                     }
@@ -300,7 +320,8 @@ internal open class NettyNetworkHandler(
     protected inner class StateLoading(
         private val connection: NettyChannel,
     ) : NettyState(State.LOADING) {
-        init {
+
+        override fun startState() {
             coroutineContext.job.invokeOnCompletion {
                 if (it != null) {
                     connection.close()
@@ -333,7 +354,7 @@ internal open class NettyNetworkHandler(
         private val connection: NettyChannel,
         private val configPush: Job,
     ) : NettyState(State.OK) {
-        init {
+        override fun startState() {
             coroutineContext.job.invokeOnCompletion { err ->
                 if (err is StateSwitchingException) {
                     if (err.new.correspondingState == State.CLOSED) {
@@ -370,10 +391,16 @@ internal open class NettyNetworkHandler(
         override fun toString(): String = "StateOK"
     }
 
+    /**
+     * 这会永久关闭这个 [NettyNetworkHandler], 但通常 bot 会使用 [NetworkHandlerSelector], selector 会创建新的 [NettyNetworkHandler] 来恢复连接.
+     *
+     * 备注: selector 会恢复连接, 当且仅当 [exception] 类型是 [NetworkException] 且 [NetworkException.recoverable] 为 `true`.
+     */
     protected inner class StateClosed(
         val exception: Throwable?,
     ) : NettyState(State.CLOSED) {
-        init {
+
+        override fun afterUpdated() {
             close(exception)
         }
 

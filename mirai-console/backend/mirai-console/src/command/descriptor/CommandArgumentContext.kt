@@ -23,6 +23,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import java.time.*
+import java.time.temporal.TemporalAccessor
 import java.util.*
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
@@ -93,6 +95,35 @@ public interface CommandArgumentContext {
         override fun toList(): List<ParserPair<*>> = emptyList()
     }
 
+    private object TemporalCommandArgumentContext : CommandArgumentContext {
+        private val cache = HashMap<KClass<*>, CommandValueArgumentParser<*>>()
+
+        private fun <T : TemporalAccessor> put(kClass: KClass<T>, now: () -> T, parse: (CharSequence) -> T) {
+            cache[kClass] = TemporalArgumentParser(kClass.java, now, parse)
+        }
+
+        init {
+            put(Instant::class, Instant::now, Instant::parse)
+            put(Year::class, Year::now, Year::parse)
+            put(YearMonth::class, YearMonth::now, YearMonth::parse)
+            put(LocalDate::class, LocalDate::now, LocalDate::parse)
+            put(LocalTime::class, LocalTime::now, LocalTime::parse)
+            put(LocalDateTime::class, LocalDateTime::now, LocalDateTime::parse)
+            put(OffsetTime::class, OffsetTime::now, OffsetTime::parse)
+            put(OffsetDateTime::class, OffsetDateTime::now, OffsetDateTime::parse)
+            put(ZonedDateTime::class, ZonedDateTime::now, ZonedDateTime::parse)
+            put(MonthDay::class, MonthDay::now, MonthDay::parse)
+            put(ZoneOffset::class, { OffsetDateTime.now().offset }, { ZoneOffset.of(it.toString()) })
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? {
+            return cache[kClass] as CommandValueArgumentParser<T>?
+        }
+
+        override fun toList(): List<ParserPair<*>> = emptyList()
+    }
+
     /**
      * 内建的默认 [CommandValueArgumentParser]
      */
@@ -123,6 +154,7 @@ public interface CommandArgumentContext {
 
             MessageContent::class with RawContentValueArgumentParser
         },
+        TemporalCommandArgumentContext,
     ).fold(EmptyCommandArgumentContext, CommandArgumentContext::plus)
 }
 

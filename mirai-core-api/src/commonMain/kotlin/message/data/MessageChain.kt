@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,13 +14,13 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageSerializers
@@ -32,12 +32,12 @@ import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.*
 import java.util.stream.Stream
 import kotlin.reflect.KProperty
 import kotlin.streams.asSequence
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_ABSTRACT_MESSAGE_KEYS as RAMK
 
 /**
  * 消息链, `List<SingleMessage>`, 即 [单个消息元素][SingleMessage] 的有序集合.
@@ -143,6 +143,11 @@ import kotlin.streams.asSequence
  * 例如用户发送了两条内容相同的消息, 但其中一条带有引用回复而另一条没有, 则两条消息的索引可能有变化 (当然内容顺序不会改变, 只是 [QuoteReply] 的位置有可能会变化).
  * 因此在使用直接索引访问时要格外注意兼容性, 故不推荐这种访问方案.
  *
+ * ### 避免索引访问以提高性能
+ *
+ * 自 2.12 起, [MessageChain] 内部结构有性能优化. 该优化大幅降低元素数量多的 [MessageChain] 的连接的时间复杂度.
+ * 性能优化默认生效, 但若使用 [get], [subList] 等 [List] 于 [Collection] 之外的方法时则会让该优化失效 (相比 2.12 以前不会丢失性能, 只是没有优化).
+ *
  * ## 撤回和引用
  *
  * 要撤回消息, 查看 [MessageSource]
@@ -211,7 +216,7 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? {
+    public operator fun <M : SingleMessage> get(@ResolveContext(RAMK) key: MessageKey<M>): M? {
         @Suppress("UNCHECKED_CAST")
         return firstOrNull { key.safeCast.invoke(it) != null } as M?
     }
@@ -242,13 +247,16 @@ public sealed interface MessageChain :
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
+    public operator fun <M : SingleMessage> contains(@ResolveContext(RAMK) key: MessageKey<M>): Boolean =
         any { key.safeCast.invoke(it) != null }
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         forEach { it.safeCast<CodableMessage>()?.appendMiraiCodeTo(builder) }
     }
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitMessageChain(this, data)
 
     /**
      * 将 [MessageChain] 作为 `List<SingleMessage>` 序列化. 使用 [多态序列化][Polymorphic].
@@ -339,15 +347,33 @@ public sealed interface MessageChain :
 }
 
 /**
- * 不含任何元素的 [MessageChain].
+ * 返回一个不含任何元素的 [MessageChain].
+ *
+ * @since 2.12
+ */
+// Java: MessageUtils.emptyMessageChain()
+@Suppress("DEPRECATION")
+public fun emptyMessageChain(): MessageChain = EmptyMessageChain
+
+/**
+ * 不含任何元素的 [MessageChain]. 已弃用, 请使用 [emptyMessageChain]
  */
 //@Serializable(MessageChain.Serializer::class)
-public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList() {
+@Deprecated(
+    "Please use emptyMessageChain()",
+    replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
+)
+@DeprecatedSinceMirai(warningSince = "2.12")
+public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(), MessageChainImpl {
     override val size: Int get() = 0
 
     override fun toString(): String = ""
     override fun contentToString(): String = ""
     override fun serializeToMiraiCode(): String = ""
+
+    @MiraiInternalApi
+    override val hasConstrainSingle: Boolean
+        get() = false
 
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
@@ -364,6 +390,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
                 "Please specify your serial property as MessageChain and use contextual and polymorphic serializers from MessageSerializers.serializersModule.",
         level = DeprecationLevel.WARNING
     ) // deprecated since 2.8-M1
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public fun serializer(): KSerializer<MessageChain> = MessageChain.Serializer
 
     private object EmptyMessageChainIterator : Iterator<SingleMessage> {
@@ -381,7 +408,7 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
  */
 @JvmSynthetic
 public inline fun <M : SingleMessage> MessageChain.getOrFail(
-    key: MessageKey<M>,
+    @ResolveContext(RAMK) key: MessageKey<M>,
     crossinline lazyMessage: (key: MessageKey<M>) -> String = { key.toString() }
 ): M = get(key) ?: throw NoSuchElementException(lazyMessage(key))
 
@@ -463,7 +490,7 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
  */
 @JvmName("newChain")
 public fun Sequence<Message>.toMessageChain(): MessageChain =
-    createMessageChainImplOptimized(this.constrainSingleMessages())
+    LinearMessageChainImpl.create(ConstrainSingleHelper.constrainSingleMessages(this))
 
 /**
  * 扁平化 [this] 并创建一个 [MessageChain].
@@ -502,11 +529,8 @@ public inline fun Array<out Message>.toMessageChain(): MessageChain = this.asSeq
 @JvmName("newChain")
 public fun Message.toMessageChain(): MessageChain = when (this) {
     is MessageChain -> (this as List<SingleMessage>).toMessageChain()
-    else -> MessageChainImpl(
-        listOf(
-            this as? SingleMessage ?: error("Message is either MessageChain nor SingleMessage: $this")
-        )
-    )
+    is SingleMessage -> LinearMessageChainImpl.create(listOf(this), this is ConstrainSingle)
+    else -> error("Message is either MessageChain nor SingleMessage: $this")
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -160,7 +160,7 @@ internal fun PluginData.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue
 
     }
 
-    object JPluginData_value_primitivesCodegen : RegionCodegen("JPluginData.kt"), DefaultInvoke {
+    object JPluginData_value_primitivesCodegen : RegionCodegen("JAutoSavePluginData.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
@@ -172,13 +172,37 @@ internal fun PluginData.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue
                 /**
                  * 创建一个 [${ktType.standardName}] 类型的 [Value], 并设置初始值为 [default]
                  */
-                public fun value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = delegate.valueImpl(default)
+                public fun value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
                 """
             )
             appendLine()
         }
 
     }
+
+    /**
+     * @since 2.11
+     */
+    object JavaAutoSavePluginData_value_primitivesCodegen : RegionCodegen("JavaAutoSavePluginData.kt"), DefaultInvoke {
+        @JvmStatic
+        fun main(args: Array<String>) = super.startIndependently()
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
+
+        override fun StringBuilder.apply(ktType: KtType) {
+            @Suppress("unused")
+            appendKCode(
+                """
+                /**
+                 * 创建一个名称为 [name], 类型为 [${ktType.standardName}] 的 [Value], 并设置初始值为 [default].
+                 */
+                public fun value(name: String, default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default).apply { track(this, name, emptyList()) }
+                """
+            )
+            appendLine()
+        }
+
+    }
+
 
     /**
      * 运行本 object 中所有嵌套 object Codegen

@@ -1,14 +1,16 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
 
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -24,7 +26,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin10
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.LoginSolver
@@ -38,7 +39,8 @@ internal interface SsoProcessor {
     val client: QQAndroidClient
     val ssoSession: SsoSession
 
-    var firstLoginSucceed: Boolean
+    val firstLoginResult: AtomicRef<FirstLoginResult?> // null means just initialized
+    val firstLoginSucceed: Boolean get() = firstLoginResult.value?.success ?: false
     val registerResp: StatSvc.Register.Response?
 
     /**
@@ -52,6 +54,15 @@ internal interface SsoProcessor {
     suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response
 
     companion object : ComponentKey<SsoProcessor>
+}
+
+internal enum class FirstLoginResult(
+    val success: Boolean,
+    val canRecoverOnFirstLogin: Boolean,
+) {
+    PASSED(true, true),
+    CHANGE_SERVER(false, true), // by ConfigPush
+    OTHER_FAILURE(false, false),
 }
 
 /**
@@ -87,8 +98,7 @@ internal class SsoProcessorImpl(
     // public
     ///////////////////////////////////////////////////////////////////////////
 
-    @Volatile
-    override var firstLoginSucceed: Boolean = false
+    override val firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
 
     @Volatile
     override var registerResp: StatSvc.Register.Response? = null
@@ -108,18 +118,24 @@ internal class SsoProcessorImpl(
     @Throws(LoginFailedException::class)
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
         components[BdhSessionSyncer].loadServerListFromCache()
-        if (client.wLoginSigInfoInitialized) {
-            ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
-            kotlin.runCatching {
-                FastLoginImpl(handler).doLogin()
-            }.onFailure { e ->
-                collectException(e)
+        try {
+            if (client.wLoginSigInfoInitialized) {
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
+                kotlin.runCatching {
+                    FastLoginImpl(handler).doLogin()
+                }.onFailure { e ->
+                    collectException(e)
+                    SlowLoginImpl(handler).doLogin()
+                }
+            } else {
+                client = createClient(ssoContext.bot)
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
                 SlowLoginImpl(handler).doLogin()
             }
-        } else {
-            client = createClient(ssoContext.bot)
-            ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
-            SlowLoginImpl(handler).doLogin()
+        } catch (e: Exception) {
+            // Failed to log in, invalidate secrets.
+            ssoContext.bot.components[AccountSecretsManager].invalidate()
+            throw e
         }
         components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
         registerClientOnline(handler)
@@ -131,7 +147,9 @@ internal class SsoProcessorImpl(
     }
 
     private suspend fun registerClientOnline(handler: NetworkHandler): StatSvc.Register.Response {
-        return StatSvc.Register.online(client).sendAndExpect(handler).also { registerResp = it }
+        return handler.sendAndExpect(StatSvc.Register.online(client)).also {
+            registerResp = it
+        }
     }
 
     override suspend fun logout(handler: NetworkHandler) {
@@ -162,7 +180,8 @@ internal class SsoProcessorImpl(
         protected val bot get() = context.bot
         protected val logger get() = bot.logger
 
-        protected suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(): R = sendAndExpect(handler)
+        protected suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(): R =
+            handler.sendAndExpect(this)
 
         abstract suspend fun doLogin()
     }
@@ -283,7 +302,7 @@ internal class SsoProcessorImpl(
 
     private inner class FastLoginImpl(handler: NetworkHandler) : LoginStrategy(handler) {
         override suspend fun doLogin() {
-            val login10 = WtLogin10(client).sendAndExpect(handler)
+            val login10 = handler.sendAndExpect(WtLogin10(client))
             check(login10 is LoginPacketResponse.Success) { "Fast login failed: $login10" }
         }
     }

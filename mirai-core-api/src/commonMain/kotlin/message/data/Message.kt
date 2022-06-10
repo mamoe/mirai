@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -25,6 +25,8 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.code.MiraiCode
 import net.mamoe.mirai.message.code.MiraiCode.serializeToMiraiCode
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -238,7 +240,20 @@ public interface Message {
      * @see plus `+` 操作符重载
      */
     @JvmSynthetic // in java they should use `plus` instead
-    public fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
+    public fun followedBy(tail: Message): MessageChain {
+        var constrainSingleCount = 0
+        if (this.hasConstrainSingle) constrainSingleCount++
+        if (tail.hasConstrainSingle) constrainSingleCount++
+        return if (constrainSingleCount == 0) {
+            // Future optimize:
+            // When constrainSingleCount == 1, see if we can connect by CombinedMessage,
+            // this need some kind of replacement of `hasConstrainSingle` with more information about MessageKeys.
+            @OptIn(MessageChainConstructor::class)
+            CombinedMessage(this, tail, false)
+        } else {
+            LinearMessageChainImpl.combineCreate(this, tail)
+        }
+    }
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: MessageChain): MessageChain = this + another as Message
@@ -272,6 +287,21 @@ public interface Message {
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).toMessageChain()
+
+    /**
+     * @suppress 这是内部 API, 不要在任何情况下调用
+     * @since 2.12
+     */
+    @MiraiInternalApi
+    public fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R = visitor.visitMessage(this, data)
+
+    /**
+     * @suppress 这是内部 API, 不要在任何情况下调用
+     * @since 2.12
+     */
+    @MiraiInternalApi
+    public fun <D> acceptChildren(visitor: MessageVisitor<D, *>, data: D) {
+    }
 
     public companion object
 }

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -28,14 +28,36 @@ fun Project.useIr() {
     }
 }
 
-fun Project.configureJvmTarget() {
-    val defaultVer = JavaVersion.VERSION_1_8
+private fun Project.jvmVersion(): JavaVersion {
+    return if (project.path.endsWith("mirai-console-intellij")) {
+        JavaVersion.VERSION_11
+    } else {
+        JavaVersion.VERSION_1_8
+    }
+}
+
+fun Project.preConfigureJvmTarget() {
+    val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class.java) {
         kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+
+        // Support for parallel compilation: https://youtrack.jetbrains.com/issue/KT-46085
+        // Using /2 processors: jvm and android targets are compiled at the same time, sharing the processors.
+        // Also reserved 2 processors for Gradle multi-tasking
+        // On Apple M1 Max parallelism reduces compilation time by 1/3.
+//        kotlinOptions.freeCompilerArgs += "-Xbackend-threads=" + (Runtime.getRuntime().availableProcessors() / 2 - 1).coerceAtLeast(1)
     }
+
+    tasks.withType(JavaCompile::class.java) {
+        sourceCompatibility = defaultVer.toString()
+        targetCompatibility = defaultVer.toString()
+    }
+}
+fun Project.configureJvmTarget() {
+    val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class)
         .filter { it.name.startsWith("compileTestKotlin") }
@@ -46,11 +68,6 @@ fun Project.configureJvmTarget() {
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
-
-        if (project.path.endsWith("mirai-console-intellij")) {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
-        }
     }
 
     kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
@@ -144,9 +161,7 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.utils.MiraiInternalApi",
     "net.mamoe.mirai.utils.MiraiExperimentalApi",
     "net.mamoe.mirai.LowLevelApi",
-    "net.mamoe.mirai.utils.UnstableExternalImage",
 
-    "net.mamoe.mirai.message.data.ExperimentalMessageKey",
     "net.mamoe.mirai.console.ConsoleFrontEndImplementation",
     "net.mamoe.mirai.console.util.ConsoleInternalApi",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",

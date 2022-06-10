@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -13,85 +13,14 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.internal.message.LongMessageInternal
-import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.verbose
 
 internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
 internal inline val Group.groupCode: Long get() = this.id
 internal inline val User.uin: Long get() = this.id
 internal inline val Bot.uin: Long get() = this.id
-
-internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessageInternal) {
-        bot.logger.verbose("$this <- $message".replaceMagicCodes())
-    }
-}
-
-internal fun MessageChain.countImages(): Int = this.count { it is Image }
-
-private val logger by lazy { MiraiLogger.Factory.create(SendMessageHandler::class) }
-
-// Fixme: Remove in the future, see #1715
-private val fileMessageWarningShown = object : ExceptionCollector() {
-    override fun addSuppressed(receiver: Throwable, e: Throwable) {
-    }
-}
-
-// Fixme: Remove in the future, see #1715
-private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
-
-internal fun Message.verifySendingValid() {
-//    fun fail(msg: String): Nothing = throw IllegalArgumentException(msg)
-    when (this) {
-        is MessageChain -> {
-            this.forEach { it.verifySendingValid() }
-        }
-        is FileMessage -> {
-            // Fixme: https://github.com/mamoe/mirai/issues/1715
-
-            if (!ALLOW_SENDING_FILE_MESSAGE) {
-                val e =
-                    Exception("This stacktrace might help you find your code causing this problem. It is shown once for each distinct line.")
-                val log =
-                    "Sending FileMessage manually is error-prone and is planned to be prohibited in the future. " +
-                            "Please use AbsoluteFolder.uploadNewFile (recommended) or RemoteFile.uploadAndSend instead (deprecated)." +
-                            "You can add JVM argument '-Dmirai.message.allow.sending.file.message=true' to ignore this warning, " +
-                            "however, your code might not work in the future."
-
-                // Show stacktrace for each call only once.
-                if (fileMessageWarningShown.collect(e)) {
-                    logger.warning(log, e)
-                } else {
-                    logger.warning(log)
-                }
-            }
-
-//            fail("Sending FileMessage is not in support")
-        }
-    }
-}
-
-internal fun MessageChain.verifyLength(
-    originalMessage: Message, target: Contact,
-): Int {
-    val chain = this
-    val length = estimateLength(target, 15001)
-    if (length > 15000 || countImages() > 50) {
-        throw MessageTooLargeException(
-            target, originalMessage, this,
-            "message(${
-                chain.joinToString("", limit = 10).let { rsp ->
-                    if (rsp.length > 100) {
-                        rsp.take(100) + "..."
-                    } else rsp
-                }
-            }) is too large. Allow up to 50 images or 5000 chars"
-        )
-    }
-    return length
-}
 
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
@@ -186,7 +115,3 @@ internal fun String.replaceMagicCodes(): String = this
 
 internal fun Message.takeContent(length: Int): String =
     this.toMessageChain().joinToString("", limit = length) { it.content }
-
-internal inline fun <reified T : MessageContent> Message.takeSingleContent(): T? {
-    return this as? T ?: this.castOrNull<MessageChain>()?.findIsInstance()
-}

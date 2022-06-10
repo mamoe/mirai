@@ -16,7 +16,7 @@ import kotlin.test.assertIs
 
 internal class LoggingCompatibilityTest {
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     @Test
     fun `legacy overrides are still working if no services are found`() {
         val messages = StringBuilder()

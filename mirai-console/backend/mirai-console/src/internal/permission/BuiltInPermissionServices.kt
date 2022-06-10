@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.permission.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
@@ -31,7 +32,7 @@ internal fun PermissionService<*>.checkType(permissionType: KClass<out Permissio
     return this as PermissionService<Permission>
 }
 
-internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
+internal class AllPermitPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
     override val rootPermission: PermissionImpl get() = RootPermissionImpl.also { all[it.id] = it }
@@ -65,7 +66,7 @@ internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
 @Suppress("DEPRECATION")
 private val RootPermissionImpl = PermissionImpl(PermissionId("*", "*"), "The root permission").also { it.parent = it }
 
-internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
+internal class AllDenyPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
@@ -97,8 +98,13 @@ internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     }
 }
 
-internal object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
+internal class BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
     PermissionService<PermissionImpl> {
+
+    class Provider : PermissionServiceProvider {
+        override val instance: PermissionService<*> by lazy { BuiltInPermissionService() }
+        override val priority: Int get() = -1
+    }
 
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class

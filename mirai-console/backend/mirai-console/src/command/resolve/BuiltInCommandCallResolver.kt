@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,10 +15,11 @@ import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.i
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.parse.DefaultCommandValueArgument
+import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
-import net.mamoe.mirai.message.data.EmptyMessageChain
+import net.mamoe.mirai.message.data.emptyMessageChain
 import net.mamoe.mirai.message.data.toMessageChain
 
 /**
@@ -27,6 +28,12 @@ import net.mamoe.mirai.message.data.toMessageChain
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
+
+    internal object Provider : CommandCallResolverProvider {
+        override val instance: CommandCallResolver = BuiltInCommandCallResolver
+        override val priority: Int get() = -1
+    }
+
     override fun resolve(call: CommandCall): CommandResolveResult {
         val callee = CommandManager.matchCommand(call.calleeName)
             ?: return CommandResolveResult(CommandExecuteResult.UnresolvedCommand(call))
@@ -142,7 +149,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 // add default empty vararg argument
                 val remainingVararg = remainingParameters.find { it.isVararg }
                 if (remainingVararg != null) {
-                    zipped.add(remainingVararg to DefaultCommandValueArgument(EmptyMessageChain))
+                    zipped.add(remainingVararg to DefaultCommandValueArgument(emptyMessageChain()))
                     remainingParameters.remove(remainingVararg)
                 }
             }
@@ -188,7 +195,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
             .also { list ->
 
                 val candidates = list
-                    .asSequence().filterIsInstance<ResolveData>()
+                    .asSequence()
                     .flatMap { phase ->
                         phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }
                             .map { phase to it }

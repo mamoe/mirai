@@ -5,7 +5,6 @@
 
 ----
 
-![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![MiraiForum](https://img.shields.io/badge/post-on%20MiraiForum-yellow)](https://mirai.mamoe.net)
 
@@ -32,7 +31,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ### 许可证
 
-    Copyright (C) 2019-2021 Mamoe Technologies and contributors.
+    Copyright (C) 2019-2022 Mamoe Technologies and contributors.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -120,7 +119,8 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ## 开始
 
 - **用户手册**: [UserManual](docs/UserManual.md)
-- 开发文档: [docs](docs/README.md), [docs.mirai.mamoe.net](https://docs.mirai.mamoe.net/)
+- 开发文档: [在 GitHub 阅读](docs/README.md)
+  或 [在 docs.mirai.mamoe.net 阅读](https://docs.mirai.mamoe.net/)
 - 论坛: [Mirai Forum](https://mirai.mamoe.net/)
   > *Mirai 只有唯一一个官方论坛 Mirai Forum*
 

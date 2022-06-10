@@ -31,59 +31,6 @@ import kotlin.coroutines.resume
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 
-@OptIn(ConsoleInternalApi::class, kotlin.io.path.ExperimentalPathApi::class)
-fun initTestEnvironment() {
-    object : MiraiConsoleImplementation {
-        override val rootPath: Path = createTempDirectory()
-
-        override val frontEndDescription: MiraiConsoleFrontEndDescription
-            get() = object : MiraiConsoleFrontEndDescription {
-                override val name: String
-                    get() = "Test"
-                override val vendor: String
-                    get() = "Test"
-                override val version: SemVersion
-                    get() = SemVersion("1.0.0")
-
-            }
-        override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader })
-        override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl =
-            object : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
-                override suspend fun sendMessage(message: Message) {
-                    println(message)
-                }
-
-                override suspend fun sendMessage(message: String) {
-                    println(message)
-                }
-            }
-        override val dataStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
-        override val configStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
-        override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
-        override val configStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
-
-        override val consoleInput: ConsoleInput = object : ConsoleInput {
-            override suspend fun requestInput(hint: String): String {
-                println(hint)
-                return readLine() ?: error("No stdin")
-            }
-        }
-
-        override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
-            LoginSolver.Default!!
-
-        override fun createLogger(identity: String?): MiraiLogger {
-            return PlatformLogger(identity)
-        }
-
-        override val coroutineContext: CoroutineContext =
-            CoroutineName("Console Main") + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
-                throwable.printStackTrace()
-            }
-    }.start()
-    CommandManager
-}
-
 internal object Testing {
     @Volatile
     internal var cont: Continuation<Any?>? = null

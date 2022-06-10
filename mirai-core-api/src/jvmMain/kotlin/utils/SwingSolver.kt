@@ -141,6 +141,9 @@ internal object WindowHelperJvm {
         }
         if (System.getProperty("mirai.no-desktop") != null) return@run PlatformKind.CLI
         kotlin.runCatching {
+            Class.forName("java.awt.GraphicsEnvironment")
+            if (GraphicsEnvironment.isHeadless()) return@run PlatformKind.CLI
+
             Class.forName("java.awt.Desktop")
             Class.forName("java.awt.Toolkit")
             Toolkit.getDefaultToolkit()
@@ -160,6 +163,9 @@ internal object WindowHelperJvm {
             } else {
                 return@run PlatformKind.CLI
             }
+        }.onFailure { error ->
+            if (error.javaClass == ClassNotFoundException::class.java && error.cause == null) return@onFailure
+            logger.warning("Failed to initialize module `java.desktop`", error)
         }.getOrElse {
             return@run PlatformKind.CLI
         }

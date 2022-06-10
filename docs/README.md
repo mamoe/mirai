@@ -10,11 +10,12 @@
 
 ## 社区 SDK
 
-**mirai 官方提供 [Kotlin/Java 等 JVM 平台语言开发支持](#jvm-平台-mirai-开发)
+**mirai 官方提供 [Kotlin/Java 等 JVM 平台语言开发支持](#使用-mirai)
 。如果不熟悉这些语言，请使用以下社区 SDK：**
 
 要使用这些社区 SDK 需要先配置 Mirai
-Console，可以使用 [一键安装](https://mirai.mamoe.net/assets/uploads/files/1618372079496-install-20210412.cmd)（32位，带
+Console，可以使用 [一键安装](https://mirai.mamoe.net/assets/uploads/files/1618372079496-install-20210412.cmd)
+（32位，带
 HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化安装。
 
 你可以使用一个或多个语言来开发插件，而且在自己开发的同时也可以[使用下载的插件](UserManual.md#下载和安装插件)。
@@ -35,7 +36,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [Elaina]: https://github.com/wyapx/Elaina
 
-[Cesloi]: https://github.com/RF-Tar-Railt/Cesloi
+[ArcletProject/Edoves]: https://github.com/ArcletProject/Edoves
 
 [NoneBot]: https://github.com/nonebot/nonebot2
 
@@ -87,6 +88,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [YiriMirai]: https://github.com/YiriMiraiProject/YiriMirai
 
+[MiraiBots.jl]: https://github.com/melonedo/MiraiBots.jl
+
 ### 原生接口
 
 这些接口直接在 JVM 上实现，不需要中间件，拥有更佳的性能。
@@ -128,11 +131,12 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `JavaScript` / Node.js    | [drinkal/Mirai-js]                   |
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                 |
 | `JavaScript` / TypeScript | [nepsyn/miraipie]                    |
+| `Julia`                   | [MiraiBots.jl]                       |
 | `PHP`                     | [nkxingxh/miraiez]                   |
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]      |
 | `Python`                  | [Avilla][GraiaProject/Avilla]        |
+| `Python`                  | [Edoves][ArcletProject/Edoves]       |
 | `Python`                  | [Elaina]                             |
-| `Python`                  | [Cesloi]                             |
 | `Python`                  | [NoneBot]                            |
 | `Python`                  | [jerrita/saaya]                      |
 | `Python`                  | [YiriMirai]                          |
@@ -142,38 +146,70 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `易语言`                     | [only52607/e-mirai]                  |
 
 > 按字母顺序排序，排序不代表排名  
-> *想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)。*
+> *
+想在这里添加你的项目？欢迎[提交 PR](https://github.com/mamoe/mirai/edit/dev/docs/README.md)
+。*
 
 特别地，有一些 SDK 直接基于 mirai-core 开发，不需要 [`mirai-console`]：
 
 - `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
 
-## JVM 平台 Mirai 开发
+## 使用 Mirai
 
-本节介绍使用 Java、Kotlin 等 JVM 平台编程语言开发 Mirai 或 Mirai Console 插件。
+Mirai 原生支持 Java、Kotlin 等 JVM 平台编程语言。
 
-**为了避免遇到各种问题，请逐步仔细阅读。**
+要使用 Mirai，可以使用 mirai-core 作为一个依赖库获得机器人功能，也可以为 mirai-console 开发插件。
+
+生态详情可阅读：[Mirai 生态概览](mirai-ecology.md)。
+
+### JVM 平台 mirai-core 开发
+
+本节介绍使用 Java、Kotlin 等 JVM 平台编程语言使用 mirai-core 作为一个依赖库获得机器人功能。
+这通常适用于你在开发一个其他应用程序而需要使用机器人功能的情况。
+
+1. [JVM 环境和开发准备工作](Preparations.md#mirai---preparations)
+2. [配置 mirai-core 项目依赖](ConfiguringProjects.md)
+3. [阅读 mirai-core 文档](CoreAPI.md)
+
+> 如果你希望先体验 mirai
+> 的机器人功能，可克隆 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world)
+> 并在 IDE 内运行其中 Kotlin 或 Java 入口点 `main`。
+
+### JVM 平台 mirai-console 插件开发
+
+本节介绍使用 Java、Kotlin 等 JVM 平台编程语言基于 mirai-core，开发可于 mirai-console
+加载的插件来提供机器人功能。
+这通常适用于你为了开发一个机器人程序的情况。开发 mirai-console
+插件既可以[单独使用](../mirai-console/docs/Run.md)，也可以使用来自社区的其他插件。
 
 1. [JVM 环境和开发准备工作](Preparations.md#mirai---preparations)
 
-2. 选择框架 建议先阅读 [Mirai 生态概览](mirai-ecology.md)。
+2. [配置 mirai-console 插件项目](../mirai-console/docs/ConfiguringProjects.md)
 
-    - 若要将 mirai 当做依赖库嵌入你的应用使用（你调用 mirai），则需要使用
-      mirai-core，请阅读 [配置项目依赖](ConfiguringProjects.md)。
+3. [阅读 mirai-core 文档](CoreAPI.md)  
+   mirai-core 文档可让你了解如何使用 Bot 功能。
 
-    - 若要以插件模式开发（mirai 调用你），可以使用
-      mirai-console，请阅读 [mirai-console 的配置插件项目](../mirai-console/docs/ConfiguringProjects.md)
-      。
+4. [阅读 mirai-console 文档](../mirai-console/docs/README.md)
+   mirai-console 文档可让你了解 mirai-console 的一些系统。
 
-4. 阅读 API 文档（见下文）
+## 发布项目
 
-> 如果你希望先确认 mirai 能够正常运行才能安心阅读文档，可克隆 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world) 并运行其中 Kotlin 或 Java 入口点 `main`。
+欢迎各类基于 mirai 开发的开源项目在论坛发布。
 
+- [在论坛发布](https://mirai.mamoe.net/category/6/%E9%A1%B9%E7%9B%AE%E5%8F%91%E5%B8%83)
 
-之后...
+## 文档
 
-- [让更多人看到你的项目 - 在论坛发布](https://mirai.mamoe.net/category/6/%E9%A1%B9%E7%9B%AE%E5%8F%91%E5%B8%83)
+### mirai-core 文档
 
-### mirai-core API 文档
+请在 [CoreAPI.md](CoreAPI.md) 阅读 JVM 平台的 mirai-core 开发文档。
 
-请在 [CoreAPI.md](CoreAPI.md) 阅读 JVM 平台的 mirai-core-api 使用文档。
+### mirai-core API KDoc
+
+可在 <https://kdoc.mirai.mamoe.net/> 查看 KDoc（类似 JavaDoc）。但更建议使用 IntelliJ
+IDEA 等 IDE 在开发时查询源码内文档。
+
+### mirai-console 文档
+
+请在 [mirai-console/docs](../mirai-console/docs/README.md) 阅读
+mirai-console 开发文档。

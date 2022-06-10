@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl.Companion.findFileByPath
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -27,7 +27,6 @@ import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.FileSystem
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
@@ -113,12 +112,15 @@ internal class AbsoluteFolderImpl(
             return flow {
                 var index = 0
                 while (true) {
-                    val list = FileManagement.GetFileList(
-                        client,
-                        groupCode = contact.id,
-                        folderId = folderId,
-                        startIndex = index
-                    ).sendAndExpect(client.bot).toResult("AbsoluteFolderImpl.getFilesFlow").getOrThrow()
+                    val list =
+                        client.bot.network.sendAndExpect(
+                            FileManagement.GetFileList(
+                                client,
+                                groupCode = contact.id,
+                                folderId = folderId,
+                                startIndex = index
+                            )
+                        ).toResult("AbsoluteFolderImpl.getFilesFlow").getOrThrow()
                     index += list.itemList.size
 
                     if (list.int32RetCode != 0) return@flow
@@ -139,13 +141,16 @@ internal class AbsoluteFolderImpl(
             // TODO: 12/10/2021 checkPermission for AbsoluteFolderImpl.upload
 
             content.withAutoClose {
-                val resp = FileManagement.RequestUpload(
-                    folder.client,
-                    groupCode = folder.contact.id,
-                    folderId = folder.id,
-                    resource = content,
-                    filename = filepath
-                ).sendAndExpect(folder.bot).toResult("AbsoluteFolderImpl.upload").getOrThrow()
+                val resp =
+                    folder.bot.network.sendAndExpect(
+                        FileManagement.RequestUpload(
+                            folder.client,
+                            groupCode = folder.contact.id,
+                            folderId = folder.id,
+                            resource = content,
+                            filename = filepath
+                        )
+                    ).toResult("AbsoluteFolderImpl.upload").getOrThrow()
 
                 when (resp.int32RetCode) {
                     -36 -> folder.throwPermissionDeniedException("uploadNewFile")
@@ -254,12 +259,14 @@ internal class AbsoluteFolderImpl(
             var index = 0
             while (true) {
                 val list = runBlocking {
-                    FileManagement.GetFileList(
-                        client,
-                        groupCode = contact.id,
-                        folderId = id,
-                        startIndex = index
-                    ).sendAndExpect(bot)
+                    bot.network.sendAndExpect(
+                        FileManagement.GetFileList(
+                            client,
+                            groupCode = contact.id,
+                            folderId = id,
+                            startIndex = index
+                        )
+                    )
                 }.toResult("AbsoluteFolderImpl.getFilesFlow").getOrThrow()
                 index += list.itemList.size
 
@@ -307,8 +314,8 @@ internal class AbsoluteFolderImpl(
 
         // server only support nesting depth level of 1 so we don't need to check the name
 
-        val result = FileManagement.CreateFolder(client, contact.id, this.id, name)
-            .sendAndExpect(bot).toResult("AbsoluteFolderImpl.mkdir", checkResp = false)
+        val result = bot.network.sendAndExpect(FileManagement.CreateFolder(client, contact.id, this.id, name))
+            .toResult("AbsoluteFolderImpl.mkdir", checkResp = false)
             .getOrThrow() // throw protocol errors
 
         /*
@@ -389,7 +396,7 @@ internal class AbsoluteFolderImpl(
 
         if (!deep) return null
 
-        return folders().map { it.resolveFileById(id, deep) }.firstOrNull()
+        return folders().map { it.resolveFileById(id, deep) }.firstOrNull { it != null }
     }
 
     override suspend fun resolveFiles(path: String): Flow<AbsoluteFile> {

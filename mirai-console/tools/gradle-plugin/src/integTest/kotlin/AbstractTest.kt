@@ -12,6 +12,8 @@ package net.mamoe.mirai.console.gradle
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
@@ -64,16 +66,44 @@ abstract class AbstractTest {
 
         buildFile = File(tempDir, "build.gradle")
         buildFile.delete()
+        val ktVersion = "1.6.0"
+        val replacedMiraiVersion = "2.11.0-RC2"
         buildFile.writeText(
             """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version "1.6.0"
+                id("org.jetbrains.kotlin.jvm") version "$ktVersion"
                 id("net.mamoe.mirai-console")
             }
             
             repositories {
                 mavenCentral()
             }
+            // Mirai dev versions not available in gradle test.
+            // So using a released version to run tests
+            ({
+            def modules = [
+            'mirai-core-api',
+            'mirai-core-api-jvm',
+            'mirai-core',
+            'mirai-core-jvm',
+            'mirai-core-utils',
+            'mirai-core-utils-jvm',
+            'mirai-console',
+            'mirai-console-terminal',
+            'mirai-console-compiler-annotations',
+            'mirai-console-compiler-common',
+            ];
+            allprojects { configurations.all { resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                if (details.requested.group == 'net.mamoe') {
+                    if (modules.contains(details.requested.name)) {
+                        details.useVersion '$replacedMiraiVersion'
+                    }
+                }
+                if (details.requested.group == 'org.jetbrains.kotlin') {
+                    details.useVersion '$ktVersion'
+                }
+            } } }
+            })();
         """
         )
 
@@ -90,5 +120,17 @@ abstract class AbstractTest {
 //            }
 //        """
 
+    }
+
+    @JvmField
+    @RegisterExtension
+    internal val after: AfterEachCallback = AfterEachCallback { context ->
+        if (context.executionException.isPresent) {
+            val inst = context.requiredTestInstance as AbstractTest
+            println("====================== build.gradle ===========================")
+            println(inst.tempDir.resolve("build.gradle").readText())
+            println("==================== settings.gradle ==========================")
+            println(inst.tempDir.resolve("settings.gradle").readText())
+        }
     }
 }

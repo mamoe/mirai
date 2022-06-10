@@ -15,12 +15,12 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
-import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.runBIO
+import kotlin.reflect.typeOf
 
 /**
  * 供 Java 用户继承
@@ -82,7 +82,7 @@ public abstract class JRawCommand
     @ExperimentalCommandDescriptors
     override val overloads: List<@JvmWildcard CommandSignature> = listOf(
         CommandSignatureImpl(
-            receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
+            receiverParameter = CommandReceiverParameter(false, typeOf<CommandSender>()),
             valueParameters = listOf(
                 AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>(
                     "args",

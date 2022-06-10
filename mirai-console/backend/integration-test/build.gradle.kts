@@ -1,15 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("UnusedImport")
 
-import java.util.Base64
+import java.util.*
 
 plugins {
     kotlin("jvm")
@@ -27,6 +27,7 @@ kotlin {
 dependencies {
     api(project(":mirai-core-api"))
     api(project(":mirai-core-utils"))
+    testRuntimeOnly(project(":mirai-core"))
     api(project(":mirai-console-compiler-annotations"))
     api(project(":mirai-console"))
     api(project(":mirai-console-terminal"))
@@ -54,6 +55,13 @@ dependencies {
     api(asm("commons"))
 
 }
+
+// requires manual run
+val deleteSandbox = tasks.register("deleteSandbox", Delete::class.java) {
+    group = "mirai"
+    delete("build/IntegrationTest")
+}
+//tasks.getByName("clean").dependsOn(deleteSandbox)
 
 val subplugins = mutableListOf<TaskProvider<Jar>>()
 
@@ -83,8 +91,9 @@ mcit_test.configure {
     }
 }
 
-rootProject.allprojects {
-    if (project.path.removePrefix(":").startsWith("mirai-console.integration-test.tp.")) {
+val crtProject = project
+allprojects {
+    if (project != crtProject) {
         project.afterEvaluate {
             val tk = tasks.named<Jar>("jar")
             subplugins.add(tk)

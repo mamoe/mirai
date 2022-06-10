@@ -18,6 +18,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.XmlProvider
 import org.gradle.api.plugins.PluginContainer
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.JavaExec
 
 /**
  * ```
@@ -90,8 +91,18 @@ public open class MiraiConsoleExtension {
      */
     public var dontConfigureKotlinJvmDefault: Boolean = false
 
+    /**
+     * 配置 gradle task runConsole. 将此项设置为 `false` 时不会配置测试环境
+     */
+    public var consoleTestRuntime: Boolean = true
+
     internal val shadowConfigurations: MutableList<ShadowJar.() -> Unit> = mutableListOf()
     internal val excludedDependencies: MutableSet<ExcludedDependency> = mutableSetOf()
+    internal val consoleTestRuntimeConf: MutableList<JavaExec.() -> Unit> = mutableListOf()
+
+    public fun setupConsoleTestRuntime(configure: JavaExec.() -> Unit) {
+        consoleTestRuntimeConf.add(configure)
+    }
 
     internal data class ExcludedDependency(
         val group: String,
@@ -278,7 +289,7 @@ public open class MiraiConsoleExtension {
          * 自定义配置 [BintrayExtension]，覆盖
          */
         @Suppress("DeprecatedCallableAddReplaceWith")
-        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.WARNING)
+        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.ERROR)
         public fun bintray(configure: BintrayExtension.() -> Unit) {
             bintrayConfigs.add(configure)
         }
@@ -287,7 +298,7 @@ public open class MiraiConsoleExtension {
          * 自定义配置 [BintrayExtension.PackageConfig]
          */
         @Suppress("DeprecatedCallableAddReplaceWith")
-        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.WARNING)
+        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.ERROR)
         public fun packageConfig(configure: BintrayExtension.PackageConfig.() -> Unit) {
             bintrayPackageConfigConfigs.add(configure)
         }

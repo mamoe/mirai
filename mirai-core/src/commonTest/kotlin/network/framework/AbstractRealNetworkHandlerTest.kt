@@ -1,14 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework
 
+import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.MockConfiguration
@@ -29,6 +30,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import network.framework.components.TestEventDispatcherImpl
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -44,7 +46,13 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     abstract val factory: NetworkHandlerFactory<H>
     abstract val network: H
 
-    var bot: QQAndroidBot by lateinitMutableProperty { createBot() }
+    private var botInit = false
+    var bot: QQAndroidBot by lateinitMutableProperty { botInit = true; createBot() }
+
+    @AfterEach
+    fun afterEach() {
+        if (botInit) bot.close()
+    }
 
     protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {
         return object : QQAndroidBot(account, MockConfiguration.copy()) {
@@ -117,13 +125,19 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
             override suspend fun init() {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
+                bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
             }
         })
         set(ServerList, ServerListImpl())
 
         set(
             EventDispatcher,
-            TestEventDispatcherImpl(bot.coroutineContext, bot.logger.subLogger("TestEventDispatcherImpl"))
+            // Note that in real we use 'bot.coroutineContext', but here we override with a new, independent job
+            // to allow BotOfflineEvent.Active to be broadcast and joinBroadcast works even if bot coroutineScope is closed.
+            TestEventDispatcherImpl(
+                bot.coroutineContext + SupervisorJob(),
+                bot.logger.subLogger("TestEventDispatcherImpl")
+            )
         )
         // set(StateObserver, bot.run { stateObserverChain() })
     }
@@ -161,6 +175,7 @@ internal sealed class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abstr
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]
+    val firstLoginResult: FirstLoginResult? get() = bot.components[SsoProcessor].firstLoginResult.value
 }
 
 internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {

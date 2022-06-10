@@ -2,7 +2,7 @@
 name: 特性申请
 about: 申请 mirai 添加新的特性
 title: ''
-labels: feature
+labels: 't:feature'
 assignees: ''
 
 ---

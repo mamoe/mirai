@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE")
@@ -19,8 +19,10 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.message.OnlineMessageSourceToTempImpl
-import net.mamoe.mirai.internal.message.createMessageReceipt
+import net.mamoe.mirai.internal.message.protocol.outgoing.GroupTempMessageProtocolStrategy
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
@@ -41,18 +43,19 @@ internal class NormalMemberImpl constructor(
     override val joinTimestamp: Int get() = info.joinTimestamp
     override val lastSpeakTimestamp: Int get() = info.lastSpeakTimestamp
 
-    override fun toString(): String = "NormalMember($id)"
+    private val messageProtocolStrategy: MessageProtocolStrategy<NormalMemberImpl> = GroupTempMessageProtocolStrategy
 
-    private val handler: GroupTempSendMessageHandler by lazy { GroupTempSendMessageHandler(this) }
+    override fun toString(): String = "NormalMember($id)"
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
         return asFriendOrNull()?.sendMessage(message)?.convert()
             ?: asStrangerOrNull()?.sendMessage(message)?.convert()
-            ?: handler.sendMessageImpl<NormalMember>(
+            ?: sendMessageImpl(
                 message = message,
                 preSendEventConstructor = ::GroupTempMessagePreSendEvent,
                 postSendEventConstructor = ::GroupTempMessagePostSendEvent.cast(),
+                messageProtocolStrategy = messageProtocolStrategy
             )
     }
 
@@ -93,13 +96,13 @@ internal class NormalMemberImpl constructor(
                 val oldValue = _nameCard
                 _nameCard = newValue
                 launch {
-                    bot.network.run {
+                    bot.network.sendWithoutExpect(
                         TroopManagement.EditGroupNametag(
                             bot.client,
                             this@NormalMemberImpl,
                             newValue,
-                        ).sendWithoutExpect()
-                    }
+                        )
+                    )
                     MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcast()
                 }
             }
@@ -113,13 +116,13 @@ internal class NormalMemberImpl constructor(
                 val oldValue = _specialTitle
                 _specialTitle = newValue
                 launch {
-                    bot.network.run {
+                    bot.network.sendWithoutExpect(
                         TroopManagement.EditSpecialTitle(
                             bot.client,
                             this@NormalMemberImpl,
                             newValue,
-                        ).sendWithoutExpect()
-                    }
+                        )
+                    )
                     MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcast()
                 }
             }
@@ -133,14 +136,14 @@ internal class NormalMemberImpl constructor(
             "durationSeconds must greater than zero"
         }
         checkBotPermissionHigherThanThis("mute")
-        bot.network.run {
+        bot.network.sendAndExpect(
             TroopManagement.Mute(
                 client = bot.client,
                 groupCode = group.id,
                 memberUin = this@NormalMemberImpl.id,
                 timeInSecond = durationSeconds,
-            ).sendAndExpect<TroopManagement.Mute.Response>()
-        }
+            ), 5000, 2
+        )
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         (net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcast())
@@ -149,14 +152,14 @@ internal class NormalMemberImpl constructor(
 
     override suspend fun unmute() {
         checkBotPermissionHigherThanThis("unmute")
-        bot.network.run {
+        bot.network.sendAndExpect(
             TroopManagement.Mute(
                 client = bot.client,
                 groupCode = group.id,
                 memberUin = this@NormalMemberImpl.id,
                 timeInSecond = 0,
-            ).sendAndExpect<TroopManagement.Mute.Response>()
-        }
+            ), 5000, 2
+        )
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         (net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast())
@@ -168,25 +171,25 @@ internal class NormalMemberImpl constructor(
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
-        bot.network.run {
-            val response: TroopManagement.Kick.Response = TroopManagement.Kick(
+        val response: TroopManagement.Kick.Response = bot.network.sendAndExpect(
+            TroopManagement.Kick(
                 client = bot.client,
                 groupCode = group.groupCode,
                 memberId = id,
                 message = message,
                 ban = block
-            ).sendAndExpect()
+            ), 5000, 2
+        )
 
-            // Note: when member not found, result is still true.
+        // Note: when member not found, result is still true.
 
-            if (response.ret == 255) error("Operation too fast") // https://github.com/mamoe/mirai/issues/1503
-            check(response.success) { "kick failed: ${response.ret}" }
+        if (response.ret == 255) error("Operation too fast") // https://github.com/mamoe/mirai/issues/1503
+        check(response.success) { "kick failed: ${response.ret}" }
 
-            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
-            this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
-            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
-        }
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
+        this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
+        MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
     }
 
     override suspend fun modifyAdmin(operation: Boolean) {
@@ -201,21 +204,21 @@ internal class NormalMemberImpl constructor(
 
         if (origin == new) return
 
-        bot.network.run {
-            val resp: TroopManagement.ModifyAdmin.Response = TroopManagement.ModifyAdmin(
+        val resp: TroopManagement.ModifyAdmin.Response = bot.network.sendAndExpect(
+            TroopManagement.ModifyAdmin(
                 client = bot.client,
                 member = this@NormalMemberImpl,
                 operation = operation,
-            ).sendAndExpect()
+            ), 5000, 2
+        ) as TroopManagement.ModifyAdmin.Response
 
-            check(resp.success) {
-                "Failed to modify admin, cause: ${resp.msg}"
-            }
-
-            this@NormalMemberImpl.permission = new
-
-            MemberPermissionChangeEvent(this@NormalMemberImpl, origin, new).broadcast()
+        check(resp.success) {
+            "Failed to modify admin, cause: ${resp.msg}"
         }
+
+        this@NormalMemberImpl.permission = new
+
+        MemberPermissionChangeEvent(this@NormalMemberImpl, origin, new).broadcast()
     }
 }
 

@@ -70,6 +70,9 @@ object MiraiConsoleErrors {
     val RESTRICTED_CONSOLE_COMMAND_OWNER = create<PsiElement>(WARNING)
 
     @JvmField
+    val PROHIBITED_ABSTRACT_MESSAGE_KEYS = create<PsiElement>(WARNING)
+
+    @JvmField
     val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)
 
     // permission

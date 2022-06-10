@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -29,39 +29,76 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.Image.Builder
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
+import net.mamoe.mirai.message.data.Image.Key.isUploaded
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
  *
  *
  * 最推荐的存储方式是存储图片原文件, 每次发送图片时都使用文件上传.
- * 在上传时服务器会根据其缓存情况回复已有的图片 ID 或要求客户端上传. 详见 [Contact.uploadImage]
+ * 在上传时服务器会根据其缓存情况回复已有的图片 ID 或要求客户端上传.
  *
- * ### 根据 ID 构造图片
- * - [Image.fromId]. 在 Kotlin, 更推荐使用顶层函数 `val image = Image("id")`
+ * # 获取 [Image] 实例
  *
- * ### 上传和发送图片
- * - [Contact.uploadImage] 上传 [资源文件][ExternalResource] 并得到 [Image] 消息
- * - [Contact.sendImage] 上传 [资源文件][ExternalResource] 并发送返回的 [Image] 作为一条消息
+ * ## 根据 ID 构造图片
  *
- * - [ExternalResource.uploadAsImage]
- * - [ExternalResource.sendAsImageTo]
- * - [Contact.sendImage]
+ * ID 格式查看 [Image.imageId]. 通过 ID 构造的图片若未存在于服务器中, 发送后在客户端将不能正常显示. 可通过 [Image.isUploaded] 检查图片是否存在于服务器.
+ * [Image.isUploaded] 需要除了 ID 以外其他参数, 如 [width], [size] 等, 因此不建议通过 ID 构造图片, 而是使用 [Builder] 构建, 以提供详细参数.
  *
- * ### 下载图片
- * - [Image.queryUrl] 扩展函数. 查询图片下载链接
- * - [IMirai.queryImageUrl] 查询图片下载链接 (Java 使用)
+ * 使用 [Image.fromId]. 在 Kotlin, 也可以使用顶层函数 `val image = Image("id")`.
+ *
+ * ### 在 Kotlin 通过 ID 构造图片
+ * ```
+ * // 根据喜好选择
+ * val image = Image.fromId("id")
+ * val image2 = Image("id")
+ * ```
+ *
+ * ### 在 Java 通过 ID 构造图片
+ * ```java
+ * Image image = Image.fromId("id")
+ * ```
+ *
+ * ## 使用 [Builder] 构建图片
+ *
+ * [Image] 提供 [Builder] 构建方式, 可以指定 [width], [height] 等额外参数. 请尽可能提供这些参数以提升图片发送的成功率和 [Image.isUploaded] 的准确性.
+ *
+ * ## 上传图片资源获得 [Image]
+ *
+ * 使用 [Contact.uploadImage], 将 [ExternalResource] 上传得到 [Image].
+ *
+ * 也可以使用 [ExternalResource.uploadAsImage] 扩展.
+ *
+ * # 发送图片消息
+ *
+ * 在获取实例后, 将图片元素连接到[消息链][MessageChain]即可发送. 图片可以与[纯文本][PlainText]等其他 [MessageContent] 混合使用 (在同一[消息链][MessageChain]中).
+ *
+ * # 下载图片
+ *
+ * 通过[事件][MessageEvent]等方式获取到 [Image] 实例后, 使用 [Image.queryUrl] 查询得到图片的下载地址, 自行使用 HTTP 客户端下载.
+ *
+ * # 其他查询
+ *
+ * ## 查询图片是否已存在于服务器
+ *
+ * 使用 [Image.isUploaded]. 当图片在服务器上存在时返回 `true`, 这意味着图片可以直接发送.
+ *
+ * 服务器通过 [Image.md5] 鉴别图片. 当图片已经存在于服务器时, [Contact.uploadImage] 会更快返回 (仍然需要进行网络请求), 不会上传图片数据.
+ *
+ * ## 检测图片 ID 合法性
+ *
+ * 使用 [Image.IMAGE_ID_REGEX].
  *
  * ## mirai 码支持
  * 格式: &#91;mirai:image:*[Image.imageId]*&#93;
@@ -72,7 +109,6 @@ import kotlin.LazyThreadSafetyMode.NONE
 @Serializable(Image.Serializer::class)
 @NotStableForInheritance
 public interface Image : Message, MessageContent, CodableMessage {
-
     /**
      * 图片的 id.
      *
@@ -131,6 +167,11 @@ public interface Image : Message, MessageContent, CodableMessage {
      */ // was an extension on Image before 2.9.0-M1.
     public val md5: ByteArray get() = calculateImageMd5ByImageId(imageId)
 
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitImage(this, data)
+    }
+
     public object AsStringSerializer : KSerializer<Image> by String.serializer().mapPrimitive(
         SERIAL_NAME,
         serialize = { imageId },
@@ -175,7 +216,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         public var imageId: String,
     ) {
         /**
-         * 图片大小字节数. 如果不提供改属性, 将无法 [Image.Key.isUploaded]
+         * 图片大小字节数. 如果不提供该属性, 将无法 [Image.Key.isUploaded]
          *
          * @see Image.size
          */
@@ -377,6 +418,7 @@ public enum class ImageType(
     BMP("bmp"),
     JPG("jpg"),
     GIF("gif"),
+
     //WEBP, //Unsupported by pc client
     APNG("png"),
     UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
@@ -405,70 +447,9 @@ public enum class ImageType(
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 @MiraiInternalApi
 @get:JvmName("calculateImageMd5")
+@DeprecatedSinceMirai(hiddenSince = "2.9")
 public val Image.md5: ByteArray
     get() = Image.calculateImageMd5ByImageId(imageId)
-
-
-/**
- * 所有 [Image] 实现的基类.
- */
-@MiraiInternalApi
-public sealed class AbstractImage : Image {
-    private val _stringValue: String? by lazy(NONE) { "[mirai:image:$imageId]" }
-
-    override val size: Long
-        get() = 0L
-    override val width: Int
-        get() = 0
-    override val height: Int
-        get() = 0
-    override val imageType: ImageType
-        get() = ImageType.UNKNOWN
-
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = if (isEmoji) {
-        "[动画表情]"
-    } else {
-        "[图片]"
-    }
-
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:image:").append(imageId).append("]")
-    }
-
-    final override fun hashCode(): Int = imageId.hashCode()
-    final override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is Image) return false
-        return this.imageId == other.imageId
-    }
-}
-
-
-/**
- * 好友图片
- *
- * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
- */
-// NotOnlineImage
-@MiraiInternalApi
-public abstract class FriendImage @MiraiInternalApi public constructor() :
-    AbstractImage() { // change to sealed in the future.
-    public companion object
-}
-
-/**
- * 群图片.
- *
- * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
- * @see Image 查看更多说明
- */
-// CustomFace
-@MiraiInternalApi
-public abstract class GroupImage @MiraiInternalApi public constructor() :
-    AbstractImage() { // change to sealed in the future.
-    public companion object
-}
 
 
 /**

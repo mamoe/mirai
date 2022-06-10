@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,8 +10,6 @@
 @file:Suppress(
     "INVISIBLE_REFERENCE",
     "INVISIBLE_MEMBER",
-    "EXPOSED_SUPER_CLASS",
-    "NOTHING_TO_INLINE", "unused", "UNCHECKED_CAST"
 )
 @file:JvmName("PluginDataKt")
 
@@ -19,21 +17,23 @@ package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.serializersModuleOf
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
-import net.mamoe.mirai.console.data.java.JAutoSavePluginData
+import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.createInstanceSmart
-import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.internal.data.valueFromKTypeImpl
 import net.mamoe.mirai.console.internal.data.valueImpl
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.message.MessageSerializers
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /**
  * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪. 典型的实现为 [AbstractPluginData].
@@ -79,7 +79,7 @@ import kotlin.reflect.KType
  *
  * ### 使用 Java
  *
- * 参考 [JAutoSavePluginData]
+ * 参考 [JavaAutoSavePluginData]
  *
  * ## 非引用赋值
  *
@@ -108,10 +108,13 @@ import kotlin.reflect.KType
  * ## 实现注意
  * 此类型处于实验性阶段. 使用其中定义的属性和函数是安全的, 但将来可能会新增成员抽象函数.
  *
+ * 继承 [AbstractPluginData] 比继承 [PluginData] 更安全, 尽管 [AbstractPluginData] 也不稳定.
+ *
  * @see AbstractJvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库
  * @see PluginDataExtensions 相关 [SerializerAwareValue] 映射函数
  */
+@NotStableForInheritance
 public interface PluginData {
     /**
      * 这个 [PluginData] 保存时使用的名称.
@@ -130,13 +133,56 @@ public interface PluginData {
     public fun onValueChanged(value: Value<*>)
 
     /**
-     * 用于支持多态序列化.
+     * 序列化本对象数据时使用的 [SerializersModule]. 用于支持多态序列化等.
+     * 在序列化时会先使用 [PluginData.serializersModule], 再对无法找到 serializer 的类型使用 [MessageSerializers.serializersModule].
+     *
+     * ### 使用示例
+     *
+     * 假设你编写了一个类型 `ChatHistory` 用来存储一个群的消息记录:
+     * ```
+     * data class ChatHistory(
+     *     val groupId: Long,
+     *     val chain: List<MessageChain>,
+     * )
+     * ```
+     *
+     * 要在 [PluginData] 中支持它, 需要首先为 `ChatHistory` 编写 [KSerializer].
+     *
+     * 一种方式是为其添加 [kotlinx.serialization.Serializable]:
+     *
+     * ```
+     * @Serializable
+     * data class ChatHistory(
+     *     val groupId: Long,
+     *     val chain: List<MessageChain>,
+     * )
+     * ```
+     *
+     * 编译器将会自动生成一个 [KSerializer], 可通过 `ChatHistory.Companion.serializer()` 获取.
+     *
+     * 然后在 [PluginData] 定义中添加该 [KSerializer]:
+     * ```
+     * object MyData : AutoSavePluginData("save") {
+     *     // 注意, serializersModule 需要早于其他属性定义初始化
+     *     override val serializersModule = SerializersModule {
+     *         contextual(ChatHistory::class, ChatHistory.serializers()) // 为 ChatHistory 指定 KSerializer
+     *     }
+     *
+     *     val histories: Map<Long, ChatHistory> by value()
+     * }
+     * ```
+     *
+     * 然而, 即使不覆盖 `serializersModule` 提供 [KSerializer], mirai 也会通过反射尝试获取.
+     *
+     * 但对于不是使用 `@Serializable` 注解方式, 或者是 `interface`, `abstract class` 等的抽象类型, 则必须覆盖 `serializersModule` 并提供其 [KSerializer].
+     *
+     *
      *
      * @see SerializersModule
-     * @see serializersModuleOf
+     *
+     * @since 2.11
      */
-    @ConsoleExperimentalApi
-    public val serializersModule: SerializersModule
+    public val serializersModule: SerializersModule // 该属性在 2.0 增加, 但在 2.11 才正式支持并删除 @MiraiExperimentalApi
 
     /**
      * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用
@@ -200,29 +246,68 @@ public fun PluginData.value(default: String): SerializerAwareValue<String> = val
 /**
  * 通过具体化类型创建一个 [SerializerAwareValue], 并设置初始值.
  *
- * @param T 具体化参数类型 T. 仅支持:
+ * 2.11 起, 本函数会优先根据返回值推断类型. 如下示例:
+ * ```
+ * var singleMessage: SingleMessage by value(PlainText("str")) // value 的类型为 SerializerAwareValue<SingleMessage>
+ * ```
+ * 这符合正常的类型定义逻辑.
+ *
+ * @param T 具体化参数类型 T. 在 2.11 以前, 支持:
  * - 基础数据类型
  * - 标准库集合类型 ([List], [Map], [Set])
  * - 标准库数据类型 ([Map.Entry], [Pair], [Triple])
- * - 和使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的
+ * - 使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的, 可以通过反射获取 [KSerializer] 的类型
+ *
+ * 2.11 起, 还支持:
+ * - [MessageSerializers] 支持的所有类型, 如 [MessageChain].
+ * - 在 [PluginData.serializersModule] 自定义支持的类型
  */
 @Suppress("UNCHECKED_CAST")
 @LowPriorityInOverloadResolution
 public inline fun <reified T> PluginData.value(
     default: T,
     crossinline apply: T.() -> Unit = {},
-): SerializerAwareValue<T> =
-    valueFromKType(typeOf0<T>(), default).also { it.value.apply() }
+): SerializerAwareValue<@kotlin.internal.Exact T> {
+    /*
+     * 使用 `@Exact` 的 trick (自 2.11.0-RC)
+     *
+     * 使用前:
+     *
+     * ```
+     * var singleMessage: SingleMessage by value(PlainText("str"))
+     * ```
+     *
+     * `value` 的 reified [T] 根据其参数推断为 [PlainText], 则会使用 `PlainText.serializer()`.
+     *
+     * 可以通过序列化后的 YAML 文本直观地感受问题:
+     * ```yaml
+     * singleMessage:
+     *   content: str
+     * ```
+     * 那么将来若 `singleMessage` 的值变更为非 [PlainText] 类型, 将会无法序列化.
+     *
+     * 附使用 `@Exact` 时的正确结果 (使用 [SingleMessage] 的序列化器 (来自 [MessageSerializers.serializersModule])):
+     *
+     * ```yaml
+     * singleMessage:
+     *   type: PlainText
+     *   value:
+     *     content: str
+     * ```
+     *
+     * 相关测试: [net.mamoe.mirai.console.data.PluginDataTest.supports message chain]
+     */
+    return valueFromKType(typeOf<T>(), default).also { it.value.apply() }
+}
 
 /**
  * 通过具体化类型创建一个 [SerializerAwareValue].
- * @see valueFromKType 查看更多实现信息
  */
 @ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR)
 @LowPriorityInOverloadResolution
 public inline fun <@ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR) reified T>
-        PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> =
-    valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }
+        PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<@kotlin.internal.Exact T> =
+    valueImpl<T>(typeOf<T>(), T::class).also { it.value.apply() }
 
 @Suppress("UNCHECKED_CAST")
 @PublishedApi

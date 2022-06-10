@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.internal.permission.parseFromStringImpl
 import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
@@ -275,8 +276,9 @@ public sealed class AbstractPermitteeId(
     @Deprecated(
         "use AnyGroupTemp",
         ReplaceWith("AnyGroupTemp", "net.mamoe.mirai.console.permission.AbstractPermitteeId.AnyGroupTemp"),
-        DeprecationLevel.ERROR
+        DeprecationLevel.HIDDEN
     )
+    @DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
     public abstract class AnyTemp(
         groupId: Long,
     ) : AbstractPermitteeId(AnyMember(groupId), AnyTempFromAnyGroup)
@@ -308,8 +310,9 @@ public sealed class AbstractPermitteeId(
     @Deprecated(
         "use ExactGroupTemp",
         ReplaceWith("ExactGroupTemp", "net.mamoe.mirai.console.permission.AbstractPermitteeId.ExactGroupTemp"),
-        DeprecationLevel.ERROR
+        DeprecationLevel.HIDDEN
     )
+    @DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
     public abstract class ExactTemp internal constructor(
         groupId: Long,
         memberId: Long,

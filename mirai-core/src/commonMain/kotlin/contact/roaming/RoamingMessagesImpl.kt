@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -25,7 +25,6 @@ import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.*
 import java.util.stream.Stream
@@ -123,15 +122,17 @@ internal class RoamingMessagesImplFriend(
         lastMessageTime: Long,
         random: Long
     ): MessageSvcPbGetRoamMsgReq.Response {
-        return MessageSvcPbGetRoamMsgReq.createForFriend(
-            client = contact.bot.client,
-            uin = contact.id,
-            timeStart = timeStart,
-            lastMsgTime = lastMessageTime,
-            random = random,
-            maxCount = 1000,
-            sig = byteArrayOf(),
-            pwd = byteArrayOf()
-        ).sendAndExpect(contact.bot).value.check()
+        return contact.bot.network.sendAndExpect(
+            MessageSvcPbGetRoamMsgReq.createForFriend(
+                client = contact.bot.client,
+                uin = contact.id,
+                timeStart = timeStart,
+                lastMsgTime = lastMessageTime,
+                random = random,
+                maxCount = 1000,
+                sig = byteArrayOf(),
+                pwd = byteArrayOf()
+            )
+        ).value.check()
     }
 }

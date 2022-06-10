@@ -87,7 +87,7 @@ setHeartbeatStrategy(BotConfiguration.HeartbeatStrategy.REGISTER)
 ```
 
 #### 切换登录协议
-Mirai 支持多种登录协议：`ANDROID_PHONE`，`ANDROID_PAD`，`ANDROID_WATCH`，默认使用 `ANDROID_PHONE`。
+Mirai 支持多种登录协议：`ANDROID_PHONE`，`ANDROID_PAD`，`ANDROID_WATCH`，`IPAD`，`MACOS` 默认使用 `ANDROID_PHONE`。
 
 若登录失败，可尝试切换协议。**但注意部分功能在部分协议上不受支持**，详见源码内注释。
 
@@ -260,6 +260,8 @@ contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保�
 
 部分账号可以跳过滑块验证码，Mirai 会自动尝试。  
 若你的账号无法跳过验证，可在 [project-mirai/mirai-login-solver-selenium] 查看处理方案。
+
+**若遇到滑块验证问题无法解决，可以参考[论坛帮助页面](https://mirai.mamoe.net/topic/223/%E6%97%A0%E6%B3%95%E7%99%BB%E5%BD%95%E7%9A%84%E4%B8%B4%E6%97%B6%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88)。**
 
 ### 常见登录失败原因
 

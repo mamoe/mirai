@@ -45,17 +45,12 @@ jobs:
       - name: Check keys
         run: ./gradlew ensureMavenCentralAvailable
 
-      - name: fillBuildConstants
-        run: >
-          ./gradlew
-          fillBuildConstants --scan
-
       - name: Assemble
         run: ./gradlew assemble --scan
 
       - name: Check
         run: >
-          ./gradlew check --scan
+          ./gradlew check --scan --no-parallel
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true

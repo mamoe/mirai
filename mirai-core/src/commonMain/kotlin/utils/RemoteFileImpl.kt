@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,15 +18,14 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
-import net.mamoe.mirai.internal.message.FileMessageImpl
-import net.mamoe.mirai.internal.message.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
@@ -222,12 +221,14 @@ internal class RemoteFileImpl(
         return flow {
             var index = 0
             while (true) {
-                val list = FileManagement.GetFileList(
-                    client,
-                    groupCode = contact.id,
-                    folderId = info.id,
-                    startIndex = index
-                ).sendAndExpect(bot).toResult("RemoteFile.listFiles").getOrThrow()
+                val list = bot.network.sendAndExpect(
+                    FileManagement.GetFileList(
+                        client,
+                        groupCode = contact.id,
+                        folderId = info.id,
+                        startIndex = index
+                    )
+                ).toResult("RemoteFile.listFiles").getOrThrow()
                 index += list.itemList.size
 
                 if (list.int32RetCode != 0) return@flow
@@ -275,12 +276,14 @@ internal class RemoteFileImpl(
             private var ended = false
 
             private suspend fun updateItems() {
-                val list = FileManagement.GetFileList(
-                    client,
-                    groupCode = contact.id,
-                    folderId = path,
-                    startIndex = index
-                ).sendAndExpect(bot).toResult("RemoteFile.listFiles").getOrThrow()
+                val list = bot.network.sendAndExpect(
+                    FileManagement.GetFileList(
+                        client,
+                        groupCode = contact.id,
+                        folderId = path,
+                        startIndex = index
+                    )
+                ).toResult("RemoteFile.listFiles").getOrThrow()
                 if (list.int32RetCode != 0 || list.itemList.isEmpty()) {
                     ended = true
                     return
@@ -356,13 +359,15 @@ internal class RemoteFileImpl(
         if (!info.isOperable()) return false
         return when {
             info.isFile -> {
-                FileManagement.DeleteFile(
-                    client,
-                    groupCode = contact.id,
-                    busId = info.busId,
-                    fileId = info.id,
-                    parentFolderId = info.parentFolderId,
-                ).sendAndExpect(bot).toResult("RemoteFile.delete", checkResp = false).getOrThrow().int32RetCode == 0
+                bot.network.sendAndExpect(
+                    FileManagement.DeleteFile(
+                        client,
+                        groupCode = contact.id,
+                        busId = info.busId,
+                        fileId = info.id,
+                        parentFolderId = info.parentFolderId,
+                    )
+                ).toResult("RemoteFile.delete", checkResp = false).getOrThrow().int32RetCode == 0
             }
             //            recursively -> {
             //                this.listFiles().collect { child ->
@@ -372,9 +377,11 @@ internal class RemoteFileImpl(
             //            }
             else -> {
                 // natively 'recursive'
-                FileManagement.DeleteFolder(
-                    client, contact.id, info.id
-                ).sendAndExpect(bot).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
+                bot.network.sendAndExpect(
+                    FileManagement.DeleteFolder(
+                        client, contact.id, info.id
+                    )
+                ).toResult("RemoteFile.delete").getOrThrow().int32RetCode == 0
             }
         }
     }
@@ -387,11 +394,13 @@ internal class RemoteFileImpl(
 
         val info = getFileFolderInfo() ?: return false
         if (!info.isOperable()) return false
-        return if (info.isFile) {
-            FileManagement.RenameFile(client, contact.id, info.busId, info.id, info.parentFolderId, normalized)
-        } else {
-            FileManagement.RenameFolder(client, contact.id, info.id, normalized)
-        }.sendAndExpect(bot).toResult("RemoteFile.renameTo", checkResp = false).getOrThrow().int32RetCode == 0
+        return bot.network.sendAndExpect(
+            if (info.isFile) {
+                FileManagement.RenameFile(client, contact.id, info.busId, info.id, info.parentFolderId, normalized)
+            } else {
+                FileManagement.RenameFolder(client, contact.id, info.id, normalized)
+            }
+        ).toResult("RemoteFile.renameTo", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
     /**
@@ -424,10 +433,18 @@ internal class RemoteFileImpl(
         if (!info.isOperable()) return false
         return if (info.isFile) {
             val newParentId = target.parent?.checkIsImpl()?.getIdSmart() ?: return false
-            FileManagement.MoveFile(client, contact.id, info.busId, info.id, info.parentFolderId, newParentId)
-                .sendAndExpect(bot).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
+            bot.network.sendAndExpect(
+                FileManagement.MoveFile(
+                    client,
+                    contact.id,
+                    info.busId,
+                    info.id,
+                    info.parentFolderId,
+                    newParentId
+                )
+            ).toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
         } else {
-            return FileManagement.RenameFolder(client, contact.id, info.id, target.name).sendAndExpect(bot)
+            return bot.network.sendAndExpect(FileManagement.RenameFolder(client, contact.id, info.id, target.name))
                 .toResult("RemoteFile.moveTo", checkResp = false).getOrThrow().int32RetCode == 0
         }
     }
@@ -439,8 +456,8 @@ internal class RemoteFileImpl(
 
         val parentFolderId: String = parent?.getIdSmart() ?: return false
 
-        return FileManagement.CreateFolder(client, contact.id, parentFolderId, this.name)
-            .sendAndExpect(bot).toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
+        return bot.network.sendAndExpect(FileManagement.CreateFolder(client, contact.id, parentFolderId, this.name))
+            .toResult("RemoteFile.mkdir", checkResp = false).getOrThrow().int32RetCode == 0
     }
 
     private suspend fun upload0(
@@ -449,13 +466,15 @@ internal class RemoteFileImpl(
     ): Oidb0x6d6.UploadFileRspBody? = resource.withAutoClose {
         val parent = parent ?: return null
         val parentInfo = parent.getFileFolderInfo() ?: return null
-        val resp = FileManagement.RequestUpload(
-            client,
-            groupCode = contact.id,
-            folderId = parentInfo.id,
-            resource = resource,
-            filename = this.name
-        ).sendAndExpect(bot).toResult("RemoteFile.upload").getOrThrow()
+        val resp = bot.network.sendAndExpect(
+            FileManagement.RequestUpload(
+                client,
+                groupCode = contact.id,
+                folderId = parentInfo.id,
+                resource = resource,
+                filename = this.name
+            )
+        ).toResult("RemoteFile.upload").getOrThrow()
         if (resp.boolFileExist) {
             return resp
         }
@@ -534,7 +553,7 @@ internal class RemoteFileImpl(
     ): FileMessage {
         val resp = upload0(resource, callback) ?: error("Failed to upload file.")
         return FileMessageImpl(
-            resp.fileId, resp.busId, name, resource.size
+            resp.fileId, resp.busId, name, resource.size, allowSend = true
         )
     }
 
@@ -548,15 +567,18 @@ internal class RemoteFileImpl(
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(resource: ExternalResource): FileMessage {
         return upload(resource, null)
     }
 
     // compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
         file.toExternalResource().use { upload(it, callback) }
 
     //compiler bug
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File): FileMessage {
         // Dear compiler:
         //
@@ -582,12 +604,14 @@ internal class RemoteFileImpl(
     override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {
         val info = getFileFolderInfo() ?: return null
         if (!info.isFile) return null
-        val resp = FileManagement.RequestDownload(
-            client,
-            groupCode = contact.id,
-            busId = info.busId,
-            fileId = info.id
-        ).sendAndExpect(bot).toResult("RemoteFile.getDownloadInfo").getOrThrow()
+        val resp = bot.network.sendAndExpect(
+            FileManagement.RequestDownload(
+                client,
+                groupCode = contact.id,
+                busId = info.busId,
+                fileId = info.id
+            )
+        ).toResult("RemoteFile.getDownloadInfo").getOrThrow()
 
         return RemoteFile.DownloadInfo(
             filename = name,

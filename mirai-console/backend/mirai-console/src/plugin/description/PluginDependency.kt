@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -23,6 +23,12 @@ import net.mamoe.mirai.console.util.SemVersion
 /**
  * 插件的一个依赖的信息.
  *
+ * 只有添加依赖后才能使用依赖插件的 API.
+ *
+ * 被依赖的插件将会在依赖方之前加载. 即若 A 依赖 B, 那么 B 总是会在 A 之前加载.
+ *
+ * 注意, 若发现循环依赖, 将会拒绝所有参与循环的插件的加载.
+ *
  * @see PluginDescription.dependencies
  */
 @Serializable(with = PluginDependency.PluginDependencyAsStringSerializer::class)
@@ -32,7 +38,8 @@ public data class PluginDependency @JvmOverloads constructor(
      */
     @ResolveContext(PLUGIN_ID) public val id: String,
     /**
-     * 依赖版本号. 为 null 时则为不限制版本.
+     * 依赖版本号. 为 null 时则为不限制版本. 通常建议至少限制使用同一个主版本号.
+     * 如开发时依赖该插件版本 1.5.0, 则将版本限制设置为 `[1.5.0, 2.0.0)`, 表示大于等于 `1.5.0`, 小于 `2.0.0`.
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
@@ -40,7 +47,8 @@ public data class PluginDependency @JvmOverloads constructor(
      */
     @ResolveContext(VERSION_REQUIREMENT) public val versionRequirement: String? = null,
     /**
-     * 若为 `false`, 插件在找不到此依赖时也能正常加载.
+     * 若为 `false`, 在找不到此依赖时将会拒绝插件加载.
+     * 若为 `true`, 在找不到此依赖时也能正常加载.
      */
     public val isOptional: Boolean = false,
 ) {

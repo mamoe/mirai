@@ -71,8 +71,12 @@ Mirai 官方提供两个插件：
 可以使用 MCL 自动安装这些插件如：
 
 ```
-./mcl --update-package net.mamoe:mirai-api-http --type plugin --channel stable
+./mcl --update-package net.mamoe:mirai-api-http --type plugin --channel stable-v2
+
+./mcl --update-package net.mamoe:chat-command --type plugin --channel stable
 ```
+
+注意: 插件有多个频道, `--channel stable` 表示使用名为 `stable` 的频道. 不同的插件可能会设置不同的频道, 具体需要使用哪个频道可参考特定插件的说明 (很多插件会单独说明要如何安装它们, 因此不必过多考虑).
 
 详细文档：[MCL/scripts](https://github.com/iTXTech/mirai-console-loader/blob/master/scripts/README.md)
 
@@ -121,7 +125,7 @@ Mirai Console 内置一些指令，输入 `?` 并回车可以查看指令列表�
 [`/permission permit [target] [permission]`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
 来授予其他人执行相关命令的权限, 需要执行的权限一般情况在插件的介绍页都会给明
 
-`@see` [`PermissionCommand`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
+详见 [`PermissionCommand`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
 
 ## 解决问题
 

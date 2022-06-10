@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,26 +11,32 @@
 
 package net.mamoe.mirai.console.plugin
 
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.io.File
 import java.nio.file.Path
 
 /**
  * 插件管理器.
  *
- * [PluginManager] 管理所有 [插件加载器][PluginLoader], 储存对所有插件的引用 ([plugins]), 但不直接与 [插件实例][Plugin] 交互.
+ * [PluginManager] 管理所有 [插件加载器][PluginLoader], 储存对所有插件的引用 ([plugins]), 通过 [PluginLoader] 间接与 [插件实例][Plugin] 交互.
  *
- * 有关 [插件加载][PluginLoader.load], [插件启用][PluginLoader.enable] 等操作都由 [PluginLoader] 完成.
+ * [插件加载][PluginLoader.load] 和 [插件启用][PluginLoader.enable] 等操作都由 [PluginLoader] 完成.
  * [PluginManager] 仅作为一个联系所有 [插件加载器][PluginLoader], 使它们互相合作的桥梁.
  *
- * 若要主动加载一个插件, 请获取相应插件的 [PluginLoader], 然后使用 [PluginLoader.enable]
+ * 若要主动加载一个插件, 请获取能加载该插件的 [PluginLoader], 然后使用 [PluginLoader.enable]
+ *
+ * ## 获取插件管理器实例
+ *
+ * 可通过 [MiraiConsole.pluginManager] 或 [PluginManager.INSTANCE] 获取 [PluginManager] 实例.
  *
  * @see Plugin 插件
  * @see PluginLoader 插件加载器
  */
+@NotStableForInheritance
 public interface PluginManager {
     // region paths
 
@@ -75,6 +81,44 @@ public interface PluginManager {
      * **实现细节**: 在 terminal 前端实现为 `$rootPath/config`
      */
     public val pluginsConfigFolder: File
+
+    /**
+     * 插件运行时依赖存放路径 [Path], 插件自动下载的依赖都会存放于此目录
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugin-libraries`,
+     * 依赖 jar 文件由插件共享, 但是运行时插件加载的类是互相隔离的
+     *
+     * @since 2.11
+     */
+    public val pluginLibrariesPath: Path
+
+    /**
+     * 插件运行时依赖存放路径 [File], 插件自动下载的依赖都会存放于此目录
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugin-libraries`,
+     * 依赖 jar 文件由插件共享, 但是运行时插件加载的类是互相隔离的
+     *
+     * @since 2.11
+     */
+    public val pluginLibrariesFolder: File
+
+    /**
+     * 插件运行时依赖存放路径 [Path], 该路径下的依赖由全部插件共享
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugin-shared-libraries`
+     *
+     * @since 2.11
+     */
+    public val pluginSharedLibrariesPath: Path
+
+    /**
+     * 插件运行时依赖存放路径 [File], 该路径下的依赖由全部插件共享
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugin-shared-libraries`
+     *
+     * @since 2.11
+     */
+    public val pluginSharedLibrariesFolder: File
 
     // endregion
 
@@ -130,7 +174,10 @@ public interface PluginManager {
 
     // endregion
 
-    public companion object INSTANCE : PluginManager by PluginManagerImpl {
+    /**
+     * [PluginManager] 实例. 转发所有调用到 [MiraiConsole.pluginManager].
+     */
+    public companion object INSTANCE : PluginManager by (dynamicDelegation { MiraiConsole.pluginManager }) {
         /**
          * 经过泛型类型转换的 [Plugin.loader]
          */

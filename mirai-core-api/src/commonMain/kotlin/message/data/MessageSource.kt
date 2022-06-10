@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -177,13 +178,21 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */
-    public abstract val originalMessage: MessageChain
+    public abstract val originalMessage: MessageChain // see OutgoingMessageSourceInternal.originalMessage
 
     /**
-     * 返回 `"[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"`
+     * 当 [originalMessage] 已被初始化后返回 `true`.
+     *
+     * @since 2.12
      */
-    public final override fun toString(): String =
-        "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
+    public abstract val isOriginalMessageInitialized: Boolean
+
+    public abstract override fun toString(): String
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMessageSource(this, data)
+    }
 
     public object Serializer : MessageSourceSerializerImpl("MessageSource")
 
@@ -480,7 +489,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
 
             public abstract override val target: Friend
             public final override val subject: Friend get() = target
-            //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to friend $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -490,7 +502,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
 
             public abstract override val target: Stranger
             public final override val subject: Stranger get() = target
-            //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to stranger $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -500,6 +515,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public abstract override val target: Member
             public val group: Group get() = target.group
             public final override val subject: Member get() = target
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to group temp $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -508,6 +527,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
 
             public abstract override val target: Group
             public final override val subject: Group get() = target
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to group $targetId at $time]"
+            }
         }
     }
 
@@ -528,7 +551,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public abstract override val sender: Friend
             public final override val subject: Friend get() = sender
             public final override val target: Bot get() = sender.bot
-            // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.ids})"
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from friend $fromId to $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -540,6 +566,9 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public inline val group: Group get() = sender.group
             public final override val subject: Member get() = sender
             public final override val target: Bot get() = sender.bot
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from group temp $fromId to $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -550,6 +579,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public abstract override val sender: Stranger
             public final override val subject: Stranger get() = sender
             public final override val target: Bot get() = sender.bot
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from stranger $fromId to $targetId at $time]"
+            }
         }
 
         @NotStableForInheritance
@@ -561,6 +594,10 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             public override val subject: Group get() = sender.group
             public final override val target: Group get() = subject
             public inline val group: Group get() = subject
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from group $fromId to $targetId at $time]"
+            }
         }
 
         public companion object Key :
@@ -584,4 +621,8 @@ public abstract class OfflineMessageSource : MessageSource() { // TODO: 2021/1/1
      * 消息种类
      */
     public abstract val kind: MessageSourceKind
+
+    final override fun toString(): String {
+        return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to $targetId at $time]"
+    }
 }

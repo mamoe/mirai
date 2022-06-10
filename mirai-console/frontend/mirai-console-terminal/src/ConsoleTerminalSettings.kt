@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.console.terminal
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation
+
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(
@@ -28,6 +30,9 @@ annotation class ConsoleTerminalExperimentalApi
 @ConsoleTerminalExperimentalApi
 object ConsoleTerminalSettings {
     @JvmField
+    var launchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions = MiraiConsoleImplementation.ConsoleLaunchOptions()
+
+    @JvmField
     var setupAnsi: Boolean = System.getProperty("os.name")
         .lowercase()
         .contains("windows") // Just for Windows
@@ -43,4 +48,7 @@ object ConsoleTerminalSettings {
 
     @JvmField
     var noConsoleReadingReplacement: String = ""
+
+    @JvmField
+    var noLogging = false
 }

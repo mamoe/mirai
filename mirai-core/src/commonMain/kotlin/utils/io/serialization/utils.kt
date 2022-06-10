@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:JvmName("SerializationUtils")
@@ -14,9 +14,11 @@
 package net.mamoe.mirai.internal.utils.io.serialization
 
 import kotlinx.io.core.*
+import kotlinx.io.streams.asInput
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
@@ -24,9 +26,12 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.DebugLogger
+import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
 import net.mamoe.mirai.internal.utils.printStructure
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.readPacketExact
+import net.mamoe.mirai.utils.*
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -39,7 +44,64 @@ internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
 
 internal fun <T : JceStruct> ByteArray.loadAs(
     deserializer: DeserializationStrategy<T>,
-): T = this.read { Tars.UTF_8.load(deserializer, this) }
+    offset: Int = 0,
+    length: Int = size - offset,
+): T {
+    if (this.size >= 4) {
+        val possibleLength = this.toInt(offset = offset)
+//        return doLoadAs(deserializer, offset = offset + 4, length = possibleLength)
+
+        if (possibleLength == length || possibleLength == length - 4) {
+            return doLoadAs(
+                deserializer,
+                offset = offset + 4,
+                length = length - 4
+            )
+        }
+    }
+
+    return doLoadAs(deserializer, offset, length)
+}
+
+private fun <T : JceStruct> ByteArray.doLoadAs(
+    deserializer: DeserializationStrategy<T>,
+    offset: Int,
+    length: Int,
+): T {
+    try {
+        return this.inputStream(offset = offset, length = length).asInput().use { input ->
+            Tars.UTF_8.load(deserializer, input)
+        }
+    } catch (originalException: Exception) {
+        val log = ByteArrayOutputStream()
+        try {
+            val value = PrintStream(log).use { stream ->
+                stream.println("\nData: ")
+                stream.println(this.toUHexString(offset = offset, length = length))
+                stream.println("Trace:")
+
+                this.inputStream(offset = offset, length = length).asInput().use { input ->
+                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(stream))
+                }
+            }
+            return value.also {
+                TarsDecoder.logger.warning(
+                    contextualBugReportException(
+                        "解析 " + deserializer.descriptor.serialName,
+                        "启用 debug 模式后解析正常: $value \n\n${log.toByteArray().decodeToString()}",
+                        originalException
+                    )
+                )
+            }
+        } catch (secondFailure: Exception) {
+            throw contextualBugReportException(
+                "解析 " + deserializer.descriptor.serialName,
+                log.toByteArray().decodeToString(),
+                ExceptionCollector.compressExceptions(originalException, secondFailure)
+            )
+        }
+    }
+}
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
@@ -49,11 +111,11 @@ internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
 }
 
 internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
-    serializer: DeserializationStrategy<T>,
+    deserializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt(),
 ): T {
-    this.readPacketExact(length).use {
-        return Tars.UTF_8.load(serializer, it)
+    return this.useBytes(n = length) { data, arrayLength ->
+        data.loadAs(deserializer, offset = 0, length = arrayLength)
     }
 }
 

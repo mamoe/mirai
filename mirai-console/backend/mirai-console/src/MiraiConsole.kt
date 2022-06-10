@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "unused")
@@ -12,8 +12,8 @@
 
 package net.mamoe.mirai.console
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
@@ -23,27 +23,59 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.nio.file.Path
 import java.time.Instant
 
-
 /**
- * mirai-console 实例
+ * Mirai Console 后端功能入口.
+ *
+ * # 使用 Mirai Console
+ *
+ * ## 获取 Mirai Console 后端实例
+ *
+ * 一般插件开发者只能通过 [MiraiConsole.INSTANCE] 获得 [MiraiConsole] 实例.
+ *
+ * ## Mirai Console 生命周期
+ *
+ * [MiraiConsole] 实现[协程作用域][CoroutineScope]. [MiraiConsole] 生命周期与该[协程作用域][CoroutineScope]的相同.
+ *
+ * 在 [MiraiConsole] 实例构造后就视为*已开始[生存][Job.isActive]*. 随后才会[正式启动][MiraiConsoleImplementation.start] (初始化和加载插件等).
+ *
+ * [取消 Job][Job.cancel] 时会同时停止 [MiraiConsole], 并进行清理工作 (例如调用 [JvmPlugin.onDisable].
+ *
+ * ## 获取插件管理器等功能实例
+ *
+ * [MiraiConsole] 是后端功能入口, 可调用其 [MiraiConsole.pluginManager] 获取到 [PluginManager] 等实例.
+ *
+ * # 实现 Mirai Console
+ *
+ * ## 实现 Mirai Console 后端
+ *
+ * [MiraiConsole] 不可直接实现.
+ *
+ * 要实现 Mirai Console 后端, 需实现接口 [MiraiConsoleImplementation] 为一个 `class` 切勿实现为 `object`(单例或静态).
+ *
+ * ## 启动 Mirai Console 后端
+ *
+ * Mirai Console 后端 (即本 [MiraiConsole] 类实例) 不可单独 (直接) 启动, 需要配合一个任意的前端实现.
+ *
+ * Mirai Console 的启动时机由前端决定. 前端可在恰当的时机调用 [MiraiConsoleImplementation.start] 来启动一个 [MiraiConsoleImplementation].
+ *
+ * [MiraiConsoleImplementation] 将会由 [bridge][MiraiConsoleImplementationBridge] 转接为 [MiraiConsole] 实现. 对 [MiraiConsole] 的调用都会被转发到前端实现的 [MiraiConsoleImplementation].
  *
  * @see INSTANCE
  * @see MiraiConsoleImplementation
  */
+@NotStableForInheritance
 public interface MiraiConsole : CoroutineScope {
     /**
      * Console 运行根目录, 由前端决定确切路径.
@@ -83,9 +115,16 @@ public interface MiraiConsole : CoroutineScope {
      */
     public val version: SemVersion
 
+    /**
+     * [PluginManager] 实例. 在 [MiraiConsole] 生命周期内应保持不变.
+     *
+     * @since 2.10
+     */
+    public val pluginManager: PluginManager
 
     @ConsoleExperimentalApi
     public val pluginCenter: PluginCenter
+        get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     /**
      * 创建一个 logger
@@ -104,7 +143,12 @@ public interface MiraiConsole : CoroutineScope {
     @ConsoleExperimentalApi
     public val isAnsiSupported: Boolean
 
-    public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
+    /**
+     * [MiraiConsole] 唯一实例. 一般插件开发者只能通过 [MiraiConsole.INSTANCE] 获得 [MiraiConsole] 实例.
+     *
+     * 对象以 [bridge][MiraiConsoleImplementationBridge] 实现, 将会桥接特定前端实现的 [MiraiConsoleImplementation] 到 [MiraiConsole].
+     */
+    public companion object INSTANCE : MiraiConsole by dynamicDelegation({ MiraiConsoleImplementation.getBridge() }) {
         /**
          * 获取 [MiraiConsole] 的 [Job]
          */ // MiraiConsole.INSTANCE.getJob()
@@ -117,7 +161,7 @@ public interface MiraiConsole : CoroutineScope {
          *
          * 调用 [Bot.login] 可登录.
          *
-         * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         * @see Bot.instances 获取现有 [Bot] 实例列表
          * @see BotConfigurationAlterer ExtensionPoint
          */
         // don't static
@@ -176,15 +220,12 @@ public interface MiraiConsole : CoroutineScope {
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
                 autoReconnectOnForceOffline()
 
-                this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
+                this.loginSolver = MiraiConsoleImplementation.getInstance().createLoginSolver(id, this)
                 configuration()
             }
 
-            config = GlobalComponentStorage.run {
-                BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
-                    extension.alterConfiguration(id, acc)
-
-                }
+            config = GlobalComponentStorage.foldExtensions(BotConfigurationAlterer, config) { acc, extension ->
+                extension.alterConfiguration(id, acc)
             }
 
             return when (password) {
@@ -197,6 +238,22 @@ public interface MiraiConsole : CoroutineScope {
         @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
         public val isActive: Boolean
             get() = job.isActive
+
+        /**
+         * 停止 Console 运行
+         *
+         * Console 会在一个合适的时间进行关闭, 并不是调用马上关闭 Console
+         */
+        @ConsoleExperimentalApi
+        @JvmStatic
+        public fun shutdown() {
+            val consoleJob = job
+            if (!consoleJob.isActive) return
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch {
+                MiraiConsoleImplementation.shutdown()
+            }
+        }
     }
 
 

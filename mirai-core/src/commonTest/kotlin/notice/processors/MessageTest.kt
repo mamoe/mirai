@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,7 +17,6 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupTempMessageEvent
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
-import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.PlainText
@@ -135,7 +134,6 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `friend message test`() {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
-            bot.components[SsoProcessor].firstLoginSucceed = true
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
                     fromUin = 1230001,
@@ -216,8 +214,6 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `group temp message test`() {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
-            bot.components[SsoProcessor].firstLoginSucceed = true
-
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
                     fromUin = 1230001,
@@ -312,8 +308,6 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
     @Test
     suspend fun `group temp message test for issue 1410`() {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
-            bot.components[SsoProcessor].firstLoginSucceed = true
-
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
                     fromUin = 1230001,

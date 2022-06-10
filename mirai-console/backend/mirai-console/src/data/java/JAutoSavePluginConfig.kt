@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.data.java
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 /**
  * 一个插件的配置数据, 用于和用户交互.
@@ -37,5 +38,11 @@ import net.mamoe.mirai.console.data.PluginData
  * @see JAutoSavePluginData
  * @see PluginConfig
  */
+@Deprecated(
+    "请使用 JavaAutoSavePluginConfig",
+    replaceWith = ReplaceWith("JavaAutoSavePluginConfig", "net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig"),
+    level = DeprecationLevel.WARNING
+)
+@DeprecatedSinceMirai(warningSince = "2.11")
 public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName),
     PluginConfig

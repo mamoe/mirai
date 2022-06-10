@@ -8,10 +8,10 @@
  */
 package net.mamoe.mirai.console.data
 
-import net.mamoe.mirai.console.framework.AbstractConsoleTest
+import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 
 @Suppress("unused")
-class JavaPluginDescriptionTests : AbstractConsoleTest() {
+class JavaPluginDescriptionTests : AbstractConsoleInstanceTest() {
 
 //    @Test
 //    fun testSimpleValue() {

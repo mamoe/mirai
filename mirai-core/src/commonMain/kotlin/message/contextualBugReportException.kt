@@ -19,12 +19,12 @@ internal data class ContextualBugReportException(
 
 internal fun contextualBugReportException(
     context: String,
-    forDebug: String,
+    forDebug: String?,
     e: Throwable? = null,
     additional: String = "",
 ): ContextualBugReportException {
     return ContextualBugReportException(
-        "在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new   $additional 调试信息: $forDebug",
+        "在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai: https://github.com/mamoe/mirai/issues/new/choose   $additional 调试信息: $forDebug",
         e,
     )
 }

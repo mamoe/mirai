@@ -10,24 +10,28 @@
 
 package net.mamoe.mirai.internal
 
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
+import java.nio.ByteBuffer
 
 internal data class BotAccount(
     @JvmSynthetic
     internal val id: Long,
+
     @JvmSynthetic
     @MiraiExperimentalApi
-    val passwordMd5: ByteArray, // md5
+    val passwordMd5Buffer: ByteBuffer, // md5
 
     val phoneNumber: String = ""
 ) {
     init {
-        check(passwordMd5.size == 16) {
-            "Invalid passwordMd5: size must be 16 but got ${passwordMd5.size}. passwordMd5=${passwordMd5.toUHexString()}"
+        check(passwordMd5Buffer.remaining == 16) {
+            "Invalid passwordMd5: size must be 16 but got ${passwordMd5Buffer.remaining}. passwordMd5=${passwordMd5.toUHexString()}"
         }
     }
+
+    constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "") : this(
+        id, SecretsProtection.escape(passwordMd5), phoneNumber
+    )
 
     constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
         id,
@@ -37,6 +41,13 @@ internal data class BotAccount(
         require(passwordPlainText.length <= 16) { "Password length must be at most 16." }
     }
 
+    @get:JvmSynthetic
+    @MiraiExperimentalApi
+    val passwordMd5: ByteArray
+        get() {
+            return passwordMd5Buffer.duplicate().readBytes()
+        }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -44,7 +55,7 @@ internal data class BotAccount(
         other as BotAccount
 
         if (id != other.id) return false
-        if (!passwordMd5.contentEquals(other.passwordMd5)) return false
+        if (passwordMd5Buffer != other.passwordMd5Buffer) return false
 
         return true
     }
@@ -52,7 +63,7 @@ internal data class BotAccount(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + passwordMd5.contentHashCode()
+        result = 31 * result + passwordMd5Buffer.hashCode()
         return result
     }
 }

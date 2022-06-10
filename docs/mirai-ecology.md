@@ -59,7 +59,7 @@ mirai-console 的内部也不是单一的结构，它分为**前端**和**后端
 - [后端](/mirai-console/backend)：后端就是做了上述工作，即提供**指令**，**权限**，**自动数据**
   等开放接口。
 - [前端](/mirai-console/frontend)：前端就是启动 mirai-console
-  并监控后端运行状态的端口，上述命令行解密是前端的一种，即 [**
+  并监控后端运行状态的端口，上述命令行界面是前端的一种，即 [**
   mirai-console-terminal**](/mirai-console/frontend/mirai-console-terminal)
   ，在终端启动的前端。另外还有其他可用的前端如运行在 Android
   的 **[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid)**。

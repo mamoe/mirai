@@ -28,10 +28,17 @@ tasks.register("updateSnapshotVersion") {
     doLast {
         rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
             var text = readText()
-            check(text.indexOf("project = \"${project.version}\"") != -1) { "Cannot find \"project = \\\"${project.version}\\\"\"" }
-            text = text.replace("project = \"${project.version}\"", "project = \"${snapshotVersion}\"")
+            val template = { version: Any? -> "/*PROJECT_VERSION_START*/\"${version}\"/*PROJECT_VERSION_END*/" }
+            check(text.indexOf(template(project.version)) != -1) { "Cannot find ${template(project.version)}" }
+            text = text.replace(template(project.version), template(snapshotVersion))
             writeText(text)
         }
+    }
+}
+
+tasks.register("publishSnapshotPage") {
+    doLast {
+        UpdateSnapshotPage.run(project, getSha())
     }
 }
 

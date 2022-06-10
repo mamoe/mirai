@@ -18,7 +18,9 @@ import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.DeprecationLevel.ERROR
+import kotlin.DeprecationLevel.HIDDEN
 
 /**
  * 表示一个 mirai-console 插件.
@@ -53,8 +55,9 @@ public interface Plugin : CommandOwner {
 @Deprecated(
     "Moved to companion for a better Java API. ",
     ReplaceWith("this.description", "net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description"),
-    level = ERROR
+    level = HIDDEN
 )
+@DeprecatedSinceMirai(errorSince = "2.0", hiddenSince = "2.10")
 public inline val Plugin.description: PluginDescription
     get() = getPluginDescription(this) // resolved to net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.getDescription
 

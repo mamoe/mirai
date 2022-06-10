@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.data
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.internal.data.ShadowMap
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -32,7 +33,7 @@ public object PluginDataExtensions {
             "getOrDefault on NotNullMap always returns the value in the map, and defaultValue will never be returned.",
             level = DeprecationLevel.WARNING,
             replaceWith = ReplaceWith("this.get(key)")
-        )
+        ) // diagnostic deprecation
         override fun getOrDefault(key: K, defaultValue: V): V {
             return super.getOrDefault(key, defaultValue)
         }
@@ -49,7 +50,7 @@ public object PluginDataExtensions {
             "getOrDefault on NotNullMutableMap always returns the value in the map, and defaultValue will never be returned.",
             level = DeprecationLevel.WARNING,
             replaceWith = ReplaceWith("this.get(key)")
-        )
+        ) // diagnostic deprecation
         override fun getOrDefault(key: K, defaultValue: V): V {
             return super<MutableMap>.getOrDefault(key, defaultValue)
         }
@@ -58,7 +59,7 @@ public object PluginDataExtensions {
             "putIfAbsent on NotNullMutableMap always does nothing.",
             level = DeprecationLevel.WARNING,
             replaceWith = ReplaceWith("")
-        )
+        ) // diagnostic deprecation
         override fun putIfAbsent(key: K, value: V): Nothing? = null
     }
 

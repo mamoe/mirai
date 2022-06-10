@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,6 +17,8 @@ import kotlin.test.assertEquals
 internal class TypeSafeMapTest {
 
     private val myKey = TypeKey<String>("test")
+    private val myNullableKey = TypeKey<String?>("testNullable")
+    private val myNullableKey2 = TypeKey<String?>("testNullable2")
     private val myKey2 = TypeKey<CharSequence>("test2")
 
     @Test
@@ -27,6 +29,17 @@ internal class TypeSafeMapTest {
         assertEquals(2, map.size)
         assertEquals("str", map[myKey])
         assertEquals("str2", map[myKey2])
+
+    }
+
+    @Test
+    fun `test nulls`() {
+        val map = MutableTypeSafeMap()
+        map[myNullableKey] = null
+        map[myNullableKey2] = "str2"
+        assertEquals(2, map.size)
+        assertEquals(null, map[myNullableKey])
+        assertEquals("str2", map[myNullableKey2])
     }
 
     @Test

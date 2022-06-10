@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -14,6 +14,8 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketLogger
+import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
@@ -28,10 +30,14 @@ import kotlin.io.use
  */
 internal interface PacketCodec {
     /**
-     * It's caller's responsibility to close [input]
+     * It's caller's responsibility to close [input].
+     *
+     * @throws PacketCodecException normal, known errors
+     * @throws Exception unexpected errors
      * @param input received from sockets.
      * @return decoded
      */
+    @Throws(PacketCodecException::class)
     fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket
 
     /**
@@ -50,17 +56,39 @@ internal interface PacketCodec {
     }
 }
 
+/**
+ * Wraps an exception thrown by [PacketCodec.decodeRaw], which is not a [PacketCodecException] (meaning unexpected).
+ */
 internal data class ExceptionInPacketCodecException(
     override val cause: Throwable,
 ) : IllegalStateException("Exception in PacketCodec.", cause)
 
-internal class OicqDecodingException(
-    val targetException: Throwable
-) : RuntimeException(
-    null, targetException,
-    true, // enableSuppression
-    false, // writableStackTrace
-) {
+/**
+ * Thrown by [PacketCodec.decodeRaw], representing an excepted error.
+ */
+internal class PacketCodecException(
+    val targetException: Throwable,
+    val kind: Kind,
+) : NetworkException(recoverable = true, cause = targetException) {
+    constructor(message: String, kind: Kind) : this(IllegalStateException(message), kind)
+
+    enum class Kind {
+        /**
+         * 会触发重连
+         */
+        SESSION_EXPIRED,
+
+        /**
+         * 只记录日志
+         */
+        PROTOCOL_UPDATED,
+
+        /**
+         * 只记录日志
+         */
+        OTHER,
+    }
+
     override fun getStackTrace(): Array<StackTraceElement> {
         return targetException.stackTrace
     }
@@ -76,9 +104,12 @@ internal class PacketCodecImpl : PacketCodec {
 
         val flag2 = readByte().toInt()
         val flag3 = readByte().toInt()
-        check(flag3 == 0) {
-            "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
-                    "Remaining=${this.readBytes().toUHexString()}"
+        if (flag3 != 0) {
+            throw PacketCodecException(
+                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
+                        "Remaining=${this.readBytes().toUHexString()}",
+                kind = PROTOCOL_UPDATED
+            )
         }
 
         readString(readInt() - 4)// uinAccount
@@ -90,12 +121,15 @@ internal class PacketCodecImpl : PacketCodec {
                 2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
                 1 -> TEA.decrypt(buffer, client.wLoginSigInfo.d2Key, size)
                 0 -> buffer
-                else -> error("Unknown flag2=$flag2")
+                else -> throw PacketCodecException("Unknown flag2=$flag2", PROTOCOL_UPDATED)
             }.let { decryptedData ->
                 when (flag1) {
                     0x0A -> parseSsoFrame(client, decryptedData)
                     0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                    else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
+                    else -> throw PacketCodecException(
+                        "unknown flag1: ${flag1.toByte().toUHexString()}",
+                        PROTOCOL_UPDATED
+                    )
                 }
             }.let { raw ->
                 when (flag2) {
@@ -107,11 +141,11 @@ internal class PacketCodecImpl : PacketCodec {
                             try {
                                 parseOicqResponse(client)
                             } catch (e: Throwable) {
-                                throw OicqDecodingException(e)
+                                throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                             }
                         }
                     )
-                    else -> error("Unknown flag2=$flag2")
+                    else -> error("unreachable")
                 }
             }
         }
@@ -136,11 +170,27 @@ internal class PacketCodecImpl : PacketCodec {
                 PacketLogger.verbose { "sequenceId = $ssoSequenceId" }
 
                 val returnCode = readInt()
-                check(returnCode == 0) {
+                if (returnCode != 0) {
                     if (returnCode <= -10000) {
-                        // https://github.com/mamoe/mirai/issues/470
-                        error("returnCode = $returnCode")
-                    } else "returnCode = $returnCode"
+                        // #470: -10008, 例如在手机QQ强制下线机器人
+                        // #1957: -10106, 未知原因, 但会导致收不到消息
+
+                        throw PacketCodecException(
+                            "Received packet returnCode = $returnCode, which may mean session expired.",
+                            SESSION_EXPIRED
+                        )
+
+                        // 备注: 之后该异常将会导致 NetworkHandler close, 然后由 selector 触发重连.
+                        // 重连时会在 net.mamoe.mirai.internal.network.components.SsoProcessorImpl.login 进行 FastLogin.
+                        // 不确定在这种情况下执行 FastLogin 是否正确. 若有问题, 考虑强制执行 SlowLogin (by invalidating session).
+                    } else {
+                        throw PacketCodecException(
+                            "Received unknown packet returnCode = $returnCode, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
+                            OTHER
+                        )
+
+                        // 备注: OTHER 不会触发重连, 只会记录日志.
+                    }
                 }
 
                 if (PacketLogger.isEnabled) {
@@ -182,7 +232,7 @@ internal class PacketCodecImpl : PacketCodec {
                     }
                 }
                 8 -> input
-                else -> error("unknown dataCompressed flag: $dataCompressed")
+                else -> throw PacketCodecException("Unknown dataCompressed flag: $dataCompressed", PROTOCOL_UPDATED)
             }
 
             // body
@@ -221,7 +271,7 @@ internal class PacketCodecImpl : PacketCodec {
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
-                val size = (this.remaining - 1).toInt();
+                val size = (this.remaining - 1).toInt()
                 // session
                 TEA.decrypt(
                     this.readBytes(),

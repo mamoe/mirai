@@ -1,72 +1,79 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
 
 package net.mamoe.mirai.console.internal.data
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
+import kotlinx.serialization.serializerOrNull
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import java.lang.reflect.Modifier
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 
-/**
- * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
- * Copyright 2017-2020 JetBrains s.r.o.
- */
-@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-@Suppress(
-    "UNCHECKED_CAST",
-    "NO_REFLECTION_IN_CLASS_PATH",
-    "UNSUPPORTED",
-    "INVISIBLE_MEMBER",
-    "INVISIBLE_REFERENCE",
-    "IMPLICIT_CAST_TO_ANY"
-)
-internal fun serializerMirai(type: KType): KSerializer<Any?> {
-    fun serializerByKTypeImpl(type: KType): KSerializer<Any> {
+@Suppress("UNCHECKED_CAST")
+internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
+    fun serializerByKTypeImpl(type: KType): KSerializer<*> {
         val rootClass = type.classifierAsKClass()
+
+        // In Kotlin 1.6.20, `typeOf<Array<Long>>?.classifier` surprisingly gives kotlin.LongArray
+        // https://youtrack.jetbrains.com/issue/KT-52170/
+        if (type.arguments.size == 1) { // can be typeOf<Array<...>>, so cannot be typeOf<IntArray>
+            val result: KSerializer<Any?>? = when (rootClass) {
+                ByteArray::class -> ArraySerializer(Byte.serializer()).cast()
+                ShortArray::class -> ArraySerializer(Short.serializer()).cast()
+                IntArray::class -> ArraySerializer(Int.serializer()).cast()
+                LongArray::class -> ArraySerializer(Long.serializer()).cast()
+                FloatArray::class -> ArraySerializer(Float.serializer()).cast()
+                DoubleArray::class -> ArraySerializer(Double.serializer()).cast()
+                CharArray::class -> ArraySerializer(Char.serializer()).cast()
+                BooleanArray::class -> ArraySerializer(Boolean.serializer()).cast()
+                else -> null
+            }
+
+            if (result != null) return result
+        }
+
+        this.serializerOrNull(type)?.let { return it } // Kotlin builtin and user-defined
+        MessageSerializers.serializersModule.serializerOrNull(type)?.let { return it } // Mirai Messages
+        if (type.classifier == Any::class) return if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer as KSerializer<Any?>
 
         val typeArguments = type.arguments
             .map { requireNotNull(it.type) { "Star projections in type arguments are not allowed, but had $type" } }
         return when {
-            typeArguments.isEmpty() -> rootClass.serializer()
+            typeArguments.isEmpty() -> this.serializer(type)
             else -> {
-                val serializers = typeArguments
-                    .map(::serializerMirai)
-                // Array is not supported, see KT-32839
+                val serializers = typeArguments.map(::serializerMirai)
                 when (rootClass) {
-                    List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
+                    Collection::class, List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
                     HashSet::class -> SetSerializer(serializers[0])
                     Set::class, MutableSet::class, LinkedHashSet::class -> SetSerializer(serializers[0])
                     HashMap::class -> MapSerializer(serializers[0], serializers[1])
-                    ConcurrentHashMap::class, ConcurrentMap::class -> MapSerializer(serializers[0], serializers[1]).map(
-                        serializer = { HashMap(it as Map<*, *>) },
-                        deserializer = { ConcurrentHashMap(it) }
+                    Map::class, MutableMap::class, LinkedHashMap::class -> MapSerializer(
+                        serializers[0],
+                        serializers[1]
                     )
-                    Map::class, MutableMap::class, LinkedHashMap::class -> MapSerializer(serializers[0], serializers[1])
                     Map.Entry::class -> MapEntrySerializer(serializers[0], serializers[1])
                     Pair::class -> PairSerializer(serializers[0], serializers[1])
                     Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
-                    /* mamoe modify */ Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
+
+                    Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
                     else -> {
                         if (rootClass.java.isArray) {
                             return ArraySerializer(
@@ -81,10 +88,10 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
                     }
                 }
             }
-        }.cast()
+        }
     }
 
-    val result = serializerByKTypeImpl(type)
+    val result = serializerByKTypeImpl(type) as KSerializer<Any>
     return if (type.isMarkedNullable) result.nullable else result.cast()
 }
 

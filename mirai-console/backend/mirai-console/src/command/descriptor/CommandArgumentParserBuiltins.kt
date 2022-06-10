@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPOSED_SUPER_CLASS")
@@ -21,6 +21,9 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.chineseLength
+import java.time.temporal.TemporalAccessor
 
 
 /**
@@ -479,6 +482,32 @@ public class EnumValueArgumentParser<T : Enum<T>>(
     }
 }
 
+/**
+ * 解析参数为时间 [T]
+ * @param now 返回当前时间
+ * @param parse 从字符串解析时间
+ * @since 2.10
+ */
+@MiraiExperimentalApi
+public class TemporalArgumentParser<T : TemporalAccessor>(
+    private val type: Class<T>,
+    private val now: () -> T,
+    private val parse: (CharSequence) -> T,
+) : InternalCommandValueArgumentParserExtensions<T>() {
+
+    override fun parse(raw: String, sender: CommandSender): T {
+        return try {
+            if (raw.equals(other = "now", ignoreCase = true)) {
+                now.invoke()
+            } else {
+                parse.invoke(raw)
+            }
+        } catch (e: Throwable) {
+            illegalArgument("无法解析 $raw 为 ${type.javaClass}")
+        }
+    }
+}
+
 internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> :
     AbstractCommandValueArgumentParser<T>() {
     private fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
@@ -542,20 +571,11 @@ internal fun Double.toDecimalPlace(n: Int): String = "%.${n}f".format(this)
 internal fun String.truncate(lengthLimit: Int, replacement: String = "..."): String = buildString {
     var lengthSum = 0
     for (char in this@truncate) {
-        lengthSum += char.chineseLength()
+        lengthSum += char.chineseLength
         if (lengthSum > lengthLimit) {
             append(replacement)
             return toString()
         } else append(char)
     }
     return toString()
-}
-
-internal fun Char.chineseLength(): Int {
-    return when (this) {
-        in '\u0000'..'\u007F' -> 1
-        in '\u0080'..'\u07FF' -> 2
-        in '\u0800'..'\uFFFF' -> 2
-        else -> 2
-    }
 }

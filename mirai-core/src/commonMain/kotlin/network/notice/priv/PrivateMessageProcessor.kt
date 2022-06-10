@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.notice.priv
@@ -18,8 +18,8 @@ import net.mamoe.mirai.internal.getGroupByUinOrCode
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
+import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
-import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSyncSafely
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
@@ -29,7 +29,9 @@ import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
 /**
- * Handles [UserMessageEvent] and their sync events. For [GroupMessageEvent], see [GroupMessageProcessor]
+ * Handles [UserMessageEvent] and their sync events. Requires [KEY_FROM_SYNC].
+ *
+ * For [GroupMessageEvent], see [GroupMessageProcessor].
  *
  * @see StrangerMessageEvent
  * @see StrangerMessageSyncEvent
@@ -59,8 +61,9 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
 
     override suspend fun NoticePipelineContext.processImpl(data: MsgComm.Msg) = data.context {
         markAsConsumed()
+        val fromSync = attributes[KEY_FROM_SYNC, null] ?: return
 
-        if (fromSyncSafely) {
+        if (fromSync) {
             val msgFromAppid = msgHead.fromAppid
             // 3116 = music share
             // message sent by bot

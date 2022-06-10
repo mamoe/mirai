@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.plugin.jvm
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
@@ -77,6 +78,21 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
 
     @ConsoleExperimentalApi
     public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToMillis
+
+    /**
+     * 获取 [JvmPluginClasspath]
+     *
+     * 注: 仅插件通过 console 内置插件加载器加载时可用
+     *
+     * @since 2.12
+     */
+    protected val jvmPluginClasspath: JvmPluginClasspath by lazy {
+        val classLoader = this@AbstractJvmPlugin.javaClass.classLoader
+        if (classLoader is JvmPluginClassLoaderN) {
+            return@lazy classLoader.openaccess
+        }
+        error("jvmPluginClasspath not available for $classLoader")
+    }
 }
 
 /**

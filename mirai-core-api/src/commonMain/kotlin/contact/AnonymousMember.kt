@@ -31,11 +31,11 @@ public interface AnonymousMember : Member {
     /** 该匿名群成员 ID */
     public val anonymousId: String
 
-    @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember")
+    @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember") // diagnostic deprecation
     public override suspend fun sendMessage(message: Message): Nothing =
         throw UnsupportedOperationException("Cannot send message to AnonymousMember")
 
-    @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember")
+    @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember") // diagnostic deprecation
     public override suspend fun sendMessage(message: String): Nothing =
         throw UnsupportedOperationException("Cannot send message to AnonymousMember")
 

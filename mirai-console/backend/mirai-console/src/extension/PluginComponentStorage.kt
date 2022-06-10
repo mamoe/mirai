@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.internal.extension.AbstractConcurrentComponentSto
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.reflect.full.companionObjectInstance
 
 /**
@@ -57,6 +58,12 @@ public class PluginComponentStorage(
     ///////////////////////////////////////////////////////////////////////////
 
     /** 注册一个 [SingletonExtensionSelector] */
+    @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
+    @Deprecated(
+        "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.11")
     public fun contributeSingletonExtensionSelector(lazyInstance: () -> SingletonExtensionSelector): Unit =
         contribute(SingletonExtensionSelector, plugin, lazyInstance)
 
@@ -77,6 +84,9 @@ public class PluginComponentStorage(
     ///////////////////////////////////////////////////////////////////////////
 
     /** 注册一个 [PermissionServiceProvider] */
+    @Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated for removal. Please implement your own CommandCallResolverProvider, and use contributePermissionService(provider).")
+    @DeprecatedSinceMirai(warningSince = "2.11") // for removal.
     @OverloadResolutionByLambdaReturnType
     public fun contributePermissionService(lazyInstance: () -> PermissionService<*>): Unit =
         contribute(PermissionServiceProvider, plugin, PermissionServiceProviderImplLazy(lazyInstance))
@@ -90,6 +100,9 @@ public class PluginComponentStorage(
     /////////////////////////////////////
 
     /** 注册一个 [PluginLoaderProvider] */
+    @Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated for removal. Please implement your own CommandCallResolverProvider, and use contributePluginLoader(provider).")
+    @DeprecatedSinceMirai(warningSince = "2.11") // for removal.
     @OverloadResolutionByLambdaReturnType
     public fun contributePluginLoader(lazyInstance: () -> PluginLoader<*, *>): Unit =
         contribute(PluginLoaderProvider, plugin, PluginLoaderProviderImplLazy(lazyInstance))
@@ -103,6 +116,9 @@ public class PluginComponentStorage(
     /////////////////////////////////////
 
     /** 注册一个 [CommandCallParserProvider] */
+    @Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated for removal. Please implement your own CommandCallResolverProvider, and use contributeCommandCallParser(provider).")
+    @DeprecatedSinceMirai(warningSince = "2.11") // for removal.
     @ExperimentalCommandDescriptors
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallParser(lazyInstance: () -> CommandCallParser): Unit =
@@ -117,7 +133,10 @@ public class PluginComponentStorage(
 
     /////////////////////////////////////
 
-    /** 注册一个 [CommandCallResolverProvider] */
+
+    @Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated for removal. Please implement your own CommandCallResolverProvider, and use contributeCommandCallResolver(provider).")
+    @DeprecatedSinceMirai(warningSince = "2.11") // for removal.
     @ExperimentalCommandDescriptors
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallResolver(lazyInstance: () -> CommandCallResolver): Unit =
@@ -133,6 +152,9 @@ public class PluginComponentStorage(
     /////////////////////////////////////
 
     /** 注册一个 [CommandCallInterceptorProvider] */
+    @Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated for removal. Please implement your own CommandCallResolverProvider, and use contributeCommandCallInterceptor(provider).")
+    @DeprecatedSinceMirai(warningSince = "2.11") // for removal.
     @ExperimentalCommandDescriptors
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallInterceptor(lazyInstance: () -> CommandCallInterceptor): Unit =

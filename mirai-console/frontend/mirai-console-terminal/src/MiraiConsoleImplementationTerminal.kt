@@ -22,14 +22,12 @@
 package net.mamoe.mirai.console.terminal
 
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -37,7 +35,10 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.terminal.noconsole.AllEmptyLineReader
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
-import net.mamoe.mirai.console.util.*
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
 import org.jline.reader.LineReader
@@ -66,7 +67,7 @@ open class MiraiConsoleImplementationTerminal
     override val configStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
-    NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
+    SupervisorJob() + CoroutineName("MiraiConsoleImplementationTerminal") +
             CoroutineExceptionHandler { coroutineContext, throwable ->
                 if (throwable is CancellationException) {
                     return@CoroutineExceptionHandler
@@ -74,21 +75,53 @@ open class MiraiConsoleImplementationTerminal
                 val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {
+    override val jvmPluginLoader: JvmPluginLoader by lazy { backendAccess.createDefaultJvmPluginLoader(coroutineContext) }
+    override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
     override val isAnsiSupported: Boolean get() = true
+    override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {
+        MiraiConsoleImplementation.ConsoleDataScope.createDefault(
+            coroutineContext,
+            dataStorageForBuiltIns,
+            configStorageForBuiltIns
+        )
+    }
+    // used in test
+    internal val logService: LoggingService
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         LoginSolver.Default?.takeIf { it !is StandardCharImageLoginSolver }?.let { return it }
         return StandardCharImageLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
+    override fun createLogger(identity: String?): MiraiLogger {
+        return PlatformLogger(identity = identity, output = { line ->
+            val text = line + ANSI_RESET
+            lineReader.printAbove(text)
+            logService.pushLine(text)
+        })
+    }
 
     init {
         with(rootPath.toFile()) {
             mkdir()
             require(isDirectory) { "rootDir $absolutePath is not a directory" }
+            logService = if (ConsoleTerminalSettings.noLogging) {
+                LoggingServiceNoop()
+            } else {
+                LoggingServiceI(childScope("Log Service")).also { service ->
+                    service.startup(resolve("logs"))
+                }
+            }
         }
+    }
+
+    override val consoleLaunchOptions: MiraiConsoleImplementation.ConsoleLaunchOptions
+        get() = ConsoleTerminalSettings.launchOptions
+
+    override fun preStart() {
+        registerSignalHandler()
+        overrideSTD(this)
     }
 }
 
@@ -111,6 +144,7 @@ val terminal: Terminal = run {
         .jansi(true)
         .dumb(true)
         .paused(true)
+        .signalHandler { signalHandler(it.name) }
         .build()
         .let { terminal ->
             if (terminal is AbstractWindowsTerminal) {
@@ -150,9 +184,3 @@ private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
 }
 
 internal val ANSI_RESET = Ansi().reset().toString()
-
-internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
-    PlatformLogger(identity = it, output = { line ->
-        lineReader.printAbove(line + ANSI_RESET)
-    })
-}

@@ -1,7 +1,7 @@
 name: Bug 报告
 description: 提交一个 bug
 labels:
-  - "question"
+  - "z:question"
 
 body:
   - type: markdown
@@ -71,21 +71,23 @@ body:
       description: |
         请提供全面的相关日志. 请不要截图.
         如果日志过大, 可以在 `补充信息` 上传文件.
+        如果你遇到的问题是 "消息收不到", "收消息报错" 等与协议有关的问题, 请一定提交日志. 若不提交日志, 你的问题可能会被直接关闭.
       render: 'text'
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: journal-network
     attributes:
       label: 网络日志
       description: |
+        如果网络日志 (Net xxx) 不包含在系统日志中, 请额外提供网络日志. 若已经包含, 请忽略.
         请提供全面的网络日志. 请不要截图.
-        一般网络日志位于 bots/<****>/logs 里
+        若使用 Mirai Console 一般网络日志位于 bots/<****>/logs 里
         如果日志过大, 可以在 `补充信息` 上传文件.
       render: text
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: additional

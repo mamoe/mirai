@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -97,7 +97,8 @@ import java.io.File
  * @see FileSupported
  * @since 2.5
  */
-@Deprecated("Please use RemoteFiles and AbsoluteFileFolder form fileSupported.files") // deprecated since 2.8.0-RC
+@Deprecated("Please use RemoteFiles and AbsoluteFileFolder form fileSupported.files", level = DeprecationLevel.WARNING) // deprecated since 2.8.0-RC
+@DeprecatedSinceMirai(warningSince = "2.8")
 @NotStableForInheritance
 public interface RemoteFile {
     /**
@@ -300,8 +301,9 @@ public interface RemoteFile {
     @Deprecated(
         "Use moveTo(RemoteFile) instead.",
         replaceWith = ReplaceWith("this.moveTo(this.resolveSibling(path))"),
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     ) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
     public suspend fun moveTo(path: String): Boolean {
         // Impl notes:
         // if `path` is absolute, this works as intended.
@@ -351,8 +353,10 @@ public interface RemoteFile {
      */
     @Deprecated(
         "Deprecated without replacement. Please use AbsoluteFolder.uploadNewFile",
-        ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+        ReplaceWith("contact.files.uploadNewFile(path, this, callback)"),
+        level = DeprecationLevel.WARNING
     ) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public interface ProgressionCallback {
         /**
          * 当上传开始时调用
@@ -452,8 +456,9 @@ public interface RemoteFile {
      * @throws IllegalStateException 该文件上传失败或权限不足时抛出
      */
     @Deprecated(
-        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.WARNING
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource, callback)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(
         resource: ExternalResource,
         callback: ProgressionCallback? = null,
@@ -465,10 +470,11 @@ public interface RemoteFile {
      * 阅读 [upload] 获取更多信息
      * @see upload
      */
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource)"), DeprecationLevel.WARNING
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(resource)"), DeprecationLevel.ERROR
     )  // deprecated since 2.7-M1
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(resource: ExternalResource): FileMessage = upload(resource, null)
 
     /**
@@ -477,10 +483,11 @@ public interface RemoteFile {
      * 阅读 [upload] 获取更多信息
      * @see upload
      */
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(file, callback)"), DeprecationLevel.WARNING
+        "Use uploadAndSend instead.", ReplaceWith("this.uploadAndSend(file, callback)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(
         file: File,
         callback: ProgressionCallback? = null,
@@ -492,10 +499,11 @@ public interface RemoteFile {
      * 阅读 [upload] 获取更多信息
      * @see upload
      */
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Use sendFile instead.", ReplaceWith("this.uploadAndSend(file)"), DeprecationLevel.WARNING
+        "Use sendFile instead.", ReplaceWith("this.uploadAndSend(file)"), DeprecationLevel.ERROR
     ) // deprecated since 2.7-M1
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
     public suspend fun upload(file: File): FileMessage = file.toExternalResource().use { upload(it) }
 
     /**
@@ -576,13 +584,14 @@ public interface RemoteFile {
                 "this.sendFile(path, resource, callback)",
                 "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
             ),
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
         public suspend fun FileSupported.uploadFile(
             path: String,
             resource: ExternalResource,
             callback: ProgressionCallback? = null,
-        ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(resource, callback)
+        ): FileMessage = @Suppress("DEPRECATION", "DEPRECATION_ERROR") this.filesRoot.resolve(path).upload(resource, callback)
 
         /**
          * 上传文件并获取文件消息, 但不发送.
@@ -600,13 +609,14 @@ public interface RemoteFile {
                 "this.sendFile(path, file, callback)",
                 "net.mamoe.mirai.utils.RemoteFile.Companion.sendFile"
             ),
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
         public suspend fun FileSupported.uploadFile(
             path: String,
             file: File,
             callback: ProgressionCallback? = null,
-        ): FileMessage = @Suppress("DEPRECATION") this.filesRoot.resolve(path).upload(file, callback)
+        ): FileMessage = @Suppress("DEPRECATION", "DEPRECATION_ERROR") this.filesRoot.resolve(path).upload(file, callback)
 
         /**
          * 上传文件并发送文件消息到相关 [FileSupported].
@@ -620,12 +630,13 @@ public interface RemoteFile {
             ReplaceWith("this.files.uploadNewFile(path, resource, callback)"),
             level = DeprecationLevel.WARNING
         ) // deprecated since 2.8.0-RC
+        @DeprecatedSinceMirai(warningSince = "2.8")
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             resource: ExternalResource,
             callback: ProgressionCallback? = null,
         ): MessageReceipt<C> =
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             this.filesRoot.resolve(path).upload(resource, callback).sendTo(this)
 
         /**
@@ -639,12 +650,13 @@ public interface RemoteFile {
             ReplaceWith("file.toExternalResource().use { this.files.uploadNewFile(path, it, callback) }"),
             level = DeprecationLevel.WARNING
         ) // deprecated since 2.8.0-RC
+        @DeprecatedSinceMirai(warningSince = "2.8")
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             file: File,
             callback: ProgressionCallback? = null,
         ): MessageReceipt<C> =
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             this.filesRoot.resolve(path).upload(file, callback).sendTo(this)
     }
 }

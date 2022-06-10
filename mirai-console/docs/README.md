@@ -2,7 +2,7 @@
 
 欢迎来到 mirai-console 开发文档!
 
-**Mirai Console 基于 [mirai-core](/)，因此请先阅读 [Mirai 文档](/docs/CoreAPI.md)
+**Mirai Console 基于 mirai-core，因此建议先阅读 [Mirai 文档](/docs/CoreAPI.md)
 。**
 
 > 其他链接：
@@ -11,7 +11,7 @@
 
 ### 后端插件开发基础
 
-- 插件 - [Plugin 模块](Plugins.md)
+- 插件 - [Plugin 模块](plugin/Plugins.md)
 - 指令 - [Command 模块](Commands.md)
 - 存储 - [PluginData 模块](PluginData.md)
 - 权限 - [Permission 模块](Permissions.md)

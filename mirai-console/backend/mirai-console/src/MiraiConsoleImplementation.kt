@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
@@ -15,27 +15,38 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
+import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
-import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.console.internal.pluginManagerImpl
+import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.NotStableForInheritance
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KClass
 
 
 /**
@@ -47,6 +58,7 @@ import kotlin.coroutines.CoroutineContext
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
+@ConsoleFrontEndImplementation
 public annotation class ConsoleFrontEndImplementation
 
 /**
@@ -58,6 +70,16 @@ public annotation class ConsoleFrontEndImplementation
  */
 @ConsoleFrontEndImplementation
 public interface MiraiConsoleImplementation : CoroutineScope {
+    /**
+     * 获取原始 [MiraiConsoleImplementation] 实例.
+     *
+     * [MiraiConsoleImplementation.start] 实际上会创建 [MiraiConsoleImplementationBridge] 并启动该 bridge, 不会直接使用提供的 [MiraiConsoleImplementation] 实例.
+     * [MiraiConsoleImplementation.getInstance] 获取到的将会是 bridge. 可通过 `bridge.origin` 获取原始在 [start] 传递的实例.
+     *
+     * @since 2.11.0-RC
+     */
+    public val origin: MiraiConsoleImplementation get() = this
+
     /**
      * [MiraiConsole] 的 [CoroutineScope.coroutineContext], 必须拥有如下元素
      *
@@ -83,6 +105,18 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * @return 不可变的 [List], [Collections.unmodifiableList]
      */
     public val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>>
+
+    /**
+     * [JvmPluginLoader] 实例. 建议实现为 lazy:
+     *
+     * ```
+     * override val jvmPluginLoader: JvmPluginLoader by lazy { backendAccess.createDefaultJvmPluginLoader(coroutineContext) }
+     * ```
+     *
+     * @see BackendAccess.createDefaultJvmPluginLoader
+     * @since 2.10.0-RC
+     */
+    public val jvmPluginLoader: JvmPluginLoader
 
     /**
      * 由 Kotlin 用户实现
@@ -127,6 +161,17 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public val consoleCommandSender: ConsoleCommandSenderImpl
 
+    /**
+     * [CommandManager] 实现, 建议实现为 lazy:
+     * ```
+     * override val commandManager: CommandManager by lazy { backendAccess.createDefaultCommandManager(coroutineContext) }
+     * ```
+     *
+     * @since 2.10.0-RC
+     * @see BackendAccess.createDefaultCommandManager
+     */
+    public val commandManager: CommandManager
+
     public val dataStorageForJvmPluginLoader: PluginDataStorage
     public val configStorageForJvmPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
@@ -151,7 +196,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         public fun requestInputJ(hint: String): String
 
         override suspend fun requestInput(hint: String): String {
-            return withContext(Dispatchers.IO) { requestInputJ(hint) }
+            return runInterruptible(Dispatchers.IO) { requestInputJ(hint) }
         }
     }
 
@@ -185,7 +230,78 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /**
      * 前端预先定义的 [LoggerController], 以允许前端使用自己的配置系统
      */
-    public val loggerController: LoggerController get() = LoggerControllerImpl
+    public val loggerController: LoggerController get() = LoggerControllerImpl()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ConsoleDataScope
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Mirai Console 内置的一些 [PluginConfig] 和 [PluginData] 的管理器.
+     *
+     * 建议实现为 lazy:
+     * ```
+     * override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {
+     *     MiraiConsoleImplementation.ConsoleDataScope.createDefault(
+     *         coroutineContext,
+     *         dataStorageForBuiltIns,
+     *         configStorageForBuiltIns
+     *     )
+     * }
+     * ```
+     *
+     * @since 2.10.0-RC
+     */
+    public val consoleDataScope: ConsoleDataScope
+
+    /**
+     * Mirai Console 内置的一些 [PluginConfig] 和 [PluginData] 的管理器.
+     *
+     * @since 2.10.0-RC
+     */
+    @ConsoleFrontEndImplementation
+    @NotStableForInheritance
+    public interface ConsoleDataScope {
+        public val dataHolder: AutoSavePluginDataHolder
+        public val configHolder: AutoSavePluginDataHolder
+        public fun addAndReloadConfig(config: PluginConfig)
+
+        /**
+         * @since 2.11.0-RC
+         */
+        public fun <T : PluginData> find(type: KClass<T>): T?
+
+        /**
+         * @since 2.11.0-RC
+         */
+        public fun <T : PluginData> get(type: KClass<T>): T =
+            find(type) ?: throw NoSuchElementException(type.qualifiedName)
+
+        public fun reloadAll()
+
+        /**
+         * @since 2.10.0-RC
+         */
+        @ConsoleFrontEndImplementation
+        public companion object {
+            /**
+             * @since 2.11.0-RC
+             */
+            public inline fun <reified T : PluginData> ConsoleDataScope.find(): T? = find(T::class)
+
+            /**
+             * @since 2.11.0-RC
+             */
+            public inline fun <reified T : PluginData> ConsoleDataScope.get(): T = get(T::class)
+
+            @JvmStatic
+            public fun createDefault(
+                coroutineContext: CoroutineContext,
+                dataStorage: PluginDataStorage,
+                configStorage: PluginDataStorage
+            ): ConsoleDataScope = ConsoleDataScopeImpl(coroutineContext, dataStorage, configStorage)
+        }
+    }
 
 
     /// Hooks & Backend Access
@@ -226,10 +342,25 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     @ConsoleFrontEndImplementation
     public interface BackendAccess {
         // GlobalComponentStorage
+        /**
+         * 在 Mirai Console 第一个 phase 之后会包含内建 storages.
+         */
         public val globalComponentStorage: ComponentStorage
 
         // PluginManagerImpl.resolvedPlugins
         public val resolvedPlugins: MutableList<Plugin>
+
+        /**
+         * @since 2.10.0-RC
+         */
+        public fun createDefaultJvmPluginLoader(coroutineContext: CoroutineContext): JvmPluginLoader =
+            BuiltInJvmPluginLoaderImpl(coroutineContext)
+
+        /**
+         * @since 2.10.0-RC
+         */
+        public fun createDefaultCommandManager(coroutineContext: CoroutineContext): CommandManager =
+            CommandManagerImpl(coroutineContext)
     }
 
     /**
@@ -240,41 +371,97 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val backendAccess: BackendAccess
         get() = backendAccessInstance
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ConsoleLaunchOptions
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Console 启动参数, 修改参数会改变默认行为
+     * @since 2.10.0-RC
+     */
+    @ConsoleExperimentalApi
+    public class ConsoleLaunchOptions {
+        @JvmField
+        public var crashWhenPluginLoadFailed: Boolean = false
+    }
+
+    @ConsoleExperimentalApi
+    public val consoleLaunchOptions: ConsoleLaunchOptions
+        get() = ConsoleLaunchOptions()
+
+    @ConsoleFrontEndImplementation
     public companion object {
         private val backendAccessInstance = object : BackendAccess {
-            override val globalComponentStorage: ComponentStorage get() = GlobalComponentStorage
-            override val resolvedPlugins: MutableList<Plugin> get() = PluginManagerImpl.resolvedPlugins
+            override val globalComponentStorage: ComponentStorage get() = getBridge().globalComponentStorage
+            override val resolvedPlugins: MutableList<Plugin> get() = MiraiConsole.pluginManagerImpl.resolvedPlugins
+        }
+
+        internal suspend fun shutdown() {
+            val bridge = currentBridge ?: return
+            if (!bridge.isActive) return
+            bridge.shutdownDaemon.tryStart()
+
+            Bot.instances.forEach { bot ->
+                lateinit var logger: MiraiLogger
+                kotlin.runCatching {
+                    logger = bot.logger
+                    bot.closeAndJoin()
+                }.onFailure { t ->
+                    kotlin.runCatching { logger.error("Error in closing bot", t) }
+                }
+            }
+            MiraiConsole.job.cancelAndJoin()
+        }
+
+        init {
+            Runtime.getRuntime().addShutdownHook(thread(false, name = "Mirai Console Shutdown Hook") {
+                if (instanceInitialized) {
+                    runBlocking {
+                        shutdown()
+                    }
+                }
+            })
         }
 
         @Volatile
-        internal var instance: MiraiConsoleImplementation? = null
-        internal val instanceInitialized: Boolean get() = instance != null
+        internal var currentBridge: MiraiConsoleImplementationBridge? = null
+        internal val instanceInitialized: Boolean get() = currentBridge != null
+
         private val initLock = ReentrantLock()
 
         /**
-         * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
+         * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例. 注意该实例不是 [start] 时传递的实例, 而会是 [MiraiConsoleImplementationBridge].
          *
-         * 必须在 [start] 之后才能使用, 否则抛出 [UninitializedPropertyAccessException]
+         * 必须在 [start] 之后才能使用, 否则抛出 [UninitializedPropertyAccessException].
          */
         @JvmStatic
         @ConsoleFrontEndImplementation
-        public fun getInstance(): MiraiConsoleImplementation = instance ?: throw UninitializedPropertyAccessException()
+        public fun getInstance(): MiraiConsoleImplementation =
+            currentBridge ?: throw UninitializedPropertyAccessException()
+
+        /**
+         * @since 2.11
+         */
+        internal fun getBridge(): MiraiConsoleImplementationBridge =
+            currentBridge ?: throw UninitializedPropertyAccessException()
 
         /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
-            val instance = instance
-            if (instance != null && instance.isActive) {
+            val currentBridge = currentBridge
+            if (currentBridge != null && currentBridge.isActive) {
                 error(
                     "Mirai Console is already initialized and is currently running. " +
                             "Run MiraiConsole.cancel to kill old instance before starting another instance."
                 )
             }
-            this@Companion.instance = this
+            val newBridge = MiraiConsoleImplementationBridge(this)
+            this@Companion.currentBridge = newBridge
             kotlin.runCatching {
-                MiraiConsoleImplementationBridge.doStart()
+                newBridge.doStart()
             }.onFailure { e ->
                 kotlin.runCatching {
                     MiraiConsole.mainLogger.error("Failed to init MiraiConsole.", e)

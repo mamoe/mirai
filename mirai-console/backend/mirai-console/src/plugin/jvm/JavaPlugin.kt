@@ -21,6 +21,9 @@ public abstract class JavaPlugin @JvmOverloads constructor(
     public final override val description: JvmPluginDescription,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
+    init {
+        __jpi_try_to_init_dependencies()
+    }
 
     /**
      * Java API Scheduler

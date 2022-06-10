@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.data.proto
@@ -13,8 +13,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoNumber
 import kotlinx.serialization.protobuf.ProtoType
+import net.mamoe.mirai.internal.utils.io.NestedStructure
+import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.unzip
 
 @Serializable
 internal class ImCommon : ProtoBuf {
@@ -350,7 +355,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(21) @JvmField val anonGroupMsg: AnonymousGroupMsg? = null,
         @ProtoNumber(22) @JvmField val qqLiveOld: QQLiveOld? = null,
         @ProtoNumber(23) @JvmField val lifeOnline: LifeOnlineAccount? = null,
-        @ProtoNumber(24) @JvmField val qqwalletMsg: QQWalletMsg? = null,
+        // @ProtoNumber(24) @JvmField val qqwalletMsg: QQWalletMsg? = null,
         @ProtoNumber(25) @JvmField val crmElem: CrmElem? = null,
         @ProtoNumber(26) @JvmField val conferenceTipsInfo: ConferenceTipsInfo? = null,
         @ProtoNumber(27) @JvmField val redbagInfo: RedBagInfo? = null,
@@ -380,7 +385,11 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(51) @JvmField val lightApp: LightAppElem? = null,
         @ProtoNumber(52) @JvmField val eimInfo: EIMInfo? = null,
         @ProtoNumber(53) @JvmField val commonElem: CommonElem? = null,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return this.structureToStringIfAvailable() ?: super.toString()
+        }
+    }
 
     @Serializable
     internal class ElemFlags(
@@ -533,9 +542,25 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal class LightAppElem(
+        @NestedStructure(LightAppElemDesensitizer::class)
         @ProtoNumber(1) @JvmField val data: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+
+    internal object LightAppElemDesensitizer : NestedStructureDesensitizer<LightAppElem, ByteArray> {
+
+        // unzip
+        override fun deserialize(context: LightAppElem, byteArray: ByteArray): ByteArray {
+            if (byteArray.isEmpty()) return byteArray
+
+            return when (byteArray[0].toInt()) {
+                0 -> byteArrayOf(0) + byteArray.decodeToString(startIndex = 1).toByteArray()
+                1 -> byteArrayOf(0) + byteArray.unzip(offset = 1).decodeToString().toByteArray()
+                else -> error("unknown compression flag=${byteArray[0]}")
+            }
+        }
+
+    }
 
     @Serializable
     internal class LocationInfo(
@@ -932,7 +957,7 @@ internal class ImMsgBody : ProtoBuf {
     @Serializable
     internal class RichText(
         @ProtoNumber(1) @JvmField val attr: Attr? = null,
-        @ProtoNumber(2) @JvmField val elems: MutableList<Elem> = mutableListOf(),
+        @ProtoNumber(2) @JvmField val elems: List<Elem> = listOf(),
         @ProtoNumber(3) @JvmField val notOnlineFile: NotOnlineFile? = null,
         @ProtoNumber(4) @JvmField val ptt: Ptt? = null,
         @ProtoNumber(5) @JvmField val tmpPtt: TmpPtt? = null,
@@ -981,10 +1006,17 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(6) @JvmField val type: Int = 0,
         @ProtoNumber(7) @JvmField val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(8) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @NestedStructure(SrcMsgDesensitizer::class)
         @ProtoNumber(9) @JvmField val srcMsg: ByteArray? = null,
         @ProtoNumber(10) @JvmField val toUin: Long = 0L,
         @ProtoNumber(11) @JvmField val troopName: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+
+    internal object SrcMsgDesensitizer : NestedStructureDesensitizer<SourceMsg, MsgComm.Msg> {
+        override fun deserialize(context: SourceMsg, byteArray: ByteArray): MsgComm.Msg {
+            return byteArray.loadAs(MsgComm.Msg.serializer())
+        }
+    }
 
     @Serializable
     internal class Text(

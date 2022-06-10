@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.handler.selector
@@ -14,6 +14,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.yield
+import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.logger
@@ -94,6 +95,16 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             }
             val current = getCurrentInstanceOrNull()
             lastNetwork = current
+
+            if (current != null) {
+                if (current.context[SsoProcessor].firstLoginResult.value?.canRecoverOnFirstLogin == false) {
+                    // == null 只表示
+                    // == false 表示第一次登录失败, 且此失败没必要重试
+                    logIfEnabled { "[FIRST LOGIN ERROR] current = $current" }
+                    logIfEnabled { "[FIRST LOGIN ERROR] current.state = ${current.state}" }
+                    throw current.getLastFailure() ?: exceptionCollector.getLast() ?: error("Failed to login with unknown reason.")
+                }
+            }
 
             /**
              * @return `false` if failed

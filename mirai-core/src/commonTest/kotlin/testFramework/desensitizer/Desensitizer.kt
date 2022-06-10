@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -25,6 +25,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
 import java.io.File
+import java.net.URL
 import kotlin.reflect.KType
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.findAnnotation
@@ -46,7 +47,7 @@ internal class Desensitizer private constructor(
     }
 
     fun desensitize(value: Array<Byte>): Array<Byte> {
-        return desensitize(value.toUHexString()).hexToBytes().toTypedArray()
+        return desensitize(value.toByteArray().toUHexString()).hexToBytes().toTypedArray()
     }
 
 
@@ -58,13 +59,15 @@ internal class Desensitizer private constructor(
                     val filename =
                         systemProp("mirai.network.recording.desensitization.filepath", "local.desensitization.yml")
 
-                    val file =
+                    val file: URL? =
                         File(filename).takeIf { it.isFile }?.toURI()?.toURL()
                             ?: Thread.currentThread().contextClassLoader.getResource(filename)
                             ?: Thread.currentThread().contextClassLoader.getResource("recording/configs/$filename")
-                            ?: error("Could not find desensitization configuration!")
 
-                    format.decodeFromString(file.readText())
+                    file?.readText()?.let { format.decodeFromString(it) } ?: kotlin.run {
+                        logger.warning { "Couldn't find desensitization rules. You can set by system property 'mirai.network.recording.desensitization.filepath' to path to the desensitization configuration file, or use the 'local.desensitization.yml' by default." }
+                        mapOf()
+                    }
                 }.also {
                     logger.info { "Loaded ${it.size} desensitization rules." }
                 }
@@ -165,7 +168,7 @@ private val format = Yaml {
 }
 
 
-private class DesensitizationVisitor(
+internal class DesensitizationVisitor(
     private val desensitizer: Desensitizer,
 ) : ValueDescTransformerNotNull<Nothing?>() {
     override fun visitValue(desc: ValueDesc, data: Nothing?): ValueDesc {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,6 +17,7 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.event.EventPriority.*
 import net.mamoe.mirai.utils.NotStableForInheritance
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 订阅者的状态
@@ -49,8 +50,8 @@ public interface Listener<in E : Event> : CompletableJob {
 
     // Impl notes:
     // Inheriting CompletableJob is a bad idea. See #1224.
-    // However we cannot change it as it leads to binary changes.
-    // We can do it in 3.0 or when we found incompatibility with kotlinx.serialization.
+    // However, we cannot change it as it leads to binary changes.
+    // We can do it in 3.0 or when we found incompatibility with kotlinx.coroutines.
 
     /**
      * 并发类型
@@ -67,7 +68,7 @@ public interface Listener<in E : Event> : CompletableJob {
     /**
      * 这个方法将会调用 [EventChannel.subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
      *
-     * 这个函数不会抛出任何异常, 详见 [EventChannel.subscribe]
+     * 这个函数会传递捕获的异常到本 [Listener] 创建时提供的监听方 [CoroutineContext] (通常). 详细行为可见 [EventChannel.subscribe].
      */
     public suspend fun onEvent(event: E): ListeningStatus
 }
@@ -108,11 +109,4 @@ public enum class EventPriority {
      * - 不 [拦截事件][Event.intercept]
      */
     MONITOR;
-
-    internal companion object {
-        @JvmStatic
-        internal val prioritiesExcludedMonitor: Array<EventPriority> = run {
-            values().filter { it != MONITOR }.toTypedArray()
-        }
-    }
 }

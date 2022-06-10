@@ -18,6 +18,13 @@ internal class PluginMissingDependencyException : PluginResolutionException {
     public constructor(cause: Throwable?) : super(cause)
 }
 
+internal class PluginInfiniteCircularDependencyReferenceException: PluginResolutionException {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
+}
+
 internal open class PluginResolutionException : Exception {
     public constructor() : super()
     public constructor(message: String?) : super(message)

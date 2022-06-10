@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.data
 
-import net.mamoe.mirai.console.data.java.JAutoSavePluginConfig
+import net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig
 
 /**
  * 一个插件的配置数据, 用于和用户交互.
@@ -33,7 +33,7 @@ import net.mamoe.mirai.console.data.java.JAutoSavePluginConfig
  * 即可将一个 [PluginData] 变更为 [PluginConfig].
  *
  * ### Java
- * 见 [JAutoSavePluginConfig]
+ * 见 [JavaAutoSavePluginConfig]
  *
  * @see PluginData
  */

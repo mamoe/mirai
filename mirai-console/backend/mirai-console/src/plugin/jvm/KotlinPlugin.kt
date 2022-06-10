@@ -20,7 +20,11 @@ import kotlin.coroutines.EmptyCoroutineContext
 public abstract class KotlinPlugin @JvmOverloads constructor(
     public final override val description: JvmPluginDescription,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
+) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
+    init {
+        __jpi_try_to_init_dependencies()
+    }
+}
 
 /*
 

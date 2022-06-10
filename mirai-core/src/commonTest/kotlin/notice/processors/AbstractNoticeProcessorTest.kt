@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
 import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
@@ -58,10 +59,11 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
         attributes: TypeSafeMap = TypeSafeMap(),
         pipeline: NoticeProcessorPipeline = bot.components.noticeProcessorPipeline,
         block: UseTestContext.() -> ProtocolStruct
-    ): ProcessResult {
+    ): Collection<Packet> {
+        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
         val handler = LoggingPacketHandlerAdapter(PacketLoggingStrategyImpl(bot), bot.logger)
         val context = UseTestContext(attributes.toMutableTypeSafeMap())
-        return pipeline.process(bot, block(context), context.attributes).also { list ->
+        return pipeline.process(block(context), context.attributes).collected.also { list ->
             for (packet in list) {
                 handler.handlePacket(IncomingPacket("test", packet))
             }
@@ -70,16 +72,17 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
 
     protected suspend inline fun use(
         attributes: TypeSafeMap = TypeSafeMap(),
-        crossinline createContext: NoticeProcessorPipelineImpl.(bot: QQAndroidBot, attributes: TypeSafeMap) -> NoticeProcessorPipelineImpl.ContextImpl,
+        crossinline createContext: NoticeProcessorPipelineImpl.(attributes: TypeSafeMap) -> NoticeProcessorPipelineImpl.ContextImpl,
         block: UseTestContext.() -> ProtocolStruct
-    ): ProcessResult = use(attributes, pipeline = object : NoticeProcessorPipelineImpl() {
-        init {
-            bot.components.noticeProcessorPipeline.processors.forEach { registerProcessor(it) }
-        }
+    ): Collection<Packet> =
+        use(attributes, pipeline = object : NoticeProcessorPipelineImpl(bot) {
+            init {
+                bot.components.noticeProcessorPipeline.processors.forEach { registerProcessor(it.value) }
+            }
 
-        override fun createContext(bot: QQAndroidBot, attributes: TypeSafeMap): NoticePipelineContext =
-            createContext(this, bot, attributes)
-    }, block)
+            override fun createContext(data: ProtocolStruct, attributes: TypeSafeMap): NoticePipelineContext =
+                createContext(this, attributes)
+        }, block)
 
     fun setBot(id: Long): QQAndroidBot {
         bot = createBot(BotAccount(id, "a"))

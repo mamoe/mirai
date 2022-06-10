@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 
 /**
@@ -80,6 +81,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
      */
     @Suppress("DEPRECATION")
     @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8")
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
         @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)
@@ -93,6 +95,11 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     public suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile?
 
     override val key: Key get() = Key
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitFileMessage(this, data)
+    }
 
     /**
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
@@ -112,7 +119,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
             Mirai.createFileMessage(id, internalId, name, size)
     }
 
-    public object Serializer : KSerializer<FileMessage> by FallbackSerializer("FileMessage") // not polymorphic
+    public object Serializer : KSerializer<FileMessage> by FallbackSerializer(SERIAL_NAME) // not polymorphic
 
     @MiraiInternalApi
     private open class FallbackSerializer(serialName: String) : KSerializer<FileMessage> by Delegate.serializer().map(
@@ -120,7 +127,7 @@ public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
         serialize = { Delegate(id, internalId, name, size) },
         deserialize = { Mirai.createFileMessage(id, internalId, name, size) },
     ) {
-        @SerialName(Image.SERIAL_NAME)
+        @SerialName(SERIAL_NAME)
         @Serializable
         data class Delegate(
             val id: String,

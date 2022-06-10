@@ -15,6 +15,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
@@ -63,25 +64,25 @@ public data class MusicShare(
 
        // Kotlin
        MusicShare(
-           kind = MusicKind.NeteaseCloudMusic,
-           title = "ファッション",
-           summary = "rinahamu/Yunomi",
-           brief = "",
-           jumpUrl = "http://music.163.com/song/1338728297/?userid=324076307",
-           pictureUrl = "http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg",
-           musicUrl = "http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307"
+           kind = NeteaseCloudMusic,
+           title = "ジェリーフィッシュ",
+           summary = "Yunomi/ローラーガール",
+           jumpUrl = "https://y.music.163.com/m/song?id=562591636&uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&app_version=8.7.46",
+           pictureUrl = "http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg",
+           musicUrl = "http://music.163.com/song/media/outer/url?id=562591636&&sc=wmv&tn=",
+           brief = "[分享]ジェリーフィッシュ",
        )
 
        // Java
        new MusicShare(
-           MusicKind.NeteaseCloudMusic,
-           "ファッション",
-           "rinahamu/Yunomi",
-           "http://music.163.com/song/1338728297/?userid=324076307",
-           "http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg",
-           "http://music.163.com/song/media/outer/url?id=1338728297&userid=324076307"
+           NeteaseCloudMusic,
+           "ジェリーフィッシュ",
+           "Yunomi/ローラーガール",
+           "https://y.music.163.com/m/song?id=562591636&uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&app_version=8.7.46",
+           "http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg",
+           "http://music.163.com/song/media/outer/url?id=562591636&&sc=wmv&tn=",
+           "[分享]ジェリーフィッシュ",
        );
-
      */
 
     public constructor(
@@ -129,6 +130,10 @@ public data class MusicShare(
             .append(']')
     }
 
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitMusicShare(this, data)
+    }
 
     /**
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.

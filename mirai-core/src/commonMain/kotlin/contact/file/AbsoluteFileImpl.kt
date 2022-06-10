@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,10 +12,9 @@ package net.mamoe.mirai.internal.contact.file
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
-import net.mamoe.mirai.internal.message.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.toUHexString
 
@@ -59,13 +58,14 @@ internal class AbsoluteFileImpl(
         }
 
     override suspend fun exists(): Boolean {
-        return FileManagement.GetFileInfo(
-            client,
-            groupCode = contact.id,
-            busId = busId,
-            fileId = id
-        ).sendAndExpect(bot)
-            .toResult("AbsoluteFileImpl.exists", checkResp = false)
+        return bot.network.sendAndExpect(
+            FileManagement.GetFileInfo(
+                client,
+                groupCode = contact.id,
+                busId = busId,
+                fileId = id
+            )
+        ).toResult("AbsoluteFileImpl.exists", checkResp = false)
             .getOrThrow()
             .fileInfo != null
     }
@@ -78,9 +78,20 @@ internal class AbsoluteFileImpl(
         if (folder.absolutePath == this.parentOrRoot.absolutePath) return true
         checkPermission("moveTo")
 
-        val result = FileManagement.MoveFile(client, contact.id, busId, id, parent.idOrRoot, folder.idOrRoot)
-            .sendAndExpect(bot).toResult("AbsoluteFileImpl.moveTo", checkResp = false)
-            .getOrThrow()
+
+        val result =
+            bot.network.sendAndExpect(
+                FileManagement.MoveFile(
+                    client,
+                    contact.id,
+                    busId,
+                    id,
+                    parent.idOrRoot,
+                    folder.idOrRoot
+                )
+            )
+                .toResult("AbsoluteFileImpl.moveTo", checkResp = false)
+                .getOrThrow()
 
         return when (result.int32RetCode) {
             -36 -> throwPermissionDeniedException("moveTo")
@@ -103,14 +114,14 @@ internal class AbsoluteFileImpl(
         // java.lang.IllegalStateException: Failed AbsoluteFileImpl.getUrl, result=-303, msg=param error: bus_id
         // java.lang.IllegalStateException: Failed AbsoluteFileImpl.getUrl, result=-103, msg=GetFileAttrAction file not exist
 
-        val resp = FileManagement.RequestDownload(
-            client,
-            groupCode = contact.id,
-            busId = busId,
-            fileId = id
-        ).sendAndExpect(bot)
-            .toResult("AbsoluteFileImpl.getUrl")
-            .getOrElse { return null }
+        val resp = bot.network.sendAndExpect(
+            FileManagement.RequestDownload(
+                client,
+                groupCode = contact.id,
+                busId = busId,
+                fileId = id
+            )
+        ).toResult("AbsoluteFileImpl.getUrl").getOrElse { return null }
 
 
         return "http://${resp.downloadIp}/ftn_handler/${resp.downloadUrl.toUHexString("")}/?fname=" +
@@ -133,8 +144,7 @@ internal class AbsoluteFileImpl(
     override fun toString(): String = "AbsoluteFile(name=$name, absolutePath=$absolutePath, id=$id)"
 
     override suspend fun refreshed(): AbsoluteFile? {
-        val result = FileManagement.GetFileInfo(client, contact.id, id, busId)
-            .sendAndExpect(bot)
+        val result = bot.network.sendAndExpect(FileManagement.GetFileInfo(client, contact.id, id, busId))
             .toResult("AbsoluteFile.refreshed")
             .getOrNull()?.fileInfo
             ?: return null

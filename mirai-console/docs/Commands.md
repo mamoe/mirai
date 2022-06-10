@@ -130,6 +130,7 @@ Mirai Console 内建 [`SimpleCommand`] 与 [`CompositeCommand`] 拥有 [`Command
 
 此时示例一定比理论有意义。
 
+Kotlin 示例：
 ```kotlin
 object MySimpleCommand : SimpleCommand(
     MyPluginMain, "tell", "私聊",
@@ -142,6 +143,22 @@ object MySimpleCommand : SimpleCommand(
 }
 ```
 
+Java 示例：
+```java
+public class MySimpleCommand extends SimpleCommand {
+
+    public MySimpleCommand(JvmPlugin plugin) {
+        super(plugin, "tell", new String[]{"私聊"}, "Tell somebody privately", plugin.getParentPermission(), CommandArgumentContext.EMPTY);
+    }
+
+    @Handler // 标记这是指令处理器，方法名随意
+    public void handle(CommandSender sender, User target, String message) { // 后两个参数会被作为指令参数要求
+        target.sendMessage(message);
+    }
+
+}
+```
+
 指令 `/tell 123456 Hello` 的解析流程:
 1. 被分割为 `/`, `"tell"`, `"123456"`, `"Hello"`
 2. `MySimpleCommand` 被匹配到，根据 `/` 和 `"test"`。`"123456"`, `"Hello"` 被作为指令的原生参数。
@@ -151,13 +168,13 @@ object MySimpleCommand : SimpleCommand(
 6. `"Hello"` 也会按照 4~5 的步骤转换为 `String` 类型的参数
 7. 解析完成的参数被传入 `handle`
 
-
-## [`CompositeCommand`]
+### [`CompositeCommand`]
 
 [`CompositeCommand`] 的参数解析与 [`SimpleCommand`] 一样，只是多了「子指令」概念。
 
 示例：  
 
+Kotlin 示例：
 ```kotlin
 @OptIn(ConsoleExperimentalAPI::class)
 object MyCompositeCommand : CompositeCommand(
@@ -206,6 +223,103 @@ object MyCompositeCommand : CompositeCommand(
     }
 }
 ```
+
+Java 示例：
+```java
+public class MyCompositeCommand extends CompositeCommand {
+
+    public MyCompositeCommand(JvmPlugin plugin) {
+        // "manage" 是主指令名, 还有更多参数可填, 此处忽略
+        super(plugin, "manage", new String[]{}, "示例指令", plugin.getParentPermission(), CommandArgumentContext.EMPTY);
+    }
+
+    // [参数智能解析]
+    //
+    // 在控制台执行 "/manage <群号>.<群员> <持续时间>",
+    // 或在聊天群内发送 "/manage <@一个群员> <持续时间>",
+    // 或在聊天群内发送 "/manage <目标群员的群名> <持续时间>",
+    // 或在聊天群内发送 "/manage <目标群员的账号> <持续时间>"
+    // 时调用这个函数
+    @SubCommand // 表示这是一个子指令，使用函数名作为子指令名称
+    public void mute(CommandSender sender, Member target, int duration) { // 通过 /manage mute <target> <duration> 调用
+        sender.sendMessage("/manage mute 被调用了, 参数为: " + target.toString() + ", " + duration);
+
+        String result;
+        try {
+            target.mute(duration);
+            result = "成功";
+        } catch (Exception e) {
+            result = "失败，" + e.getMessage();
+        }
+
+        sender.sendMessage("结果: " + result);
+    }
+
+    @SubCommand
+    public void foo(ConsoleCommandSender sender) {
+        // 使用 ConsoleCommandSender 作为接收者，表示指令只能由控制台执行。
+        // 当用户尝试在聊天环境执行时将会收到错误提示。
+    }
+
+    @SubCommand(value = {"list", "查看列表"}) // 可以设置多个子指令名。此时函数名会被忽略。
+    public void ignoredFunctionName(CommandSender sender) { // 执行 "/manage list" 时调用这个函数
+        sender.sendMessage("/manage list 被调用了");
+    }
+
+    // 支持 Image 类型, 需在聊天中执行此指令.
+    @SubCommand
+    public void test(CommandSender sender, Image image) { // 执行 "/manage test <一张图片>" 时调用这个函数
+        // 由于 Image 类型消息只可能在聊天环境，可以直接使用 UserCommandSender。
+
+        sender.sendMessage("/manage image 被调用了, 图片是 " + image.getImageId());
+    }
+}
+```
+
+### 文本参数的转义
+
+不同的参数默认用空格分隔。有时用户希望在文字参数中包含空格本身，参数解析器可以接受三种表示方法。
+
+以上文中定义的 `MySimpleCommand` 为例：
+
+#### 英文双引号
+
+表示将其中内容作为一个参数，可以包括空格。
+
+例如：用户输入 `/tell 123456 "Hello world!"` ，`message` 会收到 `Hello world!`。
+
+注意：双引号仅在参数的首尾部生效。例如，用户输入 `/tell 123456 He"llo world!"`，`message` 只会得到 `He"llo`。
+
+#### 转义符
+
+即英文反斜杠 `\`。表示忽略之后一个字符的特殊含义，仅看作字符本身。
+
+例如：
+
+- 用户输入 `/tell 123456 Hello\ world!`，`message` 得到 `Hello world!`；
+- 用户输入 `/tell 123456 \"Hello world!\"`，`message` 得到 `"Hello`。
+
+#### 暂停解析标志
+
+即连续两个英文短横线 `--`。表示从此处开始，到**这段文字内容**结束为止，都作为一个完整参数。
+
+例如：
+
+- 用户输入 `/tell 123456 -- Hello:::test\12""3`，`message` 得到 `Hello:::test\12""3`（`:` 表示空格）；
+- 用户输入 `/tell 123456 -- Hello @全体成员 test1 test2`，那么暂停解析的作用范围到 `@` 为止，之后的 `test1` 和 `test2` 是不同的参数。
+- 用户输入 `/tell 123456 \-- Hello` 或 `/tell 123456 "--" Hello`，这不是暂停解析标志，`message` 得到 `--` 本身。
+
+注意：
+
+`--` 的前后都应与其他参数有间隔，否则不认为这是暂停解析标志。
+
+例如，用户输入 `/tell 123456--Hello world!`，`123456--Hello` 会被试图转换为 `User` 并出错。即使转换成功，`message` 也只会得到 `world!`。
+
+### 非文本参数的转义
+
+有时可能需要只用一个参数来接受各种消息内容，例如用户可以在 `/tell 123456` 后接图片、表情等，它们都是 `message` 的一部分。
+
+对于这种定义方式，Mirai Console 的支持尚待实现，目前可以使用 [`RawCommand`] 替代。  
 
 ### 选择 [`RawCommand`], [`SimpleCommand`] 或 [`CompositeCommand`]
 

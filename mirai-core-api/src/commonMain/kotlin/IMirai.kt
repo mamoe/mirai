@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -20,7 +20,6 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event._EventBroadcast
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
@@ -30,10 +29,9 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.utils.FileCacheStrategy
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.*
+import java.util.ServiceLoader
+import kotlin.reflect.full.companionObjectInstance
 
 /**
  * [IMirai] 实例.
@@ -100,6 +98,8 @@ public interface IMirai : LowLevelApiAccessor {
      *
      * 覆盖后将会立即应用到全局.
      */
+    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
+    @DeprecatedSinceMirai(warningSince = "2.11.0")
     public var Http: HttpClient
 
     /**
@@ -314,9 +314,7 @@ public interface IMirai : LowLevelApiAccessor {
     /**
      * 广播一个事件. 由 [Event.broadcast] 调用.
      */
-    public suspend fun broadcastEvent(event: Event) {
-        _EventBroadcast.implementation.broadcastImpl(event)
-    }
+    public suspend fun broadcastEvent(event: Event)
 }
 
 /**
@@ -355,4 +353,10 @@ internal object _MiraiInstance {
 }
 
 @JvmSynthetic
-internal expect fun findMiraiInstance(): IMirai
+internal fun findMiraiInstance(): IMirai {
+    ServiceLoader.load(IMirai::class.java).firstOrNull()?.let { return it }
+
+    val implClass = Class.forName("net.mamoe.mirai.internal.MiraiImpl")
+    (implClass.kotlin.companionObjectInstance as? IMirai)?.let { return it }
+    return implClass.asSubclass(IMirai::class.java).getConstructor().newInstance()
+}

@@ -7,6 +7,9 @@
 - 桌面 JVM：最低 Java 8，但推荐 Java 11（要使用一键启动器，需要 11）
 - Android：Android SDK 26+ （Android 8.0，Oreo)
 
+目前主要使用的自动启动器，[Mirai Console Loader](https://github.com/iTXTech/mirai-console-loader)
+，（MCL） 默认安装 JRE 17。但旧版本 MCL 会默认安装 JRE 11。因此 Mirai Console 插件使用 JDK 11
+是较合适的。
 
 **但注意不要使用 Oracle JDK**
 （[原因](https://github.com/mamoe/mirai/discussions/779)），可以使用其他任何 JDK。
@@ -21,7 +24,7 @@
 
 [Mirai Console IntelliJ]: /mirai-console/tools/intellij-plugin
 
-[Mirai Console IntelliJ-JB]: /mirai-console/tools/intellij-plugin
+[Mirai Console IntelliJ-JB]: https://plugins.jetbrains.com/plugin/15094-mirai-console
 
 [Mirai Console IntelliJ-OK]: https://plugins.jetbrains.com/embeddable/install/15094
 

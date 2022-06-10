@@ -1,0 +1,3 @@
+io.ktor:ktor-client-core-jvm:2.0.0
+io.ktor:ktor-client-java-jvm:2.0.0
+io.ktor:ktor-client-resources-jvm:2.0.0

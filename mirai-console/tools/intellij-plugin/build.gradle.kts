@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("UnusedImport")
@@ -18,10 +18,11 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.aliyun.com/repository/public")
+    maven("https://maven.aliyun.com/repository/public") // IntelliJ dependencies are very large (>500MB)
+    mavenCentral()
 }
 
-version = Versions.console
+version = Versions.consoleIntellij
 description = "IntelliJ plugin for Mirai Console"
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -42,12 +43,11 @@ intellij {
     )
 }
 
-afterEvaluate {
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
+
 tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishPluginTask::class) {
     val pluginKey = project.findProperty("jetbrains.hub.key")?.toString()
     if (pluginKey != null) {
@@ -64,15 +64,15 @@ fun File.resolveMkdir(relative: String): File {
 
 kotlin.target.compilations.all {
     kotlinOptions {
-        apiVersion = "1.4"
-        languageVersion = "1.4"
         jvmTarget = "11"
+        apiVersion = "1.5" // bundled Kotlin is 1.5.10
     }
 }
 
+// https://plugins.jetbrains.com/docs/intellij/kotlin.html#kotlin-standard-library
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
-    sinceBuild.set("201.*")
-    untilBuild.set("215.*")
+    sinceBuild.set("221.0")
+    untilBuild.set("221.999999")
     pluginDescription.set(
         """
         Plugin development support for <a href='https://github.com/mamoe/mirai'>Mirai Console</a>
@@ -93,12 +93,12 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
 }
 
 dependencies {
-    api(`jetbrains-annotations`)
-    api(`kotlinx-coroutines-jdk8`)
-    api(`kotlinx-coroutines-swing`)
-
-    api(project(":mirai-console-compiler-common"))
-
-    implementation(`kotlin-stdlib-jdk8`)
-    implementation(`kotlin-reflect`)
+    implementation(project(":mirai-console-compiler-common")) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk7")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+    }
+//    implementation(project(":mirai-console-compiler-common")) {
+//        isTransitive = false
+//    }
 }

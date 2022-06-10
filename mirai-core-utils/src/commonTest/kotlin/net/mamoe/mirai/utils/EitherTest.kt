@@ -1,16 +1,17 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:OptIn(ExperimentalStdlibApi::class)
 
 package net.mamoe.mirai.utils
 
+import net.mamoe.mirai.utils.Either.Companion.flatMapNull
 import net.mamoe.mirai.utils.Either.Companion.fold
 import net.mamoe.mirai.utils.Either.Companion.ifLeft
 import net.mamoe.mirai.utils.Either.Companion.ifRight
@@ -129,6 +130,39 @@ internal class EitherTest {
                     throw AssertionError("should not be called")
                 }.leftOrNull
         )
+    }
+
+    @Test
+    fun `can flatMapNull`() {
+        assertTypeIs(typeOf<Either<CharSequence, Int>>(), Either<CharSequence, Int>(1))
+
+        // not null types
+        Either<CharSequence, Int>("left").run {
+            val result = flatMapNull { throw AssertionError("Fail") }
+            assertEquals(this, result) // don't assertSame: arguments boxed separately
+        }
+
+        Either<CharSequence, Int>(1).run {
+            val result = flatMapNull { throw AssertionError("Fail") }
+            assertEquals(this, result) // don't assertSame: arguments boxed separately
+        }
+
+        // nullable types
+        Either<CharSequence, Int?>("left").run {
+            val result = flatMapNull { throw AssertionError("Fail") }
+            assertEquals(this, result) // don't assertSame: arguments boxed separately
+        }
+
+        Either<CharSequence, Int?>(1).run {
+            val result = flatMapNull { throw AssertionError("Fail") }
+            assertEquals(this, result) // don't assertSame: arguments boxed separately
+        }
+
+        // normal case
+        Either<CharSequence, Int?>(null).run {
+            val result = flatMapNull { right(true) } // can interlace type
+            assertEquals(true, result.right)
+        }
     }
 
     @Test

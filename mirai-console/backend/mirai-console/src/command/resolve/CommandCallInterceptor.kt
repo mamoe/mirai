@@ -66,15 +66,13 @@ public interface CommandCallInterceptor {
          */
         @JvmStatic
         public fun Message.intercepted(caller: CommandSender): InterceptResult<Message> {
-            GlobalComponentStorage.run {
-                return CommandCallInterceptorProvider.foldExtensions(this@intercepted) { acc, ext ->
-                    val intercepted = ext.instance.interceptBeforeCall(acc, caller)
-                    intercepted?.fold(
-                        onIntercepted = { return intercepted },
-                        otherwise = { it }
-                    ) ?: acc
-                }.let { InterceptResult(it) }
-            }
+            return GlobalComponentStorage.foldExtensions(CommandCallInterceptorProvider, this@intercepted) { acc, ext ->
+                val intercepted = ext.instance.interceptBeforeCall(acc, caller)
+                intercepted?.fold(
+                    onIntercepted = { return intercepted },
+                    otherwise = { it }
+                ) ?: acc
+            }.let { InterceptResult(it) }
         }
 
         /**
@@ -83,15 +81,13 @@ public interface CommandCallInterceptor {
          */
         @JvmStatic
         public fun CommandCall.intercepted(): InterceptResult<CommandCall> {
-            GlobalComponentStorage.run {
-                return CommandCallInterceptorProvider.foldExtensions(this@intercepted) { acc, ext ->
-                    val intercepted = ext.instance.interceptCall(acc)
-                    intercepted?.fold(
-                        onIntercepted = { return intercepted },
-                        otherwise = { it }
-                    ) ?: acc
-                }.let { InterceptResult(it) }
-            }
+            return GlobalComponentStorage.foldExtensions(CommandCallInterceptorProvider, this@intercepted) { acc, ext ->
+                val intercepted = ext.instance.interceptCall(acc)
+                intercepted?.fold(
+                    onIntercepted = { return intercepted },
+                    otherwise = { it }
+                ) ?: acc
+            }.let { InterceptResult(it) }
         }
 
         /**
@@ -100,15 +96,13 @@ public interface CommandCallInterceptor {
          */
         @JvmStatic
         public fun ResolvedCommandCall.intercepted(): InterceptResult<ResolvedCommandCall> {
-            GlobalComponentStorage.run {
-                return CommandCallInterceptorProvider.foldExtensions(this@intercepted) { acc, ext ->
-                    val intercepted = ext.instance.interceptResolvedCall(acc)
-                    intercepted?.fold(
-                        onIntercepted = { return intercepted },
-                        otherwise = { it }
-                    ) ?: acc
-                }.let { InterceptResult(it) }
-            }
+            return GlobalComponentStorage.foldExtensions(CommandCallInterceptorProvider, this@intercepted) { acc, ext ->
+                val intercepted = ext.instance.interceptResolvedCall(acc)
+                intercepted?.fold(
+                    onIntercepted = { return intercepted },
+                    otherwise = { it }
+                ) ?: acc
+            }.let { InterceptResult(it) }
         }
     }
 }

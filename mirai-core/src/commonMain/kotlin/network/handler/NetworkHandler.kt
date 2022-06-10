@@ -1,15 +1,17 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -26,9 +28,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespTy
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
- * Basic interface available to application. Usually wrapped with [SelectorNetworkHandler].
+ * Coroutine-based network framework. Usually wrapped with [SelectorNetworkHandler] to enable retrying.
  *
- * Implementation is usually subclass of [NetworkHandlerSupport].
+ * Implementation is typically subclass of [NetworkHandlerSupport].
  *
  * Instances are often created by [NetworkHandlerFactory].
  *
@@ -125,15 +127,25 @@ internal interface NetworkHandler : CoroutineScope {
     suspend fun resumeConnection()
 
 
+    suspend fun <P : Packet?> sendAndExpect(
+        packet: OutgoingPacketWithRespType<P>,
+        timeout: Long = 5000,
+        attempts: Int = 2
+    ): P
+
     /**
      * Sends [packet], suspends and expects to receive a response from the server.
      *
      * Coroutine suspension may happen if connection is not yet available however,
      * [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
      *
+     * @throws TimeoutCancellationException if timeout has been reached.
+     * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
+     * @throws IllegalArgumentException if [timeout] or [attempts] are invalid.
+     *
      * @param attempts ranges `1..INFINITY`
      */
-    suspend fun sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): Packet?
+    suspend fun <P : Packet?> sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): P
 
     /**
      * Sends [packet] and does not expect any response.
@@ -141,11 +153,14 @@ internal interface NetworkHandler : CoroutineScope {
      * Response is still being processed but not passed as a return value of this function, so it does not suspends this function (due to awaiting for the response).
      * However, coroutine is still suspended if connection is not yet available,
      * and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     * legalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     *
+     * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
      */
     suspend fun sendWithoutExpect(packet: OutgoingPacket)
 
     /**
-     * Closes this handler gracefully (i.e. asynchronously).
+     * Closes this handler gracefully (i.e. asynchronously). You should provide [cause] as possible as you can to give debugging information.
      *
      * After invocation of [close], [state] will always be [State.CLOSED].
      */
@@ -154,32 +169,6 @@ internal interface NetworkHandler : CoroutineScope {
     ///////////////////////////////////////////////////////////////////////////
     // compatibility
     ///////////////////////////////////////////////////////////////////////////
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendWithoutExpect] without extension receiver instead.
-     */
-    suspend fun OutgoingPacket.sendWithoutExpect(
-        antiCollisionParam: Any? = null,
-    ) = this@NetworkHandler.sendWithoutExpect(this)
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
-     */
-    @Suppress("UNCHECKED_CAST")
-    suspend fun <R> OutgoingPacket.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2,
-        antiCollisionParam: Any? = null, // signature collision
-    ): R = sendAndExpect(this, timeoutMillis, retry) as R
-
-    /**
-     * @suppress This is for compatibility with old code. Use [sendAndExpect] without extension receiver instead.
-     */
-    @Suppress("UNCHECKED_CAST")
-    suspend fun <R : Packet?> OutgoingPacketWithRespType<R>.sendAndExpect(
-        timeoutMillis: Long = 5000,
-        retry: Int = 2,
-    ): R = sendAndExpect(this, timeoutMillis, retry) as R
 }
 
 internal val NetworkHandler.logger: MiraiLogger get() = context.logger

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS", "MemberVisibilityCanBePrivate")
@@ -63,6 +63,11 @@ public open class BotConfiguration { // open for Java
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
     @MiraiExperimentalApi
+    @Deprecated(
+        "Changing serial format is going to be forbidden. Deprecated for removal. ",
+        level = DeprecationLevel.ERROR
+    )
+    @DeprecatedSinceMirai(errorSince = "2.11") // was experimental
     public var json: Json = kotlin.runCatching {
         Json {
             isLenient = true
@@ -198,15 +203,17 @@ public open class BotConfiguration { // open for Java
     /** 心跳失败后的第一次重连前的等待时间. */
     @Deprecated(
         "Useless since new network. Please just remove this.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
     public var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
     /** 重连失败后, 继续尝试的每次等待时间 */
     @Deprecated(
         "Useless since new network. Please just remove this.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
     public var reconnectPeriodMillis: Long = 5.secondsToMillis
 
     /** 最多尝试多少次重连 */
@@ -292,6 +299,21 @@ public open class BotConfiguration { // open for Java
     ///////////////////////////////////////////////////////////////////////////
     // Device
     ///////////////////////////////////////////////////////////////////////////
+
+    @JvmField
+    internal var accountSecrets: Boolean = true
+
+    /**
+     * 禁止保存 `account.secrets`.
+     *
+     * `account.secrets` 保存账号的会话信息。
+     * 它可加速登录过程，也可能可以减少出现验证码的次数。如果遇到一段时间后无法接收消息通知等同步问题时可尝试禁用。
+     *
+     * @since 2.11
+     */
+    public fun disableAccountSecretes() {
+        accountSecrets = false
+    }
 
     /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
@@ -579,21 +601,19 @@ public open class BotConfiguration { // open for Java
         return BotConfiguration().also { new ->
             // To structural order
             new.workingDir = workingDir
+            @Suppress("DEPRECATION_ERROR")
             new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
             new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
             new.heartbeatStrategy = heartbeatStrategy
-            @Suppress("DEPRECATION")
-            new.firstReconnectDelayMillis = firstReconnectDelayMillis
-            @Suppress("DEPRECATION")
-            new.reconnectPeriodMillis = reconnectPeriodMillis
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.autoReconnectOnForceOffline = autoReconnectOnForceOffline
             new.loginSolver = loginSolver
             new.protocol = protocol
             new.highwayUploadCoroutineCount = highwayUploadCoroutineCount
+            new.accountSecrets = accountSecrets
             new.deviceInfo = deviceInfo
             new.botLoggerSupplier = botLoggerSupplier
             new.networkLoggerSupplier = networkLoggerSupplier

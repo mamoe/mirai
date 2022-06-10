@@ -28,7 +28,6 @@ import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
-import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.isValid
@@ -39,7 +38,6 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
-import net.mamoe.mirai.internal.network.protocol.packet.sendAndExpect
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.retryCatching
@@ -140,9 +138,11 @@ internal class ContactUpdaterImpl(
             var count = 0
             var total: Short
             while (true) {
-                val data = FriendList.GetFriendGroupList(
-                    bot.client, count, 150, 0, 0
-                ).sendAndExpect(bot, timeoutMillis = 5000, retry = 2)
+                val data = bot.network.sendAndExpect(
+                    FriendList.GetFriendGroupList(bot.client, count, 150, 0, 0),
+                    timeout = 5000,
+                    attempts = 2
+                )
 
                 total = data.totalFriendCount
 
@@ -163,9 +163,11 @@ internal class ContactUpdaterImpl(
             logger.info { "Loaded ${list.size} friends from local cache." }
 
             // For sync bot nick
-            FriendList.GetFriendGroupList(
-                bot.client, 0, 1, 0, 0
-            ).sendAndExpect<Packet>(bot)
+            bot.network.sendAndExpect(
+                FriendList.GetFriendGroupList(
+                    bot.client, 0, 1, 0, 0
+                )
+            )
 
             list
         } else {
@@ -225,8 +227,12 @@ internal class ContactUpdaterImpl(
         }
         var currentCount = 0
         logger.info { "Start loading stranger list..." }
-        val response = StrangerList.GetStrangerList(bot.client)
-            .sendAndExpect(bot, timeoutMillis = 5000, retry = 2)
+
+        val response = bot.network.sendAndExpect(
+            StrangerList.GetStrangerList(bot.client),
+            timeout = 5000,
+            attempts = 2
+        )
 
         if (response.result == 0) {
             response.strangerList.forEach {
@@ -245,11 +251,12 @@ internal class ContactUpdaterImpl(
         if (initGroupOk) {
             return
         }
-        TroopManagement.GetTroopConfig(bot.client).sendAndExpect(bot)
+
+        bot.network.sendAndExpect(TroopManagement.GetTroopConfig(bot.client))
 
         logger.info { "Start loading group list..." }
-        val troopListData = FriendList.GetTroopListSimplify(bot.client)
-            .sendAndExpect(bot, retry = 5)
+
+        val troopListData = bot.network.sendAndExpect(FriendList.GetTroopListSimplify(bot.client), attempts = 5)
 
         val semaphore = Semaphore(30)
 

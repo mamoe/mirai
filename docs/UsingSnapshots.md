@@ -67,7 +67,7 @@ dependencies {
 settings.gradle(.kts)
 ```
 pluginManagement {
-    dependencies {
+    repositories {
         gradlePluginPortal()
         maven("https://repo.mirai.mamoe.net/snapshots")
     }

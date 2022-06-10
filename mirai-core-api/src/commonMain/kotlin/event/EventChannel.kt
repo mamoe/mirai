@@ -1,17 +1,14 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
-
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "MemberVisibilityCanBePrivate", "unused")
 
 @file:JvmMultifileClass
 @file:JvmName("EventChannelKt")
-
 
 package net.mamoe.mirai.event
 
@@ -19,30 +16,44 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.event.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.internal.event.GlobalEventListeners
-import net.mamoe.mirai.internal.event.Handler
-import net.mamoe.mirai.internal.event.ListenerRegistry
 import net.mamoe.mirai.internal.event.registerEventHandler
 import net.mamoe.mirai.utils.*
+import org.jetbrains.annotations.Contract
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
 /**
- * 事件通道. 事件通道是监听事件的入口. **在不同的事件通道中可以监听到不同类型的事件**.
+ * 事件通道.
  *
- * [GlobalEventChannel] 是最大的通道: 所有的事件都可以在 [GlobalEventChannel] 监听到.
- * 通过 [Bot.eventChannel] 得到的通道只能监听到来自这个 [Bot] 的事件.
+ * 事件通道是监听事件的入口, 但不负责广播事件. 要广播事件, 使用 [Event.broadcast] 或 [IMirai.broadcastEvent].
+ *
+ * ## 获取事件通道
+ *
+ * [EventChannel] 不可自行构造, 只能通过 [GlobalEventChannel], [BotEvent], 或基于一个通道的过滤等操作获得.
+ *
+ * ### 全局事件通道
+ *
+ * [GlobalEventChannel] 是单例对象, 表示全局事件通道, 可以获取到在其中广播的所有事件.
+ *
+ * ### [BotEvent] 事件通道
+ *
+ * 若只需要监听某个 [Bot] 的事件, 可通过 [Bot.eventChannel] 获取到这样的 [EventChannel].
+ *
+ * ## 通道操作
  *
  * ### 对通道的操作
- * - "缩窄" 通道: 通过 [EventChannel.filter]. 例如 `filter { it is BotEvent }` 得到一个只能监听到 [BotEvent] 的事件通道.
+ * - 过滤通道: 通过 [EventChannel.filter]. 例如 `filter { it is BotEvent }` 得到一个只能监听到 [BotEvent] 的事件通道.
  * - 转换为 Kotlin 协程 [Channel]: [EventChannel.asChannel]
  * - 添加 [CoroutineContext]: [context], [parentJob], [parentScope], [exceptionHandler]
  *
@@ -51,20 +62,31 @@ import kotlin.reflect.KClass
  * - [EventChannel.subscribeAlways] 创建一个总是监听事件的事件监听器.
  * - [EventChannel.subscribeOnce] 创建一个只监听单次的事件监听器.
  *
- * ### 获取事件通道
- * - 全局事件通道: [GlobalEventChannel]
- * - [BotEvent] 通道: [Bot.eventChannel]
+ * ### 监听器生命周期
  *
- * @see subscribe
+ * 阅读 [EventChannel.subscribe] 以获取监听器生命周期相关信息.
+ *
+ * ## 与 kotlinx-coroutines 交互
+ *
+ * mirai [EventChannel] 设计比 kotlinx-coroutines 的 [Flow] 稳定版更早.
+ * [EventChannel] 的功能与 [Flow] 类似, 不过 [EventChannel] 在 [subscribe] (类似 [Flow.collect]) 时有优先级判定, 也允许[拦截][Event.intercept].
+ *
+ * ### 通过 [Flow] 接收事件
+ *
+ * 使用 [EventChannel.asFlow] 获得 [Flow], 然后可使用 [Flow.collect] 等操作.
+ *
+ * ### 转发事件到 [SendChannel]
+ *
+ * 使用 [EventChannel.forwardToChannel] 可将事件转发到指定 [SendChannel].
  */
-public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal constructor(
+@NotStableForInheritance // since 2.12, before it was `final class`.
+public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi public constructor(
     public val baseEventClass: KClass<out BaseEvent>,
     /**
      * 此事件通道的默认 [CoroutineScope.coroutineContext]. 将会被添加给所有注册的事件监听器.
      */
-    public val defaultCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    public val defaultCoroutineContext: CoroutineContext,
 ) {
-
     /**
      * 创建事件监听并将监听结果发送在 [Channel]. 将返回值 [Channel] [关闭][Channel.close] 时将会同时关闭事件监听.
      *
@@ -81,7 +103,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         ),
         level = DeprecationLevel.WARNING,
     )
-    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+    @DeprecatedSinceMirai(warningSince = "2.10")
     @MiraiExperimentalApi
     public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,
@@ -97,6 +119,17 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * 返回创建的会转发监听到的所有事件到 [channel] 的[事件监听器][Listener]. [停止][Listener.complete] 该监听器会停止转发, 不会影响目标 [channel].
      *
      * 若 [Channel.send] 挂起, 则监听器也会挂起, 也就可能会导致事件广播过程挂起.
+     *
+     * 示例:
+     *
+     * ```
+     * val eventChannel: EventChannel<BotEvent> = ...
+     * val channel = Channel<BotEvent>() // kotlinx.coroutines.channels.Channel
+     * eventChannel.forwardToChannel(channel, priority = ...)
+     *
+     * // 其他地方
+     * val event: BotEvent = channel.receive() // 挂起并接收一个事件
+     * ```
      *
      * @see subscribeAlways
      * @see Channel
@@ -116,6 +149,37 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
             }
         }
     }
+
+    /**
+     * 通过 [Flow] 接收此通道内的所有事件.
+     *
+     * ```
+     * val eventChannel: EventChannel<BotEvent> = ...
+     * val flow: Flow<BotEvent> = eventChannel.asFlow()
+     *
+     * flow.collect { // it
+     *   //
+     * }
+     *
+     * flow.filterIsInstance<GroupMessageEvent>.collect { // it: GroupMessageEvent
+     *   // 处理事件 ...
+     * }
+     *
+     * flow.filterIsInstance<FriendMessageEvent>.collect { // it: FriendMessageEvent
+     *   // 处理事件 ...
+     * }
+     * ```
+     *
+     * 类似于 [SharedFlow], [EventChannel.asFlow] 返回的 [Flow] 永远都不会停止. 因此上述示例 [Flow.collect] 永远都不会正常 (以抛出异常之外的) 结束.
+     *
+     * 通过 [asFlow] 接收事件相当于通过 [subscribeAlways] 以 [EventPriority.MONITOR] 监听事件.
+     *
+     * **注意**: [context], [parentJob] 等控制 [EventChannel.defaultCoroutineContext] 的操作对 [asFlow] 无效. 因为 [asFlow] 并不创建协程.
+     *
+     * @see Flow
+     * @since 2.12
+     */
+    public abstract fun asFlow(): Flow<BaseEvent>
 
     // region transforming operations
 
@@ -153,25 +217,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      */
     @JvmSynthetic
     public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        val parent = this
-        return object : EventChannel<BaseEvent>(baseEventClass, defaultCoroutineContext) {
-            private inline val innerThis get() = this
-
-            override fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
-                val thisIntercepted: suspend (E) -> ListeningStatus = { ev ->
-                    val filterResult = try {
-                        @Suppress("UNCHECKED_CAST")
-                        baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
-                    } catch (e: Throwable) {
-                        if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
-                        throw ExceptionInEventChannelFilterException(ev, innerThis, cause = e)
-                    }
-                    if (filterResult) this@intercepted.invoke(ev)
-                    else ListeningStatus.LISTENING
-                }
-                return parent.intercept(thisIntercepted)
-            }
-        }
+        return FilterEventChannel(this, filter)
     }
 
     /**
@@ -246,23 +292,14 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      *
      * 此操作不会修改 [`this.coroutineContext`][defaultCoroutineContext], 只会创建一个新的 [EventChannel].
      */
-    public fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> {
-        val origin = this
-        return object : EventChannel<BaseEvent>(
-            baseEventClass,
-            coroutineContexts.fold(this.defaultCoroutineContext) { acc, element -> acc + element }
-        ) {
-            override fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
-                return origin.intercept(this)
-            }
-        }
-    }
+    public abstract fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent>
 
     /**
      * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [this.coroutineContext][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
      * @see context
      */
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     public fun exceptionHandler(coroutineExceptionHandler: CoroutineExceptionHandler): EventChannel<BaseEvent> {
         return context(coroutineExceptionHandler)
     }
@@ -275,6 +312,17 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
         return context(CoroutineExceptionHandler { _, throwable ->
             coroutineExceptionHandler(throwable)
         })
+    }
+
+    /**
+     * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [`this.coroutineContext`][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
+     * @see context
+     * @since 2.12
+     */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    public fun exceptionHandler(coroutineExceptionHandler: Consumer<Throwable>): EventChannel<BaseEvent> {
+        return exceptionHandler { coroutineExceptionHandler.accept(it) }
     }
 
     /**
@@ -351,13 +399,18 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * 请通过 `withContext(Dispatchers.IO) { }` 等方法执行阻塞工作.
      *
      * ## 异常处理
-     * - 当参数 [handler] 处理抛出异常时, 将会按如下顺序寻找 [CoroutineExceptionHandler] 处理异常:
-     *   1. 参数 [coroutineContext]
-     *   2. [EventChannel.defaultCoroutineContext]
-     *   3. [Event.broadcast] 调用者的 [coroutineContext]
-     *   4. 若事件为 [BotEvent], 则从 [BotEvent.bot] 获取到 [Bot], 进而在 [Bot.coroutineContext] 中寻找
-     *   5. 若以上四个步骤均无法获取 [CoroutineExceptionHandler], 则使用 [MiraiLogger.Companion] 通过日志记录. 但这种情况理论上不应发生.
      *
+     * **监听过程抛出的异常是需要尽可能避免的, 因为这将产生不确定性.**
+     *
+     * 当参数 [handler] 处理事件抛出异常时, 只会从监听方协程上下文 ([CoroutineContext]) 寻找 [CoroutineExceptionHandler] 处理异常, 即如下顺序:
+     *   1. 本函数参数 [coroutineContext]
+     *   2. [EventChannel.defaultCoroutineContext]
+     *   3. 若以上步骤无法获取 [CoroutineExceptionHandler], 则只会在日志记录异常.
+     *   因此建议先指定 [CoroutineExceptionHandler] (可通过 [EventChannel.exceptionHandler]) 再监听事件, 或者在监听事件中捕获异常.
+     *
+     * 因此, 广播方 ([Event.broadcast]) 不会知晓监听方产生的异常, 其 [Event.broadcast] 过程也不会因监听方产生异常而提前结束.
+     *
+     * ***备注***: 在 2.11 以前, 发生上述异常时还会从广播方和有关 [Bot] 协程域获取 [CoroutineExceptionHandler]. 因此行为不稳定而在 2.11 变更为上述过程.
      *
      * 事件处理时抛出异常不会停止监听器.
      *
@@ -368,7 +421,14 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * 基于 [concurrency] 参数, 事件监听器可以被允许并行执行.
      *
      * - 若 [concurrency] 为 [ConcurrencyKind.CONCURRENT], [handler] 可能被并行调用, 需要保证并发安全.
-     * - 若 [concurrency] 为 [ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制.
+     * - 若 [concurrency] 为 [ConcurrencyKind.LOCKED], [handler] 会被 [Mutex] 限制, 串行异步执行.
+     *
+     * ## 衍生监听方法
+     *
+     * 这些方法仅 Kotlin 可用.
+     *
+     * - [syncFromEvent]: 挂起当前协程, 监听一个事件, 并尝试从这个事件中**获取**一个值
+     * - [nextEvent]: 挂起当前协程, 直到监听到特定类型事件的广播并通过过滤器, 返回这个事件实例.
      *
      * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext].
      * @param concurrency 并发类型. 查看 [ConcurrencyKind]
@@ -377,10 +437,6 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      *
      * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
      *
-     * @see syncFromEvent 挂起当前协程, 监听一个事件, 并尝试从这个事件中**同步**一个值
-     * @see asyncFromEvent 异步监听一个事件, 并尝试从这个事件中获取一个值.
-     *
-     * @see nextEvent 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
      *
      * @see selectMessages 以 `when` 的语法 '选择' 即将到来的一条消息.
      * @see whileSelectMessages 以 `when` 的语法 '选择' 即将到来的所有消息, 直到不满足筛选结果.
@@ -561,7 +617,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see subscribeAlways
      */
     @JvmOverloads
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     public fun <E : Event> subscribeAlways(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -588,7 +645,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see subscribe
      */
     @JvmOverloads
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     public fun <E : Event> subscribe(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -613,7 +671,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
      * @see subscribeOnce
      */
     @JvmOverloads
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     public fun <E : Event> subscribeOnce(
         eventClass: Class<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -632,47 +691,78 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads internal con
 
     // region impl
 
-    /**
-     * 由子类实现，可以为 handler 包装一个过滤器等. 每个 handler 都会经过此函数处理.
-     */
-    @MiraiExperimentalApi
-    protected open fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): (suspend (E) -> ListeningStatus) {
-        return this
-    }
 
-    private fun <E : Event> intercept(listener: (suspend (E) -> ListeningStatus)): suspend (E) -> ListeningStatus {
-        return listener.intercepted()
+    // protected, to hide from users
+    @MiraiInternalApi
+    protected abstract fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>)
+
+    // to overcome visibility issue
+    internal fun <E : Event> registerListener0(eventClass: KClass<out E>, listener: Listener<E>) {
+        return registerListener(eventClass, listener)
     }
 
     private fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
-        with(GlobalEventListeners[listener.priority]) {
-            @Suppress("UNCHECKED_CAST")
-            val node = ListenerRegistry(listener as Listener<Event>, eventClass)
-            add(node)
-            listener.invokeOnCompletion {
-                this.remove(node)
-            }
-        }
+        registerListener(eventClass, listener)
         return listener
     }
 
-
-    @Suppress("FunctionName")
-    private fun <E : Event> createListener(
+    /**
+     * Creates [Listener] instance using the [listenerBlock] action.
+     */
+    @Contract("_ -> new") // always creates new instance
+    @MiraiInternalApi
+    protected abstract fun <E : Event> createListener(
         coroutineContext: CoroutineContext,
         concurrencyKind: ConcurrencyKind,
-        priority: EventPriority = EventPriority.NORMAL,
-        handler: suspend (E) -> ListeningStatus,
-    ): Listener<E> {
-        val context = this.defaultCoroutineContext + coroutineContext
-        return Handler(
-            parentJob = context[Job],
-            subscriberContext = context,
-            handler = handler.intercepted(),
-            concurrencyKind = concurrencyKind,
-            priority = priority
-        )
-    }
+        priority: EventPriority,
+        listenerBlock: suspend (E) -> ListeningStatus,
+    ): Listener<E>
+
+    // to overcome visibility issue
+    internal fun <E : Event> createListener0(
+        coroutineContext: CoroutineContext,
+        concurrencyKind: ConcurrencyKind,
+        priority: EventPriority,
+        listenerBlock: suspend (E) -> ListeningStatus,
+    ): Listener<E> = createListener(coroutineContext, concurrencyKind, priority, listenerBlock)
 
     // endregion
+}
+
+
+// used by mirai-core
+internal open class FilterEventChannel<BaseEvent : Event>(
+    private val delegate: EventChannel<BaseEvent>,
+    private val filter: suspend (event: BaseEvent) -> Boolean,
+) : EventChannel<BaseEvent>(delegate.baseEventClass, delegate.defaultCoroutineContext) {
+    private fun <E : Event> intercept(block: suspend (E) -> ListeningStatus): suspend (E) -> ListeningStatus {
+        return { ev ->
+            val filterResult = try {
+                @Suppress("UNCHECKED_CAST")
+                baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
+            } catch (e: Throwable) {
+                if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
+                throw ExceptionInEventChannelFilterException(ev, this, cause = e)
+            }
+            if (filterResult) block.invoke(ev)
+            else ListeningStatus.LISTENING
+        }
+    }
+
+    override fun asFlow(): Flow<BaseEvent> = delegate.asFlow().filter(filter)
+
+    override fun <E : Event> registerListener(eventClass: KClass<out E>, listener: Listener<E>) {
+        delegate.registerListener0(eventClass, listener)
+    }
+
+    override fun <E : Event> createListener(
+        coroutineContext: CoroutineContext,
+        concurrencyKind: ConcurrencyKind,
+        priority: EventPriority,
+        listenerBlock: suspend (E) -> ListeningStatus
+    ): Listener<E> = delegate.createListener0(coroutineContext, concurrencyKind, priority, intercept(listenerBlock))
+
+    override fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> {
+        return delegate.context(*coroutineContexts)
+    }
 }

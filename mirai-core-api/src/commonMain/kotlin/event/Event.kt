@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
@@ -12,33 +12,37 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.internal.event.VerboseEvent
-import net.mamoe.mirai.internal.event.callAndRemoveIfRequired
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
- * 可被监听的类, 可以是任何 class 或 object.
+ * 表示一个事件.
  *
- * 若监听这个类, 监听器将会接收所有事件的广播.
+ * 实现时应继承 [AbstractEvent] 而不要直接实现 [Event]. 否则将无法广播.
  *
- * 所有 [Event] 都应继承 [AbstractEvent] 而不要直接实现 [Event]. 否则将无法广播也无法监听.
+ * ## 广播事件
  *
- * ### 广播
- * 广播事件的唯一方式为 [broadcast].
+ * 使用 [Event.broadcast] 或 [IMirai.broadcastEvent].
  *
- * @see EventChannel.subscribeAlways
- * @see EventChannel.subscribeOnce
+ * Kotlin:
+ * ```
+ * val event: Event = ...
+ * event.broadcast()
+ * ```
  *
- * @see EventChannel.subscribeMessages
+ * Java:
+ * ```
+ * Event event = ...;
+ * Mirai.getInstance().broadcastEvent(event);
+ * ```
  *
- * @see [broadcast] 广播事件
- * @see [EventChannel.subscribe] 监听事件
+ * ## 监听事件
+ *
+ * 参阅 [EventChannel].
  *
  * @see CancellableEvent 可被取消的事件
  */
@@ -72,12 +76,14 @@ public interface Event {
 public abstract class AbstractEvent : Event {
     /** 限制一个事件实例不能并行广播. (适用于 object 广播的情况) */
     @JvmField
-    internal val broadCastLock = Mutex()
+    @MiraiInternalApi
+    public val broadCastLock: Mutex = Mutex()
 
     @Suppress("PropertyName")
     @JvmField
     @Volatile
-    internal var _intercepted = false
+    @MiraiInternalApi
+    public var _intercepted: Boolean = false
 
     @Volatile
     private var _cancelled = false
@@ -104,6 +110,7 @@ public abstract class AbstractEvent : Event {
 
     /**
      * @see CancellableEvent.cancel
+     * @throws IllegalStateException 当事件未实现接口 [CancellableEvent] 时抛出
      */
     public fun cancel() {
         check(this is CancellableEvent) {
@@ -128,8 +135,6 @@ public interface CancellableEvent : Event {
     /**
      * 取消这个事件.
      * 事件需实现 [CancellableEvent] 接口才可以被取消
-     *
-     * @throws IllegalStateException 当事件未实现接口 [CancellableEvent] 时抛出
      */
     public fun cancel()
 }
@@ -140,69 +145,16 @@ public interface CancellableEvent : Event {
  * 当事件被实现为 Kotlin `object` 时, 同一时刻只能有一个 [广播][broadcast] 存在.
  * 较晚执行的 [广播][broadcast] 将会挂起协程并等待之前的广播任务结束.
  *
- * @see __broadcastJava Java 使用
+ * ## 异常处理
+ *
+ * 作为广播方, 本函数不会抛出监听方产生的异常.
+ *
+ * [EventChannel.filter] 和 [Listener.onEvent] 时产生的异常只会由监听方处理.
  */
 @JvmBlockingBridge
-public suspend fun <E : Event> E.broadcast(): E = _EventBroadcast.implementation.broadcastPublic(this)
-
-/**
- * @since 2.7-M1
- */
-@Suppress("ClassName")
-internal open class _EventBroadcast {
-    companion object {
-        @Volatile
-        @JvmStatic
-        var implementation: _EventBroadcast = _EventBroadcast()
-
-        private val SHOW_VERBOSE_EVENT_ALWAYS = systemProp("mirai.event.show.verbose.events", false)
-    }
-
-    open suspend fun <E : Event> broadcastPublic(event: E): E = event.apply { Mirai.broadcastEvent(this) }
-
-    @JvmName("broadcastImpl") // avoid mangling
-    internal suspend fun <E : Event> broadcastImpl(event: E): E {
-        check(event is AbstractEvent) { "Events must extend AbstractEvent" }
-
-        if (event is BroadcastControllable && !event.shouldBroadcast) {
-            return event
-        }
-        event.broadCastLock.withLock {
-            event._intercepted = false
-            if (EventDisabled) return@withLock
-            logEvent(event)
-            callAndRemoveIfRequired(event)
-        }
-
-        return event
-    }
-
-    private fun isVerboseEvent(event: Event): Boolean {
-        if (SHOW_VERBOSE_EVENT_ALWAYS) return false
-        if (event is VerboseEvent) {
-            if (event is BotEvent) {
-                return !event.bot.configuration.isShowingVerboseEventLog
-            }
-            return true
-        }
-        return false
-    }
-
-    private fun logEvent(event: Event) {
-        if (event is Packet.NoEventLog) return
-        if (event is Packet.NoLog) return
-        if (event is MessageEvent) return // specially handled in [LoggingPacketHandlerAdapter]
-//        if (this is Packet) return@withLock // all [Packet]s are logged in [LoggingPacketHandlerAdapter]
-        if (isVerboseEvent(event)) return
-
-        if (event is BotEvent) {
-            event.bot.logger.verbose { "Event: $event" }
-        } else {
-            topLevelEventLogger.verbose { "Event: $event" }
-        }
-    }
-
-    private val topLevelEventLogger by lazy { MiraiLogger.Factory.create(Event::class, "EventPipeline") }
+public suspend fun <E : Event> E.broadcast(): E {
+    Mirai.broadcastEvent(this)
+    return this
 }
 
 /**
@@ -210,6 +162,11 @@ internal open class _EventBroadcast {
  * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
  */
 @MiraiExperimentalApi
+@Deprecated(
+    "Deprecated without replacement. If you really need this, please file an issue.",
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(errorSince = "2.12")
 public var EventDisabled: Boolean = false
 
 /**

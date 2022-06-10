@@ -1,19 +1,19 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 @file:Suppress("EXPERIMENTAL_API_USAGE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.internal
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -30,11 +30,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateI
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
+import net.mamoe.mirai.internal.network.handler.state.*
 import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
-import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
-import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
-import net.mamoe.mirai.internal.network.handler.state.StateObserver
-import net.mamoe.mirai.internal.network.handler.state.safe
 import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
 import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
 import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
@@ -50,11 +47,13 @@ import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.ImagePatcher
+import net.mamoe.mirai.internal.utils.ImagePatcherImpl
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.contracts.contract
+import kotlin.time.Duration.Companion.seconds
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
@@ -76,7 +75,9 @@ internal open class QQAndroidBot constructor(
         if (!this.isActive) return
         runBlocking {
             try { // this may not be very good but
-                components[SsoProcessor].logout(network)
+                withTimeoutOrNull(5.seconds) {
+                    components[SsoProcessor].logout(network)
+                }
             } catch (ignored: Exception) {
             }
         }
@@ -120,7 +121,7 @@ internal open class QQAndroidBot constructor(
                     lastDisconnectedIP = lastConnectedIP
                 }
             },
-            StateChangedObserver("BotOfflineEventBroadcaster", State.OK, State.CLOSED) { new ->
+            StateChangedObserver("BotOfflineEventBroadcasterAfter", State.OK, State.CLOSED) { new ->
                 // logging performed by BotOfflineEventMonitor
                 val cause = new.getCause()
                 when {
@@ -136,8 +137,32 @@ internal open class QQAndroidBot constructor(
                     cause is BotClosedByEvent -> {
                     }
                     else -> {
+                        // handled by BotOfflineEventBroadcasterBefore
+                    }
+                }
+            },
+            BeforeStateChangedObserver("BotOfflineEventBroadcasterBefore", State.OK, State.CLOSED) { new ->
+                // logging performed by BotOfflineEventMonitor
+                val cause = new.getCause()
+                when {
+                    // handled by BotOfflineEventBroadcasterAfter
+                    cause is ForceOfflineException -> {}
+                    cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {}
+                    cause is NetworkException && cause.recoverable -> {}
+                    cause is BotClosedByEvent -> {}
+                    else -> {
                         // any other unexpected exceptions considered as an error
-                        eventDispatcher.broadcastAsync(BotOfflineEvent.Active(bot, cause))
+
+                        // When bot is closed, eventDispatcher.isActive will be false.
+                        // While in TestEventDispatcherImpl, eventDispatcher.isActive will always be true to enable catching the event.
+                        if (eventDispatcher.isActive) {
+                            eventDispatcher.broadcastAsync { BotOfflineEvent.Active(bot, cause) }
+                        } else {
+                            @OptIn(DelicateCoroutinesApi::class)
+                            GlobalScope.launch {
+                                BotOfflineEvent.Active(bot, cause).broadcast()
+                            }
+                        }
                     }
                 }
             },
@@ -166,6 +191,7 @@ internal open class QQAndroidBot constructor(
         set(
             NoticeProcessorPipeline,
             NoticeProcessorPipelineImpl.create(
+                bot,
                 MsgInfoDecoder(pipelineLogger.subLogger("MsgInfoDecoder")),
                 GroupNotificationDecoder(),
 
@@ -224,7 +250,7 @@ internal open class QQAndroidBot constructor(
             AccountSecretsManager,
             configuration.createAccountsSecretsManager(bot.logger.subLogger("AccountSecretsManager")),
         )
-        set(ImagePatcher, ImagePatcher())
+        set(ImagePatcher, ImagePatcherImpl())
     }
 
     /**

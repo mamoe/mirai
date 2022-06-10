@@ -1,16 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
 
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.ParseErrorPacket
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -29,40 +28,16 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushTransMsg
 import net.mamoe.mirai.internal.network.toPacket
+import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
-import java.io.Closeable
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KClass
-
-internal typealias ProcessResult = Collection<Packet>
 
 /**
  * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
  */
-internal interface NoticeProcessorPipeline {
-    val processors: Collection<NoticeProcessor>
-
-    fun interface DisposableRegistry : Closeable {
-        fun dispose()
-
-        override fun close() {
-            dispose()
-        }
-    }
-
-    fun registerProcessor(processor: NoticeProcessor): DisposableRegistry
-
-    /**
-     * Process [data] into [Packet]s. Exceptions are wrapped into [ParseErrorPacket]
-     */
-    suspend fun process(
-        bot: QQAndroidBot,
-        data: ProtocolStruct,
-        attributes: TypeSafeMap = TypeSafeMap.EMPTY
-    ): ProcessResult
-
+internal interface NoticeProcessorPipeline :
+    ProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet> {
     companion object : ComponentKey<NoticeProcessorPipeline> {
         val ComponentStorage.noticeProcessorPipeline get() = get(NoticeProcessorPipeline)
 
@@ -71,70 +46,14 @@ internal interface NoticeProcessorPipeline {
             data: ProtocolStruct,
             attributes: TypeSafeMap = TypeSafeMap.EMPTY,
         ): Packet {
-            return components.noticeProcessorPipeline.process(this, data, attributes).toPacket()
+            return components.noticeProcessorPipeline.process(data, attributes).collected.toPacket()
         }
     }
 }
 
-@JvmInline
-internal value class MutableProcessResult(
-    val data: MutableCollection<Packet>
-)
-
-internal interface NoticePipelineContext : BotAware, NewContactSupport {
+internal interface NoticePipelineContext : BotAware, NewContactSupport,
+    ProcessorPipelineContext<ProtocolStruct, Packet> {
     override val bot: QQAndroidBot
-
-    val attributes: TypeSafeMap
-
-
-    val isConsumed: Boolean
-
-    /**
-     * Marks the input as consumed so that there will not be warnings like 'Unknown type xxx'. This will not stop the pipeline.
-     *
-     * If this is executed, make sure you provided all information important for debugging.
-     *
-     * You need to invoke [markAsConsumed] if your implementation includes some `else` branch which covers all situations,
-     * and throws a [contextualBugReportException] or logs something.
-     */
-    @ConsumptionMarker
-    fun NoticeProcessor.markAsConsumed(marker: Any = this)
-
-    /**
-     * Marks the input as not consumed, if it was marked by this [NoticeProcessor].
-     */
-    @ConsumptionMarker
-    fun NoticeProcessor.markNotConsumed(marker: Any = this)
-
-    @DslMarker
-    annotation class ConsumptionMarker // to give an explicit color.
-
-
-    val collected: MutableProcessResult
-
-    // DSL to simplify some expressions
-    operator fun MutableProcessResult.plusAssign(packet: Packet?) {
-        if (packet != null) collect(packet)
-    }
-
-
-    /**
-     * Collect a result.
-     */
-    fun collect(packet: Packet)
-
-    /**
-     * Collect results.
-     */
-    fun collect(packets: Iterable<Packet>)
-
-    /**
-     * Fire the [data] into the processor pipeline, and collect the results to current [collected].
-     *
-     * @param attributes extra attributes
-     * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
-     */
-    suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap = TypeSafeMap.EMPTY): ProcessResult
 
     companion object {
         val KEY_FROM_SYNC = TypeKey<Boolean>("fromSync")
@@ -150,127 +69,56 @@ internal interface NoticePipelineContext : BotAware, NewContactSupport {
     }
 }
 
-internal abstract class AbstractNoticePipelineContext(
-    override val bot: QQAndroidBot, override val attributes: TypeSafeMap,
-) : NoticePipelineContext {
-    private val consumers: Stack<Any> = Stack()
-
-    override val isConsumed: Boolean get() = consumers.isNotEmpty()
-    override fun NoticeProcessor.markAsConsumed(marker: Any) {
-        traceLogging.info { "markAsConsumed: marker=$marker" }
-        consumers.push(marker)
-    }
-
-    override fun NoticeProcessor.markNotConsumed(marker: Any) {
-        if (consumers.peek() === marker) {
-            consumers.pop()
-            traceLogging.info { "markNotConsumed: Y, marker=$marker" }
-        } else {
-            traceLogging.info { "markNotConsumed: N, marker=$marker" }
-        }
-    }
-
-    override val collected = MutableProcessResult(ConcurrentLinkedQueue())
-
-    override fun collect(packet: Packet) {
-        collected.data.add(packet)
-        traceLogging.info { "collect: $packet" }
-    }
-
-    override fun collect(packets: Iterable<Packet>) {
-        this.collected.data.addAll(packets)
-        traceLogging.info {
-            val list = packets.toList()
-            "collect: [${list.size}] ${list.joinToString()}"
-        }
-    }
-
-    abstract override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult
-}
-
-
 internal inline val NoticePipelineContext.context get() = this
 
-private val traceLogging: MiraiLogger by lazy {
+private val defaultTraceLogging: MiraiLogger by lazy {
     MiraiLogger.Factory.create(NoticeProcessorPipelineImpl::class, "NoticeProcessorPipeline")
         .withSwitch(systemProp("mirai.network.notice.pipeline.log.full", false))
 }
 
-internal open class NoticeProcessorPipelineImpl protected constructor() : NoticeProcessorPipeline {
-    /**
-     * Must be ordered
-     */
-    override val processors = ConcurrentLinkedQueue<NoticeProcessor>()
-
-    override fun registerProcessor(processor: NoticeProcessor): NoticeProcessorPipeline.DisposableRegistry {
-        processors.add(processor)
-        return NoticeProcessorPipeline.DisposableRegistry {
-            processors.remove(processor)
-        }
-    }
-
+internal open class NoticeProcessorPipelineImpl protected constructor(
+    private val bot: QQAndroidBot,
+    traceLogging: MiraiLogger = defaultTraceLogging,
+) : NoticeProcessorPipeline,
+    AbstractProcessorPipeline<NoticeProcessor, NoticePipelineContext, ProtocolStruct, Packet>(
+        PipelineConfiguration(stopWhenConsumed = false), traceLogging
+    ) {
 
     open inner class ContextImpl(
-        bot: QQAndroidBot, attributes: TypeSafeMap,
-    ) : AbstractNoticePipelineContext(bot, attributes) {
-        override suspend fun processAlso(data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
-            traceLogging.info { "processAlso: data=$data" }
-            return process(bot, data, this.attributes + attributes).also {
-                this.collected.data += it
-                traceLogging.info { "processAlso: result=$it" }
-            }
-        }
+        attributes: TypeSafeMap,
+    ) : BaseContextImpl(attributes), NoticePipelineContext {
+        override val bot: QQAndroidBot
+            get() = this@NoticeProcessorPipelineImpl.bot
     }
 
-
-    override suspend fun process(bot: QQAndroidBot, data: ProtocolStruct, attributes: TypeSafeMap): ProcessResult {
-        traceLogging.info { "process: data=$data" }
-        val context = createContext(bot, attributes)
-
-        val diff = if (traceLogging.isEnabled) CollectionDiff<Packet>() else null
-        diff?.save(context.collected.data)
-
-        for (processor in processors) {
-
-            val result = kotlin.runCatching {
-                processor.process(context, data)
-            }.onFailure { e ->
-                context.collect(
-                    ParseErrorPacket(
-                        data,
-                        IllegalStateException(
-                            "Exception in $processor while processing packet ${packetToString(data)}.",
-                            e,
-                        ),
-                    ),
-                )
-            }
-
-            diff?.run {
-                val diffPackets = subtractAndSave(context.collected.data)
-
-                traceLogging.info {
-                    "Finished ${
-                        processor.toString().replace("net.mamoe.mirai.internal.network.notice.", "")
-                    }, success=${result.isSuccess}, consumed=${context.isConsumed}, diff=$diffPackets"
-                }
-            }
-        }
-        return context.collected.data
+    override fun handleExceptionInProcess(
+        data: ProtocolStruct,
+        context: NoticePipelineContext,
+        attributes: TypeSafeMap,
+        processor: NoticeProcessor,
+        e: Throwable
+    ) {
+        context.collect(
+            ParseErrorPacket(
+                data,
+                IllegalStateException(
+                    "Exception in $processor while processing packet ${packetToString(data)}.",
+                    e,
+                ),
+            )
+        )
     }
 
-    protected open fun createContext(
-        bot: QQAndroidBot,
-        attributes: TypeSafeMap
-    ): NoticePipelineContext = ContextImpl(bot, attributes)
+    override fun createContext(data: ProtocolStruct, attributes: TypeSafeMap): NoticePipelineContext =
+        ContextImpl(attributes)
 
     protected open fun packetToString(data: Any?): String =
         data.toDebugString("mirai.network.notice.pipeline.log.full")
 
 
     companion object {
-        fun create(vararg processors: NoticeProcessor): NoticeProcessorPipelineImpl =
-            NoticeProcessorPipelineImpl().apply {
+        fun create(bot: QQAndroidBot, vararg processors: NoticeProcessor): NoticeProcessorPipelineImpl =
+            NoticeProcessorPipelineImpl(bot, defaultTraceLogging).apply {
                 for (processor in processors) {
                     registerProcessor(processor)
                 }
@@ -285,9 +133,7 @@ internal open class NoticeProcessorPipelineImpl protected constructor() : Notice
 /**
  * A processor handling some specific type of message.
  */
-internal interface NoticeProcessor {
-    suspend fun process(context: NoticePipelineContext, data: Any?)
-}
+internal interface NoticeProcessor : Processor<NoticePipelineContext, ProtocolStruct>
 
 internal abstract class AnyNoticeProcessor : SimpleNoticeProcessor<ProtocolStruct>(type())
 
@@ -295,7 +141,7 @@ internal abstract class SimpleNoticeProcessor<in T : ProtocolStruct>(
     private val type: KClass<T>,
 ) : NoticeProcessor {
 
-    final override suspend fun process(context: NoticePipelineContext, data: Any?) {
+    final override suspend fun process(context: NoticePipelineContext, data: ProtocolStruct) {
         if (type.isInstance(data)) {
             context.processImpl(data.uncheckedCast())
         }

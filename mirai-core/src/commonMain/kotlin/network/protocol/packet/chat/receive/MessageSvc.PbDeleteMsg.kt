@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -31,21 +31,21 @@ internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("Message
             )
         }
 
-    internal suspend fun delete(bot: QQAndroidBot, messages: List<MsgComm.Msg>) =
-        bot.network.run {
-            val map = messages.map {
-                MsgSvc.PbDeleteMsgReq.MsgItem(
-                    fromUin = it.msgHead.fromUin,
-                    toUin = it.msgHead.toUin,
-                    // 群为84、好友为187。群通过其他方法删除，但测试结果显示通过187也能删除群消息。
-                    msgType = 187,
-                    msgSeq = it.msgHead.msgSeq,
-                    msgUid = it.msgHead.msgUid,
-                )
-            }
-
-            MessageSvcPbDeleteMsg(bot.client, map).sendWithoutExpect()
+    internal suspend fun delete(bot: QQAndroidBot, messages: List<MsgComm.Msg>) {
+        val map = messages.map {
+            MsgSvc.PbDeleteMsgReq.MsgItem(
+                fromUin = it.msgHead.fromUin,
+                toUin = it.msgHead.toUin,
+                // 群为84、好友为187。群通过其他方法删除，但测试结果显示通过187也能删除群消息。
+                msgType = 187,
+                msgSeq = it.msgHead.msgSeq,
+                msgUid = it.msgHead.msgUid,
+            )
         }
+
+        bot.network.sendWithoutExpect(MessageSvcPbDeleteMsg(bot.client, map))
+    }
+
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
 }

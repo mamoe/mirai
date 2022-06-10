@@ -13,17 +13,25 @@ import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.internal.util.runIgnoreException
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.currentTimeMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+@Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+@Deprecated("No longer supported, deprecated for removal.")
+@DeprecatedSinceMirai(warningSince = "2.10.0-RC")
 @ConsoleExperimentalApi
 public object CoroutineScopeUtils {
+    @Deprecated("No longer supported, deprecated for removal.")
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
         this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
 
+    @Deprecated("No longer supported, deprecated for removal.")
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineScope.childScope(
@@ -32,6 +40,8 @@ public object CoroutineScopeUtils {
     ): CoroutineScope =
         CoroutineScope(this.childScopeContext(name, context))
 
+    @Deprecated("No longer supported, deprecated for removal.")
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineScope.childScopeContext(
@@ -90,6 +100,8 @@ internal fun CoroutineScope.launchTimedTask(
     action: suspend CoroutineScope.() -> Unit,
 ) = TimedTask(this, coroutineContext, intervalMillis, action)
 
+@Deprecated("No longer supported, deprecated for removal.")
+@DeprecatedSinceMirai(warningSince = "2.10.0-RC")
 @ConsoleExperimentalApi
 public class NamedSupervisorJob @JvmOverloads constructor(
     private val name: String,

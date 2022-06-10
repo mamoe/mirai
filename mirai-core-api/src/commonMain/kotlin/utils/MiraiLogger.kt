@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused")
@@ -94,7 +94,8 @@ public interface MiraiLogger {
          */
         @MiraiInternalApi
         @MiraiExperimentalApi
-        @Deprecated("Deprecated.") // deprecated since 2.7
+        @Deprecated("Deprecated.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
         public val TopLevel: MiraiLogger by lazy { Factory.create(MiraiLogger::class, "Mirai") }
 
         /**
@@ -103,9 +104,10 @@ public interface MiraiLogger {
         @Suppress("DeprecatedCallableAddReplaceWith")
         @Deprecated(
             "Please set factory by providing an service of type net.mamoe.mirai.utils.MiraiLogger.Factory",
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.7
         @JvmStatic
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally, for internal uses.
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
             DefaultFactoryOverrides.override { _, identity -> creator(identity) }
         }
@@ -119,9 +121,10 @@ public interface MiraiLogger {
             "Please use MiraiLogger.Factory.create", ReplaceWith(
                 "MiraiLogger.Factory.create(YourClass::class, identity)",
                 "net.mamoe.mirai.utils.MiraiLogger"
-            ), level = DeprecationLevel.WARNING
+            ), level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.7
         @JvmStatic
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
         public fun create(identity: String?): MiraiLogger = Factory.create(MiraiLogger::class, identity)
     }
 
@@ -208,7 +211,8 @@ public interface MiraiLogger {
      * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MynLogger() + MyLogger2()`
      */
     @Suppress("UNUSED_PARAMETER")
-    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public var follower: MiraiLogger?
         get() = null
         set(value) {}
@@ -274,7 +278,8 @@ public interface MiraiLogger {
      * @return [follower]
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public operator fun <T : MiraiLogger> plus(follower: T): T = follower
 }
 
@@ -353,6 +358,19 @@ public expect open class PlatformLogger @JvmOverloads constructor(
 @Suppress("unused")
 public object SilentLogger : PlatformLogger() {
     public override val identity: String? = null
+
+    override val isEnabled: Boolean
+        get() = false
+    override val isVerboseEnabled: Boolean
+        get() = false
+    override val isDebugEnabled: Boolean
+        get() = false
+    override val isInfoEnabled: Boolean
+        get() = false
+    override val isWarningEnabled: Boolean
+        get() = false
+    override val isErrorEnabled: Boolean
+        get() = false
 
     public override fun error0(message: String?): Unit = Unit
     public override fun debug0(message: String?): Unit = Unit
@@ -464,71 +482,62 @@ public class MiraiLoggerWithSwitch internal constructor(private val delegate: Mi
  * @see PlatformLogger
  * @see SimpleLogger
  */
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     public override val isEnabled: Boolean get() = true
 
     @Suppress("OverridingDeprecatedMember")
-    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("follower 设计不佳, 请避免使用", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public final override var follower: MiraiLogger? = null
 
     public final override fun verbose(message: String?) {
         if (!isEnabled) return
-        follower?.verbose(message)
         verbose0(message)
     }
 
     public final override fun verbose(message: String?, e: Throwable?) {
         if (!isEnabled) return
-        follower?.verbose(message, e)
         verbose0(message, e)
     }
 
     public final override fun debug(message: String?) {
         if (!isEnabled) return
-        follower?.debug(message)
         debug0(message)
     }
 
     public final override fun debug(message: String?, e: Throwable?) {
         if (!isEnabled) return
-        follower?.debug(message, e)
         debug0(message, e)
     }
 
     public final override fun info(message: String?) {
         if (!isEnabled) return
-        follower?.info(message)
         info0(message)
     }
 
     public final override fun info(message: String?, e: Throwable?) {
         if (!isEnabled) return
-        follower?.info(message, e)
         info0(message, e)
     }
 
     public final override fun warning(message: String?) {
         if (!isEnabled) return
-        follower?.warning(message)
         warning0(message)
     }
 
     public final override fun warning(message: String?, e: Throwable?) {
         if (!isEnabled) return
-        follower?.warning(message, e)
         warning0(message, e)
     }
 
     public final override fun error(message: String?) {
         if (!isEnabled) return
-        follower?.error(message)
         error0(message)
     }
 
     public final override fun error(message: String?, e: Throwable?) {
         if (!isEnabled) return
-        follower?.error(message, e)
         error0(message, e)
     }
 
@@ -544,9 +553,9 @@ public abstract class MiraiLoggerPlatformBase : MiraiLogger {
     protected abstract fun error0(message: String?, e: Throwable?)
 
     @Suppress("OverridingDeprecatedMember")
-    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.WARNING) // deprecated since 2.7
+    @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
+    @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public override operator fun <T : MiraiLogger> plus(follower: T): T {
-        this.follower = follower
         return follower
     }
 }

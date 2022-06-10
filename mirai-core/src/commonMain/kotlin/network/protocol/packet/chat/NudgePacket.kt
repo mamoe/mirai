@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat
@@ -16,7 +16,6 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0xed3
 import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -38,7 +37,7 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
         client: QQAndroidClient,
         nudgeTargetId: Long,
         messageReceiverUin: Long,
-    ): OutgoingPacket = buildOutgoingUniPacket(client) {
+    ) = buildOutgoingUniPacket(client) {
         writeProtoBuf(
             OidbSso.OIDBSSOPkg.serializer(),
             OidbSso.OIDBSSOPkg(
@@ -57,7 +56,7 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
         client: QQAndroidClient,
         messageReceiverGroupCode: Long,
         nudgeTargetId: Long,
-    ): OutgoingPacket = buildOutgoingUniPacket(client) {
+    ) = buildOutgoingUniPacket(client) {
         writeProtoBuf(
             OidbSso.OIDBSSOPkg.serializer(),
             OidbSso.OIDBSSOPkg(

@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE")
@@ -13,29 +13,17 @@ package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.SendMessageHandler
-import net.mamoe.mirai.internal.message.MessageSourceInternal
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.PacketCodec
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.internal.network.protocol.data.proto.MultiMsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.structureToString
-import net.mamoe.mirai.message.data.ForwardMessage
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.toMessageChain
-import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toLongUnsigned
 
 internal class MessageValidationData(
     val data: ByteArray,
@@ -44,71 +32,6 @@ internal class MessageValidationData(
     override fun toString(): String {
         return "MessageValidationData(data=<size=${data.size}>, md5=${md5.contentToString()})"
     }
-}
-
-internal fun Collection<ForwardMessage.INode>.calculateValidationData(
-    client: QQAndroidClient,
-    random: Int,
-    handler: SendMessageHandler<*>,
-    isLong: Boolean,
-): MessageValidationData {
-    val offeredSourceIds = mutableSetOf<Int>()
-    fun calculateMsgSeq(node: ForwardMessage.INode): Int {
-        node.messageChain[MessageSource]?.let { source ->
-            source as MessageSourceInternal
-
-            val sid = source.sequenceIds.first()
-            // Duplicate message added
-            if (offeredSourceIds.add(sid)) {
-                return sid
-            }
-        }
-        return client.atomicNextMessageSequenceId()
-    }
-
-    val msgList = map { chain ->
-        MsgComm.Msg(
-            msgHead = MsgComm.MsgHead(
-                fromUin = chain.senderId,
-                toUin = if (isLong) {
-                    handler.targetUserUin ?: 0
-                } else 0,
-                msgSeq = calculateMsgSeq(chain),
-                msgTime = chain.time,
-                msgUid = 0x01000000000000000L or random.toLongUnsigned(),
-                mutiltransHead = MsgComm.MutilTransHead(
-                    status = 0,
-                    msgId = 1
-                ),
-                msgType = 82, // troop
-                groupInfo = handler.run { chain.groupInfo },
-                isSrcMsg = false
-            ),
-            msgBody = ImMsgBody.MsgBody(
-                richText = ImMsgBody.RichText(
-                    elems = chain.messageChain.toMessageChain()
-                        .toRichTextElems(
-                            handler.contact,
-                            withGeneralFlags = false,
-                            isForward = true,
-                        ).toMutableList()
-                )
-            )
-        )
-    }
-    val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
-        msg = msgList,
-        pbItemList = listOf(
-            MsgTransmit.PbMultiMsgItem(
-                fileName = "MultiMsg",
-                buffer = MsgTransmit.PbMultiMsgNew(msgList).toByteArray(MsgTransmit.PbMultiMsgNew.serializer())
-            )
-        )
-    )
-
-    val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())
-
-    return MessageValidationData(bytes.gzip())
 }
 
 internal class MultiMsg {

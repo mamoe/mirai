@@ -22,10 +22,6 @@ jobs:
 
       - run: chmod -R 777 *
 
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v4.8
-
       - name: Init gradle project
         run: ./gradlew clean --scan
 
@@ -38,20 +34,16 @@ jobs:
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
           CURRENT_BRANCH_NAME: dev
 
-      - name: fillBuildConstants
-        run: >
-          ./gradlew
-          fillBuildConstants --scan
-
       - name: Assemble
         run: ./gradlew assemble --scan
 
       - name: Check
         run: >
-          ./gradlew check --scan
+          ./gradlew check --scan --no-parallel
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true
+          -Dmirai.network.handle.selector.logging=true
 
       - run: >
           ./gradlew publish --info --scan
@@ -61,3 +53,12 @@ jobs:
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
           CURRENT_BRANCH_NAME: dev
+
+      - name: Release CI RAM
+        run: pkill java
+        continue-on-error: true
+      - run: >
+          ./gradlew publishSnapshotPage --info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
