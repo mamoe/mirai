@@ -693,45 +693,45 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
                 }
             }
             optionCommand.withRegistration {
-                assertArrayEquals(
+                assertContentEquals(
                     emptyArray<String>(),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test vararg 1"))
                     }
                 )
-                assertArrayEquals(
+                assertContentEquals(
                     arrayOf("s"),
                     withTesting<Array<String>> {
                         assertSuccess(sender.executeCommand("/test vararg 1 s"))
                     }
                 )
-                assertArrayEquals(
+                assertContentEquals(
                     arrayOf("s", "s", "s"),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test vararg 1 s s s"))
                     }
                 )
 
-                assertArrayEquals(
+                assertContentEquals(
                     TestEnumArgCommand.TestEnum.values(),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test enum 1 ${TestEnumArgCommand.TestEnum.values().joinToString(" ")}"))
                     }
                 )
 
-                assertArrayEquals(
+                assertContentEquals(
                     longArrayOf(),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test long arg1"))
                     }
                 )
-                assertArrayEquals(
+                assertContentEquals(
                     longArrayOf(1),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test long arg1 1"))
                     }
                 )
-                assertArrayEquals(
+                assertContentEquals(
                     longArrayOf(1, 2, 3),
                     withTesting {
                         assertSuccess(sender.executeCommand("/test long arg1 1 2 3"))
@@ -740,14 +740,6 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
             }
         }
     }
-}
-
-fun <T> assertArrayEquals(expected: Array<out T>, actual: Array<out T>, message: String? = null) {
-    asserter.assertEquals(message, expected.contentToString(), actual.contentToString())
-}
-
-fun assertArrayEquals(expected: LongArray, actual: LongArray, message: String? = null) {
-    asserter.assertEquals(message, expected.contentToString(), actual.contentToString())
 }
 
 @OptIn(ExperimentalCommandDescriptors::class)

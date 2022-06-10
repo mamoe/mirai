@@ -146,6 +146,15 @@ public data class CommandReceiverParameter<T : CommandSender>(
 
 internal val ANY_TYPE = typeOf<Any>()
 internal val ARRAY_OUT_ANY_TYPE = typeOf<Array<out Any?>>()
+internal val BASE_ARRAY_TYPES = mapOf(
+    typeOf<ByteArray>() to typeOf<Byte>(),
+    typeOf<CharArray>() to typeOf<Char>(),
+    typeOf<ShortArray>() to typeOf<Short>(),
+    typeOf<IntArray>() to typeOf<Int>(),
+    typeOf<LongArray>() to typeOf<Long>(),
+    typeOf<FloatArray>() to typeOf<Float>(),
+    typeOf<DoubleArray>() to typeOf<Double>()
+)
 
 @ExperimentalCommandDescriptors
 public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>, AbstractCommandParameter<T>() {

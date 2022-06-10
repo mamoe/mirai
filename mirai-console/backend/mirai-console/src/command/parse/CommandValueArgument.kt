@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.internal.data.castOrInternalError
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
-import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
@@ -104,13 +103,13 @@ public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType, contex
 
         @Suppress("UNCHECKED_CAST")
         return when (expectingType) {
-            typeOf0<ByteArray>() -> (result as List<Byte>).toByteArray()
-            typeOf0<CharArray>() -> (result as List<Char>).toCharArray()
-            typeOf0<ShortArray>() -> (result as List<Short>).toShortArray()
-            typeOf0<IntArray>() -> (result as List<Int>).toIntArray()
-            typeOf0<LongArray>() -> (result as List<Long>).toLongArray()
-            typeOf0<FloatArray>() -> (result as List<Float>).toFloatArray()
-            typeOf0<DoubleArray>() -> (result as List<Double>).toDoubleArray()
+            typeOf<ByteArray>() -> (result as List<Byte>).toByteArray()
+            typeOf<CharArray>() -> (result as List<Char>).toCharArray()
+            typeOf<ShortArray>() -> (result as List<Short>).toShortArray()
+            typeOf<IntArray>() -> (result as List<Int>).toIntArray()
+            typeOf<LongArray>() -> (result as List<Long>).toLongArray()
+            typeOf<FloatArray>() -> (result as List<Float>).toFloatArray()
+            typeOf<DoubleArray>() -> (result as List<Double>).toDoubleArray()
             else -> result.toArray(arrayElementType.createArray(result.size))
         } as T?
     }
