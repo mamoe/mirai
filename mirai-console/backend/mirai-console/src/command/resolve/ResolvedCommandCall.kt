@@ -101,7 +101,6 @@ public class ResolvedCommandCallImpl(
                 context[type.classifierAsKClass()]?.parse(message, caller)
             } ?: throw NoValueArgumentMappingException(argument, parameter.type)
 
-            // TODO: 2020/10/17 consider vararg and optional
             ResolvedCommandValueArgument(parameter.cast(), value)
         }
     }

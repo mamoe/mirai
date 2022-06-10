@@ -1166,8 +1166,7 @@ public abstract interface class net/mamoe/mirai/console/command/parse/CommandVal
 }
 
 public final class net/mamoe/mirai/console/command/parse/CommandValueArgumentKt {
-	public static final fun mapToType (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lkotlin/reflect/KType;)Ljava/lang/Object;
-	public static final fun mapToTypeOrNull (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lkotlin/reflect/KType;)Ljava/lang/Object;
+	public static final fun mapToTypeOrNull (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lkotlin/reflect/KType;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 	public static final fun mapValue (Lnet/mamoe/mirai/console/command/parse/CommandValueArgument;Lnet/mamoe/mirai/console/command/descriptor/TypeVariant;)Ljava/lang/Object;
 }
 
