@@ -12,10 +12,13 @@
 
 package net.mamoe.mirai.utils
 
+import android.graphics.Bitmap
 import android.util.Base64
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
+
+public actual typealias PlatformImage = Bitmap
 
 
 public actual fun ByteArray.encodeBase64(): String {

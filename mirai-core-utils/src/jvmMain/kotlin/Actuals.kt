@@ -12,10 +12,12 @@
 
 package net.mamoe.mirai.utils
 
+import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
+public actual typealias PlatformImage = BufferedImage
 
 public actual fun ByteArray.encodeBase64(): String {
     return Base64.getEncoder().encodeToString(this)

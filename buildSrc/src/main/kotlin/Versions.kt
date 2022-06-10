@@ -55,6 +55,7 @@ object Versions {
     const val bouncycastle = "1.64"
     const val mavenArtifactResolver = "1.7.3"
     const val mavenResolverProvider = "3.8.4"
+    const val zxing = "3.5.0"
 
     const val junit = "5.7.2"
 
@@ -157,3 +158,6 @@ const val `maven-resolver-impl` = "org.apache.maven.resolver:maven-resolver-impl
 const val `maven-resolver-connector-basic` = "org.apache.maven.resolver:maven-resolver-connector-basic:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-transport-http` = "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-provider` = "org.apache.maven:maven-resolver-provider:${Versions.mavenResolverProvider}"
+
+const val `zxing-javase` = "com.google.zxing:javase:${Versions.zxing}"
+const val `zxing-core` = "com.google.zxing:core:${Versions.zxing}"

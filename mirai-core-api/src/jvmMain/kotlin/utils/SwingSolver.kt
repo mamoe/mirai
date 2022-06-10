@@ -102,10 +102,16 @@ public object SwingSolver : LoginSolver() {
         val title = "Mirai UnsafeDeviceLoginVerify(${bot.id})"
         return SwingLoginSolver(
             title, "",
-            arrayOf(
+            mutableListOf<Any>(
                 "", HyperLinkLabel(url, "设备锁验证", title),
                 "URL", JTextField(url),
-            ),
+            ).also { components ->
+                val qr = PlatformImageUtil.generateQRCode(url, 300, 300)
+                if (qr != null) {
+                    components.add("")
+                    components.add(JLabel(ImageIcon(qr)))
+                }
+            }.toTypedArray(),
             hiddenInput = true,
             topComponent = JLabel(
                 """
