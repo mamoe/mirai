@@ -11,7 +11,6 @@ import com.google.gradle.osdetector.OsDetector
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -23,7 +22,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import java.io.File
 
 private val miraiPlatform = Attribute.of(
@@ -116,18 +115,22 @@ val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
-        jvm("jvmBase") {
-            compilations.all {
-                this.compileKotlinTask.enabled = false // IDE complain
+        if (IDEA_ACTIVE) {
+            jvm("jvmBase") { // dummy target for resolution, not published
+                compilations.all {
+                    this.compileKotlinTask.enabled = false // IDE complain
+                }
+                attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
+                attributes.attribute(miraiPlatform, "jvmBase") // avoid resolution
             }
-            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // avoid resolving by others
-//            attributes.attribute(miraiPlatform, "jvmBase")
         }
 
         if (isAndroidSDKAvailable && ANDROID_ENABLED) {
             jvm("android") {
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                //   publishAllLibraryVariants()
+                if (IDEA_ACTIVE) {
+                    attributes.attribute(miraiPlatform, "android") // avoid resolution
+                }
             }
         } else {
             printAndroidNotInstalled()
@@ -138,89 +141,6 @@ fun Project.configureJvmTargetsHierarchical() {
         }
     }
 }
-
-///**
-// * [IDEA_ACTIVE] 时配置单一 'native' target, 基于 host 平台; 否则配置所有 native targets 依赖 'native' 作为中间平台.
-// */
-//@Deprecated("")
-//fun KotlinMultiplatformExtension.configureNativeTargets(
-//    project: Project
-//) {
-//    val nativeMainSets = mutableListOf<KotlinSourceSet>()
-//    val nativeTestSets = mutableListOf<KotlinSourceSet>()
-//    val nativeTargets = mutableListOf<KotlinNativeTarget>()
-//
-//    if (IDEA_ACTIVE) {
-//        val target = when {
-//            Os.isFamily(Os.FAMILY_MAC) -> if (Os.isArch("aarch64")) macosArm64("native") else macosX64(
-//                "native"
-//            )
-//            Os.isFamily(Os.FAMILY_WINDOWS) -> mingwX64("native")
-//            else -> linuxX64("native")
-//        }
-//        nativeTargets.add(target)
-//    } else {
-//        // 1.6.0
-//        val nativeTargetNames: List<String> = arrayOf(
-//            // serialization doesn't support those commented targets
-////                "androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64",
-//            "iosArm32, iosArm64, iosX64, iosSimulatorArm64",
-//            "watchosArm32, watchosArm64, watchosX86, watchosX64, watchosSimulatorArm64",
-//            "tvosArm64, tvosX64, tvosSimulatorArm64",
-//            "macosX64, macosArm64",
-////            "linuxMips32, linuxMipsel32, linuxX64",
-//            "linuxX64",
-//            "mingwX64",
-////                "wasm32" // linuxArm32Hfp, mingwX86
-//        ).flatMap { it.split(",") }.map { it.trim() }
-//        presets.filter { it.name in nativeTargetNames }.forEach { preset ->
-//            val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
-//            nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
-//            nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
-//            nativeTargets.add(target)
-//        }
-//
-//        if (!IDEA_ACTIVE) {
-//            project.configure(nativeMainSets) {
-//                dependsOn(sourceSets.maybeCreate("nativeMain"))
-//            }
-//
-//            project.configure(nativeTestSets) {
-//                dependsOn(sourceSets.maybeCreate("nativeTest"))
-//            }
-//        }
-//    }
-//
-//    project.configureNativeInterop("main", project.projectDir.resolve("src/nativeMainInterop"), nativeTargets)
-//    project.configureNativeInterop("test", project.projectDir.resolve("src/nativeTestInterop"), nativeTargets)
-//    project.configureNativeLinkOptions(nativeTargets)
-//
-//    val sourceSets = project.kotlinSourceSets.orEmpty()
-//    val commonMain = sourceSets.single { it.name == "commonMain" }
-//    val commonTest = sourceSets.single { it.name == "commonTest" }
-//    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
-//    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
-//    val jvmMain = sourceSets.single { it.name == "jvmMain" }
-//    val jvmTest = sourceSets.single { it.name == "jvmTest" }
-//    val androidMain = sourceSets.single { it.name == "androidMain" }
-//    val androidTest = sourceSets.single { it.name == "androidTest" }
-//
-//    val nativeMain = sourceSets.single { it.name == "nativeMain" }
-//    val nativeTest = sourceSets.single { it.name == "nativeTest" }
-//
-//
-//    jvmBaseMain.dependsOn(commonMain)
-//    jvmBaseTest.dependsOn(commonTest)
-//
-//    jvmMain.dependsOn(jvmBaseMain)
-//    androidMain.dependsOn(jvmBaseMain)
-//
-//    jvmTest.dependsOn(jvmBaseTest)
-//    androidTest.dependsOn(jvmBaseTest)
-//
-//    nativeMain.dependsOn(commonMain)
-//    nativeTest.dependsOn(commonTest)
-//}
 
 /**
  * ```
@@ -315,12 +235,12 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         )
     }
 
-//    NATIVE_TARGETS.forEach { targetName ->
+//    WIN_TARGETS.forEach { targetName ->
 //        val target = targets.getByName(targetName) as KotlinNativeTarget
 //        if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
-//            target.binaries.test(listOf(NativeBuildType.RELEASE)) {
-//                // add release test to run on CI
-//                project.afterEvaluate {
+//            // add release test to run on CI
+//            project.afterEvaluate {
+//                target.findOrCreateTest(NativeBuildType.RELEASE) {
 //                    // use linkReleaseTestMingwX64 for mingwX64Test to save memory
 //                    tasks.getByName("mingwX64Test", KotlinNativeTest::class)
 //                        .executable(linkTask) { linkTask.binary.outputFile }
@@ -337,16 +257,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
             }
             staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
                 baseName = project.name.toLowerCase().replace("-", "")
-            }
-        }
-        if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS && targetName == "mingwX64") {
-            target.binaries.test(listOf(NativeBuildType.RELEASE)) {
-                // add release test to run on CI
-                project.afterEvaluate {
-                    // use linkReleaseTestMingwX64 for mingwX64Test to save memory
-                    tasks.getByName("mingwX64Test", KotlinNativeTest::class)
-                        .executable(linkTask) { linkTask.binary.outputFile }
-                }
             }
         }
     }
@@ -403,12 +313,18 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     androidTest.dependsOn(jvmBaseTest)
 }
 
+private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =
+    binaries.findTest(buildType)?.apply(configure) ?: binaries.test(listOf(buildType), configure)
+
 
 // e.g. Linker will try to link curl for mingwX64 but this can't be done on macOS.
 fun Project.disableCrossCompile() {
     project.afterEvaluate {
-        if (HOST_KIND !is HostKind.MACOS) {
-            MAC_TARGETS.forEach { target -> disableTargetLink(this, target) }
+        if (HOST_KIND != HostKind.MACOS_ARM64) {
+            disableTargetLink(this, HostKind.MACOS_ARM64.targetName)
+        }
+        if (HOST_KIND != HostKind.MACOS_X64) {
+            disableTargetLink(this, HostKind.MACOS_X64.targetName)
         }
         if (HOST_KIND != HostKind.WINDOWS) {
             WIN_TARGETS.forEach { target -> disableTargetLink(this, target) }
@@ -420,13 +336,13 @@ fun Project.disableCrossCompile() {
 }
 
 private fun disableTargetLink(project: Project, target: String) {
-    project.tasks.getByName("linkDebugTest${target.titlecase()}").enabled = false
+    project.tasks.findByName("linkDebugTest${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkReleaseTest${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkDebugShared${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkReleaseShared${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkDebugStatic${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkReleaseStatic${target.titlecase()}")?.enabled = false
-    project.tasks.getByName("${target}Test").enabled = false
+    project.tasks.findByName("${target}Test")?.enabled = false
 }
 
 private fun Project.linkerDirs(): List<String> {
