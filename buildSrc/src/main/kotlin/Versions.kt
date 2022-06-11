@@ -156,6 +156,8 @@ const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycas
 
 const val `maven-resolver-api` = "org.apache.maven.resolver:maven-resolver-api:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-impl` = "org.apache.maven.resolver:maven-resolver-impl:${Versions.mavenArtifactResolver}"
-const val `maven-resolver-connector-basic` = "org.apache.maven.resolver:maven-resolver-connector-basic:${Versions.mavenArtifactResolver}"
-const val `maven-resolver-transport-http` = "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
+const val `maven-resolver-connector-basic` =
+    "org.apache.maven.resolver:maven-resolver-connector-basic:${Versions.mavenArtifactResolver}"
+const val `maven-resolver-transport-http` =
+    "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-provider` = "org.apache.maven:maven-resolver-provider:${Versions.mavenResolverProvider}"
