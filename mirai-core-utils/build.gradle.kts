@@ -23,7 +23,7 @@ description = "mirai-core utilities"
 kotlin {
     explicitApi()
 
-    configureHMPP()
+    configureJvmTargetsHierarchical()
     configureNativeTargetsHierarchical(project)
 
     sourceSets {

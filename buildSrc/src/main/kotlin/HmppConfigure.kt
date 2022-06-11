@@ -38,21 +38,44 @@ val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoole
 
 val OS_NAME = System.getProperty("os.name").toLowerCase()
 
-enum class HostKind {
-    LINUX, WINDOWS, MACOS,
+lateinit var osDetector: OsDetector
+
+// aarch = arm
+val OsDetector.isAarch
+    get() = osDetector.arch.run {
+        contains("aarch", ignoreCase = true) || contains("arm", ignoreCase = true)
+    }
+
+@Suppress("ClassName")
+sealed class HostKind(
+    val targetName: String
+) {
+    object LINUX : HostKind("linuxX64")
+    object WINDOWS : HostKind("windowsX64")
+
+    abstract class MACOS(targetName: String) : HostKind(targetName)
+
+    object MACOS_X64 : MACOS("macosX64")
+    object MACOS_ARM64 : MACOS("macosArm64")
 }
 
-val HOST_KIND = when {
-    OS_NAME.contains("windows", true) -> HostKind.WINDOWS
-    OS_NAME.contains("mac", true) -> HostKind.MACOS
-    else -> HostKind.LINUX
+val HOST_KIND by lazy {
+    when {
+        OS_NAME.contains("windows", true) -> HostKind.WINDOWS
+        OS_NAME.contains("mac", true) -> {
+            if (osDetector.isAarch) {
+                HostKind.MACOS_ARM64
+            } else {
+                HostKind.MACOS_X64
+            }
+        }
+        else -> HostKind.LINUX
+    }
 }
 
 enum class HostArch {
     X86, X64, ARM32, ARM64
 }
-
-lateinit var osDetector: OsDetector
 
 val MAC_TARGETS: Set<String> by lazy {
     if (!IDEA_ACTIVE) setOf(
@@ -78,7 +101,7 @@ val MAC_TARGETS: Set<String> by lazy {
 //        "tvosSimulatorArm64",
     ) else setOf(
         // IDEA active, reduce load
-        if (osDetector.arch.contains("aarch")) "macosArm64" else "macosX64"
+        HOST_KIND.targetName
     )
 }
 
@@ -90,16 +113,8 @@ val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
 val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
-val HOST_NATIVE_TARGET by lazy {
-    when (HOST_KIND) {
-        HostKind.LINUX -> "linuxX64"
-        HostKind.MACOS -> if (osDetector.arch.contains("aarch")) "macosArm64" else "macosX64"
-        HostKind.WINDOWS -> "mingwX64"
-    }
-}
 
-
-fun Project.configureHMPPJvm() {
+fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         jvm("jvmBase") {
             compilations.all {
@@ -336,6 +351,39 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         }
     }
 
+    // Register platform tasks, e.g. linkDebugSharedHost
+    project.afterEvaluate {
+        val targetName = HOST_KIND.targetName
+        val targetNameCapitalized = targetName.capitalize()
+        project.tasks.run {
+            listOf(
+                "compileKotlin",
+                "linkDebugTest",
+                "linkReleaseTest",
+                "linkDebugShared",
+                "linkReleaseShared",
+                "linkDebugStatic",
+                "linkReleaseStatic",
+            ).forEach { name ->
+                findByName("$name$targetNameCapitalized")?.let { plat ->
+                    register("${name}Host") {
+                        group = "mirai"
+                        description = "Run ${plat.name} which can be run on the current Host."
+                        dependsOn(plat)
+                    }
+                }
+            }
+
+            findByName("${targetName}Test")?.let { plat ->
+                register("hostTest") {
+                    group = "mirai"
+                    description = "Run ${plat.name} which can be run on the current Host."
+                    dependsOn(plat)
+                }
+            }
+        }
+    }
+
     jvmBaseMain.dependsOn(commonMain)
     jvmBaseTest.dependsOn(commonTest)
 
@@ -359,7 +407,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 // e.g. Linker will try to link curl for mingwX64 but this can't be done on macOS.
 fun Project.disableCrossCompile() {
     project.afterEvaluate {
-        if (HOST_KIND != HostKind.MACOS) {
+        if (HOST_KIND !is HostKind.MACOS) {
             MAC_TARGETS.forEach { target -> disableTargetLink(this, target) }
         }
         if (HOST_KIND != HostKind.WINDOWS) {
@@ -408,7 +456,6 @@ private fun Project.configureNativeInterop(
 
     if (nativeInteropDir.exists() && nativeInteropDir.isDirectory && nativeInteropDir.resolve("build.rs").exists()) {
         val kotlinDylibName = project.name.replace("-", "_") + "_i"
-        val kotlinDylibName = project.name.replace("-", "_")
 
         val headerName = "$crateName.h"
         val rustLibDir = nativeInteropDir.resolve("target/debug/")
