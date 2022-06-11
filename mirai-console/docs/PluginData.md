@@ -110,7 +110,7 @@ object MyData : AutoSavePluginData("MyData") { // 文件名为 MyData, 会被保
 
 3. 建立自动保存链接
 使用 `PluginDataStorage.load(PluginDataHolder, PluginData)` 即可完成自动保存链接，并读取数据。  
-对于 [JVM 插件][`JvmPlugin`]，可简便地在 `onEnable()` 中使用 `MyData.reload()`（对于上例）。详见 [读取 `PluginData` 或 `PluginConfig`](Plugins.md#读取-plugindata-或-pluginconfig)
+对于 [JVM 插件][`JvmPlugin`]，可简便地在 `onEnable()` 中使用 `MyData.reload()`（对于上例）。详见 [读取 `PluginData` 或 `PluginConfig`](plugin/JVMPlugin-Appendix.md#读取-plugindata-或-pluginconfig)
 
 ### 定义数据模型（Java）
 *由于 Java 语法局限，为 Kotlin 而设计的 PluginData 在 Java 使用很复杂。*  
