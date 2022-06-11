@@ -16,12 +16,7 @@ import net.mamoe.mirai.utils.LoggerAdapters.asMiraiLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertSame
+import kotlin.test.*
 
 internal class Log4j2LoggingTest {
     @BeforeTest
@@ -56,7 +51,7 @@ internal class Log4j2LoggingTest {
         val parent = MiraiLogger.Factory.create(Log4j2LoggingTest::class, "test1")
         val parentMarker = parent.cast().marker!!
 
-        val child = parent.subLogger("sub")
+        val child = subLoggerImpl(parent, "sub")
         val childMarker = child.markerOrNull!!
 
         assertEquals("test1", parentMarker.name)
@@ -89,4 +84,8 @@ internal class Log4j2LoggingTest {
             info("InfoFF")
         }
     }
+}
+
+internal fun MiraiLogger.subLogger(s: String): MiraiLogger {
+    return subLoggerImpl(this, s)
 }
