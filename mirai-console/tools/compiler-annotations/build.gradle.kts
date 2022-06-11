@@ -20,7 +20,7 @@ description = "Mirai Console compiler annotations"
 kotlin {
     explicitApi()
 
-    configureHMPP()
+    configureJvmTargetsHierarchical()
     configureNativeTargetsHierarchical(project)
 }
 
