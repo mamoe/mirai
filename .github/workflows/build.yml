@@ -1,10 +1,10 @@
-name: Build mirai
+name: Build
 
 on: [ push, pull_request ]
 
 jobs:
   build-mirai-jvm:
-    name: "JVM modules (${{ matrix.os }})"
+    name: "JVM (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -224,7 +224,7 @@ jobs:
 
 
   build-mirai-core-native:
-    name: "core-native (${{ matrix.os }})"
+    name: "Native (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -461,6 +461,23 @@ jobs:
         run: ./gradlew :mirai-core:compileKotlinMingwX64 :mirai-core:compileTestKotlinMingwX64 ${{ env.gradleArgs }}
 
       - if: ${{ env.isWindows == 'true' }}
+        name: Kill java
+        run: Taskkill /IM java.exe /F
+        shell: cmd
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: Kill mongod
+        run: Taskkill /IM mongod.exe /F
+        shell: cmd
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: tasklist
+        run: tasklist
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
         name: "Link mirai-core for mingwX64"
         run: ./gradlew mirai-core:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
 
@@ -486,7 +503,7 @@ jobs:
 
 
   build-mirai-core-ubuntu:
-    name: "core-native (${{ matrix.os }})"
+    name: "Native (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
