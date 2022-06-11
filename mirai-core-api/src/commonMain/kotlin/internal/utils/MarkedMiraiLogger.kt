@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.jvm.JvmName
-import kotlin.native.CName
 
 /**
  * 内部添加 [Marker] 支持, 并兼容旧 [MiraiLogger] API.
@@ -39,16 +37,18 @@ internal fun Marker(name: String, vararg parents: Marker?): Marker {
 
 internal val MiraiLogger.markerOrNull get() = (this as? MarkedMiraiLogger)?.marker
 
-/**
- * Create a marked logger whose marker is a child of this' marker.
- *
- * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
- */
-@JvmName("subLoggerImpl2")
-@CName("", "subLogger2")
-internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
-    return subLoggerImpl(this, name)
-}
+// This clashes with the same declaration in mirai-core (same package), for native.
+//
+///**
+// * Create a marked logger whose marker is a child of this' marker.
+// *
+// * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
+// */
+//@JvmName("subLoggerImpl2")
+//@CName("", "subLogger2")
+//internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
+//    return subLoggerImpl(this, name)
+//}
 
 // used by mirai-core
 internal fun subLoggerImpl(origin: MiraiLogger, name: String): MiraiLogger {
