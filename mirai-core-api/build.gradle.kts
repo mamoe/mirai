@@ -26,7 +26,7 @@ description = "Mirai API module"
 
 kotlin {
     explicitApi()
-    configureHMPP()
+    configureJvmTargetsHierarchical()
 
     configureNativeTargetsHierarchical(project)
 
