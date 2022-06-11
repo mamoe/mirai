@@ -270,7 +270,8 @@ internal class BuiltInJvmPluginLoaderImpl(
                 loadedPlugins.firstOrNull { it.id == dep.id }
             }.filterNot { it.isEnabled }.toList()
             if (failedDependencies.isNotEmpty()) {
-                throw IllegalStateException("Failed to enable '${plugin.name}' because dependencies not enabled: " + failedDependencies.joinToString { "'${it.name}'" })
+                logger.error("Failed to enable '${plugin.name}' because dependencies not enabled: " + failedDependencies.joinToString { "'${it.name}'" })
+                return
             }
 
             if (plugin is JvmPluginInternal) {
