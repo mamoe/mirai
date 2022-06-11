@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import java.io.File
 
@@ -318,9 +319,9 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     NATIVE_TARGETS.forEach { targetName ->
         val target = targets.getByName(targetName) as KotlinNativeTarget
         if (!IDEA_ACTIVE && HOST_KIND == HostKind.WINDOWS) {
-            target.binaries.test(listOf(NativeBuildType.RELEASE)) {
-                // add release test to run on CI
-                project.afterEvaluate {
+            // add release test to run on CI
+            project.afterEvaluate {
+                target.findOrCreateTest(NativeBuildType.RELEASE) {
                     // use linkReleaseTestMingwX64 for mingwX64Test to save memory
                     tasks.getByName("mingwX64Test", KotlinNativeTest::class)
                         .executable(linkTask) { linkTask.binary.outputFile }
@@ -402,6 +403,9 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     androidMain.dependsOn(jvmBaseMain)
     androidTest.dependsOn(jvmBaseTest)
 }
+
+private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =
+    binaries.findTest(buildType)?.apply(configure) ?: binaries.test(listOf(buildType), configure)
 
 
 // e.g. Linker will try to link curl for mingwX64 but this can't be done on macOS.
