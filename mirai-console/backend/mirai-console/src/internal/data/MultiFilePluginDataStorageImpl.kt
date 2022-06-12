@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.nio.file.Path
@@ -43,7 +44,7 @@ internal open class MultiFilePluginDataStorageImpl(
                 yaml.decodeFromString(instance.updaterSerializer, text)
             } catch (cause: Throwable) {
                 // backup data file
-                file.copyTo(file.resolveSibling("${file.name}.bak"))
+                file.copyTo(file.resolveSibling("${file.name}.${currentTimeMillis()}.bak"))
                 throw cause
             }
         } else {
