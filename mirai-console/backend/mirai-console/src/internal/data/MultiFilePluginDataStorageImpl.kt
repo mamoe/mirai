@@ -43,7 +43,7 @@ internal open class MultiFilePluginDataStorageImpl(
                 yaml.decodeFromString(instance.updaterSerializer, text)
             } catch (cause: Throwable) {
                 // backup data file
-                file.copyTo(file.resolveSibling("$file.bak"))
+                file.copyTo(file.resolveSibling("${file.name}.bak"))
                 throw cause
             }
         } else {
