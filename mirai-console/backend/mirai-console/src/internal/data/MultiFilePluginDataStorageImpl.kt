@@ -35,9 +35,17 @@ internal open class MultiFilePluginDataStorageImpl(
         instance.onInit(holder, this)
 
         // 0xFEFF is BOM, handle UTF8-BOM
-        val text = getPluginDataFile(holder, instance).readText().removePrefix("\uFEFF")
+        val file = getPluginDataFile(holder, instance)
+        val text = file.readText().removePrefix("\uFEFF")
         if (text.isNotBlank()) {
-            createYaml(instance).decodeFromString(instance.updaterSerializer, text)
+            val yaml = createYaml(instance)
+            try {
+                yaml.decodeFromString(instance.updaterSerializer, text)
+            } catch (cause: Throwable) {
+                // backup data file
+                file.copyTo(file.resolveSibling("$file.bak"))
+                throw cause
+            }
         } else {
             this.store(holder, instance) // save an initial copy
         }
