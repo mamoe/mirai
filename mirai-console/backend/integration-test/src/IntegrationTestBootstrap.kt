@@ -22,9 +22,7 @@ import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.sha1
 import net.mamoe.mirai.utils.toUHexString
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
+import org.objectweb.asm.*
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -215,6 +213,28 @@ private fun AbstractTestPointAsPlugin.generatePluginJar() {
             superName,
             null
         )
+
+        // region Copy class annotations
+        this.javaClass.getResourceAsStream(javaClass.simpleName + ".class")!!.use {
+            ClassReader(it)
+        }.accept(object : ClassVisitor(Opcodes.ASM9) {
+            override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
+                if ("kotlin/Metadata" in descriptor) return null
+                return classWriter.visitAnnotation(descriptor, visible)
+            }
+
+            override fun visitTypeAnnotation(
+                typeRef: Int,
+                typePath: TypePath,
+                descriptor: String,
+                visible: Boolean
+            ): AnnotationVisitor? {
+                if ("kotlin/Metadata" in descriptor) return null
+                return classWriter.visitTypeAnnotation(typeRef, typePath, descriptor, visible)
+            }
+        }, ClassReader.SKIP_CODE)
+        // endregion
+
         classWriter.visitMethod(
             Opcodes.ACC_PUBLIC,
             "<init>", "()V", null, null

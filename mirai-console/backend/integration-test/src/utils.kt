@@ -9,6 +9,7 @@
 
 package net.mamoe.console.integrationtest
 
+import net.mamoe.mirai.console.internal.plugin.ConsoleJvmPluginTestFailedError
 import org.junit.jupiter.api.fail
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -51,6 +52,13 @@ public fun assertClassSame(expected: Class<*>?, actually: Class<*>?) {
                 "Class excepted: ${vt(expected)}\n" +
                 "Class actually: ${vt(actually)}"
     }
+}
+
+public fun forceFail(
+    msg: String? = null,
+    cause: Throwable? = null,
+): Nothing {
+    throw ConsoleJvmPluginTestFailedError(msg, cause)
 }
 // endregion
 

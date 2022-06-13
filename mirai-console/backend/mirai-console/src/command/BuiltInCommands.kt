@@ -618,7 +618,11 @@ public object BuiltInCommands {
                     gray().append("<none>")
                 } else {
                     MiraiConsole.pluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
-                        green().append(plugin.name).reset().append(" v").gold()
+                        if (plugin.isEnabled) {
+                            green().append(plugin.name).reset().append(" v").gold()
+                        } else {
+                            red().append(plugin.name).append("(disabled)").reset().append(" v").gold()
+                        }
                         plugin.version.toString()
                     }
                 }

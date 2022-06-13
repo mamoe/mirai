@@ -238,7 +238,7 @@ internal class MiraiConsoleImplementationBridge(
                 registeredCommand.permission // init
             }
 
-            mainLogger.info { "${pluginManager.plugins.size} plugin(s) enabled." }
+            mainLogger.info { "${pluginManager.plugins.count { it.isEnabled }} plugin(s) enabled." }
         }
 
         phase("auto-login bots") {

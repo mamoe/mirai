@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -29,6 +29,22 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
     protected open fun KotlinPlugin.onEnable0() {}
     protected open fun KotlinPlugin.onDisable0() {}
 
+    protected open fun exceptionHandler(exception: Throwable, step: JvmPluginExecutionStep, instance: KotlinPlugin) {
+        IntegrationTestBootstrapContext.failures.add(this.javaClass)
+    }
+
+    private fun callEH(exception: Throwable, step: JvmPluginExecutionStep, instance: KotlinPlugin) {
+        try {
+            exceptionHandler(exception, step, instance)
+        } catch (e: Throwable) {
+            forceFail(cause = e)
+        }
+    }
+
+    protected enum class JvmPluginExecutionStep {
+        OnEnable, OnDisable, OnLoad
+    }
+
 
     @Suppress("unused")
     @PublishedApi
@@ -51,7 +67,7 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
             try {
                 impl.apply { onDisable0() }
             } catch (e: Throwable) {
-                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                impl.callEH(e, JvmPluginExecutionStep.OnDisable, this)
                 throw e
             }
         }
@@ -60,7 +76,7 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
             try {
                 impl.apply { onEnable0() }
             } catch (e: Throwable) {
-                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                impl.callEH(e, JvmPluginExecutionStep.OnEnable, this)
                 throw e
             }
         }
@@ -69,7 +85,7 @@ public abstract class AbstractTestPointAsPlugin : AbstractTestPoint() {
             try {
                 impl.apply { onLoad0(this@onLoad) }
             } catch (e: Throwable) {
-                IntegrationTestBootstrapContext.failures.add(impl.javaClass)
+                impl.callEH(e, JvmPluginExecutionStep.OnLoad, this@TestPointPluginImpl)
                 throw e
             }
         }
