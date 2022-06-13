@@ -21,9 +21,8 @@ import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import net.mamoe.mirai.utils.mapToByteArray
+import kotlin.test.*
 
 internal class MessageSerializationTest : AbstractTest() {
     @Suppress("DEPRECATION_ERROR")
@@ -310,5 +309,16 @@ internal class MessageSerializationTest : AbstractTest() {
         assertEquals(origin.offlineAsRec, result.offlineAsRec)
 
         assertEquals(origin, result)
+    }
+
+    @Test
+    fun `test Audio extraData`() {
+        val origin = OnlineAudioImpl("name", byteArrayOf(), 1, AudioCodec.SILK, "url", 2, ImMsgBody.Ptt(1))
+        val result = format.parseToJsonElement(origin.serialize()).jsonObject
+
+        assertNotNull(origin.extraData)
+        assertContentEquals(
+            origin.extraData,
+            result["extraData"]?.jsonArray?.mapToByteArray { it.jsonPrimitive.int.toByte() })
     }
 }
