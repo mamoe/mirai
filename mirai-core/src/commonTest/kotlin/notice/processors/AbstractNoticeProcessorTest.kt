@@ -18,10 +18,8 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.FriendImpl
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.NormalMemberImpl
-import net.mamoe.mirai.internal.contact.StrangerImpl
+import net.mamoe.mirai.internal.asQQAndroidBot
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
@@ -212,5 +210,16 @@ internal interface GroupExtensions {
     ): Group {
         members.delegate.add(NormalMemberImpl(this.cast(), this.coroutineContext, info))
         return this
+    }
+
+    fun Bot.addOtherClient(
+        appId: Int,
+        platform: Platform = Platform.IOS,
+        deviceName: String = "my device $appId",
+        deviceKind: String = "my device kind $appId"
+    ): OtherClient {
+        return bot.asQQAndroidBot().createOtherClient(OtherClientInfo(appId, platform, deviceName, deviceKind)).also {
+            this.otherClients.delegate.add(it)
+        }
     }
 }
