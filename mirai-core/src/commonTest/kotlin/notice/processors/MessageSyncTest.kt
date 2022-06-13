@@ -101,6 +101,7 @@ internal class MessageSyncTest : AbstractNoticeProcessorTest() {
                 addMember(1230001, permission = MemberPermission.OWNER)
                 addMember(1230002, permission = MemberPermission.MEMBER)
             }
+            addOtherClient(537067835)
         }
 
         runTest().toList().run {
@@ -167,6 +168,7 @@ internal class MessageSyncTest : AbstractNoticeProcessorTest() {
 
         setBot(1230002).apply {
             addFriend(1230001)
+            addOtherClient(537067835)
         }
 
         runTest().toList().run {
