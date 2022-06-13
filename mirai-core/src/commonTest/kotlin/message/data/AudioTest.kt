@@ -7,10 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.message
+package net.mamoe.mirai.internal.message.data
 
-import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
-import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl.Companion.DOWNLOAD_URL
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl.Companion.refineUrl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
