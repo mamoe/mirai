@@ -78,9 +78,10 @@ internal class PluginManagerImpl(
 
     init {
         MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
-            plugins.forEach { plugin ->
-                if (plugin.isEnabled)
+            plugins.asReversed().forEach { plugin ->
+                if (plugin.isEnabled) {
                     disablePlugin(plugin)
+                }
             }
         }
     }
