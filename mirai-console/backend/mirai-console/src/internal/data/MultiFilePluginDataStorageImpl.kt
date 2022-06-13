@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.nio.file.Path
@@ -35,9 +36,17 @@ internal open class MultiFilePluginDataStorageImpl(
         instance.onInit(holder, this)
 
         // 0xFEFF is BOM, handle UTF8-BOM
-        val text = getPluginDataFile(holder, instance).readText().removePrefix("\uFEFF")
+        val file = getPluginDataFile(holder, instance)
+        val text = file.readText().removePrefix("\uFEFF")
         if (text.isNotBlank()) {
-            createYaml(instance).decodeFromString(instance.updaterSerializer, text)
+            val yaml = createYaml(instance)
+            try {
+                yaml.decodeFromString(instance.updaterSerializer, text)
+            } catch (cause: Throwable) {
+                // backup data file
+                file.copyTo(file.resolveSibling("${file.name}.${currentTimeMillis()}.bak"))
+                throw cause
+            }
         } else {
             this.store(holder, instance) // save an initial copy
         }
