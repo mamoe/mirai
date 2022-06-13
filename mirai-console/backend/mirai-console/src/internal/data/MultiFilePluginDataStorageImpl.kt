@@ -62,7 +62,10 @@ internal open class MultiFilePluginDataStorageImpl(
             error("Target File $file is occupied by a directory therefore data ${instance::class.qualifiedNameOrTip} can't be saved.")
         }
 //        logger.verbose { "File allocated for ${instance.saveName}: $file" }
-        return file.toFile().also { it.createNewFile() }
+        return file.toFile().also {
+            it.parentFile?.mkdirs()
+            it.createNewFile()
+        }
     }
 
     @ConsoleExperimentalApi
