@@ -41,7 +41,7 @@ suspend fun main() {
     val bot = BotFactory.newBot(account.id, account.password) {
         enableContactCache()
         fileBasedDeviceInfo("local.device.json")
-        protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE
+        protocol = BotConfiguration.MiraiProtocol.ANDROID_PAD
     }.asQQAndroidBot()
 
     bot.components[NoticeProcessorPipeline].registerProcessor(RecordingNoticeProcessor())

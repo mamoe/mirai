@@ -13,7 +13,7 @@
         <module name="mirai.mirai-core.jvmTest"/>
         <shortenClasspath name="NONE"/>
         <option name="VM_PARAMETERS"
-                value="-Dmirai.debug.network.state.observer.logging=true -Dmirai.debug.network.show.all.components=true -Dkotlinx.coroutines.debug=on -Dmirai.debug.network.show.packet.details=true"/>
+                value="-Dmirai.debug.network.show.all.components=true -Dkotlinx.coroutines.debug=on -Dmirai.debug.network.show.packet.details=true -Dmirai.network.notice.unconsumed.logging=true -Dmirai.network.packet.logger=true"/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/run"/>
         <method v="2">
             <option name="Make" enabled="true"/>
