@@ -117,18 +117,22 @@ val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
-//        jvm("jvmBase") {
-//            compilations.all {
-//                this.compileKotlinTask.enabled = false // IDE complain
-//            }
-//            attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // avoid resolving by others
-////            attributes.attribute(miraiPlatform, "jvmBase")
-//        }
+        if (IDEA_ACTIVE) {
+            jvm("jvmBase") { // dummy target for resolution, not published
+                compilations.all {
+                    this.compileKotlinTask.enabled = false // IDE complain
+                }
+                attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
+                attributes.attribute(miraiPlatform, "jvmBase") // avoid resolution
+            }
+        }
 
         if (isAndroidSDKAvailable && ANDROID_ENABLED) {
             jvm("android") {
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                //   publishAllLibraryVariants()
+                if (IDEA_ACTIVE) {
+                    attributes.attribute(miraiPlatform, "android") // avoid resolution
+                }
             }
         } else {
             printAndroidNotInstalled()

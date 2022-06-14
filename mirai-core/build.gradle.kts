@@ -60,7 +60,7 @@ kotlin {
                 implementation(`log4j-api`)
                 implementation(`netty-all`)
                 implementation(`ktor-client-okhttp`)
-                api(`kotlinx-coroutines-core`)
+                api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
             }
         }
 
