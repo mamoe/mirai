@@ -57,9 +57,7 @@ public open class BuildMiraiPluginV2 : Jar() {
                 "net.mamoe:mirai-core-utils",
                 "net.mamoe:mirai-core-utils-jvm",
                 "net.mamoe:mirai-core-utils-android",
-                "net.mamoe:mirai-core-utils-addition",
-                "net.mamoe:mirai-core-utils-addition-jvm",
-                "net.mamoe:mirai-core-utils-addition-android",
+                "net.mamoe:mirai-core-utils-barcode",
                 "net.mamoe:mirai-console",
                 "net.mamoe:mirai-console-terminal",
             )

@@ -71,9 +71,7 @@ internal class JvmPluginDependencyDownloader(
                     "mirai-core-utils",
                     "mirai-core-utils-jvm",
                     "mirai-core-utils-android",
-                    "mirai-core-utils-addition",
-                    "mirai-core-utils-addition-jvm",
-                    "mirai-core-utils-addition-android",
+                    "mirai-core-utils-barcode",
                     "mirai-console",
                     "mirai-console-terminal",
                 )
