@@ -241,6 +241,23 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
+      # Prepare environment for linking for macOS
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install OpenSSL
+        run: >
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
+          make &&
+          sudo make install
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install gcc-multilib
+        run: sudo apt install gcc-multilib -y
+        continue-on-error: true
+
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
@@ -512,11 +529,13 @@ jobs:
       - if: ${{ env.isWindows == 'true' }}
         name: wmic pagefile list /format:list
         run: wmic pagefile list /format:list
+        shell: cmd
         continue-on-error: true
 
       - if: ${{ env.isWindows == 'true' }}
-        name: wmic computersystem where name="%computername%" set AutomaticManagedPagefile=true
-        run: wmic computersystem where name="%computername%" set AutomaticManagedPagefile=true
+        name: 'wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000'
+        run: 'wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000' # only 14G total space available
+        shell: cmd
         continue-on-error: true
 
       - if: ${{ env.isWindows == 'true' }}
