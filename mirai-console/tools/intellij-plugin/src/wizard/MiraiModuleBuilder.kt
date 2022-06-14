@@ -55,7 +55,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
 
 
     override fun createWizardSteps(
-        wizardContext: WizardContext,
+        context: WizardContext,
         modulesProvider: ModulesProvider
     ): Array<ModuleWizardStep> = emptyArray()
 

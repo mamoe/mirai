@@ -12,15 +12,16 @@ package net.mamoe.mirai.internal.testFramework
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 
+@Suppress("UNUSED_PARAMETER", "unused")
 internal actual object DebugProbes {
 
     /**
-     * Prints [job] hierarchy representation from [jobToString] to the given [out].
+     * Prints  hierarchy representation from [jobToString] to the given .
      */
 //    public fun printJob(job: Job, out: PrintStream = System.out): Unit
 
     /**
-     * Prints all coroutines launched within the given [scope].
+     * Prints all coroutines launched within the given .
      * Throws [IllegalStateException] if the scope has no a job in it.
      */
 //    public fun printScope(scope: CoroutineScope, out: PrintStream = System.out): Unit
@@ -113,7 +114,7 @@ internal actual object DebugProbes {
     }
 
     /**
-     * Prints [job] hierarchy representation from [jobToString] to the given [out].
+     * Prints [job] hierarchy representation from [jobToString] to the given .
      */
     actual fun printJob(job: Job) {
     }

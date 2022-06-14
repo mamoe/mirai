@@ -90,7 +90,7 @@ public expect fun GzipDecompressionInput(source: Input): Input
 /**
  * @see GzipDecompressionInput
  */
-public inline fun Input.gzipDecompressionInput(): Input = GzipDecompressionInput(this)
+public fun Input.gzipDecompressionInput(): Input = GzipDecompressionInput(this)
 
 /**
  * [source] will be closed on returned [Input.close]
@@ -101,7 +101,7 @@ public expect fun InflateInput(source: Input): Input
 /**
  * @see InflateInput
  */
-public inline fun Input.inflateInput(): Input = InflateInput(this)
+public fun Input.inflateInput(): Input = InflateInput(this)
 
 /**
  * [source] will be closed on returned [Input.close]
@@ -112,4 +112,4 @@ public expect fun DeflateInput(source: Input): Input
 /**
  * @see DeflateInput
  */
-public inline fun Input.deflateInput(): Input = DeflateInput(this)
+public fun Input.deflateInput(): Input = DeflateInput(this)

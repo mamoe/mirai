@@ -25,6 +25,7 @@ internal class WindowsMiraiFileImplTest : AbstractNativeMiraiFileImplTest() {
         super.parent()
     }
 
+    @Test
     override fun `canonical paths for non-canonical input`() {
         super.`canonical paths for non-canonical input`()
 
