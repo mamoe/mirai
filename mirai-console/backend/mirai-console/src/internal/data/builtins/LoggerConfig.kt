@@ -21,7 +21,8 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 public class LoggerConfig : ReadOnlyPluginConfig("Logger") {
     @ValueDescription(
         """
-        日志输出等级 可选值: ALL, VERBOSE, DEBUG, INFO, WARNING, ERROR, NONE
+        默认日志输出等级
+        可选值: ALL, VERBOSE, DEBUG, INFO, WARNING, ERROR, NONE
     """
     )
     public val defaultPriority: AbstractLoggerController.LogPriority by value(AbstractLoggerController.LogPriority.INFO)
