@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
@@ -281,11 +281,9 @@ jobs:
         os:
           - windows-2022
           #          - windows-2019 # Our config works only for Windows 2022 servers (Using some absolute paths)
-          - macos-12
-          - macos-11
     env:
       # Disabling Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
-      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" # --no-daemon
+      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -297,7 +295,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
@@ -540,7 +538,7 @@ jobs:
 
       - if: ${{ env.isWindows == 'true' }}
         name: "Link mirai-core for mingwX64"
-        run: ./gradlew mirai-core:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
+        run: ./gradlew mirai-core:linkReleaseTestMingwX64 --scan --no-daemon
 
       - if: ${{ env.isWindows == 'true' }}
         name: "Test mirai-core for mingwX64"
@@ -572,6 +570,8 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-18.04
+          - macos-12
+          - macos-11
     env:
       # Disable Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
       gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" "-Dmirai.windows.target=false" # Disable windows targets
@@ -586,10 +586,29 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
+
+      # Prepare environment for linking for macOS
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install OpenSSL
+        run: >
+          git clone https://github.com/openssl/openssl.git --recursive &&
+          cd openssl &&
+          git checkout tags/openssl-3.0.3 &&
+          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
+          make &&
+          sudo make install
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Install gcc-multilib
+        run: sudo apt install gcc-multilib -y
+        continue-on-error: true
+
+      # Prepare environment for linking for Ubuntu
 
       - if: ${{ env.isUbuntu == 'true' }}
         name: Install OpenSSL
