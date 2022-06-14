@@ -28,6 +28,7 @@ internal class UnixMiraiFileImplTest : AbstractNativeMiraiFileImplTest() {
         super.parent()
     }
 
+    @Test
     override fun `canonical paths for non-canonical input`() {
         super.`canonical paths for non-canonical input`()
 
