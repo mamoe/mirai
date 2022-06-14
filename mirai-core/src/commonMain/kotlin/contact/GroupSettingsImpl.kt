@@ -17,7 +17,6 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.GroupAllowMemberInviteEvent
-import net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent
 import net.mamoe.mirai.event.events.GroupMuteAllEvent
 import net.mamoe.mirai.event.events.GroupNameChangeEvent
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -65,7 +64,8 @@ internal class GroupSettingsImpl(
         get() = _entranceAnnouncement
         set(newValue) {
             group.setImpl(newValue, { _entranceAnnouncement }, { _entranceAnnouncement = it }, GroupOperation::memo) {
-                GroupEntranceAnnouncementChangeEvent(it, newValue, group, null)
+                @Suppress("DEPRECATION")
+                net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent(it, newValue, group, null)
             }
         }
 

@@ -82,9 +82,9 @@ public expect abstract class LoginSolver() {
 
 }
 
-internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
+internal fun getFileBasedDeviceInfoSupplier(file: () -> File): (Bot) -> DeviceInfo {
     return {
         @Suppress("DEPRECATION_ERROR")
-        file().loadAsDeviceInfo(json)
+        file().loadAsDeviceInfo(BotConfiguration.json)
     }
 }

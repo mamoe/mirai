@@ -61,44 +61,7 @@ public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T
 @ConsoleExperimentalApi
 public constructor(
     extensionType: KClass<E>
-) : AbstractExtensionPoint<E>(extensionType) {
-
-    /**
-     * @since 2.10
-     */
-    @Deprecated(
-        "Default(builtin) implementations are not allowed any more. " +
-                "For plugin authors, provide them with lower priority when plugin being loaded(through the ComponentScope). " +
-                "For frontend implementers, provide them by `BackendAccess.globalComponentScope.contribute`. ",
-        replaceWith = ReplaceWith("AbstractInstanceExtensionPoint(extensionType)"),
-        level = DeprecationLevel.ERROR,
-    )
-    @DeprecatedSinceMirai(errorSince = "2.11") // for removal
-    @ConsoleExperimentalApi
-    public constructor(
-        extensionType: KClass<E>,
-        /**
-         * 内建的实现列表.
-         */
-        @Suppress("UNUSED_PARAMETER") builtinImplementations: () -> E,
-    ) : this(extensionType)
-
-    /**
-     * @since 2.0
-     */
-    @Deprecated(
-        "Default(builtin) implementations are not allowed any more. " +
-                "For plugin authors, provide them with lower priority when plugin being loaded(through the ComponentScope). " +
-                "For frontend implementers, provide them by `BackendAccess.globalComponentScope.contribute`. ",
-        replaceWith = ReplaceWith("AbstractInstanceExtensionPoint(extensionType)"),
-        level = DeprecationLevel.ERROR
-    )
-    @DeprecatedSinceMirai(errorSince = "2.11") // for removal
-    @ConsoleExperimentalApi // was experimental since 2.0
-    public constructor(extensionType: KClass<E>, @Suppress("UNUSED_PARAMETER") vararg builtinImplementations: E) : this(
-        extensionType,
-    )
-}
+) : AbstractExtensionPoint<E>(extensionType)
 
 @Deprecated(
     "Please use AbstractInstanceExtensionPoint instead.",

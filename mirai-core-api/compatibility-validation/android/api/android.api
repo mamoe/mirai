@@ -199,7 +199,7 @@ public final class net/mamoe/mirai/contact/AvatarSpec : java/lang/Enum, java/lan
 }
 
 public final class net/mamoe/mirai/contact/BotIsBeingMutedException : net/mamoe/mirai/contact/SendMessageFailedException {
-	public fun <init> (Lnet/mamoe/mirai/contact/Group;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/Group;)V
 	public fun getMessage ()Ljava/lang/String;
 	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getTarget ()Lnet/mamoe/mirai/contact/Group;
@@ -5733,7 +5733,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun getHeartbeatStrategy ()Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;
 	public final fun getHeartbeatTimeoutMillis ()J
 	public final fun getHighwayUploadCoroutineCount ()I
-	public final fun getJson ()Lkotlinx/serialization/json/Json;
 	public final fun getLoginCacheEnabled ()Z
 	public final fun getLoginSolver ()Lnet/mamoe/mirai/utils/LoginSolver;
 	public final fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
@@ -5779,7 +5778,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setHeartbeatStrategy (Lnet/mamoe/mirai/utils/BotConfiguration$HeartbeatStrategy;)V
 	public final fun setHeartbeatTimeoutMillis (J)V
 	public final fun setHighwayUploadCoroutineCount (I)V
-	public final fun setJson (Lkotlinx/serialization/json/Json;)V
 	public final fun setLoginCacheEnabled (Z)V
 	public final fun setLoginSolver (Lnet/mamoe/mirai/utils/LoginSolver;)V
 	public final fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V

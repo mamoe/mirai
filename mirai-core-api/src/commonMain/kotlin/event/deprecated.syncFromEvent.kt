@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
  * @throws TimeoutCancellationException 在超时后抛出.
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
-@DeprecatedSinceMirai(warningSince = "2.10")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
 @Deprecated(
     "Use GlobalEventChannel.syncFromEvent",
     ReplaceWith(
@@ -42,7 +42,7 @@ import kotlin.reflect.KClass
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @JvmSynthetic
 public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
@@ -79,11 +79,11 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@DeprecatedSinceMirai(warningSince = "2.10")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
 @Deprecated(
     "Use GlobalEventChannel.syncFromEvent",
     ReplaceWith("withTimeoutOrNull(timeoutMillis) { GlobalEventChannel.syncFromEvent<E, R>(priority) { event -> with(event) { mapper(event) } }"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
@@ -125,8 +125,10 @@ public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),
+    level = DeprecationLevel.ERROR
 )
 @JvmSynthetic
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
 @Suppress("DeferredIsResult")
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
@@ -175,8 +177,9 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNu
         "net.mamoe.mirai.event.globalEventChannel",
         "net.mamoe.mirai.event.syncFromEvent"
     ),
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai("2.10")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
 @JvmSynthetic
 @Suppress("DeferredIsResult")
 public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
@@ -201,7 +204,7 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 //////////////
 
 @Deprecated("Deprecated since its usages are deprecated")
-@DeprecatedSinceMirai("2.10")
+@DeprecatedSinceMirai(warningSince = "2.10")
 @JvmSynthetic
 @PublishedApi
 internal suspend inline fun <E : Event, R> syncFromEventImpl(

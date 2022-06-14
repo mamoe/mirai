@@ -118,6 +118,7 @@ internal open class NettyNetworkHandler(
     protected open fun setupChannelPipeline(pipeline: ChannelPipeline, decodePipeline: PacketDecodePipeline) {
         pipeline
             .addLast(object : ChannelInboundHandlerAdapter() {
+                @Suppress("OVERRIDE_DEPRECATION")
                 override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
                     handlePipelineException(ctx, cause)
                 }

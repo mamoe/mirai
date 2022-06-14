@@ -101,9 +101,9 @@ public abstract class EventChannel<out BaseEvent : Event> @MiraiInternalApi publ
             "Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }",
             "kotlinx.coroutines.channels.Channel"
         ),
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
     )
-    @DeprecatedSinceMirai(warningSince = "2.10")
+    @DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
     @MiraiExperimentalApi
     public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,

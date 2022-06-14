@@ -59,26 +59,6 @@ public open class BotConfiguration { // open for Java
      */
     public var workingDir: File = File(".")
 
-    /**
-     * Json 序列化器, 使用 'kotlinx.serialization'
-     */
-    @MiraiExperimentalApi
-    @Deprecated(
-        "Changing serial format is going to be forbidden. Deprecated for removal. ",
-        level = DeprecationLevel.ERROR
-    )
-    @DeprecatedSinceMirai(errorSince = "2.11") // was experimental
-    public var json: Json = kotlin.runCatching {
-        Json {
-            isLenient = true
-            ignoreUnknownKeys = true
-            prettyPrint = true
-        }
-    }.getOrElse {
-        @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatible for older versions
-        Json {}
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Coroutines
     ///////////////////////////////////////////////////////////////////////////
@@ -340,7 +320,7 @@ public open class BotConfiguration { // open for Java
     @ConfigurationDsl
     public fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
-            this.json.decodeFromString(DeviceInfo.serializer(), json)
+            Companion.json.decodeFromString(DeviceInfo.serializer(), json)
         }
     }
 
@@ -602,7 +582,6 @@ public open class BotConfiguration { // open for Java
             // To structural order
             new.workingDir = workingDir
             @Suppress("DEPRECATION_ERROR")
-            new.json = json
             new.parentCoroutineContext = parentCoroutineContext
             new.heartbeatPeriodMillis = heartbeatPeriodMillis
             new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
@@ -644,6 +623,17 @@ public open class BotConfiguration { // open for Java
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
         public val Default: BotConfiguration = BotConfiguration()
+
+        internal val json: Json = kotlin.runCatching {
+            Json {
+                isLenient = true
+                ignoreUnknownKeys = true
+                prettyPrint = true
+            }
+        }.getOrElse {
+            @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatibility for older versions
+            Json {}
+        }
     }
 }
 

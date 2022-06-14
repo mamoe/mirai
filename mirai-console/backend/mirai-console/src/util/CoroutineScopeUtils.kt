@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.util
@@ -18,20 +18,20 @@ import net.mamoe.mirai.utils.currentTimeMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-@Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
-@Deprecated("No longer supported, deprecated for removal.")
-@DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+@Suppress("DEPRECATION", "DEPRECATION_ERROR", "DeprecatedCallableAddReplaceWith")
+@Deprecated("No longer supported, deprecated for removal.", level = DeprecationLevel.ERROR)
+@DeprecatedSinceMirai(warningSince = "2.10.0-RC", errorSince = "2.12")
 @ConsoleExperimentalApi
 public object CoroutineScopeUtils {
-    @Deprecated("No longer supported, deprecated for removal.")
-    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+    @Deprecated("No longer supported, deprecated for removal.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC", errorSince = "2.12")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
         this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
 
-    @Deprecated("No longer supported, deprecated for removal.")
-    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+    @Deprecated("No longer supported, deprecated for removal.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC", errorSince = "2.12")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineScope.childScope(
@@ -40,8 +40,8 @@ public object CoroutineScopeUtils {
     ): CoroutineScope =
         CoroutineScope(this.childScopeContext(name, context))
 
-    @Deprecated("No longer supported, deprecated for removal.")
-    @DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+    @Deprecated("No longer supported, deprecated for removal.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(warningSince = "2.10.0-RC", errorSince = "2.12")
     @JvmStatic
     @ConsoleExperimentalApi
     public fun CoroutineScope.childScopeContext(
@@ -100,8 +100,8 @@ internal fun CoroutineScope.launchTimedTask(
     action: suspend CoroutineScope.() -> Unit,
 ) = TimedTask(this, coroutineContext, intervalMillis, action)
 
-@Deprecated("No longer supported, deprecated for removal.")
-@DeprecatedSinceMirai(warningSince = "2.10.0-RC")
+@Deprecated("No longer supported, deprecated for removal.", level = DeprecationLevel.ERROR)
+@DeprecatedSinceMirai(warningSince = "2.10.0-RC", errorSince = "2.12")
 @ConsoleExperimentalApi
 public class NamedSupervisorJob @JvmOverloads constructor(
     private val name: String,

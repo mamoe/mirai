@@ -557,6 +557,11 @@ internal class RemoteFileImpl(
         )
     }
 
+    @Deprecated(
+        "Use uploadAndSend instead.",
+        replaceWith = ReplaceWith("this.uploadAndSend(resource, callback)"),
+        level = DeprecationLevel.ERROR
+    )
     override suspend fun upload(
         resource: ExternalResource,
         callback: RemoteFile.ProgressionCallback?,
@@ -567,17 +572,32 @@ internal class RemoteFileImpl(
     }
 
     // compiler bug
+    @Deprecated(
+        "Use uploadAndSend instead.",
+        replaceWith = ReplaceWith("this.uploadAndSend(resource)"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(resource: ExternalResource): FileMessage {
         return upload(resource, null)
     }
 
     // compiler bug
+    @Deprecated(
+        "Use uploadAndSend instead.",
+        replaceWith = ReplaceWith("this.uploadAndSend(file, callback)"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File, callback: RemoteFile.ProgressionCallback?): FileMessage =
         file.toExternalResource().use { upload(it, callback) }
 
     //compiler bug
+    @Deprecated(
+        "Use sendFile instead.",
+        replaceWith = ReplaceWith("this.uploadAndSend(file)"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("DEPRECATION_ERROR")
     override suspend fun upload(file: File): FileMessage {
         // Dear compiler:

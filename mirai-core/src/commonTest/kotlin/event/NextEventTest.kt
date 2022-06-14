@@ -139,7 +139,7 @@ internal class NextEventTest : AbstractEventTest() {
     suspend fun `nextEventOrNull can receive`() {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                nextEventOrNull<TE>(5000)
+                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
             }
 
             TE(1).broadcast()
@@ -153,7 +153,7 @@ internal class NextEventTest : AbstractEventTest() {
     suspend fun `nextEventOrNull can filter type`() {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                nextEventOrNull<TE>(5000)
+                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
             }
 
             TE2(1).broadcast()
@@ -171,7 +171,7 @@ internal class NextEventTest : AbstractEventTest() {
     suspend fun `nextEventOrNull can filter by filter`() {
         withContext(dispatcher) {
             val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                nextEventOrNull<TE>(5000) { it.x == 2 }
+                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) { it.x == 2 } }
             }
 
             TE(1).broadcast()
@@ -188,7 +188,8 @@ internal class NextEventTest : AbstractEventTest() {
     @Test
     suspend fun `nextEventOrNull can timeout`() {
         withContext(dispatcher) {
-            assertEquals(null, nextEventOrNull<TE>(timeoutMillis = 1))
+            assertEquals(null,
+                withTimeoutOrNull<TE>(timeMillis = 1) { globalEventChannel().nextEvent(EventPriority.MONITOR) })
         }
     }
 }
