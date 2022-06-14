@@ -78,7 +78,7 @@ Mirai 官方提供两个插件：
 
 注意: 插件有多个频道, `--channel stable` 表示使用名为 `stable` 的频道. 不同的插件可能会设置不同的频道, 具体需要使用哪个频道可参考特定插件的说明 (很多插件会单独说明要如何安装它们, 因此不必过多考虑).
 
-详细文档：[MCL/scripts](https://github.com/iTXTech/mirai-console-loader/blob/master/scripts/README.md)
+详细文档：[MCL/scripts](https://github.com/iTXTech/mirai-console-loader/blob/master/cli.md)
 
 #### 在哪找社区插件
 
