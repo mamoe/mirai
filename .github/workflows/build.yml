@@ -542,7 +542,7 @@ jobs:
 
       - if: ${{ env.isWindows == 'true' }}
         name: "Link mirai-core for mingwX64"
-        run: ./gradlew mirai-core:linkReleaseTestMingwX64 --no-daemon
+        run: ./gradlew mirai-core:linkReleaseTestMingwX64 --no-daemon --no-parallel -Porg.gradle.logging.level=quiet -Porg.gradle.parallel=false
 
       - if: ${{ env.isWindows == 'true' }}
         name: "Test mirai-core for mingwX64"
