@@ -35,6 +35,7 @@ internal fun FileMessage.checkIsImpl(): FileMessageImpl {
 }
 
 @Serializable
+@Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST") // bug
 @SerialName(FileMessage.SERIAL_NAME)
 internal data class FileMessageImpl(
     override val id: String,

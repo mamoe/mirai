@@ -43,8 +43,6 @@ open class TM(private val name: String = Random.nextInt().toString()) : SingleMe
         if (this === other) return true
         if (!isSameType(this, other)) return false
 
-        other as TM
-
         if (name != other.name) return false
 
         return true
@@ -73,17 +71,6 @@ private fun testRefineLight(
     after: MessageChain
 ) = assertEquals(after.toMessageChain(), before.toMessageChain().refineLight(bot))
 
-
-@Suppress("TestFunctionName")
-private fun RefinableMessage(
-    refine: (bot: Bot, context: MessageChain) -> Message?
-): RefinableMessage {
-    return object : RefinableMessage, TM() {
-        override fun tryRefine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message? {
-            return refine(bot, context)
-        }
-    }
-}
 
 @Suppress("TestFunctionName")
 private fun RefinableMessage0(
