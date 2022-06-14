@@ -127,6 +127,34 @@ Mirai Console 内置一些指令，输入 `?` 并回车可以查看指令列表�
 
 详见 [`PermissionCommand`](/mirai-console/docs/BuiltInCommands.md#permissioncommand)
 
+### 配置
+
+Mirai Console 支持一些自定义配置。各项配置可以在 `config` 目录中找到。
+
+### 自动登录
+
+修改 `AutoLogin.yml` 可配置自动登录。也可以使用 `/autologin` 指令。
+
+### 指令前缀
+
+可以在 `Command.yml` 配置指令前缀，默认为 `/`。注意，部分指令可不需要前缀也能使用，这取决于插件开发者的选择。
+
+### 管理日志
+
+Mirai Console 会记录运行时的日志并保存到 `logs` 目录中，其中 `latest.log` 为最新日志。
+
+可以参考[日志文档](../mirai-console/docs/Logging.md)了解如何配置日志的详略程度。
+
+若要向插件开发者提交问题，建议将日志等级调整为 `ALL` 并复现问题后附加 `latest.log` 一并提交。
+
+### 配置权限
+
+`grantedPermissionMap.yml` 包含权限授予信息。通常建议使用指令 `/perm` 来修改权限，而不建议直接修改配置。
+
+### 远程仓库
+
+`repoLoc.yml` 包含对远程仓库的配置，通常不需要修改，除非某个插件要求。
+
 ## 解决问题
 
 如果遇到使用问题或想提建议，可以在 [issues](https://github.com/mamoe/mirai/issues)

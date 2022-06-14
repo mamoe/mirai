@@ -330,43 +330,7 @@ public final class JExample extends JavaPlugin {
 }
 ```
 
-Console 的日志一共有五个级别：
-
-|  级别（由高到低）  | 用途           |  默认启用  |
-|:----------:|--------------|:------:|
-|   ERROR    | 记录影响程序运行的错误  |   是    |
-|  WARNING   | 记录不影响程序运行的警告 |   是    |
-|    INFO    | 记录一条普通信息     |   是    |
-|   DEBUG    | 记录普通调试信息     |   否    |
-|  VERBOSE   | 记录详细调试信息     |   否    |
-
-由于 DEBUG 和 VERBOSE
-默认是禁用的，插件开发者可以自由使用这两个级别的日志来辅助进行调试工作。也可以在当用户遇到问题时，让用户单独启用这些日志来获取调试信息。
-
-可以在配置 `config/Console/Logger.yml` 中进行如下操作：
-
-### 调整全局日志等级
-
-修改 `defaultPriority`，若设置为 DEBUG，则启用上表中 DEBUG 及更高级别的日志，即
-DEBUG、INFO、WARNING、ERROR。
-
-### 调整特定日志等级
-
-每个插件被分配的 MiraiLogger 的 ID (identity) 为插件描述的名称（name）。
-
-在 `loggers` 增加对名称的配置，示例（启用名为 `Chat Command` 的插件的 DEBUG 及更高级别的日志）：
-
-```yaml
-loggers:
-    "Chat Command": DEBUG
-```
-
-提示：该 ID 也可以在日志中找到。如下面的日志中，`Bot 12345678` 就是其所属 MiraiLogger 的 ID。（其前 V
-代表等级为 VERBOSE）
-
-```text
-2022-05-02 11:09:28 V/Bot 12345678: Event: BotOnlineEvent(bot=Bot(12345678))
-```
+有关日志的配置方式可以参考 [Logging](../Logging.md)
 
 ## 插件生命周期与依赖管理
 
