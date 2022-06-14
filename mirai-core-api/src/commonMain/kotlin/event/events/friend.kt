@@ -25,7 +25,6 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiInternalApi
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -83,7 +82,6 @@ public data class NewFriendRequestEvent @MiraiInternalApi public constructor(
      */
     public val fromNick: String,
 ) : BotEvent, Packet, AbstractEvent(), FriendInfoChangeEvent {
-    @JvmField
     internal val responded: AtomicBoolean = atomic(false)
 
     /**
