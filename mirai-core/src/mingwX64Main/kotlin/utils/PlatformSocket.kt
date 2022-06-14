@@ -19,11 +19,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
-import net.mamoe.mirai.internal.network.protocol.packet.login.toIpV4Long
 import net.mamoe.mirai.utils.DEFAULT_BUFFER_SIZE
 import net.mamoe.mirai.utils.toReadPacket
 import net.mamoe.mirai.utils.wrapIO
-import platform.posix.*
+import platform.posix.close
+import platform.posix.read
+import platform.posix.write
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -91,41 +92,32 @@ internal actual class PlatformSocket(
             serverIp: String,
             serverPort: Int
         ): PlatformSocket {
-            val addr = memScoped {
-                alloc<sockaddr_in>() {
-                    sin_family = AF_INET.convert()
-                    resolveIpFromHost(serverIp)
-                    sin_addr.S_un.S_addr = resolveIpFromHost(serverIp)
-                }
-            }.reinterpret<sockaddr>()
+            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toUShort())
+            if (r < 0) error("Failed socket_create_connect: $r")
+            return PlatformSocket(r)
 
-            val id = socket(AF_INET, 1 /* SOCKET_STREAM */, IPPROTO_TCP)
-            if (id != 0uL) throw PosixException.forErrno(posixFunctionName = "socket()")
-
-            val conn = connect(id, addr.ptr, sizeOf<sockaddr_in>().convert())
-            if (conn != 0) throw PosixException.forErrno(posixFunctionName = "connect()")
-
-            return PlatformSocket(conn)
-        }
-
-        private fun resolveIpFromHost(serverIp: String): UInt {
-            val host = platform.windows.gethostbyname(serverIp)
-                ?: throw IllegalStateException("Failed to resolve IP from host. host=$serverIp")
-
-//            val str = try {
-//                val hAddrList = host.pointed.h_addr_list
-//                    ?: throw IllegalStateException("Empty IP list resolved from host. host=$serverIp")
+//            val addr = memScoped {
+//                alloc<sockaddr_in>() {
+//                    sin_family = AF_INET.convert()
+//                    sin_port = htons(serverPort.toUShort())
+//                    sin_addr.S_un
+//                    sin_addr = resolveIpFromHost(serverIp).reinterpret<in_addr>().rawValue
+//                }
+//            }.reinterpret<sockaddr>()
 //
-//                hAddrList[0]!!.toKString()
-//            } finally {
-//                free(host)
-//            }
-
-            // TODO: 2022/5/30 check memory
-
-            return serverIp.toIpV4Long().toUInt()
-//            return str.toIpV4Long().toUInt()
+//            val id = socket(AF_INET, SOCK_STREAM, 0)
+//            if (id.toInt() == -1) throw PosixException.forErrno(posixFunctionName = "socket()")
+//
+//            val conn = connect(id, addr.ptr, sizeOf<sockaddr_in>().convert())
+//            if (conn != 0) throw PosixException.forErrno(posixFunctionName = "connect()")
+//
+//            return PlatformSocket(conn)
         }
+
+//        private fun resolveIpFromHost(serverIp: String): CPointer<hostent> {
+//            return gethostbyname(serverIp)
+//                ?: throw IllegalStateException("Failed to resolve IP from host. host=$serverIp")
+//        }
 
         actual suspend inline fun <R> withConnection(
             serverIp: String,

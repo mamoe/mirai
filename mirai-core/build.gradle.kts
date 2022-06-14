@@ -131,6 +131,14 @@ kotlin {
                 }
         }
 
+        WIN_TARGETS.forEach { target ->
+            (targets.getByName(target) as KotlinNativeTarget).compilations.getByName("main").cinterops.create("Socket")
+                .apply {
+                    defFile = projectDir.resolve("src/mingwX64Main/cinterop/Socket.def")
+                    packageName("sockets")
+                }
+        }
+
         configure(WIN_TARGETS.map { getByName(it + "Main") }) {
             dependencies {
                 implementation(`ktor-client-curl`)
