@@ -21,6 +21,12 @@ runs:
         name: mirai-core-utils
         path: mirai-core-utils/build/libs
 
+    - name: Upload mirai-core-utils-barcode
+      uses: actions/upload-artifact@v3
+      with:
+        name: mirai-core-utils-barcode
+        path: mirai-core-utils-barcode/build/libs
+
     - name: Upload mirai-core-api
       uses: actions/upload-artifact@v3
       with:
