@@ -23,11 +23,11 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @see RemoteFiles
  */
 @NotStableForInheritance
-public expect interface FileSupported : Contact {
+public actual interface FileSupported : Contact {
     /**
      * 获取远程文件列表 (管理器).
      *
      * @since 2.8
      */
-    public val files: RemoteFiles
+    public actual val files: RemoteFiles
 }

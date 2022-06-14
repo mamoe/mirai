@@ -7,10 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-@file:JvmMultifileClass
-@file:JvmName("MessageUtils")
-
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
@@ -22,16 +18,11 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.copy
-import net.mamoe.mirai.utils.map
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
-import kotlin.native.CName
+import net.mamoe.mirai.utils.safeCast
 
 /**
  * 文件消息.
@@ -49,90 +40,71 @@ import kotlin.native.CName
  * @suppress [FileMessage] 的使用是稳定的, 但自行实现不稳定.
  */
 @Serializable(FileMessage.Serializer::class)
-@Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST")
 @SerialName(FileMessage.SERIAL_NAME)
 @NotStableForInheritance
 @JvmBlockingBridge
-public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
+public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 服务器需要的某种 ID.
      */
-    public val id: String
+    public actual val id: String
 
     /**
      * 服务器需要的某种 ID.
      */
-    public val internalId: Int
+    public actual val internalId: Int
 
     /**
      * 文件名
      */
-    public val name: String
+    public actual val name: String
 
     /**
      * 文件大小 bytes
      */
-    public val size: Long
+    public actual val size: Long
 
-    open override fun contentToString(): String
+    actual override fun contentToString(): String = "[文件]$name" // orthodox
 
-    open override fun appendMiraiCodeTo(builder: StringBuilder)
+    actual override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:file:")
+        builder.appendStringAsMiraiCode(id).append(",")
+        builder.append(internalId).append(",")
+        builder.appendStringAsMiraiCode(name).append(",")
+        builder.append(size).append("]")
+    }
 
     /**
      * 获取一个对应的 [AbsoluteFile]. 当目标群或好友不存在这个文件时返回 `null`.
      *
      * @since 2.8
      */
-    public suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile?
+    public actual suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile?
 
-    open override val key: Key
+    actual override val key: Key get() = Key
 
     @MiraiInternalApi
-    open override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R
+    actual override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitFileMessage(this, data)
+    }
 
     /**
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
      */
-    public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, FileMessage> {
+    public actual companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, FileMessage>(
+            MessageContent, { it.safeCast() }) {
 
-        @Suppress("CONST_VAL_WITHOUT_INITIALIZER")
-        public const val SERIAL_NAME: String
+        public actual const val SERIAL_NAME: String = "FileMessage"
 
         /**
          * 构造 [FileMessage]
          * @since 2.5
          */
-        @JvmStatic
-        public fun create(id: String, internalId: Int, name: String, size: Long): FileMessage
+        public actual fun create(id: String, internalId: Int, name: String, size: Long): FileMessage =
+            Mirai.createFileMessage(id, internalId, name, size)
     }
 
-    public object Serializer : KSerializer<FileMessage> // not polymorphic
+    public actual object Serializer :
+        KSerializer<FileMessage> by FallbackFileMessageSerializer(SERIAL_NAME) // not polymorphic
 }
-
-@MiraiInternalApi
-internal open class FallbackFileMessageSerializer constructor(serialName: String) :
-    KSerializer<FileMessage> by Delegate.serializer().map(
-        Delegate.serializer().descriptor.copy(serialName),
-        serialize = { Delegate(id, internalId, name, size) },
-        deserialize = { Mirai.createFileMessage(id, internalId, name, size) },
-    ) {
-    @Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST")
-    @SerialName(FileMessage.SERIAL_NAME)
-    @Serializable
-    data class Delegate constructor(
-        val id: String,
-        val internalId: Int,
-        val name: String,
-        val size: Long,
-    )
-}
-
-/**
- * 构造 [FileMessage]
- * @since 2.5
- */
-@JvmSynthetic
-@CName("", "FileMessage_new")
-public inline fun FileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage =
-    FileMessage.create(id, internalId, name, size)
