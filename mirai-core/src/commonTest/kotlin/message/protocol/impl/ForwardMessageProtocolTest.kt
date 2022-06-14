@@ -98,7 +98,7 @@ internal class ForwardMessageProtocolTest : AbstractMessageProtocolTest() {
     // // TODO: 2022/5/23 test for download ForwardMessage
 //    @Test
 //    fun `can receive and download ForwardMessage`() {
-//        val message = runBlocking {
+//        val message = runTest {
 //            runWithFacade {
 //                net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
 //                    msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(

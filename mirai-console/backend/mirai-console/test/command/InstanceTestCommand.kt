@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.Testing
 import net.mamoe.mirai.console.Testing.withTesting
@@ -191,7 +192,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleExecute() = runBlocking {
+    fun testSimpleExecute() = runTest {
         simpleCommand.withRegistration {
             assertEquals("test", withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, "test"))
@@ -200,7 +201,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `test raw command`() = runBlocking {
+    fun `test raw command`() = runTest {
         rawCommand.withRegistration {
             val result = withTesting<MessageChain> {
                 assertSuccess(rawCommand.execute(sender, PlainText("a1"), PlainText("a2"), PlainText("a3")))
@@ -221,7 +222,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `test enum argument`() = runBlocking {
+    fun `test enum argument`() = runTest {
         val enum = TestEnumArgCommand()
         enum.withRegistration {
 
@@ -291,7 +292,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `test temporal argument`() = runBlocking {
+    fun `test temporal argument`() = runTest {
         val command = TestTemporalArgCommand()
         command.withRegistration {
             val temporal: List<KClass<out TemporalAccessor>> = listOf(
@@ -322,7 +323,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsSplitting() = runBlocking {
+    fun testSimpleArgsSplitting() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "ttt", "tt").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test ttt tt")))
@@ -331,7 +332,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsEscape() = runBlocking {
+    fun testSimpleArgsEscape() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test esc\\ ape")))
@@ -340,7 +341,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsQuote() = runBlocking {
+    fun testSimpleArgsQuote() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\"")))
@@ -349,7 +350,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsQuoteReject() = runBlocking {
+    fun testSimpleArgsQuoteReject() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "es\"c", "ape\"").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test es\"c ape\"")))
@@ -358,7 +359,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsQuoteEscape() = runBlocking {
+    fun testSimpleArgsQuoteEscape() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "\"esc", "ape\"").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \\\"esc ape\"")))
@@ -367,7 +368,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsMultipleQuotes() = runBlocking {
+    fun testSimpleArgsMultipleQuotes() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape", "1 2").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\" \"1 2\"")))
@@ -376,7 +377,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsMisplacedQuote() = runBlocking {
+    fun testSimpleArgsMisplacedQuote() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape", "1\"", "\"2").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \"esc ape\" 1\" \"2 ")))
@@ -385,7 +386,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsQuoteSpaceEscape() = runBlocking {
+    fun testSimpleArgsQuoteSpaceEscape() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test \"esc", "ape\"").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test\\ \"esc ape\"")))
@@ -394,7 +395,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParse() = runBlocking {
+    fun testSimpleArgsStopParse() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape  ").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test -- esc ape  ")))
@@ -403,7 +404,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParse2() = runBlocking {
+    fun testSimpleArgsStopParse2() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "esc ape  test\\12\"\"3").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test --  esc ape  test\\12\"\"3")))
@@ -412,7 +413,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParseReject() = runBlocking {
+    fun testSimpleArgsStopParseReject() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test--", "esc", "ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test-- esc ape  ")))
@@ -421,7 +422,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParseEscape() = runBlocking {
+    fun testSimpleArgsStopParseEscape() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "--", "esc", "ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \\-- esc ape")))
@@ -430,7 +431,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParseEscape2() = runBlocking {
+    fun testSimpleArgsStopParseEscape2() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", " --", "esc", "ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \\ -- esc ape")))
@@ -439,7 +440,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun testSimpleArgsStopParseQuote() = runBlocking {
+    fun testSimpleArgsStopParseQuote() = runTest {
         simpleCommand.withRegistration {
             assertEquals(arrayOf("test", "--", "esc", "ape").joinToString(), withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, PlainText("test \"--\" esc ape")))
@@ -450,7 +451,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     val image = Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
 
     @Test
-    fun `PlainText and Image args splitting`() = runBlocking {
+    fun `PlainText and Image args splitting`() = runTest {
         simpleCommand.withRegistration {
             val result = withTesting<MessageChain> {
                 assertSuccess(simpleCommand.execute(sender, buildMessageChain {
@@ -472,7 +473,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `executing command by string command`() = runBlocking {
+    fun `executing command by string command`() = runTest {
         compositeCommand.withRegistration {
             val result = withTesting<Int> {
                 assertSuccess(sender.executeCommand("/testComposite mute 1"))
@@ -490,7 +491,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `composite command executing`() = runBlocking {
+    fun `composite command executing`() = runTest {
         compositeCommand.withRegistration {
             assertEquals(1, withTesting {
                 assertSuccess(compositeCommand.execute(sender, "mute 1"))
@@ -499,7 +500,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     }
 
     @Test
-    fun `test first param command sender`() = runBlocking {
+    fun `test first param command sender`() = runTest {
         object : CompositeCommand(owner, "cmd") {
             @SubCommand
             fun handle(sender: CommandSender, arg: String) {

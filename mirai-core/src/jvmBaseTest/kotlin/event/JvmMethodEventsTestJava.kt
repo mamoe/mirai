@@ -10,8 +10,9 @@
 package net.mamoe.mirai.internal.event
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.utils.childScope
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,12 +21,14 @@ internal class JvmMethodEventsTestJava : AbstractEventTest() {
     private val called = AtomicInteger(0)
 
     @Test
-    fun test() = runBlocking {
+    fun test() = runTest {
         val host = TestHost(called)
-        globalEventChannel().registerListenerHost(host)
-        runBlocking { TestEvent().broadcast() }
+        val scope = this.childScope()
+        scope.globalEventChannel().registerListenerHost(host)
+        TestEvent().broadcast()
         assertEquals(3, called.get(), null)
         host.cancel() // reset listeners
+        scope.cancel()
     }
 }
 
