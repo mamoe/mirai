@@ -195,7 +195,9 @@ internal class PacketCodecImpl : PacketCodec {
 
                 if (PacketLogger.isEnabled) {
                     val extraData = readBytes(readInt() - 4)
-                    PacketLogger.verbose { "(sso/inner)extraData = ${extraData.toUHexString()}" }
+                    if (extraData.isNotEmpty()) {
+                        PacketLogger.verbose { "(sso/inner)extraData = ${extraData.toUHexString()}" }
+                    }
                 } else {
                     discardExact(readInt() - 4)
                 }

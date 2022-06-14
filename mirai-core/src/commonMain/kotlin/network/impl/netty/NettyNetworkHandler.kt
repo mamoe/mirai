@@ -110,7 +110,6 @@ internal open class NettyNetworkHandler(
 
     private inner class OutgoingPacketEncoder : MessageToByteEncoder<OutgoingPacket>(OutgoingPacket::class.java) {
         override fun encode(ctx: ChannelHandlerContext, msg: OutgoingPacket, out: ByteBuf) {
-            packetLogger.debug { "encode: ${msg.displayName}" }
             out.writeBytes(msg.delegate)
         }
     }
@@ -187,7 +186,6 @@ internal open class NettyNetworkHandler(
 
         fun send(raw: RawIncomingPacket) {
             launch {
-                packetLogger.debug { "Packet Handling Processor: receive packet ${raw.commandName}" }
                 val result = packetCodec.processBody(context.bot, raw)
                 if (result == null) {
                     collectUnknownPacket(raw)
