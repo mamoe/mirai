@@ -283,7 +283,7 @@ jobs:
           #          - windows-2019 # Our config works only for Windows 2022 servers (Using some absolute paths)
     env:
       # Disabling Gradle daemon and Kotlin compiler daemon to save memory — 7 GB for Windows and Ubuntu hosts.
-      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process"
+      gradleArgs: --scan "-Dkotlin.compiler.execution.strategy=in-process" --no-daemon
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
