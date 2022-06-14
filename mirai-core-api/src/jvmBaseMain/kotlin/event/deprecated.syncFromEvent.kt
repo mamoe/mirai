@@ -16,8 +16,6 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 /**

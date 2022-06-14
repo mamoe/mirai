@@ -17,8 +17,6 @@ import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 
 /**
