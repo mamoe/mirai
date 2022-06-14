@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.components.BotInitProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
@@ -31,7 +32,7 @@ import kotlin.test.assertTrue
 internal class BotInitProcessorTest {
     class WithoutSelector : AbstractCommonNHTest() {
         @Test
-        fun `BotInitProcessor halted`() = runBlockingUnit {
+        fun `BotInitProcessor halted`() = runTest {
             val p = setComponent(BotInitProcessor, object : BotInitProcessor {
                 var ranTimes = 0
                 var haltedTimes = 0

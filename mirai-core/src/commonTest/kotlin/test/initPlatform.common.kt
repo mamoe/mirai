@@ -9,7 +9,11 @@
 
 package net.mamoe.mirai.internal.test
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CloseableCoroutineDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlin.test.AfterTest
 import kotlin.test.Test
 
@@ -22,7 +26,7 @@ internal abstract class CommonAbstractTest {
     private val dispatchers = mutableListOf<CloseableCoroutineDispatcher>()
 
     fun borrowSingleThreadDispatcher(): CoroutineDispatcher {
-        return newSingleThreadContext(this::class.simpleName ?: "CommonAbstractTest")
+        return StandardTestDispatcher()
     }
 
     @AfterTest

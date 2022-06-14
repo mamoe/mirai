@@ -9,7 +9,7 @@
 package  net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -26,7 +26,7 @@ internal class MessageUtilsTest {
     }
 
     @Test
-    fun `flow toMessageChain`(): Unit = runBlocking {
+    fun `flow toMessageChain`() = runTest {
         assertEquals(messageChainOf(PlainText("1")), flowOf(PlainText("1")).toMessageChain())
     }
 }

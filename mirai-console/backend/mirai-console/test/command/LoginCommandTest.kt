@@ -12,8 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.runBlocking
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -29,15 +28,14 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCommandDescriptors::class)
-@JvmBlockingBridge
 internal class LoginCommandTest : AbstractCommandTest() {
 
     @Test
-    fun `login with provided password`() = runBlocking {
+    fun `login with provided password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 
-        val bot = awaitDeferred<QQAndroidBot> { cont ->
+        val bot = awaitDeferred { cont ->
             val command = object : LoginCommandImpl() {
                 override suspend fun doLogin(bot: Bot) {
                     cont.complete(bot as QQAndroidBot)
@@ -53,7 +51,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    fun `login with saved plain password`() = runBlocking {
+    fun `login with saved plain password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 
@@ -66,7 +64,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
             )
         })
 
-        val bot = awaitDeferred<QQAndroidBot> { cont ->
+        val bot = awaitDeferred { cont ->
             val command = object : LoginCommandImpl() {
                 override suspend fun doLogin(bot: Bot) {
                     cont.complete(bot as QQAndroidBot)
@@ -82,7 +80,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    fun `login with saved md5 password`() = runBlocking {
+    fun `login with saved md5 password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 

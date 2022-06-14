@@ -23,7 +23,7 @@ internal class TestCoroutineUtils {
     // TODO TestCoroutineUtils disabled manually: on CI real time measurement is not precise causing tests to fail.
 
 //    @Test
-//    fun `test launchTimedTask 0 time`() = runBlocking {
+//    fun `test launchTimedTask 0 time`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        val result = withTimeoutOrNull(6000) {
@@ -39,7 +39,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask finishes 1 time`() = runBlocking {
+//    fun `test launchTimedTask finishes 1 time`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        withTimeout(4000) {
@@ -55,7 +55,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask finishes multiple times`() = runBlocking {
+//    fun `test launchTimedTask finishes multiple times`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        val resumedTimes = AtomicInteger(0)
@@ -77,7 +77,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask interval less than delay`() = runBlocking {
+//    fun `test launchTimedTask interval less than delay`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        withTimeout(5000) {

@@ -65,6 +65,7 @@ dependencies {
 
     testApi(project(":mirai-core"))
     testApi(`kotlin-stdlib-jdk8`)
+    testApi(`kotlinx-coroutines-test`)
 
     "consoleRuntimeClasspath"(project)
     "consoleRuntimeClasspath"(project(":mirai-core-utils"))

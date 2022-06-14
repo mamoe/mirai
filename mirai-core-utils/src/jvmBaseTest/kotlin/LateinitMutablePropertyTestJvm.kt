@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
@@ -20,7 +21,7 @@ import kotlin.test.assertSame
 
 internal class LateinitMutablePropertyTestJvm {
     @Test
-    fun `initializer called once if requested by multiple threads`() = runBlocking {
+    fun `initializer called once if requested by multiple threads`() = runTest {
         val value = Symbol("expected")
         var counter = 0
 
